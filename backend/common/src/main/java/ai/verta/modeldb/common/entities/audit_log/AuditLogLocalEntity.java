@@ -71,6 +71,9 @@ public class AuditLogLocalEntity {
   @Column(name = "response", columnDefinition = "longtext")
   private String response;
 
+  @Column(name = "workspace_id")
+  private Long workspaceId;
+
   private AuditLogLocalEntity() {}
 
   public AuditLogLocalEntity(
@@ -82,7 +85,8 @@ public class AuditLogLocalEntity {
       Service resourceService,
       String methodName,
       String request,
-      String response) {
+      String response,
+      Long workspaceId) {
     tsNano = System.currentTimeMillis() * 1000000;
     localId = String.format("%s_%s", serviceName, UUID.randomUUID());
     this.userId = userId;
@@ -93,6 +97,7 @@ public class AuditLogLocalEntity {
     this.methodName = methodName;
     this.request = request;
     this.response = response;
+    this.workspaceId = workspaceId;
   }
 
   public String getLocalId() {
@@ -101,19 +106,21 @@ public class AuditLogLocalEntity {
 
   public AuditLog toProto() {
     List<AuditResource> auditResources = new ArrayList<>();
-    for (Map.Entry<String, Long> resourceId : resourceIdWorkspaceIdMap.entrySet()) {
-      final AuditResource.Builder resource =
-          AuditResource.newBuilder()
-              .setResourceId(resourceId.getKey())
-              .setWorkspaceId(resourceId.getValue());
-      if (resourceType != null) {
-        resource.setResourceType(
-            ResourceType.newBuilder().setModeldbServiceResourceTypeValue(resourceType).build());
+    if (resourceIdWorkspaceIdMap != null) {
+      for (Map.Entry<String, Long> resourceId : resourceIdWorkspaceIdMap.entrySet()) {
+        final AuditResource.Builder resource =
+            AuditResource.newBuilder().setWorkspaceId(resourceId.getValue())
+                    .setResourceId(resourceId.getKey());
+
+        if (resourceType != null) {
+          resource.setResourceType(
+              ResourceType.newBuilder().setModeldbServiceResourceTypeValue(resourceType).build());
+        }
+        if (resourceService != null) {
+          resource.setResourceServiceValue(resourceService);
+        }
+        auditResources.add(resource.build());
       }
-      if (resourceService != null) {
-        resource.setResourceServiceValue(resourceService);
-      }
-      auditResources.add(resource.build());
     }
 
     AuditLog.Builder builder =
@@ -125,7 +132,8 @@ public class AuditLogLocalEntity {
                     .setModeldbServiceAction(ModelDBServiceActions.forNumber(action))
                     .setServiceValue(resourceService)
                     .build())
-            .addAllResource(auditResources);
+            .addAllResource(auditResources)
+            .setWorkspaceId(this.workspaceId);
     if (tsNano != null) {
       builder.setTsNano(tsNano);
     }

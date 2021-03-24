@@ -109,7 +109,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       ModelDBServiceActions action,
       Map<String, Long> resourceIdWorkspaceIdMap,
       String request,
-      String response) {
+      String response,
+      Long workspaceId) {
     auditLogLocalDAO.saveAuditLog(
         new AuditLogLocalEntity(
             SERVICE_NAME,
@@ -121,7 +122,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
             Service.MODELDB_SERVICE,
             MonitoringInterceptor.METHOD_NAME.get(),
             request,
-            response));
+            response,
+            workspaceId));
   }
 
   /**
@@ -149,7 +151,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.CREATE,
           Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          project.getWorkspaceServiceId());
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -190,7 +193,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -232,7 +236,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -280,7 +285,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -334,7 +340,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(resource.getResourceId(), resource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          resource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -379,7 +386,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -419,7 +427,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -450,7 +459,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(resource.getResourceId(), resource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          resource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -497,7 +507,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -540,7 +551,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -580,7 +592,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -617,7 +630,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.DELETE,
           Collections.singletonMap(entityResource.getResourceId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -661,7 +675,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
       List<GetResourcesResponseItem> responseItems =
           roleService.getResourceItems(
-              workspace,
+              null,
               projects.stream().map(Project::getId).collect(Collectors.toSet()),
               ModelDBServiceResourceTypes.PROJECT);
       saveAuditLog(
@@ -673,7 +687,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       GetResourcesResponseItem::getResourceId,
                       GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          workspace.getId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -704,7 +719,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -778,7 +794,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       Workspace workspace =
           roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
       List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(workspace, projectIds, ModelDBServiceResourceTypes.PROJECT);
+          roleService.getResourceItems(null, projectIds, ModelDBServiceResourceTypes.PROJECT);
       saveAuditLog(
           Optional.ofNullable(userInfo),
           ModelDBServiceActions.READ,
@@ -788,7 +804,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       GetResourcesResponseItem::getResourceId,
                       GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          workspace.getId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -826,7 +843,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.CREATE,
           Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -947,7 +965,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -988,7 +1007,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1018,7 +1038,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1066,7 +1087,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1097,7 +1119,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1147,7 +1170,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(responseBuilder.build()));
+          ModelDBUtils.getStringFromProtoObject(responseBuilder.build()),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -1184,7 +1208,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           Collections.singletonMap(
               existingProject.getId(), existingProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          existingProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1215,7 +1240,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
       List<GetResourcesResponseItem> responseItems =
           roleService.getResourceItems(
-              workspace,
+              null,
               projects.stream().map(Project::getId).collect(Collectors.toSet()),
               ModelDBServiceResourceTypes.PROJECT);
       saveAuditLog(
@@ -1227,7 +1252,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       GetResourcesResponseItem::getResourceId,
                       GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          workspace.getId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1285,7 +1311,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(resource.getResourceId(), resource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          resource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1332,7 +1359,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(responseBuilder.build()));
+          ModelDBUtils.getStringFromProtoObject(responseBuilder.build()),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -1364,7 +1392,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(resource.getResourceId(), resource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          resource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1399,7 +1428,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1433,7 +1463,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       GetResourcesResponseItem::getResourceId,
                       GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItems.get(0).getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 

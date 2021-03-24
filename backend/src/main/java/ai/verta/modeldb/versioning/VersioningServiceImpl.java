@@ -26,6 +26,7 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.Collections;
@@ -70,7 +71,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ModelDBServiceActions action,
       Map<String, Long> resourceIdWorkspaceIdMap,
       String request,
-      String response) {
+      String response,
+      Long workspaceId) {
     auditLogLocalDAO.saveAuditLog(
         new AuditLogLocalEntity(
             SERVICE_NAME,
@@ -82,7 +84,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
             ServiceEnum.Service.MODELDB_SERVICE,
             MonitoringInterceptor.METHOD_NAME.get(),
             request,
-            response));
+            response,
+            workspaceId));
   }
 
   @Override
@@ -99,6 +102,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       Response response = repositoryDAO.listRepositories(request, userInfo);
 
+      Workspace workspace =
+          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
       List<GetResourcesResponseItem> responseItems =
           roleService.getResourceItems(
               null,
@@ -115,7 +120,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                       GetResourcesResponseItem::getResourceId,
                       GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          workspace.getId());
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -138,7 +144,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               String.valueOf(response.getRepository().getId()),
               response.getRepository().getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          response.getRepository().getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -184,7 +191,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               String.valueOf(response.getRepository().getId()),
               response.getRepository().getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          response.getRepository().getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -222,7 +230,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               String.valueOf(response.getRepository().getId()),
               response.getRepository().getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          response.getRepository().getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -253,7 +262,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               String.valueOf(repositoryResponse.getRepository().getId()),
               repositoryResponse.getRepository().getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repositoryResponse.getRepository().getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -282,7 +292,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -312,7 +323,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -376,7 +388,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository1.getId()), repository1.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository1.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -429,7 +442,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -463,7 +477,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -497,7 +512,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -524,7 +540,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -552,7 +569,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(mergeResponse));
+          ModelDBUtils.getStringFromProtoObject(mergeResponse),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(mergeResponse);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -579,7 +597,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(mergeResponse));
+          ModelDBUtils.getStringFromProtoObject(mergeResponse),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(mergeResponse);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -604,7 +623,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -630,7 +650,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -655,7 +676,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -683,7 +705,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -709,7 +732,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -734,7 +758,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -758,7 +783,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -782,7 +808,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -809,7 +836,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -822,6 +850,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       FindRepositories request, StreamObserver<FindRepositories.Response> responseObserver) {
     try {
       FindRepositories.Response response = repositoryDAO.findRepositories(request);
+      Workspace workspace =
+          roleService.getWorkspaceByWorkspaceName(
+              authService.getCurrentLoginUserInfo(), request.getWorkspaceName());
       List<GetResourcesResponseItem> responseItems =
           roleService.getResourceItems(
               null,
@@ -838,7 +869,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                       GetResourcesResponseItem::getResourceId,
                       GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          workspace.getId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -854,16 +886,27 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       List<Repository> repositories = new LinkedList<>();
       FindRepositoriesBlobs.Response response =
           blobDAO.findRepositoriesBlobs(commitDAO, request, repositories);
+      Workspace workspace =
+          roleService.getWorkspaceByWorkspaceName(
+              authService.getCurrentLoginUserInfo(), request.getWorkspaceName());
+      List<GetResourcesResponseItem> responseItems =
+          roleService.getResourceItems(
+              null,
+              repositories.stream()
+                  .map(repository -> String.valueOf(repository.getId()))
+                  .collect(Collectors.toSet()),
+              ModelDBServiceResourceTypes.REPOSITORY);
       saveAuditLog(
           Optional.empty(),
           ModelDBServiceActions.READ,
-          repositories.stream()
+          responseItems.stream()
               .collect(
                   Collectors.toMap(
-                      repository -> String.valueOf(repository.getId()),
-                      Repository::getWorkspaceServiceId)),
+                      GetResourcesResponseItem::getResourceId,
+                      GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          workspace.getId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -898,7 +941,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -974,7 +1018,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1021,7 +1066,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1075,7 +1121,8 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           Collections.singletonMap(
               String.valueOf(repository.getId()), repository.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          repository.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {

@@ -101,7 +101,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       ModelDBServiceActions action,
       Map<String, Long> resourceIdWorkspaceIdMap,
       String request,
-      String response) {
+      String response,
+      Long workspaceId) {
     auditLogLocalDAO.saveAuditLog(
         new AuditLogLocalEntity(
             SERVICE_NAME,
@@ -113,7 +114,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             Service.MODELDB_SERVICE,
             MonitoringInterceptor.METHOD_NAME.get(),
             request,
-            response));
+            response,
+            workspaceId));
   }
 
   private DatasetVersion getDatasetVersionFromRequest(
@@ -204,7 +206,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.CREATE,
           Collections.singletonMap(datasetVersion.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -250,7 +253,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.READ,
           auditResourceMap,
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       /*Build response*/
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -349,7 +353,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -423,7 +428,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(datasetVersion.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       /*Build response*/
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -491,7 +497,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.READ,
           auditResourceMap,
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -532,7 +539,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(datasetVersion.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -582,7 +590,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -632,7 +641,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -683,7 +693,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -734,7 +745,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -785,7 +797,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -840,7 +853,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -883,7 +897,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.DELETE,
           auditResourceMap,
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -917,7 +932,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(request.getDatasetVersionId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -974,7 +990,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getDatasetVersionId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1005,7 +1022,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(request.getDatasetVersionId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1044,7 +1062,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(request.getDatasetVersionId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1080,7 +1099,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           Collections.singletonMap(
               response.getDatasetVersion().getId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
