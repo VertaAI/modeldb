@@ -71,13 +71,6 @@ public class PublicRoleServiceUtils implements RoleService {
 
   @Override
   public void createRoleBinding(
-      Role role,
-      CollaboratorBase collaborator,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
-
-  @Override
-  public void createRoleBinding(
       String roleName,
       RoleScope roleBindingScope,
       CollaboratorBase collaborator,
@@ -94,11 +87,6 @@ public class PublicRoleServiceUtils implements RoleService {
   public Map<String, Actions> getSelfAllowedActionsBatch(
       List<String> resourceIds, ModelDBServiceResourceTypes type) {
     return new HashMap<>();
-  }
-
-  @Override
-  public Role getRoleByName(String roleName, RoleScope roleScope) {
-    return null;
   }
 
   @Override
