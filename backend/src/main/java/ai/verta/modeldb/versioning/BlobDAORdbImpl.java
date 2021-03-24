@@ -390,15 +390,14 @@ public class BlobDAORdbImpl implements BlobDAO {
   }
 
   private Folder getFolder(Session session, String commitSha, String folderSha) {
+    Query query =
+        session.createQuery(
+            "From "
+                + InternalFolderElementEntity.class.getSimpleName()
+                + " where folder_hash = :folder_hash");
+    query.setParameter("folder_hash", folderSha);
     Optional result =
-        session
-            .createQuery(
-                "From "
-                    + InternalFolderElementEntity.class.getSimpleName()
-                    + " where folder_hash = '"
-                    + folderSha
-                    + "'")
-            .list().stream()
+        query.list().stream()
             .map(
                 d -> {
                   InternalFolderElementEntity entity = (InternalFolderElementEntity) d;

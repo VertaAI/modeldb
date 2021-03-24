@@ -136,7 +136,10 @@
         "DELETE",
         "DEPLOY",
         "PUBLIC_READ",
-        "UPDATE_PERMISSIONS"
+        "UPDATE_PERMISSIONS",
+        "LOCK",
+        "UNLOCK",
+        "UPDATE_REDACT"
       ],
       "default": "UNKNOWN"
     },
@@ -152,7 +155,9 @@
         "DATASET_VERSION",
         "DASHBOARD",
         "REPOSITORY",
-        "REGISTERED_MODEL"
+        "REGISTERED_MODEL",
+        "REGISTERED_MODEL_VERSION",
+        "MONITORED_ENTITY"
       ],
       "default": "UNKNOWN"
     },
@@ -316,7 +321,10 @@
           "title": "Who"
         },
         "resource": {
-          "$ref": "#/definitions/versioningAuditResource",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningAuditResource"
+          },
           "title": "What"
         },
         "action": {
@@ -326,6 +334,11 @@
         "method_name": {
           "type": "string",
           "title": "Unique identifier for the method, like the fully qualified method name in grpc"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "Workspace of the request, independent from any resource being returned."
         },
         "ts_nano": {
           "type": "string",
@@ -357,6 +370,13 @@
         },
         "resource_predicate": {
           "$ref": "#/definitions/versioningResourcePredicate"
+        },
+        "workspace_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
         }
       }
     },
@@ -369,7 +389,7 @@
         },
         "resource_type": {
           "$ref": "#/definitions/uacResourceType",
-          "title": "the tyep of the resource"
+          "title": "the type of the resource"
         },
         "resource_service": {
           "$ref": "#/definitions/ServiceEnumService",
