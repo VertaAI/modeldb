@@ -168,9 +168,10 @@ config.yaml --> artifactStoreConfig --> nfsRootPath : "root path"
     # Default value for signedUrlValidityInMinutes is 5 minutes if signedUrlValidityInMinutes is not present in config.
     # Using the Java Duration parser to extract time. Value specified should follow ISO-8601 standard.
     #  (https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/Duration.html#parse(java.lang.CharSequence))
-    # If you want to upload large files upto 1 GB, set the validtiy to at least 30 minutes.
+    # If you want to upload large files upto 1 GB, set the validity to at least 30 minutes.
     signedUrlValidity: PT5M
 ```
+- Please note that the bucket needs to exist already in the cloud storage. 
 
 ## Additional Functionaries
 

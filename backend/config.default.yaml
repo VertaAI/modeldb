@@ -12,7 +12,7 @@ mdb_service_user:
   devKey:
 
 artifactStoreConfig:
-  artifactStoreType: NFS #S3, GCP, NFS
+  artifactStoreType: NFS #S3, GCS, NFS
   S3:
     cloudAccessKey: #for s3 aws account access-key
     cloudSecretKey: #for s3 aws account secret-key
@@ -25,6 +25,9 @@ artifactStoreConfig:
     artifactEndpoint:
       getArtifact: "/v1/artifact1/getArtifact"
       storeArtifact: "/v1/artifact/storeArtifact"
+  GCS: # Refer to backend/README.md file to understand more about these configs
+    cloudBucketName:
+    signedUrlValidity: PT5M
 
 # Database settings (type mongodb, couchbasedb, relational etc..)
 database:
