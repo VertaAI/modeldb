@@ -3,15 +3,16 @@ package ai.verta.modeldb;
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
-import ai.verta.modeldb.authservice.AuthInterceptor;
 import ai.verta.modeldb.comment.CommentServiceImpl;
+import ai.verta.modeldb.common.GracefulShutdown;
+import ai.verta.modeldb.common.authservice.AuthInterceptor;
+import ai.verta.modeldb.common.config.InvalidConfigException;
+import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.config.InvalidConfigException;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
-import ai.verta.modeldb.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.experiment.ExperimentServiceImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunServiceImpl;
 import ai.verta.modeldb.health.HealthServiceImpl;
@@ -20,6 +21,7 @@ import ai.verta.modeldb.lineage.LineageServiceImpl;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.ProjectServiceImpl;
+import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -139,15 +141,16 @@ public class App implements ApplicationContextAware {
         Boolean.parseBoolean(
             Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
                 .orElse("false"));
+    ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
-      ModelDBHibernateUtil.runLiquibaseMigration(config.database);
+      modelDBHibernateUtil.runLiquibaseMigration(config.database);
       LOGGER.info("Liquibase migration done");
 
-      ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
+      modelDBHibernateUtil.createOrGetSessionFactory(config.database);
 
       LOGGER.info("Code migration starting");
-      ModelDBHibernateUtil.runMigration(config);
+      modelDBHibernateUtil.runMigration(config);
       LOGGER.info("Code migration done");
 
       boolean runLiquibaseSeparate =
@@ -159,7 +162,7 @@ public class App implements ApplicationContextAware {
       }
     }
 
-    ModelDBHibernateUtil.createOrGetSessionFactory(config.database);
+    modelDBHibernateUtil.createOrGetSessionFactory(config.database);
 
     return false;
   }
@@ -190,6 +193,7 @@ public class App implements ApplicationContextAware {
 
       // Initialize cron jobs
       CronJobUtils.initializeCronJobs(config, services);
+      ReconcilerInitializer.initialize(config, services);
 
       // Initialize grpc server
       ServerBuilder<?> serverBuilder = ServerBuilder.forPort(config.grpcServer.port);

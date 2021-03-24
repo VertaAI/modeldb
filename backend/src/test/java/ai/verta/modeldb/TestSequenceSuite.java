@@ -34,7 +34,8 @@ import org.junit.runners.Suite;
   BlobProtoEquality.class,
   DiffAndMerge.class,
   ValidatorBlobTest.class,
-  ValidatorBlobDiffTest.class
+  ValidatorBlobDiffTest.class,
+  GlobalSharingTest.class
   //  ArtifactStoreTest.class
 })
 public class TestSequenceSuite {}

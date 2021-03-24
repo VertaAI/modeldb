@@ -24,6 +24,8 @@ public class PopulateVersionMigration {
   private PopulateVersionMigration() {}
 
   private static final Logger LOGGER = LogManager.getLogger(PopulateVersionMigration.class);
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
   private static MetadataDAO metadataDAO;
   private static int recordUpdateLimit = 100;
 
@@ -37,7 +39,7 @@ public class PopulateVersionMigration {
     LOGGER.debug("DatasetVersion version migration started");
 
     Long count;
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String repoCountQueryStr =
           "SELECT COUNT(r) FROM "
               + RepositoryEntity.class.getSimpleName()
@@ -52,7 +54,7 @@ public class PopulateVersionMigration {
     LOGGER.debug("Total Datasets {}", count);
 
     while (lowerBound < count) {
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         LOGGER.debug("starting DatasetVersion version migration");
         String repoQuery =
             "SELECT r FROM "

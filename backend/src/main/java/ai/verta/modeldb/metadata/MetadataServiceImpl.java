@@ -1,10 +1,10 @@
 package ai.verta.modeldb.metadata;
 
 import ai.verta.modeldb.DAOSet;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.rpc.Code;
 import com.oblac.nomen.Nomen;
 import io.grpc.stub.StreamObserver;
@@ -35,8 +35,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(GetLabelsRequest.Response.newBuilder().addAllLabels(labels).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, GetLabelsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetLabelsRequest.Response.getDefaultInstance());
     }
   }
 
@@ -60,8 +59,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(AddLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, AddLabelsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, AddLabelsRequest.Response.getDefaultInstance());
     }
   }
 
@@ -79,8 +77,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(AddLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, AddLabelsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, AddLabelsRequest.Response.getDefaultInstance());
     }
   }
 
@@ -97,7 +94,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(GetLabelIdsRequest.Response.newBuilder().addAllIds(labelIds).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetLabelIdsRequest.Response.getDefaultInstance());
     }
   }
@@ -124,7 +121,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(DeleteLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteLabelsRequest.Response.getDefaultInstance());
     }
   }
@@ -152,7 +149,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(AddKeyValuePropertiesRequest.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AddKeyValuePropertiesRequest.Response.getDefaultInstance());
     }
   }
@@ -184,7 +181,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
               .build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetKeyValuePropertiesRequest.Response.getDefaultInstance());
     }
   }
@@ -213,7 +210,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(DeleteKeyValuePropertiesRequest.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteKeyValuePropertiesRequest.Response.getDefaultInstance());
     }
   }
@@ -233,7 +230,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
               .build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GenerateRandomNameRequest.Response.getDefaultInstance());
     }
   }

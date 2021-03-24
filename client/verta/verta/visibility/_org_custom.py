@@ -8,6 +8,11 @@ class OrgCustom(_Visibility):
     """
     Organization-wide access with manually-specified permissions.
 
+    .. note::
+
+        With an older ModelDB backend that does not support new permissions
+        values, this will be converted to :class:`~verta.visibility.OrgDefault`.
+
     Parameters
     ----------
     write : bool, default False

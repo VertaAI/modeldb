@@ -360,7 +360,10 @@ class _ModelDBEntity(object):
                               " logging latest checkpoint from disk")
                         zipf.write(exec_path, filename)
                     else:
-                        zipf.writestr(filename, six.ensure_binary(saved_notebook.read()))
+                        zipf.writestr(
+                            _artifact_utils.global_read_zipinfo(filename),
+                            six.ensure_binary(saved_notebook.read()),
+                        )
                 else:
                     zipf.write(exec_path, filename)
             zipstream.seek(0)

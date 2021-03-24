@@ -20,6 +20,7 @@ import com.google.rpc.Code;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,7 +54,8 @@ public class TrialUtils {
       ExperimentRunDAO experimentRunDAO,
       String projectId,
       UserInfo userInfo)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
+          InterruptedException {
     if (config != null) {
       Project project = projectDAO.getProjectByID(projectId);
       if (project.getWorkspaceId() != null && !project.getWorkspaceId().isEmpty()) {

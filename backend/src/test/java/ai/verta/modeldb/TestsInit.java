@@ -1,7 +1,7 @@
 package ai.verta.modeldb;
 
 import ai.verta.artifactstore.ArtifactStoreGrpc;
-import ai.verta.modeldb.authservice.AuthInterceptor;
+import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;

@@ -5,11 +5,11 @@ import ai.verta.modeldb.*;
 import ai.verta.modeldb.CommentServiceGrpc.CommentServiceImplBase;
 import ai.verta.modeldb.GetComments.Response;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import io.grpc.stub.StreamObserver;
@@ -109,7 +109,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onNext(AddComment.Response.newBuilder().setComment(newComment).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, AddComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, AddComment.Response.getDefaultInstance());
     }
   }
 
@@ -127,7 +127,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, UpdateComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, UpdateComment.Response.getDefaultInstance());
     }
   }
 
@@ -148,7 +148,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onNext(GetComments.Response.newBuilder().addAllComments(comments).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetComments.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetComments.Response.getDefaultInstance());
     }
   }
 
@@ -177,7 +177,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onNext(DeleteComment.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, DeleteComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, DeleteComment.Response.getDefaultInstance());
     }
   }
 }

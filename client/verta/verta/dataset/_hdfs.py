@@ -2,7 +2,6 @@
 
 from __future__ import print_function
 
-import functools
 import hashlib
 
 from ._path import Path
@@ -53,6 +52,10 @@ class HDFSPath(Path):
 
         super(HDFSPath, self).__init__(paths, base_path)
 
+    @classmethod
+    def _create_empty(cls):
+        return cls(None, [])
+
     def _file_to_component(self, filepath):
         original_filepath = filepath
         filepath = filepath[len(_HDFS_PREFIX):]  # prefix prepended in init
@@ -79,47 +82,3 @@ class HDFSPath(Path):
             for chunk in iter(lambda: f.read(2**20), b''):
                 file_hash.update(chunk)
         return file_hash.hexdigest()
-
-    @staticmethod
-    def with_spark(sc, paths):
-        """
-        Creates an HDFSPath blob with a SparkContext instance.
-
-        Parameters
-        ----------
-        sc : pyspark.SparkContext
-            SparkContext instance.
-        paths : list of strs
-            List of paths to binary input data file(s) from HDFS.
-
-        Returns
-        -------
-        :class:`~verta.dataset.HDFSPath`
-            HDFSPath blob capturing the metadata of the binary files.
-
-        """
-        if isinstance(paths, six.string_types):
-            paths = [paths]
-
-        rdds = list(map(sc.binaryFiles, paths))
-        rdd = functools.reduce(lambda a,b: a.union(b), rdds)
-
-        def get_component(entry):
-            filepath, content = entry
-            h = hashlib.md5(content).hexdigest()
-            return _dataset.Component(
-                path=filepath,
-                size=len(content),
-                # last_modified=metadata['modificationTime'], # handle timezone?
-                md5=hashlib.md5(content).hexdigest(),
-            )
-
-        result = rdd.map(get_component)
-        result = result.collect()
-        obj = HDFSPath(None, [])
-        obj._components_map.update({
-            component.path: component
-            for component
-            in result
-        })
-        return obj

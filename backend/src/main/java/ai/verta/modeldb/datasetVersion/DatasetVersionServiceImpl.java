@@ -7,6 +7,7 @@ import ai.verta.modeldb.CreateDatasetVersion.Response;
 import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceImplBase;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -162,7 +164,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, CreateDatasetVersion.Response.getDefaultInstance());
     }
   }
@@ -193,14 +195,15 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetAllDatasetVersionsByDatasetId.Response.getDefaultInstance());
     }
   }
 
   private DatasetVersionDTO getDatasetVersionDTOByDatasetId(
       String datasetId, int pageNumber, int pageLimit, boolean ascending)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
+          InterruptedException {
 
     /*Get Data*/
     RepositoryIdentification repositoryIdentification =
@@ -240,7 +243,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   }
 
   private List<DatasetVersion> convertRepoDatasetVersions(
-      RepositoryEntity repositoryEntity, List<Commit> commitList) throws ModelDBException {
+      RepositoryEntity repositoryEntity, List<Commit> commitList)
+      throws ModelDBException, ExecutionException, InterruptedException {
     List<DatasetVersion> datasetVersions = new ArrayList<>();
     for (Commit commit : commitList) {
       if (commit.getParentShasList().isEmpty()) {
@@ -280,7 +284,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetVersion.Response.getDefaultInstance());
     }
   }
@@ -344,7 +348,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetLatestDatasetVersionByDatasetId.Response.getDefaultInstance());
     }
   }
@@ -396,7 +400,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, FindDatasetVersions.Response.getDefaultInstance());
     }
   }
@@ -436,7 +440,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateDatasetVersionDescription.Response.getDefaultInstance());
     }
   }
@@ -485,7 +489,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AddDatasetVersionTags.Response.getDefaultInstance());
     }
   }
@@ -534,7 +538,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetVersionTags.Response.getDefaultInstance());
     }
   }
@@ -584,7 +588,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AddDatasetVersionAttributes.Response.getDefaultInstance());
     }
   }
@@ -634,7 +638,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateDatasetVersionAttributes.Response.getDefaultInstance());
     }
   }
@@ -675,7 +679,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetDatasetVersionAttributes.Response.getDefaultInstance());
     }
   }
@@ -731,7 +735,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetVersionAttributes.Response.getDefaultInstance());
     }
   }
@@ -759,7 +763,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetVersions.Response.getDefaultInstance());
     }
   }
@@ -783,7 +787,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetUrlForDatasetBlobVersioned.Response.getDefaultInstance());
     }
   }
@@ -838,7 +842,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(CommitVersionedDatasetBlobArtifactPart.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver,
           e,
           CommitVersionedDatasetBlobArtifactPart.Response.getDefaultInstance());
@@ -860,7 +864,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver,
           e,
           GetCommittedVersionedDatasetBlobArtifactParts.Response.getDefaultInstance());
@@ -898,7 +902,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           CommitMultipartVersionedDatasetBlobArtifact.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver,
           e,
           CommitMultipartVersionedDatasetBlobArtifact.Response.getDefaultInstance());
@@ -923,7 +927,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetDatasetVersionById.Response.getDefaultInstance());
     }
   }

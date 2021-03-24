@@ -23,6 +23,8 @@ import org.hibernate.query.Query;
 public class CommentDAORdbImpl implements CommentDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(CommentDAORdbImpl.class);
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
   private final AuthService authService;
   // queries
   private static final String GET_ENTITY_COMMENT_QUERY =
@@ -50,7 +52,7 @@ public class CommentDAORdbImpl implements CommentDAO {
 
   @Override
   public Comment addComment(String entityType, String entityId, Comment newComment) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery(ADD_ENTITY_COMMENT_QUERY);
       query.setParameter("entityId", entityId);
       query.setParameter("entityName", entityType);
@@ -84,7 +86,7 @@ public class CommentDAORdbImpl implements CommentDAO {
 
   @Override
   public Comment updateComment(String entityType, String entityId, Comment updatedComment) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       UserCommentEntity userCommentEntity =
           session.load(UserCommentEntity.class, updatedComment.getId());
       if (userCommentEntity == null) {
@@ -110,7 +112,7 @@ public class CommentDAORdbImpl implements CommentDAO {
 
   @Override
   public List<Comment> getComments(String entityType, String entityId) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = session.createQuery(GET_ENTITY_COMMENT_QUERY);
       query.setParameter("entityId", entityId);
       query.setParameter("entityName", entityType);
@@ -133,7 +135,7 @@ public class CommentDAORdbImpl implements CommentDAO {
   @Override
   public Boolean deleteComment(
       String entityType, String entityId, String commentId, UserInfo userInfo) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String finalQuery = DELETE_USER_COMMENTS_QUERY;
       if (userInfo != null) {
         finalQuery = finalQuery + " AND uc." + ModelDBConstants.OWNER + " = :vertaId";
