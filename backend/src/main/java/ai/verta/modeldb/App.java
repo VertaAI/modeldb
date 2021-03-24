@@ -9,6 +9,7 @@ import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -218,6 +219,7 @@ public class App implements ApplicationContextAware {
       serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());
       serverBuilder.intercept(new AuthInterceptor());
+      serverBuilder.intercept(new AuditLogInterceptor(config.grpcServer.quitOnAuditMissing));
 
       // Add APIs
       initializeBackendServices(serverBuilder, services, daos);

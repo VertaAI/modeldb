@@ -12,6 +12,7 @@ public class MonitoringInterceptor implements ServerInterceptor {
 
   private static final Logger LOGGER = LogManager.getLogger(MonitoringInterceptor.class);
   public static final AtomicInteger ACTIVE_REQUEST_COUNT = new AtomicInteger();
+  public static final Context.Key<String> METHOD_NAME = Context.key("method_name");
   private static final Counter qpsCountRequests =
       Counter.build()
           .labelNames("grpc_method")
@@ -52,7 +53,7 @@ public class MonitoringInterceptor implements ServerInterceptor {
       ServerCall<R, S> call, Metadata requestHeaders, ServerCallHandler<R, S> next) {
     String methodName = call.getMethodDescriptor().getFullMethodName();
 
-    Context context = Context.current();
+    Context context = Context.current().withValue(METHOD_NAME, methodName);
     ServerCall.Listener<R> delegate = Contexts.interceptCall(context, call, requestHeaders, next);
     ACTIVE_REQUEST_COUNT.incrementAndGet();
     LOGGER.trace("Active Request count {}", ACTIVE_REQUEST_COUNT.get());

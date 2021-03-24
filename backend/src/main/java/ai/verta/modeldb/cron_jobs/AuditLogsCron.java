@@ -3,7 +3,7 @@ package ai.verta.modeldb.cron_jobs;
 import ai.verta.modeldb.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
+import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.versioning.*;
@@ -129,24 +129,7 @@ public class AuditLogsCron extends TimerTask {
       LOGGER.info(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
       List<AuditLog> auditLogs =
           auditLogLocalEntities.stream()
-              .map(
-                  auditLogLocalEntity ->
-                      AuditLog.newBuilder()
-                          .setLocalId(auditLogLocalEntity.getLocalId())
-                          .setUser(
-                              AuditUser.newBuilder()
-                                  .setUserId(auditLogLocalEntity.getUserId())
-                                  .build())
-                          .setAction(auditLogLocalEntity.getAction())
-                          .setResource(
-                              AuditResource.newBuilder()
-                                  .setResourceId(auditLogLocalEntity.getResourceId())
-                                  .setResourceService(auditLogLocalEntity.getResourceService())
-                                  .setResourceType(auditLogLocalEntity.getResourceType())
-                                  .build())
-                          .setMetadataBlob(auditLogLocalEntity.getMetadataBlob())
-                          .setTsNano(auditLogLocalEntity.getTsNano())
-                          .build())
+              .map(AuditLogLocalEntity::toProto)
               .collect(Collectors.toList());
 
       AddAuditLogBatch addAuditLogBatch =
