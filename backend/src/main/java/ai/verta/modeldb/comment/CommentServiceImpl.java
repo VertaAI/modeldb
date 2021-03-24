@@ -13,9 +13,10 @@ import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateComment;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
@@ -62,7 +63,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       Map<String, Long> resourceIdWorkspaceIdMap,
       String request,
-      String response) {
+      String response,
+      Long workspaceId) {
     auditLogLocalDAO.saveAuditLog(
         new AuditLogLocalEntity(
             SERVICE_NAME,
@@ -74,7 +76,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
             ServiceEnum.Service.MODELDB_SERVICE,
             MonitoringInterceptor.METHOD_NAME.get(),
             request,
-            response));
+            response,
+            workspaceId));
   }
 
   /**
@@ -159,11 +162,12 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           ModelDBServiceResourceTypes.EXPERIMENT_RUN,
           Collections.singletonMap(newComment.getId(), responseItem.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, AddComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, AddComment.Response.getDefaultInstance());
     }
   }
 
@@ -187,12 +191,13 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           ModelDBServiceResourceTypes.EXPERIMENT_RUN,
           Collections.singletonMap(updatedComment.getId(), responseItem.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, UpdateComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, UpdateComment.Response.getDefaultInstance());
     }
   }
 
@@ -223,11 +228,12 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           ModelDBServiceResourceTypes.EXPERIMENT_RUN,
           auditResourceMap,
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetComments.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetComments.Response.getDefaultInstance());
     }
   }
 
@@ -264,11 +270,12 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           ModelDBServiceResourceTypes.EXPERIMENT_RUN,
           Collections.singletonMap(request.getId(), responseItem.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, DeleteComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, DeleteComment.Response.getDefaultInstance());
     }
   }
 }

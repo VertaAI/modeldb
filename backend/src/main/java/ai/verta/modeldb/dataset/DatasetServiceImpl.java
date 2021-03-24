@@ -12,13 +12,14 @@ import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
 import ai.verta.modeldb.GetAllDatasets.Response;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
-import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -88,7 +90,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       ModelDBServiceActions action,
       Map<String, Long> resourceIdWorkspaceIdMap,
       String request,
-      String response) {
+      String response,
+      Long workspaceId) {
     auditLogLocalDAO.saveAuditLog(
         new AuditLogLocalEntity(
             SERVICE_NAME,
@@ -100,7 +103,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             Service.MODELDB_SERVICE,
             MonitoringInterceptor.METHOD_NAME.get(),
             request,
-            response));
+            response,
+            workspaceId));
   }
 
   /**
@@ -127,12 +131,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           ModelDBServiceActions.CREATE,
           Collections.singletonMap(dataset.getId(), dataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          dataset.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, CreateDataset.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, CreateDataset.Response.getDefaultInstance());
     }
   }
 
@@ -202,11 +207,12 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .addAllDatasets(datasetPaginationDTO.getDatasets())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
               .build();
+
       Workspace workspace =
           roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
       List<GetResourcesResponseItem> responseItems =
           roleService.getResourceItems(
-              workspace,
+              null,
               response.getDatasetsList().stream().map(Dataset::getId).collect(Collectors.toSet()),
               ModelDBServiceResourceTypes.DATASET);
       saveAuditLog(
@@ -218,12 +224,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       GetResourcesResponseItem::getResourceId,
                       GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          workspace.getId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetAllDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetAllDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -247,12 +254,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           ModelDBServiceActions.DELETE,
           Collections.singletonMap(entityResource.getResourceId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, DeleteDataset.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, DeleteDataset.Response.getDefaultInstance());
     }
   }
 
@@ -281,12 +289,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           Collections.singletonMap(
               response.getDataset().getId(), response.getDataset().getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          response.getDataset().getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetDatasetById.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetDatasetById.Response.getDefaultInstance());
     }
   }
 
@@ -307,7 +316,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
       List<GetResourcesResponseItem> responseItems =
           roleService.getResourceItems(
-              workspace,
+              null,
               response.getDatasetsList().stream().map(Dataset::getId).collect(Collectors.toSet()),
               ModelDBServiceResourceTypes.DATASET);
       saveAuditLog(
@@ -319,12 +328,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       GetResourcesResponseItem::getResourceId,
                       GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          workspace.getId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, FindDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, FindDatasets.Response.getDefaultInstance());
     }
   }
 
@@ -382,10 +392,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseBuilder.addAllSharedDatasets(sharedDatasets);
 
       Workspace workspace =
-          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
+          roleService.getWorkspaceByWorkspaceName(userInfo, findDatasets.getWorkspaceName());
       List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              workspace, datasetIdSet, ModelDBServiceResourceTypes.DATASET);
+          roleService.getResourceItems(null, datasetIdSet, ModelDBServiceResourceTypes.DATASET);
       saveAuditLog(
           Optional.ofNullable(userInfo),
           ModelDBServiceActions.READ,
@@ -395,13 +404,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       GetResourcesResponseItem::getResourceId,
                       GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(responseBuilder.build()));
+          ModelDBUtils.getStringFromProtoObject(responseBuilder.build()),
+          workspace.getId());
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
-          responseObserver, e, GetDatasetByName.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetDatasetByName.Response.getDefaultInstance());
     }
   }
 
@@ -441,12 +450,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedDataset.getId(), updatedDataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedDataset.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateDatasetName.Response.getDefaultInstance());
     }
   }
@@ -483,12 +493,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedDataset.getId(), updatedDataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedDataset.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateDatasetDescription.Response.getDefaultInstance());
     }
   }
@@ -526,12 +537,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           Collections.singletonMap(
               response.getDataset().getId(), response.getDataset().getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          response.getDataset().getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, AddDatasetTags.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, AddDatasetTags.Response.getDefaultInstance());
     }
   }
 
@@ -543,7 +555,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       throw new ModelDBException("Not supported", Code.UNIMPLEMENTED);
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
     }
   }
 
@@ -579,12 +591,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedDataset.getId(), updatedDataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedDataset.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetTags.Response.getDefaultInstance());
     }
   }
@@ -629,12 +642,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedDataset.getId(), updatedDataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedDataset.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, AddDatasetAttributes.Response.getDefaultInstance());
     }
   }
@@ -675,12 +689,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           ModelDBServiceActions.UPDATE,
           Collections.singletonMap(updatedDataset.getId(), updatedDataset.getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          updatedDataset.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, UpdateDatasetAttributes.Response.getDefaultInstance());
     }
   }
@@ -729,12 +744,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           Collections.singletonMap(
               response.getDataset().getId(), response.getDataset().getWorkspaceServiceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          response.getDataset().getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, DeleteDatasetAttributes.Response.getDefaultInstance());
     }
   }
@@ -763,16 +779,18 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       GetResourcesResponseItem::getResourceId,
                       GetResourcesResponseItem::getWorkspaceId)),
           ModelDBUtils.getStringFromProtoObjectSilent(request),
-          ModelDBUtils.getStringFromProtoObjectSilent(response));
+          ModelDBUtils.getStringFromProtoObjectSilent(response),
+          responseItems.get(0).getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(responseObserver, e, DeleteDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e, DeleteDatasets.Response.getDefaultInstance());
     }
   }
 
-  private void deleteRepositoriesByDatasetIds(List<String> datasetIds) throws ModelDBException {
+  private void deleteRepositoriesByDatasetIds(List<String> datasetIds)
+      throws ModelDBException, ExecutionException, InterruptedException {
     for (String datasetId : datasetIds) {
       repositoryDAO.deleteRepository(
           DeleteRepositoryRequest.newBuilder()
@@ -887,11 +905,12 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(responseItem.getResourceId(), responseItem.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, LastExperimentByDatasetId.Response.getDefaultInstance());
     }
   }
@@ -971,12 +990,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           ModelDBServiceActions.READ,
           Collections.singletonMap(entityResource.getResourceId(), entityResource.getWorkspaceId()),
           ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response));
+          ModelDBUtils.getStringFromProtoObject(response),
+          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      ModelDBUtils.observeError(
+      CommonUtils.observeError(
           responseObserver, e, GetExperimentRunByDataset.Response.getDefaultInstance());
     }
   }

@@ -50,9 +50,11 @@ class TestOrganization:
         endpoint_path = _utils.generate_default_name()
 
         project = client.create_project(project_name)
+        created_entities.append(project)
         exp = client.create_experiment(exp_name)
         run = client.create_experiment_run(run_name)
         repository = client.get_or_create_repository(name=repository_name)
+        created_entities.append(repository)
 
         dataset = client.create_dataset(dataset_name)
         created_entities.append(dataset)
@@ -73,9 +75,11 @@ class TestOrganization:
         assert excinfo.value.response.status_code == 409
 
         new_project = client.create_project(project_name, workspace=organization.name)
+        created_entities.append(new_project)
         new_exp = client.create_experiment(exp_name)
         new_run = client.create_experiment_run(run_name)
         new_repository = client.get_or_create_repository(name=repository_name, workspace=organization.name)
+        created_entities.append(new_repository)
 
         new_dataset = client.create_dataset(dataset_name, workspace=organization.name)
         created_entities.append(new_dataset)
@@ -91,7 +95,3 @@ class TestOrganization:
         assert run.id != new_run.id
         assert dataset.id != new_dataset.id
         assert repository.id != new_repository.id
-
-        project.delete()  # have to delete manually because creating dataset makes project untracked by client context.
-        new_project.delete()
-        repository.delete()

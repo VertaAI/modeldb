@@ -71,6 +71,7 @@ message ModelDBResourceEnum {
         REPOSITORY = 8;
         REGISTERED_MODEL = 9;
         REGISTERED_MODEL_VERSION = 10;
+        MONITORED_ENTITY = 11;
     }
 };
 

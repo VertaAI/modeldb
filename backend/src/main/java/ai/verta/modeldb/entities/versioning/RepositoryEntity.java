@@ -19,6 +19,9 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
 import com.google.api.client.util.Objects;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.*;
 import javax.persistence.*;
@@ -197,7 +200,7 @@ public class RepositoryEntity {
     this.visibility_migration = visibility_migration;
   }
 
-  public Repository toProto(RoleService roleService, AuthService authService)
+  public ListenableFuture<Repository> toProto(RoleService roleService, AuthService authService)
       throws InvalidProtocolBufferException {
     final Builder builder = Repository.newBuilder().setId(this.id);
     builder
@@ -210,45 +213,55 @@ public class RepositoryEntity {
     ModelDBServiceResourceTypes modelDBServiceResourceTypes =
         ModelDBUtils.getModelDBServiceResourceTypesFromRepository(this);
 
-    GetResourcesResponseItem repositoryResource =
-        roleService.getEntityResource(String.valueOf(this.id), modelDBServiceResourceTypes);
-    builder.setVisibility(repositoryResource.getVisibility());
-    builder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
-    builder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
-    builder.setCustomPermission(repositoryResource.getCustomPermission());
+    ListenableFuture<GetResourcesResponseItem> futureRepositoryResource =
+        roleService.getEntityResource(
+            Optional.of(String.valueOf(this.id)), Optional.empty(), modelDBServiceResourceTypes);
+    ListenableFuture<Repository> futureBuilder =
+        Futures.transform(
+            futureRepositoryResource,
+            repository -> {
+              builder.setVisibility(repository.getVisibility());
+              builder.setWorkspaceServiceId(repository.getWorkspaceId());
+              builder.setOwner(String.valueOf(repository.getOwnerId()));
+              builder.setCustomPermission(repository.getCustomPermission());
 
-    RepositoryVisibility visibility;
-    if (isDataset()) {
-      DatasetVisibility datasetVisibility =
-          (DatasetVisibility)
-              ModelDBUtils.getOldVisibility(
-                  modelDBServiceResourceTypes, repositoryResource.getVisibility());
-      visibility = RepositoryVisibility.forNumber(datasetVisibility.getNumber());
-    } else {
-      visibility =
-          (RepositoryVisibility)
-              ModelDBUtils.getOldVisibility(
-                  modelDBServiceResourceTypes, repositoryResource.getVisibility());
-    }
+              RepositoryVisibility visibility;
+              if (isDataset()) {
+                DatasetVisibility datasetVisibility =
+                    (DatasetVisibility)
+                        ModelDBUtils.getOldVisibility(
+                            modelDBServiceResourceTypes, repository.getVisibility());
+                visibility = RepositoryVisibility.forNumber(datasetVisibility.getNumber());
+              } else {
+                visibility =
+                    (RepositoryVisibility)
+                        ModelDBUtils.getOldVisibility(
+                            modelDBServiceResourceTypes, repository.getVisibility());
+              }
 
-    builder.setRepositoryVisibility(visibility);
+              builder.setRepositoryVisibility(visibility);
 
-    Workspace workspace = authService.workspaceById(false, repositoryResource.getWorkspaceId());
-    switch (workspace.getInternalIdCase()) {
-      case ORG_ID:
-        builder.setWorkspaceId(workspace.getOrgId());
-        builder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
-        break;
-      case USER_ID:
-        builder.setWorkspaceId(workspace.getUserId());
-        builder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
-        break;
-    }
+              Workspace workspace = authService.workspaceById(false, repository.getWorkspaceId());
+              switch (workspace.getInternalIdCase()) {
+                case ORG_ID:
+                  builder.setWorkspaceId(workspace.getOrgId());
+                  builder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
+                  break;
+                case USER_ID:
+                  builder.setWorkspaceId(workspace.getUserId());
+                  builder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+                  break;
+              }
 
-    if (description != null) {
-      builder.setDescription(description);
-    }
-    return builder.build();
+              if (description != null) {
+                builder.setDescription(description);
+              }
+
+              return builder.build();
+            },
+            MoreExecutors.directExecutor());
+
+    return futureBuilder;
   }
 
   public void update(Repository repository) throws InvalidProtocolBufferException {

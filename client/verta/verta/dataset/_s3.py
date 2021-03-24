@@ -78,19 +78,17 @@ class S3(_dataset._Dataset):
                     " not {} ({})".format(type(path), path)
                 )
 
-            self._components_map.update({
-                component.path: component
-                for component
-                in self._get_s3_components(s3_loc)
-            })
+            self._add_components(self._get_s3_components(s3_loc))
 
     @classmethod
     def _from_proto(cls, blob_msg):
-        obj = cls(paths=[])
+        obj = cls._create_empty()
 
-        for component_msg in blob_msg.dataset.s3.components:
-            component = _dataset.S3Component._from_proto(component_msg)
-            obj._components_map[component.path] = component
+        obj._add_components([
+            _dataset.S3Component._from_proto(component_msg)
+            for component_msg
+            in blob_msg.dataset.s3.components
+        ])
 
         return obj
 

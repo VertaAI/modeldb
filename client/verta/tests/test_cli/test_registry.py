@@ -9,8 +9,11 @@ from click.testing import CliRunner
 from verta import Client
 from verta._cli import cli
 from verta._cli.registry.update import add_attributes
-from verta._registry import RegisteredModel
-from verta._internal_utils import _utils
+from verta.registry._entities import RegisteredModel
+from verta._internal_utils import (
+    _artifact_utils,
+    _utils,
+)
 from verta.environment import Python
 from verta.utils import ModelAPI
 from verta.endpoint.update._strategies import DirectUpdateStrategy
@@ -251,7 +254,7 @@ class TestCreate:
                 "type": "torch",
                 "python_version": "2.7.17"
             }
-            model_version.log_artifact("model_api.json", model_api, True, "json")
+            model_version.log_artifact(_artifact_utils.MODEL_API_KEY, model_api, True, "json")
 
             path = _utils.generate_default_name()
             endpoint = client.set_endpoint(path)
@@ -630,7 +633,8 @@ class TestUpdate:
 
         custom_module_filenames = {"__init__.py", "_verta_config.py"}
         model_version = registered_model.get_version(name=version_name)
-        with zipfile.ZipFile(model_version.get_artifact("custom_modules"), 'r') as zipf:
+        custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        with zipfile.ZipFile(custom_modules, 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
 

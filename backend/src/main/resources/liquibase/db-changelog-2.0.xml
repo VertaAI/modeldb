@@ -497,8 +497,9 @@
             <column name="resource_service" type="int4" />
             <column name="ts_nano" type="int8" />
             <column name="method_name" type="text" />
-            <column name="request" type="text" />
-            <column name="response" type="text" />
+            <column name="request" type="longtext" />
+            <column name="response" type="longtext" />
+            <column name="workspace_id" type="int8" />
         </createTable>
         <rollback>
             <dropTable tableName="audit_service_local_audit_log"/>
@@ -516,7 +517,9 @@
                 <constraints foreignKeyName="audit_fk_audit_service_local_audit_log_id" referencedTableName="audit_service_local_audit_log"
                              referencedColumnNames="id"/>
             </column>
-            <column name="resource_id" type="VARCHAR(255)"/>
+            <column name="resource_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
             <column name="workspace_id" type="int8" />
         </createTable>
         <rollback>

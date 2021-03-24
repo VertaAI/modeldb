@@ -2,6 +2,7 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
@@ -212,7 +213,7 @@ public class AttributeEntity {
   public KeyValue getProtoObj() throws InvalidProtocolBufferException {
     Builder valueBuilder = Value.newBuilder();
     try {
-      valueBuilder = (Builder) ModelDBUtils.getProtoObjectFromString(value, valueBuilder);
+      valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(value, valueBuilder);
     } catch (InvalidProtocolBufferException e) {
       LOGGER.warn("Error generating builder for {}", value);
       throw e;

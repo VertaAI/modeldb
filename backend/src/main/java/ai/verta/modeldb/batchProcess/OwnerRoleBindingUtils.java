@@ -7,6 +7,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
@@ -34,13 +35,17 @@ public class OwnerRoleBindingUtils {
   private OwnerRoleBindingUtils() {}
 
   private static final Logger LOGGER = LogManager.getLogger(OwnerRoleBindingUtils.class);
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
   private static AuthService authService;
+  private static UAC uac;
   private static RoleService roleService;
 
   public static void execute() {
     if (Config.getInstance().hasAuth()) {
       authService = AuthServiceUtils.FromConfig(Config.getInstance());
-      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService);
+      uac = UAC.FromConfig(Config.getInstance());
+      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
       return;
@@ -70,7 +75,7 @@ public class OwnerRoleBindingUtils {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         Transaction transaction = session.beginTransaction();
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
@@ -156,7 +161,7 @@ public class OwnerRoleBindingUtils {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         Transaction transaction = session.beginTransaction();
 
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
@@ -237,7 +242,7 @@ public class OwnerRoleBindingUtils {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         Transaction transaction = session.beginTransaction();
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
@@ -324,7 +329,7 @@ public class OwnerRoleBindingUtils {
     Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
     while (lowerBound < count) {
 
-      try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         Transaction transaction = session.beginTransaction();
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
@@ -402,7 +407,7 @@ public class OwnerRoleBindingUtils {
   }
 
   private static Long getEntityCount(Class<?> klass) {
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
       countQuery.select(criteriaBuilder.count(countQuery.from(klass)));

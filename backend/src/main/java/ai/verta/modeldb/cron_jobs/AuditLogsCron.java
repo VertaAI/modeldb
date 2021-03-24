@@ -3,7 +3,7 @@ package ai.verta.modeldb.cron_jobs;
 import ai.verta.modeldb.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.entities.audit_log.AuditLogLocalEntity;
+import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.versioning.*;
@@ -21,6 +21,7 @@ import org.hibernate.query.Query;
 
 public class AuditLogsCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(AuditLogsCron.class);
+  private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private final Integer recordUpdateLimit;
 
   public AuditLogsCron(Integer recordUpdateLimit) {
@@ -33,7 +34,7 @@ public class AuditLogsCron extends TimerTask {
     LOGGER.info("AuditLogsCron wakeup");
 
     CommonUtils.registeredBackgroundUtilsCount();
-    try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String alias = "al";
       String getAuditLogsLocalQueryString =
           new StringBuilder("FROM ")

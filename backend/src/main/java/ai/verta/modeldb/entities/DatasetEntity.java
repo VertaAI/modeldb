@@ -13,14 +13,9 @@ import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import javax.persistence.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
@@ -226,7 +221,8 @@ public class DatasetEntity {
     this.deleted = deleted;
   }
 
-  public Dataset getProtoObject(RoleService roleService) throws InvalidProtocolBufferException {
+  public Dataset getProtoObject(RoleService roleService)
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     Dataset.Builder datasetBuilder =
         Dataset.newBuilder()
             .setId(getId())
@@ -243,8 +239,12 @@ public class DatasetEntity {
             .setWorkspaceTypeValue(getWorkspace_type());
 
     GetResourcesResponseItem repositoryResource =
-        roleService.getEntityResource(
-            String.valueOf(this.id), ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
+        roleService
+            .getEntityResource(
+                Optional.ofNullable(String.valueOf(this.id)),
+                Optional.empty(),
+                ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET)
+            .get();
     datasetBuilder.setVisibility(repositoryResource.getVisibility());
     datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));

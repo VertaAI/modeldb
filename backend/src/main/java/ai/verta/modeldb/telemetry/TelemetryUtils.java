@@ -2,8 +2,8 @@ package ai.verta.modeldb.telemetry;
 
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.config.InvalidConfigException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.io.FileNotFoundException;
@@ -19,6 +19,8 @@ import org.apache.logging.log4j.Logger;
 
 public class TelemetryUtils {
   private static final Logger LOGGER = LogManager.getLogger(TelemetryUtils.class);
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
   private boolean telemetryInitialized = false;
   public static String telemetryUniqueIdentifier = null;
   private String consumer = ModelDBConstants.TELEMETRY_CONSUMER_URL;
@@ -38,9 +40,9 @@ public class TelemetryUtils {
     if (!telemetryInitialized) {
       LOGGER.info("Found value for telemetryInitialized : {}", telemetryInitialized);
 
-      try (Connection connection = ModelDBHibernateUtil.getConnection()) {
+      try (Connection connection = modelDBHibernateUtil.getConnection()) {
         boolean existStatus =
-            ModelDBHibernateUtil.tableExists(
+            modelDBHibernateUtil.tableExists(
                 connection, Config.getInstance().database, "modeldb_deployment_info");
         if (!existStatus) {
           LOGGER.warn("modeldb_deployment_info table not found");
@@ -89,7 +91,7 @@ public class TelemetryUtils {
     }
     LOGGER.info("Telemetry unique identifier not initialized");
     telemetryUniqueIdentifier = UUID.randomUUID().toString();
-    try (Connection connection = ModelDBHibernateUtil.getConnection()) {
+    try (Connection connection = modelDBHibernateUtil.getConnection()) {
       String sql =
           "INSERT INTO modeldb_deployment_info (md_key, md_value, creation_timestamp) VALUES(?,?,?)";
       try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -113,7 +115,7 @@ public class TelemetryUtils {
   }
 
   public void deleteTelemetryInformation() {
-    try (Connection connection = ModelDBHibernateUtil.getConnection()) {
+    try (Connection connection = modelDBHibernateUtil.getConnection()) {
       Statement stmt = connection.createStatement();
       String query = "DELETE FROM telemetry_information";
       int deletedRows = stmt.executeUpdate(query);
@@ -125,7 +127,7 @@ public class TelemetryUtils {
   }
 
   public void insertTelemetryInformation(KeyValue telemetryMetric) {
-    try (Connection connection = ModelDBHibernateUtil.getConnection()) {
+    try (Connection connection = modelDBHibernateUtil.getConnection()) {
       String sql =
           "INSERT INTO telemetry_information (tel_key, tel_value, collection_timestamp, telemetry_consumer) VALUES(?,?,?,?)";
       try (PreparedStatement pstmt = connection.prepareStatement(sql)) {

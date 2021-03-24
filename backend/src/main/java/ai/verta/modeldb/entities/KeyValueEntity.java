@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.common.KeyValue;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -188,7 +189,7 @@ public class KeyValueEntity {
   public KeyValue getProtoKeyValue() throws InvalidProtocolBufferException {
     Value.Builder valueBuilder = Value.newBuilder();
     try {
-      valueBuilder = (Builder) ModelDBUtils.getProtoObjectFromString(value, valueBuilder);
+      valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(value, valueBuilder);
     } catch (InvalidProtocolBufferException e) {
       LOGGER.warn("Error generating builder for {}", value);
       throw e;
