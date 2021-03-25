@@ -2,7 +2,7 @@ import numbers
 
 from ..external import six
 
-from .._internal_utils import _utils
+from .._internal_utils import arg_handler
 
 from . import _VertaDataType
 
@@ -11,6 +11,7 @@ class FloatHistogram(_VertaDataType):
     _TYPE_NAME = "floatHistogram"
     _VERSION = "v1"
 
+    @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, bucket_limits, data):
         # TODO: convert to builtin prior to checks
 
@@ -21,8 +22,8 @@ class FloatHistogram(_VertaDataType):
         if not all(isinstance(count, six.integer_types) for count in data):
             raise TypeError("`data` must contain all integers")
 
-        self._bucket_limits = _utils.to_builtin(bucket_limits)
-        self._data = _utils.to_builtin(data)
+        self._bucket_limits = bucket_limits
+        self._data = data
 
     def _as_dict(self):
         return self._as_dict_inner({
