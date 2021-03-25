@@ -24,7 +24,9 @@ class ConfusionMatrix(_VertaDataType):
         self._labels = labels
 
     def _as_dict(self):
-        return self._as_dict_inner({
-            "value": self._value,
-            "labels": self._labels,
-        })
+        return self._as_dict_inner(
+            {
+                "value": self._value,
+                "labels": self._labels,
+            }
+        )

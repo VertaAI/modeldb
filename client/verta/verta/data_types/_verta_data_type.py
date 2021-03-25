@@ -11,7 +11,8 @@ class _VertaDataType(object):
     def _as_dict_inner(self, data):
         return {
             "type": "verta.{}.{}".format(
-                self._TYPE_NAME, self._VERSION,
+                self._TYPE_NAME,
+                self._VERSION,
             ),
             self._TYPE_NAME: data,
         }

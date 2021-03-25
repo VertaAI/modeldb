@@ -14,7 +14,9 @@ class FloatHistogram(_VertaDataType):
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, bucket_limits, data):
         if len(bucket_limits) != len(data) + 1:
-            raise ValueError("length of `bucket_limits` must be 1 greater than length of `data`")
+            raise ValueError(
+                "length of `bucket_limits` must be 1 greater than length of `data`"
+            )
         if not all(isinstance(limit, numbers.Real) for limit in bucket_limits):
             raise TypeError("`bucket_limits` must contain all numbers")
         if not all(isinstance(count, six.integer_types) for count in data):
@@ -24,7 +26,9 @@ class FloatHistogram(_VertaDataType):
         self._data = data
 
     def _as_dict(self):
-        return self._as_dict_inner({
-            "bucketLimits": self._bucket_limits,
-            "data": self._data,
-        })
+        return self._as_dict_inner(
+            {
+                "bucketLimits": self._bucket_limits,
+                "data": self._data,
+            }
+        )

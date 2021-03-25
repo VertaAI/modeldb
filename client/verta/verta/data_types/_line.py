@@ -27,7 +27,9 @@ class Line(_VertaDataType):
         return cls(x, y)
 
     def _as_dict(self):
-        return self._as_dict_inner({
-            "x": self._x,
-            "y": self._y,
-        })
+        return self._as_dict_inner(
+            {
+                "x": self._x,
+                "y": self._y,
+            }
+        )

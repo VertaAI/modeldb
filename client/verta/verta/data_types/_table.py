@@ -22,7 +22,9 @@ class Table(_VertaDataType):
         return cls(df.values.tolist(), df.columns.tolist())
 
     def _as_dict(self):
-        return self._as_dict_inner({
-            "rows": self._data,
-            "header": self._columns,
-        })
+        return self._as_dict_inner(
+            {
+                "rows": self._data,
+                "header": self._columns,
+            }
+        )

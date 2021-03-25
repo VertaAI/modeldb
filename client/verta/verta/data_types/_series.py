@@ -17,6 +17,8 @@ class Series(_VertaDataType):
         self._value = value
 
     def _as_dict(self):
-        return self._as_dict_inner({
-            "value": self._value,
-        })
+        return self._as_dict_inner(
+            {
+                "value": self._value,
+            }
+        )
