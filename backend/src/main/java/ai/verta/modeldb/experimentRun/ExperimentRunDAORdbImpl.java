@@ -2745,8 +2745,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private void deleteAllKeyValueEntities(
       Session session, String experimentRunId, String fieldType) {
-    session.createNativeQuery("DELETE FROM keyvalue WHERE experiment_run_id = :experiment_run_id"
-        + " AND field_type = :field_type")
+    session
+        .createNativeQuery(
+            "DELETE FROM keyvalue WHERE experiment_run_id = :experiment_run_id"
+                + " AND field_type = :field_type")
         .setParameter("experiment_run_id", experimentRunId)
         .setParameter("field_type", fieldType)
         .executeUpdate();
@@ -2754,9 +2756,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private void deleteKeyValueEntities(
       Session session, String experimentRunId, List<String> keys, String fieldType) {
-    session.createNativeQuery("DELETE FROM keyvalue WHERE experiment_run_id = :experiment_run_id"
-        + " AND field_type = :field_type"
-        + " AND kv_key IN (:keys)")
+    session
+        .createNativeQuery(
+            "DELETE FROM keyvalue WHERE experiment_run_id = :experiment_run_id"
+                + " AND field_type = :field_type"
+                + " AND kv_key IN (:keys)")
         .setParameter("experiment_run_id", experimentRunId)
         .setParameter("field_type", fieldType)
         .setParameter("keys", keys)
