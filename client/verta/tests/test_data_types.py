@@ -21,7 +21,7 @@ class TestConfusionMatrix:
         np = pytest.importorskip("numpy")
         attr = data_types.ConfusionMatrix(
             value=np.arange(1, 10).reshape((3, 3)),
-            labels=["a", "b", "c"],
+            labels=np.array(["a", "b", "c"]),
         )
         assert attr._as_dict() == {
             "type": "verta.confusionMatrix.v1",
@@ -46,6 +46,20 @@ class TestDiscreteHistogram:
             },
         }
 
+    def test_discrete_histogram_numpy(self):
+        np = pytest.importorskip("numpy")
+        attr = data_types.DiscreteHistogram(
+            buckets=np.array(["yes", "no"]),
+            data=np.array([10, 20]),
+        )
+        assert attr._as_dict() == {
+            "type": "verta.discreteHistogram.v1",
+            "discreteHistogram": {
+                "buckets": ["yes", "no"],
+                "data": [10, 20],
+            },
+        }
+
 
 class TestFloatHistogram:
     def test_float_histogram(self):
@@ -61,12 +75,40 @@ class TestFloatHistogram:
             },
         }
 
+    def test_float_histogram_numpy(self):
+        np = pytest.importorskip("numpy")
+        attr = data_types.FloatHistogram(
+            bucket_limits=np.array([0, 3, 6]),
+            data=np.array([10, 20]),
+        )
+        assert attr._as_dict() == {
+            "type": "verta.floatHistogram.v1",
+            "floatHistogram": {
+                "bucketLimits": [0, 3, 6],
+                "data": [10, 20],
+            },
+        }
+
 
 class TestLine:
     def test_line(self):
         attr = data_types.Line(
             x=[1, 2, 3],
             y=[1, 4, 9],
+        )
+        assert attr._as_dict() == {
+            "type": "verta.line.v1",
+            "line": {
+                "x": [1, 2, 3],
+                "y": [1, 4, 9],
+            },
+        }
+
+    def test_line_numpy(self):
+        np = pytest.importorskip("numpy")
+        attr = data_types.Line(
+            x=np.array([1, 2, 3]),
+            y=np.array([1, 4, 9]),
         )
         assert attr._as_dict() == {
             "type": "verta.line.v1",
