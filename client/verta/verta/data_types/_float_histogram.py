@@ -13,8 +13,6 @@ class FloatHistogram(_VertaDataType):
 
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, bucket_limits, data):
-        # TODO: convert to builtin prior to checks
-
         if len(bucket_limits) != len(data) + 1:
             raise ValueError("length of `bucket_limits` must be 1 greater than length of `data`")
         if not all(isinstance(limit, numbers.Real) for limit in bucket_limits):
