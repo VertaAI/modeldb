@@ -741,6 +741,7 @@ class ExperimentRun(_DeployableEntity):
             _utils.body_to_json(response), Message.Response)
         attributes = _utils.unravel_key_values(response_msg.attributes)
         try:
+            # TODO: VR-10434 try to read into a `_VertaDataType`
             return attributes[key]
         except KeyError:
             six.raise_from(
@@ -767,6 +768,7 @@ class ExperimentRun(_DeployableEntity):
 
         response_msg = _utils.json_to_proto(
             _utils.body_to_json(response), Message.Response)
+        # TODO: VR-10434 try to read into a `_VertaDataType`
         return _utils.unravel_key_values(response_msg.attributes)
 
     def _delete_attributes(self, keys):
