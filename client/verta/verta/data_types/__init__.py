@@ -11,7 +11,7 @@ from .._internal_utils import (
 
 
 @six.add_metaclass(abc.ABCMeta)
-class _VertaAttribute(object):
+class _VertaDataType(object):
     _TYPE_NAME = None
     _VERSION = None
 
@@ -31,7 +31,7 @@ class _VertaAttribute(object):
         pass
 
 
-class StringValue(_VertaAttribute):
+class StringValue(_VertaDataType):
     _TYPE_NAME = "stringValue"
     _VERSION = "v1"
 
@@ -47,7 +47,7 @@ class StringValue(_VertaAttribute):
         })
 
 
-class NumericValue(_VertaAttribute):
+class NumericValue(_VertaDataType):
     _TYPE_NAME = "numericValue"
     _VERSION = "v1"
 
@@ -67,7 +67,7 @@ class NumericValue(_VertaAttribute):
         return self._as_dict_inner(data)
 
 
-class DiscreteHistogram(_VertaAttribute):
+class DiscreteHistogram(_VertaDataType):
     _TYPE_NAME = "discreteHistogram"
     _VERSION = "v1"
 
@@ -87,7 +87,7 @@ class DiscreteHistogram(_VertaAttribute):
         })
 
 
-class FloatHistogram(_VertaAttribute):
+class FloatHistogram(_VertaDataType):
     _TYPE_NAME = "floatHistogram"
     _VERSION = "v1"
 
@@ -111,7 +111,7 @@ class FloatHistogram(_VertaAttribute):
         })
 
 
-class Table(_VertaAttribute):
+class Table(_VertaDataType):
     _TYPE_NAME = "table"
     _VERSION = "v1"
 
@@ -135,7 +135,7 @@ class Table(_VertaAttribute):
         })
 
 
-class Matrix(_VertaAttribute):
+class Matrix(_VertaDataType):
     _TYPE_NAME = "matrix"
     _VERSION = "v1"
 
@@ -153,7 +153,7 @@ class Matrix(_VertaAttribute):
         })
 
 
-class Series(_VertaAttribute):
+class Series(_VertaDataType):
     _TYPE_NAME = "series"
     _VERSION = "v1"
 
@@ -169,7 +169,7 @@ class Series(_VertaAttribute):
         })
 
 
-class Line(_VertaAttribute):
+class Line(_VertaDataType):
     _TYPE_NAME = "line"
     _VERSION = "v1"
 
@@ -196,7 +196,7 @@ class Line(_VertaAttribute):
         })
 
 
-class ConfusionMatrix(_VertaAttribute):
+class ConfusionMatrix(_VertaDataType):
     _TYPE_NAME = "confusionMatrix"
     _VERSION = "v1"
 

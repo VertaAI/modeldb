@@ -645,7 +645,7 @@ class ExperimentRun(_DeployableEntity):
 
         """
         _utils.validate_flat_key(key)
-        if isinstance(value, data_types._VertaAttribute):
+        if isinstance(value, data_types._VertaDataType):
             value = value._as_dict()
 
         if overwrite:
