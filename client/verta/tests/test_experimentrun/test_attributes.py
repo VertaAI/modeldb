@@ -71,6 +71,20 @@ class TestCustomAttributes:
             },
         }
 
+    def test_table_numpy(self):
+        np = pytest.importorskip("numpy")
+        attr = attributes.Table(
+            data=np.arange(1, 7).reshape((2, 3)),
+            columns=["header1", "header2", "header3"],
+        )
+        assert attr._as_dict() == {
+            "type": "verta.table.v1",
+            "table": {
+                "header": ["header1", "header2", "header3"],
+                "rows": [[1, 2, 3], [4, 5, 6]],
+            },
+        }
+
     def test_table_from_pandas(self):
         pd = pytest.importorskip("pandas")
         df = pd.DataFrame(
@@ -95,8 +109,28 @@ class TestCustomAttributes:
             },
         }
 
+    def test_matrix_numpy(self):
+        np = pytest.importorskip("numpy")
+        attr = attributes.Matrix(np.arange(1, 7).reshape((2, 3)))
+        assert attr._as_dict() == {
+            "type": "verta.matrix.v1",
+            "matrix": {
+                "value": [[1, 2, 3], [4, 5, 6]],
+            },
+        }
+
     def test_series(self):
         attr = attributes.Series([1, 2, 3])
+        assert attr._as_dict() == {
+            "type": "verta.series.v1",
+            "series": {
+                "value": [1, 2, 3],
+            },
+        }
+
+    def test_series_numpy(self):
+        np = pytest.importorskip("numpy")
+        attr = attributes.Series(np.arange(1, 4))
         assert attr._as_dict() == {
             "type": "verta.series.v1",
             "series": {
@@ -132,6 +166,20 @@ class TestCustomAttributes:
     def test_confusion_matrix(self):
         attr = attributes.ConfusionMatrix(
             value=[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            labels=["a", "b", "c"],
+        )
+        assert attr._as_dict() == {
+            "type": "verta.confusionMatrix.v1",
+            "confusionMatrix": {
+                "labels": ["a", "b", "c"],
+                "value": [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            },
+        }
+
+    def test_confusion_matrix_numpy(self):
+        np = pytest.importorskip("numpy")
+        attr = attributes.ConfusionMatrix(
+            value=np.arange(1, 10).reshape((3, 3)),
             labels=["a", "b", "c"],
         )
         assert attr._as_dict() == {

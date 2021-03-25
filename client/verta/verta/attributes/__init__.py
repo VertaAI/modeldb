@@ -77,7 +77,7 @@ class DiscreteHistogram(_VertaAttribute):
             raise TypeError("`data` must contain all integers")
 
         self._buckets = buckets
-        self._data = data
+        self._data = _utils.to_builtin(data)
 
     def _as_dict(self):
         return self._as_dict_inner({
@@ -99,7 +99,7 @@ class FloatHistogram(_VertaAttribute):
             raise TypeError("`count` must contain all integers")
 
         self._bucket_limits = bucket_limits
-        self._data = data
+        self._data = _utils.to_builtin(data)
 
     def _as_dict(self):
         return self._as_dict_inner({
@@ -113,13 +113,12 @@ class Table(_VertaAttribute):
     _VERSION = "v1"
 
     def __init__(self, data, columns):
-        # TODO: support NumPy data
         if len(set(len(row) for row in data)) != 1:
             raise ValueError("each row in `data` must have same length")
         if len(columns) != len(data[0]):
             raise ValueError("length of `columns` must equal length of rows in `data`")
 
-        self._data = data
+        self._data = _utils.to_builtin(data)
         self._columns = columns
 
     @classmethod
@@ -138,13 +137,12 @@ class Matrix(_VertaAttribute):
     _VERSION = "v1"
 
     def __init__(self, value):
-        # TODO: support NumPy value
         if len(set(len(row) for row in value)) != 1:
             raise ValueError("each row in `value` must have same length")
         if not all(isinstance(el, numbers.Real) for row in value for el in row):
             raise TypeError("`value` must contain all numbers")
 
-        self._value = value
+        self._value = _utils.to_builtin(value)
 
     def _as_dict(self):
         return self._as_dict_inner({
@@ -157,11 +155,10 @@ class Series(_VertaAttribute):
     _VERSION = "v1"
 
     def __init__(self, value):
-        # TODO: support NumPy value
         if not all(isinstance(el, numbers.Real) for el in value):
-            raise TypeError("`value` must contain all numbers")  # TODO: check if true
+            raise TypeError("`value` must contain all numbers")
 
-        self._value = value
+        self._value = _utils.to_builtin(value)
 
     def _as_dict(self):
         return self._as_dict_inner({
@@ -174,7 +171,6 @@ class Line(_VertaAttribute):
     _VERSION = "v1"
 
     def __init__(self, x, y):
-        # TODO: support NumPy x and y
         if len(x) != len(y):
             raise ValueError("`x` and `y` must have the same length")
         if not all(isinstance(el, numbers.Real) for el in x):
@@ -182,8 +178,8 @@ class Line(_VertaAttribute):
         if not all(isinstance(el, numbers.Real) for el in y):
             raise TypeError("`y` must contain all numbers")
 
-        self._x = x
-        self._y = y
+        self._x = _utils.to_builtin(x)
+        self._y = _utils.to_builtin(y)
 
     @classmethod
     def from_tuples(cls, tuples):
@@ -211,7 +207,7 @@ class ConfusionMatrix(_VertaAttribute):
         if not all(isinstance(el, numbers.Real) for row in value for el in row):
             raise TypeError("`value` must contain all numbers")
 
-        self._value = value
+        self._value = _utils.to_builtin(value)
         self._labels = labels
 
     def _as_dict(self):
