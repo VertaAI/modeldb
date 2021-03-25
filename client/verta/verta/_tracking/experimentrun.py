@@ -669,7 +669,7 @@ class ExperimentRun(_DeployableEntity):
 
         self._clear_cache()
 
-    def log_attributes(self, attributes, overwrite=False):  # TODO
+    def log_attributes(self, attributes, overwrite=False):
         """
         Logs potentially multiple attributes to this Experiment Run.
 
@@ -684,6 +684,9 @@ class ExperimentRun(_DeployableEntity):
         # validate all keys first
         for key in six.viewkeys(attributes):
             _utils.validate_flat_key(key)
+        for key, value in six.viewitems(attributes):
+            if isinstance(value, data_types._VertaDataType):
+                attributes[key] = value._as_dict()
 
         if overwrite:
             keys = list(six.viewkeys(attributes))

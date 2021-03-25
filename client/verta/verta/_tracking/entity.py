@@ -13,6 +13,7 @@ from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 
 from ..external import six
 
+from .. import data_types
 from ..visibility import (
     _visibility,
     _workspace_default,
@@ -172,6 +173,10 @@ class _ModelDBEntity(object):
 
         attrs = kwargs.pop('attrs', None)
         if attrs is not None:
+            for key, value in six.viewitems(attrs):
+                if isinstance(value, data_types._VertaDataType):
+                    attrs[key] = value._as_dict()
+
             kwargs['attrs'] = [
                 _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
                 for key, value in six.viewitems(attrs)
