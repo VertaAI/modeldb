@@ -941,14 +941,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       List<String> keys = newMetrics.stream().map(KeyValue::getKey).collect(Collectors.toList());
-      List<String> existingKeys = (List<String>) session.createNativeQuery("SELECT key FROM keyvalue"
-          + " WHERE experiment_run_id = :experiment_run_id"
-          + " AND kv_key IN (:keys)"
-          + " AND field_type = :field_type")
-          .setParameter("experiment_run_id", experimentRunId)
-          .setParameter("keys", keys)
-          .setParameter("field_type", ModelDBConstants.METRICS)
-          .list();
+      List<String> existingKeys =
+          (List<String>)
+              session
+                  .createNativeQuery(
+                      "SELECT key FROM keyvalue"
+                          + " WHERE experiment_run_id = :experiment_run_id"
+                          + " AND kv_key IN (:keys)"
+                          + " AND field_type = :field_type")
+                  .setParameter("experiment_run_id", experimentRunId)
+                  .setParameter("keys", keys)
+                  .setParameter("field_type", ModelDBConstants.METRICS)
+                  .list();
       if (!existingKeys.isEmpty()) {
         Status status =
             Status.newBuilder()
@@ -961,13 +965,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       Transaction transaction = session.beginTransaction();
-      String sql = "INSERT INTO keyvalue"
-          + " (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id)"
-          + " VALUES (:entity_name, :field_type, :kv_key, :kv_value, :value_type, :experiment_run_id)";
-      for(KeyValue metric : newMetrics) {
-        session.createNativeQuery(sql)
+      String sql =
+          "INSERT INTO keyvalue"
+              + " (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id)"
+              + " VALUES (:entity_name, :field_type, :kv_key, :kv_value, :value_type, :experiment_run_id)";
+      for (KeyValue metric : newMetrics) {
+        session
+            .createNativeQuery(sql)
             .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
-            .setParameter("field_type",  ModelDBConstants.METRICS)
+            .setParameter("field_type", ModelDBConstants.METRICS)
             .setParameter("kv_key", metric.getKey())
             .setParameter("kv_value", ModelDBUtils.getStringFromProtoObject(metric.getValue()))
             .setParameter("value_type", metric.getValueType().getNumber())
