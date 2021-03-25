@@ -3,7 +3,7 @@ import pytest
 from verta import attributes
 
 
-class TestCustomAttributes:  # TODO: sort methods alphabetically
+class TestStringValue:
     def test_string_value(self):
         attr = attributes.StringValue("umbrella")
         assert attr._as_dict() == {
@@ -13,6 +13,8 @@ class TestCustomAttributes:  # TODO: sort methods alphabetically
             },
         }
 
+
+class TestNumericValue:
     def test_numeric_value(self):
         attr = attributes.NumericValue(42)
         assert attr._as_dict() == {
@@ -32,6 +34,8 @@ class TestCustomAttributes:  # TODO: sort methods alphabetically
             },
         }
 
+
+class TestDiscreteHistogram:
     def test_discrete_histogram(self):
         attr = attributes.DiscreteHistogram(
             buckets=["yes", "no"],
@@ -45,6 +49,8 @@ class TestCustomAttributes:  # TODO: sort methods alphabetically
             },
         }
 
+
+class TestFloatHistogram:
     def test_float_histogram(self):
         attr = attributes.FloatHistogram(
             bucket_limits=[0, 3, 6],
@@ -58,6 +64,8 @@ class TestCustomAttributes:  # TODO: sort methods alphabetically
             },
         }
 
+
+class TestTable:
     def test_table(self):
         attr = attributes.Table(
             data=[[1, "two", 3], [4, "five", 6]],
@@ -100,6 +108,8 @@ class TestCustomAttributes:  # TODO: sort methods alphabetically
             },
         }
 
+
+class TestMatrix:
     def test_matrix(self):
         attr = attributes.Matrix([[1, 2, 3], [4, 5, 6]])
         assert attr._as_dict() == {
@@ -119,6 +129,8 @@ class TestCustomAttributes:  # TODO: sort methods alphabetically
             },
         }
 
+
+class TestSeries:
     def test_series(self):
         attr = attributes.Series([1, 2, 3])
         assert attr._as_dict() == {
@@ -138,6 +150,8 @@ class TestCustomAttributes:  # TODO: sort methods alphabetically
             },
         }
 
+
+class TestLine:
     def test_line(self):
         attr = attributes.Line(
             x=[1, 2, 3],
@@ -163,6 +177,8 @@ class TestCustomAttributes:  # TODO: sort methods alphabetically
             },
         }
 
+
+class TestConfusionMatrix:
     def test_confusion_matrix(self):
         attr = attributes.ConfusionMatrix(
             value=[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
