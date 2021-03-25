@@ -41,7 +41,7 @@ from .._dataset_versioning import (
 )
 from .. import _repository
 from .._repository import commit as commit_module
-from .. import attributes as attributes_module
+from .. import data_types
 from .. import deployment
 from .. import utils
 from ..environment import _Environment, Python
@@ -645,7 +645,7 @@ class ExperimentRun(_DeployableEntity):
 
         """
         _utils.validate_flat_key(key)
-        if isinstance(value, attributes_module._VertaAttribute):
+        if isinstance(value, data_types._VertaAttribute):
             value = value._as_dict()
 
         if overwrite:

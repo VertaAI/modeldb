@@ -3,7 +3,7 @@ import pytest
 from verta import attributes
 
 
-class TestCustomAttributes:
+class TestCustomAttributes:  # TODO: sort methods alphabetically
     def test_string_value(self):
         attr = attributes.StringValue("umbrella")
         assert attr._as_dict() == {
