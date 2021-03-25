@@ -110,27 +110,6 @@ class TestMatrix:
         }
 
 
-class TestNumericValue:
-    def test_numeric_value(self):
-        attr = attributes.NumericValue(42)
-        assert attr._as_dict() == {
-            "type": "verta.numericValue.v1",
-            "numericValue": {
-                "value": 42,
-            },
-        }
-
-    def test_numeric_value_with_unit(self):
-        attr = attributes.NumericValue(14, unit="lbs")
-        assert attr._as_dict() == {
-            "type": "verta.numericValue.v1",
-            "numericValue": {
-                "value": 14,
-                "unit": "lbs",
-            },
-        }
-
-
 class TestSeries:
     def test_series(self):
         attr = attributes.Series([1, 2, 3])
@@ -148,17 +127,6 @@ class TestSeries:
             "type": "verta.series.v1",
             "series": {
                 "value": [1, 2, 3],
-            },
-        }
-
-
-class TestStringValue:
-    def test_string_value(self):
-        attr = attributes.StringValue("umbrella")
-        assert attr._as_dict() == {
-            "type": "verta.stringValue.v1",
-            "stringValue": {
-                "value": "umbrella",
             },
         }
 
