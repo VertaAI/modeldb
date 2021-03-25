@@ -1,11 +1,11 @@
 import pytest
 
-from verta import attributes
+from verta import data_types
 
 
 class TestConfusionMatrix:
     def test_confusion_matrix(self):
-        attr = attributes.ConfusionMatrix(
+        attr = data_types.ConfusionMatrix(
             value=[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
             labels=["a", "b", "c"],
         )
@@ -19,7 +19,7 @@ class TestConfusionMatrix:
 
     def test_confusion_matrix_numpy(self):
         np = pytest.importorskip("numpy")
-        attr = attributes.ConfusionMatrix(
+        attr = data_types.ConfusionMatrix(
             value=np.arange(1, 10).reshape((3, 3)),
             labels=["a", "b", "c"],
         )
@@ -34,7 +34,7 @@ class TestConfusionMatrix:
 
 class TestDiscreteHistogram:
     def test_discrete_histogram(self):
-        attr = attributes.DiscreteHistogram(
+        attr = data_types.DiscreteHistogram(
             buckets=["yes", "no"],
             data=[10, 20],
         )
@@ -49,7 +49,7 @@ class TestDiscreteHistogram:
 
 class TestFloatHistogram:
     def test_float_histogram(self):
-        attr = attributes.FloatHistogram(
+        attr = data_types.FloatHistogram(
             bucket_limits=[0, 3, 6],
             data=[10, 20],
         )
@@ -64,7 +64,7 @@ class TestFloatHistogram:
 
 class TestLine:
     def test_line(self):
-        attr = attributes.Line(
+        attr = data_types.Line(
             x=[1, 2, 3],
             y=[1, 4, 9],
         )
@@ -77,7 +77,7 @@ class TestLine:
         }
 
     def test_line_from_tuples(self):
-        attr = attributes.Line.from_tuples(
+        attr = data_types.Line.from_tuples(
             [(1, 1), (2, 4), (3, 9)]
         )
         assert attr._as_dict() == {
@@ -91,7 +91,7 @@ class TestLine:
 
 class TestMatrix:
     def test_matrix(self):
-        attr = attributes.Matrix([[1, 2, 3], [4, 5, 6]])
+        attr = data_types.Matrix([[1, 2, 3], [4, 5, 6]])
         assert attr._as_dict() == {
             "type": "verta.matrix.v1",
             "matrix": {
@@ -101,7 +101,7 @@ class TestMatrix:
 
     def test_matrix_numpy(self):
         np = pytest.importorskip("numpy")
-        attr = attributes.Matrix(np.arange(1, 7).reshape((2, 3)))
+        attr = data_types.Matrix(np.arange(1, 7).reshape((2, 3)))
         assert attr._as_dict() == {
             "type": "verta.matrix.v1",
             "matrix": {
@@ -112,7 +112,7 @@ class TestMatrix:
 
 class TestSeries:
     def test_series(self):
-        attr = attributes.Series([1, 2, 3])
+        attr = data_types.Series([1, 2, 3])
         assert attr._as_dict() == {
             "type": "verta.series.v1",
             "series": {
@@ -122,7 +122,7 @@ class TestSeries:
 
     def test_series_numpy(self):
         np = pytest.importorskip("numpy")
-        attr = attributes.Series(np.arange(1, 4))
+        attr = data_types.Series(np.arange(1, 4))
         assert attr._as_dict() == {
             "type": "verta.series.v1",
             "series": {
@@ -133,7 +133,7 @@ class TestSeries:
 
 class TestTable:
     def test_table(self):
-        attr = attributes.Table(
+        attr = data_types.Table(
             data=[[1, "two", 3], [4, "five", 6]],
             columns=["header1", "header2", "header3"],
         )
@@ -147,7 +147,7 @@ class TestTable:
 
     def test_table_numpy(self):
         np = pytest.importorskip("numpy")
-        attr = attributes.Table(
+        attr = data_types.Table(
             data=np.arange(1, 7).reshape((2, 3)),
             columns=["header1", "header2", "header3"],
         )
@@ -165,7 +165,7 @@ class TestTable:
             [[1, "two", 3], [4, "five", 6]],
             columns=["header1", "header2", "header3"],
         )
-        attr = attributes.Table.from_pandas(df)
+        attr = data_types.Table.from_pandas(df)
         assert attr._as_dict() == {
             "type": "verta.table.v1",
             "table": {
