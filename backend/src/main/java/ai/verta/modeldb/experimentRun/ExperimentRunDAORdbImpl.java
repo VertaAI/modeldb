@@ -924,9 +924,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public void logMetrics(String experimentRunId, List<KeyValue> newMetrics)
       throws InvalidProtocolBufferException {
     try (Session session = ModelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntityObj =
-          session.load(ExperimentRunEntity.class, experimentRunId);
-      if (experimentRunEntityObj == null) {
+      BigInteger count =
+          (BigInteger)
+              session
+                  .createNativeQuery("SELECT count(*) FROM experiment_run WHERE id = :id")
+                  .setParameter("id", experimentRunId)
+                  .getSingleResult();
+      if (count.intValue() != 1) {
         LOGGER.info(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
         Status status =
             Status.newBuilder()
@@ -936,14 +940,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      String existsQueryString =
-          "Select kv.key FROM KeyValueEntity kv WHERE kv.experimentRunEntity.id IS NOT NULL AND kv.experimentRunEntity.id = :runId AND kv.key IN (:keys) AND kv.field_type = :field_type";
-      Query existsQuery = session.createQuery(existsQueryString);
-      existsQuery.setParameter("runId", experimentRunId);
-      existsQuery.setParameterList(
-          "keys", newMetrics.stream().map(KeyValue::getKey).collect(Collectors.toList()));
-      existsQuery.setParameter("field_type", ModelDBConstants.METRICS);
-      List<String> existingKeys = existsQuery.list();
+      List<String> keys = newMetrics.stream().map(KeyValue::getKey).collect(Collectors.toList());
+      List<String> existingKeys = (List<String>) session.createNativeQuery("SELECT key FROM keyvalue"
+          + " WHERE experiment_run_id = :experiment_run_id"
+          + " AND kv_key IN (:keys)"
+          + " AND field_type = :field_type")
+          .setParameter("experiment_run_id", experimentRunId)
+          .setParameter("keys", keys)
+          .setParameter("field_type", ModelDBConstants.METRICS)
+          .list();
       if (!existingKeys.isEmpty()) {
         Status status =
             Status.newBuilder()
@@ -955,12 +960,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw StatusProto.toStatusRuntimeException(status);
       }
 
-      List<KeyValueEntity> newMetricList =
-          RdbmsUtils.convertKeyValuesFromKeyValueEntityList(
-              experimentRunEntityObj, ModelDBConstants.METRICS, newMetrics);
       Transaction transaction = session.beginTransaction();
-      for (KeyValueEntity keyValueEntity : newMetricList) {
-        session.save(keyValueEntity);
+      String sql = "INSERT INTO keyvalue"
+          + " (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id)"
+          + " VALUES (:entity_name, :field_type, :kv_key, :kv_value, :value_type, :experiment_run_id)";
+      for(KeyValue metric : newMetrics) {
+        session.createNativeQuery(sql)
+            .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
+            .setParameter("field_type",  ModelDBConstants.METRICS)
+            .setParameter("kv_key", metric.getKey())
+            .setParameter("kv_value", ModelDBUtils.getStringFromProtoObject(metric.getValue()))
+            .setParameter("value_type", metric.getValueType().getNumber())
+            .setParameter("experiment_run_id", experimentRunId)
+            .executeUpdate();
       }
       updateExperimentRunTimestamp(experimentRunId, session);
       transaction.commit();
