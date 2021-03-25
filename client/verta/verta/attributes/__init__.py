@@ -3,6 +3,11 @@ import numbers
 
 from ..external import six
 
+from .._internal_utils import (
+    _utils,
+    importer,
+)
+
 
 @six.add_metaclass(abc.ABCMeta)
 class _VertaAttribute(object):
@@ -117,8 +122,9 @@ class Table(_VertaAttribute):
         self._data = data
         self._columns = columns
 
-    def from_pandas(self, df):
-        pass
+    @classmethod
+    def from_pandas(cls, df):
+        return cls(df.values.tolist(), df.columns.tolist())
 
     def _as_dict(self):
         return self._as_dict_inner({
@@ -179,8 +185,10 @@ class Line(_VertaAttribute):
         self._x = x
         self._y = y
 
-    def from_tuples(self, tuples):
-        pass
+    @classmethod
+    def from_tuples(cls, tuples):
+        x, y = zip(*tuples)
+        return cls(x, y)
 
     def _as_dict(self):
         return self._as_dict_inner({

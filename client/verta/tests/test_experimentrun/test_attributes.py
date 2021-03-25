@@ -1,3 +1,5 @@
+import pytest
+
 from verta import attributes
 
 
@@ -20,6 +22,7 @@ class TestCustomAttributes:
             },
         }
 
+    def test_numeric_value_with_unit(self):
         attr = attributes.NumericValue(14, unit="lbs")
         assert attr._as_dict() == {
             "type": "verta.numericValue.v1",
@@ -68,6 +71,21 @@ class TestCustomAttributes:
             },
         }
 
+    def test_table_from_pandas(self):
+        pd = pytest.importorskip("pandas")
+        df = pd.DataFrame(
+            [[1, "two", 3], [4, "five", 6]],
+            columns=["header1", "header2", "header3"],
+        )
+        attr = attributes.Table.from_pandas(df)
+        assert attr._as_dict() == {
+            "type": "verta.table.v1",
+            "table": {
+                "header": ["header1", "header2", "header3"],
+                "rows": [[1, "two", 3], [4, "five", 6]],
+            },
+        }
+
     def test_matrix(self):
         attr = attributes.Matrix([[1, 2, 3], [4, 5, 6]])
         assert attr._as_dict() == {
@@ -90,6 +108,18 @@ class TestCustomAttributes:
         attr = attributes.Line(
             x=[1, 2, 3],
             y=[1, 4, 9],
+        )
+        assert attr._as_dict() == {
+            "type": "verta.line.v1",
+            "line": {
+                "x": [1, 2, 3],
+                "y": [1, 4, 9],
+            },
+        }
+
+    def test_line_from_tuples(self):
+        attr = attributes.Line.from_tuples(
+            [(1, 1), (2, 4), (3, 9)]
         )
         assert attr._as_dict() == {
             "type": "verta.line.v1",
