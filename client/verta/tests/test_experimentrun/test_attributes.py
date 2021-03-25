@@ -74,3 +74,43 @@ class TestSimpleAttributes:
         for key, val in six.viewitems(attributes):
             with pytest.raises(TypeError):
                 experiment_run.log_attribute(key, val)
+
+
+class TestComplexAttributes:
+    def test_creation(self, client, strs):
+        key = strs[0]
+        attr = data_types.DiscreteHistogram(
+            buckets=["yes", "no"],
+            data=[10, 20],
+        )
+
+        experiment_run = client.create_experiment_run(
+            attrs={key: attr},
+        )
+        assert experiment_run.get_attribute(key) == attr._as_dict()
+
+    def test_single(self, experiment_run, strs):
+        key = strs[0]
+        attr = data_types.Line(
+            x=[1, 2, 3],
+            y=[1, 4, 9],
+        )
+
+        experiment_run.log_attribute(key, attr)
+        assert experiment_run.get_attribute(key) == attr._as_dict()
+
+    def test_batch(self, experiment_run, strs):
+        key1, key2 = strs[:2]
+        attr1 = data_types.Table(
+            data=[[1, "two", 3], [4, "five", 6]],
+            columns=["header1", "header2", "header3"],
+        )
+        attr2 = data_types.ConfusionMatrix(
+            value=[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            labels=["a", "b", "c"],
+        )
+
+        experiment_run.log_attribute(key1, attr1)
+        assert experiment_run.get_attribute(key1) == attr1._as_dict()
+        experiment_run.log_attribute(key2, attr2)
+        assert experiment_run.get_attribute(key2) == attr2._as_dict()
