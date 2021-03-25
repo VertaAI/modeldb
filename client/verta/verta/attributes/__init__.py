@@ -6,6 +6,17 @@ from ..external import six
 
 @six.add_metaclass(abc.ABCMeta)
 class _VertaAttribute(object):
+    _TYPE_NAME = None
+    _VERSION = None
+
+    def _as_dict_inner(self, data):
+        return {
+            "type": "verta.{}.{}".format(
+                self._TYPE_NAME, self._VERSION,
+            ),
+            self._TYPE_NAME: data,
+        }
+
     @abc.abstractmethod
     def _as_dict(self):
         raise NotImplementedError
@@ -15,6 +26,9 @@ class _VertaAttribute(object):
 
 
 class StringValue(_VertaAttribute):
+    _TYPE_NAME = "stringValue"
+    _VERSION = "v1"
+
     def __init__(self, value):
         if not isinstance(value, six.string_types):
             raise TypeError("`value` must be a string, not {}".format(type(value)))
@@ -22,10 +36,15 @@ class StringValue(_VertaAttribute):
         self._value = value
 
     def _as_dict(self):
-        pass
+        return self._as_dict_inner({
+            "value": self._value,
+        })
 
 
 class NumericValue(_VertaAttribute):
+    _TYPE_NAME = "numericValue"
+    _VERSION = "v1"
+
     def __init__(self, value, unit=None):
         if not isinstance(value, numbers.Real):
             raise TypeError("`value` must be a number, not {}".format(type(value)))
@@ -36,10 +55,16 @@ class NumericValue(_VertaAttribute):
         self._unit = unit
 
     def _as_dict(self):
-        pass
+        data = {"value": self._value}
+        if self._unit:
+            data["unit"] = self._unit
+        return self._as_dict_inner(data)
 
 
 class DiscreteHistogram(_VertaAttribute):
+    _TYPE_NAME = "discreteHistogram"
+    _VERSION = "v1"
+
     def __init__(self, buckets, data):
         if len(buckets) != len(data):
             raise ValueError("`buckets` and `data` must have the same length")
@@ -50,10 +75,16 @@ class DiscreteHistogram(_VertaAttribute):
         self._data = data
 
     def _as_dict(self):
-        pass
+        return self._as_dict_inner({
+            "buckets": self._buckets,
+            "data": self._data,
+        })
 
 
 class FloatHistogram(_VertaAttribute):
+    _TYPE_NAME = "floatHistogram"
+    _VERSION = "v1"
+
     def __init__(self, bucket_limits, data):
         if len(bucket_limits) != len(data) + 1:
             raise ValueError("length of `bucket_limits` must be 1 greater than length of `data`")
@@ -66,10 +97,16 @@ class FloatHistogram(_VertaAttribute):
         self._data = data
 
     def _as_dict(self):
-        pass
+        return self._as_dict_inner({
+            "bucketLimits": self._bucket_limits,
+            "data": self._data,
+        })
 
 
 class Table(_VertaAttribute):
+    _TYPE_NAME = "table"
+    _VERSION = "v1"
+
     def __init__(self, data, columns):
         # TODO: support NumPy data
         if len(set(len(row) for row in data)) != 1:
@@ -84,10 +121,16 @@ class Table(_VertaAttribute):
         pass
 
     def _as_dict(self):
-        pass
+        return self._as_dict_inner({
+            "rows": self._data,
+            "header": self._columns,
+        })
 
 
 class Matrix(_VertaAttribute):
+    _TYPE_NAME = "matrix"
+    _VERSION = "v1"
+
     def __init__(self, value):
         # TODO: support NumPy value
         if len(set(len(row) for row in value)) != 1:
@@ -98,10 +141,15 @@ class Matrix(_VertaAttribute):
         self._value = value
 
     def _as_dict(self):
-        pass
+        return self._as_dict_inner({
+            "value": self._value,
+        })
 
 
 class Series(_VertaAttribute):
+    _TYPE_NAME = "series"
+    _VERSION = "v1"
+
     def __init__(self, value):
         # TODO: support NumPy value
         if not all(isinstance(el, numbers.Real) for el in value):
@@ -110,10 +158,15 @@ class Series(_VertaAttribute):
         self._value = value
 
     def _as_dict(self):
-        pass
+        return self._as_dict_inner({
+            "value": self._value,
+        })
 
 
 class Line(_VertaAttribute):
+    _TYPE_NAME = "line"
+    _VERSION = "v1"
+
     def __init__(self, x, y):
         # TODO: support NumPy x and y
         if len(x) != len(y):
@@ -130,10 +183,16 @@ class Line(_VertaAttribute):
         pass
 
     def _as_dict(self):
-        pass
+        return self._as_dict_inner({
+            "x": self._x,
+            "y": self._y,
+        })
 
 
 class ConfusionMatrix(_VertaAttribute):
+    _TYPE_NAME = "confusionMatrix"
+    _VERSION = "v1"
+
     def __init__(self, value, labels):
         if len(set(len(row) for row in value)) != 1:
             raise ValueError("each row in `value` must have same length")
@@ -148,4 +207,7 @@ class ConfusionMatrix(_VertaAttribute):
         self._labels = labels
 
     def _as_dict(self):
-        pass
+        return self._as_dict_inner({
+            "value": self._value,
+            "labels": self._labels,
+        })
