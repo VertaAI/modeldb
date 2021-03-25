@@ -43,8 +43,6 @@ class DiscreteHistogram(_VertaAttribute):
     def __init__(self, buckets, data):
         if len(buckets) != len(data):
             raise ValueError("`buckets` and `data` must have the same length")
-        if not all(isinstance(bucket, numbers.Real) for bucket in buckets):
-            raise TypeError("`buckets` must contain all numbers")
         if not all(isinstance(count, six.integer_types) for count in data):
             raise TypeError("`data` must contain all integers")
 
