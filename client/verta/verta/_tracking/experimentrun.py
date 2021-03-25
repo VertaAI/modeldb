@@ -41,6 +41,7 @@ from .._dataset_versioning import (
 )
 from .. import _repository
 from .._repository import commit as commit_module
+from .. import attributes as attributes_module
 from .. import deployment
 from .. import utils
 from ..environment import _Environment, Python
@@ -644,6 +645,8 @@ class ExperimentRun(_DeployableEntity):
 
         """
         _utils.validate_flat_key(key)
+        if isinstance(value, attributes_module._VertaAttribute):
+            value = value._as_dict()
 
         if overwrite:
             self._delete_attributes([key])
@@ -666,7 +669,7 @@ class ExperimentRun(_DeployableEntity):
 
         self._clear_cache()
 
-    def log_attributes(self, attributes, overwrite=False):
+    def log_attributes(self, attributes, overwrite=False):  # TODO
         """
         Logs potentially multiple attributes to this Experiment Run.
 

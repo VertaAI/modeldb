@@ -38,7 +38,7 @@ class StringValue(_VertaAttribute):
         if not isinstance(value, six.string_types):
             raise TypeError("`value` must be a string, not {}".format(type(value)))
 
-        self._value = value
+        self._value = _utils.to_builtin(value)
 
     def _as_dict(self):
         return self._as_dict_inner({
@@ -56,8 +56,8 @@ class NumericValue(_VertaAttribute):
         if unit and not isinstance(unit, six.string_types):
             raise TypeError("`unit` must be a string, not {}".format(type(unit)))
 
-        self._value = value
-        self._unit = unit
+        self._value = _utils.to_builtin(value)
+        self._unit = _utils.to_builtin(unit)
 
     def _as_dict(self):
         data = {"value": self._value}
@@ -76,7 +76,7 @@ class DiscreteHistogram(_VertaAttribute):
         if not all(isinstance(count, six.integer_types) for count in data):
             raise TypeError("`data` must contain all integers")
 
-        self._buckets = buckets
+        self._buckets = _utils.to_builtin(buckets)
         self._data = _utils.to_builtin(data)
 
     def _as_dict(self):
@@ -96,9 +96,9 @@ class FloatHistogram(_VertaAttribute):
         if not all(isinstance(limit, numbers.Real) for limit in bucket_limits):
             raise TypeError("`bucket_limits` must contain all numbers")
         if not all(isinstance(count, six.integer_types) for count in data):
-            raise TypeError("`count` must contain all integers")
+            raise TypeError("`data` must contain all integers")
 
-        self._bucket_limits = bucket_limits
+        self._bucket_limits = _utils.to_builtin(bucket_limits)
         self._data = _utils.to_builtin(data)
 
     def _as_dict(self):
@@ -119,7 +119,7 @@ class Table(_VertaAttribute):
             raise ValueError("length of `columns` must equal length of rows in `data`")
 
         self._data = _utils.to_builtin(data)
-        self._columns = columns
+        self._columns = _utils.to_builtin(columns)
 
     @classmethod
     def from_pandas(cls, df):
@@ -208,7 +208,7 @@ class ConfusionMatrix(_VertaAttribute):
             raise TypeError("`value` must contain all numbers")
 
         self._value = _utils.to_builtin(value)
-        self._labels = labels
+        self._labels = _utils.to_builtin(labels)
 
     def _as_dict(self):
         return self._as_dict_inner({
