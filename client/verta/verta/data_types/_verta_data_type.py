@@ -7,6 +7,11 @@ from ..external import six
 
 @six.add_metaclass(abc.ABCMeta)
 class _VertaDataType(object):
+    """
+    Base class for complex structured data types. Not for external use.
+
+    """
+
     _TYPE_NAME = None
     _VERSION = None
 

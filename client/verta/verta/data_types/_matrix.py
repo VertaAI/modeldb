@@ -6,6 +6,28 @@ from . import _VertaDataType
 
 
 class Matrix(_VertaDataType):
+    """
+    Representation of a matrix.
+
+    Parameters
+    ----------
+    value : list of list of float
+        Matrix values.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.data_types import Matrix
+        data = Matrix([
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+        ])
+        run.log_attribute("matrix", data)
+
+    """
+
     _TYPE_NAME = "matrix"
     _VERSION = "v1"
 

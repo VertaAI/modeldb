@@ -6,6 +6,24 @@ from . import _VertaDataType
 
 
 class Series(_VertaDataType):
+    """
+    Representation of a numerical series.
+
+    Parameters
+    ----------
+    value : list of float
+        Series values.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.data_types import Series
+        data = Series([1, 1, 2, 3, 5])
+        run.log_attribute("series", data)
+
+    """
+
     _TYPE_NAME = "series"
     _VERSION = "v1"
 
