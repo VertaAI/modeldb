@@ -1,4 +1,4 @@
-.. lock-api:
+.. _lock-api:
 
 Lock
 ====
