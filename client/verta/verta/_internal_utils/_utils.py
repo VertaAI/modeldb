@@ -320,6 +320,7 @@ class LazyList(object):
         page_number = self.page_number(msg)
         while self.page_limit(msg) * page_number < total_records:  # pylint: disable=no-member
             page_number += 1  # pylint: disable=no-member
+            self.set_page_number(msg, page_number)
 
             records, total_records = self._call_back_end(msg)
             for rec in records:
