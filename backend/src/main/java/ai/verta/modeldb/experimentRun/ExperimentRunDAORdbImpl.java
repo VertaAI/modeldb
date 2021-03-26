@@ -835,13 +835,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-
   private static final Counter observationCount =
       Counter.build()
           .labelNames("experiment_run_id")
           .name("observation_count")
           .help("Observations per experiment run")
           .register();
+
   @Override
   public void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException {
@@ -936,6 +936,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .name("metric_count")
           .help("Metrics per experiment run")
           .register();
+
   @Override
   public void logMetrics(String experimentRunId, List<KeyValue> newMetrics)
       throws InvalidProtocolBufferException {
