@@ -747,7 +747,7 @@ class ExperimentRun(_DeployableEntity):
             attribute = attributes[key]
             try:
                 return data_types._VertaDataType._from_dict(attribute)
-            except:
+            except (KeyError, TypeError, ValueError):
                 return attribute
         except KeyError:
             six.raise_from(
@@ -778,7 +778,7 @@ class ExperimentRun(_DeployableEntity):
         for key, attribute in attributes.items():
             try:
                 attributes[key] = data_types._VertaDataType._from_dict(attribute)
-            except:
+            except (KeyError, TypeError, ValueError):
                 pass
         return attributes
 
