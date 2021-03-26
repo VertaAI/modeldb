@@ -1,15 +1,15 @@
 Core APIs
 =========
 
-The core Verta APIs are used to establish connections between the Verta clients and Verta servers 
+The core Verta APIs are used to establish connections between the Verta clients and Verta servers
 as well as manage authentication and access control.
-Two types of core constructs are essential to note when using Verta: the Verta `Client` and 
+Two types of core constructs are essential to note when using Verta: the Verta `Client` and
 the Verta `Organizational Hierarchy` described below.
 
 Verta Client
 ------------
 
-The Verta `Client` object used to manage connections between the Verta clients and servers. 
+The Verta `Client` object used to manage connections between the Verta clients and servers.
 The client object also manages authentication information.
 
 Organizational Hierarchy
@@ -47,4 +47,4 @@ An **artifact** is any object that is the result of an Experiment Run. Examples 
     Experiment <api/experiment>
     ExperimentRun (Core) <api/experimentrun_basic>
     ExperimentRuns <api/experimentruns>
-    
+    api/data_types
