@@ -473,6 +473,15 @@ class LazyList(object):
         limit : int
             Number of entities to fetch per call.
 
+        Examples
+        --------
+        .. code-block:: python
+
+            runs = proj.expt_runs
+            runs.set_page_limit(10)
+            for run in runs:  # fetches 10 runs per backend call
+                print(run.get_metric("accuracy"))
+
         """
         if not isinstance(limit, six.integer_types):
             raise TypeError("`limit` must be int, not {}".format(type(limit)))
