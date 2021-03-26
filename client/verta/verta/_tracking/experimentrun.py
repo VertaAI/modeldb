@@ -41,6 +41,7 @@ from .._dataset_versioning import (
 )
 from .. import _repository
 from .._repository import commit as commit_module
+from .. import data_types
 from .. import deployment
 from .. import utils
 from ..environment import _Environment, Python
@@ -644,6 +645,8 @@ class ExperimentRun(_DeployableEntity):
 
         """
         _utils.validate_flat_key(key)
+        if isinstance(value, data_types._VertaDataType):
+            value = value._as_dict()
 
         if overwrite:
             self._delete_attributes([key])
@@ -681,6 +684,9 @@ class ExperimentRun(_DeployableEntity):
         # validate all keys first
         for key in six.viewkeys(attributes):
             _utils.validate_flat_key(key)
+        for key, value in six.viewitems(attributes):
+            if isinstance(value, data_types._VertaDataType):
+                attributes[key] = value._as_dict()
 
         if overwrite:
             keys = list(six.viewkeys(attributes))
@@ -738,6 +744,7 @@ class ExperimentRun(_DeployableEntity):
             _utils.body_to_json(response), Message.Response)
         attributes = _utils.unravel_key_values(response_msg.attributes)
         try:
+            # TODO: VR-10434 try to read into a `_VertaDataType`
             return attributes[key]
         except KeyError:
             six.raise_from(
@@ -764,6 +771,7 @@ class ExperimentRun(_DeployableEntity):
 
         response_msg = _utils.json_to_proto(
             _utils.body_to_json(response), Message.Response)
+        # TODO: VR-10434 try to read into a `_VertaDataType`
         return _utils.unravel_key_values(response_msg.attributes)
 
     def _delete_attributes(self, keys):
