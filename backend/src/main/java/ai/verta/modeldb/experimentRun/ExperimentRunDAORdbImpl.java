@@ -962,7 +962,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           (List<String>)
               session
                   .createNativeQuery(
-                      "SELECT key FROM keyvalue"
+                      "SELECT kv_key FROM keyvalue"
                           + " WHERE experiment_run_id = :experiment_run_id"
                           + " AND kv_key IN (:keys)"
                           + " AND field_type = :field_type")
