@@ -152,27 +152,6 @@ class TestMatrix:
         }
 
 
-class TestSeries:
-    def test_series(self):
-        attr = data_types.Series([1, 2, 3])
-        assert attr._as_dict() == {
-            "type": "verta.series.v1",
-            "series": {
-                "value": [1, 2, 3],
-            },
-        }
-
-    def test_series_numpy(self):
-        np = pytest.importorskip("numpy")
-        attr = data_types.Series(np.arange(1, 4))
-        assert attr._as_dict() == {
-            "type": "verta.series.v1",
-            "series": {
-                "value": [1, 2, 3],
-            },
-        }
-
-
 class TestTable:
     def test_table(self):
         attr = data_types.Table(

@@ -856,8 +856,8 @@ class RegisteredModelVersion(_DeployableEntity):
         """
         Sets this model version's lock level
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         lock_level : :ref:`lock level <lock-api>`
             Lock level to set.
 
