@@ -30,3 +30,11 @@ class Table(_VertaDataType):
                 "header": self._columns,
             }
         )
+
+    @classmethod
+    def _from_dict(cls, d):
+        data = d[cls._TYPE_NAME]
+        return cls(
+            data=data["rows"],
+            columns=data["header"],
+        )

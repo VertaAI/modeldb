@@ -744,8 +744,11 @@ class ExperimentRun(_DeployableEntity):
             _utils.body_to_json(response), Message.Response)
         attributes = _utils.unravel_key_values(response_msg.attributes)
         try:
-            # TODO: VR-10434 try to read into a `_VertaDataType`
-            return attributes[key]
+            attribute = attributes[key]
+            try:
+                return data_types._VertaDataType._from_dict(attribute)
+            except (KeyError, TypeError, ValueError):
+                return attribute
         except KeyError:
             six.raise_from(
                 KeyError("no attribute found with key {}".format(key)), None)
@@ -771,8 +774,13 @@ class ExperimentRun(_DeployableEntity):
 
         response_msg = _utils.json_to_proto(
             _utils.body_to_json(response), Message.Response)
-        # TODO: VR-10434 try to read into a `_VertaDataType`
-        return _utils.unravel_key_values(response_msg.attributes)
+        attributes = _utils.unravel_key_values(response_msg.attributes)
+        for key, attribute in attributes.items():
+            try:
+                attributes[key] = data_types._VertaDataType._from_dict(attribute)
+            except (KeyError, TypeError, ValueError):
+                pass
+        return attributes
 
     def _delete_attributes(self, keys):
         response = _utils.make_request("DELETE",

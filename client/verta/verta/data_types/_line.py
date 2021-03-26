@@ -33,3 +33,11 @@ class Line(_VertaDataType):
                 "y": self._y,
             }
         )
+
+    @classmethod
+    def _from_dict(cls, d):
+        data = d[cls._TYPE_NAME]
+        return cls(
+            x=data["x"],
+            y=data["y"],
+        )

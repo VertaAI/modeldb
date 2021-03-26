@@ -87,7 +87,7 @@ class TestComplexAttributes:
         experiment_run = client.create_experiment_run(
             attrs={key: attr},
         )
-        assert experiment_run.get_attribute(key) == attr._as_dict()
+        assert experiment_run.get_attribute(key) == attr
 
     def test_single(self, experiment_run, strs):
         key = strs[0]
@@ -97,10 +97,10 @@ class TestComplexAttributes:
         )
 
         experiment_run.log_attribute(key, attr)
-        assert experiment_run.get_attribute(key) == attr._as_dict()
+        assert experiment_run.get_attribute(key) == attr
 
     def test_batch(self, experiment_run, strs):
-        key1, key2 = strs[:2]
+        key1, key2, key3 = strs[:3]
         attr1 = data_types.Table(
             data=[[1, "two", 3], [4, "five", 6]],
             columns=["header1", "header2", "header3"],
@@ -109,8 +109,16 @@ class TestComplexAttributes:
             value=[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
             labels=["a", "b", "c"],
         )
+        attr3 = {"a": 1}
 
         experiment_run.log_attribute(key1, attr1)
-        assert experiment_run.get_attribute(key1) == attr1._as_dict()
+        assert experiment_run.get_attribute(key1) == attr1
         experiment_run.log_attribute(key2, attr2)
-        assert experiment_run.get_attribute(key2) == attr2._as_dict()
+        assert experiment_run.get_attribute(key2) == attr2
+        experiment_run.log_attribute(key3, attr3)
+
+        assert experiment_run.get_attributes() == {
+            key1: attr1,
+            key2: attr2,
+            key3: attr3,
+        }

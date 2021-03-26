@@ -30,3 +30,11 @@ class ConfusionMatrix(_VertaDataType):
                 "labels": self._labels,
             }
         )
+
+    @classmethod
+    def _from_dict(cls, d):
+        data = d[cls._TYPE_NAME]
+        return cls(
+            value=data["value"],
+            labels=data["labels"],
+        )

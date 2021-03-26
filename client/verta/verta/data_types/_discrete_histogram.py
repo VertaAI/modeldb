@@ -28,3 +28,11 @@ class DiscreteHistogram(_VertaDataType):
                 "data": self._data,
             }
         )
+
+    @classmethod
+    def _from_dict(cls, d):
+        data = d[cls._TYPE_NAME]
+        return cls(
+            buckets=data["buckets"],
+            data=data["data"],
+        )
