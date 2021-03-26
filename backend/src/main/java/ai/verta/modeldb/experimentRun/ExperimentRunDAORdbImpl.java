@@ -84,6 +84,8 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.protobuf.StatusProto;
+import io.prometheus.client.Counter;
+import io.prometheus.client.Gauge;
 import java.math.BigInteger;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
@@ -833,6 +835,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
+
+  private static final Counter observationCount =
+      Counter.build()
+          .labelNames("experiment_run_id")
+          .name("observation_count")
+          .help("Observations per experiment run")
+          .register();
   @Override
   public void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException {
@@ -874,6 +883,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   query.setParameter("epoch_number", null);
                 }
                 query.executeUpdate();
+                observationCount.labels(experimentRunId).inc();
               });
       transaction.commit();
     } catch (Exception ex) {
@@ -920,6 +930,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
+  private static final Counter metricCount =
+      Counter.build()
+          .labelNames("experiment_run_id")
+          .name("metric_count")
+          .help("Metrics per experiment run")
+          .register();
   @Override
   public void logMetrics(String experimentRunId, List<KeyValue> newMetrics)
       throws InvalidProtocolBufferException {
@@ -979,6 +995,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             .setParameter("value_type", metric.getValueType().getNumber())
             .setParameter("experiment_run_id", experimentRunId)
             .executeUpdate();
+        metricCount.labels(experimentRunId).inc();
       }
       updateExperimentRunTimestamp(experimentRunId, session);
       transaction.commit();
