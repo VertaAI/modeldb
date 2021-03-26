@@ -6,6 +6,29 @@ from . import _VertaDataType
 
 
 class Table(_VertaDataType):
+    """
+    Representation of a table.
+
+    Parameters
+    ----------
+    data : list of list
+        Tabular data.
+    columns : list of str
+        Column names.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.data_types import Table
+        data = Table(
+            data=[[1, 24, "blue"], [2, 36, "red"]],
+            columns=["id", "height", "color"],
+        )
+        run.log_attribute("measurements", data)
+
+    """
+
     _TYPE_NAME = "table"
     _VERSION = "v1"
 
@@ -21,6 +44,19 @@ class Table(_VertaDataType):
 
     @classmethod
     def from_pandas(cls, df):
+        """
+        Alternate constructor that takes a pandas DataFrame.
+
+        Parameters
+        ----------
+        df : :class:`pandas.DataFrame`
+            DataFrame.
+
+        Returns
+        -------
+        :class:`verta.data_types.Table`
+
+        """
         return cls(df.values.tolist(), df.columns.tolist())
 
     def _as_dict(self):

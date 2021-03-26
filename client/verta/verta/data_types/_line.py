@@ -6,6 +6,29 @@ from . import _VertaDataType
 
 
 class Line(_VertaDataType):
+    """
+    Representation of line plot points.
+
+    Parameters
+    ----------
+    x : list of float
+        Points' x-coordinates.
+    y : list of float
+        Points' y-coordinates.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.data_types import Line
+        data = Line(
+            x=[1, 2, 3],
+            y=[1, 4, 9],
+        )
+        run.log_attribute("price", data)
+
+    """
+
     _TYPE_NAME = "line"
     _VERSION = "v1"
 
@@ -23,6 +46,29 @@ class Line(_VertaDataType):
 
     @classmethod
     def from_tuples(cls, tuples):
+        """
+        Alternate constructor that takes coordinates as tuples.
+
+        Parameters
+        ----------
+        tuples : list of (float, float)
+            Points' coordinates.
+
+        Returns
+        -------
+        :class:`verta.data_types.Line`
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.data_types import Line
+            data = Line.from_tuples(
+                [(1, 1), (2, 4), (3, 9)],
+            )
+            run.log_attribute("price", data)
+
+        """
         x, y = zip(*tuples)
         return cls(x, y)
 

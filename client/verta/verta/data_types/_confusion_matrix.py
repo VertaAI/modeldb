@@ -6,6 +6,32 @@ from . import _VertaDataType
 
 
 class ConfusionMatrix(_VertaDataType):
+    """
+    Representation of a confusion matrix.
+
+    Parameters
+    ----------
+    value : list of list of float
+        Cell values.
+    labels : list of str
+        Row/column labels.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.data_types import ConfusionMatrix
+        data = ConfusionMatrix(
+            value=[
+                [6, 1],
+                [2, 3],
+            ],
+            labels=["spam", "not spam"],
+        )
+        run.log_attribute("spam_confusion_matrix", data)
+
+    """
+
     _TYPE_NAME = "confusionMatrix"
     _VERSION = "v1"
 
