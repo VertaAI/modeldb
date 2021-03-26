@@ -9,7 +9,7 @@ from . import _utils
 
 def args_to_builtin(ignore_self):
     """
-    Function decorator that applies ``_utils.to_builtin()`` to all arguments.
+    Returns a decorator that applies ``_utils.to_builtin()`` to all arguments.
 
     Parameters
     ----------
