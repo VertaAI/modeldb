@@ -50,7 +50,7 @@ class TestLazyList:
             end = min(self._size, end)
             ids = list(range(start, end))
             objs = [_ExperimentRunService.ExperimentRun(id=str(i)) for i in ids]
-            assert self._page_number(msg) <= self._size
+            assert max(ids) <= self._size
             return objs, self._size
 
         def _create_element(self, el):
