@@ -284,24 +284,25 @@ class LazyList(object):
         self._conn = conn
         self._conf = conf
         self._msg = msg  # protobuf msg used to make back end calls
+        self.limit = self._ITER_PAGE_LIMIT
 
     def __getitem__(self, index):
         if isinstance(index, int):
             # copy msg to avoid mutating `self`'s state
             msg = self._msg.__class__()
             msg.CopyFrom(self._msg)
-            msg = self.set_page_limit(msg, 1)
+            msg = self._set_page_limit(msg, 1)
             if index >= 0:
                 # convert zero-based indexing into page number
-                msg = self.set_page_number(msg, index + 1)
+                msg = self._set_page_number(msg, index + 1)
             else:
                 # reverse page order to index from end
                 msg.ascending = not msg.ascending  # pylint: disable=no-member
-                msg = self.set_page_number(msg, abs(index))
+                msg = self._set_page_number(msg, abs(index))
 
             records, total_records = self._call_back_end(msg)
             if (not records
-                    and self.page_number(msg) > total_records):  # pylint: disable=no-member
+                    and self._page_number(msg) > total_records):  # pylint: disable=no-member
                 raise IndexError("index out of range")
 
             return self._create_element(records[0])
@@ -312,15 +313,15 @@ class LazyList(object):
         # copy msg to avoid mutating `self`'s state
         msg = self._msg.__class__()
         msg.CopyFrom(self._msg)
-        self.set_page_limit(msg, self._ITER_PAGE_LIMIT)
-        self.set_page_number(msg, 0) # this will be incremented as soon as we enter the loop
+        self._set_page_limit(msg, self.limit)
+        self._set_page_number(msg, 0) # this will be incremented as soon as we enter the loop
 
         seen_ids = set()
         total_records = float('inf')
-        page_number = self.page_number(msg)
-        while self.page_limit(msg) * page_number < total_records:  # pylint: disable=no-member
+        page_number = self._page_number(msg)
+        while self._page_limit(msg) * page_number < total_records:  # pylint: disable=no-member
             page_number += 1  # pylint: disable=no-member
-            self.set_page_number(msg, page_number)
+            self._set_page_number(msg, page_number)
 
             records, total_records = self._call_back_end(msg)
             for rec in records:
@@ -337,8 +338,8 @@ class LazyList(object):
         msg = self._msg.__class__()
         msg.CopyFrom(self._msg)
         # minimal request just to get total_records
-        self.set_page_limit(msg, 1)
-        self.set_page_number(msg, 1)
+        self._set_page_limit(msg, 1)
+        self._set_page_number(msg, 1)
 
         _, total_records = self._call_back_end(msg)
 
@@ -460,18 +461,36 @@ class LazyList(object):
         """Instantiate element to return to user."""
         raise NotImplementedError
 
-    def set_page_limit(self, msg, param):
+    def set_page_limit(self, limit):
+        """
+        Sets the number of entites to fetch per backend call during iteration.
+
+        By default, each call fetches a batch of 100 entities, but lowering
+        this value may be useful for substantially larger responses.
+
+        Parameters
+        ----------
+        limit : int
+            Number of entities to fetch per call.
+
+        """
+        if not isinstance(limit, six.integer_types):
+            raise TypeError("`limit` must be int, not {}".format(type(limit)))
+
+        self.limit = limit
+
+    def _set_page_limit(self, msg, param):
         msg.page_limit = param
         return msg
 
-    def set_page_number(self, msg, param):
+    def _set_page_number(self, msg, param):
         msg.page_number = param
         return msg
 
-    def page_limit(self, msg):
+    def _page_limit(self, msg):
         return msg.page_limit
 
-    def page_number(self, msg):
+    def _page_number(self, msg):
         return msg.page_number
 
 

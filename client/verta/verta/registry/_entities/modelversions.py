@@ -56,18 +56,18 @@ class RegisteredModelVersions(_utils.LazyList):
         new_list._msg.id.ClearField('named_id')
         return new_list
 
-    def set_page_limit(self, msg, param):
+    def _set_page_limit(self, msg, param):
         msg.pagination.page_limit = param
         return msg
 
-    def set_page_number(self, msg, param):
+    def _set_page_number(self, msg, param):
         msg.pagination.page_number = param
         return msg
 
-    def page_limit(self, msg):
+    def _page_limit(self, msg):
         return msg.pagination.page_limit
 
-    def page_number(self, msg):
+    def _page_number(self, msg):
         return msg.pagination.page_number
 
     def with_workspace(self, workspace_name=None):
