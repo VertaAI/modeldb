@@ -380,8 +380,7 @@
         "DASHBOARD",
         "REPOSITORY",
         "REGISTERED_MODEL",
-        "REGISTERED_MODEL_VERSION",
-        "MONITORED_ENTITY"
+        "REGISTERED_MODEL_VERSION"
       ],
       "default": "UNKNOWN"
     },
