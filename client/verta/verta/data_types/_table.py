@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from .._internal_utils import arg_handler
 
 from . import _VertaDataType

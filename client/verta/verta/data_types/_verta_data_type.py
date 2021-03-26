@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import abc
 
 from ..external import six

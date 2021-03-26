@@ -1,5 +1,8 @@
+# -*- coding: utf-8 -*-
+
 # TODO: move other argument-handling utils here
 import functools
+import numbers
 
 from . import _utils
 
@@ -31,3 +34,37 @@ def args_to_builtin(ignore_self):
             return f(*args, **kwargs)
         return wrapper
     return decorator
+
+
+def contains_only_numbers(l):
+    """
+    Returns whether `l` contains only numbers.
+
+    Note that if `l` is an exhaustible iterator, it will be exhausted; Python
+    doesn't seem to have a way to copy it while preserving the original
+    referenced object.
+
+    Uses ``numbers.Real``, which is a virtual superclass for ``int`` and
+    ``float``.
+
+    Parameters
+    ----------
+    l : 1D or 2D list of float
+        List of numbers
+
+    Returns
+    -------
+    bool
+
+    """
+    for row in l:
+        try:
+            items = iter(row)
+        except TypeError:  # `row` is not iterable
+            if not isinstance(row, numbers.Real):
+                return False
+        else:
+            for item in items:
+                if not isinstance(item, numbers.Real):
+                    return False
+    return True

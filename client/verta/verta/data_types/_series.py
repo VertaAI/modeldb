@@ -1,4 +1,4 @@
-import numbers
+# -*- coding: utf-8 -*-
 
 from .._internal_utils import arg_handler
 
@@ -11,8 +11,8 @@ class Series(_VertaDataType):
 
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, value):
-        if not all(isinstance(el, numbers.Real) for el in value):
-            raise TypeError("`value` must contain all numbers")
+        if not arg_handler.contains_only_numbers(value):
+            raise TypeError("`value` must contain only numbers")
 
         self._value = value
 

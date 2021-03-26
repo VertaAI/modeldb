@@ -1,4 +1,4 @@
-import numbers
+# -*- coding: utf-8 -*-
 
 from .._internal_utils import arg_handler
 
@@ -13,10 +13,10 @@ class Line(_VertaDataType):
     def __init__(self, x, y):
         if len(x) != len(y):
             raise ValueError("`x` and `y` must have the same length")
-        if not all(isinstance(el, numbers.Real) for el in x):
-            raise TypeError("`x` must contain all numbers")
-        if not all(isinstance(el, numbers.Real) for el in y):
-            raise TypeError("`y` must contain all numbers")
+        if not arg_handler.contains_only_numbers(x):
+            raise TypeError("`x` must contain only numbers")
+        if not arg_handler.contains_only_numbers(y):
+            raise TypeError("`y` must contain only numbers")
 
         self._x = x
         self._y = y

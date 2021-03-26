@@ -1,4 +1,4 @@
-import numbers
+# -*- coding: utf-8 -*-
 
 from ..external import six
 
@@ -17,8 +17,8 @@ class FloatHistogram(_VertaDataType):
             raise ValueError(
                 "length of `bucket_limits` must be 1 greater than length of `data`"
             )
-        if not all(isinstance(limit, numbers.Real) for limit in bucket_limits):
-            raise TypeError("`bucket_limits` must contain all numbers")
+        if not arg_handler.contains_only_numbers(bucket_limits):
+            raise TypeError("`bucket_limits` must contain only numbers")
         if not all(isinstance(count, six.integer_types) for count in data):
             raise TypeError("`data` must contain all integers")
 

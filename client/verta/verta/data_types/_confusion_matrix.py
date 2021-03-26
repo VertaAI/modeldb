@@ -1,4 +1,4 @@
-import numbers
+# -*- coding: utf-8 -*-
 
 from .._internal_utils import arg_handler
 
@@ -17,8 +17,8 @@ class ConfusionMatrix(_VertaDataType):
             raise ValueError("rows and columns in `value` must have the same length")
         if len(labels) != len(value[0]):
             raise ValueError("length of `columns` must equal length of rows in `value`")
-        if not all(isinstance(el, numbers.Real) for row in value for el in row):
-            raise TypeError("`value` must contain all numbers")
+        if not arg_handler.contains_only_numbers(value):
+            raise TypeError("`value` must contain only numbers")
 
         self._value = value
         self._labels = labels
