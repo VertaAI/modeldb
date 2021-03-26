@@ -26,10 +26,6 @@ Data Types
     :members:
     :inherited-members:
 
-.. autoclass:: verta.data_types.Series
-    :members:
-    :inherited-members:
-
 .. autoclass:: verta.data_types.Table
     :members:
     :inherited-members:
