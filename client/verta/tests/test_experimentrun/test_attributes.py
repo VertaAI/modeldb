@@ -109,7 +109,7 @@ class TestComplexAttributes:
             value=[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
             labels=["a", "b", "c"],
         )
-        attr3 = {'a': 1}
+        attr3 = {"a": 1}
 
         experiment_run.log_attribute(key1, attr1)
         assert experiment_run.get_attribute(key1) == attr1

@@ -42,6 +42,7 @@ class _VertaDataType(object):
             Matrix,
             Table,
         )
+
         SUBCLASSES = [
             ConfusionMatrix,
             DiscreteHistogram,

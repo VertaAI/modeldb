@@ -28,6 +28,4 @@ class Matrix(_VertaDataType):
     @classmethod
     def _from_dict(cls, d):
         data = d[cls._TYPE_NAME]
-        return cls(
-            value=data["value"]
-        )
+        return cls(value=data["value"])

@@ -36,7 +36,4 @@ class FloatHistogram(_VertaDataType):
     @classmethod
     def _from_dict(cls, d):
         data = d[cls._TYPE_NAME]
-        return cls(
-            bucket_limits=data["bucketLimits"],
-            data=data["data"]
-        )
+        return cls(bucket_limits=data["bucketLimits"], data=data["data"])

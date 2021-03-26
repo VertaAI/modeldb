@@ -127,9 +127,7 @@ class TestLine:
         }
 
     def test_line_from_tuples(self):
-        attr = data_types.Line.from_tuples(
-            [(1, 1), (2, 4), (3, 9)]
-        )
+        attr = data_types.Line.from_tuples([(1, 1), (2, 4), (3, 9)])
         assert attr._as_dict() == {
             "type": "verta.line.v1",
             "line": {
