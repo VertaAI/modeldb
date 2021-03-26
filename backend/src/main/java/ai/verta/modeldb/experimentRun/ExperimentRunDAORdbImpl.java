@@ -885,6 +885,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 query.executeUpdate();
                 observationCount.labels(experimentRunId).inc();
               });
+      updateExperimentRunTimestamp(experimentRunId, session);
       transaction.commit();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
