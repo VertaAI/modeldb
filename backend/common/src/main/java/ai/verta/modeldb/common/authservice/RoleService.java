@@ -105,7 +105,6 @@ public interface RoleService {
 
   void createRoleBinding(
       String roleName,
-      RoleScope roleBindingScope,
       CollaboratorBase collaborator,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);

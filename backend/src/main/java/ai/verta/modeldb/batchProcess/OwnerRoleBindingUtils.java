@@ -111,7 +111,6 @@ public class OwnerRoleBindingUtils {
               try {
                 roleService.createRoleBinding(
                     ModelDBConstants.ROLE_EXPERIMENT_OWNER,
-                    null,
                     new CollaboratorUser(authService, userInfoValue),
                     experimentEntity.getId(),
                     ModelDBServiceResourceTypes.EXPERIMENT);
@@ -195,7 +194,6 @@ public class OwnerRoleBindingUtils {
             try {
               roleService.createRoleBinding(
                   ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-                  null,
                   new CollaboratorUser(authService, userInfoValue),
                   experimentRunEntity.getId(),
                   ModelDBServiceResourceTypes.EXPERIMENT_RUN);
@@ -278,7 +276,6 @@ public class OwnerRoleBindingUtils {
               try {
                 roleService.createRoleBinding(
                     ModelDBConstants.ROLE_DATASET_VERSION_OWNER,
-                    null,
                     new CollaboratorUser(authService, userInfoValue),
                     datasetVersionEntity.getId(),
                     ModelDBServiceResourceTypes.DATASET_VERSION);
@@ -366,7 +363,6 @@ public class OwnerRoleBindingUtils {
                     ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
                 roleService.createRoleBinding(
                     ModelDBConstants.ROLE_REPOSITORY_OWNER,
-                    null,
                     new CollaboratorUser(authService, userInfoValue),
                     String.valueOf(repositoryEntity.getId()),
                     modelDBServiceResourceTypes);

@@ -100,7 +100,6 @@ public class OwnerRoleBindingRepositoryUtils {
                     ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
                 roleService.createRoleBinding(
                     ModelDBConstants.ROLE_REPOSITORY_OWNER,
-                    null,
                     new CollaboratorUser(authService, userInfoValue),
                     String.valueOf(repositoryEntity.getId()),
                     modelDBServiceResourceTypes);

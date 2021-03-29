@@ -72,7 +72,6 @@ public class PublicRoleServiceUtils implements RoleService {
   @Override
   public void createRoleBinding(
       String roleName,
-      RoleScope roleBindingScope,
       CollaboratorBase collaborator,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}

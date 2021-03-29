@@ -363,7 +363,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private void createRoleBindingsForExperimentRun(ExperimentRun experimentRun, UserInfo userInfo) {
     roleService.createRoleBinding(
         ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-        null,
         new CollaboratorUser(authService, userInfo),
         experimentRun.getId(),
         ModelDBServiceResourceTypes.EXPERIMENT_RUN);

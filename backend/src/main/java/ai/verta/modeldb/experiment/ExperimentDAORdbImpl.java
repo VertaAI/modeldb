@@ -224,7 +224,6 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   private void createRoleBindingsForExperiment(Experiment experiment, UserInfo userInfo) {
     roleService.createRoleBinding(
         ModelDBConstants.ROLE_EXPERIMENT_OWNER,
-        null,
         new CollaboratorUser(authService, userInfo),
         experiment.getId(),
         ModelDBServiceResourceTypes.EXPERIMENT);

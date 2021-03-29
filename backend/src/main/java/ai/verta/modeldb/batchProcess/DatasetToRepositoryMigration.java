@@ -334,14 +334,12 @@ public class DatasetToRepositoryMigration {
             .equals(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)) {
           roleService.createRoleBinding(
               ModelDBConstants.ROLE_REPOSITORY_READ_ONLY,
-              null,
               collaboratorBase,
               dataset.getId(),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
         } else {
           roleService.createRoleBinding(
               ModelDBConstants.ROLE_REPOSITORY_READ_WRITE,
-              null,
               collaboratorBase,
               dataset.getId(),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);

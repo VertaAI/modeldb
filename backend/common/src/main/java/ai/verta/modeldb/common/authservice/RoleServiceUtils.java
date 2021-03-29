@@ -772,16 +772,13 @@ public class RoleServiceUtils implements RoleService {
   @Override
   public void createRoleBinding(
       String roleName,
-      RoleScope roleBindingScope,
       CollaboratorBase collaborator,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     String roleBindingName =
         buildRoleBindingName(
             roleName, resourceId, collaborator, modelDBServiceResourceTypes.name());
-    if (roleBindingScope == null) {
-      roleBindingScope = RoleScope.newBuilder().build();
-    }
+    RoleScope roleBindingScope = RoleScope.newBuilder().build();
 
     RoleBinding newRoleBinding =
         RoleBinding.newBuilder()
