@@ -69,8 +69,9 @@ public class RdbmsUtils {
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     List<Project> projects = new ArrayList<>();
     if (projectEntityList != null) {
+      Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
       for (ProjectEntity projectEntity : projectEntityList) {
-        projects.add(projectEntity.getProtoObject(roleService, authService));
+        projects.add(projectEntity.getProtoObject(roleService, authService, cacheWorkspaceMap));
       }
     }
     return projects;
