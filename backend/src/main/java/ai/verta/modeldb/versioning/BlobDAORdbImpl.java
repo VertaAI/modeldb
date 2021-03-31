@@ -37,6 +37,7 @@ import ai.verta.modeldb.versioning.blob.diff.DiffMerger;
 import ai.verta.modeldb.versioning.blob.diff.TypeChecker;
 import ai.verta.modeldb.versioning.blob.factory.BlobFactory;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolStringList;
@@ -1677,10 +1678,11 @@ public class BlobDAORdbImpl implements BlobDAO {
         blobExpandedSet.addAll(blobExpandedMap.values());
       }
 
+      Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
       Function<RepositoryEntity, Repository> toProto =
           (repositoryEntity) -> {
             try {
-              return repositoryEntity.toProto(roleService, authService).get();
+              return repositoryEntity.toProto(roleService, authService, cacheWorkspaceMap).get();
             } catch (InvalidProtocolBufferException | InterruptedException | ExecutionException e) {
               throw new ModelDBException(e);
             }

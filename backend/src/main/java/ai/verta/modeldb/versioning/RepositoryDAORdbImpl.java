@@ -254,7 +254,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepositoryById(session, request.getId());
       return GetRepositoryRequest.Response.newBuilder()
-          .setRepository(repository.toProto(roleService, authService).get())
+          .setRepository(repository.toProto(roleService, authService, new HashMap<>()).get())
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -418,7 +418,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               create,
               RepositoryTypeEnum.REGULAR);
       return SetRepository.Response.newBuilder()
-          .setRepository(repository.toProto(roleService, authService).get())
+          .setRepository(repository.toProto(roleService, authService, new HashMap<>()).get())
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -705,14 +705,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             create,
             RepositoryTypeEnum.DATASET);
 
-    return repositoryEntity.toProto(roleService, authService);
+    return repositoryEntity.toProto(roleService, authService, new HashMap<>());
   }
 
   ListenableFuture<Dataset> convertToDataset(
-      Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity)
+      Session session,
+      MetadataDAO metadataDAO,
+      RepositoryEntity repositoryEntity,
+      Map<Long, Workspace> cacheWorkspaceMap)
       throws ModelDBException, InvalidProtocolBufferException {
 
-    ListenableFuture<Repository> repository = repositoryEntity.toProto(roleService, authService);
+    ListenableFuture<Repository> repository =
+        repositoryEntity.toProto(roleService, authService, cacheWorkspaceMap);
     return Futures.transform(
         repository,
         rep -> repositoryToDataset(session, metadataDAO, rep),
@@ -843,8 +847,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           ListRepositoriesRequest.Response.newBuilder();
 
       List<ListenableFuture<Repository>> repositories = new ArrayList<>(repositoryEntities.size());
+      Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
       for (RepositoryEntity repositoryEntity : repositoryEntities) {
-        repositories.add(repositoryEntity.toProto(roleService, authService));
+        repositories.add(repositoryEntity.toProto(roleService, authService, cacheWorkspaceMap));
       }
       builder.addAllRepositories(Futures.allAsList(repositories).get());
 
@@ -1298,8 +1303,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         LOGGER.debug("Final return Total Records: {}", totalRecords);
 
         List<ListenableFuture<Repository>> repositories = new ArrayList<>();
+        Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
         for (RepositoryEntity repositoryEntity : repositoryEntities) {
-          repositories.add(repositoryEntity.toProto(roleService, authService));
+          repositories.add(repositoryEntity.toProto(roleService, authService, cacheWorkspaceMap));
         }
 
         return FindRepositories.Response.newBuilder()
@@ -1348,7 +1354,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                           repositoryIdentification,
                           true,
                           false,
-                          RepositoryTypeEnum.DATASET))
+                          RepositoryTypeEnum.DATASET),
+                      new HashMap<>())
                   .get())
           .build();
     } catch (Exception ex) {
@@ -1544,10 +1551,15 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       List<RepositoryEntity> repositoryEntities = query.list();
       LOGGER.debug("Repositorys result count : {}", repositoryEntities.size());
 
+      Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
       Map<Long, SimpleEntry<ListenableFuture<Dataset>, ListenableFuture<Repository>>>
           repositoriesAndDatasetsMap =
               convertRepositoriesFromRepositoryEntityList(
-                  session, metadataDAO, repositoryEntities, queryParameters.getIdsOnly());
+                  session,
+                  metadataDAO,
+                  repositoryEntities,
+                  queryParameters.getIdsOnly(),
+                  cacheWorkspaceMap);
 
       LinkedHashMap<ListenableFuture<Dataset>, ListenableFuture<Repository>>
           repositoriesAndDatasets =
@@ -1605,7 +1617,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               session,
               metadataDAO,
               getRepositoryById(
-                  session, repositoryIdentification, true, false, RepositoryTypeEnum.DATASET))
+                  session, repositoryIdentification, true, false, RepositoryTypeEnum.DATASET),
+              new HashMap<>())
           .get();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -1669,7 +1682,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               false,
               RepositoryTypeEnum.DATASET);
       return GetDatasetById.Response.newBuilder()
-          .setDataset(convertToDataset(session, metadataDAO, repositoryEntity).get())
+          .setDataset(
+              convertToDataset(session, metadataDAO, repositoryEntity, new HashMap<>()).get())
           .build();
     } catch (NumberFormatException e) {
       String message = "Can't find repository, wrong id format: " + id;
@@ -1688,14 +1702,15 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           Session session,
           MetadataDAO metadataDAO,
           List<RepositoryEntity> repositoryEntityList,
-          boolean idsOnly) {
+          boolean idsOnly,
+          Map<Long, Workspace> cacheWorkspaceMap) {
     return repositoryEntityList.stream()
         .collect(
             Collectors.toMap(
                 RepositoryEntity::getId,
                 repositoryEntity ->
                     getDatasetRepositorySimpleEntry(
-                        session, metadataDAO, idsOnly, repositoryEntity),
+                        session, metadataDAO, idsOnly, repositoryEntity, cacheWorkspaceMap),
                 (a, b) -> a,
                 LinkedHashMap::new));
   }
@@ -1705,11 +1720,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           Session session,
           MetadataDAO metadataDAO,
           boolean idsOnly,
-          RepositoryEntity repositoryEntity) {
+          RepositoryEntity repositoryEntity,
+          Map<Long, Workspace> cacheWorkspaceMap) {
     try {
       return new SimpleEntry<>(
-          convertToDataset(session, metadataDAO, repositoryEntity),
-          repositoryEntity.toProto(roleService, authService));
+          convertToDataset(session, metadataDAO, repositoryEntity, cacheWorkspaceMap),
+          repositoryEntity.toProto(roleService, authService, cacheWorkspaceMap));
     } catch (InvalidProtocolBufferException | ModelDBException e) {
       LOGGER.warn(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
       throw new InternalErrorException(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);

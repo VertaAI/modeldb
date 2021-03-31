@@ -200,7 +200,8 @@ public class RepositoryEntity {
     this.visibility_migration = visibility_migration;
   }
 
-  public ListenableFuture<Repository> toProto(RoleService roleService, AuthService authService)
+  public ListenableFuture<Repository> toProto(
+      RoleService roleService, AuthService authService, Map<Long, Workspace> cacheWorkspaceMap)
       throws InvalidProtocolBufferException {
     final Builder builder = Repository.newBuilder().setId(this.id);
     builder
@@ -241,7 +242,14 @@ public class RepositoryEntity {
 
               builder.setRepositoryVisibility(visibility);
 
-              Workspace workspace = authService.workspaceById(false, repository.getWorkspaceId());
+              Workspace workspace;
+              if (cacheWorkspaceMap.containsKey(repository.getWorkspaceId())) {
+                workspace = cacheWorkspaceMap.get(repository.getWorkspaceId());
+              } else {
+                workspace = authService.workspaceById(false, repository.getWorkspaceId());
+                cacheWorkspaceMap.put(workspace.getId(), workspace);
+              }
+
               switch (workspace.getInternalIdCase()) {
                 case ORG_ID:
                   builder.setWorkspaceId(workspace.getOrgId());
