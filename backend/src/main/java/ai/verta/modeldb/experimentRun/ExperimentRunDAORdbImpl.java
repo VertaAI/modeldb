@@ -866,17 +866,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               session, observations, ExperimentRunEntity.class.getSimpleName(), experimentRunId)
           .forEach(
               observation -> {
-                String kvSql = "INSERT INTO keyvalue"
-                    + " (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id)"
-                    + " VALUES (:entity_name, :field_type, :kv_key, :kv_value, :value_type, :experiment_run_id)";
-                final long attributeId = session.createNativeQuery(kvSql)
-                    .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
-                    .setParameter("field_type", ModelDBConstants.OBSERVATIONS)
-                    .setParameter("kv_key", observation.getAttribute().getKey())
-                    .setParameter("kv_value", observation.getAttribute().getValue().getStringValue())
-                    .setParameter("value_type", observation.getAttribute().getValueType().getNumber())
-                    .setParameter("experiment_run_id", experimentRunId)
-                    .executeUpdate();
+                String kvSql =
+                    "INSERT INTO keyvalue"
+                        + " (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id)"
+                        + " VALUES (:entity_name, :field_type, :kv_key, :kv_value, :value_type, :experiment_run_id)";
+                final long attributeId =
+                    session
+                        .createNativeQuery(kvSql)
+                        .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
+                        .setParameter("field_type", ModelDBConstants.OBSERVATIONS)
+                        .setParameter("kv_key", observation.getAttribute().getKey())
+                        .setParameter(
+                            "kv_value", observation.getAttribute().getValue().getStringValue())
+                        .setParameter(
+                            "value_type", observation.getAttribute().getValueType().getNumber())
+                        .setParameter("experiment_run_id", experimentRunId)
+                        .executeUpdate();
 
                 observationCount.labels(experimentRunId).inc();
                 String sql =
