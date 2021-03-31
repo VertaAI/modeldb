@@ -626,9 +626,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
-      return projectObj
-          .getProtoObject(roleService, authService, new HashMap<>())
-          .getTagsList();
+      return projectObj.getProtoObject(roleService, authService, new HashMap<>()).getTagsList();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getProjectTags(projectId);
@@ -1095,8 +1093,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         String errorMessage = "Project not found for given ID: " + projectId;
         throw new NotFoundException(errorMessage);
       }
-      Project project =
-          projectEntity.getProtoObject(roleService, authService, new HashMap<>());
+      Project project = projectEntity.getProtoObject(roleService, authService, new HashMap<>());
       if (project.getArtifactsList() != null && !project.getArtifactsList().isEmpty()) {
         LOGGER.debug("Project Artifacts getting successfully");
         return project.getArtifactsList();
