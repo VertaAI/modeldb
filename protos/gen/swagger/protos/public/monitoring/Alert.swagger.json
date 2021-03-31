@@ -1,0 +1,819 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "monitoring/Alert.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/alerts/createAlert": {
+      "post": {
+        "operationId": "AlertService_createAlert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringAlert"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateAlertRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/alerts/createNotificationChannel": {
+      "post": {
+        "operationId": "AlertService_createNotificationChannel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringNotificationChannel"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateNotificationChannelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/alerts/deleteAlert": {
+      "delete": {
+        "operationId": "AlertService_deleteAlert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringDeleteAlertRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/alerts/deleteNotificationChannel": {
+      "delete": {
+        "operationId": "AlertService_deleteNotificationChannel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringDeleteNotificationChannelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/alerts/findAlert": {
+      "post": {
+        "operationId": "AlertService_findAlert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringFindAlertRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringFindAlertRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/alerts/findNotificationChannel": {
+      "post": {
+        "operationId": "AlertService_findNotificationChannel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringFindNotificationChannelRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringFindNotificationChannelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/alerts/listAlertHistory": {
+      "post": {
+        "operationId": "AlertService_listAlertHistory",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringListAlertHistoryRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringListAlertHistoryRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/alerts/updateAlert": {
+      "post": {
+        "operationId": "AlertService_updateAlert",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringAlert"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringUpdateAlertRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/alerts/updateAlertStatus": {
+      "post": {
+        "operationId": "AlertService_updateAlertStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringUpdateAlertStatusRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    },
+    "/alerts/updateNotificationChannel": {
+      "post": {
+        "operationId": "AlertService_updateNotificationChannel",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringNotificationChannel"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringUpdateNotificationChannelRequest"
+            }
+          }
+        ],
+        "tags": [
+          "AlertService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "AlertStatusEnumAlertStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OK",
+        "ALERTING"
+      ],
+      "default": "UNKNOWN"
+    },
+    "AlerterTypeEnumAlerterType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "FIXED",
+        "REFERENCE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "NotificationChannelTypeEnumNotificationChannelType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "SLACK"
+      ],
+      "default": "UNKNOWN"
+    },
+    "monitoringAlert": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "monitored_entity_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "created_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "updated_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "last_evaluated_at_millis": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Add some robustness in case the alert isn't evaluated in a while"
+        },
+        "notification_channels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "title": "Use a map instead of a list to represent that this is a set"
+        },
+        "sample_find_base": {
+          "$ref": "#/definitions/monitoringFindSummarySampleRequest",
+          "title": "Base for finding samples to be evaluated. The time will be the only field changing here"
+        },
+        "status": {
+          "$ref": "#/definitions/AlertStatusEnumAlertStatus",
+          "title": "Current status of this alert"
+        },
+        "violating_summary_sample_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          },
+          "title": "If the alert is triggering right now, then this contains the list of sample ids that are making it trigger"
+        },
+        "alerter_type": {
+          "$ref": "#/definitions/AlerterTypeEnumAlerterType",
+          "title": "Information about the alerter that should be used to evaluate this alert"
+        },
+        "alerter_fixed": {
+          "$ref": "#/definitions/monitoringAlertFixed"
+        },
+        "alerter_reference": {
+          "$ref": "#/definitions/monitoringAlertReference"
+        }
+      }
+    },
+    "monitoringAlertFixed": {
+      "type": "object",
+      "properties": {
+        "threshold": {
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "monitoringAlertReference": {
+      "type": "object",
+      "properties": {
+        "threshold": {
+          "type": "number",
+          "format": "float"
+        },
+        "reference_sample_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "monitoringCreateAlertRequest": {
+      "type": "object",
+      "properties": {
+        "alert": {
+          "$ref": "#/definitions/monitoringAlert"
+        }
+      }
+    },
+    "monitoringCreateNotificationChannelRequest": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "$ref": "#/definitions/monitoringNotificationChannel"
+        }
+      },
+      "title": "Create a new notification channel. Names must be unique"
+    },
+    "monitoringDeleteAlertRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      }
+    },
+    "monitoringDeleteNotificationChannelRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      },
+      "title": "Delete notification channels"
+    },
+    "monitoringEmpty": {
+      "type": "object"
+    },
+    "monitoringFilterQuerySummarySample": {
+      "type": "object",
+      "properties": {
+        "find_summaries": {
+          "$ref": "#/definitions/monitoringFindSummaryRequest"
+        },
+        "sample_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/monitoringLabelFilterQuerySummarySample"
+          }
+        },
+        "time_window_start_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "time_window_end_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "description": "Filters the caller wants to apply to selectively summary samples."
+    },
+    "monitoringFindAlertRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "monitored_entity_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "last_evaluated_at_millis_after": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Find alerts based on when they were last evaluated"
+        },
+        "alerter_types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AlerterTypeEnumAlerterType"
+          },
+          "title": "Allow alerters to filter to only their own types"
+        },
+        "status": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AlertStatusEnumAlertStatus"
+          },
+          "title": "Allow filtering to see only failing alerts"
+        }
+      }
+    },
+    "monitoringFindAlertRequestResponse": {
+      "type": "object",
+      "properties": {
+        "alerts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringAlert"
+          }
+        }
+      }
+    },
+    "monitoringFindNotificationChannelRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringNotificationChannelTypeEnum"
+          }
+        }
+      },
+      "title": "Find an notification channel based on the different fields"
+    },
+    "monitoringFindNotificationChannelRequestResponse": {
+      "type": "object",
+      "properties": {
+        "channels": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringNotificationChannel"
+          }
+        }
+      }
+    },
+    "monitoringFindSummaryRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "type_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "monitored_entity_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      },
+      "title": "Request to fetch multiple summaries"
+    },
+    "monitoringFindSummarySampleRequest": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/monitoringFilterQuerySummarySample"
+        }
+      },
+      "description": "Request to fetch multiple summary samples, potentially with aggregation."
+    },
+    "monitoringLabelFilterQuerySummarySample": {
+      "type": "object",
+      "properties": {
+        "label_value": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Filter details for a given label."
+    },
+    "monitoringListAlertHistoryItem": {
+      "type": "object",
+      "properties": {
+        "event_time_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "status": {
+          "$ref": "#/definitions/AlertStatusEnumAlertStatus"
+        },
+        "violating_summary_sample_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      },
+      "title": "Tracks previous calls to (UpdateAlertStatusRequest) based on its arguments"
+    },
+    "monitoringListAlertHistoryRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "History of the status of the alerts"
+    },
+    "monitoringListAlertHistoryRequestResponse": {
+      "type": "object",
+      "properties": {
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringListAlertHistoryItem"
+          }
+        }
+      }
+    },
+    "monitoringNotificationChannel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "created_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "updated_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "type": {
+          "$ref": "#/definitions/NotificationChannelTypeEnumNotificationChannelType"
+        },
+        "slack_webhook": {
+          "$ref": "#/definitions/monitoringNotificationChannelSlackWebhook"
+        }
+      },
+      "title": "Content of an notification channel"
+    },
+    "monitoringNotificationChannelSlackWebhook": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        }
+      },
+      "title": "Configuration for an notification channel for slack webhooks"
+    },
+    "monitoringNotificationChannelTypeEnum": {
+      "type": "object"
+    },
+    "monitoringUpdateAlertRequest": {
+      "type": "object",
+      "properties": {
+        "alert": {
+          "$ref": "#/definitions/monitoringAlert"
+        }
+      }
+    },
+    "monitoringUpdateAlertStatusRequest": {
+      "type": "object",
+      "properties": {
+        "alert_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "event_time_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "status": {
+          "$ref": "#/definitions/AlertStatusEnumAlertStatus"
+        },
+        "violating_summary_sample_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "Allow the alerter to trigger an alert (in which case it shares what is the sample that failed)\nor change the status (most likely to OK if was triggering before)\nWe provide this in addition to UpdateAlertRequest so that we can do the small change to this field atomically"
+    },
+    "monitoringUpdateNotificationChannelRequest": {
+      "type": "object",
+      "properties": {
+        "channel": {
+          "$ref": "#/definitions/monitoringNotificationChannel"
+        }
+      },
+      "title": "Updates an notification channel. The matching with a previous one happens from the id being the same"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}
