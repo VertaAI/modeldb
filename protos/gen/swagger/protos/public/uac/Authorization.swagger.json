@@ -323,7 +323,8 @@
         "ORGANIZATION",
         "TEAM",
         "WORKSPACE",
-        "USER"
+        "USER",
+        "SERVICE_ACCOUNT"
       ],
       "default": "UNKNOWN"
     },
