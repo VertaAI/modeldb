@@ -1,8 +1,4 @@
-import time
-
-
-def now_in_millis():
-    return int(round(time.time() * 1000))
+# -*- coding: utf-8 -*-
 
 def extract_ids(objects_or_ids):
     try:
