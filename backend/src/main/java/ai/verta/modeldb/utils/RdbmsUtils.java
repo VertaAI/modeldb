@@ -71,7 +71,9 @@ public class RdbmsUtils {
     if (projectEntityList != null) {
       Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
       for (ProjectEntity projectEntity : projectEntityList) {
-        projects.add(projectEntity.getProtoObject(roleService, authService, cacheWorkspaceMap));
+        projects.add(
+            projectEntity.getProtoObject(
+                roleService, authService, cacheWorkspaceMap, Optional.empty()));
       }
     }
     return projects;
