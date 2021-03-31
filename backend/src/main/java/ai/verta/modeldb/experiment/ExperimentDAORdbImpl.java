@@ -19,7 +19,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
@@ -223,9 +222,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   }
 
   private void createRoleBindingsForExperiment(Experiment experiment, UserInfo userInfo) {
-    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
     roleService.createRoleBinding(
-        ownerRole,
+        ModelDBConstants.ROLE_EXPERIMENT_OWNER,
         new CollaboratorUser(authService, userInfo),
         experiment.getId(),
         ModelDBServiceResourceTypes.EXPERIMENT);

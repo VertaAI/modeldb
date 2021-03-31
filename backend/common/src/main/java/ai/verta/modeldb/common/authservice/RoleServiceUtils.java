@@ -771,42 +771,14 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public void createRoleBinding(
-      Role role,
-      CollaboratorBase collaborator,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    String roleBindingName =
-        buildRoleBindingName(
-            role.getName(), resourceId, collaborator, modelDBServiceResourceTypes.name());
-
-    RoleBinding newRoleBinding =
-        RoleBinding.newBuilder()
-            .setName(roleBindingName)
-            .setScope(role.getScope())
-            .setRoleId(role.getId())
-            .addEntities(collaborator.getEntities())
-            .addResources(
-                Resources.newBuilder()
-                    .setService(Service.MODELDB_SERVICE)
-                    .setResourceType(
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                    .addResourceIds(resourceId)
-                    .build())
-            .build();
-    setRoleBindingOnAuthService(true, newRoleBinding);
-  }
-
-  @Override
-  public void createRoleBinding(
       String roleName,
-      RoleScope roleBindingScope,
       CollaboratorBase collaborator,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     String roleBindingName =
         buildRoleBindingName(
             roleName, resourceId, collaborator, modelDBServiceResourceTypes.name());
+    RoleScope roleBindingScope = RoleScope.newBuilder().build();
 
     RoleBinding newRoleBinding =
         RoleBinding.newBuilder()
@@ -845,37 +817,6 @@ public class RoleServiceUtils implements RoleService {
                 return null;
               },
           timeout);
-    }
-  }
-
-  @Override
-  public Role getRoleByName(String roleName, RoleScope roleScope) {
-    return getRoleByName(true, roleName, roleScope);
-  }
-
-  private Role getRoleByName(boolean retry, String roleName, RoleScope roleScope) {
-    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      GetRoleByName.Builder getRoleByNameRequest = GetRoleByName.newBuilder().setName(roleName);
-      if (roleScope != null) {
-        getRoleByNameRequest.setScope(roleScope);
-      }
-      GetRoleByName.Response getRoleByNameResponse =
-          authServiceChannel
-              .getRoleServiceBlockingStub()
-              .getRoleByName(getRoleByNameRequest.build());
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getRoleByNameResponse);
-
-      return getRoleByNameResponse.getRole();
-    } catch (StatusRuntimeException ex) {
-      return (Role)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<Role>)
-                  (retry1) -> getRoleByName(retry1, roleName, roleScope),
-              timeout);
     }
   }
 
