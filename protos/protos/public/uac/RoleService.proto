@@ -105,6 +105,7 @@ message AuthzResourceEnum {
         TEAM = 3;
         WORKSPACE = 4;
         USER = 5;
+        SERVICE_ACCOUNT = 6;
     }
 };
 
