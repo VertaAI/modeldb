@@ -104,6 +104,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.persistence.ColumnResult;
+import javax.persistence.SqlResultSetMapping;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
@@ -842,6 +844,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .help("Observations per experiment run")
           .register();
 
+
   @Override
   public void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException {
@@ -866,17 +869,30 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               session, observations, ExperimentRunEntity.class.getSimpleName(), experimentRunId)
           .forEach(
               observation -> {
+                KeyValue attribute = observation.getAttribute();
                 String kvSql = "INSERT INTO keyvalue"
-                    + " (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id)"
-                    + " VALUES (:entity_name, :field_type, :kv_key, :kv_value, :value_type, :experiment_run_id)";
-                final long attributeId = session.createNativeQuery(kvSql)
+                    + " (field_type, kv_key, kv_value, value_type, experiment_run_id)"
+                    + " VALUES (:field_type, :kv_key, :kv_value, :value_type, :experiment_run_id)";
+                session.createNativeQuery(kvSql)
                     .setParameter("field_type", ModelDBConstants.ATTRIBUTES)
-                    .setParameter("kv_key", observation.getAttribute().getKey())
-                    .setParameter("kv_value", observation.getAttribute().getValue().getStringValue())
-                    .setParameter("value_type", observation.getAttribute().getValueType().getNumber())
+                    .setParameter("kv_key", attribute.getKey())
+                    .setParameter("kv_value", attribute.getValue().getNumberValue())
+                    .setParameter("value_type", attribute.getValueType().getNumber())
                     .setParameter("experiment_run_id", experimentRunId)
                     .executeUpdate();
-
+                List<BigInteger> resultList = (List<BigInteger>) session.createNativeQuery("SELECT id FROM keyvalue"
+                    + " WHERE experiment_run_id = :experiment_run_id"
+                    + " AND field_type = :field_type"
+                    + " AND kv_key = :kv_key"
+                    + " AND kv_value = :kv_value"
+                    + " AND value_type = :value_type")
+                    .setParameter("experiment_run_id", experimentRunId)
+                    .setParameter("field_type", ModelDBConstants.ATTRIBUTES)
+                    .setParameter("kv_key", attribute.getKey())
+                    .setParameter("kv_value", attribute.getValue().getNumberValue())
+                    .setParameter("value_type", attribute.getValueType().getNumber())
+                    .getResultList();
+                BigInteger attributeId = resultList.get(0);
                 double epochNumber = getEpochNumber(experimentRunId, session, observation);
 
                 observationCount.labels(experimentRunId).inc();
@@ -890,7 +906,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                         .setParameter("timestamp", observation.getTimestamp())
                         .setParameter("experiment_run_id", experimentRunId)
                         .setParameter("epoch_number", epochNumber)
-                        .setParameter("keyvaluemapping_id", attributeId)
+                        .setParameter("keyvaluemapping_id", attributeId.intValue())
                         .executeUpdate();
               });
       updateExperimentRunTimestamp(experimentRunId, session);
