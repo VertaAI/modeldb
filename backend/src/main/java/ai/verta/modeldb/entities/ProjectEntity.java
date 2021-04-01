@@ -330,7 +330,7 @@ public class ProjectEntity {
       RoleService roleService,
       AuthService authService,
       Map<Long, Workspace> cacheWorkspaceMap,
-      Optional<Map<String, GetResourcesResponseItem>> getResourcesMap)
+      Map<String, GetResourcesResponseItem> getResourcesMap)
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     Project.Builder projectBuilder =
         Project.newBuilder()
@@ -355,14 +355,20 @@ public class ProjectEntity {
     }
 
     GetResourcesResponseItem projectResource;
-    if (getResourcesMap.isPresent() && !getResourcesMap.get().isEmpty()) {
-      projectResource = getResourcesMap.get().get(this.id);
+    if (getResourcesMap != null
+        && !getResourcesMap.isEmpty()
+        && getResourcesMap.containsKey(this.id)) {
+      projectResource = getResourcesMap.get(this.id);
     } else {
       projectResource =
           roleService
               .getEntityResource(
                   Optional.of(this.id), Optional.empty(), ModelDBServiceResourceTypes.PROJECT)
               .get();
+      if (getResourcesMap == null) {
+        getResourcesMap = new HashMap<>();
+      }
+      getResourcesMap.put(this.id, projectResource);
     }
     projectBuilder.setVisibility(projectResource.getVisibility());
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());

@@ -70,10 +70,11 @@ public class RdbmsUtils {
     List<Project> projects = new ArrayList<>();
     if (projectEntityList != null) {
       Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
+      Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
       for (ProjectEntity projectEntity : projectEntityList) {
         projects.add(
             projectEntity.getProtoObject(
-                roleService, authService, cacheWorkspaceMap, Optional.empty()));
+                roleService, authService, cacheWorkspaceMap, getResourcesMap));
       }
     }
     return projects;
