@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 
-from _protos.private.monitoring.Summary_pb2 import FilterQuerySummarySample
+from verta._protos.public.monitoring.Summary_pb2 import FilterQuerySummarySample
 
-from _protos.private.monitoring.Labels_pb2 import (
+from verta._protos.public.monitoring.Labels_pb2 import (
     FindSampleLabelsRequest,
     FindSampleLabelValuesItem,
     FindSampleLabelValuesRequest,
 )
-from clients.summaries import Summary
-import time_utils
+from .summaries import Summary
+from .. import time_utils
 
 
 class Labels:

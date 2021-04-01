@@ -5,10 +5,10 @@ from builtins import object
 
 import json
 from datetime import datetime
-import time_utils
-import utils
-from _protos.private.monitoring import Summary_pb2 as SummaryService
-from _protos.private.monitoring.Summary_pb2 import (
+from .. import time_utils
+from ..utils import extract_ids
+from verta._protos.public.monitoring import Summary_pb2 as SummaryService
+from verta._protos.public.monitoring.Summary_pb2 import (
     CreateSummaryRequest,
     CreateSummarySample,
     DeleteSummaryRequest,
@@ -27,11 +27,11 @@ from verta import data_types
 
 class SummaryQuery(object):
     def __init__(self, ids=None, names=None, type_names=None, monitored_entities=None):
-        self._ids = utils.extract_ids(ids) if ids else None
+        self._ids = extract_ids(ids) if ids else None
         self._names = names
         self._type_names = type_names
         self._monitored_entity_ids = (
-            utils.extract_ids(monitored_entities) if monitored_entities else None
+            extract_ids(monitored_entities) if monitored_entities else None
         )
 
     def _to_proto_request(self):

@@ -71,7 +71,7 @@ from .endpoint._endpoint import Endpoint
 from .endpoint._endpoints import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
-
+from .operations.monitoring.client import Client as MonitoringClient
 
 class Client(object):
     """
@@ -206,6 +206,8 @@ class Client(object):
 
         self._ctx = _Context(self._conn, self._conf)
         self._workspace = None
+
+        self.operations = MonitoringClient(self)
 
     @property
     def proj(self):

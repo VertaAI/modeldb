@@ -1,7 +1,7 @@
 import os
 import time
-from client import Client
-from profilers import Profiler
+from .client import Client
+from .profilers import Profiler
 
 
 class Alerter(Profiler):
@@ -60,6 +60,6 @@ class Alerter(Profiler):
         print("Found alert threshold {}".format(threshold))
         if diff > threshold:
             print("Alert threshold exceeded: threshold is {}".format(threshold))
-            client.alerts.create("Threshold violation", alert_definition)
+            # client.alerts.create("Threshold violation", alert_definition)
         else:
             print("No violation.")

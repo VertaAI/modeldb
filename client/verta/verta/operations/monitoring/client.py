@@ -3,39 +3,42 @@
 from __future__ import print_function
 import itertools
 
-import verta
+from verta._tracking import _Context
 
-from verta._tracking import entity
-from verta._tracking import (
-    _Context,
-)
-
-from monitored_entity import MonitoredEntity
-from data_source import DataSource
-from clients.profilers import Profilers
-from clients.alert_definitions import AlertDefinitions
-from clients.alerts import Alerts
-from clients.summaries import Summaries
-from clients.labels import Labels
+from .monitored_entity import MonitoredEntity
+from .clients.profilers import Profilers
+from .clients.summaries import Summaries
+from .clients.labels import Labels
 
 
-class Client(verta.Client):
-    def __init__(self, *args, **kwargs):
-        super(Client, self).__init__(*args, **kwargs)
+class Client(object):
+    def __init__ (self, verta_client):
+        self._client = verta_client
         self.profilers = Profilers(self._conn, self._conf, self)
-        self.alerts = Alerts(self._conn, self._conf)
-        self.alert_definitions = AlertDefinitions(self._conn, self._conf)
         self.summaries = Summaries(self._conn, self._conf)
         self.labels = Labels(self._conn, self._conf)
+
+    @property
+    def _conn(self):
+        return self._client._conn
+
+    @property
+    def _conf(self):
+        return self._client._conf
+
+    @property
+    def _ctx(self):
+        return self._client._ctx
 
     def get_or_create_monitored_entity(self, name=None, workspace=None, id=None):
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
-        name = self._set_from_config_if_none(name, "monitored_entity")
-        workspace = self._set_from_config_if_none(workspace, "workspace")
+        name = self._client._set_from_config_if_none(name, "monitored_entity")
+        workspace = self._client._set_from_config_if_none(workspace, "workspace")
 
-        ctx = _Context(self._conn, self._conf)
+        ctx = self._ctx
+        # TODO: use the context workspace and do not modify it through parameters on this method
         ctx.workspace_name = workspace
 
         resource_name = "MonitoredEntity"

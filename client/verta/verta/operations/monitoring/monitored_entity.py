@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import warnings
 
-from _protos.private.monitoring import (
+from verta._protos.public.monitoring import (
     DataMonitoringService_pb2 as _DataMonitoringService,
 )
 
@@ -12,8 +12,6 @@ from verta._tracking import (entity, _Context)
 from verta._internal_utils import (
     _utils,
 )
-
-from data_source import DataSource
 
 
 class MonitoredEntity(entity._ModelDBEntity):
@@ -94,41 +92,6 @@ class MonitoredEntity(entity._ModelDBEntity):
 
     def _update(self, msg, response_proto, endpoint, method):
         raise NotImplementedError()
-
-
-    def get_or_create_data_source(self, name=None, id=None):
-        if name is not None and id is not None:
-            raise ValueError("cannot specify both `name` and `id`")
-
-        name = self._client._set_from_config_if_none(name, "data_source")
-        monitored_entity_id = self.id
-        ctx = _Context(self._client._conn, self._client._conf)
-
-        resource_name = "DataSource"
-        if id is not None:
-            entity = DataSource._get_by_id(self._conn, self._conf, id, monitored_entity_id=monitored_entity_id, client=self._client)
-        else:
-            sources = DataSource.list(self._conn, self._conf)
-            cond = lambda src: src.monitored_entity_id == monitored_entity_id and src.name == name
-            found = next(filter(cond, sources), None)
-            if found:
-                return found
-            entity = DataSource._get_or_create_by_name(
-                self._conn,
-                name,
-                # TODO: support get by name
-                lambda name: None,
-                lambda name: DataSource._create(
-                    self._conn,
-                    self._conf,
-                    ctx,
-                    client=self._client,
-                    monitored_entity=self,
-                    name=name,
-                ),
-                lambda: __error(),
-            )
-        return entity
 
 
     def delete(self):

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import collections
 
-from data_formats import (
+from verta.data_types import (
     DiscreteHistogram,
     FloatHistogram,
 )

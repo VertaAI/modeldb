@@ -4,10 +4,10 @@ from collections import namedtuple
 import time
 
 from verta._tracking import entity, _Context
-from _protos.private.monitoring import (
+from verta._protos.public.monitoring import (
     DataMonitoringService_pb2 as _DataMonitoringService,
 )
-from _protos.private.monitoring.DataMonitoringService_pb2 import (
+from verta._protos.public.monitoring.DataMonitoringService_pb2 import (
     GetProfilerRequest,
     CreateProfilerRequest,
     ListProfilersRequest,
