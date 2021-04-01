@@ -14,7 +14,7 @@ from .clients.labels import Labels
 class Client(object):
     def __init__ (self, verta_client):
         self._client = verta_client
-        self.profilers = Profilers(self._conn, self._conf, self)
+        self.profilers = Profilers(self._conn, self._conf, self._client)
         self.summaries = Summaries(self._conn, self._conf)
         self.labels = Labels(self._conn, self._conf)
 
