@@ -171,9 +171,20 @@ func local_request_DataMonitoringService_UpdateMonitoredEntity_0(ctx context.Con
 
 }
 
+var (
+	filter_DataMonitoringService_ListMonitoredEntities_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
 func request_DataMonitoringService_ListMonitoredEntities_0(ctx context.Context, marshaler runtime.Marshaler, client DataMonitoringServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ListMonitoredEntitiesRequest
 	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DataMonitoringService_ListMonitoredEntities_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 
 	msg, err := client.ListMonitoredEntities(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -183,6 +194,13 @@ func request_DataMonitoringService_ListMonitoredEntities_0(ctx context.Context, 
 func local_request_DataMonitoringService_ListMonitoredEntities_0(ctx context.Context, marshaler runtime.Marshaler, server DataMonitoringServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq ListMonitoredEntitiesRequest
 	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DataMonitoringService_ListMonitoredEntities_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
 
 	msg, err := server.ListMonitoredEntities(ctx, &protoReq)
 	return msg, metadata, err

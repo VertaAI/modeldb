@@ -193,80 +193,6 @@ message DisableProfilerRequest {
   }
 }
 
-// // Summary
-
-// message Summary {
-//   uint64 id = 1;
-//   string name = 2;
-//   uint64 data_source_id = 3;
-//   uint64 monitored_entity_id = 5;
-//   uint64 profiler_id = 9;
-//   string blob = 4;
-//   uint64 created_at_millis = 6;
-//   uint64 time_window_start_at_millis = 7;
-//   uint64 time_window_end_at_millis = 8;
-// }
-
-// message CreateSummaryRequest {
-//   uint64 monitored_entity_id = 1;
-//   uint64 data_source_id = 2;
-//   uint64 profiler_id = 5;
-//   string name = 3;
-//   string blob = 4;
-//   uint64 time_window_start_at_millis = 6;
-//   uint64 time_window_end_at_millis = 7;
-
-//   message Response {
-//     Summary summary = 1;
-//   }
-// }
-
-// message GetSummaryRequest {
-//   uint64 id = 1;
-
-//   message Response {
-//     Summary summary = 1;
-//   }
-// }
-
-// // Find the Summary that spans the given timestamp
-// message FindSummaryRequest {
-//   uint64 monitored_entity_id = 1;
-//   uint64 data_source_id = 2;
-//   string summary_name = 3;
-//   uint64 timestamp_millis = 4;
-
-//   message Response {
-//     Summary summary = 1;
-//   }
-// }
-
-// // Find all Summaries in thee given time window
-// message FindSummariesRequest {
-//   uint64 monitored_entity_id = 1;
-//   uint64 data_source_id = 2;
-//   string summary_name = 3;
-//   uint64 time_window_start_timestamp_millis = 4;
-//   uint64 time_window_end_timestamp_millis = 5;
-
-//   message Response {
-//     repeated Summary summaries = 1;
-//   }
-// }
-
-// message ListSummariesRequest {
-//   message Response {
-//     repeated Summary summaries = 1;
-//   }
-// }
-
-// message DeleteSummaryRequest {
-//   uint64 id = 1;
-
-//   message Response {
-//   }
-// }
-
 // Monitored entity
 
 message MonitoredEntity {
@@ -274,12 +200,14 @@ message MonitoredEntity {
   string name = 2;
   repeated uint64 data_source_ids = 3;
   repeated uint64 summary_ids = 4;
+  uint64 workspace_id = 5;
 }
 
 message CreateMonitoredEntityRequest {
   string name = 1;
   repeated uint64 data_source_ids = 2;
   repeated uint64 summary_ids = 3;
+  uint64 workspace_id = 4;
 
   message Response {
     MonitoredEntity monitored_entity = 1;
@@ -296,6 +224,7 @@ message GetMonitoredEntityRequest {
 
 message GetMonitoredEntityByNameRequest {
   string name = 1;
+  uint64 workspace_id = 2;
 
   message Response {
     MonitoredEntity monitored_entity = 1;
@@ -314,6 +243,7 @@ message UpdateMonitoredEntityRequest {
 }
 
 message ListMonitoredEntitiesRequest {
+  uint64 workspace_id = 1;
   message Response {
     repeated MonitoredEntity monitored_entities = 1;
   }
@@ -325,142 +255,6 @@ message DeleteMonitoredEntityRequest {
   message Response {
   }
 }
-
-// // Alert Definition
-
-// message SeverityEnum {
-//   enum Severity {
-//     UNDEFINED = 0;
-//     LOW = 1;
-//     MEDIUM = 2;
-//     HIGH = 3;
-//   }
-// }
-
-// // TODO: pull in all fields from https://vertaai.atlassian.net/browse/VR-9906
-
-// message AlertDefinition {
-//   uint64 id = 1;
-//   string name = 2;
-//   uint64 monitored_entity_id = 3;
-//   uint64 reference_data_source_id = 4;
-//   uint64 source_profiler_id = 5;
-//   uint64 created_at_millis = 6;
-//   uint64 updated_at_millis = 7;
-//   float threshold = 8;
-//   SeverityEnum.Severity severity = 9;
-//   string webhook = 10;
-// }
-
-// message GetAlertDefinitionRequest {
-//   uint64 id = 1;
-
-//   message Response {
-//     AlertDefinition alert_definition = 1;
-//   }
-// }
-
-// message CreateAlertDefinitionRequest {
-//   string name = 1;
-//   uint64 monitored_entity_id = 2;
-//   uint64 reference_data_source_id = 3;
-//   uint64 source_profiler_id = 4;
-//   float threshold = 5;
-//   SeverityEnum.Severity severity = 6;
-//   string webhook =7;
-
-//   message Response {
-//     AlertDefinition alert_definition = 1;
-//   }
-// }
-
-// message UpdateAlertDefinitionRequest {
-//   uint64 id = 1;
-//   string name = 2;
-//   uint64 reference_data_source_id = 3;
-//   uint64 source_profiler_id = 4;
-//   float threshold = 5;
-//   SeverityEnum.Severity severity = 6;
-//   string webhook = 7;
-
-//   message Response {
-//     AlertDefinition alert_definition = 1;
-//   }
-// }
-
-// message ListAlertDefinitionsRequest {
-//   uint64 monitored_entity_id = 1;
-//   message Response {
-//     repeated AlertDefinition alert_definition = 1;
-//   }
-// }
-
-// message DeleteAlertDefinitionRequest {
-//   uint64 id = 1;
-
-//   message Response {
-//   }
-// }
-
-// // Alert
-
-// message Alert {
-//   uint64 id = 1;
-//   string name = 2;
-//   uint64 alert_definition_id = 3;
-//   uint64 created_at_millis = 4;
-//   uint64 updated_at_millis = 5;
-//   uint64 triggered_at_millis = 6;
-//   uint64 acked_at_millis = 7;
-//   uint64 closed_at_millis = 8;
-// }
-
-// message GetAlertRequest {
-//   uint64 id = 1;
-
-//   message Response {
-//     Alert alert = 1;
-//   }
-// }
-
-// message CreateAlertRequest {
-//   string name = 1;
-//   uint64 alert_definition_id = 2;
-//   uint64 triggered_at_millis = 3;
-//   uint64 acked_at_millis = 4;
-//   uint64 closed_at_millis = 5;
-
-//   message Response {
-//     Alert alert = 1;
-//   }
-// }
-
-// message UpdateAlertRequest {
-//   uint64 id = 1;
-//   string name = 2;
-//   uint64 triggered_at_millis = 3;
-//   uint64 acked_at_millis = 4;
-//   uint64 closed_at_millis = 5;
-
-//   message Response {
-//     Alert alert = 1;
-//   }
-// }
-
-// message ListAlertsRequest {
-//   uint64 alert_definition_id = 1;
-
-//   message Response {
-//     repeated Alert alert = 1;
-//   }
-// }
-
-// message DeleteAlertRequest {
-//   uint64 id = 1;
-
-//   message Response {
-//   }
-// }
 
 // Service definitions
 service DataMonitoringService {
@@ -502,44 +296,6 @@ service DataMonitoringService {
       body: "*"
     };
   };
-
-  // rpc getSummary(GetSummaryRequest) returns (GetSummaryRequest.Response) {
-  //   option (google.api.http) = {
-  //     get: "/v1/monitored_entity/getSummary"
-  //   };
-  // };
-
-  // rpc findSummary(FindSummaryRequest) returns (FindSummaryRequest.Response) {
-  //   option (google.api.http) = {
-  //     get: "/v1/monitored_entity/findSummary"
-  //   };
-  // };
-
-  // rpc findSummaries(FindSummariesRequest) returns (FindSummariesRequest.Response) {
-  //   option (google.api.http) = {
-  //     get: "/v1/monitored_entity/findSummaries"
-  //   };
-  // };
-
-  // rpc createSummary(CreateSummaryRequest) returns (CreateSummaryRequest.Response) {
-  //   option (google.api.http) = {
-  //     post: "/v1/monitored_entity/createSummary"
-  //     body: "*"
-  //   };
-  // };
-
-  // rpc listSummaries(ListSummariesRequest) returns (ListSummariesRequest.Response) {
-  //   option (google.api.http) = {
-  //     get: "/v1/monitored_entity/listSummaries"
-  //   };
-  // };
-
-  // rpc deleteSummary(DeleteSummaryRequest) returns (DeleteSummaryRequest.Response) {
-  //   option (google.api.http) = {
-  //     delete: "/v1/monitored_entity/deleteSummary"
-  //     body: "*"
-  //   };
-  // };
 
   rpc getDataSource(GetDataSourceRequest) returns (GetDataSourceRequest.Response) {
     option (google.api.http) = {
@@ -632,70 +388,4 @@ service DataMonitoringService {
       body: "*"
     };
   };
-
-  // rpc getAlert(GetAlertRequest) returns (GetAlertRequest.Response) {
-  //   option (google.api.http) = {
-  //     get: "/v1/monitored_entity/getAlert"
-  //   };
-  // };
-
-  // rpc createAlert(CreateAlertRequest) returns (CreateAlertRequest.Response) {
-  //   option (google.api.http) = {
-  //     post: "/v1/monitored_entity/createAlert"
-  //     body: "*"
-  //   };
-  // };
-
-  // rpc updateAlert(UpdateAlertRequest) returns (UpdateAlertRequest.Response) {
-  //   option (google.api.http) = {
-  //     patch: "/v1/monitored_entity/updateAlert"
-  //     body: "*"
-  //   };
-  // };
-
-  // rpc listAlerts(ListAlertsRequest) returns (ListAlertsRequest.Response) {
-  //   option (google.api.http) = {
-  //     get: "/v1/monitored_entity/listAlerts"
-  //   };
-  // };
-
-  // rpc deleteAlert(DeleteAlertRequest) returns (DeleteAlertRequest.Response) {
-  //   option (google.api.http) = {
-  //     delete: "/v1/monitored_entity/deleteAlert"
-  //     body: "*"
-  //   };
-  // };
-
-  // rpc getAlertDefinition(GetAlertDefinitionRequest) returns (GetAlertDefinitionRequest.Response) {
-  //   option (google.api.http) = {
-  //     get: "/v1/monitored_entity/getAlertDefinition"
-  //   };
-  // };
-
-  // rpc createAlertDefinition(CreateAlertDefinitionRequest) returns (CreateAlertDefinitionRequest.Response) {
-  //   option (google.api.http) = {
-  //     post: "/v1/monitored_entity/createAlertDefinition"
-  //     body: "*"
-  //   };
-  // };
-
-  // rpc updateAlertDefinition(UpdateAlertDefinitionRequest) returns (UpdateAlertDefinitionRequest.Response) {
-  //   option (google.api.http) = {
-  //     patch: "/v1/monitored_entity/updateAlertDefinition"
-  //     body: "*"
-  //   };
-  // };
-
-  // rpc listAlertDefinitions(ListAlertDefinitionsRequest) returns (ListAlertDefinitionsRequest.Response) {
-  //   option (google.api.http) = {
-  //     get: "/v1/monitored_entity/listAlertDefinitions"
-  //   };
-  // };
-
-  // rpc deleteAlertDefinition(DeleteAlertDefinitionRequest) returns (DeleteAlertDefinitionRequest.Response) {
-  //   option (google.api.http) = {
-  //     delete: "/v1/monitored_entity/deleteAlertDefinition"
-  //     body: "*"
-  //   };
-  // };
 }
