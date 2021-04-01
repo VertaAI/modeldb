@@ -415,6 +415,13 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
           }
         ],
         "tags": [
@@ -530,6 +537,15 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
         "tags": [
           "DataMonitoringService"
         ]
@@ -698,6 +714,10 @@
             "type": "string",
             "format": "uint64"
           }
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
@@ -977,6 +997,10 @@
             "type": "string",
             "format": "uint64"
           }
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
