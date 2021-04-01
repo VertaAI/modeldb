@@ -870,33 +870,28 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                     + " (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id)"
                     + " VALUES (:entity_name, :field_type, :kv_key, :kv_value, :value_type, :experiment_run_id)";
                 final long attributeId = session.createNativeQuery(kvSql)
-                    .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
-                    .setParameter("field_type", ModelDBConstants.OBSERVATIONS)
+                    .setParameter("field_type", ModelDBConstants.ATTRIBUTES)
                     .setParameter("kv_key", observation.getAttribute().getKey())
                     .setParameter("kv_value", observation.getAttribute().getValue().getStringValue())
                     .setParameter("value_type", observation.getAttribute().getValueType().getNumber())
                     .setParameter("experiment_run_id", experimentRunId)
                     .executeUpdate();
 
+                double epochNumber = getEpochNumber(experimentRunId, session, observation);
+
                 observationCount.labels(experimentRunId).inc();
                 String sql =
                     "INSERT INTO observation"
                         + " (entity_name, field_type, timestamp, experiment_run_id, epoch_number, keyvaluemapping_id)"
                         + " VALUES (:entity_name, :field_type, :timestamp, :experiment_run_id, :epoch_number, :keyvaluemapping_id)";
-                Query query =
-                    session
-                        .createNativeQuery(sql)
+                session.createNativeQuery(sql)
                         .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
-                        .setParameter("experiment_run_id", experimentRunId)
                         .setParameter("field_type", ModelDBConstants.OBSERVATIONS)
                         .setParameter("timestamp", observation.getTimestamp())
-                        .setParameter("keyvaluemapping_id", attributeId);
-                if (observation.hasEpochNumber()) {
-                  query.setParameter("epoch_number", observation.getEpochNumber().getNumberValue());
-                } else {
-                  query.setParameter("epoch_number", null);
-                }
-                query.executeUpdate();
+                        .setParameter("experiment_run_id", experimentRunId)
+                        .setParameter("epoch_number", epochNumber)
+                        .setParameter("keyvaluemapping_id", attributeId)
+                        .executeUpdate();
               });
       updateExperimentRunTimestamp(experimentRunId, session);
       transaction.commit();
@@ -907,6 +902,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw ex;
       }
     }
+  }
+
+  private double getEpochNumber(String experimentRunId, Session session,
+      Observation observation) {
+    if (observation.hasEpochNumber()) {
+      return observation.getEpochNumber().getNumberValue();
+    }
+
+    Long epochNumber = (Long) session.createNativeQuery("SELECT MAX(epoch_number) FROM observation"
+            + " WHERE experiment_run_id = :experiment_run_id")
+            .setParameter("experiment_run_id", experimentRunId)
+            .getSingleResult();
+    if (epochNumber == null) {
+      return 0;
+    }
+    return epochNumber + 1;
   }
 
   @Override
