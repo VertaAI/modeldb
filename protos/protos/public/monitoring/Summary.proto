@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package ai.verta.monitoring;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+
+message Empty {}
+
+// Summary is a collection of multiple samples through time with a shared name and type. It's used to make sure the multiple samples are consistent with each other.
+message Summary {
+    uint64 id = 1;
+    uint64 monitored_entity_id = 2;
+    string name = 3;
+    string type_name = 4;
+}
+
+// Request to create a summary sample
+message CreateSummaryRequest {
+    uint64 monitored_entity_id = 1;
+    string name = 2;
+    string type_name = 3;
+}
+
+// Request to fetch multiple summaries
+message FindSummaryRequest {
+    repeated uint64 ids = 1;
+    repeated string names = 2;
+    repeated string type_names = 3;
+    repeated uint64 monitored_entity_ids = 4;
+
+    message Response {
+        repeated Summary summaries = 1;
+    }
+}
+
+// Request to delete summaries. It deletes all the associated samples
+message DeleteSummaryRequest {
+    repeated uint64 ids = 1;
+}
+
+// Summary sample is one instance of a summary corresponding to a given time range and a given set of labels.
+message SummarySample {
+    uint64 id = 1;
+    uint64 summary_id = 2;
+    map<string, string> labels = 3;
+    string content = 4;
+    uint64 created_at_millis = 6;
+    uint64 time_window_start_at_millis = 7;
+    uint64 time_window_end_at_millis = 8;
+}
+
+// Request to create a summary sample
+message CreateSummarySample {
+    // Summary info if detailed (e.g. want to avoid the extra hop to fetch the id and do the creation dance)
+    uint64 monitored_entity_id = 1;
+    string summary_name = 2;
+    string summary_type_name = 3;
+    // or just the summary id
+    uint64 summary_id = 4;
+
+    // Sample info
+    map<string, string> labels = 5; // Any label starting with "verta_" should be blocked for internal use
+    string content = 6;
+    uint64 created_at_millis = 7;
+    uint64 time_window_start_at_millis = 8;
+    uint64 time_window_end_at_millis = 9;
+}
+
+// Request to fetch multiple summary samples, potentially with aggregation.
+message FindSummarySampleRequest {
+    FilterQuerySummarySample filter = 1; // Optional
+    // AggregationQuerySummary aggregation = 2; // Optional
+
+    message Response {
+        repeated SummarySample samples = 1;
+    }
+}
+
+// Filters the caller wants to apply to selectively summary samples.
+message FilterQuerySummarySample {
+    FindSummaryRequest find_summaries = 1;
+
+    repeated uint64 sample_ids = 2;
+    map<string, LabelFilterQuerySummarySample> labels = 3;
+    uint64 time_window_start_at_millis = 4;
+    uint64 time_window_end_at_millis = 5;
+}
+
+// Filter details for a given label.
+message LabelFilterQuerySummarySample {
+    repeated string label_value = 1;
+}
+
+// Request to delete summary samples
+message DeleteSummarySampleRequest {
+    repeated uint64 ids = 1;
+}
+
+service SummaryService {
+    rpc createSummary(CreateSummaryRequest) returns (Summary) {
+        option (google.api.http) = {
+            post: "/v1/summaries/createSummary"
+            body: "*"
+        };
+    };
+
+    rpc findSummary(FindSummaryRequest) returns (FindSummaryRequest.Response) {
+        option (google.api.http) = {
+            post: "/v1/summaries/findSummary"
+            body: "*"
+        };
+    };
+
+    rpc deleteSummary(DeleteSummaryRequest) returns (Empty) {
+        option (google.api.http) = {
+            delete: "/v1/summaries/deleteSummary"
+            body: "*"
+        };
+    };
+
+    rpc createSample(CreateSummarySample) returns (SummarySample) {
+        option (google.api.http) = {
+            post: "/v1/summaries/createSample"
+            body: "*"
+        };
+    };
+
+    rpc findSample(FindSummarySampleRequest) returns (FindSummarySampleRequest.Response) {
+        option (google.api.http) = {
+            post: "/v1/summaries/findSample"
+            body: "*"
+        };
+    };
+
+    rpc deleteSample(DeleteSummarySampleRequest) returns (Empty) {
+        option (google.api.http) = {
+            delete: "/v1/summaries/deleteSample"
+            body: "*"
+        };
+    };
+}
