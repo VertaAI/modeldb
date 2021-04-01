@@ -844,7 +844,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .help("Observations per experiment run")
           .register();
 
-
   @Override
   public void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException {
@@ -870,28 +869,34 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .forEach(
               observation -> {
                 KeyValue attribute = observation.getAttribute();
-                String kvSql = "INSERT INTO keyvalue"
-                    + " (field_type, kv_key, kv_value, value_type, experiment_run_id)"
-                    + " VALUES (:field_type, :kv_key, :kv_value, :value_type, :experiment_run_id)";
-                session.createNativeQuery(kvSql)
+                String kvSql =
+                    "INSERT INTO keyvalue"
+                        + " (field_type, kv_key, kv_value, value_type, experiment_run_id)"
+                        + " VALUES (:field_type, :kv_key, :kv_value, :value_type, :experiment_run_id)";
+                session
+                    .createNativeQuery(kvSql)
                     .setParameter("field_type", ModelDBConstants.ATTRIBUTES)
                     .setParameter("kv_key", attribute.getKey())
                     .setParameter("kv_value", attribute.getValue().getNumberValue())
                     .setParameter("value_type", attribute.getValueType().getNumber())
                     .setParameter("experiment_run_id", experimentRunId)
                     .executeUpdate();
-                List<BigInteger> resultList = (List<BigInteger>) session.createNativeQuery("SELECT id FROM keyvalue"
-                    + " WHERE experiment_run_id = :experiment_run_id"
-                    + " AND field_type = :field_type"
-                    + " AND kv_key = :kv_key"
-                    + " AND kv_value = :kv_value"
-                    + " AND value_type = :value_type")
-                    .setParameter("experiment_run_id", experimentRunId)
-                    .setParameter("field_type", ModelDBConstants.ATTRIBUTES)
-                    .setParameter("kv_key", attribute.getKey())
-                    .setParameter("kv_value", attribute.getValue().getNumberValue())
-                    .setParameter("value_type", attribute.getValueType().getNumber())
-                    .getResultList();
+                List<BigInteger> resultList =
+                    (List<BigInteger>)
+                        session
+                            .createNativeQuery(
+                                "SELECT id FROM keyvalue"
+                                    + " WHERE experiment_run_id = :experiment_run_id"
+                                    + " AND field_type = :field_type"
+                                    + " AND kv_key = :kv_key"
+                                    + " AND kv_value = :kv_value"
+                                    + " AND value_type = :value_type")
+                            .setParameter("experiment_run_id", experimentRunId)
+                            .setParameter("field_type", ModelDBConstants.ATTRIBUTES)
+                            .setParameter("kv_key", attribute.getKey())
+                            .setParameter("kv_value", attribute.getValue().getNumberValue())
+                            .setParameter("value_type", attribute.getValueType().getNumber())
+                            .getResultList();
                 BigInteger attributeId = resultList.get(0);
                 double epochNumber = getEpochNumber(experimentRunId, session, observation);
 
@@ -900,14 +905,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                     "INSERT INTO observation"
                         + " (entity_name, field_type, timestamp, experiment_run_id, epoch_number, keyvaluemapping_id)"
                         + " VALUES (:entity_name, :field_type, :timestamp, :experiment_run_id, :epoch_number, :keyvaluemapping_id)";
-                session.createNativeQuery(sql)
-                        .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
-                        .setParameter("field_type", ModelDBConstants.OBSERVATIONS)
-                        .setParameter("timestamp", observation.getTimestamp())
-                        .setParameter("experiment_run_id", experimentRunId)
-                        .setParameter("epoch_number", epochNumber)
-                        .setParameter("keyvaluemapping_id", attributeId.intValue())
-                        .executeUpdate();
+                session
+                    .createNativeQuery(sql)
+                    .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
+                    .setParameter("field_type", ModelDBConstants.OBSERVATIONS)
+                    .setParameter("timestamp", observation.getTimestamp())
+                    .setParameter("experiment_run_id", experimentRunId)
+                    .setParameter("epoch_number", epochNumber)
+                    .setParameter("keyvaluemapping_id", attributeId.intValue())
+                    .executeUpdate();
               });
       updateExperimentRunTimestamp(experimentRunId, session);
       transaction.commit();
@@ -920,16 +926,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-  private double getEpochNumber(String experimentRunId, Session session,
-      Observation observation) {
+  private double getEpochNumber(String experimentRunId, Session session, Observation observation) {
     if (observation.hasEpochNumber()) {
       return observation.getEpochNumber().getNumberValue();
     }
 
-    Long epochNumber = (Long) session.createNativeQuery("SELECT MAX(epoch_number) FROM observation"
-            + " WHERE experiment_run_id = :experiment_run_id")
-            .setParameter("experiment_run_id", experimentRunId)
-            .getSingleResult();
+    Long epochNumber =
+        (Long)
+            session
+                .createNativeQuery(
+                    "SELECT MAX(epoch_number) FROM observation"
+                        + " WHERE experiment_run_id = :experiment_run_id")
+                .setParameter("experiment_run_id", experimentRunId)
+                .getSingleResult();
     if (epochNumber == null) {
       return 0;
     }
