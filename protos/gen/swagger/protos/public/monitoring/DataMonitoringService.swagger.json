@@ -1,0 +1,1141 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "monitoring/DataMonitoringService.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/monitored_entity/createDataSource": {
+      "post": {
+        "operationId": "DataMonitoringService_createDataSource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateDataSourceRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateDataSourceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/createMonitoredEntity": {
+      "post": {
+        "operationId": "DataMonitoringService_createMonitoredEntity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateMonitoredEntityRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateMonitoredEntityRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/createProfiler": {
+      "post": {
+        "operationId": "DataMonitoringService_createProfiler",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateProfilerRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateProfilerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/deleteDataSource": {
+      "delete": {
+        "operationId": "DataMonitoringService_deleteDataSource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringDeleteDataSourceRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringDeleteDataSourceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/deleteMonitoredEntity": {
+      "delete": {
+        "operationId": "DataMonitoringService_deleteMonitoredEntity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringDeleteMonitoredEntityRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringDeleteMonitoredEntityRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/deleteProfile": {
+      "delete": {
+        "operationId": "DataMonitoringService_deleteProfiler",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringDeleteProfilerRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringDeleteProfilerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/disableProfiler": {
+      "post": {
+        "operationId": "DataMonitoringService_disableProfiler",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringDisableProfilerRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringDisableProfilerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/enableProfiler": {
+      "post": {
+        "operationId": "DataMonitoringService_enableProfiler",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringEnableProfilerRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringEnableProfilerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/findDataSources": {
+      "get": {
+        "operationId": "DataMonitoringService_findDataSources",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringFindDataSourcesRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "monitored_entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/findProfilersForMonitoredEntity": {
+      "post": {
+        "operationId": "DataMonitoringService_findProfilersForMonitoredEntity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringFindProfilersForMonitoredEntityRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringFindProfilersForMonitoredEntityRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/getDataSource": {
+      "get": {
+        "operationId": "DataMonitoringService_getDataSource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringGetDataSourceRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/getMonitoredEntity": {
+      "get": {
+        "operationId": "DataMonitoringService_getMonitoredEntity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringGetMonitoredEntityRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/getMonitoredEntityByName": {
+      "get": {
+        "operationId": "DataMonitoringService_getMonitoredEntityByName",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringGetMonitoredEntityByNameRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/getProfiler": {
+      "get": {
+        "operationId": "DataMonitoringService_getProfiler",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringGetProfilerRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/getProfilerStatus": {
+      "get": {
+        "operationId": "DataMonitoringService_getProfilerStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringGetProfilerStatusRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "profiler_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "monitored_entity_id",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/listDataSources": {
+      "get": {
+        "operationId": "DataMonitoringService_listDataSources",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringListDataSourcesRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/listMonitoredEntities": {
+      "get": {
+        "operationId": "DataMonitoringService_listMonitoredEntities",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringListMonitoredEntitiesRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/listProfilers": {
+      "get": {
+        "operationId": "DataMonitoringService_listProfilers",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringListProfilersRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/updateMonitoredEntity": {
+      "patch": {
+        "operationId": "DataMonitoringService_updateMonitoredEntity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringUpdateMonitoredEntityRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringUpdateMonitoredEntityRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
+    "/monitored_entity/updateProfiler": {
+      "patch": {
+        "operationId": "DataMonitoringService_updateProfiler",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringUpdateProfilerRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringUpdateProfilerRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "BuildStatusEnumBuildStatus": {
+      "type": "string",
+      "enum": [
+        "UNDEFINED",
+        "BUILDING",
+        "DELETING",
+        "ERROR",
+        "FINISHED"
+      ],
+      "default": "UNDEFINED"
+    },
+    "DeployStatusEnumDeployStatus": {
+      "type": "string",
+      "enum": [
+        "UNDEFINED",
+        "INACTIVE",
+        "ACTIVE",
+        "UPDATING",
+        "CREATING",
+        "ERROR"
+      ],
+      "default": "UNDEFINED"
+    },
+    "ValueTypeEnumValueType": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "LIST",
+        "BLOB"
+      ],
+      "default": "STRING"
+    },
+    "monitoringCreateDataSourceRequest": {
+      "type": "object",
+      "properties": {
+        "data_source_reference": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "monitored_entity_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "monitoringCreateDataSourceRequestResponse": {
+      "type": "object",
+      "properties": {
+        "data_source": {
+          "$ref": "#/definitions/monitoringDataSource"
+        }
+      }
+    },
+    "monitoringCreateMonitoredEntityRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "data_source_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "summary_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "monitoringCreateMonitoredEntityRequestResponse": {
+      "type": "object",
+      "properties": {
+        "monitored_entity": {
+          "$ref": "#/definitions/monitoringMonitoredEntity"
+        }
+      }
+    },
+    "monitoringCreateProfilerRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "profiler_reference": {
+          "type": "string"
+        }
+      }
+    },
+    "monitoringCreateProfilerRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profiler": {
+          "$ref": "#/definitions/monitoringProfiler"
+        }
+      }
+    },
+    "monitoringDataSource": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "data_source_reference": {
+          "type": "string"
+        },
+        "monitored_entity_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "timestamp_millis": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "monitoringDeleteDataSourceRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "monitoringDeleteDataSourceRequestResponse": {
+      "type": "object"
+    },
+    "monitoringDeleteMonitoredEntityRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "monitoringDeleteMonitoredEntityRequestResponse": {
+      "type": "object"
+    },
+    "monitoringDeleteProfilerRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "monitoringDeleteProfilerRequestResponse": {
+      "type": "object"
+    },
+    "monitoringDisableProfilerRequest": {
+      "type": "object",
+      "properties": {
+        "profiler_id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "monitored_entity_id": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "monitoringDisableProfilerRequestResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/monitoringProfilerStatus"
+        }
+      }
+    },
+    "monitoringEnableProfilerRequest": {
+      "type": "object",
+      "properties": {
+        "profiler_id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "monitored_entity_id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "environment": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringKeyValue"
+          }
+        }
+      }
+    },
+    "monitoringEnableProfilerRequestResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/monitoringProfilerStatus"
+        }
+      }
+    },
+    "monitoringFindDataSourcesRequestResponse": {
+      "type": "object",
+      "properties": {
+        "dataSources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringDataSource"
+          }
+        }
+      }
+    },
+    "monitoringFindProfilersForMonitoredEntityRequest": {
+      "type": "object",
+      "properties": {
+        "monitored_entity_id": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "monitoringFindProfilersForMonitoredEntityRequestResponse": {
+      "type": "object",
+      "properties": {
+        "statuses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringProfilerStatus"
+          }
+        }
+      }
+    },
+    "monitoringGetDataSourceRequestResponse": {
+      "type": "object",
+      "properties": {
+        "data_source": {
+          "$ref": "#/definitions/monitoringDataSource"
+        }
+      }
+    },
+    "monitoringGetMonitoredEntityByNameRequestResponse": {
+      "type": "object",
+      "properties": {
+        "monitored_entity": {
+          "$ref": "#/definitions/monitoringMonitoredEntity"
+        }
+      }
+    },
+    "monitoringGetMonitoredEntityRequestResponse": {
+      "type": "object",
+      "properties": {
+        "monitored_entity": {
+          "$ref": "#/definitions/monitoringMonitoredEntity"
+        }
+      }
+    },
+    "monitoringGetProfilerRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profiler": {
+          "$ref": "#/definitions/monitoringProfiler"
+        }
+      }
+    },
+    "monitoringGetProfilerStatusRequestResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/monitoringProfilerStatus"
+        }
+      }
+    },
+    "monitoringKeyValue": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "monitoringListDataSourcesRequestResponse": {
+      "type": "object",
+      "properties": {
+        "dataSource": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringDataSource"
+          }
+        }
+      }
+    },
+    "monitoringListMonitoredEntitiesRequestResponse": {
+      "type": "object",
+      "properties": {
+        "monitored_entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringMonitoredEntity"
+          }
+        }
+      }
+    },
+    "monitoringListProfilersRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profilers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringProfiler"
+          }
+        }
+      }
+    },
+    "monitoringMonitoredEntity": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "data_source_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "summary_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "monitoringProfiler": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "profiler_reference": {
+          "type": "string"
+        }
+      }
+    },
+    "monitoringProfilerStatus": {
+      "type": "object",
+      "properties": {
+        "profiler_id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "monitored_entity_id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "build_status": {
+          "$ref": "#/definitions/BuildStatusEnumBuildStatus"
+        },
+        "deploy_status": {
+          "$ref": "#/definitions/DeployStatusEnumDeployStatus"
+        }
+      }
+    },
+    "monitoringUpdateMonitoredEntityRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "data_source_ids_to_remove": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "summary_ids_to_remove": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      }
+    },
+    "monitoringUpdateMonitoredEntityRequestResponse": {
+      "type": "object",
+      "properties": {
+        "monitored_entity": {
+          "$ref": "#/definitions/monitoringMonitoredEntity"
+        }
+      }
+    },
+    "monitoringUpdateProfilerRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "profiler_reference": {
+          "type": "string"
+        }
+      }
+    },
+    "monitoringUpdateProfilerRequestResponse": {
+      "type": "object",
+      "properties": {
+        "profiler": {
+          "$ref": "#/definitions/monitoringProfiler"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

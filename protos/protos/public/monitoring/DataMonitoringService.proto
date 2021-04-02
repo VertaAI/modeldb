@@ -1,0 +1,391 @@
+syntax = "proto3";
+
+package ai.verta.monitoring;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+
+// Data source
+
+message DataSource {
+  uint64 id = 1;
+  string name = 2;
+  string data_source_reference = 3;
+  uint64 monitored_entity_id = 4;
+  uint64 timestamp_millis = 5;
+}
+
+message CreateDataSourceRequest {
+  string data_source_reference = 1;
+  string name = 2;
+  uint64 monitored_entity_id = 3;
+
+  message Response {
+    DataSource data_source = 1;
+  }
+}
+
+message GetDataSourceRequest {
+  uint64 id = 1;
+
+  message Response {
+    DataSource data_source = 1;
+  }
+}
+
+message FindDataSourcesRequest {
+  uint64 monitored_entity_id = 1;
+
+  message Response {
+    repeated DataSource dataSources = 1;
+  }
+}
+
+message ListDataSourcesRequest {
+  message Response {
+    repeated DataSource dataSource = 1;
+  }
+}
+
+message DeleteDataSourceRequest {
+  uint64 id = 1;
+
+  message Response {
+  }
+}
+
+
+// Profiler
+
+message Profiler {
+  uint64 id = 1;
+  string name = 2;
+  string profiler_reference = 3;
+}
+
+message CreateProfilerRequest {
+  string name = 1;
+  string profiler_reference = 2;
+
+  message Response {
+    Profiler profiler = 1;
+  }
+}
+
+message GetProfilerRequest {
+  uint64 id = 1;
+
+  message Response {
+    Profiler profiler = 1;
+  }
+}
+
+message UpdateProfilerRequest {
+  uint64 id = 1;
+  string name = 2;
+  string profiler_reference = 3;
+
+  message Response {
+    Profiler profiler = 1;
+  }
+}
+
+message ListProfilersRequest {
+
+  message Response {
+    repeated Profiler profilers = 1;
+  }
+}
+
+message DeleteProfilerRequest {
+  uint64 id = 1;
+
+  message Response {
+  }
+}
+
+// Mirror deployment API build response
+message BuildStatusEnum {
+  enum BuildStatus {
+    UNDEFINED = 0;
+    BUILDING = 1;
+    DELETING = 2;
+    ERROR = 3;
+    FINISHED = 4;
+  }
+}
+
+// Mirror deployment API stage status
+message DeployStatusEnum {
+  enum DeployStatus {
+    UNDEFINED = 0;
+    INACTIVE = 1;
+    ACTIVE = 2;
+    UPDATING = 3;
+    CREATING = 4;
+    ERROR = 5;
+  }
+}
+
+message ProfilerStatus {
+  uint32 profiler_id = 1;
+  uint32 monitored_entity_id = 2;
+  BuildStatusEnum.BuildStatus build_status = 3;
+  DeployStatusEnum.DeployStatus deploy_status = 4;
+}
+
+message GetProfilerStatusRequest {
+  uint32 profiler_id = 1;
+  uint32 monitored_entity_id = 2;
+
+  message Response {
+    ProfilerStatus status = 1;
+  }
+}
+
+message FindProfilersForMonitoredEntityRequest {
+  uint32 monitored_entity_id = 1;
+
+  message Response {
+    repeated ProfilerStatus statuses = 1;
+  }
+}
+
+message KeyValue {
+    string key = 1;
+    google.protobuf.Value value = 2;
+
+    /*
+    *   As per documentation of proto buffer 3.
+    *   For enums, the default value is the first defined enum value, which must be 0.
+    */
+    ValueTypeEnum.ValueType value_type = 3;
+}
+
+message ValueTypeEnum {
+    enum ValueType {
+        STRING = 0;
+        NUMBER = 1;
+        LIST = 2;
+        BLOB = 3;
+    }
+}
+
+message EnableProfilerRequest {
+  uint32 profiler_id = 1;
+  uint32 monitored_entity_id = 2;
+  repeated KeyValue environment = 3;
+
+  message Response {
+    ProfilerStatus status = 1;
+  }
+}
+
+message DisableProfilerRequest {
+  uint32 profiler_id = 1;
+  uint32 monitored_entity_id = 2;
+
+  message Response {
+    ProfilerStatus status = 1;
+  }
+}
+
+// Monitored entity
+
+message MonitoredEntity {
+  uint64 id = 1;
+  string name = 2;
+  repeated uint64 data_source_ids = 3;
+  repeated uint64 summary_ids = 4;
+  uint64 workspace_id = 5;
+}
+
+message CreateMonitoredEntityRequest {
+  string name = 1;
+  repeated uint64 data_source_ids = 2;
+  repeated uint64 summary_ids = 3;
+  uint64 workspace_id = 4;
+
+  message Response {
+    MonitoredEntity monitored_entity = 1;
+  }
+}
+
+message GetMonitoredEntityRequest {
+  uint64 id = 1;
+
+  message Response {
+    MonitoredEntity monitored_entity = 1;
+  }
+}
+
+message GetMonitoredEntityByNameRequest {
+  string name = 1;
+  uint64 workspace_id = 2;
+
+  message Response {
+    MonitoredEntity monitored_entity = 1;
+  }
+}
+
+message UpdateMonitoredEntityRequest {
+  uint64 id = 1;
+  string name = 2;
+  repeated uint64 data_source_ids_to_remove = 4;
+  repeated uint64 summary_ids_to_remove = 6;
+
+  message Response {
+    MonitoredEntity monitored_entity = 1;
+  }
+}
+
+message ListMonitoredEntitiesRequest {
+  uint64 workspace_id = 1;
+  message Response {
+    repeated MonitoredEntity monitored_entities = 1;
+  }
+}
+
+message DeleteMonitoredEntityRequest {
+  uint64 id = 1;
+
+  message Response {
+  }
+}
+
+// Service definitions
+service DataMonitoringService {
+  rpc getMonitoredEntity(GetMonitoredEntityRequest) returns (GetMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/monitored_entity/getMonitoredEntity"
+    };
+  };
+
+  rpc getMonitoredEntityByName(GetMonitoredEntityByNameRequest) returns (GetMonitoredEntityByNameRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/monitored_entity/getMonitoredEntityByName"
+    };
+  };
+
+  rpc createMonitoredEntity(CreateMonitoredEntityRequest) returns (CreateMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/monitored_entity/createMonitoredEntity"
+      body: "*"
+    };
+  };
+
+  rpc updateMonitoredEntity(UpdateMonitoredEntityRequest) returns (UpdateMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      patch: "/v1/monitored_entity/updateMonitoredEntity"
+      body: "*"
+    };
+  };
+
+  rpc listMonitoredEntities(ListMonitoredEntitiesRequest) returns (ListMonitoredEntitiesRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/monitored_entity/listMonitoredEntities"
+    };
+  };
+
+  rpc deleteMonitoredEntity(DeleteMonitoredEntityRequest) returns (DeleteMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      delete: "/v1/monitored_entity/deleteMonitoredEntity"
+      body: "*"
+    };
+  };
+
+  rpc getDataSource(GetDataSourceRequest) returns (GetDataSourceRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/monitored_entity/getDataSource"
+    };
+  };
+
+  rpc findDataSources(FindDataSourcesRequest) returns (FindDataSourcesRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/monitored_entity/findDataSources"
+    };
+  };
+
+  rpc createDataSource(CreateDataSourceRequest) returns (CreateDataSourceRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/monitored_entity/createDataSource"
+      body: "*"
+    };
+  };
+
+  rpc listDataSources(ListDataSourcesRequest) returns (ListDataSourcesRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/monitored_entity/listDataSources"
+    };
+  };
+
+  rpc deleteDataSource(DeleteDataSourceRequest) returns (DeleteDataSourceRequest.Response) {
+    option (google.api.http) = {
+      delete: "/v1/monitored_entity/deleteDataSource"
+      body: "*"
+    };
+  };
+
+  rpc getProfiler(GetProfilerRequest) returns (GetProfilerRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/monitored_entity/getProfiler"
+    };
+  };
+
+  rpc createProfiler(CreateProfilerRequest) returns (CreateProfilerRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/monitored_entity/createProfiler"
+      body: "*"
+    };
+  };
+
+  rpc updateProfiler(UpdateProfilerRequest) returns (UpdateProfilerRequest.Response) {
+    option (google.api.http) = {
+      patch: "/v1/monitored_entity/updateProfiler"
+      body: "*"
+    };
+  };
+
+  rpc listProfilers(ListProfilersRequest) returns (ListProfilersRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/monitored_entity/listProfilers"
+    };
+  };
+
+  rpc deleteProfiler(DeleteProfilerRequest) returns (DeleteProfilerRequest.Response) {
+    option (google.api.http) = {
+      delete: "/v1/monitored_entity/deleteProfile"
+      body: "*"
+    };
+  };
+
+  rpc getProfilerStatus(GetProfilerStatusRequest) returns (GetProfilerStatusRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/monitored_entity/getProfilerStatus"
+    };
+  };
+
+  rpc findProfilersForMonitoredEntity(FindProfilersForMonitoredEntityRequest) returns (FindProfilersForMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/monitored_entity/findProfilersForMonitoredEntity"
+      body: "*"
+    };
+  };
+
+  rpc enableProfiler(EnableProfilerRequest) returns (EnableProfilerRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/monitored_entity/enableProfiler"
+      body: "*"
+    };
+  };
+
+  rpc disableProfiler(DisableProfilerRequest) returns (DisableProfilerRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/monitored_entity/disableProfiler"
+      body: "*"
+    };
+  };
+}
