@@ -327,7 +327,10 @@ public class ProjectEntity {
   }
 
   public Project getProtoObject(
-      RoleService roleService, AuthService authService, Map<Long, Workspace> cacheWorkspaceMap)
+      RoleService roleService,
+      AuthService authService,
+      Map<Long, Workspace> cacheWorkspaceMap,
+      Map<String, GetResourcesResponseItem> getResourcesMap)
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     Project.Builder projectBuilder =
         Project.newBuilder()
@@ -351,11 +354,22 @@ public class ProjectEntity {
       projectBuilder.setCodeVersionSnapshot(getCode_version_snapshot().getProtoObject());
     }
 
-    GetResourcesResponseItem projectResource =
-        roleService
-            .getEntityResource(
-                Optional.of(this.id), Optional.empty(), ModelDBServiceResourceTypes.PROJECT)
-            .get();
+    GetResourcesResponseItem projectResource;
+    if (getResourcesMap != null
+        && !getResourcesMap.isEmpty()
+        && getResourcesMap.containsKey(this.id)) {
+      projectResource = getResourcesMap.get(this.id);
+    } else {
+      projectResource =
+          roleService
+              .getEntityResource(
+                  Optional.of(this.id), Optional.empty(), ModelDBServiceResourceTypes.PROJECT)
+              .get();
+      if (getResourcesMap == null) {
+        getResourcesMap = new HashMap<>();
+      }
+      getResourcesMap.put(this.id, projectResource);
+    }
     projectBuilder.setVisibility(projectResource.getVisibility());
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
     projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
