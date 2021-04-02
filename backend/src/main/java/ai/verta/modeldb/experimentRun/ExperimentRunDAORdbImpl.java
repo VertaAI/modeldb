@@ -870,17 +870,21 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .forEach(
               observation -> {
                 KeyValue attribute = observation.getAttribute();
-                String kvSql = "INSERT INTO keyvalue"
-                    + " (field_type, kv_key, kv_value, value_type)"
-                    + " VALUES (:field_type, :kv_key, :kv_value, :value_type)";
+                String kvSql =
+                    "INSERT INTO keyvalue"
+                        + " (field_type, kv_key, kv_value, value_type)"
+                        + " VALUES (:field_type, :kv_key, :kv_value, :value_type)";
                 String attributeValue = getAttributeValue(attribute);
-                session.createNativeQuery(kvSql)
+                session
+                    .createNativeQuery(kvSql)
                     .setParameter("field_type", ModelDBConstants.ATTRIBUTES)
                     .setParameter("kv_key", attribute.getKey())
                     .setParameter("kv_value", attributeValue)
                     .setParameter("value_type", attribute.getValueType().getNumber())
                     .executeUpdate();
-                BigInteger attributeId = (BigInteger) session.createNativeQuery("SELECT LAST_INSERT_ID()").uniqueResult();
+                BigInteger attributeId =
+                    (BigInteger)
+                        session.createNativeQuery("SELECT LAST_INSERT_ID()").uniqueResult();
 
                 double epochNumber = getEpochNumber(experimentRunId, session, observation);
 
@@ -913,7 +917,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private String getAttributeValue(KeyValue attribute) {
     // None, bool, float, int, str
     Value value = attribute.getValue();
-    switch(value.getKindCase().getNumber()) {
+    switch (value.getKindCase().getNumber()) {
       case Value.BOOL_VALUE_FIELD_NUMBER:
         return Boolean.valueOf(value.getBoolValue()).toString();
       case Value.NUMBER_VALUE_FIELD_NUMBER:
@@ -926,8 +930,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-  private double getEpochNumber(String experimentRunId, Session session,
-      Observation observation) {
+  private double getEpochNumber(String experimentRunId, Session session, Observation observation) {
     if (observation.hasEpochNumber()) {
       return observation.getEpochNumber().getNumberValue();
     }
