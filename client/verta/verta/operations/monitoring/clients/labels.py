@@ -10,40 +10,27 @@ from verta._protos.public.monitoring.Labels_pb2 import (
 )
 from .summaries import Summary
 from .. import time_utils
-
+from ..utils import maybe
 
 class Labels:
     def __init__(self, conn, conf):
         self._conn = conn
         self._conf = conf
 
-    def find(
-        self,
-        summary_query=None,
-        sample_ids=None,
-        labels=None,
-        time_window_start=None,
-        time_window_end=None,
-        keys=None,
-    ):
-        summaries_proto = summary_query._to_proto_request() if summary_query else None
-        time_window_start_at_millis = time_utils.epoch_millis(time_window_start) if time_window_start else None
-        time_window_end_at_millis = time_utils.epoch_millis(time_window_end) if time_window_end else None
-        labels_proto = Summary._labels_proto(labels) if labels else None
-        summary_filter = FilterQuerySummarySample(
-            find_summaries=summaries_proto,
-            sample_ids=sample_ids,
-            labels=labels_proto,
-            time_window_start_at_millis=time_window_start_at_millis,
-            time_window_end_at_millis=time_window_end_at_millis,
-        )
-        if keys:
-            return self._find_keys_and_values(summary_filter, keys)
-        else:
-            return self._find_keys_only(summary_filter)
 
+    def find_keys(self, **kwargs):
+    """
+        Find a list of labels according to provided parameters.
 
-    def _find_keys_only(self, summary_filter):
+        :key summary_query:
+        :key sample_ids:
+        :key labels:
+        :key time_window_start:
+        :key time_window_end:
+        :return: find_keys should return a list of strings used as label keys
+        :rtype: list
+    """
+        summary_filter = self._build_summary_filter(**kwargs)
         msg = FindSampleLabelsRequest(filter=summary_filter)
         endpoint = "/api/v1/labels/findLabels"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
@@ -52,7 +39,24 @@ class Labels:
         )
         return [label for label in proto.labels]
 
-    def _find_keys_and_values(self, summary_filter, keys):
+    def find_values(self, **kwargs):
+    """
+        Find a dictionary of label keys and values according to provided parameters.
+
+        :key summary_query:
+        :key sample_ids:
+        :key labels:
+        :key time_window_start:
+        :key time_window_end:
+        :key keys: the label keys for which values should be returned
+        :return: find_keys should return a list of strings used as label keys
+        :rtype: list
+    """
+        summary_filter = self._build_summary_filter(**kwargs)
+        if 'keys' in kwargs:
+            keys = kwargs['keys']
+        else:
+            keys = []
         msg = FindSampleLabelValuesRequest(filter=summary_filter, labels=keys)
         endpoint = "/api/v1/labels/findLabelValues"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
@@ -63,3 +67,23 @@ class Labels:
             key: {v for v in valuesItem.values}
             for key, valuesItem in proto.labels.items()
         }
+
+
+    def _build_summary_filter(self, **kwargs):
+        summary_query = kwargs.get('summary_query', None)
+        summary_query = maybe(lambda q: q._to_proto_request(), summary_query)
+
+        window_start = kwargs.get('time_window_start', None)
+        window_start_at_millis = maybe(lambda t: time_utils.epoch_millis(t), window_start)
+
+        window_end = kwargs.get('time_window_end', None)
+        window_end_at_millis = maybe(lambda t: time_utils.epoch_millis(t), window_end)
+
+        labels_proto = maybe(lambda li: Summary._labels_proto(li), labels)
+        return FilterQuerySummarySample(
+            find_summaries=summaries_proto,
+            sample_ids=sample_ids,
+            labels=labels_proto,
+            time_window_start_at_millis=window_start_at_millis,
+            time_window_end_at_millis=window_end_at_millis,
+        )
