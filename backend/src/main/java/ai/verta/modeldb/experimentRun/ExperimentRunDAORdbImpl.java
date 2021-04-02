@@ -8,6 +8,7 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
+import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
@@ -104,6 +105,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import javax.persistence.ColumnResult;
+import javax.persistence.SqlResultSetMapping;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
@@ -866,24 +869,39 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               session, observations, ExperimentRunEntity.class.getSimpleName(), experimentRunId)
           .forEach(
               observation -> {
+                KeyValue attribute = observation.getAttribute();
+                String kvSql =
+                    "INSERT INTO keyvalue"
+                        + " (field_type, kv_key, kv_value, value_type)"
+                        + " VALUES (:field_type, :kv_key, :kv_value, :value_type)";
+                String attributeValue = getAttributeValue(attribute);
+                session
+                    .createNativeQuery(kvSql)
+                    .setParameter("field_type", ModelDBConstants.ATTRIBUTES)
+                    .setParameter("kv_key", attribute.getKey())
+                    .setParameter("kv_value", attributeValue)
+                    .setParameter("value_type", attribute.getValueType().getNumber())
+                    .executeUpdate();
+                BigInteger attributeId =
+                    (BigInteger)
+                        session.createNativeQuery("SELECT LAST_INSERT_ID()").uniqueResult();
+
+                double epochNumber = getEpochNumber(experimentRunId, session, observation);
+
+                observationCount.labels(experimentRunId).inc();
                 String sql =
                     "INSERT INTO observation"
-                        + " (entity_name, field_type, timestamp, experiment_run_id, epoch_number)"
-                        + " VALUES (:entity_name, :field_type, :timestamp, :experiment_run_id, :epoch_number)";
-                Query query =
-                    session
-                        .createNativeQuery(sql)
-                        .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
-                        .setParameter("experiment_run_id", experimentRunId)
-                        .setParameter("field_type", ModelDBConstants.OBSERVATIONS)
-                        .setParameter("timestamp", observation.getTimestamp());
-                if (observation.hasEpochNumber()) {
-                  query.setParameter("epoch_number", observation.getEpochNumber().getNumberValue());
-                } else {
-                  query.setParameter("epoch_number", null);
-                }
-                query.executeUpdate();
-                observationCount.labels(experimentRunId).inc();
+                        + " (entity_name, field_type, timestamp, experiment_run_id, epoch_number, keyvaluemapping_id)"
+                        + " VALUES (:entity_name, :field_type, :timestamp, :experiment_run_id, :epoch_number, :keyvaluemapping_id)";
+                session
+                    .createNativeQuery(sql)
+                    .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
+                    .setParameter("field_type", ModelDBConstants.OBSERVATIONS)
+                    .setParameter("timestamp", observation.getTimestamp())
+                    .setParameter("experiment_run_id", experimentRunId)
+                    .setParameter("epoch_number", epochNumber)
+                    .setParameter("keyvaluemapping_id", attributeId.intValue())
+                    .executeUpdate();
               });
       updateExperimentRunTimestamp(experimentRunId, session);
       transaction.commit();
@@ -894,6 +912,41 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         throw ex;
       }
     }
+  }
+
+  private String getAttributeValue(KeyValue attribute) {
+    // None, bool, float, int, str
+    Value value = attribute.getValue();
+    switch (value.getKindCase().getNumber()) {
+      case Value.BOOL_VALUE_FIELD_NUMBER:
+        return Boolean.valueOf(value.getBoolValue()).toString();
+      case Value.NUMBER_VALUE_FIELD_NUMBER:
+        return Double.valueOf(value.getNumberValue()).toString();
+      case Value.STRING_VALUE_FIELD_NUMBER:
+        return value.getStringValue();
+      case Value.NULL_VALUE_FIELD_NUMBER:
+      default:
+        return "null";
+    }
+  }
+
+  private double getEpochNumber(String experimentRunId, Session session, Observation observation) {
+    if (observation.hasEpochNumber()) {
+      return observation.getEpochNumber().getNumberValue();
+    }
+
+    Long epochNumber =
+        (Long)
+            session
+                .createNativeQuery(
+                    "SELECT MAX(epoch_number) FROM observation"
+                        + " WHERE experiment_run_id = :experiment_run_id")
+                .setParameter("experiment_run_id", experimentRunId)
+                .getSingleResult();
+    if (epochNumber == null) {
+      return 0;
+    }
+    return epochNumber + 1;
   }
 
   @Override
