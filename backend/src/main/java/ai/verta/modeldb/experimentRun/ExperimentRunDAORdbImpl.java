@@ -845,7 +845,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .help("Observations per experiment run")
           .register();
 
-
   @Override
   public void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException {
@@ -890,14 +889,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                     "INSERT INTO observation"
                         + " (entity_name, field_type, timestamp, experiment_run_id, epoch_number, keyvaluemapping_id)"
                         + " VALUES (:entity_name, :field_type, :timestamp, :experiment_run_id, :epoch_number, :keyvaluemapping_id)";
-                session.createNativeQuery(sql)
-                        .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
-                        .setParameter("field_type", ModelDBConstants.OBSERVATIONS)
-                        .setParameter("timestamp", observation.getTimestamp())
-                        .setParameter("experiment_run_id", experimentRunId)
-                        .setParameter("epoch_number", epochNumber)
-                        .setParameter("keyvaluemapping_id", attributeId.intValue())
-                        .executeUpdate();
+                session
+                    .createNativeQuery(sql)
+                    .setParameter("entity_name", ExperimentRunEntity.class.getSimpleName())
+                    .setParameter("field_type", ModelDBConstants.OBSERVATIONS)
+                    .setParameter("timestamp", observation.getTimestamp())
+                    .setParameter("experiment_run_id", experimentRunId)
+                    .setParameter("epoch_number", epochNumber)
+                    .setParameter("keyvaluemapping_id", attributeId.intValue())
+                    .executeUpdate();
               });
       updateExperimentRunTimestamp(experimentRunId, session);
       transaction.commit();
@@ -932,10 +932,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       return observation.getEpochNumber().getNumberValue();
     }
 
-    Long epochNumber = (Long) session.createNativeQuery("SELECT MAX(epoch_number) FROM observation"
-            + " WHERE experiment_run_id = :experiment_run_id")
-            .setParameter("experiment_run_id", experimentRunId)
-            .getSingleResult();
+    Long epochNumber =
+        (Long)
+            session
+                .createNativeQuery(
+                    "SELECT MAX(epoch_number) FROM observation"
+                        + " WHERE experiment_run_id = :experiment_run_id")
+                .setParameter("experiment_run_id", experimentRunId)
+                .getSingleResult();
     if (epochNumber == null) {
       return 0;
     }
