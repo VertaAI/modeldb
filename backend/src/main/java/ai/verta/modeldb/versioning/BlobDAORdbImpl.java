@@ -1682,8 +1682,9 @@ public class BlobDAORdbImpl implements BlobDAO {
       Function<RepositoryEntity, Repository> toProto =
           (repositoryEntity) -> {
             try {
-              return repositoryEntity.toProto(roleService, authService, cacheWorkspaceMap).get();
-            } catch (InvalidProtocolBufferException | InterruptedException | ExecutionException e) {
+              return repositoryEntity.toProto(
+                  roleService, authService, cacheWorkspaceMap, new HashMap<>());
+            } catch (InvalidProtocolBufferException e) {
               throw new ModelDBException(e);
             }
           };

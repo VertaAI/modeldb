@@ -2338,12 +2338,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
         GetResourcesResponseItem entityResource =
-            roleService
-                .getEntityResource(
-                    Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
-                    Optional.empty(),
-                    ModelDBServiceResourceTypes.REPOSITORY)
-                .get();
+            roleService.getEntityResource(
+                Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
+                Optional.empty(),
+                ModelDBServiceResourceTypes.REPOSITORY);
         Workspace workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
         if (workspace != null) {
           findExperimentRuns.setWorkspaceName(
@@ -2421,12 +2419,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
         GetResourcesResponseItem entityResource =
-            roleService
-                .getEntityResource(
-                    Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
-                    Optional.empty(),
-                    ModelDBServiceResourceTypes.REPOSITORY)
-                .get();
+            roleService.getEntityResource(
+                Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
+                Optional.empty(),
+                ModelDBServiceResourceTypes.REPOSITORY);
         Workspace workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
         if (workspace != null) {
           findExperimentRuns.setWorkspaceName(
