@@ -19,17 +19,17 @@ class Labels:
 
 
     def find_keys(self, **kwargs):
-    """
-        Find a list of labels according to provided parameters.
+        """
+            Find a list of labels according to provided parameters.
 
-        :key summary_query:
-        :key sample_ids:
-        :key labels:
-        :key time_window_start:
-        :key time_window_end:
-        :return: find_keys should return a list of strings used as label keys
-        :rtype: list
-    """
+            :key summary_query:
+            :key sample_ids:
+            :key labels:
+            :key time_window_start:
+            :key time_window_end:
+            :return: find_keys should return a list of strings used as label keys
+            :rtype: list
+        """
         summary_filter = self._build_summary_filter(**kwargs)
         msg = FindSampleLabelsRequest(filter=summary_filter)
         endpoint = "/api/v1/labels/findLabels"
@@ -40,18 +40,18 @@ class Labels:
         return [label for label in proto.labels]
 
     def find_values(self, **kwargs):
-    """
-        Find a dictionary of label keys and values according to provided parameters.
+        """
+            Find a dictionary of label keys and values according to provided parameters.
 
-        :key summary_query:
-        :key sample_ids:
-        :key labels:
-        :key time_window_start:
-        :key time_window_end:
-        :key keys: the label keys for which values should be returned
-        :return: find_keys should return a list of strings used as label keys
-        :rtype: list
-    """
+            :key summary_query:
+            :key sample_ids:
+            :key labels:
+            :key time_window_start:
+            :key time_window_end:
+            :key keys: the label keys for which values should be returned
+            :return: find_keys should return a list of strings used as label keys
+            :rtype: list
+        """
         summary_filter = self._build_summary_filter(**kwargs)
         if 'keys' in kwargs:
             keys = kwargs['keys']
