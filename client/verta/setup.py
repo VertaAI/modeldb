@@ -33,6 +33,7 @@ setup(
         "protobuf>=3.8",
         "pyyaml>=5.1, <5.4",
         "requests>=2.21, <3.0",
+        "numpy",
     ],
     entry_points={
         'console_scripts': [
