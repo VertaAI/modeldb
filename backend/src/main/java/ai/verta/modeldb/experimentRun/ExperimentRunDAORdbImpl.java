@@ -838,13 +838,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
   }
 
-  private static final Counter observationCount =
-      Counter.build()
-          .labelNames("experiment_run_id")
-          .name("observation_count")
-          .help("Observations per experiment run")
-          .register();
-
   @Override
   public void logObservations(String experimentRunId, List<Observation> observations)
       throws InvalidProtocolBufferException {
@@ -888,7 +881,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
                 double epochNumber = getEpochNumber(experimentRunId, session, observation);
 
-                observationCount.labels(experimentRunId).inc();
                 String sql =
                     "INSERT INTO observation"
                         + " (entity_name, field_type, timestamp, experiment_run_id, epoch_number, keyvaluemapping_id)"
