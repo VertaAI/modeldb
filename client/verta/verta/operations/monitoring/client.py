@@ -6,9 +6,9 @@ import itertools
 from verta._tracking import _Context
 
 from .monitored_entity import MonitoredEntity
-from .clients.profilers import Profilers
-from .clients.summaries import Summaries
-from .clients.labels import Labels
+from .profilers import Profilers
+from .summaries import Summaries
+from .labels import Labels
 
 
 class Client(object):

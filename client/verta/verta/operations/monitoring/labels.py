@@ -9,8 +9,8 @@ from verta._protos.public.monitoring.Labels_pb2 import (
     FindSampleLabelValuesRequest,
 )
 from .summaries import Summary
-from .. import time_utils
-from ..utils import maybe
+from . import time_utils
+from .utils import maybe
 
 class Labels:
     def __init__(self, conn, conf):
@@ -71,7 +71,9 @@ class Labels:
 
     def _build_summary_filter(self, **kwargs):
         summary_query = kwargs.get('summary_query', None)
-        summary_query = maybe(lambda q: q._to_proto_request(), summary_query)
+        summaries_proto = maybe(lambda q: q._to_proto_request(), summary_query)
+
+        sample_ids = kwargs.get('sample_id', None)
 
         window_start = kwargs.get('time_window_start', None)
         window_start_at_millis = maybe(lambda t: time_utils.epoch_millis(t), window_start)
@@ -79,6 +81,7 @@ class Labels:
         window_end = kwargs.get('time_window_end', None)
         window_end_at_millis = maybe(lambda t: time_utils.epoch_millis(t), window_end)
 
+        labels = kwargs.get('labels', None)
         labels_proto = maybe(lambda li: Summary._labels_proto(li), labels)
         return FilterQuerySummarySample(
             find_summaries=summaries_proto,

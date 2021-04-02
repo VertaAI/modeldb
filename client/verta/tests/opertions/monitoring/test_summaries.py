@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from client import Client
 from verta._internal_utils._utils import generate_default_name
-from clients.operations.monitoring.summaries import (
+from verta.operations.monitoring.summaries import (
     Summary,
     SummaryQuery,
     SummarySample,
 )
-import time_utils
+import verta.operations.monitoring.time_utils
 from datetime import datetime, timedelta, timezone
 import requests
 from verta import data_types
