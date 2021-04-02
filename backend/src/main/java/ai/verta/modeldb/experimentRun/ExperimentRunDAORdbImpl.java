@@ -8,6 +8,7 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
+import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
@@ -871,28 +872,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               observation -> {
                 KeyValue attribute = observation.getAttribute();
                 String kvSql = "INSERT INTO keyvalue"
-                    + " (field_type, kv_key, kv_value, value_type, experiment_run_id)"
-                    + " VALUES (:field_type, :kv_key, :kv_value, :value_type, :experiment_run_id)";
+                    + " (field_type, kv_key, kv_value, value_type)"
+                    + " VALUES (:field_type, :kv_key, :kv_value, :value_type)";
+                String attributeValue = getAttributeValue(attribute);
                 session.createNativeQuery(kvSql)
                     .setParameter("field_type", ModelDBConstants.ATTRIBUTES)
                     .setParameter("kv_key", attribute.getKey())
-                    .setParameter("kv_value", attribute.getValue().getNumberValue())
+                    .setParameter("kv_value", attributeValue)
                     .setParameter("value_type", attribute.getValueType().getNumber())
-                    .setParameter("experiment_run_id", experimentRunId)
                     .executeUpdate();
-                List<BigInteger> resultList = (List<BigInteger>) session.createNativeQuery("SELECT id FROM keyvalue"
-                    + " WHERE experiment_run_id = :experiment_run_id"
-                    + " AND field_type = :field_type"
-                    + " AND kv_key = :kv_key"
-                    + " AND kv_value = :kv_value"
-                    + " AND value_type = :value_type")
-                    .setParameter("experiment_run_id", experimentRunId)
-                    .setParameter("field_type", ModelDBConstants.ATTRIBUTES)
-                    .setParameter("kv_key", attribute.getKey())
-                    .setParameter("kv_value", attribute.getValue().getNumberValue())
-                    .setParameter("value_type", attribute.getValueType().getNumber())
-                    .getResultList();
-                BigInteger attributeId = resultList.get(0);
+                BigInteger attributeId = (BigInteger) session.createNativeQuery("SELECT LAST_INSERT_ID()").uniqueResult();
+
                 double epochNumber = getEpochNumber(experimentRunId, session, observation);
 
                 observationCount.labels(experimentRunId).inc();
@@ -917,6 +907,22 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       } else {
         throw ex;
       }
+    }
+  }
+
+  private String getAttributeValue(KeyValue attribute) {
+    // None, bool, float, int, str
+    Value value = attribute.getValue();
+    switch(value.getKindCase().getNumber()) {
+      case Value.BOOL_VALUE_FIELD_NUMBER:
+        return Boolean.valueOf(value.getBoolValue()).toString();
+      case Value.NUMBER_VALUE_FIELD_NUMBER:
+        return Double.valueOf(value.getNumberValue()).toString();
+      case Value.STRING_VALUE_FIELD_NUMBER:
+        return value.getStringValue();
+      case Value.NULL_VALUE_FIELD_NUMBER:
+      default:
+        return "null";
     }
   }
 
