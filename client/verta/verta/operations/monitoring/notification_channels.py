@@ -65,7 +65,7 @@ class NotificationChannel(entity._ModelDBEntity):
             )
         )
         if msg.channel.type == _AlertService.NotificationChannelTypeEnum.SLACK:
-            msg.channel.slack_webhook = channel._as_proto()
+            msg.channel.slack_webhook.CopyFrom(channel._as_proto())
         else:
             raise ValueError(
                 "unrecognized notification channel type enum value {}".format(msg.alert.alerter_type)

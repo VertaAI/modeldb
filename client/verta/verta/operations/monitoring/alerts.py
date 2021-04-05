@@ -78,9 +78,9 @@ class Alert(entity._ModelDBEntity):
             ),
         )
         if msg.alert.alerter_type == _AlertService.AlerterTypeEnum.FIXED:
-            msg.alert.alerter_fixed = alert._as_proto()
+            msg.alert.alerter_fixed.CopyFrom(alert._as_proto())
         elif msg.alert.alerter_type == _AlertService.AlerterTypeEnum.REFERENCE:
-            msg.alert.alerter_reference = alert._as_proto()
+            msg.alert.alerter_reference.CopyFrom(alert._as_proto())
         else:
             raise ValueError(
                 "unrecognized alert type enum value {}".format(msg.alert.alerter_type)
