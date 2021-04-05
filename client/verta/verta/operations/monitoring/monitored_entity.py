@@ -12,6 +12,7 @@ from verta._tracking import (entity, _Context)
 from verta._internal_utils import (
     _utils,
 )
+from . import alerts
 
 
 class MonitoredEntity(entity._ModelDBEntity):
@@ -44,6 +45,10 @@ class MonitoredEntity(entity._ModelDBEntity):
             return self._conn._get_workspace_name_by_id(self._msg.workspace_id)
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
+
+    @property
+    def alerts(self):
+        return alerts.Alerts(self._conn, self._conf, self.id)
 
     @classmethod
     def _generate_default_name(cls):
