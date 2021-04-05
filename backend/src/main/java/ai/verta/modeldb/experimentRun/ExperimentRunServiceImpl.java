@@ -2819,4 +2819,44 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       CommonUtils.observeError(responseObserver, e, LogEnvironment.Response.getDefaultInstance());
     }
   }
+
+  @Override
+  public void findExperimentRunsFields(
+      FindExperimentRunsFields request,
+      StreamObserver<FindExperimentRunsFields.Response> responseObserver) {
+    try {
+      if (!request.getFindRequest().getProjectId().isEmpty()) {
+        // Validate if current user has access to the entity or not
+        roleService.validateEntityUserWithUserInfo(
+            ModelDBServiceResourceTypes.PROJECT,
+            request.getFindRequest().getProjectId(),
+            ModelDBServiceActions.READ);
+      } else if (!request.getFindRequest().getExperimentId().isEmpty()) {
+        Map<String, String> projectIdsMap =
+            experimentDAO.getProjectIdsByExperimentIds(
+                Collections.singletonList(request.getFindRequest().getExperimentId()));
+        String projectId = projectIdsMap.get(request.getFindRequest().getExperimentId());
+        // Validate if current user has access to the entity or not
+        roleService.validateEntityUserWithUserInfo(
+            ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
+      }
+
+      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      FindExperimentRunsFields.Response response =
+          experimentRunDAO.findExperimentRunsFields(
+              projectDAO, currentLoginUserInfo, request.getFindRequest());
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.UPDATE,
+          Collections.emptyMap(),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          authService.getWorkspaceIdFromUserInfo(currentLoginUserInfo));
+      responseObserver.onNext(response);
+      responseObserver.onCompleted();
+    } catch (Exception e) {
+      CommonUtils.observeError(
+          responseObserver, e, FindExperimentRunsFields.Response.getDefaultInstance());
+    }
+  }
 }

@@ -2884,4 +2884,116 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
     }
   }
+
+  @Override
+  public FindExperimentRunsFields.Response findExperimentRunsFields(
+      ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters) {
+
+    Workspace workspace = null;
+    if (!queryParameters.getWorkspaceName().isEmpty()) {
+      workspace =
+          roleService.getWorkspaceByWorkspaceName(
+              currentLoginUserInfo, queryParameters.getWorkspaceName());
+    }
+    List<GetResourcesResponseItem> accessibleProjectResourceByWorkspace =
+        roleService.getResourceItems(
+            workspace,
+            !queryParameters.getProjectId().isEmpty()
+                ? new HashSet<>(Collections.singletonList(queryParameters.getProjectId()))
+                : Collections.emptySet(),
+            ModelDBServiceResourceTypes.PROJECT);
+    Set<String> accessibleProjectIds =
+        accessibleProjectResourceByWorkspace.stream()
+            .map(GetResourcesResponseItem::getResourceId)
+            .collect(Collectors.toSet());
+
+    List<String> accessibleExperimentRunIds = new ArrayList<>();
+    if (!queryParameters.getExperimentRunIdsList().isEmpty()) {
+      accessibleExperimentRunIds.addAll(
+          getAccessibleExperimentRunIDs(
+              queryParameters.getExperimentRunIdsList(),
+              ModelDBActionEnum.ModelDBServiceActions.READ));
+      if (accessibleExperimentRunIds.isEmpty()) {
+        throw new PermissionDeniedException(
+            "Access is denied. User is unauthorized for given ExperimentRun IDs : "
+                + accessibleExperimentRunIds);
+      }
+    }
+
+    List<KeyValueQuery> predicates = new ArrayList<>(queryParameters.getPredicatesList());
+    for (KeyValueQuery predicate : predicates) {
+      if (predicate.getKey().equals(ModelDBConstants.ID)) {
+        List<String> accessibleExperimentRunId =
+            getAccessibleExperimentRunIDs(
+                Collections.singletonList(predicate.getValue().getStringValue()),
+                ModelDBActionEnum.ModelDBServiceActions.READ);
+        accessibleExperimentRunIds.addAll(accessibleExperimentRunId);
+        // Validate if current user has access to the entity or not where predicate key has an id
+        RdbmsUtils.validatePredicates(
+            ModelDBConstants.EXPERIMENT_RUNS, accessibleExperimentRunIds, predicate, roleService);
+      }
+    }
+
+    List<String> projectIds = new ArrayList<>();
+    if (!queryParameters.getProjectId().isEmpty()
+        && accessibleProjectIds.contains(queryParameters.getProjectId())) {
+      projectIds.add(queryParameters.getProjectId());
+    } else if (accessibleExperimentRunIds.isEmpty()
+        && queryParameters.getExperimentId().isEmpty()) {
+      projectIds.addAll(accessibleProjectIds);
+    }
+
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      List<Object[]> selectedFieldsObjects =
+          finsExperimentRunsFieldsOrValues(
+              queryParameters, accessibleExperimentRunIds, projectIds, session);
+
+      List<String> metrics = new ArrayList<>();
+      List<String> hyperparameters = new ArrayList<>();
+      List<String> attributes = new ArrayList<>();
+      for (Object[] selectedFields : selectedFieldsObjects) {
+        metrics.add(String.valueOf(selectedFields[0]));
+        hyperparameters.add(String.valueOf(selectedFields[1]));
+        attributes.add(String.valueOf(selectedFields[2]));
+      }
+      return FindExperimentRunsFields.Response.newBuilder()
+          .addAllMetrics(metrics)
+          .addAllHyperparameters(hyperparameters)
+          .addAllAttributes(attributes)
+          .build();
+    }
+  }
+
+  private List<Object[]> finsExperimentRunsFieldsOrValues(
+      FindExperimentRuns queryParameters,
+      List<String> accessibleExperimentRunIds,
+      List<String> projectIds,
+      Session session) {
+    FindExperimentRunsQuery findExperimentRunsQuery =
+        new FindExperimentRunsQuery.FindExperimentRunsSQLQueryBuilder(
+                session,
+                authService,
+                roleService,
+                Arrays.asList(
+                    ModelDBConstants.METRICS,
+                    ModelDBConstants.HYPERPARAMETERS,
+                    ModelDBConstants.ATTRIBUTES))
+            .setProjectIds(projectIds)
+            .setExperimentIds(Collections.singletonList(queryParameters.getExperimentId()))
+            .setExperimentIds(accessibleExperimentRunIds)
+            .setPredicates(queryParameters.getPredicatesList())
+            .setPageLimit(queryParameters.getPageLimit())
+            .setPageNumber(queryParameters.getPageNumber())
+            .setIdsOnly(queryParameters.getIdsOnly())
+            .setSortKey(queryParameters.getSortKey())
+            .setAscending(queryParameters.getAscending())
+            .build();
+    List<Object[]> selectedFieldsObjects =
+        findExperimentRunsQuery.getFindExperimentRunsSQLQuery().list();
+    Long totalRecords =
+        (Long) findExperimentRunsQuery.getFindExperimentRunsCountSQLQuery().uniqueResult();
+    LOGGER.debug("Final return experimentRun fields, size {}", selectedFieldsObjects.size());
+    LOGGER.debug("Final return Total Records: {}", totalRecords);
+    return selectedFieldsObjects;
+  }
 }
