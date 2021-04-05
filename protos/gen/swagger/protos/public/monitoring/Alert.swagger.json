@@ -574,6 +574,28 @@
         }
       }
     },
+    "monitoringFindMonitoredEntityRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
     "monitoringFindNotificationChannelRequest": {
       "type": "object",
       "properties": {
@@ -613,6 +635,9 @@
     "monitoringFindSummaryRequest": {
       "type": "object",
       "properties": {
+        "find_monitored_entities": {
+          "$ref": "#/definitions/monitoringFindMonitoredEntityRequest"
+        },
         "ids": {
           "type": "array",
           "items": {
