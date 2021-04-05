@@ -298,6 +298,38 @@
         ]
       }
     },
+    "/monitored_entity/findMonitoredEntity": {
+      "post": {
+        "operationId": "DataMonitoringService_findMonitoredEntity",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringFindMonitoredEntityRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringFindMonitoredEntityRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DataMonitoringService"
+        ]
+      }
+    },
     "/monitored_entity/findProfilersForMonitoredEntity": {
       "post": {
         "operationId": "DataMonitoringService_findProfilersForMonitoredEntity",
@@ -701,20 +733,6 @@
         "name": {
           "type": "string"
         },
-        "data_source_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "summary_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
         "workspace_id": {
           "type": "string",
           "format": "uint64"
@@ -866,6 +884,39 @@
         }
       }
     },
+    "monitoringFindMonitoredEntityRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "monitoringFindMonitoredEntityRequestResponse": {
+      "type": "object",
+      "properties": {
+        "monitored_entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringMonitoredEntity"
+          }
+        }
+      }
+    },
     "monitoringFindProfilersForMonitoredEntityRequest": {
       "type": "object",
       "properties": {
@@ -984,20 +1035,6 @@
         "name": {
           "type": "string"
         },
-        "data_source_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "summary_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
         "workspace_id": {
           "type": "string",
           "format": "uint64"
@@ -1047,20 +1084,6 @@
         },
         "name": {
           "type": "string"
-        },
-        "data_source_ids_to_remove": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "summary_ids_to_remove": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
         }
       }
     },
