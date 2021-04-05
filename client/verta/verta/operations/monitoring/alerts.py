@@ -122,7 +122,7 @@ class Alerts(object):
         last_evaluated_at_millis=None,
     ):
         ctx = _Context(self._conn, self._conf)
-        alert = Alert._create(
+        return Alert._create(
             self._conn,
             self._conf,
             ctx,
@@ -135,14 +135,13 @@ class Alerts(object):
             updated_at_millis=updated_at_millis,
             last_evaluated_at_millis=last_evaluated_at_millis,
         )
-        return alert
 
     def get(self, name=None, id=None):
         if name and id:
             raise ValueError("cannot specify both `name` and `id`")
         elif name:
             return Alert._get_by_name(
-                self._conn, self._conf, name, self._monitored_entity_id
+                self._conn, self._conf, name, self._monitored_entity_id,
             )
         elif id:
             return Alert._get_by_id(self._conn, self._conf, id)
