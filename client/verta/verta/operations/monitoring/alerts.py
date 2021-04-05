@@ -55,7 +55,7 @@ class Alert(entity._ModelDBEntity):
         name,
         monitored_entity_id,
         alert,
-        summary_sample_query,  # TODO: would need a SummarySampleQuery class
+        summary_sample_query,
         notification_channels,
         created_at_millis,
         updated_at_millis,

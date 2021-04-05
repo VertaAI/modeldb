@@ -4,8 +4,8 @@ from __future__ import print_function
 
 import json
 from datetime import datetime
-from verta._internal_utils import time_utils
-from .utils import extract_ids
+from ..._internal_utils import time_utils
+from .utils import extract_ids, maybe
 from verta._protos.public.monitoring import Summary_pb2 as SummaryService
 from verta._protos.public.monitoring.Summary_pb2 import (
     CreateSummaryRequest,
@@ -43,6 +43,29 @@ class SummaryQuery(object):
 
     def __repr__(self):
         return "SummaryQuery({}, {}, {}, {})".format(self._ids, self._names, self._type_names, self._monitored_entity_ids)
+
+
+class SummarySampleQuery(object):
+    def __init__(self, summary_query=None, ids=None, labels=None, time_window_start_at_millis=None, time_window_end_at_millis=None):
+        self._find_summaries = summary_query._to_proto_request() if summary_query else None
+        self._sample_ids = extract_ids(ids) if ids else None
+        self._labels = maybe(Summary._labels_proto, labels)
+        self._time_window_start_at_millis = time_window_start_at_millis
+        self._time_window_end_at_millis = time_window_end_at_millis
+
+    def _to_proto_request(self):
+        return FindSummarySampleRequest(
+            filter=FilterQuerySummarySample(
+                find_summaries=self._find_summaries,
+                sample_ids=self._sample_ids,
+                labels=self._labels,
+                time_window_start_at_millis=self._time_window_start_at_millis,
+                time_window_end_at_millis=self._time_window_end_at_millis,
+            )
+        )
+
+    def __repr__(self):
+        return "SummarySampleQuery({})".format(self._to_proto_request())
 
 
 class Summary(entity._ModelDBEntity):
