@@ -160,6 +160,53 @@ class TestMatrix:
         }
 
 
+class TestNumericValue:
+    def test_numeric_value(self):
+        attr = data_types.NumericValue(42)
+        assert attr._as_dict() == {
+            "type": "verta.numericValue.v1",
+            "numericValue": {
+                "value": 42,
+            },
+        }
+
+    def test_numeric_value_with_unit(self):
+        attr = data_types.NumericValue(14, unit="lbs")
+        assert attr._as_dict() == {
+            "type": "verta.numericValue.v1",
+            "numericValue": {
+                "value": 14,
+                "unit": "lbs",
+            },
+        }
+
+    def test_numeric_value_numpy(self):
+        np = pytest.importorskip("numpy")
+        d = {
+            "type": "verta.numericValue.v1",
+            "numericValue": {
+                "value": 42,
+            },
+        }
+
+        attr = data_types.NumericValue(np.float32(42))
+        assert attr._as_dict() == d
+
+        attr = data_types.NumericValue(np.array(42))
+        assert attr._as_dict() == d
+
+
+class TestStringValue:
+    def test_string_value(self):
+        attr = data_types.StringValue("umbrella")
+        assert attr._as_dict() == {
+            "type": "verta.stringValue.v1",
+            "stringValue": {
+                "value": "umbrella",
+            },
+        }
+
+
 class TestTable:
     def test_table(self):
         attr = data_types.Table(
