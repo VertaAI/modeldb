@@ -1028,13 +1028,13 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       Set<String> projectIdsSet = new HashSet<>();
       List<Project> finalProjects = new ArrayList<>();
+      Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
       for (ProjectEntity projectEntity : projectEntities) {
         if (!projectIdsSet.contains(projectEntity.getId())) {
           projectIdsSet.add(projectEntity.getId());
           if (queryParameters.getIdsOnly()) {
             finalProjects.add(Project.newBuilder().setId(projectEntity.getId()).build());
           } else {
-            Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
             finalProjects.add(
                 projectEntity.getProtoObject(
                     roleService, authService, cacheWorkspaceMap, getResourcesMap));
