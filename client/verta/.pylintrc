@@ -139,6 +139,7 @@ disable=print-statement,
         exception-escape,
         comprehension-escape,
     # everything below was added by @convoliution
+        bad-continuation,
         invalid-name,
         missing-docstring,
         line-too-long,
