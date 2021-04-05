@@ -2,8 +2,8 @@
 
 import warnings
 
-from verta._protos.public.monitoring import Alert_pb2 as _AlertService
-from verta._tracking import entity, _Context
+from ..._protos.public.monitoring import Alert_pb2 as _AlertService
+from ..._tracking import entity, _Context
 
 
 class Alert(entity._ModelDBEntity):

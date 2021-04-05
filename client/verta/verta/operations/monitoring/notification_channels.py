@@ -2,8 +2,8 @@
 
 import warnings
 
-from verta._protos.public.monitoring import Alert_pb2 as _AlertService
-from verta._tracking import entity, _Context
+from ..._protos.public.monitoring import Alert_pb2 as _AlertService
+from ..._tracking import entity, _Context
 
 
 class NotificationChannel(entity._ModelDBEntity):
@@ -33,6 +33,7 @@ class NotificationChannel(entity._ModelDBEntity):
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
+        # NOTE: workspace is currently unsupported until https://vertaai.atlassian.net/browse/VR-9792
         msg = _AlertService.FindNotificationChannelRequest(
             names=[name],
         )
