@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import json
 from datetime import datetime
-from . import time_utils
+from verta._internal_utils import time_utils
 from .utils import extract_ids
 from verta._protos.public.monitoring import Summary_pb2 as SummaryService
 from verta._protos.public.monitoring.Summary_pb2 import (

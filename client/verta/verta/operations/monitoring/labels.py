@@ -9,7 +9,7 @@ from verta._protos.public.monitoring.Labels_pb2 import (
     FindSampleLabelValuesRequest,
 )
 from .summaries import Summary
-from . import time_utils
+from verta._internal_utils import time_utils
 from .utils import maybe
 
 class Labels:
