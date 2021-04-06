@@ -40,7 +40,7 @@ class ProfilerReference(entity._ModelDBEntity):
         reference = self._msg.profiler_reference
         return "ProfilerReference ({}, {}, {})".format(id, name, reference)
 
-    def enable(self, monitored_entity, environment={}, wait=False):
+    def enable(self, monitored_entity, environment=None, wait=False):
         if wait:
             return self._blocking_enable(monitored_entity, environment)
 
@@ -49,8 +49,8 @@ class ProfilerReference(entity._ModelDBEntity):
             monitored_entity_id = monitored_entity.id
         except:
             monitored_entity_id = monitored_entity
-        environment = environment if environment else dict()
-        environment = {"PROFILER_ID": self.id, **environment}
+        environment = environment.copy() if environment else dict()
+        environment["PROFILER_ID"] = self.id
         key_values = [KeyValue(key=k, value=_utils.python_to_val_proto(v, allow_collection=True)) for k, v in environment.items()]
 
         msg = EnableProfilerRequest(

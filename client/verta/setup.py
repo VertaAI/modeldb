@@ -34,6 +34,8 @@ setup(
         "pyyaml>=5.1, <5.4",
         "requests>=2.21, <3.0",
         "numpy",
+        "scipy",
+        "pandas"
     ],
     entry_points={
         'console_scripts': [
