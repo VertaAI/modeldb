@@ -14,7 +14,9 @@ class _NotificationChannel(object):
 
     def __repr__(self):
         return "<{} notification channel>".format(
-            _AlertService.NotificationChannelTypeEnum.NotificationChannelType.Name(self._TYPE).lower()
+            _AlertService.NotificationChannelTypeEnum.NotificationChannelType.Name(
+                self._TYPE
+            ).lower()
         )
 
     @abc.abstractmethod

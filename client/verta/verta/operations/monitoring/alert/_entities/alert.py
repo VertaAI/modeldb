@@ -101,7 +101,8 @@ class Alert(entity._ModelDBEntity):
     def add_notification_channel(self, notification_channel):
         raise NotImplementedError
 
-    def set_status(self, status, summary_sample=None, event_time_millis=None):  # TODO: alternatively, fire() & resolve()?
+    # TODO: alternatively, fire() & resolve()?
+    def set_status(self, status, summary_sample=None, event_time_millis=None):
         msg = _AlertService.UpdateAlertStatusRequest(
             alert_id=self.id,
             event_time_millis=event_time_millis,
@@ -158,7 +159,10 @@ class Alerts(object):
             raise ValueError("cannot specify both `name` and `id`")
         elif name:
             return Alert._get_by_name(
-                self._conn, self._conf, name, self._monitored_entity_id,
+                self._conn,
+                self._conf,
+                name,
+                self._monitored_entity_id,
             )
         elif id:
             return Alert._get_by_id(self._conn, self._conf, id)

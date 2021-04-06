@@ -69,13 +69,19 @@ class NotificationChannel(entity._ModelDBEntity):
             msg.channel.slack_webhook.CopyFrom(channel._as_proto())
         else:
             raise ValueError(
-                "unrecognized notification channel type enum value {}".format(msg.alert.alerter_type)
+                "unrecognized notification channel type enum value {}".format(
+                    msg.alert.alerter_type
+                )
             )
 
         endpoint = "/api/v1/alerts/createNotificationChannel"
         response = conn.make_proto_request("POST", endpoint, body=msg)
-        notification_channel_msg = conn.must_proto_response(response, _AlertService.NotificationChannel)
+        notification_channel_msg = conn.must_proto_response(
+            response,
+            _AlertService.NotificationChannel,
+        )
         return notification_channel_msg
+
 
 class NotificationChannels(object):
     def __init__(self, conn, conf):
@@ -91,7 +97,9 @@ class NotificationChannels(object):
     ):
         ctx = _Context(self._conn, self._conf)
         return NotificationChannel._create(
-            self._conn, self._conf, ctx,
+            self._conn,
+            self._conf,
+            ctx,
             name=name,
             channel=channel,
             created_at_millis=created_at_millis,
@@ -103,7 +111,10 @@ class NotificationChannels(object):
             raise ValueError("cannot specify both `name` and `id`")
         elif name:
             return NotificationChannel._get_by_name(
-                self._conn, self._conf, name, None,  # TODO: pass workspace instead of None
+                self._conn,
+                self._conf,
+                name,
+                None,  # TODO: pass workspace instead of None
             )
         elif id:
             return NotificationChannel._get_by_id(self._conn, self._conf, id)
