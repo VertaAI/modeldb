@@ -9,7 +9,7 @@ from ...._protos.public.monitoring import Alert_pb2 as _AlertService
 
 # TODO: move into separate files
 @six.add_metaclass(abc.ABCMeta)
-class _Alert(object):
+class _Alerter(object):
     _TYPE = _AlertService.AlerterTypeEnum.UNKNOWN
 
     def __repr__(self):
@@ -22,7 +22,7 @@ class _Alert(object):
         raise NotImplementedError
 
 
-class FixedAlert(_Alert):
+class FixedAlerter(_Alerter):
     _TYPE = _AlertService.AlerterTypeEnum.FIXED
 
     def __init__(self, threshold):
@@ -34,7 +34,7 @@ class FixedAlert(_Alert):
         )
 
 
-class ReferenceAlert(_Alert):
+class ReferenceAlerter(_Alerter):
     _TYPE = _AlertService.AlerterTypeEnum.REFERENCE
 
     def __init__(self, threshold, reference_sample):

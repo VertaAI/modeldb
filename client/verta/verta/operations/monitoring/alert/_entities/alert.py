@@ -55,7 +55,7 @@ class Alert(entity._ModelDBEntity):
         ctx,
         name,
         monitored_entity_id,
-        alert,
+        alerter,
         summary_sample_query,
         notification_channels,
         created_at_millis,
@@ -75,13 +75,13 @@ class Alert(entity._ModelDBEntity):
                     for notification_channel in notification_channels
                 },
                 sample_find_base=summary_sample_query._to_proto_request(),
-                alerter_type=alert._TYPE,
+                alerter_type=alerter._TYPE,
             ),
         )
         if msg.alert.alerter_type == _AlertService.AlerterTypeEnum.FIXED:
-            msg.alert.alerter_fixed.CopyFrom(alert._as_proto())
+            msg.alert.alerter_fixed.CopyFrom(alerter._as_proto())
         elif msg.alert.alerter_type == _AlertService.AlerterTypeEnum.REFERENCE:
-            msg.alert.alerter_reference.CopyFrom(alert._as_proto())
+            msg.alert.alerter_reference.CopyFrom(alerter._as_proto())
         else:
             raise ValueError(
                 "unrecognized alert type enum value {}".format(msg.alert.alerter_type)
@@ -124,7 +124,7 @@ class Alerts(object):
     def create(
         self,
         name,
-        alert,
+        alerter,
         summary_sample_query=None,
         notification_channels=None,
         created_at_millis=None,
@@ -146,7 +146,7 @@ class Alerts(object):
             ctx,
             name=name,
             monitored_entity_id=self._monitored_entity_id,
-            alert=alert,
+            alerter=alerter,
             summary_sample_query=summary_sample_query,
             notification_channels=notification_channels,
             created_at_millis=created_at_millis,
