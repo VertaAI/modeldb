@@ -33,6 +33,9 @@ class _VertaDataType(object):
     def _as_dict(self):
         raise NotImplementedError
 
+    # TODO: _from_dict_inner() should be an abstract class method, but need to
+    #       figure out how to do that in Python 2
+
     @staticmethod
     def _from_dict(d):
         # TODO: when we have v2 onwards, make sure old v are still supported
@@ -68,6 +71,6 @@ class _VertaDataType(object):
                 Subclass._VERSION,
             )
             if d_type == subclass_type:
-                return Subclass._from_dict(d)
+                return Subclass._from_dict_inner(d)
 
         raise ValueError("data type {} not recognized".format(d_type))

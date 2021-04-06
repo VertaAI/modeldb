@@ -48,7 +48,7 @@ class NumericValue(_VertaDataType):
         return self._as_dict_inner(data)
 
     @classmethod
-    def _from_dict(cls, d):
+    def _from_dict_inner(cls, d):
         data = d[cls._TYPE_NAME]
         return cls(
             value=data["value"],
