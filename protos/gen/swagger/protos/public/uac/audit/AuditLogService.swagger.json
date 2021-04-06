@@ -99,8 +99,7 @@
         "ORGANIZATION",
         "TEAM",
         "WORKSPACE",
-        "USER",
-        "SERVICE_ACCOUNT"
+        "USER"
       ],
       "default": "UNKNOWN"
     },

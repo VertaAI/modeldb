@@ -6,7 +6,6 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/moni
 option java_multiple_files = true;
 
 import "google/api/annotations.proto";
-import "google/protobuf/struct.proto";
 
 // Data source
 
@@ -33,14 +32,6 @@ message GetDataSourceRequest {
 
   message Response {
     DataSource data_source = 1;
-  }
-}
-
-message FindDataSourcesRequest {
-  uint64 monitored_entity_id = 1;
-
-  message Response {
-    repeated DataSource dataSources = 1;
   }
 }
 
@@ -107,80 +98,14 @@ message DeleteProfilerRequest {
   }
 }
 
-// Mirror deployment API build response
-message BuildStatusEnum {
-  enum BuildStatus {
-    UNDEFINED = 0;
-    BUILDING = 1;
-    DELETING = 2;
-    ERROR = 3;
-    FINISHED = 4;
-  }
-}
-
-// Mirror deployment API stage status
-message DeployStatusEnum {
-  enum DeployStatus {
-    UNDEFINED = 0;
-    INACTIVE = 1;
-    ACTIVE = 2;
-    UPDATING = 3;
-    CREATING = 4;
-    ERROR = 5;
-  }
-}
-
-message ProfilerStatus {
-  uint32 profiler_id = 1;
-  uint32 monitored_entity_id = 2;
-  BuildStatusEnum.BuildStatus build_status = 3;
-  DeployStatusEnum.DeployStatus deploy_status = 4;
-}
-
-message GetProfilerStatusRequest {
-  uint32 profiler_id = 1;
-  uint32 monitored_entity_id = 2;
-
-  message Response {
-    ProfilerStatus status = 1;
-  }
-}
-
-message FindProfilersForMonitoredEntityRequest {
-  uint32 monitored_entity_id = 1;
-
-  message Response {
-    repeated ProfilerStatus statuses = 1;
-  }
-}
-
-message KeyValue {
-    string key = 1;
-    google.protobuf.Value value = 2;
-
-    /*
-    *   As per documentation of proto buffer 3.
-    *   For enums, the default value is the first defined enum value, which must be 0.
-    */
-    ValueTypeEnum.ValueType value_type = 3;
-}
-
-message ValueTypeEnum {
-    enum ValueType {
-        STRING = 0;
-        NUMBER = 1;
-        LIST = 2;
-        BLOB = 3;
-    }
-}
-
 message EnableProfilerRequest {
   uint32 profiler_id = 1;
   uint32 monitored_entity_id = 2;
-  repeated KeyValue environment = 3;
 
   message Response {
-    ProfilerStatus status = 1;
+    string profilerArn = 1;
+    string profilerInputStream = 2;
+    string profilerOutputStream = 3;
   }
 }
 
@@ -189,23 +114,71 @@ message DisableProfilerRequest {
   uint32 monitored_entity_id = 2;
 
   message Response {
-    ProfilerStatus status = 1;
+  }
+}
+
+// Summary
+
+message Summary {
+  uint64 id = 1;
+  string name = 2;
+  uint64 data_source_id = 3;
+  uint64 monitored_entity_id = 5;
+  uint64 profiler_id = 9;
+  string blob = 4;
+  uint64 created_at_millis = 6;
+  uint64 time_window_start_at_millis = 7;
+  uint64 time_window_end_at_millis = 8;
+}
+
+message CreateSummaryRequest {
+  uint64 monitored_entity_id = 1;
+  uint64 data_source_id = 2;
+  uint64 profiler_id = 5;
+  string name = 3;
+  string blob = 4;
+  uint64 time_window_start_at_millis = 6;
+  uint64 time_window_end_at_millis = 7;
+
+  message Response {
+    Summary summary = 1;
+  }
+}
+
+message GetSummaryRequest {
+  uint64 id = 1;
+
+  message Response {
+    Summary summary = 1;
+  }
+}
+
+message ListSummariesRequest {
+  message Response {
+    repeated Summary summaries = 1;
+  }
+}
+
+message DeleteSummaryRequest {
+  uint64 id = 1;
+
+  message Response {
   }
 }
 
 // Monitored entity
 
 message MonitoredEntity {
-  reserved 3, 4;  // Previously deleted fields
   uint64 id = 1;
   string name = 2;
-  uint64 workspace_id = 5;
+  repeated uint64 data_source_ids = 3;
+  repeated uint64 summary_ids = 4;
 }
 
 message CreateMonitoredEntityRequest {
-  reserved 2, 3;  // Previously deleted fields
   string name = 1;
-  uint64 workspace_id = 4;
+  repeated uint64 data_source_ids = 2;
+  repeated uint64 summary_ids = 3;
 
   message Response {
     MonitoredEntity monitored_entity = 1;
@@ -222,7 +195,6 @@ message GetMonitoredEntityRequest {
 
 message GetMonitoredEntityByNameRequest {
   string name = 1;
-  uint64 workspace_id = 2;
 
   message Response {
     MonitoredEntity monitored_entity = 1;
@@ -230,9 +202,12 @@ message GetMonitoredEntityByNameRequest {
 }
 
 message UpdateMonitoredEntityRequest {
-  reserved 4 to 6;  // Previously deleted fields
   uint64 id = 1;
   string name = 2;
+  repeated uint64 data_source_ids_to_add = 3;
+  repeated uint64 data_source_ids_to_remove = 4;
+  repeated uint64 summary_ids_to_add = 5;
+  repeated uint64 summary_ids_to_remove = 6;
 
   message Response {
     MonitoredEntity monitored_entity = 1;
@@ -240,19 +215,8 @@ message UpdateMonitoredEntityRequest {
 }
 
 message ListMonitoredEntitiesRequest {
-  uint64 workspace_id = 1;
   message Response {
     repeated MonitoredEntity monitored_entities = 1;
-  }
-}
-
-message FindMonitoredEntityRequest {
-  repeated uint64 ids = 1;
-  repeated string names = 2;
-  uint64 workspace_id = 3;
-
-  message Response {
-      repeated MonitoredEntity monitored_entities = 1;
   }
 }
 
@@ -297,13 +261,6 @@ service DataMonitoringService {
     };
   };
 
-  rpc findMonitoredEntity(FindMonitoredEntityRequest) returns (FindMonitoredEntityRequest.Response) {
-    option (google.api.http) = {
-      post: "/v1/monitored_entity/findMonitoredEntity"
-      body: "*"
-    };
-  };
-
   rpc deleteMonitoredEntity(DeleteMonitoredEntityRequest) returns (DeleteMonitoredEntityRequest.Response) {
     option (google.api.http) = {
       delete: "/v1/monitored_entity/deleteMonitoredEntity"
@@ -311,15 +268,35 @@ service DataMonitoringService {
     };
   };
 
-  rpc getDataSource(GetDataSourceRequest) returns (GetDataSourceRequest.Response) {
+  rpc getSummary(GetSummaryRequest) returns (GetSummaryRequest.Response) {
     option (google.api.http) = {
-      get: "/v1/monitored_entity/getDataSource"
+      get: "/v1/monitored_entity/getSummary"
     };
   };
 
-  rpc findDataSources(FindDataSourcesRequest) returns (FindDataSourcesRequest.Response) {
+  rpc createSummary(CreateSummaryRequest) returns (CreateSummaryRequest.Response) {
     option (google.api.http) = {
-      get: "/v1/monitored_entity/findDataSources"
+      post: "/v1/monitored_entity/createSummary"
+      body: "*"
+    };
+  };
+
+  rpc listSummaries(ListSummariesRequest) returns (ListSummariesRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/monitored_entity/listSummaries"
+    };
+  };
+
+  rpc deleteSummary(DeleteSummaryRequest) returns (DeleteSummaryRequest.Response) {
+    option (google.api.http) = {
+      delete: "/v1/monitored_entity/deleteSummary"
+      body: "*"
+    };
+  };
+
+  rpc getDataSource(GetDataSourceRequest) returns (GetDataSourceRequest.Response) {
+    option (google.api.http) = {
+      get: "/v1/monitored_entity/getDataSource"
     };
   };
 
@@ -365,26 +342,13 @@ service DataMonitoringService {
 
   rpc listProfilers(ListProfilersRequest) returns (ListProfilersRequest.Response) {
     option (google.api.http) = {
-      get: "/v1/monitored_entity/listProfilers"
+      get: "/v1/monitored_entity/listProfiler"
     };
   };
 
   rpc deleteProfiler(DeleteProfilerRequest) returns (DeleteProfilerRequest.Response) {
     option (google.api.http) = {
       delete: "/v1/monitored_entity/deleteProfile"
-      body: "*"
-    };
-  };
-
-  rpc getProfilerStatus(GetProfilerStatusRequest) returns (GetProfilerStatusRequest.Response) {
-    option (google.api.http) = {
-      get: "/v1/monitored_entity/getProfilerStatus"
-    };
-  };
-
-  rpc findProfilersForMonitoredEntity(FindProfilersForMonitoredEntityRequest) returns (FindProfilersForMonitoredEntityRequest.Response) {
-    option (google.api.http) = {
-      post: "/v1/monitored_entity/findProfilersForMonitoredEntity"
       body: "*"
     };
   };
