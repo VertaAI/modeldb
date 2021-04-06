@@ -12,7 +12,7 @@ from verta._tracking import (entity, _Context)
 from verta._internal_utils import (
     _utils,
 )
-from . import alerts
+from .alerts._entities import Alerts
 
 
 class MonitoredEntity(entity._ModelDBEntity):
@@ -48,7 +48,7 @@ class MonitoredEntity(entity._ModelDBEntity):
 
     @property
     def alerts(self):
-        return alerts.Alerts(self._conn, self._conf, self.id)
+        return Alerts(self._conn, self._conf, self.id)
 
     @classmethod
     def _generate_default_name(cls):

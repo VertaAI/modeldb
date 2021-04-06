@@ -2,11 +2,12 @@
 
 import abc
 
-from ...external import six
+from ....external import six
 
-from ..._protos.public.monitoring import Alert_pb2 as _AlertService
+from ...._protos.public.monitoring import Alert_pb2 as _AlertService
 
 
+# TODO: move into separate files
 @six.add_metaclass(abc.ABCMeta)
 class _NotificationChannel(object):
     _TYPE = _AlertService.NotificationChannelTypeEnum.UNKNOWN

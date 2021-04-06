@@ -6,7 +6,7 @@ import itertools
 from verta._tracking import _Context
 
 from .monitored_entity import MonitoredEntity
-from .notification_channels import NotificationChannels
+from .notification_channels._entities import NotificationChannels
 from .profilers import Profilers
 from .summaries import Summaries
 from .labels import Labels
