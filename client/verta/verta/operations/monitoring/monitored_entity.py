@@ -41,9 +41,9 @@ class MonitoredEntity(entity._ModelDBEntity):
         self._refresh_cache()
 
         if self._msg.workspace_id:
-            return self._get_workspace_name_by_id(self._msg.workspace_id)
+            return self._conn._get_workspace_name_by_id(self._msg.workspace_id)
         else:
-            return entity._OSS_DEFAULT_WORKSPACE
+            return self._conn._OSS_DEFAULT_WORKSPACE
 
     @classmethod
     def _generate_default_name(cls):
