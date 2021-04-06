@@ -5,6 +5,8 @@ import warnings
 from ....._protos.public.monitoring import Alert_pb2 as _AlertService
 from ....._tracking import entity, _Context
 from ...notification_channel import _NotificationChannel
+from ..status import _AlertStatus
+from ... import time_utils
 
 
 class Alert(entity._ModelDBEntity):
@@ -16,6 +18,15 @@ class Alert(entity._ModelDBEntity):
             "alerts",
             msg,
         )
+
+    @property
+    def history(self):
+        # TODO: implement lazy list and pagination
+        msg = _AlertService.ListAlertHistoryRequest(id=self.id)
+        endpoint = "/api/v1/alerts/listAlertHistory"
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        history = self._conn.must_proto_response(response, msg.Response).history
+        return list(map(AlertHistoryItem, history))
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
@@ -186,8 +197,15 @@ class Alerts(object):
 
 
 class AlertHistoryItem(object):
-    pass
+    def __init__(self, msg):
+        self._event_time = time_utils.datetime_from_millis(msg.event_time_millis)
+        self._status = _AlertStatus._from_proto(msg.status)
+        self._violating_summary_sample_ids = msg.violating_summary_sample_ids
 
-
-class AlertHistory(object):
-    pass
+    def __repr__(self):
+        return "\n\t".join((
+            "AlertHistoryItem",
+            "occurred at: {}".format(self._event_time),
+            "status: {}".format(self._status),
+            "associated summary sample IDs: {}".format(self._violating_summary_sample_ids),
+        ))

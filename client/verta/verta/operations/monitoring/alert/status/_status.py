@@ -17,6 +17,32 @@ class _AlertStatus(object):
             _AlertService.AlertStatusEnum.AlertStatus.Name(self._ALERT_STATUS).lower()
         )
 
+    @classmethod
+    def _from_proto(cls, msg):
+        """
+        Returns an alert status object.
+
+        Parameters
+        ----------
+        msg : int
+            Variant of ``AlertStatusEnum``.
+
+        Returns
+        -------
+        :class:`_AlertStatus` subclass
+
+        """
+        SUBCLASSES = [
+            Alerting,
+            Ok,
+        ]
+
+        for Subclass in SUBCLASSES:
+            if msg == Subclass._ALERT_STATUS:
+                return Subclass()
+
+        raise ValueError("alert status {} not recognized".format(msg))
+
 
 class Alerting(_AlertStatus):
     _ALERT_STATUS = _AlertService.AlertStatusEnum.ALERTING
