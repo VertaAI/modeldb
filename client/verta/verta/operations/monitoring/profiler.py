@@ -42,7 +42,7 @@ class MissingValuesProfiler(Profiler):
         except KeyError:  # pandas raises this if the column doesn't exist
             missing = total
 
-        return (column + "_missing", DiscreteHistogram([total - missing, missing]))
+        return (column + "_missing", DiscreteHistogram(["present", "missing"], [total - missing, missing]))
 
 
 class BinaryHistogramProfiler(Profiler):
