@@ -111,6 +111,13 @@ class Alert(entity._ModelDBEntity):
         self._conn.must_response(response)
         return True
 
+    def delete(self):
+        msg = _AlertService.DeleteAlertRequest(ids=[self.id])
+        endpoint = "/api/v1/alerts/deleteAlert"
+        response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
+        self._conn.must_response(response)
+        return True
+
 
 class Alerts(object):
     def __init__(self, conn, conf, monitored_entity_id):

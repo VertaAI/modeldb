@@ -85,6 +85,13 @@ class NotificationChannel(entity._ModelDBEntity):
     def _update(self):
         raise NotImplementedError
 
+    def delete(self):
+        msg = _AlertService.DeleteNotificationChannelRequest(ids=[self.id])
+        endpoint = "/api/v1/alerts/deleteNotificationChannel"
+        response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
+        self._conn.must_response(response)
+        return True
+
 
 class NotificationChannels(object):
     def __init__(self, conn, conf):
