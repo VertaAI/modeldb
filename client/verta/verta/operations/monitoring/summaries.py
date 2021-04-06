@@ -131,9 +131,7 @@ class Summary(entity._ModelDBEntity):
         return
 
 
-class SummarySample(
-    entity._ModelDBEntity
-):  # Note: trying out record instead of sample to see how this name feels
+class SummarySample(entity._ModelDBEntity):
     def __init__(self, conn, conf, msg):
         super(SummarySample, self).__init__(conn, conf, SummaryService, "summary", msg)
         self.summary_id = msg.summary_id
