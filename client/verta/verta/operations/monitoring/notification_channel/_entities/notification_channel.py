@@ -22,7 +22,7 @@ class NotificationChannel(entity._ModelDBEntity):
             ids=[int(id)],
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
-        response = conn.make_proto_request("POST", endpoint)
+        response = conn.make_proto_request("POST", endpoint, body=msg)
         channels = conn.must_proto_response(response, msg.Response).channels
         if len(channels) > 1:
             warnings.warn(
@@ -38,7 +38,7 @@ class NotificationChannel(entity._ModelDBEntity):
             names=[name],
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
-        response = conn.make_proto_request("POST", endpoint)
+        response = conn.make_proto_request("POST", endpoint, body=msg)
         channels = conn.must_proto_response(response, msg.Response).channels
         if len(channels) > 1:
             warnings.warn(
@@ -73,7 +73,7 @@ class NotificationChannel(entity._ModelDBEntity):
             )
 
         endpoint = "/api/v1/alerts/createNotificationChannel"
-        response = conn.make_proto_request("POST", endpoint)
+        response = conn.make_proto_request("POST", endpoint, body=msg)
         notification_channel_msg = conn.must_proto_response(response, _AlertService.NotificationChannel)
         return notification_channel_msg
 
@@ -115,6 +115,6 @@ class NotificationChannels(object):
     def list(self):
         msg = _AlertService.FindNotificationChannelsRequest()
         endpoint = "/api/v1/alerts/findNotificationChannel"
-        response = self._conn.make_proto_request("POST", endpoint)
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
         channels = self._conn.must_proto_response(response, msg.Response).channels
         return channels

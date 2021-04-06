@@ -23,7 +23,7 @@ class Alert(entity._ModelDBEntity):
             ids=[int(id)],
         )
         endpoint = "/api/v1/alerts/findAlert"
-        response = conn.make_proto_request("POST", endpoint)
+        response = conn.make_proto_request("POST", endpoint, body=msg)
         alerts = conn.must_proto_response(response, msg.Response).alerts
         if len(alerts) > 1:
             warnings.warn(
@@ -39,7 +39,7 @@ class Alert(entity._ModelDBEntity):
             monitored_entity_ids=[int(monitored_entity_id)],
         )
         endpoint = "/api/v1/alerts/findAlert"
-        response = conn.make_proto_request("POST", endpoint)
+        response = conn.make_proto_request("POST", endpoint, body=msg)
         alerts = conn.must_proto_response(response, msg.Response).alerts
         if len(alerts) > 1:
             warnings.warn(
@@ -88,7 +88,7 @@ class Alert(entity._ModelDBEntity):
             )
 
         endpoint = "/api/v1/alerts/createAlert"
-        response = conn.make_proto_request("POST", endpoint)
+        response = conn.make_proto_request("POST", endpoint, body=msg)
         alert_msg = conn.must_proto_response(response, _AlertService.Alert)
         return alert_msg
 
@@ -101,9 +101,17 @@ class Alert(entity._ModelDBEntity):
     def add_notification_channel(self, notification_channel):
         raise NotImplementedError
 
-    def set_status(self, status):  # TODO: alternatively, fire() & resolve()?
-        status._to_update_status_proto_request()
-        raise NotImplementedError
+    def set_status(self, status, summary_sample=None, event_time_millis=None):  # TODO: alternatively, fire() & resolve()?
+        msg = _AlertService.UpdateAlertStatusRequest(
+            alert_id=self.id,
+            event_time_millis=event_time_millis,
+            status=status._ALERT_STATUS,
+            violating_summary_sample_id=summary_sample.id,
+        )
+        endpoint = "/api/v1/alerts/updateAlertStatus"
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        self._conn.must_response(response)
+        return True
 
 
 class Alerts(object):
@@ -164,7 +172,7 @@ class Alerts(object):
             monitored_entity_ids=[self._monitored_entity_id],
         )
         endpoint = "/api/v1/alerts/findAlert"
-        response = self._conn.make_proto_request("POST", endpoint)
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
         alerts = self._conn.must_proto_response(response, msg.Response).alerts
         return alerts
 
