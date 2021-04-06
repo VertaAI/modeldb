@@ -6,6 +6,24 @@ from . import _VertaDataType
 
 
 class StringValue(_VertaDataType):
+    """
+    Representation of a string.
+
+    Parameters
+    ----------
+    value : str
+        String.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.data_types import StringValue
+        data = StringValue("RNN")
+        run.log_attribute("architecture", data)
+
+    """
+
     _TYPE_NAME = "stringValue"
     _VERSION = "v1"
 

@@ -8,6 +8,26 @@ from . import _VertaDataType
 
 
 class NumericValue(_VertaDataType):
+    """
+    Representation of a number.
+
+    Parameters
+    ----------
+    value : float
+        Number.
+    unit : str
+        Unit of measurement.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.data_types import NumericValue
+        data = NumericValue(4, unit="lbs")
+        run.log_attribute("weight", data)
+
+    """
+
     _TYPE_NAME = "numericValue"
     _VERSION = "v1"
 
