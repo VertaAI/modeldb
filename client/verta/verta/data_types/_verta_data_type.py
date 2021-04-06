@@ -34,14 +34,17 @@ class _VertaDataType(object):
         ]
         return "\n\t".join([type(self).__name__] + lines)
 
+    @classmethod
+    def _type_string(cls):
+        return "verta.{}.{}".format(cls._TYPE_NAME, cls._VERSION)
+
+
     def _as_dict_inner(self, data):
         return {
-            "type": "verta.{}.{}".format(
-                self._TYPE_NAME,
-                self._VERSION,
-            ),
+            "type": self._type_string(),
             self._TYPE_NAME: data,
         }
+
 
     @abc.abstractmethod
     def _as_dict(self):
