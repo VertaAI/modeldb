@@ -12,6 +12,11 @@ from ...._protos.public.monitoring import Alert_pb2 as _AlertService
 class _Alert(object):
     _TYPE = _AlertService.AlerterTypeEnum.UNKNOWN
 
+    def __repr__(self):
+        return "<{} alert>".format(
+            _AlertService.AlerterTypeEnum.AlerterType.Name(self._TYPE).lower()
+        )
+
     @abc.abstractmethod
     def _as_proto(self):
         raise NotImplementedError

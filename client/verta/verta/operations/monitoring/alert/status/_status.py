@@ -12,6 +12,11 @@ from ....._protos.public.monitoring import Alert_pb2 as _AlertService
 class _AlertStatus(object):
     _ALERT_STATUS = _AlertService.AlertStatusEnum.UNKNOWN
 
+    def __repr__(self):
+        return "<{} alert status>".format(
+            _AlertService.AlertStatusEnum.AlertStatus.Name(self._ALERT_STATUS).lower()
+        )
+
 
 class Alerting(_AlertStatus):
     _ALERT_STATUS = _AlertService.AlertStatusEnum.ALERTING

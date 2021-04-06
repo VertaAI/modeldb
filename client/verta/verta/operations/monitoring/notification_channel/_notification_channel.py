@@ -12,6 +12,11 @@ from ...._protos.public.monitoring import Alert_pb2 as _AlertService
 class _NotificationChannel(object):
     _TYPE = _AlertService.NotificationChannelTypeEnum.UNKNOWN
 
+    def __repr__(self):
+        return "<{} notification channel>".format(
+            _AlertService.NotificationChannelTypeEnum.NotificationChannelType.Name(self._TYPE).lower()
+        )
+
     @abc.abstractmethod
     def _as_proto(self):
         raise NotImplementedError
