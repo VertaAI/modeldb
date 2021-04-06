@@ -95,9 +95,6 @@ class Alert(entity._ModelDBEntity):
     def _update(self):
         raise NotImplementedError
 
-    def _update_status(self):
-        raise NotImplementedError
-
     def add_notification_channel(self, notification_channel):
         raise NotImplementedError
 

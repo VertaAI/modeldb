@@ -82,6 +82,9 @@ class NotificationChannel(entity._ModelDBEntity):
         )
         return notification_channel_msg
 
+    def _update(self):
+        raise NotImplementedError
+
 
 class NotificationChannels(object):
     def __init__(self, conn, conf):
