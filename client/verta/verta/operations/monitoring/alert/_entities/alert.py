@@ -4,7 +4,7 @@ import warnings
 
 from ....._protos.public.monitoring import Alert_pb2 as _AlertService
 from ....._tracking import entity, _Context
-from ...notification_channels import _NotificationChannel
+from ...notification_channel import _NotificationChannel
 
 
 class Alert(entity._ModelDBEntity):

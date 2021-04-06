@@ -12,7 +12,7 @@ from verta._tracking import (entity, _Context)
 from verta._internal_utils import (
     _utils,
 )
-from .alerts._entities import Alerts
+from .alert._entities import Alerts
 
 
 class MonitoredEntity(entity._ModelDBEntity):
