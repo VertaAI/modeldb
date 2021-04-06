@@ -4,6 +4,7 @@ import warnings
 
 from ....._protos.public.monitoring import Alert_pb2 as _AlertService
 from ....._tracking import entity, _Context
+from ...notification_channels import _NotificationChannel
 
 
 class Alert(entity._ModelDBEntity):
@@ -121,6 +122,14 @@ class Alerts(object):
         updated_at_millis=None,
         last_evaluated_at_millis=None,
     ):
+        for channel in notification_channels:
+            if isinstance(channel, _NotificationChannel):
+                raise TypeError(
+                    "a notification channel must be created in Verta before"
+                    " it can be used; please pass the object returned from"
+                    " client.notification_channels.create() instead"
+                )
+
         ctx = _Context(self._conn, self._conf)
         return Alert._create(
             self._conn,
