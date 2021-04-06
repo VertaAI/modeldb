@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=undefined-variable
+# pylint: disable=undefined-variable,no-name-in-module
 
 from datetime import datetime, timedelta, timezone
 
