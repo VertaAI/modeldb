@@ -45,6 +45,8 @@ class _VertaDataType(object):
             FloatHistogram,
             Line,
             Matrix,
+            NumericValue,
+            StringValue,
             Table,
         )
 
@@ -54,6 +56,8 @@ class _VertaDataType(object):
             FloatHistogram,
             Line,
             Matrix,
+            NumericValue,
+            StringValue,
             Table,
         ]
 

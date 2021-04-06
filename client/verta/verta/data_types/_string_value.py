@@ -38,3 +38,8 @@ class StringValue(_VertaDataType):
         return self._as_dict_inner({
             "value": self._value,
         })
+
+    @classmethod
+    def _from_dict(cls, d):
+        data = d[cls._TYPE_NAME]
+        return cls(value=data["value"])

@@ -46,3 +46,11 @@ class NumericValue(_VertaDataType):
         if self._unit:
             data["unit"] = self._unit
         return self._as_dict_inner(data)
+
+    @classmethod
+    def _from_dict(cls, d):
+        data = d[cls._TYPE_NAME]
+        return cls(
+            value=data["value"],
+            unit=data["unit"],
+        )
