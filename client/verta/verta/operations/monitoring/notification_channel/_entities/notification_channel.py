@@ -138,4 +138,7 @@ class NotificationChannels(object):
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         channels = self._conn.must_proto_response(response, msg.Response).channels
-        return channels
+        return [
+            NotificationChannel(self._conn, self._conf, channel)
+            for channel in channels
+        ]

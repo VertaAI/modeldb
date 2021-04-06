@@ -193,7 +193,10 @@ class Alerts(object):
         endpoint = "/api/v1/alerts/findAlert"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         alerts = self._conn.must_proto_response(response, msg.Response).alerts
-        return alerts
+        return [
+            Alert(self._conn, self._conf, alert)
+            for alert in alerts
+        ]
 
 
 class AlertHistoryItem(object):
