@@ -244,4 +244,10 @@ class SummarySamples:
             for sample in maybe_samples.samples
         ]
 
-    # TODO: delete()
+    def delete(self, summaries):
+        summary_ids = extract_ids(summaries)
+        msg = DeleteSummarySampleRequest(ids=summary_ids)
+        endpoint = "/api/v1/summaries/deleteSample"
+        response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
+        self._conn.must_response(response)
+        return True

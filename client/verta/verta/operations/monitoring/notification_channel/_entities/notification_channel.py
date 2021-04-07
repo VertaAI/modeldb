@@ -4,6 +4,7 @@ import warnings
 
 from ....._protos.public.monitoring import Alert_pb2 as _AlertService
 from ....._tracking import entity, _Context
+from ... import utils
 
 
 class NotificationChannel(entity._ModelDBEntity):
@@ -142,3 +143,11 @@ class NotificationChannels(object):
             NotificationChannel(self._conn, self._conf, channel)
             for channel in channels
         ]
+
+    def delete(self, channels):
+        channel_ids = utils.extract_ids(channels)
+        msg = _AlertService.DeleteNotificationChannelRequest(ids=channel_ids)
+        endpoint = "/api/v1/alerts/deleteNotificationChannel"
+        response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
+        self._conn.must_response(response)
+        return True

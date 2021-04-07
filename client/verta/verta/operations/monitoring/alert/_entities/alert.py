@@ -3,10 +3,11 @@
 import warnings
 
 from ....._protos.public.monitoring import Alert_pb2 as _AlertService
+from ....._internal_utils import time_utils
 from ....._tracking import entity, _Context
 from ...notification_channel import _NotificationChannel
 from ..status import _AlertStatus
-from ... import time_utils
+from ... import utils
 
 
 class Alert(entity._ModelDBEntity):
@@ -200,6 +201,14 @@ class Alerts(object):
             Alert(self._conn, self._conf, alert)
             for alert in alerts
         ]
+
+    def delete(self, alerts):
+        alert_ids = utils.extract_ids(alerts)
+        msg = _AlertService.DeleteAlertRequest(ids=alert_ids)
+        endpoint = "/api/v1/alerts/deleteAlert"
+        response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
+        self._conn.must_response(response)
+        return True
 
 
 class AlertHistoryItem(object):
