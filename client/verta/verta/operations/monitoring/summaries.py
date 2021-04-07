@@ -199,4 +199,4 @@ class Summaries:
         endpoint = "/api/v1/summaries/deleteSummary"
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
         self._conn.must_proto_response(response, EmptyProto)
-        return
+        return True
