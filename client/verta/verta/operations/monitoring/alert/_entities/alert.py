@@ -21,6 +21,32 @@ class Alert(entity._ModelDBEntity):
             msg,
         )
 
+    def __repr__(self):
+        self._refresh_cache()
+        msg = self._msg
+        return "\n\t".join((
+            "Alert",
+            "name: {}".format(msg.name),
+            "id: {}".format(msg.id),
+            "monitored entity id: {}".format(msg.monitored_entity_id),
+            "status: {}".format(self.status),
+            "created: {}".format(
+                _utils.timestamp_to_str(msg.created_at_millis)),
+            "updated: {}".format(
+                _utils.timestamp_to_str(msg.updated_at_millis)),
+            "last evaluated: {}".format(
+                _utils.timestamp_to_str(msg.last_evaluated_at_millis)),
+            "alerter: {}".format(
+                # TODO: use an `alerter` property that returns the actual class
+                _AlertService.AlerterTypeEnum.AlerterType.Name(msg.alerter_type)),
+            "violating summary sample ids: {}".format(
+                msg.violating_summary_sample_ids),
+            "summary sample query: {}".format(
+                self.summary_sample_query),
+            "notification channel ids: {}".format(
+                msg.notification_channels.keys()),
+        ))
+
     @property
     def history(self):
         # TODO: implement lazy list and pagination
