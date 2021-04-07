@@ -36,6 +36,20 @@ class Alert(entity._ModelDBEntity):
 
         return self._msg.name
 
+    @property
+    def status(self):
+        self._refresh_cache()
+
+        return status._AlertStatus._from_proto(self._msg.status)
+
+    @property
+    def summary_sample_query(self):
+        self._refresh_cache()
+
+        return summaries.SummarySampleQuery._from_proto_request(
+            self._msg.sample_find_base,
+        )
+
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindAlertRequest(
