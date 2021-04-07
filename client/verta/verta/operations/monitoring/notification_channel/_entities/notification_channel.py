@@ -3,8 +3,10 @@
 import warnings
 
 from ....._protos.public.monitoring import Alert_pb2 as _AlertService
+from ....._internal_utils import _utils
 from ....._tracking import entity, _Context
 from ... import utils
+from .. import _notification_channel
 
 
 class NotificationChannel(entity._ModelDBEntity):
@@ -16,6 +18,22 @@ class NotificationChannel(entity._ModelDBEntity):
             "alerts",
             msg,
         )
+
+    def __repr__(self):
+        self._refresh_cache()
+        msg = self._msg
+        return "\n\t".join((
+            "Notification Channel",
+            "name: {}".format(msg.name),
+            "id: {}".format(msg.id),
+            "created: {}".format(
+                _utils.timestamp_to_str(msg.created_at_millis)),
+            "updated: {}".format(
+                _utils.timestamp_to_str(msg.updated_at_millis)),
+            "channel: {}".format(
+                # TODO: use a `channel` property that returns the actual class
+                _AlertService.NotificationChannelTypeEnum.NotificationChannelType.Name(msg.type)),
+        ))
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
