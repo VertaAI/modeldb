@@ -223,3 +223,25 @@ class Summaries:
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
         self._conn.must_proto_response(response, EmptyProto)
         return True
+
+
+class SummarySamples:
+    def __init__(self, conn, conf):
+        self._conn = conn
+        self._conf = conf
+
+    # TODO: potentially create()
+
+    def find(self, query=None):
+        if query is None:
+            query = SummarySampleQuery()
+        msg = query._to_proto_request()
+        endpoint = "/api/v1/summaries/findSample"
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        maybe_samples = self._conn.must_proto_response(response, msg.Response)
+        return [
+            SummarySample(self._conn, self._conf, sample)
+            for sample in maybe_samples.samples
+        ]
+
+    # TODO: delete()

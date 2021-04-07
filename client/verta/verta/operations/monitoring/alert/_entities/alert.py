@@ -146,7 +146,8 @@ class Alerts(object):
         updated_at_millis=None,
         last_evaluated_at_millis=None,
     ):
-        notification_channels = notification_channels or []
+        if notification_channels is None:
+            notification_channels = []
 
         for channel in notification_channels:
             if isinstance(channel, _NotificationChannel):

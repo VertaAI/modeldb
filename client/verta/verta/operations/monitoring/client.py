@@ -8,7 +8,7 @@ from verta._tracking import _Context
 from .monitored_entity import MonitoredEntity
 from .notification_channel._entities import NotificationChannels
 from .profilers import Profilers
-from .summaries import Summaries
+from .summaries import Summaries, SummarySamples
 from .labels import Labels
 
 
@@ -17,6 +17,7 @@ class Client(object):
         self._client = verta_client
         self.profilers = Profilers(self._conn, self._conf, self._client)
         self.summaries = Summaries(self._conn, self._conf)
+        self.summary_samples = SummarySamples(self._conn, self._conf)
         self.labels = Labels(self._conn, self._conf)
 
     @property
