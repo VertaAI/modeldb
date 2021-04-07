@@ -71,14 +71,13 @@ class FloatHistogram(_VertaDataType):
                 "`other` must be type {}, not {}".format(type(self), type(other))
             )
 
-        # TODO: assuming labels are consistent
-        if collections.Counter(self._bucket_limits) != collections.Counter(
-            other._bucket_limits
-        ):
-            return -1  # fix error return
+        if self._bucket_limits != other._bucket_limits:
+            raise ValueError(
+                "bucket limits must match (self: {}, other: {})".format(
+                    self._bucket_limits, other._bucket_limits,
+                )
+            )
         else:
-            # TODO: assuming order of labels is consistent
-            # normalize
             self_normalized = self.normalize()
             other_normalized = other.normalize()
             return spatial.distance.cosine(self_normalized, other_normalized)

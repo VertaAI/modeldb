@@ -72,7 +72,11 @@ class DiscreteHistogram(_VertaDataType):
 
         # TODO: assuming labels are consistent
         if collections.Counter(self._buckets) != collections.Counter(other._buckets):
-            return -1  # fix error return
+            raise ValueError(
+                "buckets must match (self: {}, other: {})".format(
+                    self._buckets, other._buckets,
+                )
+            )
         else:
             # TODO: assuming order of labels is consistent
             # normalize
