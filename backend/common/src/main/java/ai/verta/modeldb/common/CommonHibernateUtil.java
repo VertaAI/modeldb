@@ -237,7 +237,6 @@ public abstract class CommonHibernateUtil {
 
       String sql = "SELECT * FROM database_change_log_lock WHERE ID = 1";
       ResultSet rs = stmt.executeQuery(sql);
-      setMaxAllowedPacket(jdbcCon);
 
       long lastLockAcquireTimestamp = 0L;
       boolean locked = false;
@@ -265,10 +264,7 @@ public abstract class CommonHibernateUtil {
       rs.close();
       stmt.close();
 
-      stmt = jdbcCon.createStatement();
-      ResultSet rs2 = stmt.executeQuery("SET GLOBAL max_allowed_packet=1677721");
-      stmt.close();
-
+      setMaxAllowedPacket(jdbcCon);
 
       Calendar currentCalender = Calendar.getInstance();
       long currentLockedTimeDiffSecond =
