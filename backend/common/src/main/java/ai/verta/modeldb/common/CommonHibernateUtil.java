@@ -161,17 +161,7 @@ public abstract class CommonHibernateUtil {
     isReady = false;
     sessionFactory = null;
 
-    getSessionFactory();
-
-    try (Connection con = getDBConnection(databaseConfig.RdbConfiguration)) {
-      JdbcConnection jdbcCon = new JdbcConnection(con);
-      setMaxAllowedPacket(jdbcCon);
-    } catch (DatabaseException | ClassNotFoundException | SQLException e) {
-      LOGGER.error(e.getMessage(), e);
-      throw new ModelDBException(e.getMessage(), e);
-    }
-    return sessionFactory;
-
+    return getSessionFactory();
   }
 
   private void setMaxAllowedPacket(JdbcConnection jdbcCon) throws DatabaseException, SQLException {
@@ -266,8 +256,6 @@ public abstract class CommonHibernateUtil {
       rs.close();
       stmt.close();
 
-      setMaxAllowedPacket(jdbcCon);
-
       Calendar currentCalender = Calendar.getInstance();
       long currentLockedTimeDiffSecond =
           (currentCalender.getTimeInMillis() - lastLockAcquireTimestamp) / 1000;
@@ -354,7 +342,17 @@ public abstract class CommonHibernateUtil {
 
   public boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
     try (Connection con = getDBConnection(rdb)) {
-      return con.isValid(timeout);
+      boolean valid = con.isValid(timeout);
+      if (valid) {
+        try {
+          JdbcConnection jdbcCon = new JdbcConnection(con);
+          setMaxAllowedPacket(jdbcCon);
+        } catch (DatabaseException | SQLException e) {
+          LOGGER.error(e.getMessage(), e);
+          throw new ModelDBException(e.getMessage(), e);
+        }
+      }
+      return valid;
     } catch (Exception ex) {
       LOGGER.warn("CommonHibernateUtil checkDBConnection() got error ", ex);
       return false;
