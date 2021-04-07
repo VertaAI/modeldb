@@ -64,3 +64,11 @@ class ConfusionMatrix(_VertaDataType):
             value=data["value"],
             labels=data["labels"],
         )
+
+    def dist(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                "`other` must be type {}, not {}".format(type(self), type(other))
+            )
+
+        return -1  # TODO

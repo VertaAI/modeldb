@@ -35,11 +35,21 @@ class StringValue(_VertaDataType):
         self._value = value
 
     def _as_dict(self):
-        return self._as_dict_inner({
-            "value": self._value,
-        })
+        return self._as_dict_inner(
+            {
+                "value": self._value,
+            }
+        )
 
     @classmethod
     def _from_dict_inner(cls, d):
         data = d[cls._TYPE_NAME]
         return cls(value=data["value"])
+
+    def dist(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                "`other` must be type {}, not {}".format(type(self), type(other))
+            )
+
+        return 0 if self._value == other._value else 0

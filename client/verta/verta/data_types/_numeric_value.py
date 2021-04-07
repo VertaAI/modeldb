@@ -54,3 +54,11 @@ class NumericValue(_VertaDataType):
             value=data["value"],
             unit=data["unit"],
         )
+
+    def dist(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                "`other` must be type {}, not {}".format(type(self), type(other))
+            )
+
+        return self._value - other._value

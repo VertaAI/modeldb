@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import collections
+
 from ..external import six
+
+from scipy import spatial
 
 from .._internal_utils import arg_handler
 
@@ -59,3 +63,23 @@ class DiscreteHistogram(_VertaDataType):
             buckets=data["buckets"],
             data=data["data"],
         )
+
+    def dist(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                "`other` must be type {}, not {}".format(type(self), type(other))
+            )
+
+        # TODO: assuming labels are consistent
+        if collections.Counter(self._buckets) != collections.Counter(other._buckets):
+            return -1  # fix error return
+        else:
+            # TODO: assuming order of labels is consistent
+            # normalize
+            self_normalized = self.normalize()
+            other_normalized = other.normalize()
+            return spatial.distance.cosine(self_normalized, other_normalized)
+
+    def normalize(self):
+        total = sum(self._data)
+        return [x * 1.0 / total for x in self._data]

@@ -74,3 +74,11 @@ class Table(_VertaDataType):
             data=data["rows"],
             columns=data["header"],
         )
+
+    def dist(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                "`other` must be type {}, not {}".format(type(self), type(other))
+            )
+
+        return -1  # TODO
