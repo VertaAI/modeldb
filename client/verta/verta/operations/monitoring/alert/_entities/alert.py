@@ -30,6 +30,12 @@ class Alert(entity._ModelDBEntity):
         history = self._conn.must_proto_response(response, msg.Response).history
         return list(map(AlertHistoryItem, history))
 
+    @property
+    def name(self):
+        self._refresh_cache()
+
+        return self._msg.name
+
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindAlertRequest(
