@@ -177,10 +177,10 @@ public abstract class CommonHibernateUtil {
   private void setMaxAllowedPacket(JdbcConnection jdbcCon) throws DatabaseException, SQLException {
     Integer maxAllowedPacket = databaseConfig.RdbConfiguration.maxAllowedPacket;
     if (maxAllowedPacket != null) {
-    Statement stmt = jdbcCon.createStatement();
-    ResultSet rs = stmt.executeQuery(String.format("SET GLOBAL max_allowed_packet=%d", maxAllowedPacket));
-    rs.close();
-    stmt.close();
+      Statement stmt = jdbcCon.createStatement();
+      ResultSet rs = stmt.executeQuery(String.format("SET GLOBAL max_allowed_packet=%d", maxAllowedPacket));
+      rs.close();
+      stmt.close();
     }
   }
 
