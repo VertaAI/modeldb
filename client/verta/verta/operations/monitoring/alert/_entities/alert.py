@@ -197,10 +197,7 @@ class Alerts(object):
         endpoint = "/api/v1/alerts/findAlert"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         alerts = self._conn.must_proto_response(response, msg.Response).alerts
-        return [
-            Alert(self._conn, self._conf, alert)
-            for alert in alerts
-        ]
+        return [Alert(self._conn, self._conf, alert) for alert in alerts]
 
     def delete(self, alerts):
         alert_ids = utils.extract_ids(alerts)
@@ -218,9 +215,13 @@ class AlertHistoryItem(object):
         self._violating_summary_sample_ids = msg.violating_summary_sample_ids
 
     def __repr__(self):
-        return "\n\t".join((
-            "AlertHistoryItem",
-            "occurred at: {}".format(self._event_time),
-            "status: {}".format(self._status),
-            "associated summary sample IDs: {}".format(self._violating_summary_sample_ids),
-        ))
+        return "\n\t".join(
+            (
+                "AlertHistoryItem",
+                "occurred at: {}".format(self._event_time),
+                "status: {}".format(self._status),
+                "associated summary sample IDs: {}".format(
+                    self._violating_summary_sample_ids
+                ),
+            )
+        )

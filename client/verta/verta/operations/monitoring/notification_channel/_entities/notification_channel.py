@@ -140,8 +140,7 @@ class NotificationChannels(object):
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         channels = self._conn.must_proto_response(response, msg.Response).channels
         return [
-            NotificationChannel(self._conn, self._conf, channel)
-            for channel in channels
+            NotificationChannel(self._conn, self._conf, channel) for channel in channels
         ]
 
     def delete(self, channels):
