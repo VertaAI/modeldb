@@ -64,7 +64,7 @@ class Labels:
             response, FindSampleLabelValuesRequest.Response
         )
         return {
-            key: {v for v in valuesItem.values}
+            key: set(valuesItem.values)
             for key, valuesItem in proto.labels.items()
         }
 
