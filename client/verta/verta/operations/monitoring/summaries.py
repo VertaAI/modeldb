@@ -64,13 +64,16 @@ class SummarySampleQuery(object):
 
     @classmethod
     def _from_proto_request(cls, msg):
-        return cls(
-            summary_query=SummaryQuery._from_proto_request(msg.filter.find_summaries),
-            ids=msg.filter.sample_ids,
-            labels=msg.filter.labels,
-            time_window_start_at_millis=msg.filter.time_window_start_at_millis,
-            time_window_end_at_millis=msg.filter.time_window_end_at_millis,
-        )
+        # set attrs after creation to bypass conversion logic in __init__()
+        print(msg)
+        obj = cls()
+        obj._find_summaries = msg.filter.find_summaries
+        obj._sample_ids = msg.filter.sample_ids
+        obj._labels = msg.filter.labels
+        obj._time_window_start_at_millis = msg.filter.time_window_start_at_millis
+        obj._time_window_end_at_millis = msg.filter.time_window_end_at_millis
+
+        return obj
 
     def _to_proto_request(self):
         return FindSummarySampleRequest(
