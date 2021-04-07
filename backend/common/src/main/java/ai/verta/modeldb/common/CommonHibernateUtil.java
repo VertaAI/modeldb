@@ -75,7 +75,9 @@ public abstract class CommonHibernateUtil {
             rdb.RdbUrl
                 + "/"
                 + rdb.RdbDatabaseName
-                + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
+                + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+                + "&sslMode="
+                + rdb.sslMode;
         settings.put(Environment.DRIVER, rdb.RdbDriver);
         settings.put(Environment.URL, connectionString);
         settings.put(Environment.USER, rdb.RdbUsername);
@@ -338,7 +340,9 @@ public abstract class CommonHibernateUtil {
         rdb.RdbUrl
             + "/"
             + rdb.RdbDatabaseName
-            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+            + "&sslMode="
+            + rdb.sslMode;
     try {
       Class.forName(rdb.RdbDriver);
     } catch (ClassNotFoundException e) {
@@ -512,9 +516,13 @@ public abstract class CommonHibernateUtil {
   }
 
   public void createDBIfNotExists(RdbConfig rdb) throws SQLException {
-
+    LOGGER.info("Checking DB " + rdb.RdbUrl);
+    Properties properties = new Properties();
+    properties.put("user", rdb.RdbUsername);
+    properties.put("password", rdb.RdbPassword);
+    properties.put("sslMode", rdb.sslMode);
     Connection connection =
-        DriverManager.getConnection(rdb.RdbUrl, rdb.RdbUsername, rdb.RdbPassword);
+        DriverManager.getConnection(rdb.RdbUrl, properties);
     ResultSet resultSet = connection.getMetaData().getCatalogs();
 
     while (resultSet.next()) {
