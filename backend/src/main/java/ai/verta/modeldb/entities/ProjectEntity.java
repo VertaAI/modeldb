@@ -361,10 +361,8 @@ public class ProjectEntity {
       projectResource = getResourcesMap.get(this.id);
     } else {
       projectResource =
-          roleService
-              .getEntityResource(
-                  Optional.of(this.id), Optional.empty(), ModelDBServiceResourceTypes.PROJECT)
-              .get();
+          roleService.getEntityResource(
+              Optional.of(this.id), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       if (getResourcesMap == null) {
         getResourcesMap = new HashMap<>();
       }
