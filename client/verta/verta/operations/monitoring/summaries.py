@@ -39,7 +39,7 @@ class SummaryQuery(object):
             ids=msg.ids,
             names=msg.names,
             type_names=msg.type_names,
-            monitored_entities=msg.monitories_entity_ids,
+            monitored_entities=msg.monitored_entity_ids,
         )
 
     def _to_proto_request(self):
