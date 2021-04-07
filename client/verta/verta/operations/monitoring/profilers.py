@@ -175,10 +175,10 @@ class ProfilerReference(entity._ModelDBEntity):
         msg = CreateProfilerRequest(name=name, profiler_reference=reference)
         endpoint = "/api/v1/monitored_entity/createProfiler"
         response = conn.make_proto_request("POST", endpoint, body=msg)
-        profile = conn.must_proto_response(
-            response, CreateProfilerRequest.Response
+        profiler = conn.must_proto_response(
+            response, msg.Response
         ).profiler
-        return profile
+        return profiler
 
 
 class Profilers:
