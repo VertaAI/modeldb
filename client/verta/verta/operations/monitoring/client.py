@@ -35,7 +35,8 @@ class Client(object):
             raise ValueError("cannot specify both `name` and `id`")
 
         name = self._client._set_from_config_if_none(name, "monitored_entity")
-        workspace = self._client._set_from_config_if_none(workspace, "workspace")
+        if workspace is None:
+            workspace = self._client.get_workspace()
 
         ctx = self._ctx
         # TODO: use the context workspace and do not modify it through parameters on this method
