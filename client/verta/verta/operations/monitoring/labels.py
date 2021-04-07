@@ -82,7 +82,7 @@ class Labels:
         window_end_at_millis = maybe(lambda t: time_utils.epoch_millis(t), window_end)
 
         labels = kwargs.get('labels', None)
-        labels_proto = maybe(lambda li: Summary._labels_proto(li), labels)
+        labels_proto = maybe(Summary._labels_proto, labels)
         return FilterQuerySummarySample(
             find_summaries=summaries_proto,
             sample_ids=sample_ids,
