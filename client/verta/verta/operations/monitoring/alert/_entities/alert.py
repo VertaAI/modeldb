@@ -3,11 +3,12 @@
 import warnings
 
 from ....._protos.public.monitoring import Alert_pb2 as _AlertService
-from ....._internal_utils import time_utils
+from ....._internal_utils import _utils, time_utils
 from ....._tracking import entity, _Context
-from ...notification_channel import _NotificationChannel
-from ..status import _AlertStatus
+from ... import notification_channel
+from ... import summaries
 from ... import utils
+from .. import status
 
 
 class Alert(entity._ModelDBEntity):
@@ -151,7 +152,7 @@ class Alerts(object):
             notification_channels = []
 
         for channel in notification_channels:
-            if isinstance(channel, _NotificationChannel):
+            if isinstance(channel, notification_channel._NotificationChannel):
                 raise TypeError(
                     "a notification channel must be created in Verta before"
                     " it can be used; please pass the object returned from"
@@ -211,7 +212,7 @@ class Alerts(object):
 class AlertHistoryItem(object):
     def __init__(self, msg):
         self._event_time = time_utils.datetime_from_millis(msg.event_time_millis)
-        self._status = _AlertStatus._from_proto(msg.status)
+        self._status = status._AlertStatus._from_proto(msg.status)
         self._violating_summary_sample_ids = msg.violating_summary_sample_ids
 
     def __repr__(self):
