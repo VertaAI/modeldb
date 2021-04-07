@@ -33,6 +33,15 @@ class SummaryQuery(object):
             extract_ids(monitored_entities) if monitored_entities else None
         )
 
+    @classmethod
+    def _from_proto_request(cls, msg):
+        return cls(
+            ids=msg.ids,
+            names=msg.names,
+            type_names=msg.type_names,
+            monitored_entities=msg.monitories_entity_ids,
+        )
+
     def _to_proto_request(self):
         return FindSummaryRequest(
             ids=self._ids,
@@ -52,6 +61,16 @@ class SummarySampleQuery(object):
         self._labels = maybe(Summary._labels_proto, labels)
         self._time_window_start_at_millis = time_window_start_at_millis
         self._time_window_end_at_millis = time_window_end_at_millis
+
+    @classmethod
+    def _from_proto_request(cls, msg):
+        return cls(
+            summary_query=SummaryQuery._from_proto_request(msg.filter.find_summaries),
+            ids=msg.filter.sample_ids,
+            labels=msg.filter.labels,
+            time_window_start_at_millis=msg.filter.time_window_start_at_millis,
+            time_window_end_at_millis=msg.filter.time_window_end_at_millis,
+        )
 
     def _to_proto_request(self):
         return FindSummarySampleRequest(
@@ -227,6 +246,7 @@ class Summaries:
 
 class SummarySamples:
     def __init__(self, conn, conf):
+        # TODO: potentially summary_id
         self._conn = conn
         self._conf = conf
 
