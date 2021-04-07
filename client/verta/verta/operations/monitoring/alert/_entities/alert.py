@@ -86,11 +86,7 @@ class Alert(entity._ModelDBEntity):
                     notification_channel.id: True
                     for notification_channel in notification_channels
                 },
-                sample_find_base=(
-                    summary_sample_query._to_proto_request()
-                    if summary_sample_query
-                    else None
-                ),
+                sample_find_base=summary_sample_query._to_proto_request(),
                 alerter_type=alerter._TYPE,
             ),
         )
@@ -145,7 +141,7 @@ class Alerts(object):
         self,
         name,
         alerter,
-        summary_sample_query=None,
+        summary_sample_query,
         notification_channels=None,
         created_at_millis=None,
         updated_at_millis=None,
