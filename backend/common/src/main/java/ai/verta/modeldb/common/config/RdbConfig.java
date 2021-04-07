@@ -8,6 +8,7 @@ public class RdbConfig {
   public String RdbUrl;
   public String RdbUsername;
   public String RdbPassword;
+  public Integer maxAllowedPacket;
 
   public void Validate(String base) throws InvalidConfigException {
     if (RdbDatabaseName == null || RdbDatabaseName.isEmpty())

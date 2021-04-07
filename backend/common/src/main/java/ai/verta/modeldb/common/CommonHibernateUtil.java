@@ -158,7 +158,28 @@ public abstract class CommonHibernateUtil {
   public SessionFactory resetSessionFactory() {
     isReady = false;
     sessionFactory = null;
-    return getSessionFactory();
+
+    getSessionFactory();
+
+    try (Connection con = getDBConnection(databaseConfig.RdbConfiguration)) {
+      JdbcConnection jdbcCon = new JdbcConnection(con);
+      setMaxAllowedPacket(jdbcCon);
+    } catch (DatabaseException | ClassNotFoundException | SQLException e) {
+      LOGGER.error(e.getMessage(), e);
+      throw new ModelDBException(e.getMessage(), e);
+    }
+    return sessionFactory;
+
+  }
+
+  private void setMaxAllowedPacket(JdbcConnection jdbcCon) throws DatabaseException, SQLException {
+    Integer maxAllowedPacket = databaseConfig.RdbConfiguration.maxAllowedPacket;
+    if (maxAllowedPacket != null) {
+    Statement stmt = jdbcCon.createStatement();
+    ResultSet rs = stmt.executeQuery(String.format("SET GLOBAL max_allowed_packet=%d", maxAllowedPacket));
+    rs.close();
+    stmt.close();
+    }
   }
 
   public void checkDBConnectionInLoop(boolean isStartUpTime) throws InterruptedException {
@@ -216,6 +237,7 @@ public abstract class CommonHibernateUtil {
 
       String sql = "SELECT * FROM database_change_log_lock WHERE ID = 1";
       ResultSet rs = stmt.executeQuery(sql);
+      setMaxAllowedPacket(jdbcCon);
 
       long lastLockAcquireTimestamp = 0L;
       boolean locked = false;
@@ -242,6 +264,11 @@ public abstract class CommonHibernateUtil {
       }
       rs.close();
       stmt.close();
+
+      stmt = jdbcCon.createStatement();
+      ResultSet rs2 = stmt.executeQuery("SET GLOBAL max_allowed_packet=1677721");
+      stmt.close();
+
 
       Calendar currentCalender = Calendar.getInstance();
       long currentLockedTimeDiffSecond =

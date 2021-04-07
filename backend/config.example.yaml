@@ -52,6 +52,7 @@ database:
     RdbUrl: "jdbc:postgresql://localhost:5432"
     RdbUsername:
     RdbPassword:
+    maxAllowedPacket: 91677721
 
 # Test Database settings (type mongodb, couchbasedb, relational etc..)
 test:
