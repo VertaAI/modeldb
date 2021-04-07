@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-alpine3.13 as builder
+FROM openjdk:14-jdk-alpine3.10 as builder
 
 RUN apk add wget
 
@@ -6,7 +6,7 @@ RUN GRPC_HEALTH_PROBE_VERSION=v0.3.0 && \
     wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
     chmod +x /bin/grpc_health_probe
 
-FROM openjdk:17-jdk-alpine3.13
+FROM openjdk:14-jdk-alpine3.10
 COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe
 
 RUN mkdir -p modeldb-project-work-dir
