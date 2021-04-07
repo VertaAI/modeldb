@@ -52,6 +52,7 @@ database:
     RdbUrl: "jdbc:postgresql://localhost:5432"
     RdbUsername:
     RdbPassword:
+    sslMode: DISABLED
 
 # Test Database settings (type mongodb, couchbasedb, relational etc..)
 test:
@@ -70,6 +71,7 @@ test:
       RdbUrl: "jdbc:postgresql://localhost:5432"
       RdbUsername:
       RdbPassword:
+      sslMode: DISABLED
   testUsers:
     primaryUser:
       email:
