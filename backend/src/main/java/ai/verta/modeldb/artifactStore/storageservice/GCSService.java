@@ -99,8 +99,10 @@ public class GCSService implements ArtifactStoreService {
           // resumable uploads.
           return connection.getHeaderField("Location");
         } else {
-          // If instead of returning the URL we received any other error message from the server for our post request,
-          // we can read it using getInputStream. Finally, we can thrown an error after reading the stream.
+          // If instead of returning the URL we received any other error message from the server for
+          // our post request,
+          // we can read it using getInputStream. Finally, we can thrown an error after reading the
+          // stream.
           try (BufferedReader reader =
               new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
             String inputLine;
@@ -110,7 +112,9 @@ public class GCSService implements ArtifactStoreService {
             }
 
             String errorMessage = response.toString();
-            LOGGER.error("Failed to send post request to GCS. Got the following error message: " + errorMessage);
+            LOGGER.error(
+                "Failed to send post request to GCS. Got the following error message: "
+                    + errorMessage);
             throw new ModelDBException(errorMessage);
           }
         }
@@ -167,7 +171,10 @@ public class GCSService implements ArtifactStoreService {
     // uploads and will only call generatePresignedUrl once to get the upload URL.
     String errorMessage = "Multipart not supported by GCS";
     Status status =
-            Status.newBuilder().setCode(Code.FAILED_PRECONDITION_VALUE).setMessage(errorMessage).build();
+        Status.newBuilder()
+            .setCode(Code.FAILED_PRECONDITION_VALUE)
+            .setMessage(errorMessage)
+            .build();
     LOGGER.error(errorMessage);
     throw StatusProto.toStatusRuntimeException(status);
   }
