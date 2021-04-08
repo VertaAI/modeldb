@@ -165,7 +165,11 @@ public class GCSService implements ArtifactStoreService {
     // Returning empty would let the underlying caller know that this artifact store method doesn't
     // support multipart
     // uploads and will only call generatePresignedUrl once to get the upload URL.
-    return Optional.empty();
+    String errorMessage = "Multipart not supported by GCS";
+    Status status =
+            Status.newBuilder().setCode(Code.FAILED_PRECONDITION_VALUE).setMessage(errorMessage).build();
+    LOGGER.error(errorMessage);
+    throw StatusProto.toStatusRuntimeException(status);
   }
 
   @Override
