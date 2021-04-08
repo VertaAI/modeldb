@@ -1,6 +1,6 @@
 package ai.verta.modeldb.reconcilers;
 
-import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
@@ -33,18 +33,29 @@ public class SoftDeleteRepositories extends Reconciler<String> {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final RoleService roleService;
+  private final boolean isDataset;
 
-  public SoftDeleteRepositories(ReconcilerConfig config, RoleService roleService) {
+  public SoftDeleteRepositories(
+      ReconcilerConfig config, RoleService roleService, boolean isDataset) {
     super(config, LOGGER);
     this.roleService = roleService;
+    this.isDataset = isDataset;
   }
 
   @Override
   public void resync() {
-    String queryString =
-        String.format(
-            "select rp.id from %s rp where rp.deleted=:deleted AND rp.datasetRepositoryMappingEntity IS EMPTY",
-            RepositoryEntity.class.getSimpleName());
+    String queryString;
+    if (isDataset) {
+      queryString =
+          String.format(
+              "select rp.id from %s rp where rp.deleted=:deleted AND rp.datasetRepositoryMappingEntity IS NOT EMPTY",
+              RepositoryEntity.class.getSimpleName());
+    } else {
+      queryString =
+          String.format(
+              "select rp.id from %s rp where rp.deleted=:deleted AND rp.datasetRepositoryMappingEntity IS EMPTY",
+              RepositoryEntity.class.getSimpleName());
+    }
 
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query deletedQuery = session.createQuery(queryString);
@@ -58,8 +69,13 @@ public class SoftDeleteRepositories extends Reconciler<String> {
   protected ReconcileResult reconcile(Set<String> ids) {
     LOGGER.debug("Reconciling repositories " + ids.toString());
 
-    roleService.deleteEntityResourcesWithServiceUser(
-        new ArrayList<>(ids), ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+    if (isDataset) {
+      roleService.deleteEntityResourcesWithServiceUser(
+          new ArrayList<>(ids), ModelDBServiceResourceTypes.DATASET);
+    } else {
+      roleService.deleteEntityResourcesWithServiceUser(
+          new ArrayList<>(ids), ModelDBServiceResourceTypes.REPOSITORY);
+    }
 
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       deleteRepositories(session, ids);
@@ -82,7 +98,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
       for (RepositoryEntity repository : repositoryEntities) {
         Transaction transaction = null;
         try {
-          ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+          ModelDBServiceResourceTypes modelDBServiceResourceTypes =
               ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
           roleService.deleteEntityResourcesWithServiceUser(
               Collections.singletonList(String.valueOf(repository.getId())),
