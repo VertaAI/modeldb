@@ -203,12 +203,11 @@ class Alerts(object):
         if notification_channels is None:
             notification_channels = []
         for channel in notification_channels:
-            # as opposed to notification_channel._entities.NotificationChannel
-            if isinstance(channel, notification_channel._NotificationChannel):
+            if not isinstance(channel, notification_channel._entities.NotificationChannel):
                 raise TypeError(
-                    "a notification channel must be created in Verta before"
-                    " it can be used; please pass the object returned from"
-                    " client.notification_channels.create() instead"
+                    "notification channel must be an entity object returned"
+                    " from client.notification_channels.create(),"
+                    " not {}".format(type(channel))
                 )
 
         ctx = _Context(self._conn, self._conf)
