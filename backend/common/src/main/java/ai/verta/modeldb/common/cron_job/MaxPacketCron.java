@@ -26,7 +26,9 @@ public class MaxPacketCron extends TimerTask {
 
     try (Connection con = hibernateUtil.getDBConnection(databaseConfig.RdbConfiguration)) {
       JdbcConnection jdbcCon = new JdbcConnection(con);
-      hibernateUtil.setMaxAllowedPacket(jdbcCon, databaseConfig.RdbConfiguration.maxAllowedPacket);
+      if (hibernateUtil.setMaxAllowedPacket(jdbcCon, databaseConfig.RdbConfiguration.maxAllowedPacket)) {
+        hibernateUtil.resetSessionFactory();
+      }
     } catch (Exception ex) {
       LOGGER.warn("MaxPacketCron Exception: ", ex);
     } finally {
