@@ -165,7 +165,7 @@ public abstract class CommonHibernateUtil {
     return getSessionFactory();
   }
 
-  public boolean setMaxAllowedPacket(JdbcConnection jdbcCon, Integer maxAllowedPacket)
+  public static boolean setMaxAllowedPacket(JdbcConnection jdbcCon, Integer maxAllowedPacket)
       throws DatabaseException, SQLException {
     if (maxAllowedPacket != null) {
       Statement stmt = jdbcCon.createStatement();
