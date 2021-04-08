@@ -24,9 +24,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
@@ -254,7 +251,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepositoryById(session, request.getId());
       return GetRepositoryRequest.Response.newBuilder()
-          .setRepository(repository.toProto(roleService, authService).get())
+          .setRepository(
+              repository.toProto(roleService, authService, new HashMap<>(), new HashMap<>()))
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -418,7 +416,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               create,
               RepositoryTypeEnum.REGULAR);
       return SetRepository.Response.newBuilder()
-          .setRepository(repository.toProto(roleService, authService).get())
+          .setRepository(
+              repository.toProto(roleService, authService, new HashMap<>(), new HashMap<>()))
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -655,8 +654,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
       Repository repository =
           createDatasetRepository(
-                  session, dataset, repositoryIdBuilder.build(), workspaceName, create, userInfo)
-              .get();
+              session, dataset, repositoryIdBuilder.build(), workspaceName, create, userInfo);
       return repositoryToDataset(session, metadataDAO, repository);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -667,7 +665,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
   }
 
-  private ListenableFuture<Repository> createDatasetRepository(
+  private Repository createDatasetRepository(
       Session session,
       Dataset dataset,
       RepositoryIdentification repositoryId,
@@ -705,18 +703,20 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             create,
             RepositoryTypeEnum.DATASET);
 
-    return repositoryEntity.toProto(roleService, authService);
+    return repositoryEntity.toProto(roleService, authService, new HashMap<>(), new HashMap<>());
   }
 
-  ListenableFuture<Dataset> convertToDataset(
-      Session session, MetadataDAO metadataDAO, RepositoryEntity repositoryEntity)
+  Dataset convertToDataset(
+      Session session,
+      MetadataDAO metadataDAO,
+      RepositoryEntity repositoryEntity,
+      Map<Long, Workspace> cacheWorkspaceMap,
+      Map<String, GetResourcesResponseItem> getResourcesMap)
       throws ModelDBException, InvalidProtocolBufferException {
 
-    ListenableFuture<Repository> repository = repositoryEntity.toProto(roleService, authService);
-    return Futures.transform(
-        repository,
-        rep -> repositoryToDataset(session, metadataDAO, rep),
-        MoreExecutors.directExecutor());
+    Repository repository =
+        repositoryEntity.toProto(roleService, authService, cacheWorkspaceMap, getResourcesMap);
+    return repositoryToDataset(session, metadataDAO, repository);
   }
 
   private Dataset repositoryToDataset(
@@ -767,15 +767,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       List<Predicate> finalPredicatesList = new ArrayList<>();
 
       Set<String> accessibleResourceIds;
-      if (!request.getWorkspaceName().isEmpty()
-          && request
-              .getWorkspaceName()
-              .equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+      Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
+      String workspaceName = request.getWorkspaceName();
+      if (!workspaceName.isEmpty()
+          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             roleService.getResourceItems(
                 null, Collections.emptySet(), ModelDBServiceResourceTypes.REPOSITORY);
         accessibleResourceIds =
             accessibleAllWorkspaceItems.stream()
+                .peek(
+                    responseItem -> getResourcesMap.put(responseItem.getResourceId(), responseItem))
                 .map(GetResourcesResponseItem::getResourceId)
                 .collect(Collectors.toSet());
 
@@ -789,13 +791,17 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           }
         }
       } else {
+        Workspace workspace =
+            roleService.getWorkspaceByWorkspaceName(currentLoginUserInfo, workspaceName);
+        List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+            roleService.getResourceItems(
+                workspace, Collections.emptySet(), ModelDBServiceResourceTypes.REPOSITORY);
         accessibleResourceIds =
-            ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
-                roleService,
-                Collections.emptySet(),
-                request.getWorkspaceName(),
-                currentLoginUserInfo,
-                ModelDBServiceResourceTypes.REPOSITORY);
+            accessibleAllWorkspaceItems.stream()
+                .peek(
+                    responseItem -> getResourcesMap.put(responseItem.getResourceId(), responseItem))
+                .map(GetResourcesResponseItem::getResourceId)
+                .collect(Collectors.toSet());
       }
 
       if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
@@ -842,11 +848,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       ListRepositoriesRequest.Response.Builder builder =
           ListRepositoriesRequest.Response.newBuilder();
 
-      List<ListenableFuture<Repository>> repositories = new ArrayList<>(repositoryEntities.size());
+      List<Repository> repositories = new ArrayList<>(repositoryEntities.size());
+      Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
       for (RepositoryEntity repositoryEntity : repositoryEntities) {
-        repositories.add(repositoryEntity.toProto(roleService, authService));
+        repositories.add(
+            repositoryEntity.toProto(roleService, authService, cacheWorkspaceMap, getResourcesMap));
       }
-      builder.addAllRepositories(Futures.allAsList(repositories).get());
+      builder.addAllRepositories(repositories);
 
       long totalRecords = RdbmsUtils.count(session, repositoryEntityRoot, criteriaQuery);
       builder.setTotalRecords(totalRecords);
@@ -1230,6 +1238,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                         .map(String::valueOf)
                         .collect(Collectors.toList())));
 
+        Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
         String workspaceName = request.getWorkspaceName();
         if (!workspaceName.isEmpty()
             && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
@@ -1240,6 +1249,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   ModelDBServiceResourceTypes.REPOSITORY);
           accessibleResourceIdsWithCollaborator =
               accessibleAllWorkspaceItems.stream()
+                  .peek(
+                      responseItem ->
+                          getResourcesMap.put(responseItem.getResourceId(), responseItem))
                   .map(GetResourcesResponseItem::getResourceId)
                   .collect(Collectors.toSet());
 
@@ -1253,13 +1265,20 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             }
           }
         } else {
-          accessibleResourceIdsWithCollaborator =
-              ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
-                  roleService,
+          Workspace workspace =
+              roleService.getWorkspaceByWorkspaceName(currentLoginUserInfo, workspaceName);
+          List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+              roleService.getResourceItems(
+                  workspace,
                   accessibleResourceIdsWithCollaborator,
-                  workspaceName,
-                  currentLoginUserInfo,
                   ModelDBServiceResourceTypes.REPOSITORY);
+          accessibleResourceIdsWithCollaborator =
+              accessibleAllWorkspaceItems.stream()
+                  .peek(
+                      responseItem ->
+                          getResourcesMap.put(responseItem.getResourceId(), responseItem))
+                  .map(GetResourcesResponseItem::getResourceId)
+                  .collect(Collectors.toSet());
         }
 
         if (accessibleResourceIdsWithCollaborator.isEmpty() && roleService.IsImplemented()) {
@@ -1297,13 +1316,16 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         LOGGER.debug("Final return Repositories, size {}", repositoryEntities.size());
         LOGGER.debug("Final return Total Records: {}", totalRecords);
 
-        List<ListenableFuture<Repository>> repositories = new ArrayList<>();
+        List<Repository> repositories = new ArrayList<>();
+        Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
         for (RepositoryEntity repositoryEntity : repositoryEntities) {
-          repositories.add(repositoryEntity.toProto(roleService, authService));
+          repositories.add(
+              repositoryEntity.toProto(
+                  roleService, authService, cacheWorkspaceMap, getResourcesMap));
         }
 
         return FindRepositories.Response.newBuilder()
-            .addAllRepositories(Futures.allAsList(repositories).get())
+            .addAllRepositories(repositories)
             .setTotalRecords(totalRecords)
             .build();
       } catch (ModelDBException ex) {
@@ -1341,15 +1363,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       return AddDatasetTags.Response.newBuilder()
           .setDataset(
               convertToDataset(
-                      session,
-                      metadataDAO,
-                      getRepositoryById(
-                          session,
-                          repositoryIdentification,
-                          true,
-                          false,
-                          RepositoryTypeEnum.DATASET))
-                  .get())
+                  session,
+                  metadataDAO,
+                  getRepositoryById(
+                      session, repositoryIdentification, true, false, RepositoryTypeEnum.DATASET),
+                  new HashMap<>(),
+                  new HashMap<>()))
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -1415,9 +1434,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       Root<RepositoryEntity> repositoryRoot = criteriaQuery.from(RepositoryEntity.class);
       repositoryRoot.alias("ds");
 
-      Set<String> accessibleDatasetIds = new HashSet<>();
+      Set<String> accessibleDatasetIds;
       String workspaceName = queryParameters.getWorkspaceName();
-
+      Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
       if (!workspaceName.isEmpty()
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
@@ -1429,6 +1448,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 ModelDBServiceResourceTypes.DATASET);
         accessibleDatasetIds =
             accessibleAllWorkspaceItems.stream()
+                .peek(
+                    responseItem -> getResourcesMap.put(responseItem.getResourceId(), responseItem))
                 .map(GetResourcesResponseItem::getResourceId)
                 .collect(Collectors.toSet());
 
@@ -1445,15 +1466,21 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           }
         }
       } else {
-        accessibleDatasetIds =
-            ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
-                roleService,
+        Workspace workspace =
+            roleService.getWorkspaceByWorkspaceName(currentLoginUserInfo, workspaceName);
+        List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
+            roleService.getResourceItems(
+                workspace,
                 !queryParameters.getDatasetIdsList().isEmpty()
                     ? new HashSet<>(queryParameters.getDatasetIdsList())
                     : Collections.emptySet(),
-                workspaceName,
-                currentLoginUserInfo,
                 ModelDBServiceResourceTypes.DATASET);
+        accessibleDatasetIds =
+            accessibleAllWorkspaceItems.stream()
+                .peek(
+                    responseItem -> getResourcesMap.put(responseItem.getResourceId(), responseItem))
+                .map(GetResourcesResponseItem::getResourceId)
+                .collect(Collectors.toSet());
       }
 
       if (accessibleDatasetIds.isEmpty() && roleService.IsImplemented()) {
@@ -1544,29 +1571,29 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       List<RepositoryEntity> repositoryEntities = query.list();
       LOGGER.debug("Repositorys result count : {}", repositoryEntities.size());
 
-      Map<Long, SimpleEntry<ListenableFuture<Dataset>, ListenableFuture<Repository>>>
-          repositoriesAndDatasetsMap =
-              convertRepositoriesFromRepositoryEntityList(
-                  session, metadataDAO, repositoryEntities, queryParameters.getIdsOnly());
+      Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
+      Map<Long, SimpleEntry<Dataset, Repository>> repositoriesAndDatasetsMap =
+          convertRepositoriesFromRepositoryEntityList(
+              session,
+              metadataDAO,
+              repositoryEntities,
+              queryParameters.getIdsOnly(),
+              cacheWorkspaceMap,
+              getResourcesMap);
 
-      LinkedHashMap<ListenableFuture<Dataset>, ListenableFuture<Repository>>
-          repositoriesAndDatasets =
-              repositoriesAndDatasetsMap.values().stream()
-                  .collect(
-                      Collectors.toMap(
-                          SimpleEntry::getKey,
-                          SimpleEntry::getValue,
-                          (a, b) -> a,
-                          LinkedHashMap::new));
+      LinkedHashMap<Dataset, Repository> repositoriesAndDatasets =
+          repositoriesAndDatasetsMap.values().stream()
+              .collect(
+                  Collectors.toMap(
+                      SimpleEntry::getKey, SimpleEntry::getValue, (a, b) -> a, LinkedHashMap::new));
 
       long totalRecords = RdbmsUtils.count(session, repositoryRoot, criteriaQuery);
       LOGGER.debug("Repositorys total records count : {}", totalRecords);
 
       DatasetPaginationDTO repositoryDatasetPaginationDTO = new DatasetPaginationDTO();
-      repositoryDatasetPaginationDTO.setDatasets(
-          Futures.allAsList(repositoriesAndDatasets.keySet()).get());
+      repositoryDatasetPaginationDTO.setDatasets(new ArrayList<>(repositoriesAndDatasets.keySet()));
       repositoryDatasetPaginationDTO.setRepositories(
-          Futures.allAsList(repositoriesAndDatasets.values()).get());
+          new ArrayList<>(repositoriesAndDatasets.values()));
       repositoryDatasetPaginationDTO.setTotalRecords(totalRecords);
       return repositoryDatasetPaginationDTO;
     } catch (Exception ex) {
@@ -1602,11 +1629,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           false,
           RepositoryTypeEnum.DATASET);
       return convertToDataset(
-              session,
-              metadataDAO,
-              getRepositoryById(
-                  session, repositoryIdentification, true, false, RepositoryTypeEnum.DATASET))
-          .get();
+          session,
+          metadataDAO,
+          getRepositoryById(
+              session, repositoryIdentification, true, false, RepositoryTypeEnum.DATASET),
+          new HashMap<>(),
+          new HashMap<>());
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteDatasetTags(metadataDAO, id, tagsList, deleteAll);
@@ -1669,7 +1697,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               false,
               RepositoryTypeEnum.DATASET);
       return GetDatasetById.Response.newBuilder()
-          .setDataset(convertToDataset(session, metadataDAO, repositoryEntity).get())
+          .setDataset(
+              convertToDataset(
+                  session, metadataDAO, repositoryEntity, new HashMap<>(), new HashMap<>()))
           .build();
     } catch (NumberFormatException e) {
       String message = "Can't find repository, wrong id format: " + id;
@@ -1683,33 +1713,41 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
   }
 
-  private Map<Long, SimpleEntry<ListenableFuture<Dataset>, ListenableFuture<Repository>>>
-      convertRepositoriesFromRepositoryEntityList(
-          Session session,
-          MetadataDAO metadataDAO,
-          List<RepositoryEntity> repositoryEntityList,
-          boolean idsOnly) {
+  private Map<Long, SimpleEntry<Dataset, Repository>> convertRepositoriesFromRepositoryEntityList(
+      Session session,
+      MetadataDAO metadataDAO,
+      List<RepositoryEntity> repositoryEntityList,
+      boolean idsOnly,
+      Map<Long, Workspace> cacheWorkspaceMap,
+      Map<String, GetResourcesResponseItem> getResourcesMap) {
     return repositoryEntityList.stream()
         .collect(
             Collectors.toMap(
                 RepositoryEntity::getId,
                 repositoryEntity ->
                     getDatasetRepositorySimpleEntry(
-                        session, metadataDAO, idsOnly, repositoryEntity),
+                        session,
+                        metadataDAO,
+                        idsOnly,
+                        repositoryEntity,
+                        cacheWorkspaceMap,
+                        getResourcesMap),
                 (a, b) -> a,
                 LinkedHashMap::new));
   }
 
-  private SimpleEntry<ListenableFuture<Dataset>, ListenableFuture<Repository>>
-      getDatasetRepositorySimpleEntry(
-          Session session,
-          MetadataDAO metadataDAO,
-          boolean idsOnly,
-          RepositoryEntity repositoryEntity) {
+  private SimpleEntry<Dataset, Repository> getDatasetRepositorySimpleEntry(
+      Session session,
+      MetadataDAO metadataDAO,
+      boolean idsOnly,
+      RepositoryEntity repositoryEntity,
+      Map<Long, Workspace> cacheWorkspaceMap,
+      Map<String, GetResourcesResponseItem> getResourcesMap) {
     try {
       return new SimpleEntry<>(
-          convertToDataset(session, metadataDAO, repositoryEntity),
-          repositoryEntity.toProto(roleService, authService));
+          convertToDataset(
+              session, metadataDAO, repositoryEntity, cacheWorkspaceMap, getResourcesMap),
+          repositoryEntity.toProto(roleService, authService, cacheWorkspaceMap, getResourcesMap));
     } catch (InvalidProtocolBufferException | ModelDBException e) {
       LOGGER.warn(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
       throw new InternalErrorException(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);

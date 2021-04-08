@@ -2,6 +2,7 @@
 # pylint: disable=undefined-variable,no-name-in-module
 
 from datetime import datetime, timedelta, timezone
+import time
 
 UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
