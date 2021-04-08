@@ -76,6 +76,15 @@ class Alert(entity._ModelDBEntity):
             self._msg.sample_find_base,
         )
 
+    @staticmethod
+    def _validate_notification_channel(channel):
+        if not isinstance(channel, notification_channel._entities.NotificationChannel):
+            raise TypeError(
+                "notification channel must be an entity object returned"
+                " from client.notification_channels.create(),"
+                " not {}".format(type(channel))
+            )
+
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindAlertRequest(
@@ -151,11 +160,22 @@ class Alert(entity._ModelDBEntity):
         alert_msg = conn.must_proto_response(response, _AlertService.Alert)
         return alert_msg
 
-    def _update(self):
-        raise NotImplementedError
+    def _update(self, alert_msg):
+        msg = _AlertService.UpdateAlertRequest(alert=alert_msg)
+        endpoint = "/api/v1/alerts/updateAlert"
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        self._conn.must_response(response)
+        self._clear_cache()
+        return True
 
     def add_notification_channel(self, notification_channel):
-        raise NotImplementedError
+        self._validate_notification_channel(notification_channel)
+
+        alert_msg = _AlertService.Alert()
+        alert_msg.CopyFrom(self._msg)
+        alert_msg.notification_channels.update({notification_channel.id: True})
+
+        self._update(alert_msg)
 
     # TODO: alternatively, fire() & resolve()?
     def set_status(self, status, summary_sample=None, event_time_millis=None):
@@ -168,6 +188,7 @@ class Alert(entity._ModelDBEntity):
         endpoint = "/api/v1/alerts/updateAlertStatus"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         self._conn.must_response(response)
+        self._clear_cache()
         return True
 
     def delete(self):
@@ -203,12 +224,7 @@ class Alerts(object):
         if notification_channels is None:
             notification_channels = []
         for channel in notification_channels:
-            if not isinstance(channel, notification_channel._entities.NotificationChannel):
-                raise TypeError(
-                    "notification channel must be an entity object returned"
-                    " from client.notification_channels.create(),"
-                    " not {}".format(type(channel))
-                )
+            Alert._validate_notification_channel(channel)
 
         ctx = _Context(self._conn, self._conf)
         return Alert._create(
