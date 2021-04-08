@@ -2,7 +2,6 @@ package ai.verta.modeldb.common.cron_job;
 
 import ai.verta.modeldb.common.CommonHibernateUtil;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.config.Config;
 import java.util.TimerTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,9 +13,9 @@ public class MaxPacketCron extends TimerTask {
   private final CommonHibernateUtil hibernateUtil;
   private final Integer maxAllowedPacket;
 
-  public MaxPacketCron(CommonHibernateUtil hibernateUtil) {
+  public MaxPacketCron(CommonHibernateUtil hibernateUtil, Integer maxAllowedPacket) {
     this.hibernateUtil = hibernateUtil;
-    maxAllowedPacket = Config.getInstance().database.RdbConfiguration.maxAllowedPacket;
+    this.maxAllowedPacket = maxAllowedPacket;
   }
 
   /** The action to be performed by this timer task. */
