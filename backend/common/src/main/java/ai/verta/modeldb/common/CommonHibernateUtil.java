@@ -164,14 +164,19 @@ public abstract class CommonHibernateUtil {
     return getSessionFactory();
   }
 
-  private void setMaxAllowedPacket(JdbcConnection jdbcCon) throws DatabaseException, SQLException {
-    Integer maxAllowedPacket = databaseConfig.RdbConfiguration.maxAllowedPacket;
+  public static void setMaxAllowedPacket(JdbcConnection jdbcCon, Integer maxAllowedPacket)
+      throws DatabaseException, SQLException {
     if (maxAllowedPacket != null) {
       Statement stmt = jdbcCon.createStatement();
-      ResultSet rs = stmt.executeQuery(String.format("SET GLOBAL max_allowed_packet=%d", maxAllowedPacket));
+      ResultSet rs = stmt.executeQuery(maxAllowedPacketQuery(maxAllowedPacket));
       rs.close();
       stmt.close();
     }
+  }
+
+  public static String maxAllowedPacketQuery(Integer maxAllowedPacket) {
+    return String.format("SET GLOBAL max_allowed_packet=%d",
+        maxAllowedPacket);
   }
 
   public void checkDBConnectionInLoop(boolean isStartUpTime) throws InterruptedException {
@@ -255,6 +260,7 @@ public abstract class CommonHibernateUtil {
       }
       rs.close();
       stmt.close();
+      setMaxAllowedPacket(jdbcCon, databaseConfig.RdbConfiguration.maxAllowedPacket);
 
       Calendar currentCalender = Calendar.getInstance();
       long currentLockedTimeDiffSecond =
@@ -342,17 +348,7 @@ public abstract class CommonHibernateUtil {
 
   public boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
     try (Connection con = getDBConnection(rdb)) {
-      boolean valid = con.isValid(timeout);
-      if (valid) {
-        try {
-          JdbcConnection jdbcCon = new JdbcConnection(con);
-          setMaxAllowedPacket(jdbcCon);
-        } catch (DatabaseException | SQLException e) {
-          LOGGER.error(e.getMessage(), e);
-          throw new ModelDBException(e.getMessage(), e);
-        }
-      }
-      return valid;
+      return con.isValid(timeout);
     } catch (Exception ex) {
       LOGGER.warn("CommonHibernateUtil checkDBConnection() got error ", ex);
       return false;

@@ -4,7 +4,9 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.common.config.CronJobConfig;
+import ai.verta.modeldb.common.cron_job.MaxPacketCron;
 import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.Map;
 import java.util.TimerTask;
@@ -42,6 +44,9 @@ public class CronJobUtils {
         } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_AUDIT_LOGS)
             && config.hasServiceAccount()) {
           task = new AuditLogsCron(cronJob.getValue().record_update_limit);
+        } else if (cronJob.getKey().equals(ModelDBConstants.SET_MAX_PACKET_SIZE)
+            && config.hasServiceAccount()) {
+          task = new MaxPacketCron(ModelDBHibernateUtil.getInstance());
         } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
             && (config.hasServiceAccount() || !services.roleService.IsImplemented())) {
           task =
