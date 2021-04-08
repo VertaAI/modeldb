@@ -55,12 +55,23 @@ class SummaryQuery(object):
 
 
 class SummarySampleQuery(object):
-    def __init__(self, summary_query=None, ids=None, labels=None, time_window_start_at_millis=None, time_window_end_at_millis=None):
-        self._find_summaries = summary_query._to_proto_request() if summary_query else None
+    def __init__(
+        self,
+        summary_query=None,
+        ids=None,
+        labels=None,
+        time_window_start_at_millis=None,
+        time_window_end_at_millis=None,
+        created_at_after_millis=None,
+    ):
+        self._find_summaries = (
+            summary_query._to_proto_request() if summary_query else None
+        )
         self._sample_ids = extract_ids(ids) if ids else None
         self._labels = maybe(Summary._labels_proto, labels)
         self._time_window_start_at_millis = time_window_start_at_millis
         self._time_window_end_at_millis = time_window_end_at_millis
+        self._created_at_after_millis = created_at_after_millis
 
     @classmethod
     def _from_proto_request(cls, msg):
@@ -72,6 +83,7 @@ class SummarySampleQuery(object):
         obj._labels = msg.filter.labels
         obj._time_window_start_at_millis = msg.filter.time_window_start_at_millis
         obj._time_window_end_at_millis = msg.filter.time_window_end_at_millis
+        obj._created_at_after_millis = msg.filter.created_at_after_millis
 
         return obj
 
@@ -83,6 +95,7 @@ class SummarySampleQuery(object):
                 labels=self._labels,
                 time_window_start_at_millis=self._time_window_start_at_millis,
                 time_window_end_at_millis=self._time_window_end_at_millis,
+                created_at_after_millis=self._created_at_after_millis,
             )
         )
 
