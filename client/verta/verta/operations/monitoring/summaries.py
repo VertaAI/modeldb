@@ -25,13 +25,19 @@ from verta import data_types
 
 
 class SummaryQuery(object):
-    def __init__(self, ids=None, names=None, type_names=None, monitored_entities=None):
+    def __init__(self, ids=None, names=None, data_type_classes=None, monitored_entities=None):
         self._ids = extract_ids(ids) if ids else None
         self._names = names
-        self._type_names = type_names
+
+        if data_type_classes:
+            self._type_names = [cls._type_string() for cls in data_type_classes]
+        else:
+            self._type_names = None
+
         self._monitored_entity_ids = (
             extract_ids(monitored_entities) if monitored_entities else None
         )
+
 
     def _to_proto_request(self):
         return FindSummaryRequest(
@@ -58,13 +64,16 @@ class Summary(entity._ModelDBEntity):
         return "Summary name:{}, type:{}, monitored_entity_id:{}".format(self.name, self.type, self.monitored_entity_id)
 
     def log_sample(self, data, labels, time_window_start, time_window_end, created_at=None):
+        if not isinstance(data, data_types._VertaDataType):
+            raise TypeError("expected a supported VertaDataType, found {}".format(type(data)))
+        if data._type_string() != self.type:
+            raise TypeError("expected a {}, found {}".format(self.type, data._type_string()))
+
+
         if not created_at:
             created_at = time_utils.now()
 
-        if isinstance(data, data_types._VertaDataType):
-            content = json.dumps(data._as_dict())
-        else:
-            content = data
+        content = json.dumps(data._as_dict())
 
         created_at_millis = time_utils.epoch_millis(created_at)
         window_start_millis = time_utils.epoch_millis(time_window_start)
@@ -72,6 +81,7 @@ class Summary(entity._ModelDBEntity):
 
         msg = CreateSummarySample(
             summary_id=self.id,
+            summary_type_name=data._type_string(),
             content=content,
             labels=labels,
             created_at_millis=created_at_millis,
@@ -170,11 +180,13 @@ class Summaries:
         self._conn = conn
         self._conf = conf
 
-    def create(self, name, type, monitored_entity):
+
+    def create(self, name, data_type_cls, monitored_entity):
+        assert issubclass(data_type_cls, data_types._VertaDataType)
         msg = CreateSummaryRequest(
             monitored_entity_id=monitored_entity.id,
             name=name,
-            type_name=type,
+            type_name=data_type_cls._type_string(),
         )
         endpoint = "/api/v1/summaries/createSummary"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
