@@ -179,10 +179,10 @@ class Alert(entity._ModelDBEntity):
 
 
 class Alerts(object):
-    def __init__(self, conn, conf, monitored_entity_id):
+    def __init__(self, conn, conf, monitored_entity_id=None):
         self._conn = conn
         self._conf = conf
-        self._monitored_entity_id = int(monitored_entity_id)
+        self._monitored_entity_id = int(monitored_entity_id) if monitored_entity_id else None
 
     def create(
         self,
@@ -194,9 +194,14 @@ class Alerts(object):
         updated_at_millis=None,
         last_evaluated_at_millis=None,
     ):
+        if self._monitored_entity_id is None:
+            raise RuntimeError(
+                "this Alerts cannot be used to create because it was not"
+                " obtained via monitored_entity.alerts"
+            )
+
         if notification_channels is None:
             notification_channels = []
-
         for channel in notification_channels:
             if isinstance(channel, notification_channel._NotificationChannel):
                 raise TypeError(
@@ -238,9 +243,9 @@ class Alerts(object):
     # TODO: use lazy list and pagination
     # TODO: a proper find
     def list(self):
-        msg = _AlertService.FindAlertRequest(
-            monitored_entity_ids=[self._monitored_entity_id],
-        )
+        msg = _AlertService.FindAlertRequest()
+        if self._monitored_entity_id is not None:
+            msg.monitored_entity_ids = [self._monitored_entity_id]
         endpoint = "/api/v1/alerts/findAlert"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         alerts = self._conn.must_proto_response(response, msg.Response).alerts

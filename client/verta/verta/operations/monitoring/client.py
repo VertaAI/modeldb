@@ -9,6 +9,7 @@ from .monitored_entity import MonitoredEntity
 from .profilers import Profilers
 from .summaries import Summaries
 from .labels import Labels
+from .alert._entities import Alerts
 
 
 class Client(object):
@@ -29,6 +30,10 @@ class Client(object):
     @property
     def _ctx(self):
         return self._client._ctx
+
+    @property
+    def alerts(self):
+        return Alerts(self._conn, self._conf)
 
     def get_or_create_monitored_entity(self, name=None, workspace=None, id=None):
         if name is not None and id is not None:
