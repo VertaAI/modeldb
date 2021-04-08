@@ -48,7 +48,7 @@ public class CronJobUtils {
           task =
               new MaxPacketCron(
                   ModelDBHibernateUtil.getInstance(),
-                  Config.getInstance().database.RdbConfiguration.maxAllowedPacket);
+                  Config.getInstance().database);
         } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
             && (config.hasServiceAccount() || !services.roleService.IsImplemented())) {
           task =

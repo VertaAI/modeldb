@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import io.grpc.health.v1.HealthCheckResponse;
+import java.util.Optional;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -164,13 +165,32 @@ public abstract class CommonHibernateUtil {
     return getSessionFactory();
   }
 
-  public static void setMaxAllowedPacket(JdbcConnection jdbcCon, Integer maxAllowedPacket)
+  public void setMaxAllowedPacket(JdbcConnection jdbcCon, Integer maxAllowedPacket)
       throws DatabaseException, SQLException {
     if (maxAllowedPacket != null) {
       Statement stmt = jdbcCon.createStatement();
-      ResultSet rs = stmt.executeQuery(maxAllowedPacketQuery(maxAllowedPacket));
-      rs.close();
+      ResultSet rsMaxAllowedPacket = stmt.executeQuery("SHOW VARIABLES LIKE 'max_allowed_packet'");
+      boolean shouldChangeMaxAllowedPacket = true;
+      Optional<Integer> maxAllowedPacketFromDatabase;
+      if (rsMaxAllowedPacket.next()) {
+        maxAllowedPacketFromDatabase = Optional.of(rsMaxAllowedPacket.getInt(2));
+        rsMaxAllowedPacket.close();
+        shouldChangeMaxAllowedPacket =
+            maxAllowedPacketFromDatabase.get() != maxAllowedPacket / 1024 * 1024;
+      } else {
+        maxAllowedPacketFromDatabase = Optional.empty();
+      }
+      if (shouldChangeMaxAllowedPacket) {
+        LOGGER.info("Changing maxAllowedPacket. Old value: {}, new value: {}",
+            maxAllowedPacketFromDatabase.map(Object::toString).orElse("N/A"),
+            maxAllowedPacket);
+        ResultSet rs = stmt.executeQuery(maxAllowedPacketQuery(maxAllowedPacket));
+        rs.close();
+      }
       stmt.close();
+      if (shouldChangeMaxAllowedPacket) {
+        resetSessionFactory();
+      }
     }
   }
 

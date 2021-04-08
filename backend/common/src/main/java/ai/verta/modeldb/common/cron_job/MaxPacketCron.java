@@ -2,20 +2,21 @@ package ai.verta.modeldb.common.cron_job;
 
 import ai.verta.modeldb.common.CommonHibernateUtil;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.config.DatabaseConfig;
+import java.sql.Connection;
 import java.util.TimerTask;
+import liquibase.database.jvm.JdbcConnection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 public class MaxPacketCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(MaxPacketCron.class);
   private final CommonHibernateUtil hibernateUtil;
-  private final Integer maxAllowedPacket;
+  private final DatabaseConfig databaseConfig;
 
-  public MaxPacketCron(CommonHibernateUtil hibernateUtil, Integer maxAllowedPacket) {
+  public MaxPacketCron(CommonHibernateUtil hibernateUtil, DatabaseConfig databaseConfig) {
     this.hibernateUtil = hibernateUtil;
-    this.maxAllowedPacket = maxAllowedPacket;
+    this.databaseConfig = databaseConfig;
   }
 
   /** The action to be performed by this timer task. */
@@ -23,12 +24,9 @@ public class MaxPacketCron extends TimerTask {
   public void run() {
     LOGGER.info("MaxPacketCron wakeup");
 
-    CommonUtils.registeredBackgroundUtilsCount();
-    try (Session session = hibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      session.createSQLQuery(CommonHibernateUtil
-          .maxAllowedPacketQuery(maxAllowedPacket)).executeUpdate();
-      transaction.commit();
+    try (Connection con = hibernateUtil.getDBConnection(databaseConfig.RdbConfiguration)) {
+      JdbcConnection jdbcCon = new JdbcConnection(con);
+      hibernateUtil.setMaxAllowedPacket(jdbcCon, databaseConfig.RdbConfiguration.maxAllowedPacket);
     } catch (Exception ex) {
       LOGGER.warn("MaxPacketCron Exception: ", ex);
     } finally {
