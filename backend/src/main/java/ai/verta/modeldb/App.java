@@ -198,6 +198,9 @@ public class App implements ApplicationContextAware {
 
       // Initialize grpc server
       ServerBuilder<?> serverBuilder = ServerBuilder.forPort(config.grpcServer.port);
+      if (config.grpcServer.maxInboundMessageSize != null) {
+        serverBuilder.maxInboundMessageSize(config.grpcServer.maxInboundMessageSize);
+      }
 
       // Initialize health check
       HealthServiceImpl healthService = getContext().getBean(HealthServiceImpl.class);
