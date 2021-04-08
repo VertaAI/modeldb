@@ -9,7 +9,7 @@ public class RdbConfig {
   public String RdbUsername;
   public String RdbPassword;
   public String sslMode = "DISABLED";
-  public Integer maxAllowedPacket;
+  public Integer maxAllowedPacket = 4194304; // bytes
 
   public void Validate(String base) throws InvalidConfigException {
     if (RdbDatabaseName == null || RdbDatabaseName.isEmpty())
