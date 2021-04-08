@@ -10,6 +10,7 @@ public class RdbConfig {
   public String RdbPassword;
   public String sslMode = "DISABLED";
   public Integer maxAllowedPacket = 4194304; // bytes
+  private final static int MAX_ALLOWED_PACKET_1GB = 1073741824;
 
   public void Validate(String base) throws InvalidConfigException {
     if (RdbDatabaseName == null || RdbDatabaseName.isEmpty())
@@ -24,6 +25,8 @@ public class RdbConfig {
       throw new InvalidConfigException(base + ".RdbUsername", Config.MISSING_REQUIRED);
     if (sslMode == null || sslMode.isEmpty())
       throw new InvalidConfigException(base + ".sslMode", Config.MISSING_REQUIRED);
+    maxAllowedPacket = maxAllowedPacket > MAX_ALLOWED_PACKET_1GB ?
+        MAX_ALLOWED_PACKET_1GB : maxAllowedPacket;
   }
 
   public boolean isPostgres() {
