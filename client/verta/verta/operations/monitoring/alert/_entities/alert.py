@@ -8,7 +8,7 @@ from ....._tracking import entity, _Context
 from ... import notification_channel
 from ... import summaries
 from ... import utils
-from .. import status
+from .. import status as status_module
 
 
 class Alert(entity._ModelDBEntity):
@@ -66,7 +66,7 @@ class Alert(entity._ModelDBEntity):
     def status(self):
         self._refresh_cache()
 
-        return status._AlertStatus._from_proto(self._msg.status)
+        return status_module._AlertStatus._from_proto(self._msg.status)
 
     @property
     def summary_sample_query(self):
@@ -139,8 +139,8 @@ class Alert(entity._ModelDBEntity):
                 updated_at_millis=updated_at_millis,
                 last_evaluated_at_millis=last_evaluated_at_millis,
                 notification_channels={
-                    notification_channel.id: True
-                    for notification_channel in notification_channels
+                    channel.id: True
+                    for channel in notification_channels
                 },
                 sample_find_base=summary_sample_query._to_proto_request(),
                 alerter_type=alerter._TYPE,
@@ -168,12 +168,16 @@ class Alert(entity._ModelDBEntity):
         self._clear_cache()
         return True
 
-    def add_notification_channel(self, notification_channel):
-        self._validate_notification_channel(notification_channel)
+    def add_notification_channels(self, notification_channels):
+        for channel in notification_channels:
+            self._validate_notification_channel(channel)
 
         alert_msg = _AlertService.Alert()
         alert_msg.CopyFrom(self._msg)
-        alert_msg.notification_channels.update({notification_channel.id: True})
+        alert_msg.notification_channels.update({
+            channel.id: True
+            for channel in notification_channels
+        })
 
         self._update(alert_msg)
 
@@ -279,7 +283,7 @@ class Alerts(object):
 class AlertHistoryItem(object):
     def __init__(self, msg):
         self._event_time = time_utils.datetime_from_millis(msg.event_time_millis)
-        self._status = status._AlertStatus._from_proto(msg.status)
+        self._status = status_module._AlertStatus._from_proto(msg.status)
         self._violating_summary_sample_ids = msg.violating_summary_sample_ids
 
     def __repr__(self):
