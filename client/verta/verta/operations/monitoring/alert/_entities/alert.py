@@ -44,7 +44,7 @@ class Alert(entity._ModelDBEntity):
             "summary sample query: {}".format(
                 self.summary_sample_query),
             "notification channel ids: {}".format(
-                msg.notification_channels.keys()),
+                list(msg.notification_channels.keys())),
         ))
 
     @property
