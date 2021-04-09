@@ -28,7 +28,7 @@ public interface RoleService {
   boolean deleteEntityResourcesWithServiceUser(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  ListenableFuture<GetResourcesResponseItem> getEntityResource(
+  GetResourcesResponseItem getEntityResource(
       Optional<String> entityId,
       Optional<String> workspaceName,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
@@ -37,7 +37,7 @@ public interface RoleService {
       String entityId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes)
       throws ExecutionException, InterruptedException {
-    return getEntityResource(Optional.of(entityId), Optional.empty(), modelDBServiceResourceTypes).get();
+    return getEntityResource(Optional.of(entityId), Optional.empty(), modelDBServiceResourceTypes);
   }
 
 

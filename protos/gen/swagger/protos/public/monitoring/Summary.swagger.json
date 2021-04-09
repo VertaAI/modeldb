@@ -320,6 +320,10 @@
         "time_window_end_at_millis": {
           "type": "string",
           "format": "uint64"
+        },
+        "created_at_after_millis": {
+          "type": "string",
+          "format": "uint64"
         }
       },
       "description": "Filters the caller wants to apply to selectively summary samples."

@@ -92,6 +92,7 @@ message FilterQuerySummarySample {
     map<string, LabelFilterQuerySummarySample> labels = 3;
     uint64 time_window_start_at_millis = 4;
     uint64 time_window_end_at_millis = 5;
+    uint64 created_at_after_millis = 6;
 }
 
 // Filter details for a given label.

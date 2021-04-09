@@ -52,5 +52,5 @@ class NumericValue(_VertaDataType):
         data = d[cls._TYPE_NAME]
         return cls(
             value=data["value"],
-            unit=data["unit"],
+            unit=data.get("unit"),
         )

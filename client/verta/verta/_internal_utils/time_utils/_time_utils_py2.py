@@ -2,6 +2,7 @@
 # pylint: disable=undefined-variable
 
 from datetime import datetime, timedelta, tzinfo
+import time
 
 ZERO = timedelta(0)
 

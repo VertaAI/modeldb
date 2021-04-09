@@ -160,44 +160,39 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public ListenableFuture<GetResourcesResponseItem> getEntityResource(
+  public GetResourcesResponseItem getEntityResource(
       Optional<String> entityId,
       Optional<String> workspaceName,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
-      ListenableFuture<List<GetResourcesResponseItem>> responseItems =
+      List<GetResourcesResponseItem> responseItems =
           getGetResourcesResponseItems(
               entityId,
               Optional.empty(),
               workspaceName,
               modelDBServiceResourceTypes,
               authServiceChannel);
-      return Futures.transform(
-          responseItems,
-          items -> {
-            if (items.size() > 1) {
-              LOGGER.warn(
-                  "Role service returned {}"
-                      + " resource response items fetching {} resource, but only expected 1. ID: {}",
-                  items.size(),
-                  modelDBServiceResourceTypes.name(),
-                  entityId);
-            }
-            Optional<GetResourcesResponseItem> responseItem = items.stream().findFirst();
-            if (responseItem.isPresent()) {
-              return responseItem.get();
-            } else {
-              StringBuilder errorMessage =
-                  new StringBuilder("Failed to locate ")
-                      .append(modelDBServiceResourceTypes.name())
-                      .append(" resources in UAC for ")
-                      .append(modelDBServiceResourceTypes.name())
-                      .append(" ID ")
-                      .append(entityId);
-              throw new NotFoundException(errorMessage.toString());
-            }
-          },
-          MoreExecutors.directExecutor());
+      if (responseItems.size() > 1) {
+        LOGGER.warn(
+                "Role service returned {}"
+                        + " resource response items fetching {} resource, but only expected 1. ID: {}",
+                responseItems.size(),
+                modelDBServiceResourceTypes.name(),
+                entityId);
+      }
+      Optional<GetResourcesResponseItem> responseItem = responseItems.stream().findFirst();
+      if (responseItem.isPresent()) {
+        return responseItem.get();
+      } else {
+        StringBuilder errorMessage =
+                new StringBuilder("Failed to locate ")
+                        .append(modelDBServiceResourceTypes.name())
+                        .append(" resources in UAC for ")
+                        .append(modelDBServiceResourceTypes.name())
+                        .append(" ID ")
+                        .append(entityId);
+        throw new NotFoundException(errorMessage.toString());
+      }
     } catch (StatusRuntimeException ex) {
       LOGGER.error(ex);
       throw ex;
@@ -220,8 +215,7 @@ public class RoleServiceUtils implements RoleService {
                   entityName,
                   workspaceName,
                   modelDBServiceResourceTypes,
-                  authServiceChannel)
-              .get();
+                  authServiceChannel);
       if (!responseItems.isEmpty()) {
         return responseItems;
       } else {
@@ -240,7 +234,7 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  private ListenableFuture<List<GetResourcesResponseItem>> getGetResourcesResponseItems(
+  private List<GetResourcesResponseItem> getGetResourcesResponseItems(
       Optional<String> entityId,
       Optional<String> entityName,
       Optional<String> workspaceName,
@@ -259,9 +253,9 @@ public class RoleServiceUtils implements RoleService {
     entityName.ifPresent(getResourcesBuilder::setResourceName);
     workspaceName.ifPresent(getResourcesBuilder::setWorkspaceName);
 
-    final ListenableFuture<GetResources.Response> response =
-        uac.getCollaboratorService().getResources(getResourcesBuilder.build());
-    return Futures.transform(response, r -> r.getItemList(), MoreExecutors.directExecutor());
+    final GetResources.Response response =
+        authServiceChannel.getCollaboratorServiceBlockingStub().getResources(getResourcesBuilder.build());
+    return response.getItemList();
   }
 
   @Override

@@ -17,7 +17,7 @@ class TestConfusionMatrix:
             },
         }
         assert attr._as_dict() == d
-        assert attr == data_types.ConfusionMatrix._from_dict(d)
+        assert attr == data_types._VertaDataType._from_dict(d)
 
     def test_confusion_matrix_numpy(self):
         np = pytest.importorskip("numpy")
@@ -48,7 +48,7 @@ class TestDiscreteHistogram:
             },
         }
         assert attr._as_dict() == d
-        assert attr == data_types.DiscreteHistogram._from_dict(d)
+        assert attr == data_types._VertaDataType._from_dict(d)
 
     def test_discrete_histogram_numpy(self):
         np = pytest.importorskip("numpy")
@@ -79,7 +79,7 @@ class TestFloatHistogram:
             },
         }
         assert attr._as_dict() == d
-        assert attr == data_types.FloatHistogram._from_dict(d)
+        assert attr == data_types._VertaDataType._from_dict(d)
 
     def test_float_histogram_numpy(self):
         np = pytest.importorskip("numpy")
@@ -110,7 +110,7 @@ class TestLine:
             },
         }
         assert attr._as_dict() == d
-        assert attr == data_types.Line._from_dict(d)
+        assert attr == data_types._VertaDataType._from_dict(d)
 
     def test_line_numpy(self):
         np = pytest.importorskip("numpy")
@@ -147,7 +147,7 @@ class TestMatrix:
             },
         }
         assert attr._as_dict() == d
-        assert attr == data_types.Matrix._from_dict(d)
+        assert attr == data_types._VertaDataType._from_dict(d)
 
     def test_matrix_numpy(self):
         np = pytest.importorskip("numpy")
@@ -163,22 +163,26 @@ class TestMatrix:
 class TestNumericValue:
     def test_numeric_value(self):
         attr = data_types.NumericValue(42)
-        assert attr._as_dict() == {
+        d = {
             "type": "verta.numericValue.v1",
             "numericValue": {
                 "value": 42,
             },
         }
+        assert attr._as_dict() == d
+        assert attr == data_types._VertaDataType._from_dict(d)
 
     def test_numeric_value_with_unit(self):
         attr = data_types.NumericValue(14, unit="lbs")
-        assert attr._as_dict() == {
+        d = {
             "type": "verta.numericValue.v1",
             "numericValue": {
                 "value": 14,
                 "unit": "lbs",
             },
         }
+        assert attr._as_dict() == d
+        assert attr == data_types._VertaDataType._from_dict(d)
 
     def test_numeric_value_numpy(self):
         np = pytest.importorskip("numpy")
@@ -199,12 +203,14 @@ class TestNumericValue:
 class TestStringValue:
     def test_string_value(self):
         attr = data_types.StringValue("umbrella")
-        assert attr._as_dict() == {
+        d = {
             "type": "verta.stringValue.v1",
             "stringValue": {
                 "value": "umbrella",
             },
         }
+        assert attr._as_dict() == d
+        assert attr == data_types._VertaDataType._from_dict(d)
 
 
 class TestTable:
@@ -221,7 +227,7 @@ class TestTable:
             },
         }
         assert attr._as_dict() == d
-        assert attr == data_types.Table._from_dict(d)
+        assert attr == data_types._VertaDataType._from_dict(d)
 
     def test_table_numpy(self):
         np = pytest.importorskip("numpy")
