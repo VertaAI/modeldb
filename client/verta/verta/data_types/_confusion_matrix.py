@@ -71,4 +71,4 @@ class ConfusionMatrix(_VertaDataType):
                 "`other` must be type {}, not {}".format(type(self), type(other))
             )
 
-        return -1  # TODO
+        raise NotImplementedError  # TODO
