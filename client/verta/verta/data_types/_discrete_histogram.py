@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import collections
+from __future__ import division
 
 from ..external import six
 
@@ -70,20 +70,23 @@ class DiscreteHistogram(_VertaDataType):
                 "`other` must be type {}, not {}".format(type(self), type(other))
             )
 
-        # TODO: assuming labels are consistent
-        if collections.Counter(self._buckets) != collections.Counter(other._buckets):
+        self_sorted_buckets = self.sorted_buckets()
+        other_sorted_buckets = other.sorted_buckets()
+        if self_sorted_buckets != other_sorted_buckets:
             raise ValueError(
                 "buckets must match (self: {}, other: {})".format(
-                    self._buckets, other._buckets,
+                    self_sorted_buckets, other_sorted_buckets,
                 )
             )
-        else:
-            # TODO: assuming order of labels is consistent
-            # normalize
-            self_normalized = self.normalize()
-            other_normalized = other.normalize()
-            return spatial.distance.cosine(self_normalized, other_normalized)
 
-    def normalize(self):
+        return spatial.distance.cosine(
+            self.normalized_data(),
+            other.normalized_data(),
+        )
+
+    def sorted_buckets(self):
+        return sorted(self._buckets)
+
+    def normalized_data(self):
         total = sum(self._data)
-        return [x * 1.0 / total for x in self._data]
+        return [x / total for x in self._data]

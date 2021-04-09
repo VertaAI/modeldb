@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+
 import collections
 
 from ..external import six
@@ -84,4 +86,4 @@ class FloatHistogram(_VertaDataType):
 
     def normalize(self):
         total = sum(self._data)
-        return [x * 1.0 / total for x in self._data]
+        return [x / total for x in self._data]
