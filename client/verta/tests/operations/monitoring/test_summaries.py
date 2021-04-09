@@ -42,17 +42,15 @@ class TestSummaries(object):
         )
         assert isinstance(summary_sample, SummarySample)
 
+        float_histogram = data_types.FloatHistogram(
+            bucket_limits=[1, 13, 25, 37, 49, 61],
+            data=[15, 53, 91, 34, 7],
+        )
+        labels2 = {"env": "test", "color": "red"}
         with pytest.raises(TypeError):
-            float_histogram = data_types.FloatHistogram(
-                bucket_limits=[1, 13, 25, 37, 49, 61],
-                data=[15, 53, 91, 34, 7],
-            )
-            labels2 = {"env": "test", "color": "red"}
             summary_sample_2 = summary.log_sample(
                 float_histogram, labels=labels2, time_window_start=yesterday, time_window_end=now
             )
-            print("this should not be printed, and an error should be raised")
-
 
         labels = client.operations.labels
 
