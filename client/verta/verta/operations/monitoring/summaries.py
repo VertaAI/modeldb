@@ -78,7 +78,6 @@ class SummarySampleQuery(object):
     @classmethod
     def _from_proto_request(cls, msg):
         # set attrs after creation to bypass conversion logic in __init__()
-        print(msg)
         obj = cls()
         obj._find_summaries = msg.filter.find_summaries
         obj._sample_ids = msg.filter.sample_ids
