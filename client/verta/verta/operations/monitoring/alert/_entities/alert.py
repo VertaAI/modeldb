@@ -224,7 +224,7 @@ class Alerts(object):
     ):
         if self._monitored_entity_id is None:
             raise RuntimeError(
-                "this Alerts cannot be used to create because it was not"
+                "this Alert cannot be used to create because it was not"
                 " obtained via monitored_entity.alerts"
             )
 
