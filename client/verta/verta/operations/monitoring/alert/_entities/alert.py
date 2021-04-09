@@ -187,7 +187,7 @@ class Alert(entity._ModelDBEntity):
             alert_id=self.id,
             event_time_millis=event_time_millis,
             status=status._ALERT_STATUS,
-            violating_summary_sample_id=summary_sample.id,
+            violating_summary_sample_id=summary_sample.id if summary_sample else None,
         )
         endpoint = "/api/v1/alerts/updateAlertStatus"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
@@ -265,7 +265,7 @@ class Alerts(object):
     def list(self):
         msg = _AlertService.FindAlertRequest()
         if self._monitored_entity_id is not None:
-            msg.monitored_entity_ids = [self._monitored_entity_id]
+            msg.monitored_entity_ids.append(self._monitored_entity_id)
         endpoint = "/api/v1/alerts/findAlert"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         alerts = self._conn.must_proto_response(response, msg.Response).alerts
