@@ -58,11 +58,7 @@ class _VertaDataType(object):
         # TODO: when we have v2 onwards, make sure old v are still supported
         d_type = d["type"]
         for subcls in cls.__subclasses__():
-            subclass_type = "verta.{}.{}".format(
-                subcls._TYPE_NAME,
-                subcls._VERSION,
-            )
-            if d_type == subclass_type:
+            if d_type == subcls._type_string():
                 return subcls._from_dict_inner(d)
 
         raise ValueError("data type {} not recognized".format(d_type))
