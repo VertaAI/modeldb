@@ -11,7 +11,7 @@ from verta._internal_utils import time_utils
 from datetime import timedelta
 import requests
 from verta import data_types
-
+import pytest
 
 class TestSummaries(object):
 
@@ -20,7 +20,7 @@ class TestSummaries(object):
 
         monitored_entity = client.operations.get_or_create_monitored_entity()
         summary_name = "summary_v2_{}".format(generate_default_name())
-        summary = summaries.create(summary_name, "test", monitored_entity)
+        summary = summaries.create(summary_name, data_types.DiscreteHistogram, monitored_entity)
 
         assert isinstance(summary, Summary)
 
@@ -42,16 +42,15 @@ class TestSummaries(object):
         )
         assert isinstance(summary_sample, SummarySample)
 
-
         float_histogram = data_types.FloatHistogram(
             bucket_limits=[1, 13, 25, 37, 49, 61],
             data=[15, 53, 91, 34, 7],
         )
         labels2 = {"env": "test", "color": "red"}
-        summary_sample_2 = summary.log_sample(
-            float_histogram, labels=labels2, time_window_start=yesterday, time_window_end=now
-        )
-        assert isinstance(summary_sample_2, SummarySample)
+        with pytest.raises(TypeError):
+            summary_sample_2 = summary.log_sample(
+                float_histogram, labels=labels2, time_window_start=yesterday, time_window_end=now
+            )
 
         labels = client.operations.labels
 
@@ -66,7 +65,7 @@ class TestSummaries(object):
                 assert key in retrieved_labels
 
         all_samples_for_summary = summary.find_samples()
-        assert len(all_samples_for_summary) == 2
+        assert len(all_samples_for_summary) == 1
 
         blue_samples = summary.find_samples(
             SummarySampleQuery(labels={"color": ["blue"]}),
