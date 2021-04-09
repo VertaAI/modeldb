@@ -81,11 +81,12 @@ class FloatHistogram(_VertaDataType):
                     self._bucket_limits, other._bucket_limits,
                 )
             )
-        else:
-            self_normalized = self.normalize()
-            other_normalized = other.normalize()
-            return spatial.distance.cosine(self_normalized, other_normalized)
 
-    def normalize(self):
+        return spatial.distance.cosine(
+            self.normalized_data(),
+            other.normalized_data(),
+        )
+
+    def normalized_data(self):
         total = sum(self._data)
         return [x / total for x in self._data]
