@@ -142,26 +142,13 @@ class Summary(entity._ModelDBEntity):
         result_msg = self._conn.must_proto_response(response, SummarySampleProto)
         return SummarySample(self._conn, self._conf, result_msg)
 
-    def find_samples(
-        self,
-        sample_ids=None,
-        labels=None,
-        time_window_start=None,
-        time_window_end=None,
-    ):
-        summaries_proto = SummaryQuery(ids=[self.id])._to_proto_request()
-        time_window_start_at_millis = time_utils.epoch_millis(time_window_start) if time_window_start else None
-        time_window_end_at_millis = time_utils.epoch_millis(time_window_end) if time_window_end else None
-        labels_proto = Summary._labels_proto(labels) if labels else None
-        filterSamples = FilterQuerySummarySample(
-            find_summaries=summaries_proto,
-            sample_ids=sample_ids,
-            labels=labels_proto,
-            time_window_start_at_millis=time_window_start_at_millis,
-            time_window_end_at_millis=time_window_end_at_millis,
-        )
+    def find_samples(self, query=None):
+        if query is None:
+            query = SummarySampleQuery()
+        msg = query._to_proto_request()
+        if self.id not in msg.filter.find_summaries.ids:
+            msg.filter.find_summaries.ids.append(self.id)
 
-        msg = FindSummarySampleRequest(filter=filterSamples)
         endpoint = "/api/v1/summaries/findSample"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         success = self._conn.must_proto_response(
