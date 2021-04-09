@@ -5,9 +5,10 @@ from verta.operations.monitoring.summaries import (
     Summary,
     SummaryQuery,
     SummarySample,
+    SummarySampleQuery,
 )
-import verta.operations.monitoring.time_utils
-from datetime import datetime, timedelta, timezone
+from verta._internal_utils import time_utils
+from datetime import timedelta
 import requests
 from verta import data_types
 
@@ -29,7 +30,7 @@ class TestSummaries(object):
         for s in retrieved_summaries:
             assert isinstance(s, Summary)
 
-        now = datetime.now(timezone.utc)
+        now = time_utils.now()
         yesterday = now - timedelta(days=1)
 
         discrete_histogram = data_types.DiscreteHistogram(
@@ -67,5 +68,7 @@ class TestSummaries(object):
         all_samples_for_summary = summary.find_samples()
         assert len(all_samples_for_summary) == 2
 
-        blue_samples = summary.find_samples(labels={"color": ["blue"]})
+        blue_samples = summary.find_samples(
+            SummarySampleQuery(labels={"color": ["blue"]}),
+        )
         assert len(blue_samples) == 1

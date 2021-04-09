@@ -3,6 +3,7 @@ grpcServer:
   port: 8085
   requestTimeout: 30 #time in second
   quitOnAuditMissing: false
+  maxInboundMessageSize: 4000000
 
 springServer:
   port: 8086
@@ -52,6 +53,7 @@ database:
     RdbUrl: "jdbc:postgresql://localhost:5432"
     RdbUsername:
     RdbPassword:
+    sslMode: DISABLED
 
 # Test Database settings (type mongodb, couchbasedb, relational etc..)
 test:
@@ -70,6 +72,7 @@ test:
       RdbUrl: "jdbc:postgresql://localhost:5432"
       RdbUsername:
       RdbPassword:
+      sslMode: DISABLED
   testUsers:
     primaryUser:
       email:
