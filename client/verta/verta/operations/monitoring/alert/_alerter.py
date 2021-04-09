@@ -5,6 +5,7 @@ import abc
 from ....external import six
 
 from ...._protos.public.monitoring import Alert_pb2 as _AlertService
+from .. import utils
 
 
 # TODO: move into separate files
@@ -39,10 +40,10 @@ class ReferenceAlerter(_Alerter):
 
     def __init__(self, threshold, reference_sample):
         self._threshold = threshold
-        self._reference_sample = reference_sample
+        self._reference_sample_id = utils.extract_id(reference_sample)
 
     def _as_proto(self):
         return _AlertService.AlertReference(
             threshold=self._threshold,
-            reference_sample_id=self._reference_sample.id,
+            reference_sample_id=self._reference_sample_id,
         )
