@@ -53,41 +53,16 @@ class _VertaDataType(object):
     # TODO: _from_dict_inner() should be an abstract class method, but need to
     #       figure out how to do that in Python 2
 
-    @staticmethod
-    def _from_dict(d):
+    @classmethod
+    def _from_dict(cls, d):
         # TODO: when we have v2 onwards, make sure old v are still supported
-
-        # imports here to avoid circular import in Python 2
-        # TODO: figure out if cls.__subclasses__() is robust to use
-        from . import (
-            ConfusionMatrix,
-            DiscreteHistogram,
-            FloatHistogram,
-            Line,
-            Matrix,
-            NumericValue,
-            StringValue,
-            Table,
-        )
-
-        SUBCLASSES = [
-            ConfusionMatrix,
-            DiscreteHistogram,
-            FloatHistogram,
-            Line,
-            Matrix,
-            NumericValue,
-            StringValue,
-            Table,
-        ]
-
         d_type = d["type"]
-        for Subclass in SUBCLASSES:
+        for subcls in cls.__subclasses__():
             subclass_type = "verta.{}.{}".format(
-                Subclass._TYPE_NAME,
-                Subclass._VERSION,
+                subcls._TYPE_NAME,
+                subcls._VERSION,
             )
             if d_type == subclass_type:
-                return Subclass._from_dict_inner(d)
+                return subcls._from_dict_inner(d)
 
         raise ValueError("data type {} not recognized".format(d_type))
