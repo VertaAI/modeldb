@@ -66,5 +66,5 @@ class _VertaDataType(object):
     def _from_type_string(cls, type_string):
         for subcls in cls.__subclasses__():
             if type_string == subcls._type_string():
-                return subcls
+                return subcls  # NOTE: intentionally returns the type rather than an instance
         return None
