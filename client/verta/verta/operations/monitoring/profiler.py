@@ -48,8 +48,6 @@ class MissingValuesProfiler(Profiler):
 class BinaryHistogramProfiler(Profiler):
     def __init__(self, columns):
         super(BinaryHistogramProfiler, self).__init__(columns)
-        # if len(columns) > 1:
-        #     raise Exception("BinaryHistogram can only be computed on a single column")
 
     def _profile_column(self, df, column):
         content = df[column].value_counts()
@@ -62,8 +60,6 @@ class BinaryHistogramProfiler(Profiler):
 class ContinuousHistogramProfiler(Profiler):
     def __init__(self, columns, bins=10):
         super(ContinuousHistogramProfiler, self).__init__(columns)
-        # if len(columns) > 1:
-        #     raise Exception("ContinuousHistogram can only be computed on a single column")
         self._bins = bins
 
 
@@ -72,7 +68,7 @@ class ContinuousHistogramProfiler(Profiler):
             bins = self._bins[column]
         else:
             bins = self._bins
-        values, limits = np.histogram(df[column], bins=self._bins)
+        values, limits = np.histogram(df[column], bins=bins)
         values = [v.item() for v in values]
         limits = [lim.item() for lim in limits]
-        return (column + "_histogram", FloatHistogram(values, limits))
+        return (column + "_histogram", FloatHistogram(limits, values))
