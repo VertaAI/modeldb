@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from ..external import six
 
 from .._internal_utils import arg_handler

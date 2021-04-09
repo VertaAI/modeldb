@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import division
+
 import numbers
 
 from ..external import six
@@ -61,4 +65,4 @@ class NumericValue(_VertaDataType):
                 "`other` must be type {}, not {}".format(type(self), type(other))
             )
 
-        return self._value - other._value
+        return abs((self._value - other._value) / other._value)
