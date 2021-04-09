@@ -285,7 +285,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   ExperimentRunPaginationDTO findExperimentRuns(
-      ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
+      ProjectDAO projectDAO, FindExperimentRuns queryParameters)
       throws InvalidProtocolBufferException, PermissionDeniedException;
 
   /**
