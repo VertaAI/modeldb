@@ -9,6 +9,7 @@ from verta.operations.monitoring.alert import (
     ReferenceAlerter,
 )
 
+
 class TestFixed:
     @hypothesis.given(threshold=st.floats(allow_nan=False))
     def test_create(self, threshold):
@@ -31,7 +32,7 @@ class TestFixed:
 class TestReference:
     @hypothesis.given(
         threshold=st.floats(allow_nan=False),
-        reference_sample_id=st.integers(min_value=1, max_value=2**64 - 1),
+        reference_sample_id=st.integers(min_value=1, max_value=2 ** 64 - 1),
     )
     def test_create(self, threshold, reference_sample_id):
         alerter = ReferenceAlerter(threshold, reference_sample_id)
@@ -46,7 +47,7 @@ class TestReference:
 
     @hypothesis.given(
         threshold=st.floats(allow_nan=False),
-        reference_sample_id=st.integers(min_value=1, max_value=2**64 - 1),
+        reference_sample_id=st.integers(min_value=1, max_value=2 ** 64 - 1),
     )
     def test_repr(self, threshold, reference_sample_id):
         """__repr__() does not raise exceptions"""

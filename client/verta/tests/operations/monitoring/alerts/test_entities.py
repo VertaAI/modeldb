@@ -5,7 +5,7 @@ from verta.operations.monitoring.alert import (
     FixedAlerter,
     ReferenceAlerter,
 )
-from verta.operations.monitoring.alert.status import(
+from verta.operations.monitoring.alert.status import (
     Alerting,
     Ok,
 )
@@ -18,10 +18,11 @@ from verta.operations.monitoring.notification_channel import (
 
 class TestIntegration:
     """Alerts + related entities/objects."""
+
     def test_add_notification_channels(self, client, monitored_entity):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(.7)
+        alerter = FixedAlerter(0.7)
         sample_query = SummarySampleQuery()
 
         channel1 = client.operations.notification_channels.create(
@@ -34,7 +35,9 @@ class TestIntegration:
         )
 
         alert = alerts.create(
-            name, alerter, sample_query,
+            name,
+            alerter,
+            sample_query,
             notification_channels=[channel1],
         )
         assert alert._msg.notification_channels.keys() == {channel1.id}
@@ -46,7 +49,7 @@ class TestIntegration:
     def test_set_status(self, monitored_entity, summary_sample):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(.7)
+        alerter = FixedAlerter(0.7)
         sample_query = SummarySampleQuery()
 
         alert = alerts.create(name, alerter, sample_query)
@@ -63,7 +66,7 @@ class TestFixed:
     def test_crud(self, client, monitored_entity):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(.7)
+        alerter = FixedAlerter(0.7)
         sample_query = SummarySampleQuery()
 
         created_alert = alerts.create(name, alerter, sample_query)
@@ -87,7 +90,7 @@ class TestFixed:
         """__repr__() does not raise exceptions"""
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(.7)
+        alerter = FixedAlerter(0.7)
         sample_query = SummarySampleQuery()
 
         created_alert = alerts.create(name, alerter, sample_query)

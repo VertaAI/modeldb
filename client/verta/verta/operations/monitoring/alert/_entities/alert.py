@@ -24,28 +24,31 @@ class Alert(entity._ModelDBEntity):
     def __repr__(self):
         self._refresh_cache()
         msg = self._msg
-        return "\n\t".join((
-            "Alert",
-            "name: {}".format(msg.name),
-            "id: {}".format(msg.id),
-            "monitored entity id: {}".format(msg.monitored_entity_id),
-            "status: {}".format(self.status),
-            "created: {}".format(
-                _utils.timestamp_to_str(msg.created_at_millis)),
-            "updated: {}".format(
-                _utils.timestamp_to_str(msg.updated_at_millis)),
-            "last evaluated: {}".format(
-                _utils.timestamp_to_str(msg.last_evaluated_at_millis)),
-            "alerter: {}".format(
-                # TODO: use an `alerter` property that returns the actual class
-                _AlertService.AlerterTypeEnum.AlerterType.Name(msg.alerter_type)),
-            "violating summary sample ids: {}".format(
-                msg.violating_summary_sample_ids),
-            "summary sample query: {}".format(
-                self.summary_sample_query),
-            "notification channel ids: {}".format(
-                list(msg.notification_channels.keys())),
-        ))
+        return "\n\t".join(
+            (
+                "Alert",
+                "name: {}".format(msg.name),
+                "id: {}".format(msg.id),
+                "monitored entity id: {}".format(msg.monitored_entity_id),
+                "status: {}".format(self.status),
+                "created: {}".format(_utils.timestamp_to_str(msg.created_at_millis)),
+                "updated: {}".format(_utils.timestamp_to_str(msg.updated_at_millis)),
+                "last evaluated: {}".format(
+                    _utils.timestamp_to_str(msg.last_evaluated_at_millis)
+                ),
+                "alerter: {}".format(
+                    # TODO: use an `alerter` property that returns the actual class
+                    _AlertService.AlerterTypeEnum.AlerterType.Name(msg.alerter_type)
+                ),
+                "violating summary sample ids: {}".format(
+                    msg.violating_summary_sample_ids
+                ),
+                "summary sample query: {}".format(self.summary_sample_query),
+                "notification channel ids: {}".format(
+                    list(msg.notification_channels.keys())
+                ),
+            )
+        )
 
     @property
     def history(self):
@@ -139,8 +142,7 @@ class Alert(entity._ModelDBEntity):
                 updated_at_millis=updated_at_millis,
                 last_evaluated_at_millis=last_evaluated_at_millis,
                 notification_channels={
-                    channel.id: True
-                    for channel in notification_channels
+                    channel.id: True for channel in notification_channels
                 },
                 sample_find_base=summary_sample_query._to_proto_request(),
                 alerter_type=alerter._TYPE,
@@ -174,10 +176,9 @@ class Alert(entity._ModelDBEntity):
 
         alert_msg = _AlertService.Alert()
         alert_msg.CopyFrom(self._msg)
-        alert_msg.notification_channels.update({
-            channel.id: True
-            for channel in notification_channels
-        })
+        alert_msg.notification_channels.update(
+            {channel.id: True for channel in notification_channels}
+        )
 
         self._update(alert_msg)
 
@@ -207,7 +208,9 @@ class Alerts(object):
     def __init__(self, conn, conf, monitored_entity_id=None):
         self._conn = conn
         self._conf = conf
-        self._monitored_entity_id = int(monitored_entity_id) if monitored_entity_id else None
+        self._monitored_entity_id = (
+            int(monitored_entity_id) if monitored_entity_id else None
+        )
 
     def create(
         self,
