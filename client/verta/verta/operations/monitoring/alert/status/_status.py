@@ -38,14 +38,9 @@ class _AlertStatus(object):
         :class:`_AlertStatus` subclass
 
         """
-        SUBCLASSES = [
-            Alerting,
-            Ok,
-        ]
-
-        for Subclass in SUBCLASSES:
-            if msg == Subclass._ALERT_STATUS:
-                return Subclass()
+        for subcls in cls.__subclasses__():
+            if msg == subcls._ALERT_STATUS:
+                return subcls()
 
         raise ValueError("alert status {} not recognized".format(msg))
 
