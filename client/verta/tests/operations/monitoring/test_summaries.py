@@ -5,6 +5,7 @@ from verta.operations.monitoring.summaries import (
     Summary,
     SummaryQuery,
     SummarySample,
+    SummarySampleQuery,
 )
 from verta._internal_utils import time_utils
 from datetime import timedelta
@@ -67,5 +68,7 @@ class TestSummaries(object):
         all_samples_for_summary = summary.find_samples()
         assert len(all_samples_for_summary) == 2
 
-        blue_samples = summary.find_samples(labels={"color": ["blue"]})
+        blue_samples = summary.find_samples(
+            SummarySampleQuery(labels={"color": ["blue"]}),
+        )
         assert len(blue_samples) == 1
