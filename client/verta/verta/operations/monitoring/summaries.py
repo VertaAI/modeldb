@@ -40,12 +40,12 @@ class SummaryQuery(object):
 
     @classmethod
     def _from_proto_request(cls, msg):
-        data_types = map(data_types._VertaDataType._from_type_string, msg.type_names)
-        data_types = [dt for dt in data_types if dt is not None]
+        types = map(data_types._VertaDataType._from_type_string, msg.type_names)
+        types = [dt for dt in data_types if dt is not None]
         return cls(
             ids=msg.ids,
             names=msg.names,
-            data_type_classes=data_types,
+            data_type_classes=types,
             monitored_entities=msg.monitored_entity_ids,
         )
 
