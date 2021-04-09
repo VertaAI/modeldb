@@ -52,4 +52,4 @@ class StringValue(_VertaDataType):
                 "`other` must be type {}, not {}".format(type(self), type(other))
             )
 
-        return 0 if self._value == other._value else 0
+        return 0 if self._value == other._value else 1
