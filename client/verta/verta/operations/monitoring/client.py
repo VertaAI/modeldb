@@ -6,8 +6,9 @@ import itertools
 from verta._tracking import _Context
 
 from .monitored_entity import MonitoredEntity
+from .notification_channel._entities import NotificationChannels
 from .profilers import Profilers
-from .summaries import Summaries
+from .summaries import Summaries, SummarySamples
 from .labels import Labels
 
 
@@ -16,6 +17,7 @@ class Client(object):
         self._client = verta_client
         self.profilers = Profilers(self._conn, self._conf, self._client)
         self.summaries = Summaries(self._conn, self._conf)
+        self.summary_samples = SummarySamples(self._conn, self._conf)
         self.labels = Labels(self._conn, self._conf)
 
     @property
@@ -29,6 +31,10 @@ class Client(object):
     @property
     def _ctx(self):
         return self._client._ctx
+
+    @property
+    def notification_channels(self):
+        return NotificationChannels(self._conn, self._conf)
 
     def get_or_create_monitored_entity(self, name=None, workspace=None, id=None):
         if name is not None and id is not None:
