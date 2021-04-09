@@ -10,6 +10,7 @@ from .notification_channel._entities import NotificationChannels
 from .profilers import Profilers
 from .summaries import Summaries, SummarySamples
 from .labels import Labels
+from .alert._entities import Alerts
 
 
 class Client(object):
@@ -31,6 +32,10 @@ class Client(object):
     @property
     def _ctx(self):
         return self._client._ctx
+
+    @property
+    def alerts(self):
+        return Alerts(self._conn, self._conf)
 
     @property
     def notification_channels(self):
