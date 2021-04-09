@@ -40,6 +40,8 @@ class DiscreteHistogram(_VertaDataType):
 
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, buckets, data):
+        if len(buckets) != len(set(buckets)):
+            raise ValueError("`bucekts` elements must all be unique")
         if len(buckets) != len(data):
             raise ValueError("`buckets` and `data` must have the same length")
         if not all(isinstance(count, six.integer_types) for count in data):

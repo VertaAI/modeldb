@@ -48,6 +48,8 @@ class FloatHistogram(_VertaDataType):
             )
         if not arg_handler.contains_only_numbers(bucket_limits):
             raise TypeError("`bucket_limits` must contain only numbers")
+        if not list(bucket_limits) == sorted(bucket_limits):
+            raise ValueError("`bucket_limits` must be in ascending order")
         if not all(isinstance(count, six.integer_types) for count in data):
             raise TypeError("`data` must contain all integers")
 
