@@ -8,10 +8,7 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.WorkspaceServiceGrpc;
-import io.grpc.ClientInterceptor;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.Metadata;
+import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -72,18 +69,17 @@ public class UAC {
     workspaceServiceFutureStub = other.workspaceServiceFutureStub;
   }
 
-  public UAC withServiceAccount() {
-    return this.withServiceAccount(this.serviceUserEmail, this.serviceUserDevKey);
+  private Metadata serviceAccountMetadata() {
+    return serviceAccountMetadata(serviceUserEmail, serviceUserDevKey);
   }
 
-  public UAC withServiceAccount(String serviceUserEmail, String serviceUserDevKey) {
-    UAC c = new UAC(this);
+  private Metadata serviceAccountMetadata(String serviceUserEmail, String serviceUserDevKey) {
     Metadata requestHeaders = new Metadata();
     Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> dev_key =
-        Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+            Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> dev_key_hyphen =
-        Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+            Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
     requestHeaders.put(email_key, serviceUserEmail);
@@ -91,7 +87,20 @@ public class UAC {
     requestHeaders.put(dev_key_hyphen, serviceUserDevKey);
     requestHeaders.put(source_key, "PythonClient");
 
-    c.clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
+    return requestHeaders;
+  }
+
+  public Context withServiceAccountMetadata(Context ctx) {
+    return ctx.withValue(AuthInterceptor.METADATA_INFO, serviceAccountMetadata());
+  }
+
+  public UAC withServiceAccount() {
+    return this.withServiceAccount(this.serviceUserEmail, this.serviceUserDevKey);
+  }
+
+  public UAC withServiceAccount(String serviceUserEmail, String serviceUserDevKey) {
+    UAC c = new UAC(this);
+    c.clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(serviceAccountMetadata(serviceUserEmail, serviceUserDevKey));
 
     return c;
   }
