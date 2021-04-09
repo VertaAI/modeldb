@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+
 from ..external import six
+
+from scipy import spatial
 
 from .._internal_utils import arg_handler
 
@@ -36,6 +40,8 @@ class DiscreteHistogram(_VertaDataType):
 
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, buckets, data):
+        if len(buckets) != len(set(buckets)):
+            raise ValueError("`bucekts` elements must all be unique")
         if len(buckets) != len(data):
             raise ValueError("`buckets` and `data` must have the same length")
         if not all(isinstance(count, six.integer_types) for count in data):
@@ -59,3 +65,30 @@ class DiscreteHistogram(_VertaDataType):
             buckets=data["buckets"],
             data=data["data"],
         )
+
+    def dist(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                "`other` must be type {}, not {}".format(type(self), type(other))
+            )
+
+        self_sorted_buckets = self.sorted_buckets()
+        other_sorted_buckets = other.sorted_buckets()
+        if self_sorted_buckets != other_sorted_buckets:
+            raise ValueError(
+                "buckets must match (self: {}, other: {})".format(
+                    self_sorted_buckets, other_sorted_buckets,
+                )
+            )
+
+        return spatial.distance.cosine(
+            self.normalized_data(),
+            other.normalized_data(),
+        )
+
+    def sorted_buckets(self):
+        return sorted(self._buckets)
+
+    def normalized_data(self):
+        total = sum(self._data)
+        return [x / total for x in self._data]

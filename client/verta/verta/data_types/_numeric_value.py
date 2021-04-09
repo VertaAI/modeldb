@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import division
+
 import numbers
 
 from ..external import six
@@ -54,3 +58,11 @@ class NumericValue(_VertaDataType):
             value=data["value"],
             unit=data.get("unit"),
         )
+
+    def dist(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                "`other` must be type {}, not {}".format(type(self), type(other))
+            )
+
+        return abs((self._value - other._value) / other._value)

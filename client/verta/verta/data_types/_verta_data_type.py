@@ -27,24 +27,18 @@ class _VertaDataType(object):
             _file_utils.remove_prefix(key, "_"): value
             for key, value in self.__dict__.items()
         }
-        lines = [
-            "{}: {}".format(key, value)
-            for key, value
-            in sorted(attrs.items())
-        ]
+        lines = ["{}: {}".format(key, value) for key, value in sorted(attrs.items())]
         return "\n\t".join([type(self).__name__] + lines)
 
     @classmethod
     def _type_string(cls):
         return "verta.{}.{}".format(cls._TYPE_NAME, cls._VERSION)
 
-
     def _as_dict_inner(self, data):
         return {
             "type": self._type_string(),
             self._TYPE_NAME: data,
         }
-
 
     @abc.abstractmethod
     def _as_dict(self):
@@ -68,3 +62,7 @@ class _VertaDataType(object):
             if type_string == subcls._type_string():
                 return subcls  # NOTE: intentionally returns the type rather than an instance
         return None
+
+    @abc.abstractmethod
+    def dist(self, other):
+        raise NotImplementedError
