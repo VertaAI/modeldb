@@ -61,6 +61,17 @@ class TestIntegration:
         alert.set_status(Ok())
         assert alert.status == Ok()
 
+    def test_summary_sample_query(self, monitored_entity, summary_sample):
+        alerts = monitored_entity.alerts
+        name = _utils.generate_default_name()
+        alerter = FixedAlerter(.7)
+        sample_query = SummarySampleQuery()
+
+        alert = alerts.create(name, alerter, sample_query)
+        created_query_proto = sample_query._to_proto_request()
+        retrieved_query_proto = alert.summary_sample_query._to_proto_request()
+        assert created_query_proto == retrieved_query_proto
+
 
 class TestFixed:
     def test_crud(self, client, monitored_entity):
