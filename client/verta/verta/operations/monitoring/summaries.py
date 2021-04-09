@@ -65,7 +65,9 @@ class SummarySampleQuery(object):
         created_at_after_millis=None,
     ):
         self._find_summaries = (
-            summary_query._to_proto_request() if summary_query else None
+            summary_query._to_proto_request()
+            if summary_query
+            else FindSummaryRequest()
         )
         self._sample_ids = extract_ids(ids) if ids else None
         self._labels = maybe(Summary._labels_proto, labels)
