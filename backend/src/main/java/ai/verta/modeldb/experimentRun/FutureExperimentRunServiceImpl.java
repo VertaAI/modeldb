@@ -209,7 +209,15 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void deleteMetrics(
       DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
-    super.deleteMetrics(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .deleteMetrics(request)
+              .thenApply(unused -> DeleteMetrics.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -284,7 +292,15 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void deleteHyperparameters(
       DeleteHyperparameters request,
       StreamObserver<DeleteHyperparameters.Response> responseObserver) {
-    super.deleteHyperparameters(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .deleteHyperparameters(request)
+              .thenApply(unused -> DeleteHyperparameters.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

@@ -203,6 +203,32 @@ public class FutureExperimentRunDAO {
     return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
+  public InternalFuture<Void> deleteMetrics(DeleteMetrics request) {
+    final var runId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    // Check permissions
+    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+
+    currentFuture =
+        currentFuture.thenCompose(unused -> deleteKeyValues(runId, "metrics"), executor);
+
+    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<Void> deleteHyperparameters(DeleteHyperparameters request) {
+    final var runId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    // Check permissions
+    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+
+    currentFuture =
+        currentFuture.thenCompose(unused -> deleteKeyValues(runId, "hyperparameters"), executor);
+
+    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
   public InternalFuture<List<KeyValue>> getMetrics(GetMetrics request) {
     final var runId = request.getId();
 
@@ -295,6 +321,18 @@ public class FutureExperimentRunDAO {
               }
             },
             executor);
+  }
+
+  private InternalFuture<Void> deleteKeyValues(String runId, String fieldType) {
+    return jdbi.useHandle(
+        handle ->
+            handle
+                .createUpdate(
+                    "delete from keyvalue "
+                        + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:runId")
+                .bind("run_id", runId)
+                .bind("field_type", fieldType)
+                .execute());
   }
 
   private InternalFuture<List<KeyValue>> getKeyValue(String runId, String fieldType) {
