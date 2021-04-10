@@ -28,16 +28,28 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<Void> logObservations(LogObservations request) {
-    // TODO: update ER timestamp
     // TODO: support artifacts?
-    // TODO: check that the key is not empty
-
-    // Create initial future
-    var currentFuture =
-        checkPermission(request.getId(), ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
     final var runId = request.getId();
     final var observations = request.getObservationsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    // Check permissions
+    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+
+    // Validate input
+    currentFuture =
+        currentFuture.thenRun(
+            () -> {
+              for (final var observation : observations) {
+                if (observation.getAttribute().getKey().isEmpty()) {
+                  throw new InvalidArgumentException("Empty observation key");
+                }
+              }
+            },
+            executor);
+
+    // Log observations
     for (final var observation : observations) {
       final var attribute = observation.getAttribute();
       currentFuture =
@@ -109,7 +121,7 @@ public class FutureExperimentRunDAO {
                                     .bind(
                                         "timestamp",
                                         observation.getTimestamp() == 0
-                                            ? Calendar.getInstance().getTimeInMillis()
+                                            ? now
                                             : observation.getTimestamp())
                                     .bind("run_id", runId)
                                     .bind("kvid", kvId)
@@ -117,6 +129,13 @@ public class FutureExperimentRunDAO {
                                     .executeAndReturnGeneratedKeys()
                                     .mapTo(Long.class)
                                     .one();
+
+                            handle
+                                .createUpdate(
+                                    "update experiment_run set date_updated=max(date_updated, :now) where id=:run_id")
+                                .bind("run_id", runId)
+                                .bind("now", now)
+                                .execute();
 
                             return null;
                           }),
