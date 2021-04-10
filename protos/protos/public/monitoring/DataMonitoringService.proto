@@ -196,15 +196,17 @@ message DisableProfilerRequest {
 // Monitored entity
 
 message MonitoredEntity {
-  reserved 3, 4;  // Previously deleted fields
   uint64 id = 1;
   string name = 2;
+  repeated uint64 data_source_ids = 3;
+  repeated uint64 summary_ids = 4;
   uint64 workspace_id = 5;
 }
 
 message CreateMonitoredEntityRequest {
-  reserved 2, 3;  // Previously deleted fields
   string name = 1;
+  repeated uint64 data_source_ids = 2;
+  repeated uint64 summary_ids = 3;
   uint64 workspace_id = 4;
 
   message Response {
@@ -230,9 +232,10 @@ message GetMonitoredEntityByNameRequest {
 }
 
 message UpdateMonitoredEntityRequest {
-  reserved 4 to 6;  // Previously deleted fields
   uint64 id = 1;
   string name = 2;
+  repeated uint64 data_source_ids_to_remove = 4;
+  repeated uint64 summary_ids_to_remove = 6;
 
   message Response {
     MonitoredEntity monitored_entity = 1;
@@ -243,16 +246,6 @@ message ListMonitoredEntitiesRequest {
   uint64 workspace_id = 1;
   message Response {
     repeated MonitoredEntity monitored_entities = 1;
-  }
-}
-
-message FindMonitoredEntityRequest {
-  repeated uint64 ids = 1;
-  repeated string names = 2;
-  uint64 workspace_id = 3;
-
-  message Response {
-      repeated MonitoredEntity monitored_entities = 1;
   }
 }
 
@@ -294,13 +287,6 @@ service DataMonitoringService {
   rpc listMonitoredEntities(ListMonitoredEntitiesRequest) returns (ListMonitoredEntitiesRequest.Response) {
     option (google.api.http) = {
       get: "/v1/monitored_entity/listMonitoredEntities"
-    };
-  };
-
-  rpc findMonitoredEntity(FindMonitoredEntityRequest) returns (FindMonitoredEntityRequest.Response) {
-    option (google.api.http) = {
-      post: "/v1/monitored_entity/findMonitoredEntity"
-      body: "*"
     };
   };
 
