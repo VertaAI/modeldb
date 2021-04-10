@@ -1,8 +1,13 @@
 package ai.verta.modeldb.experimentRun;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.modeldb.GetObservations;
 import ai.verta.modeldb.LogObservations;
+import ai.verta.modeldb.Observation;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -11,12 +16,18 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.concurrent.Executor;
 
 public class FutureExperimentRunDAO {
+  private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
+
   private final Executor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
@@ -25,6 +36,63 @@ public class FutureExperimentRunDAO {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
+  }
+
+  public InternalFuture<List<Observation>> getObservations(GetObservations request) {
+    // TODO: support artifacts?
+
+    final var runId = request.getId();
+    final var key = request.getObservationKey();
+
+    // Check permissions
+    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ);
+
+    // Validate input
+    currentFuture =
+        currentFuture.thenRun(
+            () -> {
+              if (key.isEmpty()) {
+                throw new InvalidArgumentException("Empty observation key");
+              }
+            },
+            executor);
+
+    return currentFuture.thenCompose(
+        unused ->
+            jdbi.withHandle(
+                handle ->
+                    handle
+                        .createQuery(
+                            "select k.kv_value value, k.value_type type, o.epoch_number epoch from "
+                                + "(select keyvaluemapping_id, epoch_number from observation "
+                                + "where experiment_run_id =:run_id and entity_name = \"ExperimentRunEntity\") o, "
+                                + "(select id, kv_value, value_type from keyvalue where kv_key =:name and entity_name IS NULL) k "
+                                + "where o.keyvaluemapping_id = k.id")
+                        .bind("run_id", runId)
+                        .bind("name", key)
+                        .map(
+                            (rs, ctx) -> {
+                              try {
+                                return Observation.newBuilder()
+                                    .setEpochNumber(
+                                        Value.newBuilder().setNumberValue(rs.getLong("epoch")))
+                                    .setAttribute(
+                                        KeyValue.newBuilder()
+                                            .setKey(key)
+                                            .setValue(
+                                                (Value.Builder)
+                                                    CommonUtils.getProtoObjectFromString(
+                                                        rs.getString("value"), Value.newBuilder()))
+                                            .setValueTypeValue(rs.getInt("type")))
+                                    .build();
+                              } catch (InvalidProtocolBufferException e) {
+                                LOGGER.error(
+                                    "Error generating builder for {}", rs.getString("value"));
+                                throw new ModelDBException(e);
+                              }
+                            })
+                        .list()),
+        executor);
   }
 
   public InternalFuture<Void> logObservations(LogObservations request) {

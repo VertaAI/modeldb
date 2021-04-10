@@ -139,7 +139,20 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void getObservations(
       GetObservations request, StreamObserver<GetObservations.Response> responseObserver) {
-    super.getObservations(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .getObservations(request)
+              .thenApply(
+                  observations ->
+                      GetObservations.Response.newBuilder()
+                          .addAllObservations(observations)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
