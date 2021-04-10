@@ -7,7 +7,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Value;
 
-import java.time.Instant;
+import java.util.Calendar;
 import java.util.concurrent.Executor;
 
 public class FutureExperimentRunDAO {
@@ -22,7 +22,7 @@ public class FutureExperimentRunDAO {
   public InternalFuture<Void> logObservations(LogObservations request) {
     // TODO: check permission
     // TODO: check expt run exists
-    // TODO: update timestamp
+    // TODO: update ER timestamp
     // TODO: support artifacts?
     // TODO: check that the key is not empty
 
@@ -49,11 +49,13 @@ public class FutureExperimentRunDAO {
                       return InternalFuture.completedInternalFuture(
                           (long) observation.getEpochNumber().getNumberValue());
                     } else {
-                      // Otherwise, infer at runtime
+                      // Otherwise, infer at runtime. We can't do this in the same SQL command as
+                      // we'll be updating these tables and some SQL implementations don't support
+                      // select together with updates
                       final var sql =
                           "select max(o.epoch_number) from "
                               + "(select keyvaluemapping_id, epoch_number from observation "
-                              + "where experiment_run_id =:run_id and entity_name = 'ExperimentRunEntity') o, "
+                              + "where experiment_run_id =:run_id and entity_name = \"ExperimentRunEntity\") o, "
                               + "(select id from keyvalue where kv_key =:name and entity_name IS NULL) k "
                               + "where o.keyvaluemapping_id = k.id";
                       return jdbi.withHandle(
@@ -63,7 +65,9 @@ public class FutureExperimentRunDAO {
                                   .bind("run_id", runId)
                                   .bind("name", attribute.getKey())
                                   .mapTo(Long.class)
-                                  .one());
+                                  .findOne()
+                                  .map(x -> x + 1)
+                                  .orElse(0L));
                     }
                   },
                   executor)
@@ -75,8 +79,8 @@ public class FutureExperimentRunDAO {
                             final var kvId =
                                 handle
                                     .createUpdate(
-                                        "insert into keyvalue (field_type, kv_key, kv_value, value_type)"
-                                            + "values ('attributes', :key, :value, :type)")
+                                        "insert into keyvalue (field_type, kv_key, kv_value, value_type) "
+                                            + "values (\"attributes\", :key, :value, :type)")
                                     .bind("key", attribute.getKey())
                                     .bind(
                                         "value",
@@ -93,13 +97,13 @@ public class FutureExperimentRunDAO {
                             final var observationId =
                                 handle
                                     .createUpdate(
-                                        "insert into observation (entity_name, field_type, timestamp, experiment_run_id, keyvaluemapping_id, epoch_number)"
-                                            + "values ('ExperimentRunEntity', 'observations', :timestamp, :run_id, :kvid, :epoch")
+                                        "insert into observation (entity_name, field_type, timestamp, experiment_run_id, keyvaluemapping_id, epoch_number) "
+                                            + "values (\"ExperimentRunEntity\", \"observations\", :timestamp, :run_id, :kvid, :epoch)")
                                     .bind(
                                         "timestamp",
                                         observation.getTimestamp() == 0
-                                            ? Instant.now()
-                                            : Instant.ofEpochMilli(observation.getTimestamp()))
+                                            ? Calendar.getInstance().getTimeInMillis()
+                                            : observation.getTimestamp())
                                     .bind("run_id", runId)
                                     .bind("kvid", kvId)
                                     .bind("epoch", epoch)
