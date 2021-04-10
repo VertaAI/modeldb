@@ -212,34 +212,19 @@ public class FutureExperimentRunDAO {
     // Validate input
 
     // Query
-    return currentFuture.thenCompose(
-        unused ->
-            jdbi.withHandle(
-                handle ->
-                    handle
-                        .createQuery(
-                            "select kv_key key, kv_value value, value_type type from keyvalue "
-                                + "where entity_name=\"ExperimentRunEntity\" and field_type=\"metrics\" and experiment_run_id=:runId")
-                        .bind("run_id", runId)
-                        .map(
-                            (rs, ctx) -> {
-                              try {
-                                return KeyValue.newBuilder()
-                                    .setKey(rs.getString("key"))
-                                    .setValue(
-                                        (Value.Builder)
-                                            CommonUtils.getProtoObjectFromString(
-                                                rs.getString("value"), Value.newBuilder()))
-                                    .setValueTypeValue(rs.getInt("type"))
-                                    .build();
-                              } catch (InvalidProtocolBufferException e) {
-                                LOGGER.error(
-                                    "Error generating builder for {}", rs.getString("value"));
-                                throw new ModelDBException(e);
-                              }
-                            })
-                        .list()),
-        executor);
+    return currentFuture.thenCompose(unused -> getKeyValue(runId, "metrics"), executor);
+  }
+
+  public InternalFuture<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
+    final var runId = request.getId();
+
+    // Check permissions
+    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ);
+
+    // Validate input
+
+    // Query
+    return currentFuture.thenCompose(unused -> getKeyValue(runId, "hyperparameters"), executor);
   }
 
   public InternalFuture<Void> logMetrics(LogMetrics request) {
@@ -250,51 +235,23 @@ public class FutureExperimentRunDAO {
     // Check permissions
     var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
-    // Validate input
     currentFuture =
-        currentFuture.thenRun(
-            () -> {
-              for (final var metric : metrics) {
-                if (metric.getKey().isEmpty()) {
-                  throw new InvalidArgumentException("Empty metric key");
-                }
-              }
-            },
-            executor);
+        currentFuture.thenCompose(unused -> logKeyValue(runId, "metrics", metrics), executor);
 
-    // Log metrics
-    for (final var metric : metrics) {
-      currentFuture =
-          currentFuture.thenCompose(
-              unused ->
-                  // Insert into KV table
-                  jdbi.useHandle(
-                      handle -> {
-                        handle
-                            .createQuery(
-                                "select id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=\"metrics\" and kv_key=:key")
-                            .bind("key", metric.getKey())
-                            .mapTo(Long.class)
-                            .findOne()
-                            .ifPresent(
-                                present -> {
-                                  throw new AlreadyExistsException("Metric key already exists");
-                                });
+    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
 
-                        handle
-                            .createUpdate(
-                                "insert into keyvalue (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id) "
-                                    + "values (\"ExperimentRunEntity\", \"metrics\", :key, :value, :type, :runId)")
-                            .bind("key", metric.getKey())
-                            .bind("value", ModelDBUtils.getStringFromProtoObject(metric.getValue()))
-                            .bind("type", metric.getValueTypeValue())
-                            .bind("runId", runId)
-                            .executeAndReturnGeneratedKeys()
-                            .mapTo(Long.class)
-                            .one();
-                      }),
-              executor);
-    }
+  public InternalFuture<Void> logHyperparameters(LogHyperparameters request) {
+    final var runId = request.getId();
+    final var hyperparameters = request.getHyperparametersList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    // Check permissions
+    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+
+    currentFuture =
+        currentFuture.thenCompose(
+            unused -> logKeyValue(runId, "hyperparameters", hyperparameters), executor);
 
     return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -338,6 +295,87 @@ public class FutureExperimentRunDAO {
               }
             },
             executor);
+  }
+
+  private InternalFuture<List<KeyValue>> getKeyValue(String runId, String fieldType) {
+    return jdbi.withHandle(
+        handle ->
+            handle
+                .createQuery(
+                    "select kv_key key, kv_value value, value_type type from keyvalue "
+                        + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:runId")
+                .bind("run_id", runId)
+                .bind("field_type", fieldType)
+                .map(
+                    (rs, ctx) -> {
+                      try {
+                        return KeyValue.newBuilder()
+                            .setKey(rs.getString("key"))
+                            .setValue(
+                                (Value.Builder)
+                                    CommonUtils.getProtoObjectFromString(
+                                        rs.getString("value"), Value.newBuilder()))
+                            .setValueTypeValue(rs.getInt("type"))
+                            .build();
+                      } catch (InvalidProtocolBufferException e) {
+                        LOGGER.error("Error generating builder for {}", rs.getString("value"));
+                        throw new ModelDBException(e);
+                      }
+                    })
+                .list());
+  }
+
+  private InternalFuture<Void> logKeyValue(String runId, String fieldType, List<KeyValue> kvs) {
+    // Validate input
+    var currentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              for (final var metric : kvs) {
+                if (metric.getKey().isEmpty()) {
+                  throw new InvalidArgumentException("Empty key");
+                }
+              }
+            },
+            executor);
+
+    // Log
+    for (final var kv : kvs) {
+      currentFuture =
+          currentFuture.thenCompose(
+              unused ->
+                  // Insert into KV table
+                  jdbi.useHandle(
+                      handle -> {
+                        handle
+                            .createQuery(
+                                "select id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and kv_key=:key and experiment_run_id=:runId")
+                            .bind("key", kv.getKey())
+                            .bind("field_type", fieldType)
+                            .bind("runId", runId)
+                            .mapTo(Long.class)
+                            .findOne()
+                            .ifPresent(
+                                present -> {
+                                  throw new AlreadyExistsException("Key already exists");
+                                });
+
+                        handle
+                            .createUpdate(
+                                "insert into keyvalue (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id) "
+                                    + "values (\"ExperimentRunEntity\", :field_type, :key, :value, :type, :runId)")
+                            .bind("key", kv.getKey())
+                            .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
+                            .bind("type", kv.getValueTypeValue())
+                            .bind("runId", runId)
+                            .bind("field_type", fieldType)
+                            .executeAndReturnGeneratedKeys()
+                            .mapTo(Long.class)
+                            .one();
+                      }),
+              executor);
+    }
+
+    return currentFuture;
   }
 
   private InternalFuture<Void> checkPermission(

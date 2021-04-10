@@ -232,19 +232,59 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void logHyperparameter(
       LogHyperparameter request, StreamObserver<LogHyperparameter.Response> responseObserver) {
-    super.logHyperparameter(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logHyperparameters(
+                  LogHyperparameters.newBuilder()
+                      .setId(request.getId())
+                      .addHyperparameters(request.getHyperparameter())
+                      .build())
+              .thenApply(unused -> LogHyperparameter.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void logHyperparameters(
       LogHyperparameters request, StreamObserver<LogHyperparameters.Response> responseObserver) {
-    super.logHyperparameters(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logHyperparameters(request)
+              .thenApply(unused -> LogHyperparameters.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getHyperparameters(
       GetHyperparameters request, StreamObserver<GetHyperparameters.Response> responseObserver) {
-    super.getHyperparameters(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .getHyperparameters(request)
+              .thenApply(
+                  hyperparameters ->
+                      GetHyperparameters.Response.newBuilder()
+                          .addAllHyperparameters(hyperparameters)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
+  }
+
+  @Override
+  public void deleteHyperparameters(
+      DeleteHyperparameters request,
+      StreamObserver<DeleteHyperparameters.Response> responseObserver) {
+    super.deleteHyperparameters(request, responseObserver);
   }
 
   @Override
@@ -430,13 +470,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       ListBlobExperimentRunsRequest request,
       StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
     super.listBlobExperimentRuns(request, responseObserver);
-  }
-
-  @Override
-  public void deleteHyperparameters(
-      DeleteHyperparameters request,
-      StreamObserver<DeleteHyperparameters.Response> responseObserver) {
-    super.deleteHyperparameters(request, responseObserver);
   }
 
   @Override
