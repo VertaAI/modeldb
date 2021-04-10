@@ -156,18 +156,60 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   }
 
   @Override
+  public void deleteObservations(
+      DeleteObservations request, StreamObserver<DeleteObservations.Response> responseObserver) {
+    super.deleteObservations(request, responseObserver);
+  }
+
+  @Override
   public void logMetric(LogMetric request, StreamObserver<LogMetric.Response> responseObserver) {
-    super.logMetric(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logMetrics(
+                  LogMetrics.newBuilder()
+                      .setId(request.getId())
+                      .addMetrics(request.getMetric())
+                      .build())
+              .thenApply(unused -> LogMetric.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void logMetrics(LogMetrics request, StreamObserver<LogMetrics.Response> responseObserver) {
-    super.logMetrics(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logMetrics(request)
+              .thenApply(unused -> LogMetrics.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getMetrics(GetMetrics request, StreamObserver<GetMetrics.Response> responseObserver) {
-    super.getMetrics(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .getMetrics(request)
+              .thenApply(
+                  metrics -> GetMetrics.Response.newBuilder().addAllMetrics(metrics).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
+  }
+
+  @Override
+  public void deleteMetrics(
+      DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
+    super.deleteMetrics(request, responseObserver);
   }
 
   @Override
@@ -388,18 +430,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       ListBlobExperimentRunsRequest request,
       StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
     super.listBlobExperimentRuns(request, responseObserver);
-  }
-
-  @Override
-  public void deleteObservations(
-      DeleteObservations request, StreamObserver<DeleteObservations.Response> responseObserver) {
-    super.deleteObservations(request, responseObserver);
-  }
-
-  @Override
-  public void deleteMetrics(
-      DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
-    super.deleteMetrics(request, responseObserver);
   }
 
   @Override

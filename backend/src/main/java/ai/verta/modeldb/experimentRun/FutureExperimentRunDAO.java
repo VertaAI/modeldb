@@ -2,9 +2,7 @@ package ai.verta.modeldb.experimentRun;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.modeldb.GetObservations;
-import ai.verta.modeldb.LogObservations;
-import ai.verta.modeldb.Observation;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -12,6 +10,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -57,6 +56,7 @@ public class FutureExperimentRunDAO {
             },
             executor);
 
+    // Query
     return currentFuture.thenCompose(
         unused ->
             jdbi.withHandle(
@@ -161,7 +161,7 @@ public class FutureExperimentRunDAO {
               .thenCompose(
                   epoch ->
                       // Insert into KV table
-                      jdbi.withHandle(
+                      jdbi.useHandle(
                           handle -> {
                             final var kvId =
                                 handle
@@ -181,36 +181,133 @@ public class FutureExperimentRunDAO {
                             // We don't need transaction here since it's fine to add to the kv table
                             // and fail to insert into the observation table, as the value will be
                             // just ignored
-                            final var observationId =
-                                handle
-                                    .createUpdate(
-                                        "insert into observation (entity_name, field_type, timestamp, experiment_run_id, keyvaluemapping_id, epoch_number) "
-                                            + "values (\"ExperimentRunEntity\", \"observations\", :timestamp, :run_id, :kvid, :epoch)")
-                                    .bind(
-                                        "timestamp",
-                                        observation.getTimestamp() == 0
-                                            ? now
-                                            : observation.getTimestamp())
-                                    .bind("run_id", runId)
-                                    .bind("kvid", kvId)
-                                    .bind("epoch", epoch)
-                                    .executeAndReturnGeneratedKeys()
-                                    .mapTo(Long.class)
-                                    .one();
-
                             handle
                                 .createUpdate(
-                                    "update experiment_run set date_updated=greatest(date_updated, :now) where id=:run_id")
+                                    "insert into observation (entity_name, field_type, timestamp, experiment_run_id, keyvaluemapping_id, epoch_number) "
+                                        + "values (\"ExperimentRunEntity\", \"observations\", :timestamp, :run_id, :kvid, :epoch)")
+                                .bind(
+                                    "timestamp",
+                                    observation.getTimestamp() == 0
+                                        ? now
+                                        : observation.getTimestamp())
                                 .bind("run_id", runId)
-                                .bind("now", now)
-                                .execute();
-
-                            return null;
+                                .bind("kvid", kvId)
+                                .bind("epoch", epoch)
+                                .executeAndReturnGeneratedKeys()
+                                .mapTo(Long.class)
+                                .one();
                           }),
                   executor);
     }
 
-    return currentFuture;
+    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<List<KeyValue>> getMetrics(GetMetrics request) {
+    final var runId = request.getId();
+
+    // Check permissions
+    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ);
+
+    // Validate input
+
+    // Query
+    return currentFuture.thenCompose(
+        unused ->
+            jdbi.withHandle(
+                handle ->
+                    handle
+                        .createQuery(
+                            "select kv_key key, kv_value value, value_type type from keyvalue "
+                                + "where entity_name=\"ExperimentRunEntity\" and field_type=\"metrics\" and experiment_run_id=:runId")
+                        .bind("run_id", runId)
+                        .map(
+                            (rs, ctx) -> {
+                              try {
+                                return KeyValue.newBuilder()
+                                    .setKey(rs.getString("key"))
+                                    .setValue(
+                                        (Value.Builder)
+                                            CommonUtils.getProtoObjectFromString(
+                                                rs.getString("value"), Value.newBuilder()))
+                                    .setValueTypeValue(rs.getInt("type"))
+                                    .build();
+                              } catch (InvalidProtocolBufferException e) {
+                                LOGGER.error(
+                                    "Error generating builder for {}", rs.getString("value"));
+                                throw new ModelDBException(e);
+                              }
+                            })
+                        .list()),
+        executor);
+  }
+
+  public InternalFuture<Void> logMetrics(LogMetrics request) {
+    final var runId = request.getId();
+    final var metrics = request.getMetricsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    // Check permissions
+    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+
+    // Validate input
+    currentFuture =
+        currentFuture.thenRun(
+            () -> {
+              for (final var metric : metrics) {
+                if (metric.getKey().isEmpty()) {
+                  throw new InvalidArgumentException("Empty metric key");
+                }
+              }
+            },
+            executor);
+
+    // Log metrics
+    for (final var metric : metrics) {
+      currentFuture =
+          currentFuture.thenCompose(
+              unused ->
+                  // Insert into KV table
+                  jdbi.useHandle(
+                      handle -> {
+                        handle
+                            .createQuery(
+                                "select id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=\"metrics\" and kv_key=:key")
+                            .bind("key", metric.getKey())
+                            .mapTo(Long.class)
+                            .findOne()
+                            .ifPresent(
+                                present -> {
+                                  throw new AlreadyExistsException("Metric key already exists");
+                                });
+
+                        handle
+                            .createUpdate(
+                                "insert into keyvalue (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id) "
+                                    + "values (\"ExperimentRunEntity\", \"metrics\", :key, :value, :type, :runId)")
+                            .bind("key", metric.getKey())
+                            .bind("value", ModelDBUtils.getStringFromProtoObject(metric.getValue()))
+                            .bind("type", metric.getValueTypeValue())
+                            .bind("runId", runId)
+                            .executeAndReturnGeneratedKeys()
+                            .mapTo(Long.class)
+                            .one();
+                      }),
+              executor);
+    }
+
+    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
+    return jdbi.useHandle(
+        handle ->
+            handle
+                .createUpdate(
+                    "update experiment_run set date_updated=greatest(date_updated, :now) where id=:run_id")
+                .bind("run_id", runId)
+                .bind("now", now)
+                .execute());
   }
 
   private InternalFuture<Void> checkProjectPermission(
