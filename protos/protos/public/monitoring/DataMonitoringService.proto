@@ -249,6 +249,16 @@ message ListMonitoredEntitiesRequest {
   }
 }
 
+message FindMonitoredEntityRequest {
+  repeated uint64 ids = 1;
+  repeated string names = 2;
+  uint64 workspace_id = 3;
+
+  message Response {
+      repeated MonitoredEntity monitored_entities = 1;
+  }
+}
+
 message DeleteMonitoredEntityRequest {
   uint64 id = 1;
 
@@ -287,6 +297,13 @@ service DataMonitoringService {
   rpc listMonitoredEntities(ListMonitoredEntitiesRequest) returns (ListMonitoredEntitiesRequest.Response) {
     option (google.api.http) = {
       get: "/v1/monitored_entity/listMonitoredEntities"
+    };
+  };
+
+  rpc findMonitoredEntity(FindMonitoredEntityRequest) returns (FindMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      post: "/v1/monitored_entity/findMonitoredEntity"
+      body: "*"
     };
   };
 
