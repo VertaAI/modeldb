@@ -11,7 +11,6 @@ import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -22,7 +21,6 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CommitDAO;
@@ -30,7 +28,6 @@ import ai.verta.modeldb.versioning.GetRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -38,13 +35,14 @@ import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
-import java.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.AbstractMap.SimpleEntry;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
@@ -82,19 +80,19 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       String request,
       String response,
       Long workspaceId) {
-    auditLogLocalDAO.saveAuditLog(
-        new AuditLogLocalEntity(
-            SERVICE_NAME,
-            authService.getVertaIdFromUserInfo(
-                userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
-            action,
-            resourceIdWorkspaceIdMap,
-            ModelDBServiceResourceTypes.EXPERIMENT_RUN,
-            Service.MODELDB_SERVICE,
-            MonitoringInterceptor.METHOD_NAME.get(),
-            request,
-            response,
-            workspaceId));
+    //    auditLogLocalDAO.saveAuditLog(
+    //        new AuditLogLocalEntity(
+    //            SERVICE_NAME,
+    //            authService.getVertaIdFromUserInfo(
+    //                userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
+    //            action,
+    //            resourceIdWorkspaceIdMap,
+    //            ModelDBServiceResourceTypes.EXPERIMENT_RUN,
+    //            Service.MODELDB_SERVICE,
+    //            MonitoringInterceptor.METHOD_NAME.get(),
+    //            request,
+    //            response,
+    //            workspaceId));
   }
 
   private void validateExperimentEntity(String experimentId) throws InvalidProtocolBufferException {
