@@ -193,7 +193,7 @@ public class App implements ApplicationContextAware {
       final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
 
       // Initialize data access
-      DAOSet daos = DAOSet.fromServices(services, handleExecutor);
+      DAOSet daos = DAOSet.fromServices(services, config.getJdbi(), handleExecutor);
 
       // Initialize telemetry
       initializeTelemetryBasedOnConfig(config);
