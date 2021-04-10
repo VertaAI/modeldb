@@ -17,6 +17,7 @@ import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experiment.ExperimentDAORdbImpl;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
+import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.lineage.LineageDAO;
 import ai.verta.modeldb.lineage.LineageDAORdbImpl;
 import ai.verta.modeldb.metadata.MetadataDAO;
@@ -24,6 +25,8 @@ import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.*;
+
+import java.util.concurrent.Executor;
 
 public class DAOSet {
   public AuditLogLocalDAO auditLogLocalDAO;
@@ -35,12 +38,13 @@ public class DAOSet {
   public DatasetVersionDAO datasetVersionDAO;
   public ExperimentDAO experimentDAO;
   public ExperimentRunDAO experimentRunDAO;
+  public FutureExperimentRunDAO futureExperimentRunDAO;
   public LineageDAO lineageDAO;
   public MetadataDAO metadataDAO;
   public ProjectDAO projectDAO;
   public RepositoryDAO repositoryDAO;
 
-  public static DAOSet fromServices(ServiceSet services) {
+  public static DAOSet fromServices(ServiceSet services, Executor executor) {
     DAOSet set = new DAOSet();
 
     set.metadataDAO = new MetadataDAORdbImpl();
@@ -59,6 +63,7 @@ public class DAOSet {
             set.commitDAO,
             set.blobDAO,
             set.metadataDAO);
+    set.futureExperimentRunDAO = new FutureExperimentRunDAO(executor);
     set.projectDAO =
         new ProjectDAORdbImpl(
             services.authService, services.roleService, set.experimentDAO, set.experimentRunDAO);

@@ -9,6 +9,7 @@ import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
@@ -60,6 +61,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.TimerTask;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -187,8 +189,11 @@ public class App implements ApplicationContextAware {
       // Initialize services that we depend on
       ServiceSet services = ServiceSet.fromConfig(config);
 
+      // Initialize executor so we don't lose context using Futures
+      final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
+
       // Initialize data access
-      DAOSet daos = DAOSet.fromServices(services);
+      DAOSet daos = DAOSet.fromServices(services, handleExecutor);
 
       // Initialize telemetry
       initializeTelemetryBasedOnConfig(config);
@@ -198,7 +203,8 @@ public class App implements ApplicationContextAware {
       ReconcilerInitializer.initialize(config, services);
 
       // Initialize grpc server
-      ServerBuilder<?> serverBuilder = ServerBuilder.forPort(config.grpcServer.port);
+      ServerBuilder<?> serverBuilder =
+          ServerBuilder.forPort(config.grpcServer.port).executor(handleExecutor);
       if (config.grpcServer.maxInboundMessageSize != null) {
         serverBuilder.maxInboundMessageSize(config.grpcServer.maxInboundMessageSize);
       }
@@ -226,7 +232,7 @@ public class App implements ApplicationContextAware {
       serverBuilder.intercept(new AuditLogInterceptor(config.grpcServer.quitOnAuditMissing));
 
       // Add APIs
-      initializeBackendServices(serverBuilder, services, daos);
+      initializeBackendServices(serverBuilder, services, daos, handleExecutor);
 
       // Create the server
       Server server = serverBuilder.build();
@@ -275,12 +281,12 @@ public class App implements ApplicationContextAware {
   }
 
   public static void initializeBackendServices(
-      ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos) {
+      ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos, Executor executor) {
     wrapService(serverBuilder, new ProjectServiceImpl(services, daos));
     LOGGER.trace("Project serviceImpl initialized");
     wrapService(serverBuilder, new ExperimentServiceImpl(services, daos));
     LOGGER.trace("Experiment serviceImpl initialized");
-    wrapService(serverBuilder, new FutureExperimentRunServiceImpl(services, daos));
+    wrapService(serverBuilder, new FutureExperimentRunServiceImpl(services, daos, executor));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
     wrapService(serverBuilder, new CommentServiceImpl(services, daos));
     LOGGER.trace("Comment serviceImpl initialized");

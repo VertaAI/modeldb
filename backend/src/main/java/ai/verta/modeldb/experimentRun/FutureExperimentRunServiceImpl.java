@@ -3,9 +3,16 @@ package ai.verta.modeldb.experimentRun;
 import ai.verta.modeldb.*;
 import io.grpc.stub.StreamObserver;
 
+import java.util.concurrent.Executor;
+
 public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
-  public FutureExperimentRunServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+  private final Executor executor;
+  private final FutureExperimentRunDAO futureExperimentRunDAO;
+
+  public FutureExperimentRunServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
     super(serviceSet, daoSet);
+    this.executor = executor;
+    this.futureExperimentRunDAO = daoSet.futureExperimentRunDAO;
   }
 
   @Override

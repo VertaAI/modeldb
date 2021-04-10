@@ -3,6 +3,7 @@ package ai.verta.modeldb;
 import ai.verta.artifactstore.ArtifactStoreGrpc;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
@@ -19,6 +20,8 @@ import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import java.util.concurrent.Executor;
 
 public class TestsInit {
 
@@ -72,14 +75,15 @@ public class TestsInit {
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     config = Config.getInstance();
+    final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
     // Initialize services that we depend on
     ServiceSet services = ServiceSet.fromConfig(config);
     authService = services.authService;
     // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services);
+    DAOSet daos = DAOSet.fromServices(services, handleExecutor);
     App.migrate(config);
 
-    App.initializeBackendServices(serverBuilder, services, daos);
+    App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
     serverBuilder.intercept(new AuthInterceptor());
     serverBuilder.intercept(new AuditLogInterceptor(true));
     ReconcilerInitializer.initialize(config, services);
