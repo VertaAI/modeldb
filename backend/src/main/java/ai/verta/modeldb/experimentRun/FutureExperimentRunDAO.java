@@ -1,10 +1,16 @@
 package ai.verta.modeldb.experimentRun;
 
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.LogObservations;
+import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.*;
 import com.google.protobuf.Value;
 
 import java.util.Calendar;
@@ -13,21 +19,22 @@ import java.util.concurrent.Executor;
 public class FutureExperimentRunDAO {
   private final Executor executor;
   private final FutureJdbi jdbi;
+  private final UAC uac;
 
-  public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi) {
+  public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
     this.executor = executor;
     this.jdbi = jdbi;
+    this.uac = uac;
   }
 
   public InternalFuture<Void> logObservations(LogObservations request) {
-    // TODO: check permission
-    // TODO: check expt run exists
     // TODO: update ER timestamp
     // TODO: support artifacts?
     // TODO: check that the key is not empty
 
     // Create initial future
-    var currentFuture = InternalFuture.runAsync(() -> {}, executor);
+    var currentFuture =
+        checkPermission(request.getId(), ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
     final var runId = request.getId();
     final var observations = request.getObservationsList();
@@ -117,5 +124,61 @@ public class FutureExperimentRunDAO {
     }
 
     return currentFuture;
+  }
+
+  private InternalFuture<Void> checkProjectPermission(
+      String projId, ModelDBActionEnum.ModelDBServiceActions action) {
+    return FutureGrpc.ClientRequest(
+            uac.getAuthzService()
+                .isSelfAllowed(
+                    IsSelfAllowed.newBuilder()
+                        .addActions(
+                            Action.newBuilder()
+                                .setModeldbServiceAction(action)
+                                .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                        .addResources(
+                            Resources.newBuilder()
+                                .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                                .setResourceType(
+                                    ResourceType.newBuilder()
+                                        .setModeldbServiceResourceType(
+                                            ModelDBResourceEnum.ModelDBServiceResourceTypes
+                                                .PROJECT))
+                                .addResourceIds(projId))
+                        .build()),
+            executor)
+        .thenAccept(
+            response -> {
+              if (!response.getAllowed()) {
+                throw new PermissionDeniedException("Permission denied");
+              }
+            },
+            executor);
+  }
+
+  private InternalFuture<Void> checkPermission(
+      String runId, ModelDBActionEnum.ModelDBServiceActions action) {
+
+    var futureMaybeProjectId =
+        jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery("select project_id from experiment_run where id=:id and deleted=0")
+                    .bind("id", runId)
+                    .mapTo(String.class)
+                    .findOne());
+
+    return futureMaybeProjectId.thenCompose(
+        maybeProjectId -> {
+          if (maybeProjectId.isEmpty()) {
+            throw new NotFoundException("Experiment run not found");
+          }
+
+          switch (action) {
+            default:
+              return checkProjectPermission(maybeProjectId.get(), action);
+          }
+        },
+        executor);
   }
 }
