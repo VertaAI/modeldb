@@ -132,7 +132,7 @@ public class FutureExperimentRunDAO {
 
                             handle
                                 .createUpdate(
-                                    "update experiment_run set date_updated=max(date_updated, :now) where id=:run_id")
+                                    "update experiment_run set date_updated=greatest(date_updated, :now) where id=:run_id")
                                 .bind("run_id", runId)
                                 .bind("now", now)
                                 .execute();
