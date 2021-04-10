@@ -1,6 +1,8 @@
 package ai.verta.modeldb.experimentRun;
 
 import ai.verta.modeldb.*;
+import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.stub.StreamObserver;
 
 import java.util.concurrent.Executor;
@@ -105,13 +107,33 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void logObservation(
       LogObservation request, StreamObserver<LogObservation.Response> responseObserver) {
-    super.logObservation(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logObservations(
+                  LogObservations.newBuilder()
+                      .setId(request.getId())
+                      .addObservations(request.getObservation())
+                      .build())
+              .thenApply(unused -> LogObservation.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void logObservations(
       LogObservations request, StreamObserver<LogObservations.Response> responseObserver) {
-    super.logObservations(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logObservations(request)
+              .thenApply(unused -> LogObservations.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
