@@ -12,6 +12,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
+import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.uac.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,6 +32,7 @@ public class FutureExperimentRunDAO {
   private final KeyValueHandler metricsHandler;
   private final KeyValueHandler hyperparametersHandler;
   private final ObservationHandler observationHandler;
+  private final TagsHandler tagsHandler;
 
   public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
     this.executor = executor;
@@ -40,6 +42,7 @@ public class FutureExperimentRunDAO {
     metricsHandler = new KeyValueHandler(executor, jdbi, "metrics");
     hyperparametersHandler = new KeyValueHandler(executor, jdbi, "hyperparameters");
     observationHandler = new ObservationHandler(executor, jdbi);
+    tagsHandler = new TagsHandler(executor, jdbi);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -138,6 +141,35 @@ public class FutureExperimentRunDAO {
         .thenCompose(
             unused -> hyperparametersHandler.logKeyValues(runId, hyperparameters), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<Void> addTags(AddExperimentRunTags request) {
+    final var runId = request.getId();
+    final var tags = request.getTagsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> tagsHandler.addTags(runId, tags), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<Void> deleteTags(DeleteExperimentRunTags request) {
+    final var runId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    final Optional<List<String>> maybeTags =
+        request.getDeleteAll() ? Optional.empty() : Optional.of(request.getTagsList());
+
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> tagsHandler.deleteTags(runId, maybeTags), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<List<String>> getTags(GetTags request) {
+    final var runId = request.getId();
+
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> tagsHandler.getTags(runId), executor);
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
