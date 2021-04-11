@@ -43,20 +43,17 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
+    // TODO: support artifacts?
+
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
-
-    // Check permissions
-    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
     final Optional<List<String>> maybeKeys =
         request.getDeleteAll() ? Optional.empty() : Optional.of(request.getObservationKeysList());
 
-    currentFuture =
-        currentFuture.thenCompose(
-            unused -> observationHandler.deleteObservations(runId, maybeKeys), executor);
-
-    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> observationHandler.deleteObservations(runId, maybeKeys), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
   public InternalFuture<List<Observation>> getObservations(GetObservations request) {
@@ -65,11 +62,8 @@ public class FutureExperimentRunDAO {
     final var runId = request.getId();
     final var key = request.getObservationKey();
 
-    // Check permissions
-    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ);
-
-    return currentFuture.thenCompose(
-        unused -> observationHandler.getObservations(runId, key), executor);
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> observationHandler.getObservations(runId, key), executor);
   }
 
   public InternalFuture<Void> logObservations(LogObservations request) {
@@ -79,74 +73,50 @@ public class FutureExperimentRunDAO {
     final var observations = request.getObservationsList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    // Check permissions
-    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
-
-    currentFuture =
-        currentFuture.thenCompose(
-            unused -> observationHandler.logObservations(runId, observations, now), executor);
-
-    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(
+            unused -> observationHandler.logObservations(runId, observations, now), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
   public InternalFuture<Void> deleteMetrics(DeleteMetrics request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    // Check permissions
-    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
-
     final Optional<List<String>> maybeKeys =
         request.getDeleteAll() ? Optional.empty() : Optional.of(request.getMetricKeysList());
 
-    currentFuture =
-        currentFuture.thenCompose(
-            unused -> metricsHandler.deleteKeyValues(runId, maybeKeys), executor);
-
-    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> metricsHandler.deleteKeyValues(runId, maybeKeys), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
   public InternalFuture<Void> deleteHyperparameters(DeleteHyperparameters request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    // Check permissions
-    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
-
     final Optional<List<String>> maybeKeys =
         request.getDeleteAll()
             ? Optional.empty()
             : Optional.of(request.getHyperparameterKeysList());
 
-    currentFuture =
-        currentFuture.thenCompose(
-            unused -> hyperparametersHandler.deleteKeyValues(runId, maybeKeys), executor);
-
-    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> hyperparametersHandler.deleteKeyValues(runId, maybeKeys), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
   public InternalFuture<List<KeyValue>> getMetrics(GetMetrics request) {
     final var runId = request.getId();
 
-    // Check permissions
-    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ);
-
-    // Validate input
-
-    // Query
-    return currentFuture.thenCompose(unused -> metricsHandler.getKeyValue(runId), executor);
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> metricsHandler.getKeyValue(runId), executor);
   }
 
   public InternalFuture<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
     final var runId = request.getId();
 
-    // Check permissions
-    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ);
-
-    // Validate input
-
-    // Query
-    return currentFuture.thenCompose(unused -> hyperparametersHandler.getKeyValue(runId), executor);
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> hyperparametersHandler.getKeyValue(runId), executor);
   }
 
   public InternalFuture<Void> logMetrics(LogMetrics request) {
@@ -154,13 +124,9 @@ public class FutureExperimentRunDAO {
     final var metrics = request.getMetricsList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    // Check permissions
-    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
-
-    currentFuture =
-        currentFuture.thenCompose(unused -> metricsHandler.logKeyValue(runId, metrics), executor);
-
-    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> metricsHandler.logKeyValue(runId, metrics), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
   public InternalFuture<Void> logHyperparameters(LogHyperparameters request) {
@@ -168,14 +134,9 @@ public class FutureExperimentRunDAO {
     final var hyperparameters = request.getHyperparametersList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    // Check permissions
-    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
-
-    currentFuture =
-        currentFuture.thenCompose(
-            unused -> hyperparametersHandler.logKeyValue(runId, hyperparameters), executor);
-
-    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> hyperparametersHandler.logKeyValue(runId, hyperparameters), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
