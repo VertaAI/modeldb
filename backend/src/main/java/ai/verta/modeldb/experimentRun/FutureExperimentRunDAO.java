@@ -329,7 +329,7 @@ public class FutureExperimentRunDAO {
             handle
                 .createUpdate(
                     "delete from keyvalue "
-                        + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:runId")
+                        + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:run_id")
                 .bind("run_id", runId)
                 .bind("field_type", fieldType)
                 .execute());
@@ -341,7 +341,7 @@ public class FutureExperimentRunDAO {
             handle
                 .createQuery(
                     "select kv_key key, kv_value value, value_type type from keyvalue "
-                        + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:runId")
+                        + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:run_id")
                 .bind("run_id", runId)
                 .bind("field_type", fieldType)
                 .map(
@@ -386,10 +386,10 @@ public class FutureExperimentRunDAO {
                       handle -> {
                         handle
                             .createQuery(
-                                "select id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and kv_key=:key and experiment_run_id=:runId")
+                                "select id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and kv_key=:key and experiment_run_id=:run_id")
                             .bind("key", kv.getKey())
                             .bind("field_type", fieldType)
-                            .bind("runId", runId)
+                            .bind("run_id", runId)
                             .mapTo(Long.class)
                             .findOne()
                             .ifPresent(
@@ -400,11 +400,11 @@ public class FutureExperimentRunDAO {
                         handle
                             .createUpdate(
                                 "insert into keyvalue (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id) "
-                                    + "values (\"ExperimentRunEntity\", :field_type, :key, :value, :type, :runId)")
+                                    + "values (\"ExperimentRunEntity\", :field_type, :key, :value, :type, :run_id)")
                             .bind("key", kv.getKey())
                             .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
                             .bind("type", kv.getValueTypeValue())
-                            .bind("runId", runId)
+                            .bind("run_id", runId)
                             .bind("field_type", fieldType)
                             .executeAndReturnGeneratedKeys()
                             .mapTo(Long.class)
