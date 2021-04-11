@@ -30,7 +30,7 @@ public class KeyValueHandler {
     this.fieldType = fieldType;
   }
 
-  public InternalFuture<List<KeyValue>> getKeyValue(String runId) {
+  public InternalFuture<List<KeyValue>> getKeyValues(String runId) {
     return jdbi.withHandle(
         handle ->
             handle
@@ -58,7 +58,7 @@ public class KeyValueHandler {
                 .list());
   }
 
-  public InternalFuture<Void> logKeyValue(String runId, List<KeyValue> kvs) {
+  public InternalFuture<Void> logKeyValues(String runId, List<KeyValue> kvs) {
     // Validate input
     var currentFuture =
         InternalFuture.runAsync(

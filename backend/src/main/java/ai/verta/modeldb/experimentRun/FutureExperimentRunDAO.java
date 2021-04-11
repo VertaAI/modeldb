@@ -109,14 +109,14 @@ public class FutureExperimentRunDAO {
     final var runId = request.getId();
 
     return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> metricsHandler.getKeyValue(runId), executor);
+        .thenCompose(unused -> metricsHandler.getKeyValues(runId), executor);
   }
 
   public InternalFuture<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
     final var runId = request.getId();
 
     return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> hyperparametersHandler.getKeyValue(runId), executor);
+        .thenCompose(unused -> hyperparametersHandler.getKeyValues(runId), executor);
   }
 
   public InternalFuture<Void> logMetrics(LogMetrics request) {
@@ -125,7 +125,7 @@ public class FutureExperimentRunDAO {
     final var now = Calendar.getInstance().getTimeInMillis();
 
     return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> metricsHandler.logKeyValue(runId, metrics), executor)
+        .thenCompose(unused -> metricsHandler.logKeyValues(runId, metrics), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
@@ -135,7 +135,8 @@ public class FutureExperimentRunDAO {
     final var now = Calendar.getInstance().getTimeInMillis();
 
     return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> hyperparametersHandler.logKeyValue(runId, hyperparameters), executor)
+        .thenCompose(
+            unused -> hyperparametersHandler.logKeyValues(runId, hyperparameters), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
