@@ -42,6 +42,23 @@ public class FutureExperimentRunDAO {
     observationHandler = new ObservationHandler(executor, jdbi);
   }
 
+  public InternalFuture<Void> deleteObservations(DeleteObservations request) {
+    final var runId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    // Check permissions
+    var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+
+    final Optional<List<String>> maybeKeys =
+        request.getDeleteAll() ? Optional.empty() : Optional.of(request.getObservationKeysList());
+
+    currentFuture =
+        currentFuture.thenCompose(
+            unused -> observationHandler.deleteObservations(runId, maybeKeys), executor);
+
+    return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
   public InternalFuture<List<Observation>> getObservations(GetObservations request) {
     // TODO: support artifacts?
 

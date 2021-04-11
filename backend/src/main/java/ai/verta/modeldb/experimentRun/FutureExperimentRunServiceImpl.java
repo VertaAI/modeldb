@@ -158,7 +158,15 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void deleteObservations(
       DeleteObservations request, StreamObserver<DeleteObservations.Response> responseObserver) {
-    super.deleteObservations(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .deleteObservations(request)
+              .thenApply(unused -> DeleteObservations.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

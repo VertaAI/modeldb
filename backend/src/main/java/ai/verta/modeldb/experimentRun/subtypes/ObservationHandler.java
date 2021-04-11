@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
 public class ObservationHandler {
@@ -179,5 +180,34 @@ public class ObservationHandler {
     }
 
     return currentFuture;
+  }
+
+  public InternalFuture<Void> deleteObservations(String runId, Optional<List<String>> maybeKeys) {
+    return jdbi.useHandle(
+        handle -> {
+          // Delete from keyvalue
+          var sql =
+              "delete from keyvalue where id in "
+                  + "(select keyvaluemapping_id from observation where entity_name=\"ExperimentRunEntity\" and field_type=\"observations\" and experiment_run_id=:run_id)";
+
+          if (maybeKeys.isPresent()) {
+            sql += " and kv_key in (<keys>)";
+          }
+
+          var query = handle.createUpdate(sql).bind("run_id", runId);
+
+          if (maybeKeys.isPresent()) {
+            query = query.bindList("keys", maybeKeys.get());
+          }
+
+          query.execute();
+
+          // Delete from observations by finding missing keyvalue matches
+          sql =
+              "delete from observation where id in "
+                  + "(select o.id from observation o left join keyvalue k on o.keyvaluemapping_id=k.id where o.experiment_run_id=:run_id and o.keyvaluemapping_id is null)";
+          query = handle.createUpdate(sql).bind("run_id", runId);
+          query.execute();
+        });
   }
 }
