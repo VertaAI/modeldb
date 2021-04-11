@@ -10,9 +10,9 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -31,10 +31,16 @@ public class FutureExperimentRunDAO {
   private final FutureJdbi jdbi;
   private final UAC uac;
 
+  private final KeyValueHandler metricsHandler;
+  private final KeyValueHandler hyperparametersHandler;
+
   public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
+
+    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics");
+    hyperparametersHandler = new KeyValueHandler(executor, jdbi, "hyperparameters");
   }
 
   public InternalFuture<List<Observation>> getObservations(GetObservations request) {
@@ -211,7 +217,7 @@ public class FutureExperimentRunDAO {
     var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
     currentFuture =
-        currentFuture.thenCompose(unused -> deleteKeyValues(runId, "metrics"), executor);
+        currentFuture.thenCompose(unused -> metricsHandler.deleteKeyValues(runId), executor);
 
     return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -224,7 +230,8 @@ public class FutureExperimentRunDAO {
     var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
     currentFuture =
-        currentFuture.thenCompose(unused -> deleteKeyValues(runId, "hyperparameters"), executor);
+        currentFuture.thenCompose(
+            unused -> hyperparametersHandler.deleteKeyValues(runId), executor);
 
     return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -238,7 +245,7 @@ public class FutureExperimentRunDAO {
     // Validate input
 
     // Query
-    return currentFuture.thenCompose(unused -> getKeyValue(runId, "metrics"), executor);
+    return currentFuture.thenCompose(unused -> metricsHandler.getKeyValue(runId), executor);
   }
 
   public InternalFuture<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
@@ -250,7 +257,7 @@ public class FutureExperimentRunDAO {
     // Validate input
 
     // Query
-    return currentFuture.thenCompose(unused -> getKeyValue(runId, "hyperparameters"), executor);
+    return currentFuture.thenCompose(unused -> hyperparametersHandler.getKeyValue(runId), executor);
   }
 
   public InternalFuture<Void> logMetrics(LogMetrics request) {
@@ -262,7 +269,7 @@ public class FutureExperimentRunDAO {
     var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
     currentFuture =
-        currentFuture.thenCompose(unused -> logKeyValue(runId, "metrics", metrics), executor);
+        currentFuture.thenCompose(unused -> metricsHandler.logKeyValue(runId, metrics), executor);
 
     return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -277,7 +284,7 @@ public class FutureExperimentRunDAO {
 
     currentFuture =
         currentFuture.thenCompose(
-            unused -> logKeyValue(runId, "hyperparameters", hyperparameters), executor);
+            unused -> hyperparametersHandler.logKeyValue(runId, hyperparameters), executor);
 
     return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -321,99 +328,6 @@ public class FutureExperimentRunDAO {
               }
             },
             executor);
-  }
-
-  private InternalFuture<Void> deleteKeyValues(String runId, String fieldType) {
-    return jdbi.useHandle(
-        handle ->
-            handle
-                .createUpdate(
-                    "delete from keyvalue "
-                        + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:run_id")
-                .bind("run_id", runId)
-                .bind("field_type", fieldType)
-                .execute());
-  }
-
-  private InternalFuture<List<KeyValue>> getKeyValue(String runId, String fieldType) {
-    return jdbi.withHandle(
-        handle ->
-            handle
-                .createQuery(
-                    "select kv_key key, kv_value value, value_type type from keyvalue "
-                        + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:run_id")
-                .bind("run_id", runId)
-                .bind("field_type", fieldType)
-                .map(
-                    (rs, ctx) -> {
-                      try {
-                        return KeyValue.newBuilder()
-                            .setKey(rs.getString("key"))
-                            .setValue(
-                                (Value.Builder)
-                                    CommonUtils.getProtoObjectFromString(
-                                        rs.getString("value"), Value.newBuilder()))
-                            .setValueTypeValue(rs.getInt("type"))
-                            .build();
-                      } catch (InvalidProtocolBufferException e) {
-                        LOGGER.error("Error generating builder for {}", rs.getString("value"));
-                        throw new ModelDBException(e);
-                      }
-                    })
-                .list());
-  }
-
-  private InternalFuture<Void> logKeyValue(String runId, String fieldType, List<KeyValue> kvs) {
-    // Validate input
-    var currentFuture =
-        InternalFuture.runAsync(
-            () -> {
-              for (final var metric : kvs) {
-                if (metric.getKey().isEmpty()) {
-                  throw new InvalidArgumentException("Empty key");
-                }
-              }
-            },
-            executor);
-
-    // Log
-    for (final var kv : kvs) {
-      currentFuture =
-          currentFuture.thenCompose(
-              unused ->
-                  // Insert into KV table
-                  jdbi.useHandle(
-                      handle -> {
-                        handle
-                            .createQuery(
-                                "select id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and kv_key=:key and experiment_run_id=:run_id")
-                            .bind("key", kv.getKey())
-                            .bind("field_type", fieldType)
-                            .bind("run_id", runId)
-                            .mapTo(Long.class)
-                            .findOne()
-                            .ifPresent(
-                                present -> {
-                                  throw new AlreadyExistsException("Key already exists");
-                                });
-
-                        handle
-                            .createUpdate(
-                                "insert into keyvalue (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id) "
-                                    + "values (\"ExperimentRunEntity\", :field_type, :key, :value, :type, :run_id)")
-                            .bind("key", kv.getKey())
-                            .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
-                            .bind("type", kv.getValueTypeValue())
-                            .bind("run_id", runId)
-                            .bind("field_type", fieldType)
-                            .executeAndReturnGeneratedKeys()
-                            .mapTo(Long.class)
-                            .one();
-                      }),
-              executor);
-    }
-
-    return currentFuture;
   }
 
   private InternalFuture<Void> checkPermission(
