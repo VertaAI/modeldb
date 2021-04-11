@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
 public class KeyValueHandler {
@@ -110,15 +111,24 @@ public class KeyValueHandler {
     return currentFuture;
   }
 
-  public InternalFuture<Void> deleteKeyValues(String runId) {
+  public InternalFuture<Void> deleteKeyValues(String runId, Optional<List<String>> maybeKeys) {
     return jdbi.useHandle(
-        handle ->
-            handle
-                .createUpdate(
-                    "delete from keyvalue "
-                        + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:run_id")
-                .bind("run_id", runId)
-                .bind("field_type", fieldType)
-                .execute());
+        handle -> {
+          var sql =
+              "delete from keyvalue "
+                  + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:run_id";
+
+          if (maybeKeys.isPresent()) {
+            sql += " and kv_key in (<keys>)";
+          }
+
+          var query = handle.createUpdate(sql).bind("run_id", runId).bind("field_type", fieldType);
+
+          if (maybeKeys.isPresent()) {
+            query = query.bindList("keys", maybeKeys.get());
+          }
+
+          query.execute();
+        });
   }
 }

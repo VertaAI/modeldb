@@ -8,6 +8,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
@@ -17,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
 public class FutureExperimentRunDAO {
@@ -77,8 +79,12 @@ public class FutureExperimentRunDAO {
     // Check permissions
     var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
+    final Optional<List<String>> maybeKeys =
+        request.getDeleteAll() ? Optional.empty() : Optional.of(request.getMetricKeysList());
+
     currentFuture =
-        currentFuture.thenCompose(unused -> metricsHandler.deleteKeyValues(runId), executor);
+        currentFuture.thenCompose(
+            unused -> metricsHandler.deleteKeyValues(runId, maybeKeys), executor);
 
     return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -90,9 +96,14 @@ public class FutureExperimentRunDAO {
     // Check permissions
     var currentFuture = checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
+    final Optional<List<String>> maybeKeys =
+        request.getDeleteAll()
+            ? Optional.empty()
+            : Optional.of(request.getHyperparameterKeysList());
+
     currentFuture =
         currentFuture.thenCompose(
-            unused -> hyperparametersHandler.deleteKeyValues(runId), executor);
+            unused -> hyperparametersHandler.deleteKeyValues(runId, maybeKeys), executor);
 
     return currentFuture.thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -193,6 +204,10 @@ public class FutureExperimentRunDAO {
 
   private InternalFuture<Void> checkPermission(
       String runId, ModelDBActionEnum.ModelDBServiceActions action) {
+    if (runId.isEmpty()) {
+      return InternalFuture.failedStage(
+          new InvalidArgumentException("Experiment run ID is missing"));
+    }
 
     var futureMaybeProjectId =
         jdbi.withHandle(
