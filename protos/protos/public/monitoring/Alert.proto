@@ -55,8 +55,13 @@ message FindNotificationChannelRequest {
     repeated string names = 2;
     repeated NotificationChannelTypeEnum types = 3;
 
+    // Pagination
+    int32 page_number = 4;
+    int32 page_limit = 5;
+
     message Response {
         repeated NotificationChannel channels = 1;
+        int32 total_record = 2;
     }
 }
 
@@ -151,8 +156,13 @@ message FindAlertRequest {
     // Allow filtering to see only failing alerts
     repeated AlertStatusEnum.AlertStatus status = 6;
 
+    // Pagination
+    int32 page_number = 7;
+    int32 page_limit = 8;
+
     message Response {
         repeated Alert alerts = 1;
+        int32 total_records = 2;
     }
 }
 

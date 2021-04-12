@@ -36,8 +36,13 @@ message FindSummaryRequest {
     repeated string type_names = 3;
     repeated uint64 monitored_entity_ids = 4;
 
+    // Pagination
+    int32 page_number = 6;
+    int32 page_limit = 7;
+
     message Response {
         repeated Summary summaries = 1;
+        int32 total_records = 2;
     }
 }
 
@@ -79,8 +84,13 @@ message FindSummarySampleRequest {
     FilterQuerySummarySample filter = 1; // Optional
     // AggregationQuerySummary aggregation = 2; // Optional
 
+    // Pagination
+    int32 page_number = 3;
+    int32 page_limit = 4;
+
     message Response {
         repeated SummarySample samples = 1;
+        int32 total_records = 2;
     }
 }
 
