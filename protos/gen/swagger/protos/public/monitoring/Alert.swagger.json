@@ -564,6 +564,15 @@
             "$ref": "#/definitions/AlertStatusEnumAlertStatus"
           },
           "title": "Allow filtering to see only failing alerts"
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -575,6 +584,10 @@
           "items": {
             "$ref": "#/definitions/monitoringAlert"
           }
+        },
+        "total_records": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -597,6 +610,15 @@
         "workspace_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -621,6 +643,15 @@
           "items": {
             "$ref": "#/definitions/monitoringNotificationChannelTypeEnum"
           }
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       },
       "title": "Find an notification channel based on the different fields"
@@ -633,6 +664,10 @@
           "items": {
             "$ref": "#/definitions/monitoringNotificationChannel"
           }
+        },
+        "total_record": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -667,6 +702,15 @@
             "type": "string",
             "format": "uint64"
           }
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       },
       "title": "Request to fetch multiple summaries"
@@ -676,6 +720,15 @@
       "properties": {
         "filter": {
           "$ref": "#/definitions/monitoringFilterQuerySummarySample"
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       },
       "description": "Request to fetch multiple summary samples, potentially with aggregation."

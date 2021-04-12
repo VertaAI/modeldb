@@ -49,31 +49,6 @@ class DataMonitoringServiceStub(object):
         request_serializer=monitoring_dot_DataMonitoringService__pb2.DeleteMonitoredEntityRequest.SerializeToString,
         response_deserializer=monitoring_dot_DataMonitoringService__pb2.DeleteMonitoredEntityRequest.Response.FromString,
         )
-    self.getDataSource = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/getDataSource',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.GetDataSourceRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.GetDataSourceRequest.Response.FromString,
-        )
-    self.findDataSources = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/findDataSources',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.FindDataSourcesRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.FindDataSourcesRequest.Response.FromString,
-        )
-    self.createDataSource = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/createDataSource',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.CreateDataSourceRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.CreateDataSourceRequest.Response.FromString,
-        )
-    self.listDataSources = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/listDataSources',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.ListDataSourcesRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.ListDataSourcesRequest.Response.FromString,
-        )
-    self.deleteDataSource = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/deleteDataSource',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.DeleteDataSourceRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.DeleteDataSourceRequest.Response.FromString,
-        )
     self.getProfiler = channel.unary_unary(
         '/ai.verta.monitoring.DataMonitoringService/getProfiler',
         request_serializer=monitoring_dot_DataMonitoringService__pb2.GetProfilerRequest.SerializeToString,
@@ -168,41 +143,6 @@ class DataMonitoringServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def deleteMonitoredEntity(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getDataSource(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def findDataSources(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def createDataSource(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def listDataSources(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def deleteDataSource(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -309,31 +249,6 @@ def add_DataMonitoringServiceServicer_to_server(servicer, server):
           servicer.deleteMonitoredEntity,
           request_deserializer=monitoring_dot_DataMonitoringService__pb2.DeleteMonitoredEntityRequest.FromString,
           response_serializer=monitoring_dot_DataMonitoringService__pb2.DeleteMonitoredEntityRequest.Response.SerializeToString,
-      ),
-      'getDataSource': grpc.unary_unary_rpc_method_handler(
-          servicer.getDataSource,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.GetDataSourceRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.GetDataSourceRequest.Response.SerializeToString,
-      ),
-      'findDataSources': grpc.unary_unary_rpc_method_handler(
-          servicer.findDataSources,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.FindDataSourcesRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.FindDataSourcesRequest.Response.SerializeToString,
-      ),
-      'createDataSource': grpc.unary_unary_rpc_method_handler(
-          servicer.createDataSource,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.CreateDataSourceRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.CreateDataSourceRequest.Response.SerializeToString,
-      ),
-      'listDataSources': grpc.unary_unary_rpc_method_handler(
-          servicer.listDataSources,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.ListDataSourcesRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.ListDataSourcesRequest.Response.SerializeToString,
-      ),
-      'deleteDataSource': grpc.unary_unary_rpc_method_handler(
-          servicer.deleteDataSource,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.DeleteDataSourceRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.DeleteDataSourceRequest.Response.SerializeToString,
       ),
       'getProfiler': grpc.unary_unary_rpc_method_handler(
           servicer.getProfiler,
