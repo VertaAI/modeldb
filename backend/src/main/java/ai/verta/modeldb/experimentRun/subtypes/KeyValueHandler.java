@@ -24,6 +24,10 @@ public class KeyValueHandler {
   private final FutureJdbi jdbi;
   private final String fieldType;
 
+  protected String getTableName() {
+    return "keyvalue";
+  }
+
   public KeyValueHandler(Executor executor, FutureJdbi jdbi, String fieldType) {
     this.executor = executor;
     this.jdbi = jdbi;
@@ -35,8 +39,9 @@ public class KeyValueHandler {
         handle ->
             handle
                 .createQuery(
-                    "select kv_key key, kv_value value, value_type type from keyvalue "
-                        + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:run_id")
+                    "select kv_key key, kv_value value, value_type type from "
+                        + getTableName()
+                        + " where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:run_id")
                 .bind("run_id", runId)
                 .bind("field_type", fieldType)
                 .map(
@@ -81,7 +86,9 @@ public class KeyValueHandler {
                       handle -> {
                         handle
                             .createQuery(
-                                "select id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and kv_key=:key and experiment_run_id=:run_id")
+                                "select id from "
+                                    + getTableName()
+                                    + " where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and kv_key=:key and experiment_run_id=:run_id")
                             .bind("key", kv.getKey())
                             .bind("field_type", fieldType)
                             .bind("run_id", runId)
@@ -94,7 +101,9 @@ public class KeyValueHandler {
 
                         handle
                             .createUpdate(
-                                "insert into keyvalue (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id) "
+                                "insert into "
+                                    + getTableName()
+                                    + " (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id) "
                                     + "values (\"ExperimentRunEntity\", :field_type, :key, :value, :type, :run_id)")
                             .bind("key", kv.getKey())
                             .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
@@ -115,7 +124,8 @@ public class KeyValueHandler {
     return jdbi.useHandle(
         handle -> {
           var sql =
-              "delete from keyvalue "
+              "delete from "
+                  + getTableName()
                   + "where entity_name=\"ExperimentRunEntity\" and field_type=:field_type and experiment_run_id=:run_id";
 
           if (maybeKeys.isPresent()) {
