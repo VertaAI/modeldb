@@ -8,6 +8,8 @@ option java_multiple_files = true;
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 
+import "monitoring/DataMonitoringService.proto";
+
 message Empty {}
 
 // Summary is a collection of multiple samples through time with a shared name and type. It's used to make sure the multiple samples are consistent with each other.
@@ -27,6 +29,8 @@ message CreateSummaryRequest {
 
 // Request to fetch multiple summaries
 message FindSummaryRequest {
+    FindMonitoredEntityRequest find_monitored_entities = 5;
+
     repeated uint64 ids = 1;
     repeated string names = 2;
     repeated string type_names = 3;
@@ -88,6 +92,7 @@ message FilterQuerySummarySample {
     map<string, LabelFilterQuerySummarySample> labels = 3;
     uint64 time_window_start_at_millis = 4;
     uint64 time_window_end_at_millis = 5;
+    uint64 created_at_after_millis = 6;
 }
 
 // Filter details for a given label.
