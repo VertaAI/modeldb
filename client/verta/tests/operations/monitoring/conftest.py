@@ -23,7 +23,7 @@ def monitored_entity(client, created_entities):
 def summary_sample(client, monitored_entity, created_entities):
     summary = client.operations.summaries.create(
         _utils.generate_default_name(),
-        data_types.NumericValue._type_string(),
+        data_types.NumericValue,
         monitored_entity,
     )
     end_time = time_utils.now()
