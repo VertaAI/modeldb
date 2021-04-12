@@ -347,6 +347,15 @@
         "workspace_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -381,6 +390,15 @@
             "type": "string",
             "format": "uint64"
           }
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       },
       "title": "Request to fetch multiple summaries"
@@ -393,6 +411,10 @@
           "items": {
             "$ref": "#/definitions/monitoringSummary"
           }
+        },
+        "total_records": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -401,6 +423,15 @@
       "properties": {
         "filter": {
           "$ref": "#/definitions/monitoringFilterQuerySummarySample"
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       },
       "description": "Request to fetch multiple summary samples, potentially with aggregation."
@@ -413,6 +444,10 @@
           "items": {
             "$ref": "#/definitions/monitoringSummarySample"
           }
+        },
+        "total_records": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
