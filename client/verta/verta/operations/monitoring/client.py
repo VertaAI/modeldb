@@ -16,10 +16,6 @@ from .alert._entities import Alerts
 class Client(object):
     def __init__ (self, verta_client):
         self._client = verta_client
-        self.profilers = Profilers(self._conn, self._conf, self._client)
-        self.summaries = Summaries(self._conn, self._conf)
-        self.summary_samples = SummarySamples(self._conn, self._conf)
-        self.labels = Labels(self._conn, self._conf)
 
     @property
     def _conn(self):
@@ -32,6 +28,22 @@ class Client(object):
     @property
     def _ctx(self):
         return self._client._ctx
+
+    @property
+    def profilers(self):
+        return Profilers(self._conn, self._conf, self._client)
+
+    @property
+    def summaries(self):
+        return Summaries(self._conn, self._conf)
+
+    @property
+    def summary_samples(self):
+        return SummarySamples(self._conn, self._conf)
+
+    @property
+    def labels(self):
+        return Labels(self._conn, self._conf)
 
     @property
     def alerts(self):
