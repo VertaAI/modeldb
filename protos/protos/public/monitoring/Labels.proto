@@ -14,8 +14,13 @@ import "monitoring/Summary.proto";
 message FindSampleLabelsRequest {
     FilterQuerySummarySample filter = 1; // Optional
 
+    // Pagination
+    int32 page_number = 2;
+    int32 page_limit = 3;
+
     message Response {
         repeated string labels = 1;
+        int32 total_records = 2;
     }
 }
 
@@ -24,8 +29,13 @@ message FindSampleLabelValuesRequest {
     FilterQuerySummarySample filter = 1; // Optional
     repeated string labels = 2;
 
+    // Pagination
+    int32 page_number = 3;
+    int32 page_limit = 4;
+
     message Response {
         map<string, FindSampleLabelValuesItem> labels = 1;
+        int32 total_records = 2;
     }
 }
 
