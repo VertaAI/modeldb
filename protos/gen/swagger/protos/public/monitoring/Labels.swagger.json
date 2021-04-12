@@ -103,35 +103,9 @@
         "time_window_end_at_millis": {
           "type": "string",
           "format": "uint64"
-        },
-        "created_at_after_millis": {
-          "type": "string",
-          "format": "uint64"
         }
       },
       "description": "Filters the caller wants to apply to selectively summary samples."
-    },
-    "monitoringFindMonitoredEntityRequest": {
-      "type": "object",
-      "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "names": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "workspace_id": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
     },
     "monitoringFindSampleLabelValuesItem": {
       "type": "object",
@@ -193,9 +167,6 @@
     "monitoringFindSummaryRequest": {
       "type": "object",
       "properties": {
-        "find_monitored_entities": {
-          "$ref": "#/definitions/monitoringFindMonitoredEntityRequest"
-        },
         "ids": {
           "type": "array",
           "items": {

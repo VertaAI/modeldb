@@ -39,11 +39,6 @@ class DataMonitoringServiceStub(object):
         request_serializer=monitoring_dot_DataMonitoringService__pb2.ListMonitoredEntitiesRequest.SerializeToString,
         response_deserializer=monitoring_dot_DataMonitoringService__pb2.ListMonitoredEntitiesRequest.Response.FromString,
         )
-    self.findMonitoredEntity = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/findMonitoredEntity',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.FindMonitoredEntityRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.FindMonitoredEntityRequest.Response.FromString,
-        )
     self.deleteMonitoredEntity = channel.unary_unary(
         '/ai.verta.monitoring.DataMonitoringService/deleteMonitoredEntity',
         request_serializer=monitoring_dot_DataMonitoringService__pb2.DeleteMonitoredEntityRequest.SerializeToString,
@@ -154,13 +149,6 @@ class DataMonitoringServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def listMonitoredEntities(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def findMonitoredEntity(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -299,11 +287,6 @@ def add_DataMonitoringServiceServicer_to_server(servicer, server):
           servicer.listMonitoredEntities,
           request_deserializer=monitoring_dot_DataMonitoringService__pb2.ListMonitoredEntitiesRequest.FromString,
           response_serializer=monitoring_dot_DataMonitoringService__pb2.ListMonitoredEntitiesRequest.Response.SerializeToString,
-      ),
-      'findMonitoredEntity': grpc.unary_unary_rpc_method_handler(
-          servicer.findMonitoredEntity,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.FindMonitoredEntityRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.FindMonitoredEntityRequest.Response.SerializeToString,
       ),
       'deleteMonitoredEntity': grpc.unary_unary_rpc_method_handler(
           servicer.deleteMonitoredEntity,
