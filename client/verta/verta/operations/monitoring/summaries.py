@@ -5,6 +5,7 @@ from __future__ import print_function
 import json
 from datetime import datetime
 from verta._internal_utils import time_utils
+from verta._internal_utils._utils import as_list_of_str
 from .utils import extract_ids, maybe
 from verta._protos.public.monitoring import Summary_pb2 as SummaryService
 from verta._protos.public.monitoring.Summary_pb2 import (
@@ -172,7 +173,7 @@ class Summary(entity._ModelDBEntity):
     @staticmethod
     def _labels_proto(labels):
         return {
-            key: LabelFilterQuerySummarySample(label_value=values)
+            key: LabelFilterQuerySummarySample(label_value=as_list_of_str(values))
             for key, values in labels.items()
         }
 
