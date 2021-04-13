@@ -684,7 +684,7 @@
             "$ref": "#/definitions/monitoringNotificationChannel"
           }
         },
-        "total_record": {
+        "total_records": {
           "type": "integer",
           "format": "int32"
         }
