@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.futures;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -8,11 +9,23 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class InternalFuture<T> {
   private CompletionStage<T> stage;
 
   private InternalFuture() {}
+
+  public static <T> InternalFuture<List<T>> sequence(final List<InternalFuture<T>> futures) {
+    var completableFuture =
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
+                    .thenApply(
+                            unit ->
+                                    futures.stream()
+                                            .map(f -> f.stage.toCompletableFuture().join())
+                                            .collect(Collectors.toList()));
+    return InternalFuture.from(completableFuture);
+  }
 
   public static <R> InternalFuture<R> from(CompletionStage<R> other) {
     var ret = new InternalFuture<R>();
