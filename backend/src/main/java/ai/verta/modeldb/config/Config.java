@@ -5,11 +5,17 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.futures.FutureJdbi;
+import com.zaxxer.hikari.HikariDataSource;
+import org.jdbi.v3.core.Jdbi;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
+import java.util.concurrent.Executor;
 
 public class Config extends ai.verta.modeldb.common.config.Config {
 
@@ -19,6 +25,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
   public TelemetryConfig telemetry;
   public TrialConfig trial;
   public List<MigrationConfig> migrations;
+  private FutureJdbi jdbi;
 
   public static Config getInstance() throws InternalErrorException {
     if (config == null) {
@@ -68,5 +75,28 @@ public class Config extends ai.verta.modeldb.common.config.Config {
   @Override
   public boolean hasServiceAccount() {
     return service_user != null;
+  }
+
+  public FutureJdbi getJdbi() {
+    if (this.jdbi == null) {
+      // Initialize HikariCP and jdbi
+      final var databaseConfig = config.database;
+      final var hikariDataSource = new HikariDataSource();
+      final var dbUrl =
+          databaseConfig.RdbConfiguration.RdbUrl
+              + "/"
+              + databaseConfig.RdbConfiguration.RdbDatabaseName
+              + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
+      hikariDataSource.setJdbcUrl(dbUrl);
+      hikariDataSource.setUsername(databaseConfig.RdbConfiguration.RdbUsername);
+      hikariDataSource.setPassword(databaseConfig.RdbConfiguration.RdbPassword);
+
+      hikariDataSource.setMaximumPoolSize(10); // TODO: configure with a valid pool size
+
+      final Jdbi jdbi = Jdbi.create(hikariDataSource);
+      final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);
+      this.jdbi = new FutureJdbi(jdbi, dbExecutor);
+    }
+    return this.jdbi;
   }
 }
