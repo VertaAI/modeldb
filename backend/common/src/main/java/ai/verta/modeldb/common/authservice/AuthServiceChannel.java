@@ -64,7 +64,6 @@ public class AuthServiceChannel implements AutoCloseable {
       Metadata.Key<String> dev_key_hyphen =
           Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
-      LOGGER.info("developer_key: {} developer-key: {}", dev_key, dev_key_hyphen);
 
       requestHeaders.put(email_key, this.serviceUserEmail);
       requestHeaders.put(dev_key, this.serviceUserDevKey);
