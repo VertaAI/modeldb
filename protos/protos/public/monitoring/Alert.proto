@@ -63,7 +63,7 @@ message FindNotificationChannelRequest {
 
     message Response {
         repeated NotificationChannel channels = 1;
-        int32 total_record = 2;
+        int32 total_records = 2;
     }
 }
 
