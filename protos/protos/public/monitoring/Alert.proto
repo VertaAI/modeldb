@@ -8,6 +8,8 @@ option java_multiple_files = true;
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 
+import "common/CommonService.proto";
+
 import "monitoring/Summary.proto";
 
 /************************
@@ -124,7 +126,9 @@ message Alert {
 }
 
 message AlertFixed {
+    // Alert is fired if summary sample is $operator $threshold
     float threshold = 1;
+    common.OperatorEnum.Operator operator = 2; // Default = GTE
 }
 
 message AlertReference {

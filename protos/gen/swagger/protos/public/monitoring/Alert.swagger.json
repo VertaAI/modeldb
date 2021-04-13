@@ -359,6 +359,21 @@
       ],
       "default": "UNKNOWN"
     },
+    "OperatorEnumOperator": {
+      "type": "string",
+      "enum": [
+        "EQ",
+        "NE",
+        "GT",
+        "GTE",
+        "LT",
+        "LTE",
+        "CONTAIN",
+        "NOT_CONTAIN",
+        "IN"
+      ],
+      "default": "EQ"
+    },
     "monitoringAlert": {
       "type": "object",
       "properties": {
@@ -427,7 +442,11 @@
       "properties": {
         "threshold": {
           "type": "number",
-          "format": "float"
+          "format": "float",
+          "title": "Alert is fired if summary sample is $operator $threshold"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },

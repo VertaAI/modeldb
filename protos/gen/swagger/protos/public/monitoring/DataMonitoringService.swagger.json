@@ -546,16 +546,6 @@
       ],
       "default": "UNDEFINED"
     },
-    "ValueTypeEnumValueType": {
-      "type": "string",
-      "enum": [
-        "STRING",
-        "NUMBER",
-        "LIST",
-        "BLOB"
-      ],
-      "default": "STRING"
-    },
     "monitoringCreateMonitoredEntityRequest": {
       "type": "object",
       "properties": {
@@ -654,7 +644,7 @@
         "environment": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/monitoringKeyValue"
+            "$ref": "#/definitions/vertamonitoringKeyValue"
           }
         }
       }
@@ -762,21 +752,6 @@
       "properties": {
         "status": {
           "$ref": "#/definitions/monitoringProfilerStatus"
-        }
-      }
-    },
-    "monitoringKeyValue": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType",
-          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
         }
       }
     },
@@ -935,6 +910,31 @@
           }
         }
       }
+    },
+    "vertamonitoringKeyValue": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/vertamonitoringValueTypeEnumValueType",
+          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "vertamonitoringValueTypeEnumValueType": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "LIST",
+        "BLOB"
+      ],
+      "default": "STRING"
     }
   },
   "basePath": "/v1"
