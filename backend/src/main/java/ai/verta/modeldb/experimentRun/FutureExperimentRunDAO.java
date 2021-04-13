@@ -10,6 +10,7 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
@@ -29,8 +30,9 @@ public class FutureExperimentRunDAO {
   private final FutureJdbi jdbi;
   private final UAC uac;
 
-  private final KeyValueHandler metricsHandler;
+  private final AttributeHandler attributeHandler;
   private final KeyValueHandler hyperparametersHandler;
+  private final KeyValueHandler metricsHandler;
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
 
@@ -39,8 +41,9 @@ public class FutureExperimentRunDAO {
     this.jdbi = jdbi;
     this.uac = uac;
 
-    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics");
+    attributeHandler = new AttributeHandler(executor, jdbi);
     hyperparametersHandler = new KeyValueHandler(executor, jdbi, "hyperparameters");
+    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics");
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi);
   }
@@ -108,6 +111,18 @@ public class FutureExperimentRunDAO {
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
+  public InternalFuture<Void> deleteAttributes(DeleteExperimentRunAttributes request) {
+    final var runId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    final Optional<List<String>> maybeKeys =
+        request.getDeleteAll() ? Optional.empty() : Optional.of(request.getAttributeKeysList());
+
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> attributeHandler.deleteKeyValues(runId, maybeKeys), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
   public InternalFuture<List<KeyValue>> getMetrics(GetMetrics request) {
     final var runId = request.getId();
 
@@ -120,6 +135,13 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(unused -> hyperparametersHandler.getKeyValues(runId), executor);
+  }
+
+  public InternalFuture<List<KeyValue>> getAttributes(GetAttributes request) {
+    final var runId = request.getId();
+
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> attributeHandler.getKeyValues(runId), executor);
   }
 
   public InternalFuture<Void> logMetrics(LogMetrics request) {
@@ -140,6 +162,16 @@ public class FutureExperimentRunDAO {
     return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused -> hyperparametersHandler.logKeyValues(runId, hyperparameters), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<Void> logAttributes(LogAttributes request) {
+    final var runId = request.getId();
+    final var attributes = request.getAttributesList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> attributeHandler.logKeyValues(runId, attributes), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 

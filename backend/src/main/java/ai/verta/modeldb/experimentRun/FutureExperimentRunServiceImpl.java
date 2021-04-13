@@ -362,33 +362,86 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void logAttribute(
       LogAttribute request, StreamObserver<LogAttribute.Response> responseObserver) {
-    super.logAttribute(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logAttributes(
+                  LogAttributes.newBuilder()
+                      .setId(request.getId())
+                      .addAttributes(request.getAttribute())
+                      .build())
+              .thenApply(unused -> LogAttribute.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void logAttributes(
       LogAttributes request, StreamObserver<LogAttributes.Response> responseObserver) {
-    super.logAttributes(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logAttributes(request)
+              .thenApply(unused -> LogAttributes.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getExperimentRunAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
-    super.getExperimentRunAttributes(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .getAttributes(request)
+              .thenApply(
+                  attributes ->
+                      GetAttributes.Response.newBuilder().addAllAttributes(attributes).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void addExperimentRunAttributes(
       AddExperimentRunAttributes request,
       StreamObserver<AddExperimentRunAttributes.Response> responseObserver) {
-    super.addExperimentRunAttributes(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logAttributes(
+                  LogAttributes.newBuilder()
+                      .setId(request.getId())
+                      .addAllAttributes(request.getAttributesList())
+                      .build())
+              .thenApply(
+                  unused -> AddExperimentRunAttributes.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteExperimentRunAttributes(
       DeleteExperimentRunAttributes request,
       StreamObserver<DeleteExperimentRunAttributes.Response> responseObserver) {
-    super.deleteExperimentRunAttributes(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .deleteAttributes(request)
+              .thenApply(
+                  unused -> DeleteExperimentRunAttributes.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
