@@ -75,33 +75,81 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void addExperimentRunTags(
       AddExperimentRunTags request,
       StreamObserver<AddExperimentRunTags.Response> responseObserver) {
-    super.addExperimentRunTags(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .addTags(request)
+              .thenApply(unused -> AddExperimentRunTags.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getExperimentRunTags(
       GetTags request, StreamObserver<GetTags.Response> responseObserver) {
-    super.getExperimentRunTags(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .getTags(request)
+              .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteExperimentRunTags(
       DeleteExperimentRunTags request,
       StreamObserver<DeleteExperimentRunTags.Response> responseObserver) {
-    super.deleteExperimentRunTags(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .deleteTags(request)
+              .thenApply(unused -> DeleteExperimentRunTags.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void addExperimentRunTag(
       AddExperimentRunTag request, StreamObserver<AddExperimentRunTag.Response> responseObserver) {
-    super.addExperimentRunTag(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .addTags(
+                  AddExperimentRunTags.newBuilder()
+                      .setId(request.getId())
+                      .addTags(request.getTag())
+                      .build())
+              .thenApply(unused -> AddExperimentRunTag.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteExperimentRunTag(
       DeleteExperimentRunTag request,
       StreamObserver<DeleteExperimentRunTag.Response> responseObserver) {
-    super.deleteExperimentRunTag(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .deleteTags(
+                  DeleteExperimentRunTags.newBuilder()
+                      .setId(request.getId())
+                      .addTags(request.getTag())
+                      .build())
+              .thenApply(unused -> DeleteExperimentRunTag.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
