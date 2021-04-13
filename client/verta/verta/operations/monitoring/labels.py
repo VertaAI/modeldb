@@ -12,23 +12,46 @@ from .summaries import Summary
 from verta._internal_utils import time_utils
 from .utils import maybe
 
-class Labels:
+
+class Labels(object):
+    """
+    Domain aggregate object for finding labels.
+
+    A label is a key-value pair associated with a summary.
+    """
+
     def __init__(self, conn, conf):
         self._conn = conn
         self._conf = conf
 
-
     def find_keys(self, **kwargs):
         """
-            Find a list of labels according to provided parameters.
+        Find a list of labels according to provided parameters.
 
-            :key summary_query:
-            :key sample_ids:
-            :key labels:
-            :key time_window_start:
-            :key time_window_end:
-            :return: find_keys should return a list of strings used as label keys
-            :rtype: list
+        Uses the supplied arguments to filter down the set of summaries inspected,
+        and returns as a list the set of label keys which exist for that set of
+        summaries.
+
+        Parameters
+        ----------
+        summary_query : verta.operations.monitoring.SummaryQuery, optional
+            A query object specifying a set of summaries.
+        sample_ids : list, optional
+             A list of integer sample ids.
+        labels : dict, optional
+             A dictionary from label key strings to either label value strings
+             or a list of label value strings.
+        time_window_start : datetime.datetime or int
+            Either a timezone aware datetime object or unix
+            epoch milliseconds.
+        time_window_end : datetime.datetime or int
+            Either a timezone aware datetime object or unix
+            epoch milliseconds.
+
+        Returns
+        -------
+        list
+            A list of strings used as label keys.
         """
         summary_filter = self._build_summary_filter(**kwargs)
         msg = FindSampleLabelsRequest(filter=summary_filter)
@@ -41,20 +64,39 @@ class Labels:
 
     def find_values(self, **kwargs):
         """
-            Find a dictionary of label keys and values according to provided parameters.
+        Find the values of specified label keys according to provided parameters.
 
-            :key summary_query:
-            :key sample_ids:
-            :key labels:
-            :key time_window_start:
-            :key time_window_end:
-            :key keys: the label keys for which values should be returned
-            :return: find_keys should return a list of strings used as label keys
-            :rtype: list
+        Uses the supplied arguments to filter down the set of summaries inspected,
+        and returns the list of label values for the specified list of label keys in
+        a dictionary.
+
+        Parameters
+        ----------
+        keys : list
+            A list of strings specifying the label keys to retrieve label values
+            for.
+        summary_query : verta.operations.monitoring.SummaryQuery, optional
+            A query object specifying a set of summaries.
+        sample_ids : list, optional
+             A list of integer sample ids.
+        labels : dict, optional
+             A dictionary from label key strings to either label value strings
+             or a list of label value strings.
+        time_window_start : datetime.datetime or int
+            Either a timezone aware datetime object or unix
+            epoch milliseconds.
+        time_window_end : datetime.datetime or int
+            Either a timezone aware datetime object or unix
+            epoch milliseconds.
+
+        Returns
+        -------
+        dict
+            A dictionary from label key strings to sets of string values.
         """
         summary_filter = self._build_summary_filter(**kwargs)
-        if 'keys' in kwargs:
-            keys = kwargs['keys']
+        if "keys" in kwargs:
+            keys = kwargs["keys"]
         else:
             keys = []
         msg = FindSampleLabelValuesRequest(filter=summary_filter, labels=keys)
@@ -63,25 +105,23 @@ class Labels:
         proto = self._conn.must_proto_response(
             response, FindSampleLabelValuesRequest.Response
         )
-        return {
-            key: set(valuesItem.values)
-            for key, valuesItem in proto.labels.items()
-        }
-
+        return {key: set(valuesItem.values) for key, valuesItem in proto.labels.items()}
 
     def _build_summary_filter(self, **kwargs):
-        summary_query = kwargs.get('summary_query', None)
+        summary_query = kwargs.get("summary_query", None)
         summaries_proto = maybe(lambda q: q._to_proto_request(), summary_query)
 
-        sample_ids = kwargs.get('sample_id', None)
+        sample_ids = kwargs.get("sample_id", None)
 
-        window_start = kwargs.get('time_window_start', None)
-        window_start_at_millis = maybe(lambda t: time_utils.epoch_millis(t), window_start)
+        window_start = kwargs.get("time_window_start", None)
+        window_start_at_millis = maybe(
+            lambda t: time_utils.epoch_millis(t), window_start
+        )
 
-        window_end = kwargs.get('time_window_end', None)
+        window_end = kwargs.get("time_window_end", None)
         window_end_at_millis = maybe(lambda t: time_utils.epoch_millis(t), window_end)
 
-        labels = kwargs.get('labels', None)
+        labels = kwargs.get("labels", None)
         labels_proto = maybe(Summary._labels_proto, labels)
         return FilterQuerySummarySample(
             find_summaries=summaries_proto,
