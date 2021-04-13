@@ -1,6 +1,8 @@
 package ai.verta.modeldb.experimentRun;
 
 import ai.verta.modeldb.*;
+import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.stub.StreamObserver;
 
 import java.util.concurrent.Executor;
@@ -105,34 +107,125 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void logObservation(
       LogObservation request, StreamObserver<LogObservation.Response> responseObserver) {
-    super.logObservation(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logObservations(
+                  LogObservations.newBuilder()
+                      .setId(request.getId())
+                      .addObservations(request.getObservation())
+                      .build())
+              .thenApply(unused -> LogObservation.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void logObservations(
       LogObservations request, StreamObserver<LogObservations.Response> responseObserver) {
-    super.logObservations(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logObservations(request)
+              .thenApply(unused -> LogObservations.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getObservations(
       GetObservations request, StreamObserver<GetObservations.Response> responseObserver) {
-    super.getObservations(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .getObservations(request)
+              .thenApply(
+                  observations ->
+                      GetObservations.Response.newBuilder()
+                          .addAllObservations(observations)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
+  }
+
+  @Override
+  public void deleteObservations(
+      DeleteObservations request, StreamObserver<DeleteObservations.Response> responseObserver) {
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .deleteObservations(request)
+              .thenApply(unused -> DeleteObservations.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void logMetric(LogMetric request, StreamObserver<LogMetric.Response> responseObserver) {
-    super.logMetric(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logMetrics(
+                  LogMetrics.newBuilder()
+                      .setId(request.getId())
+                      .addMetrics(request.getMetric())
+                      .build())
+              .thenApply(unused -> LogMetric.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void logMetrics(LogMetrics request, StreamObserver<LogMetrics.Response> responseObserver) {
-    super.logMetrics(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logMetrics(request)
+              .thenApply(unused -> LogMetrics.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getMetrics(GetMetrics request, StreamObserver<GetMetrics.Response> responseObserver) {
-    super.getMetrics(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .getMetrics(request)
+              .thenApply(
+                  metrics -> GetMetrics.Response.newBuilder().addAllMetrics(metrics).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
+  }
+
+  @Override
+  public void deleteMetrics(
+      DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .deleteMetrics(request)
+              .thenApply(unused -> DeleteMetrics.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -155,19 +248,67 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void logHyperparameter(
       LogHyperparameter request, StreamObserver<LogHyperparameter.Response> responseObserver) {
-    super.logHyperparameter(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logHyperparameters(
+                  LogHyperparameters.newBuilder()
+                      .setId(request.getId())
+                      .addHyperparameters(request.getHyperparameter())
+                      .build())
+              .thenApply(unused -> LogHyperparameter.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void logHyperparameters(
       LogHyperparameters request, StreamObserver<LogHyperparameters.Response> responseObserver) {
-    super.logHyperparameters(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logHyperparameters(request)
+              .thenApply(unused -> LogHyperparameters.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getHyperparameters(
       GetHyperparameters request, StreamObserver<GetHyperparameters.Response> responseObserver) {
-    super.getHyperparameters(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .getHyperparameters(request)
+              .thenApply(
+                  hyperparameters ->
+                      GetHyperparameters.Response.newBuilder()
+                          .addAllHyperparameters(hyperparameters)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
+  }
+
+  @Override
+  public void deleteHyperparameters(
+      DeleteHyperparameters request,
+      StreamObserver<DeleteHyperparameters.Response> responseObserver) {
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .deleteHyperparameters(request)
+              .thenApply(unused -> DeleteHyperparameters.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -353,25 +494,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       ListBlobExperimentRunsRequest request,
       StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
     super.listBlobExperimentRuns(request, responseObserver);
-  }
-
-  @Override
-  public void deleteObservations(
-      DeleteObservations request, StreamObserver<DeleteObservations.Response> responseObserver) {
-    super.deleteObservations(request, responseObserver);
-  }
-
-  @Override
-  public void deleteMetrics(
-      DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
-    super.deleteMetrics(request, responseObserver);
-  }
-
-  @Override
-  public void deleteHyperparameters(
-      DeleteHyperparameters request,
-      StreamObserver<DeleteHyperparameters.Response> responseObserver) {
-    super.deleteHyperparameters(request, responseObserver);
   }
 
   @Override

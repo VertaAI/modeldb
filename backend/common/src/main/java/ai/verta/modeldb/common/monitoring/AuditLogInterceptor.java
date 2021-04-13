@@ -1,19 +1,12 @@
 package ai.verta.modeldb.common.monitoring;
 
-import io.grpc.Context;
-import io.grpc.Contexts;
-import io.grpc.ForwardingServerCall;
-import io.grpc.ForwardingServerCallListener;
-import io.grpc.Metadata;
-import io.grpc.ServerCall;
+import io.grpc.*;
 import io.grpc.ServerCall.Listener;
-import io.grpc.ServerCallHandler;
-import io.grpc.ServerInterceptor;
-import io.grpc.Status;
 import io.prometheus.client.Counter;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AuditLogInterceptor implements ServerInterceptor {
 
@@ -62,7 +55,6 @@ public class AuditLogInterceptor implements ServerInterceptor {
                 } else {
                   message = String.format(AUDIT_WAS_CALLED_WRONG, callCount, methodName);
                 }
-                LOGGER.error(message);
                 failed_audit_logging.labels(methodName).inc();
                 if (shouldQuitOnAuditMissing) {
                   status = Status.INTERNAL.withDescription(message);
