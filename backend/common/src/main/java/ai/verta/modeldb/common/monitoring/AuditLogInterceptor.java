@@ -55,7 +55,6 @@ public class AuditLogInterceptor implements ServerInterceptor {
                 } else {
                   message = String.format(AUDIT_WAS_CALLED_WRONG, callCount, methodName);
                 }
-                //                LOGGER.error(message);
                 failed_audit_logging.labels(methodName).inc();
                 if (shouldQuitOnAuditMissing) {
                   status = Status.INTERNAL.withDescription(message);
