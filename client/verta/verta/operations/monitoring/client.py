@@ -14,7 +14,32 @@ from .alert._entities import Alerts
 
 
 class Client(object):
+    """The sub-client aggregating repositories for monitoring features.
+
+    This sub-client acts as a namespace for the repository objects used
+    to interact with Verta's profiling and data monitoring features.
+
+    Attributes
+    ----------
+    profilers
+    summaries
+    summary_samples
+    labels
+    alerts
+    notification_channels
+    """
+
     def __init__ (self, verta_client):
+        """Intended for internal use.
+
+        Users should access instances of this client through the base Verta
+        Client.
+
+        Parameters
+        ----------
+        verta_client : verta.client.Client
+            An instance of the base Verta client.
+        """
         self._client = verta_client
 
     @property
@@ -31,29 +56,56 @@ class Client(object):
 
     @property
     def profilers(self):
+        """Profilers repository."""
         return Profilers(self._conn, self._conf, self._client)
 
     @property
     def summaries(self):
+        """Summaries repository."""
         return Summaries(self._conn, self._conf)
 
     @property
     def summary_samples(self):
+        """Summary samples repository."""
         return SummarySamples(self._conn, self._conf)
 
     @property
     def labels(self):
+        """Labels repository for finding label keys and values."""
         return Labels(self._conn, self._conf)
 
     @property
     def alerts(self):
+        """Alerts repository for configuring and managing alert objects."""
         return Alerts(self._conn, self._conf)
 
     @property
     def notification_channels(self):
+        """Notification channel repository."""
         return NotificationChannels(self._conn, self._conf)
 
     def get_or_create_monitored_entity(self, name=None, workspace=None, id=None):
+        """Get or create a monitored entity by name.
+
+        Gets or creates a monitored entity. A name will be auto-generated if one
+        is not provided. Either ``name`` or ``id`` can be provided but not both.
+        If id is provided, this will act only as a get method and no object will
+        be created.
+
+        Parameters
+        ----------
+        name : string, optional
+            A unique name for this monitored entity.
+        workspace: string, optional
+            A workspace for this entity. Defaults to the client's default workspace.
+        id : int, optional
+            This should not be provided if ``name`` is provided.
+        
+        Returns
+        -------
+        verta.operations.monitoring.monitored_entity.MonitoredEntity
+            A monitored entity object.
+        """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
 
