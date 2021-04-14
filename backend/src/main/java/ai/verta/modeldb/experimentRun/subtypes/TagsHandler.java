@@ -15,10 +15,12 @@ public class TagsHandler {
 
   private final Executor executor;
   private final FutureJdbi jdbi;
+  private final String entityName;
 
-  public TagsHandler(Executor executor, FutureJdbi jdbi) {
+  public TagsHandler(Executor executor, FutureJdbi jdbi, String entityName) {
     this.executor = executor;
     this.jdbi = jdbi;
+    this.entityName = entityName;
   }
 
   public InternalFuture<List<String>> getTags(String runId) {
@@ -27,8 +29,9 @@ public class TagsHandler {
             handle
                 .createQuery(
                     "select tags from tag_mapping "
-                        + "where entity_name=\"ExperimentRunEntity\" and experiment_run_id=:run_id")
+                        + "where entity_name=:entity_name and experiment_run_id=:run_id")
                 .bind("run_id", runId)
+                .bind("entity_name", entityName)
                 .mapTo(String.class)
                 .list());
   }
@@ -57,9 +60,13 @@ public class TagsHandler {
                   handle -> {
                     final var batch =
                         handle.prepareBatch(
-                            "insert into tag_mapping (entity_name, tags, experiment_run_id) VALUES(\"ExperimentRunEntity\", :tag, :run_id)");
+                            "insert into tag_mapping (entity_name, tags, experiment_run_id) VALUES(:entity_name, :tag, :run_id)");
                     for (final var tag : tags) {
-                      batch.bind("tag", tag).bind("run_id", runId).add();
+                      batch
+                          .bind("tag", tag)
+                          .bind("run_id", runId)
+                          .bind("entity_name", entityName)
+                          .add();
                     }
 
                     batch.execute();
@@ -73,13 +80,14 @@ public class TagsHandler {
         handle -> {
           var sql =
               "delete from tag_mapping "
-                  + "where entity_name=\"ExperimentRunEntity\" and experiment_run_id=:run_id";
+                  + "where entity_name=:entity_name and experiment_run_id=:run_id";
 
           if (maybeTags.isPresent()) {
             sql += " and tags in (<tags>)";
           }
 
-          var query = handle.createUpdate(sql).bind("run_id", runId);
+          var query =
+              handle.createUpdate(sql).bind("run_id", runId).bind("entity_name", entityName);
 
           if (maybeTags.isPresent()) {
             query = query.bindList("tags", maybeTags.get());

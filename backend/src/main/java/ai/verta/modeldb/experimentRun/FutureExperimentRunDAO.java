@@ -41,11 +41,12 @@ public class FutureExperimentRunDAO {
     this.jdbi = jdbi;
     this.uac = uac;
 
-    attributeHandler = new AttributeHandler(executor, jdbi);
-    hyperparametersHandler = new KeyValueHandler(executor, jdbi, "hyperparameters");
-    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics");
+    attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
+    hyperparametersHandler =
+        new KeyValueHandler(executor, jdbi, "hyperparameters", "ExperimentRunEntity");
+    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", "ExperimentRunEntity");
     observationHandler = new ObservationHandler(executor, jdbi);
-    tagsHandler = new TagsHandler(executor, jdbi);
+    tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
