@@ -130,6 +130,8 @@ def ext_from_method(method):
         return 'pkl'
     elif method == "zip":
         return "zip"
+    elif method == ZIP_EXTENSION:  # zipped by client
+        return ZIP_EXTENSION
     elif method is None:
         return None
     else:
@@ -263,7 +265,7 @@ def serialize_model(model):
     # if `model` is filesystem path
     if isinstance(model, six.string_types):
         if os.path.isdir(model):
-            return zip_dir(model), "zip", None
+            return zip_dir(model), ZIP_EXTENSION, None
         else:  # filepath
             # open and continue
             model = open(model, 'rb')

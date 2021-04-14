@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pytest
 
 import six
@@ -6,6 +8,7 @@ import filecmp
 import hashlib
 import os
 import pickle
+import shutil
 import tempfile
 import zipfile
 
@@ -17,6 +20,7 @@ from verta._internal_utils import (
     _request_utils,
     _utils,
 )
+from . import utils
 
 
 class TestUtils:
@@ -79,10 +83,7 @@ class TestUtils:
         # different names
         assert dirpath != downloaded_dirpath
         # contents match
-        dircmp = filecmp.dircmp(dirpath, downloaded_dirpath)
-        assert not dircmp.diff_files
-        assert not dircmp.left_only
-        assert not dircmp.right_only
+        utils.assert_dirs_match(dirpath, downloaded_dirpath)
 
 
 class TestArtifacts:
@@ -283,10 +284,8 @@ class TestArtifacts:
         experiment_run.log_artifact(key, dirpath)
         experiment_run.download_artifact(key, download_path)
 
-        dircmp = filecmp.dircmp(dirpath, download_path)
-        assert not dircmp.diff_files
-        assert not dircmp.left_only
-        assert not dircmp.right_only
+        # contents match
+        utils.assert_dirs_match(dirpath, download_path)
 
     def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
         key = strs[0]
@@ -517,6 +516,25 @@ class TestModels:
             zipf.extractall(spark_model_dir)
         assert LogisticRegressionModel.load(spark_model_dir).params == model.params
 
+    def test_download_sklearn(self, experiment_run, in_tempdir):
+        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+
+        upload_filepath = "model.pkl"
+        download_filepath = "retrieved_model.pkl"
+
+        model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
+        with open(upload_filepath, 'wb') as f:
+            pickle.dump(model, f)
+
+        experiment_run.log_model(model, custom_modules=[])
+        experiment_run.download_model(download_filepath)
+
+        with open(download_filepath, 'rb') as f:
+            downloaded_model = pickle.load(f)
+
+        assert downloaded_model.get_params() == model.get_params()
+
+
 class TestArbitraryModels:
     @staticmethod
     def _assert_no_deployment_artifacts(experiment_run):
@@ -554,25 +572,34 @@ class TestArbitraryModels:
 
         self._assert_no_deployment_artifacts(experiment_run)
 
+    def test_download_arbitrary_directory(self, experiment_run, dir_and_files, strs, in_tempdir):
+        """Model that was originally a dir is unpacked on download."""
+        dirpath, _ = dir_and_files
+        download_path = strs[0]
 
-class TestDownloadModels:
-    def test_download_sklearn(self, experiment_run, in_tempdir):
-        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+        experiment_run.log_model(dirpath)
+        experiment_run.download_model(download_path)
 
-        upload_filepath = "model.pkl"
-        download_filepath = "retrieved_model.pkl"
+        # contents match
+        utils.assert_dirs_match(dirpath, download_path)
 
-        model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
-        with open(upload_filepath, 'wb') as f:
-            pickle.dump(model, f)
+    def test_download_arbitrary_zip(self, experiment_run, dir_and_files, strs, in_tempdir):
+        """Model that was originally a ZIP is not unpacked on download."""
+        model_dir, _ = dir_and_files
+        upload_path, download_path = strs[:2]
 
-        experiment_run.log_model(model, custom_modules=[])
-        experiment_run.download_model(download_filepath)
+        # zip `model_dir` into `upload_path`
+        with open(upload_path, 'wb') as f:
+            shutil.copyfileobj(
+                _artifact_utils.zip_dir(model_dir),
+                f,
+            )
 
-        with open(download_filepath, 'rb') as f:
-            downloaded_model = pickle.load(f)
+        experiment_run.log_model(upload_path)
+        experiment_run.download_model(download_path)
 
-        assert downloaded_model.get_params() == model.get_params()
+        assert zipfile.is_zipfile(download_path)
+        assert filecmp.cmp(upload_path, download_path)
 
 
 class TestImages:
