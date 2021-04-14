@@ -37,6 +37,15 @@ Release Notes
      <>`__
 
 
+v0.17.5 (2021-04-14)
+--------------------
+
+Bug Fixes
+^^^^^^^^^
+- `unzip directory models in run.download_model()
+  <https://github.com/VertaAI/modeldb/pull/2121>`__
+
+
 v0.17.4 (2021-03-26)
 --------------------
 
