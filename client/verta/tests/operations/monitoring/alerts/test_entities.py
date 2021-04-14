@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from verta._internal_utils import _utils
+from verta.common import comparison
 from verta.operations.monitoring.alert import (
     FixedAlerter,
     ReferenceAlerter,
@@ -77,7 +78,7 @@ class TestFixed:
     def test_crud(self, client, monitored_entity):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(0.7)
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
         sample_query = SummarySampleQuery()
 
         created_alert = alerts.create(name, alerter, sample_query)
@@ -89,6 +90,7 @@ class TestFixed:
         assert retrieved_alert.id == client_retrieved_alert.id
         assert isinstance(retrieved_alert, _entities.Alert)
         assert retrieved_alert._msg.alerter_type == alerter._TYPE
+        assert retrieved_alert._msg.alerter_fixed == alerter._as_proto()
 
         listed_alerts = alerts.list()
         assert created_alert.id in map(lambda a: a.id, listed_alerts)
@@ -101,7 +103,7 @@ class TestFixed:
         """__repr__() does not raise exceptions"""
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(0.7)
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
         sample_query = SummarySampleQuery()
 
         created_alert = alerts.create(name, alerter, sample_query)
