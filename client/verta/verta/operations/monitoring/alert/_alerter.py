@@ -25,6 +25,21 @@ class _Alerter(object):
 
 
 class FixedAlerter(_Alerter):
+    """
+    A alerter with a fixed numerical threshold.
+
+    .. note::
+
+        This alerter is only intended to work with summary samples of the
+        :class:`~verta.data_types.NumericValue` type.
+
+    Parameters
+    ----------
+    comparison : :class:`~verta.common.comparison._VertaComparison`
+        Alert condition.
+
+    """
+
     _TYPE = _AlertService.AlerterTypeEnum.FIXED
 
     def __init__(self, comparison):

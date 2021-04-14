@@ -7,6 +7,11 @@ from verta.external import six
 
 @six.add_metaclass(abc.ABCMeta)
 class _VertaComparison(object):
+    """
+    Base class for comparisons. Not for external use.
+
+    """
+
     _OPERATOR = None  # variant of OperatorEnum
     _SYMBOL = None  # e.g. "=="
 
@@ -14,7 +19,7 @@ class _VertaComparison(object):
         self._value = value
 
     def __repr__(self):
-        return '<comparison ({} {})>'.format(
+        return "<comparison ({} {})>".format(
             self._SYMBOL,
             self.value,
         )
