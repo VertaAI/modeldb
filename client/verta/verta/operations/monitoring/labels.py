@@ -15,7 +15,7 @@ from .utils import maybe
 
 class Labels(object):
     """
-    Domain aggregate object for finding labels.
+    Repository object for finding labels.
 
     A label is a key-value pair associated with a summary.
     """
