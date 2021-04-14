@@ -22,7 +22,7 @@ import ai.verta.modeldb.health.HealthStatusManager;
 import ai.verta.modeldb.lineage.LineageServiceImpl;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
-import ai.verta.modeldb.project.ProjectServiceImpl;
+import ai.verta.modeldb.project.FutureProjectServiceImpl;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -41,6 +41,14 @@ import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Optional;
+import java.util.TimerTask;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,15 +63,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Optional;
-import java.util.TimerTask;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
@@ -282,7 +281,7 @@ public class App implements ApplicationContextAware {
 
   public static void initializeBackendServices(
       ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos, Executor executor) {
-    wrapService(serverBuilder, new ProjectServiceImpl(services, daos));
+    wrapService(serverBuilder, new FutureProjectServiceImpl(services, daos, executor));
     LOGGER.trace("Project serviceImpl initialized");
     wrapService(serverBuilder, new ExperimentServiceImpl(services, daos));
     LOGGER.trace("Experiment serviceImpl initialized");

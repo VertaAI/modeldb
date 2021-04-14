@@ -23,10 +23,10 @@ import ai.verta.modeldb.lineage.LineageDAO;
 import ai.verta.modeldb.lineage.LineageDAORdbImpl;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
+import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.*;
-
 import java.util.concurrent.Executor;
 
 public class DAOSet {
@@ -40,6 +40,7 @@ public class DAOSet {
   public ExperimentDAO experimentDAO;
   public ExperimentRunDAO experimentRunDAO;
   public FutureExperimentRunDAO futureExperimentRunDAO;
+  public FutureProjectDAO futureProjectDAO;
   public LineageDAO lineageDAO;
   public MetadataDAO metadataDAO;
   public ProjectDAO projectDAO;
@@ -68,6 +69,7 @@ public class DAOSet {
     set.projectDAO =
         new ProjectDAORdbImpl(
             services.authService, services.roleService, set.experimentDAO, set.experimentRunDAO);
+    set.futureProjectDAO = new FutureProjectDAO(executor, jdbi, services.uac);
     if (services.artifactStoreService != null) {
       set.artifactStoreDAO = new ArtifactStoreDAORdbImpl(services.artifactStoreService);
     } else {
