@@ -41,7 +41,7 @@ public class KeyValueHandler {
         handle ->
             handle
                 .createQuery(
-                    "select kv_key key, kv_value value, value_type type from "
+                    "select kv_key as k, kv_value as v, value_type as t from "
                         + getTableName()
                         + " where entity_name=:entity_name and field_type=:field_type and experiment_run_id=:run_id")
                 .bind("run_id", runId)
@@ -51,15 +51,15 @@ public class KeyValueHandler {
                     (rs, ctx) -> {
                       try {
                         return KeyValue.newBuilder()
-                            .setKey(rs.getString("key"))
+                            .setKey(rs.getString("k"))
                             .setValue(
                                 (Value.Builder)
                                     CommonUtils.getProtoObjectFromString(
-                                        rs.getString("value"), Value.newBuilder()))
-                            .setValueTypeValue(rs.getInt("type"))
+                                        rs.getString("v"), Value.newBuilder()))
+                            .setValueTypeValue(rs.getInt("t"))
                             .build();
                       } catch (InvalidProtocolBufferException e) {
-                        LOGGER.error("Error generating builder for {}", rs.getString("value"));
+                        LOGGER.error("Error generating builder for {}", rs.getString("v"));
                         throw new ModelDBException(e);
                       }
                     })
@@ -108,7 +108,7 @@ public class KeyValueHandler {
                                 "insert into "
                                     + getTableName()
                                     + " (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id) "
-                                    + "values (:entity_name, :field_type, :key, :value, :type, :run_id)")
+                                    + " values (:entity_name, :field_type, :key, :value, :type, :run_id)")
                             .bind("key", kv.getKey())
                             .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
                             .bind("type", kv.getValueTypeValue())
@@ -131,7 +131,7 @@ public class KeyValueHandler {
           var sql =
               "delete from "
                   + getTableName()
-                  + "where entity_name=:entity_name and field_type=:field_type and experiment_run_id=:run_id";
+                  + " where entity_name=:entity_name and field_type=:field_type and experiment_run_id=:run_id";
 
           if (maybeKeys.isPresent()) {
             sql += " and kv_key in (<keys>)";
