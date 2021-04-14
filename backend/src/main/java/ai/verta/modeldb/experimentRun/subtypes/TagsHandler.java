@@ -6,6 +6,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -54,14 +55,18 @@ public class TagsHandler {
         .thenCompose(unused -> getTags(runId), executor)
         .thenCompose(
             existingTags -> {
-              tags.removeAll(existingTags);
+              final var tagsSet = new HashSet<>(tags);
+              tagsSet.removeAll(existingTags);
+              if (tagsSet.isEmpty()) {
+                return InternalFuture.completedInternalFuture(null);
+              }
 
               return jdbi.useHandle(
                   handle -> {
                     final var batch =
                         handle.prepareBatch(
                             "insert into tag_mapping (entity_name, tags, experiment_run_id) VALUES(:entity_name, :tag, :run_id)");
-                    for (final var tag : tags) {
+                    for (final var tag : tagsSet) {
                       batch
                           .bind("tag", tag)
                           .bind("run_id", runId)
