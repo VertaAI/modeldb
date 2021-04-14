@@ -17,21 +17,63 @@ public class InternalFuture<T> {
 
   private InternalFuture() {}
 
-  // Convert a list of futures to a future of a list
-  public static <T> InternalFuture<List<T>> sequence(final List<InternalFuture<T>> futures, Executor executor) {
-    final CompletableFuture<List<T>> promise = new CompletableFuture<>();
-    final ArrayList<T> values = new ArrayList<>(futures.size());
-    executor.execute(
+  public static <T> InternalFuture<Void> allOf(List<InternalFuture<T>> futures, Executor executor) {
+    if (futures.isEmpty()) {
+      return InternalFuture.completedInternalFuture(null);
+    }
+    return futures.stream()
+        .reduce((x, y) -> x.thenCompose(unsued -> y, executor))
+        .get()
+        .thenRun(() -> {}, executor);
+  }
+
+  public static <T> InternalFuture<List<T>> sequence2(
+      final List<InternalFuture<T>> futures, Executor executor) {
+    final var promise = new CompletableFuture<List<T>>();
+    final var values = new ArrayList<T>(futures.size());
+
+    InternalFuture.allOf(futures, executor)
+        .thenRun(
             () -> {
               try {
                 for (final var future : futures) {
-                  values.add(future.stage.toCompletableFuture().join());
+                  values.add(future.get());
                 }
                 promise.complete(values);
               } catch (Throwable t) {
                 promise.completeExceptionally(t);
               }
-            });
+            },
+            executor);
+
+    return InternalFuture.from(promise);
+  }
+
+  // Convert a list of futures to a future of a list
+  public static <T> InternalFuture<List<T>> sequence(
+      final List<InternalFuture<T>> futures, Executor executor) {
+    final var promise = new CompletableFuture<List<T>>();
+    final var values = new ArrayList<T>(futures.size());
+    final CompletableFuture<T>[] futuresArray =
+        futures.stream()
+            .map(x -> x.toCompletionStage().toCompletableFuture())
+            .collect(Collectors.toList())
+            .toArray(new CompletableFuture[futures.size()]);
+
+    CompletableFuture.allOf(futuresArray)
+        .thenRunAsync(
+            () -> {
+              try {
+                for (final var future : futuresArray) {
+                  values.add(future.get());
+                }
+                promise.complete(values);
+              } catch (Throwable t) {
+                promise.completeExceptionally(t);
+              }
+            },
+            executor);
+
     return InternalFuture.from(promise);
   }
 
