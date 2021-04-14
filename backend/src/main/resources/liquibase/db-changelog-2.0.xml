@@ -558,4 +558,15 @@
         <tagDatabase tag="db_version_2.22"/>
     </changeSet>
 
+    <changeSet id="set-empty-versioning_key-instead-of-null-in-run" author="anandJ">
+        <update tableName="versioning_modeldb_entity_mapping">
+            <column name="versioning_key" value=""/>
+            <where>versioning_key is null</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="db_version_2.23" author="anandJ">
+        <tagDatabase tag="db_version_2.23"/>
+    </changeSet>
+
 </databaseChangeLog>
