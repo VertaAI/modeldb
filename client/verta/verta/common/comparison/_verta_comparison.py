@@ -14,7 +14,7 @@ class _VertaComparison(object):
         self._value = value
 
     def __repr__(self):
-        return '<comparison "{} {}">'.format(
+        return '<comparison ({} {})>'.format(
             self._SYMBOL,
             self.value,
         )
