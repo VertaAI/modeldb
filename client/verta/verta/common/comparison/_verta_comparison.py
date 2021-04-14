@@ -4,8 +4,6 @@ import abc
 
 from verta.external import six
 
-from verta._internal_utils import _utils
-
 
 @six.add_metaclass(abc.ABCMeta)
 class _VertaComparison(object):
@@ -24,9 +22,6 @@ class _VertaComparison(object):
     @property
     def value(self):
         return self._value
-
-    def _value_as_proto(self):
-        _utils.python_to_val_proto(self.value)
 
     def _operator_as_proto(self):
         return self._OPERATOR
