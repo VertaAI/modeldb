@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pytest
 
 import six
@@ -6,6 +8,7 @@ import filecmp
 import hashlib
 import os
 import pickle
+import shutil
 import tempfile
 import zipfile
 
@@ -17,6 +20,16 @@ from verta._internal_utils import (
     _request_utils,
     _utils,
 )
+
+
+def assert_dirs_match(dir1, dir2):
+    assert os.path.isdir(dir1)
+    assert os.path.isdir(dir2)
+
+    dircmp = filecmp.dircmp(dir1, dir2)
+    assert not dircmp.diff_files
+    assert not dircmp.left_only
+    assert not dircmp.right_only
 
 
 class TestUtils:
@@ -79,10 +92,7 @@ class TestUtils:
         # different names
         assert dirpath != downloaded_dirpath
         # contents match
-        dircmp = filecmp.dircmp(dirpath, downloaded_dirpath)
-        assert not dircmp.diff_files
-        assert not dircmp.left_only
-        assert not dircmp.right_only
+        assert_dirs_match(dirpath, downloaded_dirpath)
 
 
 class TestArtifacts:
@@ -283,10 +293,8 @@ class TestArtifacts:
         experiment_run.log_artifact(key, dirpath)
         experiment_run.download_artifact(key, download_path)
 
-        dircmp = filecmp.dircmp(dirpath, download_path)
-        assert not dircmp.diff_files
-        assert not dircmp.left_only
-        assert not dircmp.right_only
+        # contents match
+        assert_dirs_match(dirpath, download_path)
 
     def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
         key = strs[0]
@@ -573,6 +581,35 @@ class TestDownloadModels:
             downloaded_model = pickle.load(f)
 
         assert downloaded_model.get_params() == model.get_params()
+
+    def test_arbitrary_directory(self, experiment_run, dir_and_files, strs, in_tempdir):
+        """Model that was originally a dir is unpacked on download."""
+        dirpath, _ = dir_and_files
+        download_path = strs[0]
+
+        experiment_run.log_model(dirpath)
+        experiment_run.download_model(download_path)
+
+        # contents match
+        assert_dirs_match(dirpath, download_path)
+
+    def test_arbitrary_zip(self, experiment_run, dir_and_files, strs, in_tempdir):
+        """Model that was originally a ZIP is not unpacked on download."""
+        model_dir, _ = dir_and_files
+        upload_path, download_path = strs[:2]
+
+        # zip `model_dir` into `upload_path`
+        with open(upload_path, 'wb') as f:
+            shutil.copyfileobj(
+                _artifact_utils.zip_dir(model_dir),
+                f,
+            )
+
+        experiment_run.log_model(upload_path)
+        experiment_run.download_model(download_path)
+
+        assert zipfile.is_zipfile(download_path)
+        assert filecmp.cmp(upload_path, download_path)
 
 
 class TestImages:
