@@ -3,11 +3,13 @@ package ai.verta.modeldb.project;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.AddExperimentRunTags;
-import ai.verta.modeldb.DeleteExperimentRunAttributes;
 import ai.verta.modeldb.DeleteExperimentRunTags;
+import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LogAttributes;
+import ai.verta.modeldb.Project;
+import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -48,7 +50,7 @@ public class FutureProjectDAO {
     tagsHandler = new TagsHandler(executor, jdbi, entityName);
   }
 
-  public InternalFuture<Void> deleteAttributes(DeleteExperimentRunAttributes request) {
+  public InternalFuture<Void> deleteAttributes(DeleteProjectAttributes request) {
     final var projectId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -74,6 +76,16 @@ public class FutureProjectDAO {
 
     return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> attributeHandler.logKeyValues(projectId, attributes), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
+  }
+
+  public InternalFuture<Void> updateProjectAttributes(UpdateProjectAttributes request) {
+    final var projectId = request.getId();
+    final var attribute = request.getAttribute();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> attributeHandler.updateKeyValue(projectId, attribute), executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
   }
 
@@ -145,5 +157,10 @@ public class FutureProjectDAO {
               }
             },
             executor);
+  }
+
+  public InternalFuture<Project> getPreAccessProjectById(String projectId) {
+    // TODO: Fix this later and return actual project details
+    return InternalFuture.completedInternalFuture(Project.newBuilder().build());
   }
 }

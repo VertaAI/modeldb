@@ -53,7 +53,7 @@ public class KeyValueHandler {
         handle ->
             handle
                 .createQuery(
-                    "select kv_key key, kv_value value, value_type type from "
+                    "select kv_key kv_key, kv_value value, value_type type from "
                         + getTableName()
                         + " where entity_name=:entity_name and field_type=:field_type and "
                         + entityIdReferenceColumn
@@ -65,7 +65,7 @@ public class KeyValueHandler {
                     (rs, ctx) -> {
                       try {
                         return KeyValue.newBuilder()
-                            .setKey(rs.getString("key"))
+                            .setKey(rs.getString("kv_key"))
                             .setValue(
                                 (Value.Builder)
                                     CommonUtils.getProtoObjectFromString(
@@ -116,7 +116,8 @@ public class KeyValueHandler {
                             .findOne()
                             .ifPresent(
                                 present -> {
-                                  throw new AlreadyExistsException("Key already exists");
+                                  throw new AlreadyExistsException(
+                                      "Key " + kv.getKey() + " already exists");
                                 });
 
                         handle
@@ -149,7 +150,7 @@ public class KeyValueHandler {
           var sql =
               "delete from "
                   + getTableName()
-                  + "where entity_name=:entity_name and field_type=:field_type and "
+                  + " where entity_name=:entity_name and field_type=:field_type and "
                   + entityIdReferenceColumn
                   + "=:entity_id";
 
@@ -170,5 +171,41 @@ public class KeyValueHandler {
 
           query.execute();
         });
+  }
+
+  public InternalFuture<Void> updateKeyValue(String entityId, KeyValue kv) {
+    var currentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (kv.getKey().isEmpty()) {
+                throw new InvalidArgumentException("Empty key");
+              }
+            },
+            executor);
+
+    currentFuture =
+        currentFuture.thenCompose(
+            unused ->
+                // Update into KV table
+                jdbi.useHandle(
+                    handle -> {
+                      handle
+                          .createUpdate(
+                              "Update "
+                                  + getTableName()
+                                  + " SET kv_key=:key, kv_value=:value, value_type=:type "
+                                  + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and "
+                                  + entityIdReferenceColumn
+                                  + "=:entity_id")
+                          .bind("key", kv.getKey())
+                          .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
+                          .bind("type", kv.getValueTypeValue())
+                          .bind("entity_id", entityId)
+                          .bind("field_type", fieldType)
+                          .bind("entity_name", entityName)
+                          .execute();
+                    }),
+            executor);
+    return currentFuture;
   }
 }

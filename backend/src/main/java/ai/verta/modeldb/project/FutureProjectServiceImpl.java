@@ -25,6 +25,7 @@ import ai.verta.modeldb.GetProjects;
 import ai.verta.modeldb.GetSummary;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogProjectArtifacts;
 import ai.verta.modeldb.LogProjectCodeVersion;
 import ai.verta.modeldb.ServiceSet;
@@ -33,6 +34,8 @@ import ai.verta.modeldb.SetProjectShortName;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.VerifyConnectionResponse;
+import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.stub.StreamObserver;
 import java.util.concurrent.Executor;
 
@@ -63,27 +66,80 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   public void addProjectAttributes(
       AddProjectAttributes request,
       StreamObserver<AddProjectAttributes.Response> responseObserver) {
-    super.addProjectAttributes(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .logAttributes(
+                  LogAttributes.newBuilder()
+                      .setId(request.getId())
+                      .addAllAttributes(request.getAttributesList())
+                      .build())
+              .thenCompose(
+                  unused -> futureProjectDAO.getPreAccessProjectById(request.getId()), executor)
+              .thenApply(
+                  project -> AddProjectAttributes.Response.newBuilder().setProject(project).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void updateProjectAttributes(
       UpdateProjectAttributes request,
       StreamObserver<UpdateProjectAttributes.Response> responseObserver) {
-    super.updateProjectAttributes(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .updateProjectAttributes(request)
+              .thenCompose(
+                  unused -> futureProjectDAO.getPreAccessProjectById(request.getId()), executor)
+              .thenApply(
+                  project ->
+                      UpdateProjectAttributes.Response.newBuilder().setProject(project).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getProjectAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
-    super.getProjectAttributes(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .getAttributes(request)
+              .thenApply(
+                  attributes ->
+                      GetAttributes.Response.newBuilder().addAllAttributes(attributes).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteProjectAttributes(
       DeleteProjectAttributes request,
       StreamObserver<DeleteProjectAttributes.Response> responseObserver) {
-    super.deleteProjectAttributes(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .deleteAttributes(request)
+              .thenCompose(
+                  unused -> futureProjectDAO.getPreAccessProjectById(request.getId()), executor)
+              .thenApply(
+                  project ->
+                      DeleteProjectAttributes.Response.newBuilder().setProject(project).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
