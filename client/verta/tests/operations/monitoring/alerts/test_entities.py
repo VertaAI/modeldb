@@ -65,7 +65,7 @@ class TestIntegration:
     def test_summary_sample_query(self, monitored_entity, summary_sample):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(.7)
+        alerter = FixedAlerter(0.7)
         sample_query = SummarySampleQuery()
 
         alert = alerts.create(name, alerter, sample_query)
