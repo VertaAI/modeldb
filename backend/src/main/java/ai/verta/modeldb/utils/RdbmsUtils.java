@@ -2114,7 +2114,7 @@ public class RdbmsUtils {
           new VersioningModeldbEntityMapping(
               versioningEntry.getRepositoryId(),
               versioningEntry.getCommit(),
-              null,
+              ModelDBConstants.EMPTY_STRING,
               null,
               null,
               null,
