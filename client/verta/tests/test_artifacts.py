@@ -20,16 +20,7 @@ from verta._internal_utils import (
     _request_utils,
     _utils,
 )
-
-
-def assert_dirs_match(dir1, dir2):
-    assert os.path.isdir(dir1)
-    assert os.path.isdir(dir2)
-
-    dircmp = filecmp.dircmp(dir1, dir2)
-    assert not dircmp.diff_files
-    assert not dircmp.left_only
-    assert not dircmp.right_only
+from . import utils
 
 
 class TestUtils:
@@ -92,7 +83,7 @@ class TestUtils:
         # different names
         assert dirpath != downloaded_dirpath
         # contents match
-        assert_dirs_match(dirpath, downloaded_dirpath)
+        utils.assert_dirs_match(dirpath, downloaded_dirpath)
 
 
 class TestArtifacts:
@@ -294,7 +285,7 @@ class TestArtifacts:
         experiment_run.download_artifact(key, download_path)
 
         # contents match
-        assert_dirs_match(dirpath, download_path)
+        utils.assert_dirs_match(dirpath, download_path)
 
     def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
         key = strs[0]
@@ -591,7 +582,7 @@ class TestDownloadModels:
         experiment_run.download_model(download_path)
 
         # contents match
-        assert_dirs_match(dirpath, download_path)
+        utils.assert_dirs_match(dirpath, download_path)
 
     def test_arbitrary_zip(self, experiment_run, dir_and_files, strs, in_tempdir):
         """Model that was originally a ZIP is not unpacked on download."""
