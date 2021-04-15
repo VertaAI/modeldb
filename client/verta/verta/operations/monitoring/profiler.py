@@ -1,41 +1,119 @@
 # -*- coding: utf-8 -*-
+
 import collections
+
+import numpy as np
 
 from verta.data_types import (
     DiscreteHistogram,
     FloatHistogram,
 )
+from verta.external import six
 
-import numpy as np
 
-
+@six.add_metaclass(abc.ABCMeta)
 class Profiler(object):
+    """Produces summary data types for a data frame.
+
+    A profiler's ``profile`` method accepts a data frame and produces a
+    dictionary from profile entry names to summary data types according to its
+    ``profile_column`` method.
+
+    Attributes
+    ----------
+    columns : :obj:`list` of :obj:`str`
+        The list of data frame columns which will be profiled.
+    """
+
     def __init__(self, columns):
         self.columns = columns
 
+    def __name__(self):
+        """Returns \"Profiler\""""
+        return "Profiler"
+
     def profile(self, df):
+        """Profile a pandas data frame and return a dictionary.
+
+        Profiles a pandas data frame and returns a dictionary, the values of
+        which will be data types.
+
+        Parameters
+        ----------
+        df : pandas.core.frame.DataFrame
+            A data frame to profile.
+
+        Returns
+        -------
+        dict
+            Mapping from profile column name to profiler data type
+        """
         return {column: histogram for (column, histogram) in self._profile_columns(df)}
 
-    # compatibility with model machinery
     def predict(self, df):
+        """Delegates to self.profile for internal Verta compatibility."""
         return self.profile(df)
 
     def _profile_columns(self, df):
-        return [self._profile_column(df, column) for column in self.columns]
+        return [self.profile_column(df, column) for column in self.columns]
 
-    def _profile_column(self, df, column):
+    @abc.abstractmethod
+    def profile_column(self, df, column):
+        """Profile a data frame column, returning a name and a summarization.
+
+        Parameters
+        ----------
+        df : pandas.core.frame.DataFrame
+            A data frame to profile.
+        column : string
+            The column in the data frame to profile.
+
+        Returns
+        -------
+        dict
+            A dictionary from summary data name to data types.
+        """
         raise NotImplementedError("")
 
-    def __name__(self):
-        return "Profiler"
 
 class MissingValuesProfiler(Profiler):
-    def __init__(self, columns):
-        super(MissingValuesProfiler, self).__init__(columns)
-        # if len(columns) > 1:
-        #     raise Exception("MissingValues can only be computed on a single column")
+    """Produces discrete histograms for present and missing values.
 
-    def _profile_column(self, df, column):
+    Counts the number of null and non-null values as "present" and "missing"
+    values and returns DiscreteHistogram summary data for the specified
+    columns.
+
+    Attributes
+    ----------
+    columns : :obj:`list` of :obj:`str`
+        The list of data frame columns which will be profiled.
+    """
+
+    def __init__(self, columns):
+        """Initialize a MissingValuesProfiler for the specified columns.
+
+        Parameters
+        ----------
+        columns : :obj:`list` of :obj:`str`
+            The list of data frame columns which will be profiled.
+        """
+        super(MissingValuesProfiler, self).__init__(columns)
+
+    def profile_column(self, df, column):
+        """Profile a data frame column, returning a name and DiscreteHistogram
+
+        Parameters
+        ----------
+        df : pandas.core.frame.DataFrame
+            A data frame to profile.
+        column : string
+            The column in the data frame to profile.
+
+        Returns
+        -------
+        dict
+            A dictionary from summary data names to DiscreteHistogram instances.
+        """
         total = df.shape[0]
         try:
             missing = sum(df[column].isnull())
@@ -45,11 +123,46 @@ class MissingValuesProfiler(Profiler):
         return (column + "_missing", DiscreteHistogram(["present", "missing"], [total - missing, missing]))
 
 
+# TODO: Rename to CategoricalHistogramProfiler?
 class BinaryHistogramProfiler(Profiler):
+    """Produces discrete histograms counting values per unique value in columns.
+
+    Produces histogram columns for each unique value in the profiled column and
+    counts the number of values for these keys. This should not be used for
+    columns containing continuously measured values but should be used when the
+    set of possible values in a column is small, e.g. boolean valued columns.
+
+    Attributes
+    ----------
+    columns : :obj:`list` of :obj:`str`
+        The list of data frame columns which will be profiled.
+    """
+
     def __init__(self, columns):
+        """Initialize a BinaryHistogramProfiler for the specified columns.
+
+        Parameters
+        ----------
+        columns : :obj:`list` of :obj:`str`
+            The list of data frame columns which will be profiled.
+        """
         super(BinaryHistogramProfiler, self).__init__(columns)
 
-    def _profile_column(self, df, column):
+    def profile_column(self, df, column):
+        """Profile a data frame column, returning a name and DiscreteHistogram
+
+        Parameters
+        ----------
+        df : pandas.core.frame.DataFrame
+            A data frame to profile.
+        column : string
+            The column in the data frame to profile.
+
+        Returns
+        -------
+        dict
+            A dictionary from summary data names to DiscreteHistogram instances.
+        """
         content = df[column].value_counts()
         keys = list(content.keys())
         values = [content[k] for k in keys]
@@ -57,13 +170,23 @@ class BinaryHistogramProfiler(Profiler):
         return (column + "_histogram", DiscreteHistogram(values, keys))
 
 
+# TODO: Consider design/interface for different bins
 class ContinuousHistogramProfiler(Profiler):
+    """Produces float histograms counting values according to bin intervals.
+
+    Attributes
+    ----------
+    columns : :obj:`list` of :obj:`str`
+        The list of data frame columns which will be profiled.
+    bins
+    """
+
     def __init__(self, columns, bins=10):
         super(ContinuousHistogramProfiler, self).__init__(columns)
         self._bins = bins
 
 
-    def _profile_column(self, df, column):
+    def profile_column(self, df, column):
         if isinstance(self._bins, collections.Mapping):
             bins = self._bins[column]
         else:
