@@ -19,9 +19,12 @@ class GreaterThanOrEqualTo(_VertaComparison):
     .. code-block:: python
 
         from verta.common.comparison import GreaterThanOrEqualTo
-        GreaterThanOrEqualTo(.7)
+        assert GreaterThanOrEqualTo(.7).compare(.9)
 
     """
 
     _OPERATOR = _CommonService.OperatorEnum.GTE
     _SYMBOL = ">="
+
+    def compare(self, other_value):
+        return other_value >= self.value
