@@ -8,7 +8,6 @@ import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LogAttributes;
-import ai.verta.modeldb.Project;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -157,10 +156,5 @@ public class FutureProjectDAO {
               }
             },
             executor);
-  }
-
-  public InternalFuture<Project> getPreAccessProjectById(String projectId) {
-    // TODO: Fix this later and return actual project details
-    return InternalFuture.completedInternalFuture(Project.newBuilder().build());
   }
 }
