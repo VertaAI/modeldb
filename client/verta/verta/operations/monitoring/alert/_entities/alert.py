@@ -192,10 +192,10 @@ class Alert(entity._ModelDBEntity):
 
         self._update(alert_msg)
 
-    def set_status(self, status, event_time_millis=None):
+    def set_status(self, status, event_time=None):
         msg = _AlertService.UpdateAlertStatusRequest(
             alert_id=self.id,
-            event_time_millis=event_time_millis,
+            event_time_millis=time_utils.epoch_millis(event_time) if event_time else None,
             status=status._ALERT_STATUS,
             violating_summary_sample_ids=status._sample_ids,
         )
