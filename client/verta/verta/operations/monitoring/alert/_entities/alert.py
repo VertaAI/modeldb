@@ -91,7 +91,7 @@ class Alert(entity._ModelDBEntity):
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindAlertRequest(
-            ids=[int(id)],
+            ids=[int(id)], page_number=1, page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findAlert"
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -108,6 +108,7 @@ class Alert(entity._ModelDBEntity):
         msg = _AlertService.FindAlertRequest(
             names=[name],
             monitored_entity_ids=[int(monitored_entity_id)],
+            page_number=1, page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findAlert"
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -266,7 +267,9 @@ class Alerts(object):
     # TODO: use lazy list and pagination
     # TODO: a proper find
     def list(self):
-        msg = _AlertService.FindAlertRequest()
+        msg = _AlertService.FindAlertRequest(
+            page_number=1, page_limit=-1,
+        )
         if self._monitored_entity_id is not None:
             msg.monitored_entity_ids.append(self._monitored_entity_id)
         endpoint = "/api/v1/alerts/findAlert"
