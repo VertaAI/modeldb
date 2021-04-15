@@ -149,11 +149,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var response =
           futureProjectDAO
               .addTags(request)
-              .thenCompose(
-                  unused -> futureProjectDAO.getPreAccessProjectById(request.getId()), executor)
-              .thenApply(
-                  project -> AddProjectTags.Response.newBuilder().setProject(project).build(),
-                  executor);
+              .thenApply(unused -> AddProjectTags.Response.newBuilder().build(), executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
@@ -180,11 +176,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var response =
           futureProjectDAO
               .deleteTags(request)
-              .thenCompose(
-                  unused -> futureProjectDAO.getPreAccessProjectById(request.getId()), executor)
-              .thenApply(
-                  project -> DeleteProjectTags.Response.newBuilder().setProject(project).build(),
-                  executor);
+              .thenApply(unused -> DeleteProjectTags.Response.newBuilder().build(), executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
@@ -202,11 +194,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .setId(request.getId())
                       .addTags(request.getTag())
                       .build())
-              .thenCompose(
-                  unused -> futureProjectDAO.getPreAccessProjectById(request.getId()), executor)
-              .thenApply(
-                  project -> AddProjectTag.Response.newBuilder().setProject(project).build(),
-                  executor);
+              .thenApply(unused -> AddProjectTag.Response.newBuilder().build(), executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
@@ -225,11 +213,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .addTags(request.getTag())
                       .setDeleteAll(false)
                       .build())
-              .thenCompose(
-                  unused -> futureProjectDAO.getPreAccessProjectById(request.getId()), executor)
-              .thenApply(
-                  project -> DeleteProjectTag.Response.newBuilder().setProject(project).build(),
-                  executor);
+              .thenApply(unused -> DeleteProjectTag.Response.newBuilder().build(), executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
