@@ -2,9 +2,9 @@ package ai.verta.modeldb.project;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.modeldb.AddExperimentRunTags;
-import ai.verta.modeldb.DeleteExperimentRunAttributes;
-import ai.verta.modeldb.DeleteExperimentRunTags;
+import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.DeleteProjectAttributes;
+import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LogAttributes;
@@ -48,7 +48,7 @@ public class FutureProjectDAO {
     tagsHandler = new TagsHandler(executor, jdbi, entityName);
   }
 
-  public InternalFuture<Void> deleteAttributes(DeleteExperimentRunAttributes request) {
+  public InternalFuture<Void> deleteAttributes(DeleteProjectAttributes request) {
     final var projectId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -77,7 +77,7 @@ public class FutureProjectDAO {
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
   }
 
-  public InternalFuture<Void> addTags(AddExperimentRunTags request) {
+  public InternalFuture<Void> addTags(AddProjectTags request) {
     final var projectId = request.getId();
     final var tags = request.getTagsList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -87,7 +87,7 @@ public class FutureProjectDAO {
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
   }
 
-  public InternalFuture<Void> deleteTags(DeleteExperimentRunTags request) {
+  public InternalFuture<Void> deleteTags(DeleteProjectTags request) {
     final var projectId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
