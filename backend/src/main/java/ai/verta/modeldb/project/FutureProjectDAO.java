@@ -8,6 +8,7 @@ import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LogAttributes;
+import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -74,6 +75,16 @@ public class FutureProjectDAO {
 
     return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> attributeHandler.logKeyValues(projectId, attributes), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
+  }
+
+  public InternalFuture<Void> updateProjectAttributes(UpdateProjectAttributes request) {
+    final var projectId = request.getId();
+    final var attribute = request.getAttribute();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> attributeHandler.updateKeyValue(projectId, attribute), executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
   }
 
