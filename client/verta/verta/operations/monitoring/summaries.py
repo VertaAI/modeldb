@@ -25,7 +25,15 @@ from verta import data_types
 
 
 class SummaryQuery(object):
-    def __init__(self, ids=None, names=None, data_type_classes=None, monitored_entities=None):
+    def __init__(
+        self,
+        ids=None,
+        names=None,
+        data_type_classes=None,
+        monitored_entities=None,
+        page_number=1,
+        page_limit=-1,
+    ):
         self._ids = extract_ids(ids) if ids else None
         self._names = names
 
@@ -37,6 +45,8 @@ class SummaryQuery(object):
         self._monitored_entity_ids = (
             extract_ids(monitored_entities) if monitored_entities else None
         )
+        self._page_number = page_number
+        self._page_limit = page_limit
 
     @classmethod
     def _from_proto_request(cls, msg):
@@ -47,6 +57,8 @@ class SummaryQuery(object):
             names=msg.names,
             data_type_classes=types,
             monitored_entities=msg.monitored_entity_ids,
+            page_number=msg.page_number,
+            page_limit=msg.page_limit,
         )
 
     def _to_proto_request(self):
@@ -55,6 +67,8 @@ class SummaryQuery(object):
             names=self._names,
             type_names=self._type_names,
             monitored_entity_ids=self._monitored_entity_ids,
+            page_number=self._page_number,
+            page_limit=self._page_limit,
         )
 
     def __repr__(self):
@@ -70,17 +84,20 @@ class SummarySampleQuery(object):
         time_window_start_at_millis=None,
         time_window_end_at_millis=None,
         created_at_after_millis=None,
+        page_number=1,
+        page_limit=-1,
     ):
-        self._find_summaries = (
-            summary_query._to_proto_request()
-            if summary_query
-            else FindSummaryRequest()
-        )
+        if summary_query is None:
+            summary_query = SummaryQuery()
+
+        self._find_summaries = summary_query._to_proto_request()
         self._sample_ids = extract_ids(ids) if ids else None
         self._labels = maybe(Summary._labels_proto, labels)
         self._time_window_start_at_millis = time_window_start_at_millis
         self._time_window_end_at_millis = time_window_end_at_millis
         self._created_at_after_millis = created_at_after_millis
+        self._page_number = page_number
+        self._page_limit = page_limit
 
     @classmethod
     def _from_proto_request(cls, msg):
@@ -92,6 +109,8 @@ class SummarySampleQuery(object):
         obj._time_window_start_at_millis = msg.filter.time_window_start_at_millis
         obj._time_window_end_at_millis = msg.filter.time_window_end_at_millis
         obj._created_at_after_millis = msg.filter.created_at_after_millis
+        obj._page_number = msg.page_number
+        obj._page_limit = msg.page_limit
 
         return obj
 
@@ -104,7 +123,9 @@ class SummarySampleQuery(object):
                 time_window_start_at_millis=self._time_window_start_at_millis,
                 time_window_end_at_millis=self._time_window_end_at_millis,
                 created_at_after_millis=self._created_at_after_millis,
-            )
+            ),
+            page_number=self._page_number,
+            page_limit=self._page_limit,
         )
 
     def __repr__(self):
