@@ -129,7 +129,7 @@ public class FutureProjectDAO {
                 .execute());
   }
 
-  private InternalFuture<Void> checkProjectPermission(
+  public InternalFuture<Void> checkProjectPermission(
       String projId, ModelDBActionEnum.ModelDBServiceActions action) {
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()

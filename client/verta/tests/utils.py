@@ -1,5 +1,6 @@
 import contextlib
 import copy
+import filecmp
 import random
 import os
 import sys
@@ -125,3 +126,13 @@ def sys_path_manager():
 def get_build_ids(status):
     # get the set of build_ids in the status of the stage:
     return set(map(lambda comp: comp["build_id"], status["components"]))
+
+
+def assert_dirs_match(dir1, dir2):
+    assert os.path.isdir(dir1)
+    assert os.path.isdir(dir2)
+
+    dircmp = filecmp.dircmp(dir1, dir2)
+    assert not dircmp.diff_files
+    assert not dircmp.left_only
+    assert not dircmp.right_only
