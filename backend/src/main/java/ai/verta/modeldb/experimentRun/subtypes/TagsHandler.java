@@ -4,6 +4,7 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -31,7 +32,7 @@ public class TagsHandler {
         this.entityIdReferenceColumn = "experiment_run_id";
         break;
       default:
-        throw new InternalErrorException("Invalid entity name");
+        throw new InternalErrorException("Invalid entity name: " + entityName);
     }
   }
 
@@ -68,7 +69,11 @@ public class TagsHandler {
         .thenCompose(unused -> getTags(entityId), executor)
         .thenCompose(
             existingTags -> {
-              tags.removeAll(existingTags);
+              final var tagsSet = new HashSet<>(tags);
+              tagsSet.removeAll(existingTags);
+              if (tagsSet.isEmpty()) {
+                return InternalFuture.completedInternalFuture(null);
+              }
 
               return jdbi.useHandle(
                   handle -> {
@@ -77,7 +82,7 @@ public class TagsHandler {
                             "insert into tag_mapping (entity_name, tags, "
                                 + entityIdReferenceColumn
                                 + ") VALUES(:entity_name, :tag, :entity_id)");
-                    for (final var tag : tags) {
+                    for (final var tag : tagsSet) {
                       batch
                           .bind("tag", tag)
                           .bind("entity_id", entityId)

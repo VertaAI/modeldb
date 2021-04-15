@@ -67,7 +67,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       AddProjectAttributes request,
       StreamObserver<AddProjectAttributes.Response> responseObserver) {
     try {
-      final var response =
+      final var futureResponse =
           futureProjectDAO
               .logAttributes(
                   LogAttributes.newBuilder()
@@ -79,7 +79,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
               .thenApply(
                   project -> AddProjectAttributes.Response.newBuilder().setProject(project).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -90,7 +90,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       UpdateProjectAttributes request,
       StreamObserver<UpdateProjectAttributes.Response> responseObserver) {
     try {
-      final var response =
+      final var futureResponse =
           futureProjectDAO
               .updateProjectAttributes(request)
               .thenCompose(
@@ -99,7 +99,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                   project ->
                       UpdateProjectAttributes.Response.newBuilder().setProject(project).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -109,14 +109,14 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   public void getProjectAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
     try {
-      final var response =
+      final var futureResponse =
           futureProjectDAO
               .getAttributes(request)
               .thenApply(
                   attributes ->
                       GetAttributes.Response.newBuilder().addAllAttributes(attributes).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -127,7 +127,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       DeleteProjectAttributes request,
       StreamObserver<DeleteProjectAttributes.Response> responseObserver) {
     try {
-      final var response =
+      final var futureResponse =
           futureProjectDAO
               .deleteAttributes(request)
               .thenCompose(
@@ -136,7 +136,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                   project ->
                       DeleteProjectAttributes.Response.newBuilder().setProject(project).build(),
                   executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }

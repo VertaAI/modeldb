@@ -667,7 +667,7 @@ class TestHistogram:
         assert float_hist['count'] == retrieved_float_hist['count']
 
 
-@pytest.skip(reason="old deployment API is being phased out (VR-7935)")
+@pytest.mark.skip(reason="old deployment API is being phased out (VR-7935)")
 class TestDeploy:
     def test_auto_path_auto_token_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -874,7 +874,7 @@ class TestDeploy:
         )
 
 
-@pytest.skip(reason="old deployment API is being phased out (VR-7935)")
+@pytest.mark.skip(reason="old deployment API is being phased out (VR-7935)")
 class TestUndeploy:
     def test_undeploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
@@ -897,7 +897,7 @@ class TestUndeploy:
         experiment_run.undeploy()
 
 
-@pytest.skip(reason="old deployment API is being phased out (VR-7935)")
+@pytest.mark.skip(reason="old deployment API is being phased out (VR-7935)")
 class TestGetDeployedModel:
     def test_get(self, experiment_run, model_for_deployment):
         model = model_for_deployment['model'].fit(
