@@ -41,7 +41,7 @@ class NotificationChannel(entity._ModelDBEntity):
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindNotificationChannelRequest(
-            ids=[int(id)],
+            ids=[int(id)], page_number=1, page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -57,7 +57,7 @@ class NotificationChannel(entity._ModelDBEntity):
     def _get_proto_by_name(cls, conn, name, workspace):
         # NOTE: workspace is currently unsupported until https://vertaai.atlassian.net/browse/VR-9792
         msg = _AlertService.FindNotificationChannelRequest(
-            names=[name],
+            names=[name], page_number=1, page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -156,7 +156,9 @@ class NotificationChannels(object):
     # TODO: use lazy list and pagination
     # TODO: a proper find
     def list(self):
-        msg = _AlertService.FindNotificationChannelRequest()
+        msg = _AlertService.FindNotificationChannelRequest(
+            page_number=1, page_limit=-1,
+        )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         channels = self._conn.must_proto_response(response, msg.Response).channels
