@@ -8,14 +8,13 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import com.zaxxer.hikari.HikariDataSource;
-import org.jdbi.v3.core.Jdbi;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.Executor;
+import org.jdbi.v3.core.Jdbi;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 public class Config extends ai.verta.modeldb.common.config.Config {
 
