@@ -69,7 +69,17 @@ class Alert(entity._ModelDBEntity):
     def status(self):
         self._refresh_cache()
 
-        return status_module._AlertStatus._from_proto(self._msg.status)
+        if self._msg.status == status_module.Ok._ALERT_STATUS:
+            # violating samples aren't relevant to a retrieved Ok status
+            sample_ids = None
+        else:
+            sample_ids = self._msg.violating_summary_sample_ids
+
+
+        return status_module._AlertStatus._from_proto(
+            self._msg.status,
+            sample_ids,
+        )
 
     @property
     def summary_sample_query(self):
@@ -183,13 +193,12 @@ class Alert(entity._ModelDBEntity):
 
         self._update(alert_msg)
 
-    # TODO: alternatively, fire() & resolve()?
-    def set_status(self, status, summary_sample=None, event_time_millis=None):
+    def set_status(self, status, event_time=None):
         msg = _AlertService.UpdateAlertStatusRequest(
             alert_id=self.id,
-            event_time_millis=event_time_millis,
+            event_time_millis=time_utils.epoch_millis(event_time) if event_time else None,
             status=status._ALERT_STATUS,
-            violating_summary_sample_id=summary_sample.id if summary_sample else None,
+            violating_summary_sample_ids=status._sample_ids,
         )
         endpoint = "/api/v1/alerts/updateAlertStatus"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
@@ -289,8 +298,10 @@ class Alerts(object):
 class AlertHistoryItem(object):
     def __init__(self, msg):
         self._event_time = time_utils.datetime_from_millis(msg.event_time_millis)
-        self._status = status_module._AlertStatus._from_proto(msg.status)
-        self._violating_summary_sample_ids = msg.violating_summary_sample_ids
+        self._status = status_module._AlertStatus._from_proto(
+            msg.status,
+            msg.violating_summary_sample_ids,
+        )
 
     def __repr__(self):
         return "\n\t".join(
@@ -298,8 +309,5 @@ class AlertHistoryItem(object):
                 "AlertHistoryItem",
                 "occurred at: {}".format(self._event_time),
                 "status: {}".format(self._status),
-                "associated summary sample IDs: {}".format(
-                    self._violating_summary_sample_ids
-                ),
             )
         )
