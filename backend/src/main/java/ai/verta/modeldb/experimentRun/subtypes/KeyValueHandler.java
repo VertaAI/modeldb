@@ -53,7 +53,7 @@ public class KeyValueHandler {
         handle ->
             handle
                 .createQuery(
-                    "select kv_key key, kv_value value, value_type type from "
+                    "select kv_key as k, kv_value as v, value_type as t from "
                         + getTableName()
                         + " where entity_name=:entity_name and field_type=:field_type and "
                         + entityIdReferenceColumn
@@ -65,15 +65,15 @@ public class KeyValueHandler {
                     (rs, ctx) -> {
                       try {
                         return KeyValue.newBuilder()
-                            .setKey(rs.getString("key"))
+                            .setKey(rs.getString("k"))
                             .setValue(
                                 (Value.Builder)
                                     CommonUtils.getProtoObjectFromString(
-                                        rs.getString("value"), Value.newBuilder()))
-                            .setValueTypeValue(rs.getInt("type"))
+                                        rs.getString("v"), Value.newBuilder()))
+                            .setValueTypeValue(rs.getInt("t"))
                             .build();
                       } catch (InvalidProtocolBufferException e) {
-                        LOGGER.error("Error generating builder for {}", rs.getString("value"));
+                        LOGGER.error("Error generating builder for {}", rs.getString("v"));
                         throw new ModelDBException(e);
                       }
                     })
@@ -149,7 +149,7 @@ public class KeyValueHandler {
           var sql =
               "delete from "
                   + getTableName()
-                  + "where entity_name=:entity_name and field_type=:field_type and "
+                  + " where entity_name=:entity_name and field_type=:field_type and "
                   + entityIdReferenceColumn
                   + "=:entity_id";
 
