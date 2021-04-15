@@ -34,9 +34,33 @@ class _AlertStatus(object):
         return True
 
     def __repr__(self):
-        return "<{} alert status>".format(
-            _AlertService.AlertStatusEnum.AlertStatus.Name(self._ALERT_STATUS).lower()
+        return "<alert status \"{}\" (sample IDs {})>".format(
+            _AlertService.AlertStatusEnum.AlertStatus.Name(self._ALERT_STATUS).lower(),
+            self._sample_ids,
         )
+
+    @classmethod
+    def _from_proto(cls, msg, sample_ids=None):
+        """
+        Returns an alert status object.
+
+        Parameters
+        ----------
+        msg : int
+            Variant of ``AlertStatusEnum``.
+        sample_ids : list of int
+            Summary Sample IDs that triggered the status.
+
+        Returns
+        -------
+        :class:`_AlertStatus` subclass
+
+        """
+        for subcls in cls.__subclasses__():
+            if msg == subcls._ALERT_STATUS:
+                return subcls(sample_ids)
+
+        raise ValueError("alert status {} not recognized".format(msg))
 
 
 class Alerting(_AlertStatus):

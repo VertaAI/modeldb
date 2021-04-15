@@ -55,8 +55,8 @@ class TestIntegration:
         alert = alerts.create(name, alerter, sample_query)
         assert alert.status == Ok()
 
-        alert.set_status(Alerting(), summary_sample)
-        assert alert.status == Alerting()
+        alert.set_status(Alerting([summary_sample]))
+        assert alert.status == Alerting([summary_sample])
 
         alert.set_status(Ok())
         assert alert.status == Ok()
