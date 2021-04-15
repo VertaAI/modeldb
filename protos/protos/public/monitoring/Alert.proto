@@ -132,8 +132,10 @@ message AlertFixed {
 }
 
 message AlertReference {
+    // Alert is fired if summary sample is $operator $threshold
     float threshold = 1;
     uint64 reference_sample_id = 2;
+    common.OperatorEnum.Operator operator = 3; // Default = GTE
     // TODO: add some information about the comparison type
     // For now, assume it's the default defined in the data format
 }

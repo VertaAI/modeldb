@@ -150,6 +150,8 @@ message MonitoredEntity {
   uint64 id = 1;
   string name = 2;
   uint64 workspace_id = 5;
+  uint64 created_at_timestamp_millis = 6;
+  uint64 updated_at_timestamp_millis = 7;
 }
 
 message CreateMonitoredEntityRequest {
