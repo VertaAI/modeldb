@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import json
 from datetime import datetime
-from verta._internal_utils import time_utils
+from verta._internal_utils import pagination_utils, time_utils
 from .utils import extract_ids, maybe
 from verta._protos.public.monitoring import Summary_pb2 as SummaryService
 from verta._protos.public.monitoring.Summary_pb2 import (
@@ -32,7 +32,7 @@ class SummaryQuery(object):
         data_type_classes=None,
         monitored_entities=None,
         page_number=1,
-        page_limit=-1,
+        page_limit=None,
     ):
         self._ids = extract_ids(ids) if ids else None
         self._names = names
@@ -58,7 +58,7 @@ class SummaryQuery(object):
             data_type_classes=types,
             monitored_entities=msg.monitored_entity_ids,
             page_number=msg.page_number,
-            page_limit=msg.page_limit,
+            page_limit=pagination_utils.page_limit_from_proto(msg.page_limit),
         )
 
     def _to_proto_request(self):
@@ -68,7 +68,7 @@ class SummaryQuery(object):
             type_names=self._type_names,
             monitored_entity_ids=self._monitored_entity_ids,
             page_number=self._page_number,
-            page_limit=self._page_limit,
+            page_limit=pagination_utils.page_limit_to_proto(self._page_limit),
         )
 
     def __repr__(self):
@@ -85,7 +85,7 @@ class SummarySampleQuery(object):
         time_window_end_at_millis=None,
         created_at_after_millis=None,
         page_number=1,
-        page_limit=-1,
+        page_limit=None,
     ):
         if summary_query is None:
             summary_query = SummaryQuery()
@@ -110,7 +110,7 @@ class SummarySampleQuery(object):
         obj._time_window_end_at_millis = msg.filter.time_window_end_at_millis
         obj._created_at_after_millis = msg.filter.created_at_after_millis
         obj._page_number = msg.page_number
-        obj._page_limit = msg.page_limit
+        obj._page_limit = pagination_utils.page_limit_from_proto(msg.page_limit)
 
         return obj
 
@@ -125,7 +125,7 @@ class SummarySampleQuery(object):
                 created_at_after_millis=self._created_at_after_millis,
             ),
             page_number=self._page_number,
-            page_limit=self._page_limit,
+            page_limit=pagination_utils.page_limit_to_proto(self._page_limit),
         )
 
     def __repr__(self):
