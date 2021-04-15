@@ -19,9 +19,15 @@ class EqualTo(_VertaComparison):
     .. code-block:: python
 
         from verta.common.comparison import EqualTo
-        EqualTo(.5)
+        assert EqualTo(.5).compare(.5)
 
     """
 
     _OPERATOR = _CommonService.OperatorEnum.EQ
     _SYMBOL = "=="
+
+    def compare(self, other_value):
+        if isinstance(self.value, float) or isinstance(other_value, float):
+            return self.isclose(other_value, self.value)
+        else:
+            return other_value == self.value

@@ -19,9 +19,12 @@ class LessThanOrEqualTo(_VertaComparison):
     .. code-block:: python
 
         from verta.common.comparison import LessThanOrEqualTo
-        LessThanOrEqualTo(.3)
+        assert LessThanOrEqualTo(.3).compare(.1)
 
     """
 
     _OPERATOR = _CommonService.OperatorEnum.LTE
     _SYMBOL = "<="
+
+    def compare(self, other_value):
+        return other_value <= self.value

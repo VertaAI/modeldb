@@ -19,9 +19,15 @@ class NotEqualTo(_VertaComparison):
     .. code-block:: python
 
         from verta.common.comparison import NotEqualTo
-        NotEqualTo(.5)
+        assert NotEqualTo(.5).compare(.7)
 
     """
 
     _OPERATOR = _CommonService.OperatorEnum.NE
     _SYMBOL = "!="
+
+    def compare(self, other_value):
+        if isinstance(self.value, float) or isinstance(other_value, float):
+            return not self.isclose(other_value, self.value)
+        else:
+            return other_value != self.value
