@@ -455,11 +455,15 @@
       "properties": {
         "threshold": {
           "type": "number",
-          "format": "float"
+          "format": "float",
+          "title": "Alert is fired if summary sample is $operator $threshold"
         },
         "reference_sample_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },
