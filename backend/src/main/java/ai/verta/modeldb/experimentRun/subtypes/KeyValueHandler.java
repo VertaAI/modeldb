@@ -24,6 +24,7 @@ public class KeyValueHandler {
   private final FutureJdbi jdbi;
   private final String fieldType;
   private final String entityName;
+  private final String entityIdReferenceColumn;
 
   protected String getTableName() {
     return "keyvalue";
@@ -34,17 +35,30 @@ public class KeyValueHandler {
     this.jdbi = jdbi;
     this.fieldType = fieldType;
     this.entityName = entityName;
+
+    switch (entityName) {
+      case "ProjectEntity":
+        this.entityIdReferenceColumn = "project_id";
+        break;
+      case "ExperimentRunEntity":
+        this.entityIdReferenceColumn = "experiment_run_id";
+        break;
+      default:
+        throw new InternalErrorException("Invalid entity name: " + entityName);
+    }
   }
 
-  public InternalFuture<List<KeyValue>> getKeyValues(String runId) {
+  public InternalFuture<List<KeyValue>> getKeyValues(String entityId) {
     return jdbi.withHandle(
         handle ->
             handle
                 .createQuery(
                     "select kv_key as k, kv_value as v, value_type as t from "
                         + getTableName()
-                        + " where entity_name=:entity_name and field_type=:field_type and experiment_run_id=:run_id")
-                .bind("run_id", runId)
+                        + " where entity_name=:entity_name and field_type=:field_type and "
+                        + entityIdReferenceColumn
+                        + "=:entity_id")
+                .bind("entity_id", entityId)
                 .bind("field_type", fieldType)
                 .bind("entity_name", entityName)
                 .map(
@@ -66,7 +80,7 @@ public class KeyValueHandler {
                 .list());
   }
 
-  public InternalFuture<Void> logKeyValues(String runId, List<KeyValue> kvs) {
+  public InternalFuture<Void> logKeyValues(String entityId, List<KeyValue> kvs) {
     // Validate input
     var currentFuture =
         InternalFuture.runAsync(
@@ -91,11 +105,13 @@ public class KeyValueHandler {
                             .createQuery(
                                 "select id from "
                                     + getTableName()
-                                    + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and experiment_run_id=:run_id")
+                                    + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and "
+                                    + entityIdReferenceColumn
+                                    + "=:entity_id")
                             .bind("key", kv.getKey())
                             .bind("field_type", fieldType)
                             .bind("entity_name", entityName)
-                            .bind("run_id", runId)
+                            .bind("entity_id", entityId)
                             .mapTo(Long.class)
                             .findOne()
                             .ifPresent(
@@ -107,12 +123,14 @@ public class KeyValueHandler {
                             .createUpdate(
                                 "insert into "
                                     + getTableName()
-                                    + " (entity_name, field_type, kv_key, kv_value, value_type, experiment_run_id) "
-                                    + " values (:entity_name, :field_type, :key, :value, :type, :run_id)")
+                                    + " (entity_name, field_type, kv_key, kv_value, value_type, "
+                                    + entityIdReferenceColumn
+                                    + ") "
+                                    + "values (:entity_name, :field_type, :key, :value, :type, :entity_id)")
                             .bind("key", kv.getKey())
                             .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
                             .bind("type", kv.getValueTypeValue())
-                            .bind("run_id", runId)
+                            .bind("entity_id", entityId)
                             .bind("field_type", fieldType)
                             .bind("entity_name", entityName)
                             .executeAndReturnGeneratedKeys()
@@ -125,13 +143,15 @@ public class KeyValueHandler {
     return currentFuture;
   }
 
-  public InternalFuture<Void> deleteKeyValues(String runId, Optional<List<String>> maybeKeys) {
+  public InternalFuture<Void> deleteKeyValues(String entityId, Optional<List<String>> maybeKeys) {
     return jdbi.useHandle(
         handle -> {
           var sql =
               "delete from "
                   + getTableName()
-                  + " where entity_name=:entity_name and field_type=:field_type and experiment_run_id=:run_id";
+                  + " where entity_name=:entity_name and field_type=:field_type and "
+                  + entityIdReferenceColumn
+                  + "=:entity_id";
 
           if (maybeKeys.isPresent()) {
             sql += " and kv_key in (<keys>)";
@@ -140,7 +160,7 @@ public class KeyValueHandler {
           var query =
               handle
                   .createUpdate(sql)
-                  .bind("run_id", runId)
+                  .bind("entity_id", entityId)
                   .bind("field_type", fieldType)
                   .bind("entity_name", entityName);
 
