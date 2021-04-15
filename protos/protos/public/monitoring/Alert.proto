@@ -183,7 +183,9 @@ message UpdateAlertStatusRequest {
     uint64 alert_id = 1;
     uint64 event_time_millis = 2; // Optional field that the alerter can set to provide past events (backfill)
     AlertStatusEnum.AlertStatus status = 3;
-    repeated uint64 violating_summary_sample_ids = 4; // Must contain at least one item if moving the status to Alerting. Optional if moving the status to OK.
+    repeated uint64 alerting_sample_ids = 4; // Sample IDs to be set to or left in the ALERTING status
+    repeated uint64 ok_sample_ids = 5; // Sample IDs to be set to or left in the OK status
+    bool clear_alerting_sample_ids = 6; // If true clears all samples ID in the ALERTING status.  
 }
 
 // History of the status of the alerts
