@@ -534,7 +534,7 @@ public class FutureExperimentRunDAO {
         .thenCompose(unused -> InternalFuture.completedInternalFuture(newExperimentRun), executor);
   }
 
-  public EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {
+  private EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {
     EnvironmentBlob.Builder builder = environmentBlob.toBuilder();
     if (builder.hasPython()) {
       PythonEnvironmentBlob.Builder pythonEnvironmentBlobBuilder = builder.getPython().toBuilder();
@@ -627,7 +627,7 @@ public class FutureExperimentRunDAO {
         .thenCompose(unused -> InternalFuture.completedInternalFuture(experimentRun), executor);
   }
 
-  public String buildRoleBindingName(
+  private String buildRoleBindingName(
       String roleName, String resourceId, String vertaId, String resourceTypeName) {
     return roleName + "_" + resourceTypeName + "_" + resourceId + "_" + "User_" + vertaId;
   }
