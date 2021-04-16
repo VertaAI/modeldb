@@ -1499,7 +1499,7 @@ var file_uac_Collaborator_proto_rawDesc = []byte{
 	0x0a, 0x4f, 0x52, 0x47, 0x5f, 0x43, 0x55, 0x53, 0x54, 0x4f, 0x4d, 0x10, 0x02, 0x12, 0x0b, 0x0a,
 	0x07, 0x50, 0x52, 0x49, 0x56, 0x41, 0x54, 0x45, 0x10, 0x03, 0x12, 0x15, 0x0a, 0x11, 0x57, 0x4f,
 	0x52, 0x4b, 0x53, 0x50, 0x41, 0x43, 0x45, 0x5f, 0x44, 0x45, 0x46, 0x41, 0x55, 0x4c, 0x54, 0x10,
-	0x04, 0x32, 0xd9, 0x17, 0x0a, 0x13, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74,
+	0x04, 0x32, 0xf1, 0x1b, 0x0a, 0x13, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74,
 	0x6f, 0x72, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x76, 0x0a, 0x0c, 0x67, 0x65, 0x74,
 	0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x73, 0x12, 0x1a, 0x2e, 0x61, 0x69, 0x2e, 0x76,
 	0x65, 0x72, 0x74, 0x61, 0x2e, 0x75, 0x61, 0x63, 0x2e, 0x47, 0x65, 0x74, 0x52, 0x65, 0x73, 0x6f,
@@ -1688,12 +1688,45 @@ var file_uac_Collaborator_proto_rawDesc = []byte{
 	0x6e, 0x73, 0x65, 0x22, 0x38, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x32, 0x12, 0x30, 0x2f, 0x76, 0x31,
 	0x2f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2f, 0x67, 0x65,
 	0x74, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x4d, 0x6f, 0x64, 0x65, 0x6c,
-	0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x73, 0x42, 0x3e, 0x50,
-	0x01, 0x5a, 0x3a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65,
-	0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2f, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x2f, 0x75, 0x61, 0x63, 0x62, 0x06, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x73, 0x12, 0xc1, 0x01,
+	0x0a, 0x26, 0x61, 0x64, 0x64, 0x4f, 0x72, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e,
+	0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x43, 0x6f, 0x6c, 0x6c,
+	0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x24, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65,
+	0x72, 0x74, 0x61, 0x2e, 0x75, 0x61, 0x63, 0x2e, 0x41, 0x64, 0x64, 0x43, 0x6f, 0x6c, 0x6c, 0x61,
+	0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2d,
+	0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x75, 0x61, 0x63, 0x2e, 0x41, 0x64,
+	0x64, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x42, 0x82,
+	0xd3, 0xe4, 0x93, 0x02, 0x3c, 0x22, 0x37, 0x2f, 0x76, 0x31, 0x2f, 0x63, 0x6f, 0x6c, 0x6c, 0x61,
+	0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2f, 0x61, 0x64, 0x64, 0x4f, 0x72, 0x55, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69,
+	0x74, 0x79, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x3a, 0x01,
+	0x2a, 0x12, 0xac, 0x01, 0x0a, 0x21, 0x72, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x4d, 0x6f, 0x6e, 0x69,
+	0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x43, 0x6f, 0x6c, 0x6c, 0x61,
+	0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x12, 0x20, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
+	0x74, 0x61, 0x2e, 0x75, 0x61, 0x63, 0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x43, 0x6f, 0x6c,
+	0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x1a, 0x29, 0x2e, 0x61, 0x69, 0x2e, 0x76,
+	0x65, 0x72, 0x74, 0x61, 0x2e, 0x75, 0x61, 0x63, 0x2e, 0x52, 0x65, 0x6d, 0x6f, 0x76, 0x65, 0x43,
+	0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2e, 0x52, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x3a, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x34, 0x2a, 0x32, 0x2f, 0x76,
+	0x31, 0x2f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x2f, 0x72,
+	0x65, 0x6d, 0x6f, 0x76, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e,
+	0x74, 0x69, 0x74, 0x79, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72,
+	0x12, 0xa2, 0x01, 0x0a, 0x1f, 0x67, 0x65, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65,
+	0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61,
+	0x74, 0x6f, 0x72, 0x73, 0x12, 0x1d, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
+	0x75, 0x61, 0x63, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61,
+	0x74, 0x6f, 0x72, 0x1a, 0x26, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x75,
+	0x61, 0x63, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74,
+	0x6f, 0x72, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x38, 0x82, 0xd3, 0xe4,
+	0x93, 0x02, 0x32, 0x12, 0x30, 0x2f, 0x76, 0x31, 0x2f, 0x63, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f,
+	0x72, 0x61, 0x74, 0x6f, 0x72, 0x2f, 0x67, 0x65, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72,
+	0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72,
+	0x61, 0x74, 0x6f, 0x72, 0x73, 0x42, 0x3e, 0x50, 0x01, 0x5a, 0x3a, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d, 0x6f,
+	0x64, 0x65, 0x6c, 0x64, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e,
+	0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69,
+	0x63, 0x2f, 0x75, 0x61, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1789,27 +1822,33 @@ var file_uac_Collaborator_proto_depIdxs = []int32{
 	3,  // 46: ai.verta.uac.CollaboratorService.addOrUpdateRegisteredModelCollaborator:input_type -> ai.verta.uac.AddCollaboratorRequest
 	4,  // 47: ai.verta.uac.CollaboratorService.removeRegisteredModelCollaborator:input_type -> ai.verta.uac.RemoveCollaborator
 	6,  // 48: ai.verta.uac.CollaboratorService.getRegisteredModelCollaborators:input_type -> ai.verta.uac.GetCollaborator
-	14, // 49: ai.verta.uac.CollaboratorService.getResources:output_type -> ai.verta.uac.GetResources.Response
-	14, // 50: ai.verta.uac.CollaboratorService.getResourcesSpecialPersonalWorkspace:output_type -> ai.verta.uac.GetResources.Response
-	15, // 51: ai.verta.uac.CollaboratorService.setResource:output_type -> ai.verta.uac.SetResource.Response
-	16, // 52: ai.verta.uac.CollaboratorService.deleteResources:output_type -> ai.verta.uac.DeleteResources.Response
-	11, // 53: ai.verta.uac.CollaboratorService.addOrUpdateProjectCollaborator:output_type -> ai.verta.uac.AddCollaboratorRequest.Response
-	12, // 54: ai.verta.uac.CollaboratorService.removeProjectCollaborator:output_type -> ai.verta.uac.RemoveCollaborator.Response
-	13, // 55: ai.verta.uac.CollaboratorService.getProjectCollaborators:output_type -> ai.verta.uac.GetCollaborator.Response
-	11, // 56: ai.verta.uac.CollaboratorService.addOrUpdateDatasetCollaborator:output_type -> ai.verta.uac.AddCollaboratorRequest.Response
-	12, // 57: ai.verta.uac.CollaboratorService.removeDatasetCollaborator:output_type -> ai.verta.uac.RemoveCollaborator.Response
-	13, // 58: ai.verta.uac.CollaboratorService.getDatasetCollaborators:output_type -> ai.verta.uac.GetCollaborator.Response
-	11, // 59: ai.verta.uac.CollaboratorService.addOrUpdateRepositoryCollaborator:output_type -> ai.verta.uac.AddCollaboratorRequest.Response
-	12, // 60: ai.verta.uac.CollaboratorService.removeRepositoryCollaborator:output_type -> ai.verta.uac.RemoveCollaborator.Response
-	13, // 61: ai.verta.uac.CollaboratorService.getRepositoryCollaborators:output_type -> ai.verta.uac.GetCollaborator.Response
-	11, // 62: ai.verta.uac.CollaboratorService.addOrUpdateEndpointCollaborator:output_type -> ai.verta.uac.AddCollaboratorRequest.Response
-	12, // 63: ai.verta.uac.CollaboratorService.removeEndpointCollaborator:output_type -> ai.verta.uac.RemoveCollaborator.Response
-	13, // 64: ai.verta.uac.CollaboratorService.getEndpointCollaborators:output_type -> ai.verta.uac.GetCollaborator.Response
-	11, // 65: ai.verta.uac.CollaboratorService.addOrUpdateRegisteredModelCollaborator:output_type -> ai.verta.uac.AddCollaboratorRequest.Response
-	12, // 66: ai.verta.uac.CollaboratorService.removeRegisteredModelCollaborator:output_type -> ai.verta.uac.RemoveCollaborator.Response
-	13, // 67: ai.verta.uac.CollaboratorService.getRegisteredModelCollaborators:output_type -> ai.verta.uac.GetCollaborator.Response
-	49, // [49:68] is the sub-list for method output_type
-	30, // [30:49] is the sub-list for method input_type
+	3,  // 49: ai.verta.uac.CollaboratorService.addOrUpdateMonitoredEntityCollaborator:input_type -> ai.verta.uac.AddCollaboratorRequest
+	4,  // 50: ai.verta.uac.CollaboratorService.removeMonitoredEntityCollaborator:input_type -> ai.verta.uac.RemoveCollaborator
+	6,  // 51: ai.verta.uac.CollaboratorService.getMonitoredEntityCollaborators:input_type -> ai.verta.uac.GetCollaborator
+	14, // 52: ai.verta.uac.CollaboratorService.getResources:output_type -> ai.verta.uac.GetResources.Response
+	14, // 53: ai.verta.uac.CollaboratorService.getResourcesSpecialPersonalWorkspace:output_type -> ai.verta.uac.GetResources.Response
+	15, // 54: ai.verta.uac.CollaboratorService.setResource:output_type -> ai.verta.uac.SetResource.Response
+	16, // 55: ai.verta.uac.CollaboratorService.deleteResources:output_type -> ai.verta.uac.DeleteResources.Response
+	11, // 56: ai.verta.uac.CollaboratorService.addOrUpdateProjectCollaborator:output_type -> ai.verta.uac.AddCollaboratorRequest.Response
+	12, // 57: ai.verta.uac.CollaboratorService.removeProjectCollaborator:output_type -> ai.verta.uac.RemoveCollaborator.Response
+	13, // 58: ai.verta.uac.CollaboratorService.getProjectCollaborators:output_type -> ai.verta.uac.GetCollaborator.Response
+	11, // 59: ai.verta.uac.CollaboratorService.addOrUpdateDatasetCollaborator:output_type -> ai.verta.uac.AddCollaboratorRequest.Response
+	12, // 60: ai.verta.uac.CollaboratorService.removeDatasetCollaborator:output_type -> ai.verta.uac.RemoveCollaborator.Response
+	13, // 61: ai.verta.uac.CollaboratorService.getDatasetCollaborators:output_type -> ai.verta.uac.GetCollaborator.Response
+	11, // 62: ai.verta.uac.CollaboratorService.addOrUpdateRepositoryCollaborator:output_type -> ai.verta.uac.AddCollaboratorRequest.Response
+	12, // 63: ai.verta.uac.CollaboratorService.removeRepositoryCollaborator:output_type -> ai.verta.uac.RemoveCollaborator.Response
+	13, // 64: ai.verta.uac.CollaboratorService.getRepositoryCollaborators:output_type -> ai.verta.uac.GetCollaborator.Response
+	11, // 65: ai.verta.uac.CollaboratorService.addOrUpdateEndpointCollaborator:output_type -> ai.verta.uac.AddCollaboratorRequest.Response
+	12, // 66: ai.verta.uac.CollaboratorService.removeEndpointCollaborator:output_type -> ai.verta.uac.RemoveCollaborator.Response
+	13, // 67: ai.verta.uac.CollaboratorService.getEndpointCollaborators:output_type -> ai.verta.uac.GetCollaborator.Response
+	11, // 68: ai.verta.uac.CollaboratorService.addOrUpdateRegisteredModelCollaborator:output_type -> ai.verta.uac.AddCollaboratorRequest.Response
+	12, // 69: ai.verta.uac.CollaboratorService.removeRegisteredModelCollaborator:output_type -> ai.verta.uac.RemoveCollaborator.Response
+	13, // 70: ai.verta.uac.CollaboratorService.getRegisteredModelCollaborators:output_type -> ai.verta.uac.GetCollaborator.Response
+	11, // 71: ai.verta.uac.CollaboratorService.addOrUpdateMonitoredEntityCollaborator:output_type -> ai.verta.uac.AddCollaboratorRequest.Response
+	12, // 72: ai.verta.uac.CollaboratorService.removeMonitoredEntityCollaborator:output_type -> ai.verta.uac.RemoveCollaborator.Response
+	13, // 73: ai.verta.uac.CollaboratorService.getMonitoredEntityCollaborators:output_type -> ai.verta.uac.GetCollaborator.Response
+	52, // [52:74] is the sub-list for method output_type
+	30, // [30:52] is the sub-list for method input_type
 	30, // [30:30] is the sub-list for extension type_name
 	30, // [30:30] is the sub-list for extension extendee
 	0,  // [0:30] is the sub-list for field type_name
@@ -2076,6 +2115,9 @@ type CollaboratorServiceClient interface {
 	AddOrUpdateRegisteredModelCollaborator(ctx context.Context, in *AddCollaboratorRequest, opts ...grpc.CallOption) (*AddCollaboratorRequest_Response, error)
 	RemoveRegisteredModelCollaborator(ctx context.Context, in *RemoveCollaborator, opts ...grpc.CallOption) (*RemoveCollaborator_Response, error)
 	GetRegisteredModelCollaborators(ctx context.Context, in *GetCollaborator, opts ...grpc.CallOption) (*GetCollaborator_Response, error)
+	AddOrUpdateMonitoredEntityCollaborator(ctx context.Context, in *AddCollaboratorRequest, opts ...grpc.CallOption) (*AddCollaboratorRequest_Response, error)
+	RemoveMonitoredEntityCollaborator(ctx context.Context, in *RemoveCollaborator, opts ...grpc.CallOption) (*RemoveCollaborator_Response, error)
+	GetMonitoredEntityCollaborators(ctx context.Context, in *GetCollaborator, opts ...grpc.CallOption) (*GetCollaborator_Response, error)
 }
 
 type collaboratorServiceClient struct {
@@ -2257,6 +2299,33 @@ func (c *collaboratorServiceClient) GetRegisteredModelCollaborators(ctx context.
 	return out, nil
 }
 
+func (c *collaboratorServiceClient) AddOrUpdateMonitoredEntityCollaborator(ctx context.Context, in *AddCollaboratorRequest, opts ...grpc.CallOption) (*AddCollaboratorRequest_Response, error) {
+	out := new(AddCollaboratorRequest_Response)
+	err := c.cc.Invoke(ctx, "/ai.verta.uac.CollaboratorService/addOrUpdateMonitoredEntityCollaborator", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *collaboratorServiceClient) RemoveMonitoredEntityCollaborator(ctx context.Context, in *RemoveCollaborator, opts ...grpc.CallOption) (*RemoveCollaborator_Response, error) {
+	out := new(RemoveCollaborator_Response)
+	err := c.cc.Invoke(ctx, "/ai.verta.uac.CollaboratorService/removeMonitoredEntityCollaborator", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *collaboratorServiceClient) GetMonitoredEntityCollaborators(ctx context.Context, in *GetCollaborator, opts ...grpc.CallOption) (*GetCollaborator_Response, error) {
+	out := new(GetCollaborator_Response)
+	err := c.cc.Invoke(ctx, "/ai.verta.uac.CollaboratorService/getMonitoredEntityCollaborators", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CollaboratorServiceServer is the server API for CollaboratorService service.
 type CollaboratorServiceServer interface {
 	// The caller must have permission to GET the resource accordingly
@@ -2283,6 +2352,9 @@ type CollaboratorServiceServer interface {
 	AddOrUpdateRegisteredModelCollaborator(context.Context, *AddCollaboratorRequest) (*AddCollaboratorRequest_Response, error)
 	RemoveRegisteredModelCollaborator(context.Context, *RemoveCollaborator) (*RemoveCollaborator_Response, error)
 	GetRegisteredModelCollaborators(context.Context, *GetCollaborator) (*GetCollaborator_Response, error)
+	AddOrUpdateMonitoredEntityCollaborator(context.Context, *AddCollaboratorRequest) (*AddCollaboratorRequest_Response, error)
+	RemoveMonitoredEntityCollaborator(context.Context, *RemoveCollaborator) (*RemoveCollaborator_Response, error)
+	GetMonitoredEntityCollaborators(context.Context, *GetCollaborator) (*GetCollaborator_Response, error)
 }
 
 // UnimplementedCollaboratorServiceServer can be embedded to have forward compatible implementations.
@@ -2345,6 +2417,15 @@ func (*UnimplementedCollaboratorServiceServer) RemoveRegisteredModelCollaborator
 }
 func (*UnimplementedCollaboratorServiceServer) GetRegisteredModelCollaborators(context.Context, *GetCollaborator) (*GetCollaborator_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRegisteredModelCollaborators not implemented")
+}
+func (*UnimplementedCollaboratorServiceServer) AddOrUpdateMonitoredEntityCollaborator(context.Context, *AddCollaboratorRequest) (*AddCollaboratorRequest_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddOrUpdateMonitoredEntityCollaborator not implemented")
+}
+func (*UnimplementedCollaboratorServiceServer) RemoveMonitoredEntityCollaborator(context.Context, *RemoveCollaborator) (*RemoveCollaborator_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveMonitoredEntityCollaborator not implemented")
+}
+func (*UnimplementedCollaboratorServiceServer) GetMonitoredEntityCollaborators(context.Context, *GetCollaborator) (*GetCollaborator_Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMonitoredEntityCollaborators not implemented")
 }
 
 func RegisterCollaboratorServiceServer(s *grpc.Server, srv CollaboratorServiceServer) {
@@ -2693,6 +2774,60 @@ func _CollaboratorService_GetRegisteredModelCollaborators_Handler(srv interface{
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddCollaboratorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CollaboratorServiceServer).AddOrUpdateMonitoredEntityCollaborator(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ai.verta.uac.CollaboratorService/AddOrUpdateMonitoredEntityCollaborator",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CollaboratorServiceServer).AddOrUpdateMonitoredEntityCollaborator(ctx, req.(*AddCollaboratorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CollaboratorService_RemoveMonitoredEntityCollaborator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveCollaborator)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CollaboratorServiceServer).RemoveMonitoredEntityCollaborator(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ai.verta.uac.CollaboratorService/RemoveMonitoredEntityCollaborator",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CollaboratorServiceServer).RemoveMonitoredEntityCollaborator(ctx, req.(*RemoveCollaborator))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CollaboratorService_GetMonitoredEntityCollaborators_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetCollaborator)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CollaboratorServiceServer).GetMonitoredEntityCollaborators(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ai.verta.uac.CollaboratorService/GetMonitoredEntityCollaborators",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CollaboratorServiceServer).GetMonitoredEntityCollaborators(ctx, req.(*GetCollaborator))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _CollaboratorService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ai.verta.uac.CollaboratorService",
 	HandlerType: (*CollaboratorServiceServer)(nil),
@@ -2772,6 +2907,18 @@ var _CollaboratorService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "getRegisteredModelCollaborators",
 			Handler:    _CollaboratorService_GetRegisteredModelCollaborators_Handler,
+		},
+		{
+			MethodName: "addOrUpdateMonitoredEntityCollaborator",
+			Handler:    _CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_Handler,
+		},
+		{
+			MethodName: "removeMonitoredEntityCollaborator",
+			Handler:    _CollaboratorService_RemoveMonitoredEntityCollaborator_Handler,
+		},
+		{
+			MethodName: "getMonitoredEntityCollaborators",
+			Handler:    _CollaboratorService_GetMonitoredEntityCollaborators_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

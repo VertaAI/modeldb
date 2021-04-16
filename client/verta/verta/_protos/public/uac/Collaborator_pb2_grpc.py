@@ -109,6 +109,21 @@ class CollaboratorServiceStub(object):
         request_serializer=uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
         response_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
         )
+    self.addOrUpdateMonitoredEntityCollaborator = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/addOrUpdateMonitoredEntityCollaborator',
+        request_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.FromString,
+        )
+    self.removeMonitoredEntityCollaborator = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/removeMonitoredEntityCollaborator',
+        request_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.FromString,
+        )
+    self.getMonitoredEntityCollaborators = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/getMonitoredEntityCollaborators',
+        request_serializer=uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
+        )
 
 
 class CollaboratorServiceServicer(object):
@@ -249,6 +264,27 @@ class CollaboratorServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def addOrUpdateMonitoredEntityCollaborator(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def removeMonitoredEntityCollaborator(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getMonitoredEntityCollaborators(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_CollaboratorServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -344,6 +380,21 @@ def add_CollaboratorServiceServicer_to_server(servicer, server):
       ),
       'getRegisteredModelCollaborators': grpc.unary_unary_rpc_method_handler(
           servicer.getRegisteredModelCollaborators,
+          request_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
+      ),
+      'addOrUpdateMonitoredEntityCollaborator': grpc.unary_unary_rpc_method_handler(
+          servicer.addOrUpdateMonitoredEntityCollaborator,
+          request_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.SerializeToString,
+      ),
+      'removeMonitoredEntityCollaborator': grpc.unary_unary_rpc_method_handler(
+          servicer.removeMonitoredEntityCollaborator,
+          request_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.SerializeToString,
+      ),
+      'getMonitoredEntityCollaborators': grpc.unary_unary_rpc_method_handler(
+          servicer.getMonitoredEntityCollaborators,
           request_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.FromString,
           response_serializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
       ),
