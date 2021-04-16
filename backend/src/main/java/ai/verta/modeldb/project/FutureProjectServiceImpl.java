@@ -131,30 +131,79 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void addProjectTags(
       AddProjectTags request, StreamObserver<AddProjectTags.Response> responseObserver) {
-    super.addProjectTags(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .addTags(request)
+              .thenApply(unused -> AddProjectTags.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getProjectTags(GetTags request, StreamObserver<GetTags.Response> responseObserver) {
-    super.getProjectTags(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .getTags(request)
+              .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteProjectTags(
       DeleteProjectTags request, StreamObserver<DeleteProjectTags.Response> responseObserver) {
-    super.deleteProjectTags(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .deleteTags(request)
+              .thenApply(unused -> DeleteProjectTags.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void addProjectTag(
       AddProjectTag request, StreamObserver<AddProjectTag.Response> responseObserver) {
-    super.addProjectTag(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .addTags(
+                  AddProjectTags.newBuilder()
+                      .setId(request.getId())
+                      .addTags(request.getTag())
+                      .build())
+              .thenApply(unused -> AddProjectTag.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteProjectTag(
       DeleteProjectTag request, StreamObserver<DeleteProjectTag.Response> responseObserver) {
-    super.deleteProjectTag(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .deleteTags(
+                  DeleteProjectTags.newBuilder()
+                      .setId(request.getId())
+                      .addTags(request.getTag())
+                      .setDeleteAll(false)
+                      .build())
+              .thenApply(unused -> DeleteProjectTag.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
