@@ -207,6 +207,8 @@ message FindMonitoredEntityRequest {
   int32 page_number = 4;
   int32 page_limit = 5;
 
+  string workspace_name = 6;
+
   message Response {
       repeated MonitoredEntity monitored_entities = 1;
       int32 total_records = 2;
