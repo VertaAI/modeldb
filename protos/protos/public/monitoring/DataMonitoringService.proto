@@ -202,12 +202,11 @@ message FindMonitoredEntityRequest {
   repeated uint64 ids = 1;
   repeated string names = 2;
   uint64 workspace_id = 3;
+  string workspace_name = 6;
 
     // Pagination
   int32 page_number = 4;
   int32 page_limit = 5;
-
-  string workspace_name = 6;
 
   message Response {
       repeated MonitoredEntity monitored_entities = 1;
