@@ -180,10 +180,13 @@ message DeleteAlertRequest {
 // or change the status (most likely to OK if was triggering before)
 // We provide this in addition to UpdateAlertRequest so that we can do the small change to this field atomically
 message UpdateAlertStatusRequest {
+    reserved 4; // Field removed
     uint64 alert_id = 1;
     uint64 event_time_millis = 2; // Optional field that the alerter can set to provide past events (backfill)
     AlertStatusEnum.AlertStatus status = 3;
-    repeated uint64 violating_summary_sample_ids = 4; // Must contain at least one item if moving the status to Alerting. Optional if moving the status to OK.
+    repeated uint64 alerting_sample_ids = 5; // If status is ALERTING, adds these sample IDs to the violating samples
+    repeated uint64 ok_sample_ids = 6; // If status is OK, clears these sample IDs from the violating samples
+    bool clear_alerting_sample_ids = 7; // If status is OK clears all samples IDs from the violating samples  
 }
 
 // History of the status of the alerts

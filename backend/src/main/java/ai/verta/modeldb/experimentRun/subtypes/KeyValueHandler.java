@@ -116,7 +116,8 @@ public class KeyValueHandler {
                             .findOne()
                             .ifPresent(
                                 present -> {
-                                  throw new AlreadyExistsException("Key already exists");
+                                  throw new AlreadyExistsException(
+                                      "Key " + kv.getKey() + " already exists");
                                 });
 
                         handle
@@ -170,5 +171,43 @@ public class KeyValueHandler {
 
           query.execute();
         });
+  }
+
+  // TODO: We might end up removing this update since ERs don't have them.
+  // Comment: https://github.com/VertaAI/modeldb/pull/2118#discussion_r613762413
+  public InternalFuture<Void> updateKeyValue(String entityId, KeyValue kv) {
+    var currentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (kv.getKey().isEmpty()) {
+                throw new InvalidArgumentException("Empty key");
+              }
+            },
+            executor);
+
+    currentFuture =
+        currentFuture.thenCompose(
+            unused ->
+                // Update into KV table
+                jdbi.useHandle(
+                    handle -> {
+                      handle
+                          .createUpdate(
+                              "Update "
+                                  + getTableName()
+                                  + " SET kv_key=:key, kv_value=:value, value_type=:type "
+                                  + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and "
+                                  + entityIdReferenceColumn
+                                  + "=:entity_id")
+                          .bind("key", kv.getKey())
+                          .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
+                          .bind("type", kv.getValueTypeValue())
+                          .bind("entity_id", entityId)
+                          .bind("field_type", fieldType)
+                          .bind("entity_name", entityName)
+                          .execute();
+                    }),
+            executor);
+    return currentFuture;
   }
 }

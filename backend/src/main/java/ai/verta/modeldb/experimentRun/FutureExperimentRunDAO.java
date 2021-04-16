@@ -16,6 +16,7 @@ import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.uac.*;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -57,7 +58,8 @@ public class FutureExperimentRunDAO {
     final Optional<List<String>> maybeKeys =
         request.getDeleteAll() ? Optional.empty() : Optional.of(request.getObservationKeysList());
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> observationHandler.deleteObservations(runId, maybeKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -68,7 +70,8 @@ public class FutureExperimentRunDAO {
     final var runId = request.getId();
     final var key = request.getObservationKey();
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(unused -> observationHandler.getObservations(runId, key), executor);
   }
 
@@ -79,7 +82,8 @@ public class FutureExperimentRunDAO {
     final var observations = request.getObservationsList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused -> observationHandler.logObservations(runId, observations, now), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
@@ -92,7 +96,8 @@ public class FutureExperimentRunDAO {
     final Optional<List<String>> maybeKeys =
         request.getDeleteAll() ? Optional.empty() : Optional.of(request.getMetricKeysList());
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> metricsHandler.deleteKeyValues(runId, maybeKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -106,7 +111,8 @@ public class FutureExperimentRunDAO {
             ? Optional.empty()
             : Optional.of(request.getHyperparameterKeysList());
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> hyperparametersHandler.deleteKeyValues(runId, maybeKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -118,7 +124,8 @@ public class FutureExperimentRunDAO {
     final Optional<List<String>> maybeKeys =
         request.getDeleteAll() ? Optional.empty() : Optional.of(request.getAttributeKeysList());
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> attributeHandler.deleteKeyValues(runId, maybeKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -126,21 +133,24 @@ public class FutureExperimentRunDAO {
   public InternalFuture<List<KeyValue>> getMetrics(GetMetrics request) {
     final var runId = request.getId();
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(unused -> metricsHandler.getKeyValues(runId), executor);
   }
 
   public InternalFuture<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
     final var runId = request.getId();
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(unused -> hyperparametersHandler.getKeyValues(runId), executor);
   }
 
   public InternalFuture<List<KeyValue>> getAttributes(GetAttributes request) {
     final var runId = request.getId();
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(unused -> attributeHandler.getKeyValues(runId), executor);
   }
 
@@ -149,7 +159,8 @@ public class FutureExperimentRunDAO {
     final var metrics = request.getMetricsList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> metricsHandler.logKeyValues(runId, metrics), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -159,7 +170,8 @@ public class FutureExperimentRunDAO {
     final var hyperparameters = request.getHyperparametersList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused -> hyperparametersHandler.logKeyValues(runId, hyperparameters), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
@@ -170,7 +182,8 @@ public class FutureExperimentRunDAO {
     final var attributes = request.getAttributesList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> attributeHandler.logKeyValues(runId, attributes), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -180,7 +193,8 @@ public class FutureExperimentRunDAO {
     final var tags = request.getTagsList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> tagsHandler.addTags(runId, tags), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -192,7 +206,8 @@ public class FutureExperimentRunDAO {
     final Optional<List<String>> maybeTags =
         request.getDeleteAll() ? Optional.empty() : Optional.of(request.getTagsList());
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> tagsHandler.deleteTags(runId, maybeTags), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -200,7 +215,8 @@ public class FutureExperimentRunDAO {
   public InternalFuture<List<String>> getTags(GetTags request) {
     final var runId = request.getId();
 
-    return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(unused -> tagsHandler.getTags(runId), executor);
   }
 
@@ -216,7 +232,7 @@ public class FutureExperimentRunDAO {
   }
 
   private InternalFuture<Void> checkProjectPermission(
-      String projId, ModelDBActionEnum.ModelDBServiceActions action) {
+      List<String> projId, ModelDBActionEnum.ModelDBServiceActions action) {
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(
@@ -233,7 +249,7 @@ public class FutureExperimentRunDAO {
                                         .setModeldbServiceResourceType(
                                             ModelDBResourceEnum.ModelDBServiceResourceTypes
                                                 .PROJECT))
-                                .addResourceIds(projId))
+                                .addAllResourceIds(projId))
                         .build()),
             executor)
         .thenAccept(
@@ -246,30 +262,31 @@ public class FutureExperimentRunDAO {
   }
 
   private InternalFuture<Void> checkPermission(
-      String runId, ModelDBActionEnum.ModelDBServiceActions action) {
-    if (runId.isEmpty()) {
+      List<String> runIds, ModelDBActionEnum.ModelDBServiceActions action) {
+    if (runIds.isEmpty()) {
       return InternalFuture.failedStage(
-          new InvalidArgumentException("Experiment run ID is missing"));
+          new InvalidArgumentException("Experiment run IDs is missing"));
     }
 
-    var futureMaybeProjectId =
+    var futureMaybeProjectIds =
         jdbi.withHandle(
             handle ->
                 handle
-                    .createQuery("select project_id from experiment_run where id=:id and deleted=0")
-                    .bind("id", runId)
+                    .createQuery(
+                        "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=0")
+                    .bindList("ids", runIds)
                     .mapTo(String.class)
-                    .findOne());
+                    .list());
 
-    return futureMaybeProjectId.thenCompose(
-        maybeProjectId -> {
-          if (maybeProjectId.isEmpty()) {
-            throw new NotFoundException("Experiment run not found");
+    return futureMaybeProjectIds.thenCompose(
+        maybeProjectIds -> {
+          if (maybeProjectIds.isEmpty()) {
+            throw new NotFoundException("Project ids not found for given experiment runs");
           }
 
           switch (action) {
             default:
-              return checkProjectPermission(maybeProjectId.get(), action);
+              return checkProjectPermission(maybeProjectIds, action);
           }
         },
         executor);
