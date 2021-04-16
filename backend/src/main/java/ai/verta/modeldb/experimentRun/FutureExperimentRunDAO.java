@@ -1,5 +1,6 @@
 package ai.verta.modeldb.experimentRun;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddExperimentRunTags;
@@ -56,6 +57,7 @@ import ai.verta.uac.UserInfo;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -259,8 +261,10 @@ public class FutureExperimentRunDAO {
                 .execute());
   }
 
-  private InternalFuture<Void> checkProjectPermission(
-      String projId, ModelDBActionEnum.ModelDBServiceActions action) {
+  private InternalFuture<Void> checkEntityPermission(
+      String projId,
+      ModelDBActionEnum.ModelDBServiceActions action,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(
@@ -274,8 +278,7 @@ public class FutureExperimentRunDAO {
                                 .setService(ServiceEnum.Service.MODELDB_SERVICE)
                                 .setResourceType(
                                     ResourceType.newBuilder()
-                                        .setModeldbServiceResourceType(
-                                            ModelDBServiceResourceTypes.PROJECT))
+                                        .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                                 .addResourceIds(projId))
                         .build()),
             executor)
@@ -312,7 +315,8 @@ public class FutureExperimentRunDAO {
 
           switch (action) {
             default:
-              return checkProjectPermission(maybeProjectId.get(), action);
+              return checkEntityPermission(
+                  maybeProjectId.get(), action, ModelDBServiceResourceTypes.PROJECT);
           }
         },
         executor);
@@ -347,8 +351,10 @@ public class FutureExperimentRunDAO {
     return futureTask
         .thenCompose(
             unused ->
-                checkProjectPermission(
-                    request.getProjectId(), ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+                checkEntityPermission(
+                    request.getProjectId(),
+                    ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                    ModelDBServiceResourceTypes.PROJECT),
             executor)
         .thenCompose(
             unused ->
@@ -366,10 +372,10 @@ public class FutureExperimentRunDAO {
         .thenCompose(experimentRun -> checkIfEntityAlreadyExists(experimentRun, true), executor)
         .thenCompose(
             experimentRun -> {
-              // TODO: Fix below logic for checking privileges of linked dataset versions
-              /*if (experimentRun.getDatasetsCount() > 0 && config.populateConnectionsBasedOnPrivileges) {
+              if (experimentRun.getDatasetsCount() > 0
+                  && config.populateConnectionsBasedOnPrivileges) {
                 experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
-              }*/
+              }
               return InternalFuture.completedInternalFuture(experimentRun);
             },
             executor)
@@ -382,6 +388,83 @@ public class FutureExperimentRunDAO {
             executor)
         .thenCompose(this::insertExperimentRun, executor)
         .thenCompose(experimentRun -> createRoleBindingsForExperimentRun(experimentRun), executor);
+  }
+
+  /**
+   * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false)
+   */
+  private ExperimentRun checkDatasetVersionBasedOnPrivileges(
+      ExperimentRun experimentRun, boolean errorOut) {
+    ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
+    List<Artifact> accessibleDatasetVersions =
+        getPrivilegedDatasets(experimentRun.getDatasetsList(), errorOut);
+    experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasetVersions);
+    return experimentRunBuilder.build();
+  }
+
+  /**
+   * @param newDatasets : new datasets for privilege check
+   * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false)
+   * @return {@link List} : accessible datasets
+   * @throws ModelDBException: modelDBException
+   */
+  private List<Artifact> getPrivilegedDatasets(List<Artifact> newDatasets, boolean errorOut) {
+    List<Artifact> accessibleDatasets = new ArrayList<>();
+    List<String> accessibleDatasetVersionIds = new ArrayList<>();
+    List<String> newDatasetLinkedIds = new ArrayList<>();
+    for (Artifact dataset : newDatasets) {
+      String datasetVersionId = dataset.getLinkedArtifactId();
+      if (!datasetVersionId.isEmpty()) {
+        newDatasetLinkedIds.add(datasetVersionId);
+      }
+    }
+
+    jdbi.useHandle(
+        handle -> {
+          Map<String, Long> datasetVersionDatasetMap = new HashMap<>();
+          var query =
+              handle
+                  .createQuery(
+                      " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<datasetIds>) ")
+                  .bind("datasetIds", newDatasetLinkedIds);
+          query
+              .map(
+                  (rs, ctx) ->
+                      datasetVersionDatasetMap.put(
+                          rs.getString("commit_hash"), rs.getLong("repository_id")))
+              .list();
+
+          for (Artifact dataset : newDatasets) {
+            String datasetVersionId = dataset.getLinkedArtifactId();
+            if (!datasetVersionId.isEmpty()
+                && !accessibleDatasetVersionIds.contains(datasetVersionId)) {
+              try {
+                if (datasetVersionDatasetMap.containsKey(datasetVersionId)
+                    && datasetVersionDatasetMap.get(datasetVersionId) != null) {
+                  Long datasetId = datasetVersionDatasetMap.get(datasetVersionId);
+                  checkEntityPermission(
+                      String.valueOf(datasetId),
+                      ModelDBActionEnum.ModelDBServiceActions.READ,
+                      ModelDBServiceResourceTypes.DATASET);
+                  accessibleDatasets.add(dataset);
+                  accessibleDatasetVersionIds.add(datasetVersionId);
+                } else {
+                  throw new InvalidArgumentException(
+                      "Dataset not found for dataset version: " + datasetVersionId);
+                }
+              } catch (Exception ex) {
+                LOGGER.debug(ex.getMessage());
+                if (errorOut) {
+                  throw ex;
+                }
+              }
+            } else {
+              accessibleDatasets.add(dataset);
+            }
+          }
+        });
+
+    return accessibleDatasets;
   }
 
   /**
