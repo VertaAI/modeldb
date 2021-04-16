@@ -83,6 +83,12 @@ class Alerting(_AlertStatus):
 
     _ALERT_STATUS = _AlertService.AlertStatusEnum.ALERTING
 
+    def _to_proto_request(self):
+        return _AlertService.UpdateAlertStatusRequest(
+            status=self._ALERT_STATUS,
+            alerting_sample_ids=self._sample_ids,
+        )
+
 
 class Ok(_AlertStatus):
     """
@@ -108,3 +114,14 @@ class Ok(_AlertStatus):
 
     def __init__(self, summary_samples=None):
         super(Ok, self).__init__(summary_samples=summary_samples)
+
+    def _to_proto_request(self):
+        msg = _AlertService.UpdateAlertStatusRequest(
+            status=self._ALERT_STATUS,
+        )
+        if self._sample_ids:
+            msg.ok_sample_ids = self._sample_ids
+        else:
+            msg.clear_alerting_sample_ids = True
+
+        return msg
