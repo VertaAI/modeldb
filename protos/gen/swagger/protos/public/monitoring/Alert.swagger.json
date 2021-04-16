@@ -870,12 +870,23 @@
         "status": {
           "$ref": "#/definitions/AlertStatusEnumAlertStatus"
         },
-        "violating_summary_sample_ids": {
+        "alerting_sample_ids": {
           "type": "array",
           "items": {
             "type": "string",
             "format": "uint64"
           }
+        },
+        "ok_sample_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "clear_alerting_sample_ids": {
+          "type": "boolean",
+          "format": "boolean"
         }
       },
       "title": "Allow the alerter to trigger an alert (in which case it shares what is the sample that failed)\nor change the status (most likely to OK if was triggering before)\nWe provide this in addition to UpdateAlertRequest so that we can do the small change to this field atomically"
