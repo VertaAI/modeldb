@@ -1223,9 +1223,9 @@ type UpdateAlertStatusRequest struct {
 	AlertId                uint64                      `protobuf:"varint,1,opt,name=alert_id,json=alertId,proto3" json:"alert_id,omitempty"`
 	EventTimeMillis        uint64                      `protobuf:"varint,2,opt,name=event_time_millis,json=eventTimeMillis,proto3" json:"event_time_millis,omitempty"` // Optional field that the alerter can set to provide past events (backfill)
 	Status                 AlertStatusEnum_AlertStatus `protobuf:"varint,3,opt,name=status,proto3,enum=ai.verta.monitoring.AlertStatusEnum_AlertStatus" json:"status,omitempty"`
-	AlertingSampleIds      []uint64                    `protobuf:"varint,5,rep,packed,name=alerting_sample_ids,json=alertingSampleIds,proto3" json:"alerting_sample_ids,omitempty"`           // Sample IDs to be set to or left in the ALERTING status
-	OkSampleIds            []uint64                    `protobuf:"varint,6,rep,packed,name=ok_sample_ids,json=okSampleIds,proto3" json:"ok_sample_ids,omitempty"`                             // Sample IDs to be set to or left in the OK status
-	ClearAlertingSampleIds bool                        `protobuf:"varint,7,opt,name=clear_alerting_sample_ids,json=clearAlertingSampleIds,proto3" json:"clear_alerting_sample_ids,omitempty"` // If true clears all samples ID in the ALERTING status.
+	AlertingSampleIds      []uint64                    `protobuf:"varint,5,rep,packed,name=alerting_sample_ids,json=alertingSampleIds,proto3" json:"alerting_sample_ids,omitempty"`           // If status is ALERTING, adds these sample IDs to the violating samples
+	OkSampleIds            []uint64                    `protobuf:"varint,6,rep,packed,name=ok_sample_ids,json=okSampleIds,proto3" json:"ok_sample_ids,omitempty"`                             // If status is OK, clears these sample IDs from the violating samples
+	ClearAlertingSampleIds bool                        `protobuf:"varint,7,opt,name=clear_alerting_sample_ids,json=clearAlertingSampleIds,proto3" json:"clear_alerting_sample_ids,omitempty"` // If status is OK clears all samples IDs from the violating samples
 }
 
 func (x *UpdateAlertStatusRequest) Reset() {
