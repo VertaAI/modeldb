@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
+import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.WorkspaceServiceGrpc;
 import io.grpc.*;
@@ -27,6 +28,7 @@ public class UAC {
   private final UACServiceGrpc.UACServiceFutureStub uacServiceFutureStub;
   private final WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspaceServiceFutureStub;
   private final AuthzServiceGrpc.AuthzServiceFutureStub authzServiceFutureStub;
+  private final RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub;
 
   public static UAC FromConfig(Config config) {
     if (!config.hasAuth()) return null;
@@ -60,6 +62,7 @@ public class UAC {
     uacServiceFutureStub = UACServiceGrpc.newFutureStub(authServiceChannel);
     workspaceServiceFutureStub = WorkspaceServiceGrpc.newFutureStub(authServiceChannel);
     authzServiceFutureStub = AuthzServiceGrpc.newFutureStub(authServiceChannel);
+    roleServiceFutureStub = RoleServiceGrpc.newFutureStub(authServiceChannel);
   }
 
   private UAC(UAC other) {
@@ -71,6 +74,7 @@ public class UAC {
     uacServiceFutureStub = other.uacServiceFutureStub;
     workspaceServiceFutureStub = other.workspaceServiceFutureStub;
     authzServiceFutureStub = other.authzServiceFutureStub;
+    roleServiceFutureStub = other.roleServiceFutureStub;
   }
 
   private Metadata serviceAccountMetadata() {
@@ -141,5 +145,13 @@ public class UAC {
     }
     return authzServiceFutureStub.withInterceptors(
         MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
+  }
+
+  public RoleServiceGrpc.RoleServiceFutureStub getRoleService() {
+    if (clientInterceptor != null) {
+      return roleServiceFutureStub.withInterceptors(clientInterceptor);
+    }
+    return roleServiceFutureStub.withInterceptors(
+            MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
   }
 }
