@@ -22,7 +22,7 @@ import ai.verta.modeldb.health.HealthStatusManager;
 import ai.verta.modeldb.lineage.LineageServiceImpl;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
-import ai.verta.modeldb.project.ProjectServiceImpl;
+import ai.verta.modeldb.project.FutureProjectServiceImpl;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -281,7 +281,7 @@ public class App implements ApplicationContextAware {
 
   public static void initializeBackendServices(
       ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos, Executor executor) {
-    wrapService(serverBuilder, new ProjectServiceImpl(services, daos));
+    wrapService(serverBuilder, new FutureProjectServiceImpl(services, daos, executor));
     LOGGER.trace("Project serviceImpl initialized");
     wrapService(serverBuilder, new ExperimentServiceImpl(services, daos));
     LOGGER.trace("Experiment serviceImpl initialized");
