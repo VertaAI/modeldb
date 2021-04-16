@@ -634,6 +634,9 @@
           "type": "string",
           "format": "uint64"
         },
+        "workspace_name": {
+          "type": "string"
+        },
         "page_number": {
           "type": "integer",
           "format": "int32",
