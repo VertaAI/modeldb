@@ -296,7 +296,7 @@ public class FutureExperimentRunDAO {
     final var key = request.getKey();
 
     return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> artifactHandler.getArtifacts(runId, Optional.of(key)), executor);
+        .thenCompose(unused -> artifactHandler.getArtifacts(runId, key), executor);
   }
 
   public InternalFuture<Void> deleteArtifacts(DeleteArtifact request) {

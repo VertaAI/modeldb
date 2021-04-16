@@ -44,7 +44,7 @@ public class ArtifactHandler {
     }
   }
 
-  public InternalFuture<List<Artifact>> getArtifacts(String entityId, Optional<String> key) {
+  public InternalFuture<List<Artifact>> getArtifacts(String entityId, String key) {
     var currentFuture =
         InternalFuture.runAsync(
             () -> {
@@ -64,7 +64,7 @@ public class ArtifactHandler {
                           + entityIdReferenceColumn
                           + "=:entity_id";
 
-                  if (key.isPresent() && !key.get().isEmpty()) {
+                  if (!key.isEmpty()) {
                     queryStr = queryStr + " AND ar_key=:ar_key ";
                   }
 
@@ -74,8 +74,8 @@ public class ArtifactHandler {
                           .bind("entity_id", entityId)
                           .bind("field_type", fieldType)
                           .bind("entity_name", entityName);
-                  if (key.isPresent() && !key.get().isEmpty()) {
-                    query.bind("ar_key", key.get());
+                  if (!key.isEmpty()) {
+                    query.bind("ar_key", key);
                   }
                   List<Artifact> artifacts =
                       query
