@@ -685,6 +685,9 @@
         "page_limit": {
           "type": "integer",
           "format": "int32"
+        },
+        "workspace_name": {
+          "type": "string"
         }
       }
     },
