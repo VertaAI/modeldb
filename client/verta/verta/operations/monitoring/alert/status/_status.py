@@ -120,7 +120,7 @@ class Ok(_AlertStatus):
             status=self._ALERT_STATUS,
         )
         if self._sample_ids:
-            msg.ok_sample_ids = self._sample_ids
+            msg.ok_sample_ids.extend(self._sample_ids)
         else:
             msg.clear_alerting_sample_ids = True
 
