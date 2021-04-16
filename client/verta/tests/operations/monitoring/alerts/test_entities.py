@@ -41,11 +41,13 @@ class TestIntegration:
             sample_query,
             notification_channels=[channel1],
         )
-        assert alert._msg.notification_channels.keys() == {channel1.id}
+        retrieved_channel_ids = alert._msg.notification_channels.keys()
+        assert set(retrieved_channel_ids) == {channel1.id}
 
         alert.add_notification_channels([channel2])
         alert._refresh_cache()
-        assert alert._msg.notification_channels.keys() == {channel1.id, channel2.id}
+        retrieved_channel_ids = alert._msg.notification_channels.keys()
+        assert set(retrieved_channel_ids) == {channel1.id, channel2.id}
 
     def test_set_status(self, monitored_entity, summary_sample):
         alerts = monitored_entity.alerts
