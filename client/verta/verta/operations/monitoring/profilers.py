@@ -183,12 +183,14 @@ class ProfilerReference(entity._ModelDBEntity):
 
 class Profilers:
 
-    DEFAULT_ENVIRONMENT = Python(requirements=["numpy", "scipy", "pandas"])
-
     def __init__(self, conn, conf, client):
         self._conn = conn
         self._conf = conf
         self._client = client
+
+    @classmethod
+    def default_environment(cls):
+        return Python(requirements=["numpy", "scipy", "pandas"])
 
     def list(self):
         endpoint = "/api/v1/monitored_entity/listProfilers"
@@ -203,7 +205,8 @@ class Profilers:
         ref._set_client(self._client)
         return ref
 
-    def upload(self, name, profiler, attrs={}, environment=DEFAULT_ENVIRONMENT):
+    def upload(self, name, profiler, attrs={}, environment=None):
+        environment = environment if environment else self.default_environment()
         model = self._client.get_or_create_registered_model()
         version = model.get_or_create_version()
         version.add_attribute(key="type", value="profiler", overwrite=True)

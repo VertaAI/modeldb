@@ -4,8 +4,7 @@ from __future__ import division
 
 from ..external import six
 
-from scipy import spatial
-
+from .._internal_utils.importer import maybe_dependency
 from .._internal_utils import arg_handler
 
 from . import _VertaDataType
@@ -37,6 +36,7 @@ class DiscreteHistogram(_VertaDataType):
 
     _TYPE_NAME = "discreteHistogram"
     _VERSION = "v1"
+    _scipy = maybe_dependency("scipy")
 
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, buckets, data):
@@ -81,7 +81,7 @@ class DiscreteHistogram(_VertaDataType):
                 )
             )
 
-        return spatial.distance.cosine(
+        return self._scipy.spatial.distance.cosine(
             self.normalized_data(),
             other.normalized_data(),
         )
