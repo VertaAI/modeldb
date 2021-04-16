@@ -63,10 +63,9 @@ class MonitoredEntity(entity._ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).monitored_entity
 
     @classmethod
-    def _get_proto_by_name(cls, conn, name, workspace): # TODO: How to use workspace param?
-        # NOTE: workspace is currently unsupported until https://vertaai.atlassian.net/browse/VR-9792
+    def _get_proto_by_name(cls, conn, name, workspace=None):
         Message = _DataMonitoringService.FindMonitoredEntityRequest
-        msg = Message(names=[name],page_number=1,page_limit=-1)
+        msg = Message(names=[name], workspace_name=workspace, page_number=1, page_limit=-1)
         endpoint = "/api/v1/monitored_entity/findMonitoredEntity"
         response = conn.make_proto_request("POST", endpoint, body=msg)
         results = conn.maybe_proto_response(response, Message.Response)
