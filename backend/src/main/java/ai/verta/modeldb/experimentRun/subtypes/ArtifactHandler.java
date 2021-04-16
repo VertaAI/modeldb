@@ -148,6 +148,11 @@ public class ArtifactHandler {
                                       "Key '" + artifact.getKey() + "' already exists");
                                 });
 
+                        var storeTypePath =
+                            !artifact.getPathOnly()
+                                ? Config.getInstance().artifactStoreConfig.storeTypePathPrefix()
+                                    + artifact.getPath()
+                                : "";
                         handle
                             .createUpdate(
                                 "insert into "
@@ -162,12 +167,7 @@ public class ArtifactHandler {
                             .bind("path_only", artifact.getPathOnly())
                             .bind("linked_artifact_id", artifact.getLinkedArtifactId())
                             .bind("filename_extension", artifact.getFilenameExtension())
-                            .bind(
-                                "store_type_path",
-                                !artifact.getPathOnly()
-                                    ? Config.getInstance().artifactStoreConfig.storeTypePathPrefix()
-                                        + artifact.getPath()
-                                    : "")
+                            .bind("store_type_path", storeTypePath)
                             .bind("entity_id", entityId)
                             .bind("field_type", fieldType)
                             .bind("entity_name", entityName)

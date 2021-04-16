@@ -306,13 +306,10 @@ public class FutureExperimentRunDAO {
         request.getKey().isEmpty()
             ? new ArrayList<String>()
             : Collections.singletonList(request.getKey());
+    Optional<List<String>> optionalKeys = keys.isEmpty() ? Optional.empty() : Optional.of(keys);
 
     return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(
-            unused ->
-                artifactHandler.deleteArtifacts(
-                    runId, keys.isEmpty() ? Optional.empty() : Optional.of(keys)),
-            executor)
+        .thenCompose(unused -> artifactHandler.deleteArtifacts(runId, optionalKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 }
