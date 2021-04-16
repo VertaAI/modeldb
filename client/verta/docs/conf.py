@@ -61,6 +61,9 @@ autodoc_mock_imports = [
     'verta._protos',
     'xgboost',
     'yaml',
+    'numpy',
+    'scipy',
+    'pandas',
 ]
 
 napoleon_use_rtype = False
