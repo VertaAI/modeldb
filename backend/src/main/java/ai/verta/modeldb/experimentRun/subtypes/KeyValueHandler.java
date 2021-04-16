@@ -173,6 +173,8 @@ public class KeyValueHandler {
         });
   }
 
+  // TODO: We might end up removing this update since ERs don't have them.
+  // Comment: https://github.com/VertaAI/modeldb/pull/2118#discussion_r613762413
   public InternalFuture<Void> updateKeyValue(String entityId, KeyValue kv) {
     var currentFuture =
         InternalFuture.runAsync(

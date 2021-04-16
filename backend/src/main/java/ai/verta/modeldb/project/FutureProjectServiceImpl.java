@@ -74,11 +74,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .setId(request.getId())
                       .addAllAttributes(request.getAttributesList())
                       .build())
-              .thenCompose(
-                  unused -> futureProjectDAO.getPreAccessProjectById(request.getId()), executor)
-              .thenApply(
-                  project -> AddProjectAttributes.Response.newBuilder().setProject(project).build(),
-                  executor);
+              .thenApply(unused -> AddProjectAttributes.Response.newBuilder().build(), executor);
       FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
@@ -93,12 +89,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var futureResponse =
           futureProjectDAO
               .updateProjectAttributes(request)
-              .thenCompose(
-                  unused -> futureProjectDAO.getPreAccessProjectById(request.getId()), executor)
-              .thenApply(
-                  project ->
-                      UpdateProjectAttributes.Response.newBuilder().setProject(project).build(),
-                  executor);
+              .thenApply(unused -> UpdateProjectAttributes.Response.newBuilder().build(), executor);
       FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
@@ -130,12 +121,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var futureResponse =
           futureProjectDAO
               .deleteAttributes(request)
-              .thenCompose(
-                  unused -> futureProjectDAO.getPreAccessProjectById(request.getId()), executor)
-              .thenApply(
-                  project ->
-                      DeleteProjectAttributes.Response.newBuilder().setProject(project).build(),
-                  executor);
+              .thenApply(unused -> DeleteProjectAttributes.Response.newBuilder().build(), executor);
       FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
