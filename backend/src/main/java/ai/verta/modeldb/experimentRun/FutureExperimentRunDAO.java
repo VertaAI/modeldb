@@ -231,17 +231,6 @@ public class FutureExperimentRunDAO {
                 .execute());
   }
 
-  private InternalFuture<Void> updateProjectModifiedTimestamp(List<String> runIds, Long now) {
-    return jdbi.useHandle(
-        handle ->
-            handle
-                .createUpdate(
-                    "update project p left join experiment_run run ON run.project_id = p.id set p.date_updated=greatest(p.date_updated, :now) where run.id IN (<run_ids>) ")
-                .bindList("run_ids", runIds)
-                .bind("now", now)
-                .execute());
-  }
-
   private InternalFuture<Void> checkProjectPermission(
       List<String> projId, ModelDBActionEnum.ModelDBServiceActions action) {
     return FutureGrpc.ClientRequest(
@@ -323,7 +312,6 @@ public class FutureExperimentRunDAO {
                     request.getIdsList(), ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
         .thenCompose(unused -> deleteExperimentRuns(runIds), executor)
-        .thenCompose(unused -> updateProjectModifiedTimestamp(runIds, now), executor)
         .thenCompose(unused -> InternalFuture.completedInternalFuture(true), executor);
   }
 
