@@ -348,6 +348,9 @@
           "type": "string",
           "format": "uint64"
         },
+        "workspace_name": {
+          "type": "string"
+        },
         "page_number": {
           "type": "integer",
           "format": "int32",
@@ -356,9 +359,6 @@
         "page_limit": {
           "type": "integer",
           "format": "int32"
-        },
-        "workspace_name": {
-          "type": "string"
         }
       }
     },
