@@ -176,7 +176,7 @@ class ContinuousHistogramProfiler(Profiler):
 
     Attributes
     ----------
-    columns : :obj:`list` of :obj:`str`
+    columns : list of str
         The list of data frame columns which will be profiled.
     bins
     """
