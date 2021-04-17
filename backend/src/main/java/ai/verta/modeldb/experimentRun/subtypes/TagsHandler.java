@@ -67,7 +67,7 @@ public class TagsHandler {
                     .map(
                         (rs, ctx) ->
                             new AbstractMap.SimpleEntry<>(
-                                rs.getString("tags"), rs.getString("entity_id")))
+                                rs.getString("entity_id"), rs.getString("tags")))
                     .list())
         .thenApply(
             listEntries -> {
