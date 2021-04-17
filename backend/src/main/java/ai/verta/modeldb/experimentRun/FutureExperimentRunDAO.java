@@ -1,5 +1,6 @@
 package ai.verta.modeldb.experimentRun;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.*;
@@ -10,18 +11,13 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
-import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
-import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
-import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.experimentRun.subtypes.*;
 import ai.verta.uac.*;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.Executor;
 
 public class FutureExperimentRunDAO {
   private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
@@ -35,6 +31,7 @@ public class FutureExperimentRunDAO {
   private final KeyValueHandler metricsHandler;
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
+  private final ArtifactHandler artifactHandler;
 
   public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
     this.executor = executor;
@@ -47,6 +44,7 @@ public class FutureExperimentRunDAO {
     metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", "ExperimentRunEntity");
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
+    artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -285,10 +283,86 @@ public class FutureExperimentRunDAO {
           }
 
           switch (action) {
+            case DELETE:
+              // TODO: check if we should using DELETE for the ER itself
+              return checkProjectPermission(
+                  maybeProjectIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
             default:
               return checkProjectPermission(maybeProjectIds, action);
           }
         },
         executor);
+  }
+
+  public InternalFuture<Void> deleteExperimentRuns(DeleteExperimentRuns request) {
+    final var runIds = request.getIdsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    var futureDeleteTask =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getIdsList().isEmpty()) {
+                throw new InvalidArgumentException("ExperimentRun IDs not found in request");
+              }
+            },
+            executor);
+
+    return futureDeleteTask
+        .thenCompose(
+            unused ->
+                checkPermission(
+                    request.getIdsList(), ModelDBActionEnum.ModelDBServiceActions.DELETE),
+            executor)
+        .thenCompose(unused -> deleteExperimentRuns(runIds), executor);
+  }
+
+  private InternalFuture<Void> deleteExperimentRuns(List<String> runIds) {
+    return InternalFuture.runAsync(
+        () ->
+            jdbi.withHandle(
+                handle ->
+                    handle
+                        .createUpdate(
+                            "Update experiment_run SET deleted = :deleted WHERE id IN (<ids>)")
+                        .bindList("ids", runIds)
+                        .bind("deleted", true)
+                        .execute()),
+        executor);
+  }
+
+  public InternalFuture<Void> logArtifacts(LogArtifacts request) {
+    final var runId = request.getId();
+    final var artifacts = request.getArtifactsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> artifactHandler.logArtifacts(runId, artifacts), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<List<Artifact>> getArtifacts(GetArtifacts request) {
+    final var runId = request.getId();
+    final var key = request.getKey();
+    Optional<String> maybeKey = key.isEmpty() ? Optional.empty() : Optional.of(key);
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> artifactHandler.getArtifacts(runId, maybeKey), executor);
+  }
+
+  public InternalFuture<Void> deleteArtifacts(DeleteArtifact request) {
+    final var runId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    final var keys =
+        request.getKey().isEmpty()
+            ? new ArrayList<String>()
+            : Collections.singletonList(request.getKey());
+    Optional<List<String>> optionalKeys = keys.isEmpty() ? Optional.empty() : Optional.of(keys);
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> artifactHandler.deleteArtifacts(runId, optionalKeys), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 }
