@@ -61,6 +61,8 @@ class ContinuousHistogramProfiler(Profiler):
         super(ContinuousHistogramProfiler, self).__init__(columns)
         self._bins = bins
         self._np = maybe_dependency("numpy")
+        if self._np is None:
+            raise ImportError("numpy is not installed; try `pip install numpy`")
 
     def _profile_column(self, df, column):
         if isinstance(self._bins, collections.Mapping):
