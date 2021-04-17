@@ -9,12 +9,19 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.entities.CodeVersionEntity;
+import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.*;
+import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -25,6 +32,8 @@ public class FutureExperimentRunDAO {
   private final Executor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
+  private static final ModelDBHibernateUtil modelDBHibernateUtil =
+      ModelDBHibernateUtil.getInstance();
 
   private final AttributeHandler attributeHandler;
   private final KeyValueHandler hyperparametersHandler;
@@ -324,5 +333,73 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> artifactHandler.deleteArtifacts(runId, optionalKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<Void> logCodeVersion(LogExperimentRunCodeVersion request) {
+    final var runId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> internalLogCodeVersion(request), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  private InternalFuture<Void> internalLogCodeVersion(LogExperimentRunCodeVersion request) {
+    return jdbi.withHandle(
+            // Check if it existed before
+            handle ->
+                handle
+                    .createQuery(
+                        "select code_version_snapshot_id from experiment_run where id=:run_id")
+                    .bind("run_id", request.getId())
+                    .mapTo(Long.class)
+                    .findOne())
+        .thenAccept(
+            // Check if we can overwrite
+            maybeSnapshotId -> {
+              if (maybeSnapshotId.isPresent()) {
+                if (request.getOverwrite()) {
+                  try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                    final CodeVersionEntity entity =
+                        session.get(
+                            CodeVersionEntity.class,
+                            maybeSnapshotId.get(),
+                            LockMode.PESSIMISTIC_WRITE);
+                    Transaction transaction = session.beginTransaction();
+                    session.delete(entity);
+                    transaction.commit();
+                  }
+                } else {
+                  throw new AlreadyExistsException("Code version already logged");
+                }
+              }
+            },
+            executor)
+        .thenApply(
+            // Create the new snapshot using hibernate
+            unused -> {
+              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var snapshot =
+                    RdbmsUtils.generateCodeVersionEntity(
+                        ModelDBConstants.CODE_VERSION, request.getCodeVersion());
+                Transaction transaction = session.beginTransaction();
+                session.saveOrUpdate(snapshot);
+                transaction.commit();
+                return snapshot.getId();
+              }
+            },
+            executor)
+        .thenCompose(
+            // Save the snapshot to the ER
+            snapshotId ->
+                jdbi.useHandle(
+                    handle ->
+                        handle
+                            .createUpdate(
+                                "update experiment_run set code_version_snapshot_id=:code_id where id=:run_id")
+                            .bind("code_id", snapshotId)
+                            .bind("run_id", request.getId())
+                            .execute()),
+            executor);
   }
 }

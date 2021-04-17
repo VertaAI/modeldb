@@ -4,6 +4,7 @@ import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.stub.StreamObserver;
+
 import java.util.concurrent.Executor;
 
 public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
@@ -453,7 +454,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void logExperimentRunCodeVersion(
       LogExperimentRunCodeVersion request,
       StreamObserver<LogExperimentRunCodeVersion.Response> responseObserver) {
-    super.logExperimentRunCodeVersion(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logCodeVersion(request)
+              .thenApply(
+                  unused -> LogExperimentRunCodeVersion.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
