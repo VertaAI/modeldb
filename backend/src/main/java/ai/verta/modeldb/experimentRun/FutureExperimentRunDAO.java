@@ -522,6 +522,18 @@ public class FutureExperimentRunDAO {
                   .list();
             })
         .thenCompose(
+            builders -> {
+              final var ids = builders.stream().map(x -> x.getId()).collect(Collectors.toSet());
+              final var futureTags = tagsHandler.getTagsMap(ids);
+
+              return futureTags.thenApply(
+                  tags ->
+                      builders.stream()
+                          .map(builder -> builder.addAllTags(tags.get(builder.getId()))),
+                  executor);
+            },
+            executor)
+        .thenCompose(
             experimentRunBuilders ->
                 jdbi.withHandle(
                         handle -> {
@@ -540,7 +552,7 @@ public class FutureExperimentRunDAO {
                         count ->
                             FindExperimentRuns.Response.newBuilder()
                                 .addAllExperimentRuns(
-                                    experimentRunBuilders.stream()
+                                    experimentRunBuilders
                                         .map(ExperimentRun.Builder::build)
                                         .collect(Collectors.toList()))
                                 .setTotalRecords(count)
