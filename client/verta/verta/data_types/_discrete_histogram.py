@@ -4,8 +4,7 @@ from __future__ import division
 
 from ..external import six
 
-from scipy import spatial
-
+from .._internal_utils.importer import maybe_dependency
 from .._internal_utils import arg_handler
 
 from . import _VertaDataType
@@ -40,6 +39,10 @@ class DiscreteHistogram(_VertaDataType):
 
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, buckets, data):
+        self._scipy = maybe_dependency("scipy")
+        if self._scipy is None:
+            raise ImportError("scipy is not installed; try `pip install scipy`")
+
         if len(buckets) != len(set(buckets)):
             raise ValueError("`bucekts` elements must all be unique")
         if len(buckets) != len(data):
@@ -81,7 +84,7 @@ class DiscreteHistogram(_VertaDataType):
                 )
             )
 
-        return spatial.distance.cosine(
+        return self._scipy.spatial.distance.cosine(
             self.normalized_data(),
             other.normalized_data(),
         )

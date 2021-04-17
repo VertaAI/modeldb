@@ -6,9 +6,8 @@ import collections
 
 from ..external import six
 
-from scipy import spatial
-
 from .._internal_utils import arg_handler
+from .._internal_utils.importer import maybe_dependency
 
 from . import _VertaDataType
 
@@ -42,6 +41,10 @@ class FloatHistogram(_VertaDataType):
 
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, bucket_limits, data):
+        self._scipy = maybe_dependency("scipy")
+        if self._scipy is None:
+            raise ImportError("scipy is not installed; try `pip install scipy`")
+
         if len(bucket_limits) != len(data) + 1:
             raise ValueError(
                 "length of `bucket_limits` must be 1 greater than length of `data`"
@@ -82,7 +85,7 @@ class FloatHistogram(_VertaDataType):
                 )
             )
 
-        return spatial.distance.cosine(
+        return self._scipy.spatial.distance.cosine(
             self.normalized_data(),
             other.normalized_data(),
         )
