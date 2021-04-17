@@ -3,6 +3,7 @@ package ai.verta.modeldb.experimentRun;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.futures.FutureGrpc;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
 import java.util.concurrent.Executor;
@@ -44,14 +45,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void getExperimentRunsInProject(
       GetExperimentRunsInProject request,
       StreamObserver<GetExperimentRunsInProject.Response> responseObserver) {
-    super.getExperimentRunsInProject(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
   public void getExperimentRunsInExperiment(
       GetExperimentRunsInExperiment request,
       StreamObserver<GetExperimentRunsInExperiment.Response> responseObserver) {
-    super.getExperimentRunsInExperiment(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
@@ -72,14 +75,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void updateExperimentRunName(
       UpdateExperimentRunName request,
       StreamObserver<UpdateExperimentRunName.Response> responseObserver) {
-    super.updateExperimentRunName(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
   public void updateExperimentRunDescription(
       UpdateExperimentRunDescription request,
       StreamObserver<UpdateExperimentRunDescription.Response> responseObserver) {
-    super.updateExperimentRunDescription(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
@@ -653,45 +658,52 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void sortExperimentRuns(
       SortExperimentRuns request, StreamObserver<SortExperimentRuns.Response> responseObserver) {
-    super.sortExperimentRuns(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
   public void getTopExperimentRuns(
       TopExperimentRunsSelector request,
       StreamObserver<TopExperimentRunsSelector.Response> responseObserver) {
-    super.getTopExperimentRuns(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
   public void logJobId(LogJobId request, StreamObserver<LogJobId.Response> responseObserver) {
-    super.logJobId(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
   public void getJobId(GetJobId request, StreamObserver<GetJobId.Response> responseObserver) {
-    super.getJobId(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
   public void getChildrenExperimentRuns(
       GetChildrenExperimentRuns request,
       StreamObserver<GetChildrenExperimentRuns.Response> responseObserver) {
-    super.getChildrenExperimentRuns(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
   public void setParentExperimentRunId(
       SetParentExperimentRunId request,
       StreamObserver<SetParentExperimentRunId.Response> responseObserver) {
-    super.setParentExperimentRunId(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
   public void getExperimentRunsByDatasetVersionId(
       GetExperimentRunsByDatasetVersionId request,
       StreamObserver<GetExperimentRunsByDatasetVersionId.Response> responseObserver) {
-    super.getExperimentRunsByDatasetVersionId(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
@@ -727,19 +739,22 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void listCommitExperimentRuns(
       ListCommitExperimentRunsRequest request,
       StreamObserver<ListCommitExperimentRunsRequest.Response> responseObserver) {
-    super.listCommitExperimentRuns(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
   public void listBlobExperimentRuns(
       ListBlobExperimentRunsRequest request,
       StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
-    super.listBlobExperimentRuns(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 
   @Override
   public void cloneExperimentRun(
       CloneExperimentRun request, StreamObserver<CloneExperimentRun.Response> responseObserver) {
-    super.cloneExperimentRun(request, responseObserver);
+    responseObserver.onError(
+        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
   }
 }
