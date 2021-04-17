@@ -50,16 +50,11 @@ class Client(object):
             workspace = self._client.get_workspace()
 
         ctx = self._ctx
-        # TODO: use the context workspace and do not modify it through parameters on this method
         ctx.workspace_name = workspace
 
         resource_name = "MonitoredEntity"
-        # param_names = "`desc`, `tags`, `attrs`, `time_created`, or `public_within_org`"
-        # params = (desc, tags, attrs, time_created, public_within_org)
         if id is not None:
             entity = MonitoredEntity._get_by_id(self._conn, self._conf, id)
-            # check_unnecessary_params_warning(resource_name, "id {}".format(id),
-            #                                       param_names, params)
         else:
             entity = MonitoredEntity._get_or_create_by_name(
                 self._conn,
