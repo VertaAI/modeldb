@@ -94,7 +94,7 @@ class Client(object):
 
         Parameters
         ----------
-        name : string, optional
+        name : str, optional
             A unique name for this monitored entity.
         workspace: string, optional
             A workspace for this entity. Defaults to the client's default workspace.
