@@ -503,7 +503,11 @@ public class FutureExperimentRunDAO {
                 sql += " WHERE " + String.join(" AND ", conditions);
               }
 
-              var query = handle.createQuery(sql);
+              final var offset = (request.getPageNumber() - 1) * request.getPageLimit();
+              final var limit = request.getPageLimit();
+              sql += " LIMIT :limit OFFSET :offset";
+
+              var query = handle.createQuery(sql).bind("limit", limit).bind("offset", offset);
               binds.forEach(b -> b.accept(query));
 
               return query
