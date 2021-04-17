@@ -32,6 +32,7 @@ public class FutureExperimentRunDAO {
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
+  private final CodeVersionHandler codeVersionHandler;
   private final ArtifactHandler datasetHandler;
 
   public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
@@ -46,6 +47,7 @@ public class FutureExperimentRunDAO {
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
+    codeVersionHandler = new CodeVersionHandler(executor, jdbi);
     datasetHandler = new ArtifactHandler(executor, jdbi, "datasets", "ExperimentRunEntity");
   }
 
@@ -347,5 +349,21 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()), executor);
+  }
+
+  public InternalFuture<Void> logCodeVersion(LogExperimentRunCodeVersion request) {
+    final var runId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> codeVersionHandler.logCodeVersion(request), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<Optional<CodeVersion>> getCodeVersion(GetExperimentRunCodeVersion request) {
+    final var runId = request.getId();
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> codeVersionHandler.getCodeVersion(request), executor);
   }
 }
