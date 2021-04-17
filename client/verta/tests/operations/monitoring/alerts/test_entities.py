@@ -83,6 +83,7 @@ class TestIntegration:
 
 class TestAlert:
     """Tests that aren't specific to an alerter type."""
+
     def test_update_last_evaluated_at(self, monitored_entity):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
@@ -104,6 +105,47 @@ class TestAlert:
         alert._update_last_evaluated_at(yesterday)
         alert._fetch_with_no_cache()
         assert alert._msg.last_evaluated_at_millis == yesterday_millis
+
+    def test_creation_datetime(self, monitored_entity, strs, created_entities):
+        strs = iter(strs)
+        alerts = monitored_entity.alerts
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
+        sample_query = SummarySampleQuery()
+
+        created_at = time_utils.now() - datetime.timedelta(weeks=1)
+        updated_at = time_utils.now() - datetime.timedelta(days=1)
+        last_evaluated_at = time_utils.now() - datetime.timedelta(hours=1)
+        created_at_millis = time_utils.epoch_millis(created_at)
+        updated_at_millis = time_utils.epoch_millis(updated_at)
+        last_evaluated_at_millis = time_utils.epoch_millis(last_evaluated_at)
+
+        # as datetime
+        alert = alerts.create(
+            next(strs),
+            alerter,
+            sample_query,
+            created_at=created_at,
+            updated_at=updated_at,
+            last_evaluated_at=last_evaluated_at,
+        )
+        created_entities.append(alert)
+        assert alert._msg.created_at_millis == created_at_millis
+        assert alert._msg.updated_at_millis == updated_at_millis
+        assert alert._msg.last_evaluated_at_millis == last_evaluated_at_millis
+
+        # as millis
+        alert = alerts.create(
+            next(strs),
+            alerter,
+            sample_query,
+            created_at=created_at_millis,
+            updated_at=updated_at_millis,
+            last_evaluated_at=last_evaluated_at_millis,
+        )
+        created_entities.append(alert)
+        assert alert._msg.created_at_millis == created_at_millis
+        assert alert._msg.updated_at_millis == updated_at_millis
+        assert alert._msg.last_evaluated_at_millis == last_evaluated_at_millis
 
 
 class TestFixed:

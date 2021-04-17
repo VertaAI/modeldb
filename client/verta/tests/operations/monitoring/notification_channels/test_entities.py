@@ -1,9 +1,47 @@
 # -*- coding: utf-8 -*-
 
+import datetime
+
+from verta._internal_utils import time_utils
 from verta.operations.monitoring.notification_channel import (
     SlackNotificationChannel,
 )
 from verta.operations.monitoring.notification_channel import _entities
+
+
+class TestNotificationChannel:
+    """Tests that aren't specific to a channel type."""
+
+    def test_creation_datetime(self, client, strs, created_entities):
+        strs = iter(strs)
+        notification_channels = client.operations.notification_channels
+
+        created_at = time_utils.now() - datetime.timedelta(weeks=1)
+        updated_at = time_utils.now() - datetime.timedelta(days=1)
+        created_at_millis = time_utils.epoch_millis(created_at)
+        updated_at_millis = time_utils.epoch_millis(updated_at)
+
+        # as datetime
+        channel = notification_channels.create(
+            next(strs),
+            SlackNotificationChannel(next(strs)),
+            created_at,
+            updated_at,
+        )
+        created_entities.append(channel)
+        assert channel._msg.created_at_millis == created_at_millis
+        assert channel._msg.updated_at_millis == updated_at_millis
+
+        # as millis
+        channel = notification_channels.create(
+            next(strs),
+            SlackNotificationChannel(next(strs)),
+            created_at_millis,
+            updated_at_millis,
+        )
+        created_entities.append(channel)
+        assert channel._msg.created_at_millis == created_at_millis
+        assert channel._msg.updated_at_millis == updated_at_millis
 
 
 class TestSlack:
