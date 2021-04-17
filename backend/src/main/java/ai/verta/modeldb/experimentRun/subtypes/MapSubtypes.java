@@ -1,7 +1,13 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
+import ai.verta.modeldb.common.futures.InternalFuture;
+
 import java.util.*;
+import java.util.concurrent.Executor;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MapSubtypes<T> {
   private Map<String, List<T>> map = null;
@@ -26,5 +32,15 @@ public class MapSubtypes<T> {
 
   public List<T> get(String key) {
     return map.computeIfAbsent(key, k -> new LinkedList<>());
+  }
+
+  public static <T, U, V> InternalFuture<Stream<V>> combine(
+      InternalFuture<Stream<T>> base,
+      InternalFuture<MapSubtypes<U>> map,
+      Function<T, String> keyGetter,
+      BiFunction<T, List<U>, V> applier,
+      Executor executor) {
+    return base.thenCombine(
+        map, (b, m) -> b.map(v -> applier.apply(v, m.get(keyGetter.apply(v)))), executor);
   }
 }
