@@ -344,6 +344,13 @@ public class FutureExperimentRunDAO {
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
+  public InternalFuture<Optional<CodeVersion>> getCodeVersion(GetExperimentRunCodeVersion request) {
+    final var runId = request.getId();
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> internalGetCodeVersion(request), executor);
+  }
+
   private InternalFuture<Void> internalLogCodeVersion(LogExperimentRunCodeVersion request) {
     // TODO: input validation
     return jdbi.withHandle(
@@ -401,6 +408,33 @@ public class FutureExperimentRunDAO {
                             .bind("code_id", snapshotId)
                             .bind("run_id", request.getId())
                             .execute()),
+            executor);
+  }
+
+  private InternalFuture<Optional<CodeVersion>> internalGetCodeVersion(
+      GetExperimentRunCodeVersion request) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "select code_version_snapshot_id from experiment_run where id=:run_id")
+                    .bind("run_id", request.getId())
+                    .mapTo(Long.class)
+                    .findOne())
+        .thenApply(
+            maybeSnapshotId ->
+                maybeSnapshotId.map(
+                    snapshotId -> {
+                      try (Session session =
+                          modelDBHibernateUtil.getSessionFactory().openSession()) {
+                        final CodeVersionEntity entity =
+                            session.get(
+                                CodeVersionEntity.class,
+                                maybeSnapshotId.get(),
+                                LockMode.PESSIMISTIC_WRITE);
+                        return entity.getProtoObject();
+                      }
+                    }),
             executor);
   }
 }
