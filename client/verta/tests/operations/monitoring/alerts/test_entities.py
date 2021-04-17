@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from verta._internal_utils import _utils
+import datetime
+
+from verta._internal_utils import (
+    _utils,
+    time_utils,
+)
+from verta.common import comparison
 from verta.operations.monitoring.alert import (
     FixedAlerter,
     ReferenceAlerter,
@@ -22,7 +28,7 @@ class TestIntegration:
     def test_add_notification_channels(self, client, monitored_entity):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(0.7)
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
         sample_query = SummarySampleQuery()
 
         channel1 = client.operations.notification_channels.create(
@@ -40,23 +46,25 @@ class TestIntegration:
             sample_query,
             notification_channels=[channel1],
         )
-        assert alert._msg.notification_channels.keys() == {channel1.id}
+        retrieved_channel_ids = alert._msg.notification_channels.keys()
+        assert set(retrieved_channel_ids) == {channel1.id}
 
         alert.add_notification_channels([channel2])
         alert._refresh_cache()
-        assert alert._msg.notification_channels.keys() == {channel1.id, channel2.id}
+        retrieved_channel_ids = alert._msg.notification_channels.keys()
+        assert set(retrieved_channel_ids) == {channel1.id, channel2.id}
 
     def test_set_status(self, monitored_entity, summary_sample):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(0.7)
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
         sample_query = SummarySampleQuery()
 
         alert = alerts.create(name, alerter, sample_query)
         assert alert.status == Ok()
 
-        alert.set_status(Alerting(), summary_sample)
-        assert alert.status == Alerting()
+        alert.set_status(Alerting([summary_sample]))
+        assert alert.status == Alerting([summary_sample])
 
         alert.set_status(Ok())
         assert alert.status == Ok()
@@ -64,7 +72,7 @@ class TestIntegration:
     def test_summary_sample_query(self, monitored_entity, summary_sample):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(.7)
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
         sample_query = SummarySampleQuery()
 
         alert = alerts.create(name, alerter, sample_query)
@@ -73,11 +81,36 @@ class TestIntegration:
         assert created_query_proto == retrieved_query_proto
 
 
+class TestAlert:
+    """Tests that aren't specific to an alerter type."""
+    def test_update_last_evaluated_at(self, monitored_entity):
+        alerts = monitored_entity.alerts
+        name = _utils.generate_default_name()
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
+        sample_query = SummarySampleQuery()
+
+        alert = alerts.create(name, alerter, sample_query)
+        alert._fetch_with_no_cache()
+        initial = alert._msg.last_evaluated_at_millis
+
+        alert._update_last_evaluated_at()
+        alert._fetch_with_no_cache()
+        assert alert._msg.last_evaluated_at_millis > initial
+
+        yesterday = time_utils.now() - datetime.timedelta(days=1)
+        yesterday_millis = time_utils.epoch_millis(yesterday)
+        # TODO: remove following line when backend stops round to nearest sec
+        yesterday_millis = round(yesterday_millis, -3)
+        alert._update_last_evaluated_at(yesterday)
+        alert._fetch_with_no_cache()
+        assert alert._msg.last_evaluated_at_millis == yesterday_millis
+
+
 class TestFixed:
     def test_crud(self, client, monitored_entity):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(0.7)
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
         sample_query = SummarySampleQuery()
 
         created_alert = alerts.create(name, alerter, sample_query)
@@ -89,6 +122,7 @@ class TestFixed:
         assert retrieved_alert.id == client_retrieved_alert.id
         assert isinstance(retrieved_alert, _entities.Alert)
         assert retrieved_alert._msg.alerter_type == alerter._TYPE
+        assert retrieved_alert._msg.alerter_fixed == alerter._as_proto()
 
         listed_alerts = alerts.list()
         assert created_alert.id in map(lambda a: a.id, listed_alerts)
@@ -101,7 +135,7 @@ class TestFixed:
         """__repr__() does not raise exceptions"""
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(0.7)
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
         sample_query = SummarySampleQuery()
 
         created_alert = alerts.create(name, alerter, sample_query)

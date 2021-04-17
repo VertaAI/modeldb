@@ -44,6 +44,7 @@ release = ''
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx_copybutton',
     'sphinx_click',
@@ -62,6 +63,8 @@ autodoc_mock_imports = [
     'xgboost',
     'yaml',
 ]
+
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 napoleon_use_rtype = False
 napoleon_use_ivar = True

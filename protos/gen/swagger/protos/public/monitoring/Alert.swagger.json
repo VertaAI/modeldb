@@ -455,11 +455,15 @@
       "properties": {
         "threshold": {
           "type": "number",
-          "format": "float"
+          "format": "float",
+          "title": "Alert is fired if summary sample is $operator $threshold"
         },
         "reference_sample_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "operator": {
+          "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
     },
@@ -629,6 +633,9 @@
         "workspace_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
         },
         "page_number": {
           "type": "integer",
@@ -866,12 +873,23 @@
         "status": {
           "$ref": "#/definitions/AlertStatusEnumAlertStatus"
         },
-        "violating_summary_sample_ids": {
+        "alerting_sample_ids": {
           "type": "array",
           "items": {
             "type": "string",
             "format": "uint64"
           }
+        },
+        "ok_sample_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "clear_alerting_sample_ids": {
+          "type": "boolean",
+          "format": "boolean"
         }
       },
       "title": "Allow the alerter to trigger an alert (in which case it shares what is the sample that failed)\nor change the status (most likely to OK if was triggering before)\nWe provide this in addition to UpdateAlertRequest so that we can do the small change to this field atomically"

@@ -31,7 +31,9 @@ class Labels:
             :rtype: list
         """
         summary_filter = self._build_summary_filter(**kwargs)
-        msg = FindSampleLabelsRequest(filter=summary_filter)
+        msg = FindSampleLabelsRequest(
+            filter=summary_filter, page_number=1, page_limit=-1,
+        )
         endpoint = "/api/v1/labels/findLabels"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         proto = self._conn.must_proto_response(
@@ -57,7 +59,10 @@ class Labels:
             keys = kwargs['keys']
         else:
             keys = []
-        msg = FindSampleLabelValuesRequest(filter=summary_filter, labels=keys)
+        msg = FindSampleLabelValuesRequest(
+            filter=summary_filter, labels=keys,
+            page_number=1, page_limit=-1,
+        )
         endpoint = "/api/v1/labels/findLabelValues"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         proto = self._conn.must_proto_response(

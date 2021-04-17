@@ -677,6 +677,9 @@
           "type": "string",
           "format": "uint64"
         },
+        "workspace_name": {
+          "type": "string"
+        },
         "page_number": {
           "type": "integer",
           "format": "int32",
@@ -788,6 +791,14 @@
           "type": "string"
         },
         "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "created_at_timestamp_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "updated_at_timestamp_millis": {
           "type": "string",
           "format": "uint64"
         }

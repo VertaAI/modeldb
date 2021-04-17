@@ -8,23 +8,30 @@ from verta.operations.monitoring.alert import (
     FixedAlerter,
     ReferenceAlerter,
 )
+from verta.common.comparison import _VertaComparison
 
 
 class TestFixed:
-    @hypothesis.given(threshold=st.floats(allow_nan=False))
-    def test_create(self, threshold):
-        alerter = FixedAlerter(threshold)
-        assert alerter._threshold == threshold
+    @hypothesis.given(
+        comparison=st.sampled_from(_VertaComparison.__subclasses__()),
+        threshold=st.floats(allow_nan=False),
+    )
+    def test_create(self, comparison, threshold):
+        alerter = FixedAlerter(comparison(threshold))
 
         msg = _AlertService.AlertFixed(
             threshold=threshold,
+            operator=comparison._OPERATOR,
         )
         assert alerter._as_proto() == msg
 
-    @hypothesis.given(threshold=st.floats(allow_nan=False))
-    def test_repr(self, threshold):
+    @hypothesis.given(
+        comparison=st.sampled_from(_VertaComparison.__subclasses__()),
+        threshold=st.floats(allow_nan=False),
+    )
+    def test_repr(self, comparison, threshold):
         """__repr__() does not raise exceptions"""
-        alerter = FixedAlerter(threshold)
+        alerter = FixedAlerter(comparison(threshold))
 
         assert repr(alerter)
 
