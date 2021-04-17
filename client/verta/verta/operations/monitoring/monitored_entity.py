@@ -71,7 +71,7 @@ class MonitoredEntity(entity._ModelDBEntity):
         results = conn.maybe_proto_response(response, Message.Response)
         count = results.total_records if results else 0
         if count > 1:
-            print("Warning: found more than one monitored entity with name {}".format(name))
+            warnings.warn("found more than one monitored entity with name {}".format(name))
         if results.monitored_entities:
             return results.monitored_entities[0]
 
