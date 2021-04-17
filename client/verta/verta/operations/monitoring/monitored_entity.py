@@ -8,7 +8,7 @@ from verta._protos.public.monitoring import (
     DataMonitoringService_pb2 as _DataMonitoringService,
 )
 
-from verta._tracking import (entity, _Context)
+from verta._tracking import entity, _Context
 from verta._internal_utils import (
     _utils,
 )
@@ -65,16 +65,19 @@ class MonitoredEntity(entity._ModelDBEntity):
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace=None):
         Message = _DataMonitoringService.FindMonitoredEntityRequest
-        msg = Message(names=[name], workspace_name=workspace, page_number=1, page_limit=-1)
+        msg = Message(
+            names=[name], workspace_name=workspace, page_number=1, page_limit=-1
+        )
         endpoint = "/api/v1/monitored_entity/findMonitoredEntity"
         response = conn.make_proto_request("POST", endpoint, body=msg)
         results = conn.maybe_proto_response(response, Message.Response)
         count = results.total_records if results else 0
         if count > 1:
-            warnings.warn("found more than one monitored entity with name {}".format(name))
+            warnings.warn(
+                "found more than one monitored entity with name {}".format(name)
+            )
         if results.monitored_entities:
             return results.monitored_entities[0]
-
 
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name):
@@ -102,7 +105,6 @@ class MonitoredEntity(entity._ModelDBEntity):
 
     def _update(self, msg, response_proto, endpoint, method):
         raise NotImplementedError()
-
 
     def delete(self):
         msg = _DataMonitoringService.DeleteMonitoredEntityRequest(id=self.id)
