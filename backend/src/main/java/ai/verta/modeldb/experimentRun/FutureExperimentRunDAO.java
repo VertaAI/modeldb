@@ -13,11 +13,6 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.*;
 import ai.verta.uac.*;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -288,6 +283,9 @@ public class FutureExperimentRunDAO {
           }
 
           switch (action) {
+            case DELETE:
+              return checkProjectPermission(
+                  maybeProjectIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
             default:
               return checkProjectPermission(maybeProjectIds, action);
           }
@@ -295,7 +293,7 @@ public class FutureExperimentRunDAO {
         executor);
   }
 
-  public InternalFuture<Boolean> deleteExperimentRuns(DeleteExperimentRuns request) {
+  public InternalFuture<Void> deleteExperimentRuns(DeleteExperimentRuns request) {
     final var runIds = request.getIdsList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -312,10 +310,9 @@ public class FutureExperimentRunDAO {
         .thenCompose(
             unused ->
                 checkPermission(
-                    request.getIdsList(), ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+                    request.getIdsList(), ModelDBActionEnum.ModelDBServiceActions.DELETE),
             executor)
-        .thenCompose(unused -> deleteExperimentRuns(runIds), executor)
-        .thenCompose(unused -> InternalFuture.completedInternalFuture(true), executor);
+        .thenCompose(unused -> deleteExperimentRuns(runIds), executor);
   }
 
   private InternalFuture<Void> deleteExperimentRuns(List<String> runIds) {

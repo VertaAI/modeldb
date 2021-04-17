@@ -4,6 +4,7 @@ import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.stub.StreamObserver;
+
 import java.util.concurrent.Executor;
 
 public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
@@ -622,7 +623,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
           futureExperimentRunDAO
               .deleteExperimentRuns(request)
               .thenApply(
-                  status -> DeleteExperimentRuns.Response.newBuilder().setStatus(status).build(),
+                  unused -> DeleteExperimentRuns.Response.newBuilder().setStatus(true).build(),
                   executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
