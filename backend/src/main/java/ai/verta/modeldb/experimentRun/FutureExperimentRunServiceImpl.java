@@ -470,7 +470,21 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void getExperimentRunCodeVersion(
       GetExperimentRunCodeVersion request,
       StreamObserver<GetExperimentRunCodeVersion.Response> responseObserver) {
-    super.getExperimentRunCodeVersion(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .getCodeVersion(request)
+              .thenApply(
+                  codeVersion ->
+                      GetExperimentRunCodeVersion.Response.newBuilder()
+                          .setCodeVersion(
+                              codeVersion.orElseGet(() -> CodeVersion.newBuilder().build()))
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
