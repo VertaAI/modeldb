@@ -10,10 +10,7 @@ from ...._protos.public.monitoring import Alert_pb2 as _AlertService
 # TODO: move into separate files
 @six.add_metaclass(abc.ABCMeta)
 class _NotificationChannel(object):
-    """
-    Base class for a notification channel. Not for external use.
-
-    """
+    """Base class for a notification channel. Not for external use."""
 
     _TYPE = _AlertService.NotificationChannelTypeEnum.UNKNOWN
 

@@ -135,7 +135,7 @@ class NotificationChannel(entity._ModelDBEntity):
 
     def delete(self):
         """
-        Deletes this notification channel.
+        Delete this notification channel.
 
         Returns
         -------
@@ -179,7 +179,7 @@ class NotificationChannels(object):
         updated_at=None,
     ):
         """
-        Creates a new notification channel.
+        Create a new notification channel.
 
         Parameters
         ----------
@@ -226,7 +226,7 @@ class NotificationChannels(object):
 
     def get(self, name=None, id=None):
         """
-        Gets an existing notification channel.
+        Get an existing notification channel.
 
         Either `name` or `id` can be provided but not both.
 
@@ -261,7 +261,7 @@ class NotificationChannels(object):
     # TODO: a proper find
     def list(self):
         """
-        Returns all accesible notification channels.
+        Return all accesible notification channels.
 
         Returns
         -------
@@ -281,7 +281,12 @@ class NotificationChannels(object):
 
     def delete(self, channels):
         """
-        Deletes the given notification channels in a single request.
+        Delete the given notification channels in a single request.
+
+        Parameters
+        ----------
+        list of :class:`NotificationChannel`
+            Notification channels.
 
         Returns
         -------
