@@ -240,9 +240,9 @@ class Alerts(object):
         alerter,
         summary_sample_query,
         notification_channels=None,
-        created_at_millis=None,
-        updated_at_millis=None,
-        last_evaluated_at_millis=None,
+        created_at=None,
+        updated_at=None,
+        last_evaluated_at=None,
     ):
         if self._monitored_entity_id is None:
             raise RuntimeError(
@@ -265,9 +265,9 @@ class Alerts(object):
             alerter=alerter,
             summary_sample_query=summary_sample_query,
             notification_channels=notification_channels,
-            created_at_millis=created_at_millis,
-            updated_at_millis=updated_at_millis,
-            last_evaluated_at_millis=last_evaluated_at_millis,
+            created_at_millis=time_utils.epoch_millis(created_at),
+            updated_at_millis=time_utils.epoch_millis(updated_at),
+            last_evaluated_at_millis=time_utils.epoch_millis(last_evaluated_at),
         )
 
     def get(self, name=None, id=None):
