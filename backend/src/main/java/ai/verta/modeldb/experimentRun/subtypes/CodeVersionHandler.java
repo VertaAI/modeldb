@@ -1,7 +1,6 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.GetExperimentRunCodeVersion;
 import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -32,13 +31,13 @@ public class CodeVersionHandler {
     this.jdbi = jdbi;
   }
 
-  public InternalFuture<Optional<CodeVersion>> getCodeVersion(GetExperimentRunCodeVersion request) {
+  public InternalFuture<Optional<CodeVersion>> getCodeVersion(String entityId) {
     return jdbi.withHandle(
             handle ->
                 handle
                     .createQuery(
                         "select code_version_snapshot_id from experiment_run where id=:run_id")
-                    .bind("run_id", request.getId())
+                    .bind("run_id", entityId)
                     .mapTo(Long.class)
                     .findOne())
         .thenApply(
