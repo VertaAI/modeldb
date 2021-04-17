@@ -487,6 +487,16 @@ class Alerts(object):
 
 
 class AlertHistoryItem(object):
+    """
+    The history of an alert's status changes.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        alert.history
+
+    """
     def __init__(self, msg):
         self._event_time = time_utils.datetime_from_millis(msg.event_time_millis)
         self._status = status_module._AlertStatus._from_proto(

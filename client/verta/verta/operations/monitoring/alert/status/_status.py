@@ -39,7 +39,7 @@ class _AlertStatus(object):
     @classmethod
     def _from_proto(cls, msg, sample_ids=None):
         """
-        Returns an alert status object.
+        Return an alert status object.
 
         Parameters
         ----------
