@@ -466,25 +466,64 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void logArtifact(
       LogArtifact request, StreamObserver<LogArtifact.Response> responseObserver) {
-    super.logArtifact(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureExperimentRunDAO
+              .logArtifacts(
+                  LogArtifacts.newBuilder()
+                      .setId(request.getId())
+                      .addArtifacts(request.getArtifact())
+                      .build())
+              .thenApply(unused -> LogArtifact.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void logArtifacts(
       LogArtifacts request, StreamObserver<LogArtifacts.Response> responseObserver) {
-    super.logArtifacts(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureExperimentRunDAO
+              .logArtifacts(request)
+              .thenApply(unused -> LogArtifacts.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getArtifacts(
       GetArtifacts request, StreamObserver<GetArtifacts.Response> responseObserver) {
-    super.getArtifacts(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureExperimentRunDAO
+              .getArtifacts(request)
+              .thenApply(
+                  artifacts ->
+                      GetArtifacts.Response.newBuilder().addAllArtifacts(artifacts).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteArtifact(
       DeleteArtifact request, StreamObserver<DeleteArtifact.Response> responseObserver) {
-    super.deleteArtifact(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureExperimentRunDAO
+              .deleteArtifacts(request)
+              .thenApply(deleted -> DeleteArtifact.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
