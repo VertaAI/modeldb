@@ -181,11 +181,23 @@ class Alert(entity._ModelDBEntity):
         self._clear_cache()
         return True
 
+    def _update_last_evaluated_at(self, last_evaluated_at=None):
+        if last_evaluated_at is None:
+            last_evaluated_at = time_utils.now()
+
+        alert_msg = _AlertService.Alert()
+        self._fetch_with_no_cache()
+        alert_msg.CopyFrom(self._msg)
+        alert_msg.last_evaluated_at_millis = time_utils.epoch_millis(last_evaluated_at)
+
+        self._update(alert_msg)
+
     def add_notification_channels(self, notification_channels):
         for channel in notification_channels:
             self._validate_notification_channel(channel)
 
         alert_msg = _AlertService.Alert()
+        self._fetch_with_no_cache()
         alert_msg.CopyFrom(self._msg)
         alert_msg.notification_channels.update(
             {channel.id: True for channel in notification_channels}

@@ -17,7 +17,7 @@ def now_in_millis():
 
 def epoch_millis(dt):
     if isinstance(dt, datetime):
-        return round((dt - UNIX_EPOCH).total_seconds() * 1000)
+        return int(round((dt - UNIX_EPOCH).total_seconds() * 1000))
     elif type(dt) == int:
         return dt
     else:
