@@ -32,7 +32,8 @@ class MonitoredEntity(entity._ModelDBEntity):
         """Intended for internal use only.
 
         Users should obtain a monitored entity through the
-        ``get_or_create_monitored_entity`` method of the operations sub-client.
+        :meth:`~verta.opertaions.monitoring.client.Client.get_or_create_monitored_entity`
+        method of the operations sub-client.
 
         Parameters
         ----------
