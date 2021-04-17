@@ -479,12 +479,12 @@ public class FutureExperimentRunDAO {
     final var binds = new LinkedList<Consumer<Query>>();
 
     if (!request.getProjectId().isEmpty()) {
-      conditions.push("project_id=:request_project_id)");
+      conditions.push("project_id=:request_project_id");
       binds.push(q -> q.bind("request_project_id", request.getProjectId()));
     }
 
     if (!request.getExperimentId().isEmpty()) {
-      conditions.push("experiment_id=:request_experiment_id)");
+      conditions.push("experiment_id=:request_experiment_id");
       binds.push(q -> q.bind("request_experiment_id", request.getExperimentId()));
     }
 

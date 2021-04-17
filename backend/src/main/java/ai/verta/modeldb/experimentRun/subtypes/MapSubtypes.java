@@ -1,7 +1,6 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class MapSubtypes<T> {
   private Map<String, List<T>> map = null;
@@ -9,16 +8,16 @@ public class MapSubtypes<T> {
   private MapSubtypes() {}
 
   static <T> MapSubtypes<T> from(List<AbstractMap.SimpleEntry<String, T>> entries) {
-    final var map =
-        entries.stream()
-            .collect(
-                Collectors.toMap(
-                    e -> e.getKey(),
-                    e -> Collections.singletonList(e.getValue()),
-                    (x, y) -> {
-                      x.addAll(y);
-                      return x;
-                    }));
+    final var map = new HashMap<String, List<T>>();
+    for (final var entry : entries) {
+      final var key = entry.getKey();
+      final var val = entry.getValue();
+      if (!map.containsKey(key)) {
+        map.put(key, new LinkedList<>());
+      }
+      map.get(key).add(val);
+    }
+
     final var ret = new MapSubtypes<T>();
     ret.map = map;
     return ret;

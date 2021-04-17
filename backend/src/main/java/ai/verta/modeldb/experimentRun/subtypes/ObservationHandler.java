@@ -91,7 +91,7 @@ public class ObservationHandler {
                             + " from observation as o"
                             + " join keyvalue as k"
                             + " on o.keyvaluemapping_id = k.id"
-                            + " where o.experiment_run_id in (<run_ids>) and entity_name = \"ExperimentRunEntity\" and k.entity_name IS NULL")
+                            + " where o.experiment_run_id in (<run_ids>) and o.entity_name = \"ExperimentRunEntity\" and k.entity_name IS NULL")
                     .bindList("run_ids", runIds)
                     .map(
                         (rs, ctx) -> {

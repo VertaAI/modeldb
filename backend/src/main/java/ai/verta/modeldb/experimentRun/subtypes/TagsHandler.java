@@ -60,7 +60,7 @@ public class TagsHandler {
                             + " as entity_id from tag_mapping "
                             + "where entity_name=:entity_name and "
                             + entityIdReferenceColumn
-                            + " in (<entity_ids>")
+                            + " in (<entity_ids>)")
                     .bindList("entity_ids", entityIds)
                     .bind("entity_name", entityName)
                     .map(
