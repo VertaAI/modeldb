@@ -54,14 +54,7 @@ public class FutureExperimentRunDAO {
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     codeVersionHandler = new CodeVersionHandler(executor, jdbi);
-    datasetHandler =
-        new DatasetHandler(
-            executor,
-            jdbi,
-            "ExperimentRunEntity",
-            codeVersionHandler,
-            artifactStoreDAO,
-            datasetVersionDAO);
+    datasetHandler = new DatasetHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler =
         new ArtifactHandler(
             executor,
