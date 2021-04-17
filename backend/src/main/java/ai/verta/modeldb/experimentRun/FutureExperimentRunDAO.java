@@ -11,20 +11,13 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
-import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
-import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
-import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
-import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.experimentRun.subtypes.*;
 import ai.verta.uac.*;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.Executor;
 
 public class FutureExperimentRunDAO {
   private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
@@ -294,9 +287,10 @@ public class FutureExperimentRunDAO {
   public InternalFuture<List<Artifact>> getArtifacts(GetArtifacts request) {
     final var runId = request.getId();
     final var key = request.getKey();
+    Optional<String> maybeKey = key.isEmpty() ? Optional.empty() : Optional.of(key);
 
     return checkPermission(runId, ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> artifactHandler.getArtifacts(runId, key), executor);
+        .thenCompose(unused -> artifactHandler.getArtifacts(runId, maybeKey), executor);
   }
 
   public InternalFuture<Void> deleteArtifacts(DeleteArtifact request) {

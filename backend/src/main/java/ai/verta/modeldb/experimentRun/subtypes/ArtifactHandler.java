@@ -7,11 +7,12 @@ import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ArtifactHandler {
   private static Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
@@ -44,7 +45,7 @@ public class ArtifactHandler {
     }
   }
 
-  public InternalFuture<List<Artifact>> getArtifacts(String entityId, String key) {
+  public InternalFuture<List<Artifact>> getArtifacts(String entityId, Optional<String> maybeKey) {
     var currentFuture =
         InternalFuture.runAsync(
             () -> {
@@ -64,7 +65,7 @@ public class ArtifactHandler {
                           + entityIdReferenceColumn
                           + "=:entity_id";
 
-                  if (!key.isEmpty()) {
+                  if (!maybeKey.isPresent()) {
                     queryStr = queryStr + " AND ar_key=:ar_key ";
                   }
 
@@ -74,8 +75,8 @@ public class ArtifactHandler {
                           .bind("entity_id", entityId)
                           .bind("field_type", fieldType)
                           .bind("entity_name", entityName);
-                  if (!key.isEmpty()) {
-                    query.bind("ar_key", key);
+                  if (!maybeKey.isPresent()) {
+                    query.bind("ar_key", maybeKey.get());
                   }
                   List<Artifact> artifacts =
                       query
