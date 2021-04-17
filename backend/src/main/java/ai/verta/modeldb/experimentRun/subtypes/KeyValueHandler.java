@@ -93,7 +93,7 @@ public class KeyValueHandler {
                             + " where entity_name=:entity_name and field_type=:field_type and "
                             + entityIdReferenceColumn
                             + " in (<entity_ids>)")
-                    .bind("entity_ids", entityIds)
+                    .bindList("entity_ids", entityIds)
                     .bind("field_type", fieldType)
                     .bind("entity_name", entityName)
                     .map(

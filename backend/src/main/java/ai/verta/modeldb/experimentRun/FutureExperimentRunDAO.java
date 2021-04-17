@@ -482,9 +482,6 @@ public class FutureExperimentRunDAO {
 
     // TODO: get code version
     // TODO: get environment
-    // TODO: get attributes
-    // TODO: get artifacts
-    // TODO: get datasets
     // TODO: get observations
     // TODO: get features?
     // TODO: get job id?
@@ -559,6 +556,46 @@ public class FutureExperimentRunDAO {
                                   buildersStream.map(
                                       builder ->
                                           builder.addAllMetrics(metrics.get(builder.getId()))),
+                              executor),
+                      executor);
+
+              // Get attributes
+              final var futureAttributes = attributeHandler.getKeyValuesMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCompose(
+                      buildersStream ->
+                          futureAttributes.thenApply(
+                              attributes ->
+                                  buildersStream.map(
+                                      builder ->
+                                          builder.addAllAttributes(
+                                              attributes.get(builder.getId()))),
+                              executor),
+                      executor);
+
+              // Get artifacts
+              final var futureArtifacts = artifactHandler.getArtifactsMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCompose(
+                      buildersStream ->
+                          futureArtifacts.thenApply(
+                              artifacts ->
+                                  buildersStream.map(
+                                      builder ->
+                                          builder.addAllArtifacts(artifacts.get(builder.getId()))),
+                              executor),
+                      executor);
+
+              // Get datasets
+              final var futureDatasets = datasetHandler.getArtifactsMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCompose(
+                      buildersStream ->
+                          futureDatasets.thenApply(
+                              datasets ->
+                                  buildersStream.map(
+                                      builder ->
+                                          builder.addAllDatasets(datasets.get(builder.getId()))),
                               executor),
                       executor);
 

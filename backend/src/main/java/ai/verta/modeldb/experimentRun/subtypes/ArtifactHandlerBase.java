@@ -8,8 +8,7 @@ import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
@@ -120,6 +119,64 @@ public class ArtifactHandlerBase {
                   return artifacts;
                 }),
         executor);
+  }
+
+  public InternalFuture<Map<String, List<Artifact>>> getArtifactsMap(Set<String> entityIds) {
+    return jdbi.withHandle(
+            handle -> {
+              var queryStr =
+                  "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, "
+                      + entityIdReferenceColumn
+                      + " as entity_id from "
+                      + getTableName()
+                      + " where entity_name=:entity_name and field_type=:field_type and "
+                      + entityIdReferenceColumn
+                      + " in (<entity_ids>)";
+
+              var query =
+                  handle
+                      .createQuery(queryStr)
+                      .bindList("entity_ids", entityIds)
+                      .bind("field_type", fieldType)
+                      .bind("entity_name", entityName);
+
+              return query
+                  .map(
+                      (rs, ctx) ->
+                          new AbstractMap.SimpleEntry<>(
+                              rs.getString("entity_id"),
+                              Artifact.newBuilder()
+                                  .setKey(rs.getString("k"))
+                                  .setPath(rs.getString("p"))
+                                  .setArtifactTypeValue(rs.getInt("at"))
+                                  .setPathOnly(rs.getBoolean("po"))
+                                  .setLinkedArtifactId(rs.getString("lai"))
+                                  .setFilenameExtension(rs.getString("fe"))
+                                  .build()))
+                  .list();
+            })
+        .thenApply(
+            listEntries -> {
+              final var ret =
+                  listEntries.stream()
+                      .collect(
+                          Collectors.toMap(
+                              e -> e.getKey(),
+                              e -> Collections.singletonList(e.getValue()),
+                              (x, y) -> {
+                                x.addAll(y);
+                                return x;
+                              }));
+
+              for (final var id : entityIds) {
+                if (!ret.containsKey(id)) {
+                  ret.put(id, new LinkedList<>());
+                }
+              }
+
+              return ret;
+            },
+            executor);
   }
 
   public InternalFuture<Void> logArtifacts(
