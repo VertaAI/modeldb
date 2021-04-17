@@ -4,11 +4,13 @@ import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.*;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.*;
@@ -33,9 +35,14 @@ public class FutureExperimentRunDAO {
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
   private final CodeVersionHandler codeVersionHandler;
-  private final ArtifactHandler datasetHandler;
+  private final DatasetHandler datasetHandler;
 
-  public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
+  public FutureExperimentRunDAO(
+      Executor executor,
+      FutureJdbi jdbi,
+      UAC uac,
+      ArtifactStoreDAO artifactStoreDAO,
+      DatasetVersionDAO datasetVersionDAO) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -46,9 +53,24 @@ public class FutureExperimentRunDAO {
     metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", "ExperimentRunEntity");
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
-    artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
     codeVersionHandler = new CodeVersionHandler(executor, jdbi);
-    datasetHandler = new ArtifactHandler(executor, jdbi, "datasets", "ExperimentRunEntity");
+    datasetHandler =
+        new DatasetHandler(
+            executor,
+            jdbi,
+            "ExperimentRunEntity",
+            codeVersionHandler,
+            artifactStoreDAO,
+            datasetVersionDAO);
+    artifactHandler =
+        new ArtifactHandler(
+            executor,
+            jdbi,
+            "ExperimentRunEntity",
+            codeVersionHandler,
+            datasetHandler,
+            artifactStoreDAO,
+            datasetVersionDAO);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -364,6 +386,24 @@ public class FutureExperimentRunDAO {
     final var runId = request.getId();
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> codeVersionHandler.getCodeVersion(request), executor);
+        .thenCompose(unused -> codeVersionHandler.getCodeVersion(request.getId()), executor);
+  }
+
+  public InternalFuture<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
+    final var runId = request.getId();
+
+    InternalFuture<Void> permissionCheck;
+    if (request.getMethod().toUpperCase().equals("GET")) {
+      permissionCheck =
+          checkPermission(
+              Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ);
+    } else {
+      permissionCheck =
+          checkPermission(
+              Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+    }
+
+    return permissionCheck.thenCompose(
+        unused -> artifactHandler.getUrlForArtifact(request), executor);
   }
 }

@@ -584,7 +584,12 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void getUrlForArtifact(
       GetUrlForArtifact request, StreamObserver<GetUrlForArtifact.Response> responseObserver) {
-    super.getUrlForArtifact(request, responseObserver);
+    try {
+      final var futureResponse = futureExperimentRunDAO.getUrlForArtifact(request);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

@@ -27,6 +27,7 @@ import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.*;
+
 import java.util.concurrent.Executor;
 
 public class DAOSet {
@@ -65,7 +66,6 @@ public class DAOSet {
             set.commitDAO,
             set.blobDAO,
             set.metadataDAO);
-    set.futureExperimentRunDAO = new FutureExperimentRunDAO(executor, jdbi, services.uac);
     set.projectDAO =
         new ProjectDAORdbImpl(
             services.authService, services.roleService, set.experimentDAO, set.experimentRunDAO);
@@ -86,6 +86,10 @@ public class DAOSet {
     } else {
       set.auditLogLocalDAO = new AuditLogLocalDAORdbImpl();
     }
+
+    set.futureExperimentRunDAO =
+        new FutureExperimentRunDAO(
+            executor, jdbi, services.uac, set.artifactStoreDAO, set.datasetVersionDAO);
 
     return set;
   }

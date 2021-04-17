@@ -6,22 +6,21 @@ import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 
 import java.util.concurrent.Executor;
 
-public class ArtifactHandler extends ArtifactHandlerBase {
-  public ArtifactHandler(
+public class DatasetHandler extends ArtifactHandlerBase {
+  public DatasetHandler(
       Executor executor,
       FutureJdbi jdbi,
       String entityName,
       CodeVersionHandler codeVersionHandler,
-      DatasetHandler datasetHandler,
       ArtifactStoreDAO artifactStoreDAO,
       DatasetVersionDAO datasetVersionDAO) {
     super(
         executor,
         jdbi,
-        "artifacts",
+        "datasets",
         entityName,
         codeVersionHandler,
-        datasetHandler,
+        null,
         artifactStoreDAO,
         datasetVersionDAO);
   }
