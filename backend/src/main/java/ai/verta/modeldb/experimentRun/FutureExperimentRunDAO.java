@@ -302,10 +302,50 @@ public class FutureExperimentRunDAO {
           }
 
           switch (action) {
+            case DELETE:
+              // TODO: check if we should using DELETE for the ER itself
+              return checkProjectPermission(
+                  maybeProjectIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
             default:
               return checkProjectPermission(maybeProjectIds, action);
           }
         },
+        executor);
+  }
+
+  public InternalFuture<Void> deleteExperimentRuns(DeleteExperimentRuns request) {
+    final var runIds = request.getIdsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    var futureDeleteTask =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getIdsList().isEmpty()) {
+                throw new InvalidArgumentException("ExperimentRun IDs not found in request");
+              }
+            },
+            executor);
+
+    return futureDeleteTask
+        .thenCompose(
+            unused ->
+                checkPermission(
+                    request.getIdsList(), ModelDBActionEnum.ModelDBServiceActions.DELETE),
+            executor)
+        .thenCompose(unused -> deleteExperimentRuns(runIds), executor);
+  }
+
+  private InternalFuture<Void> deleteExperimentRuns(List<String> runIds) {
+    return InternalFuture.runAsync(
+        () ->
+            jdbi.withHandle(
+                handle ->
+                    handle
+                        .createUpdate(
+                            "Update experiment_run SET deleted = :deleted WHERE id IN (<ids>)")
+                        .bindList("ids", runIds)
+                        .bind("deleted", true)
+                        .execute()),
         executor);
   }
 
