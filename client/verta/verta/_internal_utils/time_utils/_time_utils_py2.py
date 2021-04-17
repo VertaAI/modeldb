@@ -35,6 +35,8 @@ def epoch_millis(dt):
         return int(round((dt - UNIX_EPOCH).total_seconds() * 1000))
     elif type(dt) == int:
         return dt
+    elif dt is None:
+        return dt
     else:
         raise ValueError("Cannot convert argument to epoch milliseconds")
 
