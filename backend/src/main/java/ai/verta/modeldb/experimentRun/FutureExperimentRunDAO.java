@@ -483,10 +483,8 @@ public class FutureExperimentRunDAO {
     // TODO: get code version
     // TODO: get environment
     // TODO: get attributes
-    // TODO: get hyperparamters
     // TODO: get artifacts
     // TODO: get datasets
-    // TODO: get metrics
     // TODO: get observations
     // TODO: get features?
     // TODO: get job id?
@@ -534,6 +532,33 @@ public class FutureExperimentRunDAO {
                               tags ->
                                   buildersStream.map(
                                       builder -> builder.addAllTags(tags.get(builder.getId()))),
+                              executor),
+                      executor);
+
+              // Get hyperparams
+              final var futureHyperparams = hyperparametersHandler.getKeyValuesMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCompose(
+                      buildersStream ->
+                          futureHyperparams.thenApply(
+                              hyperparams ->
+                                  buildersStream.map(
+                                      builder ->
+                                          builder.addAllHyperparameters(
+                                              hyperparams.get(builder.getId()))),
+                              executor),
+                      executor);
+
+              // Get metrics
+              final var futureMetrics = metricsHandler.getKeyValuesMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCompose(
+                      buildersStream ->
+                          futureMetrics.thenApply(
+                              metrics ->
+                                  buildersStream.map(
+                                      builder ->
+                                          builder.addAllMetrics(metrics.get(builder.getId()))),
                               executor),
                       executor);
 
