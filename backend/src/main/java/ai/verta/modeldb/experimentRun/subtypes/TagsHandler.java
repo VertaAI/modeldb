@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
 
 public class TagsHandler {
   private static Logger LOGGER = LogManager.getLogger(TagsHandler.class);
@@ -51,7 +50,7 @@ public class TagsHandler {
                 .list());
   }
 
-  public InternalFuture<Map<String, List<String>>> getTagsMap(Set<String> entityIds) {
+  public InternalFuture<MapSubtypes<String>> getTagsMap(Set<String> entityIds) {
     return jdbi.withHandle(
             handle ->
                 handle
@@ -69,28 +68,7 @@ public class TagsHandler {
                             new AbstractMap.SimpleEntry<>(
                                 rs.getString("entity_id"), rs.getString("tags")))
                     .list())
-        .thenApply(
-            listEntries -> {
-              final var ret =
-                  listEntries.stream()
-                      .collect(
-                          Collectors.toMap(
-                              e -> e.getKey(),
-                              e -> Collections.singletonList(e.getValue()),
-                              (x, y) -> {
-                                x.addAll(y);
-                                return x;
-                              }));
-
-              for (final var id : entityIds) {
-                if (!ret.containsKey(id)) {
-                  ret.put(id, new LinkedList<>());
-                }
-              }
-
-              return ret;
-            },
-            executor);
+        .thenApply(MapSubtypes::from, executor);
   }
 
   public InternalFuture<Void> addTags(String entityId, List<String> tags) {

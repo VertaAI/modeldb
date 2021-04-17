@@ -14,9 +14,11 @@ import com.google.protobuf.Value;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
 
 public class KeyValueHandler {
   private static Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
@@ -81,7 +83,7 @@ public class KeyValueHandler {
                 .list());
   }
 
-  public InternalFuture<Map<String, List<KeyValue>>> getKeyValuesMap(Set<String> entityIds) {
+  public InternalFuture<MapSubtypes<KeyValue>> getKeyValuesMap(Set<String> entityIds) {
     return jdbi.withHandle(
             handle ->
                 handle
@@ -115,28 +117,7 @@ public class KeyValueHandler {
                           }
                         })
                     .list())
-        .thenApply(
-            listEntries -> {
-              final var ret =
-                  listEntries.stream()
-                      .collect(
-                          Collectors.toMap(
-                              e -> e.getKey(),
-                              e -> Collections.singletonList(e.getValue()),
-                              (x, y) -> {
-                                x.addAll(y);
-                                return x;
-                              }));
-
-              for (final var id : entityIds) {
-                if (!ret.containsKey(id)) {
-                  ret.put(id, new LinkedList<>());
-                }
-              }
-
-              return ret;
-            },
-            executor);
+        .thenApply(MapSubtypes::from, executor);
   }
 
   public InternalFuture<Void> logKeyValues(String entityId, List<KeyValue> kvs) {

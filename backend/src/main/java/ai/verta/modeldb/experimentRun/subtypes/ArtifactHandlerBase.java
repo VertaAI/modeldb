@@ -8,7 +8,10 @@ import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
@@ -121,7 +124,7 @@ public class ArtifactHandlerBase {
         executor);
   }
 
-  public InternalFuture<Map<String, List<Artifact>>> getArtifactsMap(Set<String> entityIds) {
+  public InternalFuture<MapSubtypes<Artifact>> getArtifactsMap(Set<String> entityIds) {
     return jdbi.withHandle(
             handle -> {
               var queryStr =
@@ -155,28 +158,7 @@ public class ArtifactHandlerBase {
                                   .build()))
                   .list();
             })
-        .thenApply(
-            listEntries -> {
-              final var ret =
-                  listEntries.stream()
-                      .collect(
-                          Collectors.toMap(
-                              e -> e.getKey(),
-                              e -> Collections.singletonList(e.getValue()),
-                              (x, y) -> {
-                                x.addAll(y);
-                                return x;
-                              }));
-
-              for (final var id : entityIds) {
-                if (!ret.containsKey(id)) {
-                  ret.put(id, new LinkedList<>());
-                }
-              }
-
-              return ret;
-            },
-            executor);
+        .thenApply(MapSubtypes::from, executor);
   }
 
   public InternalFuture<Void> logArtifacts(
