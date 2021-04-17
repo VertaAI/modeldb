@@ -345,6 +345,7 @@ public class FutureExperimentRunDAO {
   }
 
   private InternalFuture<Void> internalLogCodeVersion(LogExperimentRunCodeVersion request) {
+    // TODO: input validation
     return jdbi.withHandle(
             // Check if it existed before
             handle ->
