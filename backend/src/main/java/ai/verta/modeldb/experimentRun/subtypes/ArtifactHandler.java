@@ -1,8 +1,7 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.ArtifactTypeEnum;
-import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -22,11 +21,9 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
 import org.hibernate.Session;
 
-import java.util.AbstractMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 public class ArtifactHandler extends ArtifactHandlerBase {
   private static Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
@@ -218,6 +215,91 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                     .map(exprRun -> exprRun.getCodeArchive().getPath())
                     .orElseThrow(
                         () -> new InvalidArgumentException("Code version has not been logged")),
+            executor);
+  }
+
+  public InternalFuture<Void> commitArtifactPart(CommitArtifactPart request) {
+    return getArtifactId(request.getId(), request.getKey())
+        .thenAccept(
+            maybeId -> {
+              final var id =
+                  maybeId.orElseThrow(
+                      () ->
+                          new InvalidArgumentException("Key " + request.getKey() + " not logged"));
+              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final ArtifactEntity artifactEntity =
+                    session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
+                VersioningUtils.saveArtifactPartEntity(
+                    request.getArtifactPart(),
+                    session,
+                    String.valueOf(artifactEntity.getId()),
+                    ArtifactPartEntity.EXP_RUN_ARTIFACT);
+              }
+            },
+            executor);
+  }
+
+  public InternalFuture<GetCommittedArtifactParts.Response> getCommittedArtifactParts(
+      GetCommittedArtifactParts request) {
+    return getArtifactId(request.getId(), request.getKey())
+        .thenApply(
+            maybeId -> {
+              final var id =
+                  maybeId.orElseThrow(
+                      () ->
+                          new InvalidArgumentException("Key " + request.getKey() + " not logged"));
+              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final ArtifactEntity artifactEntity =
+                    session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
+                Set<ArtifactPartEntity> artifactPartEntities =
+                    VersioningUtils.getArtifactPartEntities(
+                        session,
+                        String.valueOf(artifactEntity.getId()),
+                        ArtifactPartEntity.EXP_RUN_ARTIFACT);
+                ;
+                GetCommittedArtifactParts.Response.Builder response =
+                    GetCommittedArtifactParts.Response.newBuilder();
+                artifactPartEntities.forEach(
+                    artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
+                return response.build();
+              }
+            },
+            executor);
+  }
+
+  public InternalFuture<Void> commitMultipartArtifact(CommitMultipartArtifact request) {
+    return getArtifactId(request.getId(), request.getKey())
+        .thenAccept(
+            maybeId -> {
+              final var id =
+                  maybeId.orElseThrow(
+                      () ->
+                          new InvalidArgumentException("Key " + request.getKey() + " not logged"));
+              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final ArtifactEntity artifactEntity =
+                    session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
+                if (artifactEntity.getUploadId() == null) {
+                  String message =
+                      "Multipart wasn't initialized OR Multipart artifact already committed";
+                  throw new InvalidArgumentException(message);
+                }
+                Set<ArtifactPartEntity> artifactPartEntities =
+                    VersioningUtils.getArtifactPartEntities(
+                        session,
+                        String.valueOf(artifactEntity.getId()),
+                        ArtifactPartEntity.EXP_RUN_ARTIFACT);
+                final var partETags =
+                    artifactPartEntities.stream()
+                        .map(ArtifactPartEntity::toPartETag)
+                        .collect(Collectors.toList());
+                artifactStoreDAO.commitMultipart(
+                    artifactEntity.getPath(), artifactEntity.getUploadId(), partETags);
+                session.beginTransaction();
+                artifactEntity.setUploadCompleted(true);
+                artifactEntity.setUploadId(null);
+                session.getTransaction().commit();
+              }
+            },
             executor);
   }
 }

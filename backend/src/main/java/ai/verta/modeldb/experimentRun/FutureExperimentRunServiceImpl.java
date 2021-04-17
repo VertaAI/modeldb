@@ -595,21 +595,42 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void commitArtifactPart(
       CommitArtifactPart request, StreamObserver<CommitArtifactPart.Response> responseObserver) {
-    super.commitArtifactPart(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureExperimentRunDAO
+              .commitArtifactPart(request)
+              .thenApply(unused -> CommitArtifactPart.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getCommittedArtifactParts(
       GetCommittedArtifactParts request,
       StreamObserver<GetCommittedArtifactParts.Response> responseObserver) {
-    super.getCommittedArtifactParts(request, responseObserver);
+    try {
+      final var futureResponse = futureExperimentRunDAO.getCommittedArtifactParts(request);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void commitMultipartArtifact(
       CommitMultipartArtifact request,
       StreamObserver<CommitMultipartArtifact.Response> responseObserver) {
-    super.commitMultipartArtifact(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureExperimentRunDAO
+              .commitMultipartArtifact(request)
+              .thenApply(unused -> CommitMultipartArtifact.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

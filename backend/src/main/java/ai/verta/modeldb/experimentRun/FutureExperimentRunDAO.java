@@ -399,4 +399,29 @@ public class FutureExperimentRunDAO {
     return permissionCheck.thenCompose(
         unused -> artifactHandler.getUrlForArtifact(request), executor);
   }
+
+  public InternalFuture<GetCommittedArtifactParts.Response> getCommittedArtifactParts(
+      GetCommittedArtifactParts request) {
+    final var runId = request.getId();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> artifactHandler.getCommittedArtifactParts(request), executor);
+  }
+
+  public InternalFuture<Void> commitArtifactPart(CommitArtifactPart request) {
+    final var runId = request.getId();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> artifactHandler.commitArtifactPart(request), executor);
+  }
+
+  public InternalFuture<Void> commitMultipartArtifact(CommitMultipartArtifact request) {
+    final var runId = request.getId();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> artifactHandler.commitMultipartArtifact(request), executor);
+  }
 }
