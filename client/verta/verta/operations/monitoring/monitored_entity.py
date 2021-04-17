@@ -63,6 +63,11 @@ class MonitoredEntity(entity._ModelDBEntity):
         endpoint = "/api/v1/monitored_entity/findMonitoredEntity"
         response = conn.make_proto_request("POST", endpoint, body=msg)
         results = conn.maybe_proto_response(response, Message.Response)
+        count = results.total_records if results else 0
+        if count > 1:
+            warnings.warn(
+                "found more than one monitored entity with id {}".format(id)
+            )
         if results.monitored_entities:
             return results.monitored_entities[0]
         else:
