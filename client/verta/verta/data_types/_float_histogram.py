@@ -38,10 +38,13 @@ class FloatHistogram(_VertaDataType):
 
     _TYPE_NAME = "floatHistogram"
     _VERSION = "v1"
-    _scipy = maybe_dependency("scipy")
 
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, bucket_limits, data):
+        self._scipy = maybe_dependency("scipy")
+        if self._scipy is None:
+            raise ImportError("scipy is not installed; try `pip install scipy`")
+
         if len(bucket_limits) != len(data) + 1:
             raise ValueError(
                 "length of `bucket_limits` must be 1 greater than length of `data`"
