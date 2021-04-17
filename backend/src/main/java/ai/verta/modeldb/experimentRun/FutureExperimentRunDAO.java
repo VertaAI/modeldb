@@ -470,8 +470,6 @@ public class FutureExperimentRunDAO {
 
   public InternalFuture<FindExperimentRuns.Response> findExperimentRuns(
       FindExperimentRuns request) {
-    // TODO: filter by project
-    // TODO: filter by experiment
     // TODO: filter by predicates
     // TODO: handle ids only?
     // TODO: filter by permission
@@ -479,6 +477,16 @@ public class FutureExperimentRunDAO {
 
     final var conditions = new LinkedList<String>();
     final var binds = new LinkedList<Consumer<Query>>();
+
+    if (!request.getProjectId().isEmpty()) {
+      conditions.push("project_id=:request_project_id)");
+      binds.push(q -> q.bind("request_project_id", request.getProjectId()));
+    }
+
+    if (!request.getExperimentId().isEmpty()) {
+      conditions.push("experiment_id=:request_experiment_id)");
+      binds.push(q -> q.bind("request_experiment_id", request.getExperimentId()));
+    }
 
     // TODO: get code version
     // TODO: get environment
