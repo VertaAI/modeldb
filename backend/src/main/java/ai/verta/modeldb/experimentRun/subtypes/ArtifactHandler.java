@@ -98,8 +98,7 @@ public class ArtifactHandler {
 
   public InternalFuture<Void> logArtifacts(String entityId, List<Artifact> artifacts) {
     // Validate input
-    var currentFuture =
-        InternalFuture.runAsync(
+    return InternalFuture.runAsync(
             () -> {
               if (entityId == null || entityId.isEmpty()) {
                 throw new InvalidArgumentException("Entity id is empty");
@@ -120,16 +119,13 @@ public class ArtifactHandler {
                 }
               }
             },
-            executor);
-
-    // Log
-    for (final var artifact : artifacts) {
-      currentFuture =
-          currentFuture.thenCompose(
-              unused ->
-                  // Insert into ARTIFACT table
-                  jdbi.useHandle(
-                      handle -> {
+            executor)
+        .thenCompose(
+            unused ->
+                // Check for conflicts
+                jdbi.useHandle(
+                    handle -> {
+                      for (final var artifact : artifacts) {
                         handle
                             .createQuery(
                                 "select id from "
@@ -148,7 +144,15 @@ public class ArtifactHandler {
                                   throw new AlreadyExistsException(
                                       "Key '" + artifact.getKey() + "' already exists");
                                 });
-
+                      }
+                    }),
+            executor)
+        .thenCompose(
+            unused ->
+                // Log
+                jdbi.useHandle(
+                    handle -> {
+                      for (final var artifact : artifacts) {
                         var storeTypePath =
                             !artifact.getPathOnly()
                                 ? Config.getInstance().artifactStoreConfig.storeTypePathPrefix()
@@ -172,14 +176,10 @@ public class ArtifactHandler {
                             .bind("entity_id", entityId)
                             .bind("field_type", fieldType)
                             .bind("entity_name", entityName)
-                            .executeAndReturnGeneratedKeys()
-                            .mapTo(Long.class)
-                            .one();
-                      }),
-              executor);
-    }
-
-    return currentFuture;
+                            .execute();
+                      }
+                    }),
+            executor);
   }
 
   public InternalFuture<Void> deleteArtifacts(String entityId, Optional<List<String>> maybeKeys) {
