@@ -4,6 +4,7 @@ import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.stub.StreamObserver;
+
 import java.util.concurrent.Executor;
 
 public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
@@ -25,7 +26,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void deleteExperimentRun(
       DeleteExperimentRun request, StreamObserver<DeleteExperimentRun.Response> responseObserver) {
-    super.deleteExperimentRun(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .deleteExperimentRuns(
+                  DeleteExperimentRuns.newBuilder().addIds(request.getId()).build())
+              .thenApply(
+                  unused -> DeleteExperimentRun.Response.newBuilder().setStatus(true).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -606,7 +618,17 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void deleteExperimentRuns(
       DeleteExperimentRuns request,
       StreamObserver<DeleteExperimentRuns.Response> responseObserver) {
-    super.deleteExperimentRuns(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .deleteExperimentRuns(request)
+              .thenApply(
+                  unused -> DeleteExperimentRuns.Response.newBuilder().setStatus(true).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
