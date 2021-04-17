@@ -88,8 +88,8 @@ class Client(object):
         """Get or create a monitored entity by name.
 
         Gets or creates a monitored entity. A name will be auto-generated if one
-        is not provided. Either ``name`` or ``id`` can be provided but not both.
-        If id is provided, this will act only as a get method and no object will
+        is not provided. Either `name` or ``id` can be provided but not both.
+        If `id` is provided, this will act only as a get method and no object will
         be created.
 
         Parameters
