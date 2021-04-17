@@ -15,6 +15,13 @@ class NotificationChannel(entity._ModelDBEntity):
     A notification channel directs a triggered alert to propagate a message to
     some destination to notify interested parties.
 
+    Attributes
+    ----------
+    id : int
+        ID of this notification channel.
+    name : str
+        Name of this notification channel.
+
     Examples
     --------
     .. code-block:: python
@@ -63,6 +70,12 @@ class NotificationChannel(entity._ModelDBEntity):
                 ),
             )
         )
+
+    @property
+    def name(self):
+        self._refresh_cache()
+
+        return self._msg.name
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
@@ -157,7 +170,7 @@ class NotificationChannel(entity._ModelDBEntity):
 
 class NotificationChannels(object):
     """
-    Collection object for creating and funding notification channels.
+    Collection object for creating and finding notification channels.
 
     Examples
     --------
@@ -192,7 +205,7 @@ class NotificationChannels(object):
             timezone aware datetime object or unix epoch milliseconds.
         updated_at : datetime.datetime or int, optional
             An override update time to assign to this channel. Either a
-            timezoneaware datetime object or unix epoch milliseconds.
+            timezone aware datetime object or unix epoch milliseconds.
 
         Returns
         -------

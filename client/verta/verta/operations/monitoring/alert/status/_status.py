@@ -12,10 +12,7 @@ from ... import utils
 # TODO: move into separate files
 @six.add_metaclass(abc.ABCMeta)
 class _AlertStatus(object):
-    """
-    Base class for an alert status. Not for external use.
-
-    """
+    """Base class for an alert status. Not for external use."""
 
     _ALERT_STATUS = _AlertService.AlertStatusEnum.UNKNOWN
 
