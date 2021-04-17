@@ -482,7 +482,6 @@ public class FutureExperimentRunDAO {
 
     // TODO: get code version
     // TODO: get environment
-    // TODO: get tags
     // TODO: get attributes
     // TODO: get hyperparamters
     // TODO: get artifacts
@@ -522,6 +521,26 @@ public class FutureExperimentRunDAO {
                   .list();
             })
         .thenCompose(
+            builders -> {
+              var futureBuildersStream = InternalFuture.completedInternalFuture(builders.stream());
+              final var ids = builders.stream().map(x -> x.getId()).collect(Collectors.toSet());
+
+              // Get tags
+              final var futureTags = tagsHandler.getTagsMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCompose(
+                      buildersStream ->
+                          futureTags.thenApply(
+                              tags ->
+                                  buildersStream.map(
+                                      builder -> builder.addAllTags(tags.get(builder.getId()))),
+                              executor),
+                      executor);
+
+              return futureBuildersStream;
+            },
+            executor)
+        .thenCompose(
             experimentRunBuilders ->
                 jdbi.withHandle(
                         handle -> {
@@ -540,7 +559,7 @@ public class FutureExperimentRunDAO {
                         count ->
                             FindExperimentRuns.Response.newBuilder()
                                 .addAllExperimentRuns(
-                                    experimentRunBuilders.stream()
+                                    experimentRunBuilders
                                         .map(ExperimentRun.Builder::build)
                                         .collect(Collectors.toList()))
                                 .setTotalRecords(count)
