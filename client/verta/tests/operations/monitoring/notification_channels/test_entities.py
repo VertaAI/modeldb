@@ -25,13 +25,14 @@ class TestSlack:
 
         assert notification_channels.delete([created_channel])
 
-    def test_repr(self, client, strs):
+    def test_repr(self, client, strs, created_entities):
         """__repr__() does not raise exceptions"""
         notification_channels = client.operations.notification_channels
         name, webhook_url = strs[:2]
         slack_channel = SlackNotificationChannel(webhook_url)
 
         created_channel = notification_channels.create(name, slack_channel)
+        created_entities.append(created_channel)
         assert repr(created_channel)
 
         retrieved_channel = notification_channels.get(id=created_channel.id)
