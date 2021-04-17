@@ -284,6 +284,7 @@ public class FutureExperimentRunDAO {
 
           switch (action) {
             case DELETE:
+              // TODO: check if we should using DELETE for the ER itself
               return checkProjectPermission(
                   maybeProjectIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
             default:
