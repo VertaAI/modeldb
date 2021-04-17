@@ -32,6 +32,7 @@ public class FutureExperimentRunDAO {
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
+  private final ArtifactHandler datasetHandler;
 
   public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
     this.executor = executor;
@@ -45,6 +46,7 @@ public class FutureExperimentRunDAO {
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
+    datasetHandler = new ArtifactHandler(executor, jdbi, "datasets", "ExperimentRunEntity");
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -324,5 +326,26 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> artifactHandler.deleteArtifacts(runId, optionalKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<Void> logDatasets(LogDatasets request) {
+    final var runId = request.getId();
+    final var artifacts = request.getDatasetsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(
+            unused -> datasetHandler.logArtifacts(runId, artifacts, request.getOverwrite()),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<List<Artifact>> getDatasets(GetDatasets request) {
+    final var runId = request.getId();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()), executor);
   }
 }
