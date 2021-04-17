@@ -32,7 +32,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .deleteExperimentRuns(
                   DeleteExperimentRuns.newBuilder().addIds(request.getId()).build())
               .thenApply(
-                  status -> DeleteExperimentRun.Response.newBuilder().setStatus(status).build(),
+                  unused -> DeleteExperimentRun.Response.newBuilder().setStatus(true).build(),
                   executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
