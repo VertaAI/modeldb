@@ -482,7 +482,6 @@ public class FutureExperimentRunDAO {
 
     // TODO: get code version
     // TODO: get environment
-    // TODO: get observations
     // TODO: get features?
     // TODO: get job id?
     // TODO: get versioned inputs
@@ -578,6 +577,17 @@ public class FutureExperimentRunDAO {
                       (stream, datasets) ->
                           stream.map(
                               builder -> builder.addAllDatasets(datasets.get(builder.getId()))),
+                      executor);
+
+              // Get observations
+              final var futureObservations = observationHandler.getObservationsMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      futureObservations,
+                      (stream, observations) ->
+                          stream.map(
+                              builder ->
+                                  builder.addAllObservations(observations.get(builder.getId()))),
                       executor);
 
               return futureBuildersStream;
