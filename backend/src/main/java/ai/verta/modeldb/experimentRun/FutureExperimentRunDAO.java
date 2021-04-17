@@ -480,9 +480,23 @@ public class FutureExperimentRunDAO {
     final var conditions = new LinkedList<String>();
     final var binds = new LinkedList<Consumer<Query>>();
 
+    // TODO: get code version
+    // TODO: get environment
+    // TODO: get tags
+    // TODO: get attributes
+    // TODO: get hyperparamters
+    // TODO: get artifacts
+    // TODO: get datasets
+    // TODO: get metrics
+    // TODO: get observations
+    // TODO: get features?
+    // TODO: get job id?
+    // TODO: get versioned inputs
+    // TODO: get code version from blob
     return jdbi.withHandle(
             handle -> {
-              var sql = "select id from experiment_run";
+              var sql =
+                  "select id, date_created, date_updated, experiment_id, name, project_id, description, start_time, end_time, owner from experiment_run";
 
               if (!conditions.isEmpty()) {
                 sql += " WHERE " + String.join(" AND ", conditions);
@@ -492,7 +506,19 @@ public class FutureExperimentRunDAO {
               binds.forEach(b -> b.accept(query));
 
               return query
-                  .map((rs, ctx) -> ExperimentRun.newBuilder().setId(rs.getString("id")))
+                  .map(
+                      (rs, ctx) ->
+                          ExperimentRun.newBuilder()
+                              .setId(rs.getString("id"))
+                              .setProjectId(rs.getString("project_id"))
+                              .setExperimentId(rs.getString("experiment_id"))
+                              .setName(rs.getString("name"))
+                              .setDescription(rs.getString("description"))
+                              .setDateUpdated(rs.getLong("date_updated"))
+                              .setDateCreated(rs.getLong("date_created"))
+                              .setStartTime(rs.getLong("start_time"))
+                              .setEndTime(rs.getLong("end_time"))
+                              .setOwner(rs.getString("owner")))
                   .list();
             })
         .thenCompose(
