@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 public class ArtifactHandler {
   private static Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
@@ -96,10 +97,10 @@ public class ArtifactHandler {
         executor);
   }
 
-  public InternalFuture<Void> logArtifacts(String entityId, List<Artifact> artifacts) {
+  public InternalFuture<Void> logArtifacts(
+      String entityId, List<Artifact> artifacts, boolean overwrite) {
     // Validate input
-    var currentFuture =
-        InternalFuture.runAsync(
+    return InternalFuture.runAsync(
             () -> {
               if (entityId == null || entityId.isEmpty()) {
                 throw new InvalidArgumentException("Entity id is empty");
@@ -120,35 +121,58 @@ public class ArtifactHandler {
                 }
               }
             },
-            executor);
-
-    // Log
-    for (final var artifact : artifacts) {
-      currentFuture =
-          currentFuture.thenCompose(
-              unused ->
-                  // Insert into ARTIFACT table
-                  jdbi.useHandle(
-                      handle -> {
+            executor)
+        .thenCompose(
+            unused ->
+                // Check for conflicts
+                jdbi.useHandle(
+                    handle -> {
+                      if (overwrite) {
                         handle
-                            .createQuery(
-                                "select id from "
+                            .createUpdate(
+                                "delete from "
                                     + getTableName()
-                                    + " where entity_name=:entity_name and field_type=:field_type and ar_key=:key and "
+                                    + " where entity_name=:entity_name and field_type=:field_type and ar_key in (<keys>) and "
                                     + entityIdReferenceColumn
                                     + "=:entity_id")
-                            .bind("key", artifact.getKey())
+                            .bindList(
+                                "keys",
+                                artifacts.stream()
+                                    .map(Artifact::getKey)
+                                    .collect(Collectors.toList()))
                             .bind("field_type", fieldType)
                             .bind("entity_name", entityName)
-                            .bind("entity_id", entityId)
-                            .mapTo(Long.class)
-                            .findOne()
-                            .ifPresent(
-                                present -> {
-                                  throw new AlreadyExistsException(
-                                      "Key '" + artifact.getKey() + "' already exists");
-                                });
-
+                            .bind("entity_id", entityId);
+                      } else {
+                        for (final var artifact : artifacts) {
+                          handle
+                              .createQuery(
+                                  "select id from "
+                                      + getTableName()
+                                      + " where entity_name=:entity_name and field_type=:field_type and ar_key=:key and "
+                                      + entityIdReferenceColumn
+                                      + "=:entity_id")
+                              .bind("key", artifact.getKey())
+                              .bind("field_type", fieldType)
+                              .bind("entity_name", entityName)
+                              .bind("entity_id", entityId)
+                              .mapTo(Long.class)
+                              .findOne()
+                              .ifPresent(
+                                  present -> {
+                                    throw new AlreadyExistsException(
+                                        "Key '" + artifact.getKey() + "' already exists");
+                                  });
+                        }
+                      }
+                    }),
+            executor)
+        .thenCompose(
+            unused ->
+                // Log
+                jdbi.useHandle(
+                    handle -> {
+                      for (final var artifact : artifacts) {
                         var storeTypePath =
                             !artifact.getPathOnly()
                                 ? Config.getInstance().artifactStoreConfig.storeTypePathPrefix()
@@ -172,14 +196,10 @@ public class ArtifactHandler {
                             .bind("entity_id", entityId)
                             .bind("field_type", fieldType)
                             .bind("entity_name", entityName)
-                            .executeAndReturnGeneratedKeys()
-                            .mapTo(Long.class)
-                            .one();
-                      }),
-              executor);
-    }
-
-    return currentFuture;
+                            .execute();
+                      }
+                    }),
+            executor);
   }
 
   public InternalFuture<Void> deleteArtifacts(String entityId, Optional<List<String>> maybeKeys) {

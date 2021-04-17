@@ -278,19 +278,50 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
 
   @Override
   public void logDataset(LogDataset request, StreamObserver<LogDataset.Response> responseObserver) {
-    super.logDataset(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logDatasets(
+                  LogDatasets.newBuilder()
+                      .setId(request.getId())
+                      .addDatasets(request.getDataset())
+                      .setOverwrite(request.getOverwrite())
+                      .build())
+              .thenApply(unused -> LogDataset.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void logDatasets(
       LogDatasets request, StreamObserver<LogDatasets.Response> responseObserver) {
-    super.logDatasets(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logDatasets(request)
+              .thenApply(unused -> LogDatasets.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getDatasets(
       GetDatasets request, StreamObserver<GetDatasets.Response> responseObserver) {
-    super.getDatasets(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .getDatasets(request)
+              .thenApply(
+                  datasets -> GetDatasets.Response.newBuilder().addAllDatasets(datasets).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

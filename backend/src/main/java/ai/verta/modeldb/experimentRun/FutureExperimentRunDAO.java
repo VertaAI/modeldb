@@ -33,6 +33,7 @@ public class FutureExperimentRunDAO {
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
   private final CodeVersionHandler codeVersionHandler;
+  private final ArtifactHandler datasetHandler;
 
   public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
     this.executor = executor;
@@ -47,6 +48,7 @@ public class FutureExperimentRunDAO {
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
     codeVersionHandler = new CodeVersionHandler(executor, jdbi);
+    datasetHandler = new ArtifactHandler(executor, jdbi, "datasets", "ExperimentRunEntity");
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -299,7 +301,7 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.logArtifacts(runId, artifacts), executor)
+        .thenCompose(unused -> artifactHandler.logArtifacts(runId, artifacts, false), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
@@ -326,6 +328,27 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> artifactHandler.deleteArtifacts(runId, optionalKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<Void> logDatasets(LogDatasets request) {
+    final var runId = request.getId();
+    final var artifacts = request.getDatasetsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(
+            unused -> datasetHandler.logArtifacts(runId, artifacts, request.getOverwrite()),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<List<Artifact>> getDatasets(GetDatasets request) {
+    final var runId = request.getId();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()), executor);
   }
 
   public InternalFuture<Void> logCodeVersion(LogExperimentRunCodeVersion request) {

@@ -11,11 +11,12 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class KeyValueHandler {
   private static Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
@@ -82,8 +83,7 @@ public class KeyValueHandler {
 
   public InternalFuture<Void> logKeyValues(String entityId, List<KeyValue> kvs) {
     // Validate input
-    var currentFuture =
-        InternalFuture.runAsync(
+    return InternalFuture.runAsync(
             () -> {
               for (final var kv : kvs) {
                 if (kv.getKey().isEmpty()) {
@@ -91,16 +91,13 @@ public class KeyValueHandler {
                 }
               }
             },
-            executor);
-
-    // Log
-    for (final var kv : kvs) {
-      currentFuture =
-          currentFuture.thenCompose(
-              unused ->
-                  // Insert into KV table
-                  jdbi.useHandle(
-                      handle -> {
+            executor)
+        .thenCompose(
+            unused ->
+                // Check for conflicts
+                jdbi.useHandle(
+                    handle -> {
+                      for (final var kv : kvs) {
                         handle
                             .createQuery(
                                 "select id from "
@@ -119,7 +116,15 @@ public class KeyValueHandler {
                                   throw new AlreadyExistsException(
                                       "Key " + kv.getKey() + " already exists");
                                 });
-
+                      }
+                    }),
+            executor)
+        .thenCompose(
+            unused ->
+                // Log
+                jdbi.useHandle(
+                    handle -> {
+                      for (final var kv : kvs) {
                         handle
                             .createUpdate(
                                 "insert into "
@@ -134,14 +139,10 @@ public class KeyValueHandler {
                             .bind("entity_id", entityId)
                             .bind("field_type", fieldType)
                             .bind("entity_name", entityName)
-                            .executeAndReturnGeneratedKeys()
-                            .mapTo(Long.class)
-                            .one();
-                      }),
-              executor);
-    }
-
-    return currentFuture;
+                            .execute();
+                      }
+                    }),
+            executor);
   }
 
   public InternalFuture<Void> deleteKeyValues(String entityId, Optional<List<String>> maybeKeys) {
