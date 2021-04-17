@@ -297,7 +297,7 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.logArtifacts(runId, artifacts), executor)
+        .thenCompose(unused -> artifactHandler.logArtifacts(runId, artifacts, false), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
