@@ -522,14 +522,22 @@ public class FutureExperimentRunDAO {
             })
         .thenCompose(
             builders -> {
+              var futureBuildersStream = InternalFuture.completedInternalFuture(builders.stream());
               final var ids = builders.stream().map(x -> x.getId()).collect(Collectors.toSet());
-              final var futureTags = tagsHandler.getTagsMap(ids);
 
-              return futureTags.thenApply(
-                  tags ->
-                      builders.stream()
-                          .map(builder -> builder.addAllTags(tags.get(builder.getId()))),
-                  executor);
+              // Get tags
+              final var futureTags = tagsHandler.getTagsMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCompose(
+                      buildersStream ->
+                          futureTags.thenApply(
+                              tags ->
+                                  buildersStream.map(
+                                      builder -> builder.addAllTags(tags.get(builder.getId()))),
+                              executor),
+                      executor);
+
+              return futureBuildersStream;
             },
             executor)
         .thenCompose(
