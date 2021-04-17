@@ -17,9 +17,12 @@ import ai.verta.modeldb.experimentRun.subtypes.*;
 import ai.verta.uac.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.statement.Query;
 
 import java.util.*;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class FutureExperimentRunDAO {
   private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
@@ -463,5 +466,60 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> artifactHandler.commitMultipartArtifact(request), executor);
+  }
+
+  public InternalFuture<FindExperimentRuns.Response> findExperimentRuns(
+      FindExperimentRuns request) {
+    // TODO: filter by project
+    // TODO: filter by experiment
+    // TODO: filter by predicates
+    // TODO: handle ids only?
+    // TODO: filter by permission
+    // TODO: sort by key
+
+    final var conditions = new LinkedList<String>();
+    final var binds = new LinkedList<Consumer<Query>>();
+
+    return jdbi.withHandle(
+            handle -> {
+              var sql = "select id from experiment_run";
+
+              if (!conditions.isEmpty()) {
+                sql += " WHERE " + String.join(" AND ", conditions);
+              }
+
+              var query = handle.createQuery(sql);
+              binds.forEach(b -> b.accept(query));
+
+              return query
+                  .map((rs, ctx) -> ExperimentRun.newBuilder().setId(rs.getString("id")))
+                  .list();
+            })
+        .thenCompose(
+            experimentRunBuilders ->
+                jdbi.withHandle(
+                        handle -> {
+                          var sql = "select count(id) from experiment_run";
+
+                          if (!conditions.isEmpty()) {
+                            sql += " WHERE " + String.join(" AND ", conditions);
+                          }
+
+                          var query = handle.createQuery(sql);
+                          binds.forEach(b -> b.accept(query));
+
+                          return query.mapTo(Long.class).one();
+                        })
+                    .thenApply(
+                        count ->
+                            FindExperimentRuns.Response.newBuilder()
+                                .addAllExperimentRuns(
+                                    experimentRunBuilders.stream()
+                                        .map(ExperimentRun.Builder::build)
+                                        .collect(Collectors.toList()))
+                                .setTotalRecords(count)
+                                .build(),
+                        executor),
+            executor);
   }
 }
