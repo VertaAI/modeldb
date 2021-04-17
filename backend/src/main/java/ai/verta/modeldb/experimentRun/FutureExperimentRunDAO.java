@@ -482,7 +482,6 @@ public class FutureExperimentRunDAO {
 
     // TODO: get code version
     // TODO: get environment
-    // TODO: get tags
     // TODO: get attributes
     // TODO: get hyperparamters
     // TODO: get artifacts
