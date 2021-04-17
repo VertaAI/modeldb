@@ -10,6 +10,11 @@ from ...._protos.public.monitoring import Alert_pb2 as _AlertService
 # TODO: move into separate files
 @six.add_metaclass(abc.ABCMeta)
 class _NotificationChannel(object):
+    """
+    Base class for a notification channel. Not for external use.
+
+    """
+
     _TYPE = _AlertService.NotificationChannelTypeEnum.UNKNOWN
 
     def __repr__(self):
@@ -25,6 +30,35 @@ class _NotificationChannel(object):
 
 
 class SlackNotificationChannel(_NotificationChannel):
+    """
+    A Slack notification channel.
+
+    Parameters
+    ----------
+    url : str
+        Slack webhook URL.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.operations.monitoring.notification_channel import SlackNotificationChannel
+
+        channels = Client().operations.notification_channels
+        channel = channels.create(
+            "Slack alerts",
+            SlackNotificationChannel("https://hooks.slack.com/services/.../.../......"),
+        )
+
+        alert = monitored_entity.alerts.create(
+            name="MSE",
+            alerter=alerter,
+            summary_sample_query=sample_query,
+            notification_channels=[channel],
+        )
+
+    """
+
     _TYPE = _AlertService.NotificationChannelTypeEnum.SLACK
 
     def __init__(self, url):

@@ -13,7 +13,7 @@ from ... import utils
 @six.add_metaclass(abc.ABCMeta)
 class _AlertStatus(object):
     """
-    Base class for alert status. Not for external use.
+    Base class for an alert status. Not for external use.
 
     """
 
@@ -48,7 +48,7 @@ class _AlertStatus(object):
         ----------
         msg : int
             Variant of ``AlertStatusEnum``.
-        sample_ids : list of int
+        sample_ids : list of int, optional
             Summary Sample IDs that triggered the status.
 
         Returns
