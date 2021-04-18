@@ -15,8 +15,25 @@ public class QueryFilterContext {
     binds = new LinkedList<>();
   }
 
-  public QueryFilterContext(List<String> conditions, List<Consumer<Query>> binds) {
-    this.conditions = conditions;
-    this.binds = binds;
+  public QueryFilterContext(String condition, Consumer<Query> bind) {
+    conditions = new LinkedList<>();
+    binds = new LinkedList<>();
+
+    this.conditions.add(condition);
+    this.binds.add(bind);
+  }
+
+  //  public QueryFilterContext(List<String> conditions, List<Consumer<Query>> binds) {
+  //    this.conditions = conditions;
+  //    this.binds = binds;
+  //  }
+
+  public static QueryFilterContext combine(List<QueryFilterContext> contexts) {
+    var ret = new QueryFilterContext();
+    for (final var context : contexts) {
+      ret.conditions.addAll(context.conditions);
+      ret.binds.addAll(context.binds);
+    }
+    return ret;
   }
 }
