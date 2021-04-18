@@ -78,7 +78,6 @@ public class PredicatesHandler {
 
   private InternalFuture<QueryFilterContext> processMetricsPredicate(
       long index, KeyValueQuery predicate, String name) {
-    final var key = predicate.getKey();
     final var value = predicate.getValue();
     final var operator = predicate.getOperator();
 
@@ -91,7 +90,7 @@ public class PredicatesHandler {
     sql += " and ";
 
     final var colValue = "kv_value";
-    var queryContext = new QueryFilterContext().addBind(q -> q.bind(valueBindingKey, key));
+    var queryContext = new QueryFilterContext().addBind(q -> q.bind(valueBindingKey, name));
 
     switch (value.getKindCase()) {
       case NUMBER_VALUE:

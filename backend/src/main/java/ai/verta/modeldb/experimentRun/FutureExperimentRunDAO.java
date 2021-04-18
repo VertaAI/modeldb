@@ -543,6 +543,11 @@ public class FutureExperimentRunDAO {
                       })
                   .thenCompose(
                       builders -> {
+                        if (builders == null || builders.isEmpty()) {
+                          return InternalFuture.completedInternalFuture(
+                              new LinkedList<ExperimentRun>());
+                        }
+
                         var futureBuildersStream =
                             InternalFuture.completedInternalFuture(builders.stream());
                         final var ids =
