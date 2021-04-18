@@ -167,7 +167,8 @@ public class ArtifactHandlerBase {
                                     .collect(Collectors.toList()))
                             .bind("field_type", fieldType)
                             .bind("entity_name", entityName)
-                            .bind("entity_id", entityId);
+                            .bind("entity_id", entityId)
+                            .execute();
                       } else {
                         for (final var artifact : artifacts) {
                           handle
