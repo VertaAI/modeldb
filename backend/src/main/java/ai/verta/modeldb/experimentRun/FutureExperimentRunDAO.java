@@ -5,6 +5,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.CreateExperimentRun;
+import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.DeleteArtifact;
 import ai.verta.modeldb.DeleteExperimentRunAttributes;
 import ai.verta.modeldb.DeleteExperimentRunTags;
@@ -41,6 +42,7 @@ import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
@@ -85,9 +87,10 @@ public class FutureExperimentRunDAO {
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
+  private final VersionInputHandler versionInputHandler;
   private final Config config = Config.getInstance();
 
-  public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
+  public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac, DAOSet daoSet) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -99,6 +102,7 @@ public class FutureExperimentRunDAO {
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
+    versionInputHandler = new VersionInputHandler(executor, jdbi, "ExperimentRunEntity", daoSet);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -475,13 +479,6 @@ public class FutureExperimentRunDAO {
               return InternalFuture.completedInternalFuture(experimentRun);
             },
             executor)
-        .thenCompose(
-            experimentRun -> {
-              // TODO: Fix populating logic of setVersioned_inputs,
-              // setHyperparameter_element_mappings here
-              return InternalFuture.completedInternalFuture(experimentRun);
-            },
-            executor)
         .thenCompose(this::insertExperimentRun, executor)
         .thenCompose(experimentRun -> createRoleBindingsForExperimentRun(experimentRun), executor);
   }
@@ -631,8 +628,9 @@ public class FutureExperimentRunDAO {
         // TODO .thenCompose(handle -> featureHandler.logFeatures(newExperimentRun.getId(),
         // newExperimentRun.getFeaturesList()), executor)
         // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
-        // TODO .thenCompose(handle -> versioned_inputs, executor)
-
+        .thenCompose(
+            handle -> versionInputHandler.validateAndInsertVersionedInputs(newExperimentRun),
+            executor)
         .thenCompose(unused -> InternalFuture.completedInternalFuture(newExperimentRun), executor);
   }
 
