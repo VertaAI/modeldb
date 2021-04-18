@@ -619,8 +619,11 @@ public class FutureExperimentRunDAO {
                 metricsHandler.logKeyValues(
                     newExperimentRun.getId(), newExperimentRun.getMetricsList()),
             executor)
-        // TODO .thenCompose(handle -> artifactHandler.logArtifacts(newExperimentRun.getId(),
-        // newExperimentRun.getArtifactsList()), executor)
+        .thenCompose(
+            handle ->
+                artifactHandler.logArtifacts(
+                    newExperimentRun.getId(), newExperimentRun.getArtifactsList()),
+            executor)
         // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
         // newExperimentRun.getDatasetsList()), executor)
         .thenCompose(
