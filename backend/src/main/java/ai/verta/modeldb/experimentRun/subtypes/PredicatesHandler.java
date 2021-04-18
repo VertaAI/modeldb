@@ -43,10 +43,25 @@ public class PredicatesHandler {
     final var bindingName = String.format("predicate_%d", index);
 
     switch (key) {
-      case ModelDBConstants.ID:
+      case "id":
         return InternalFuture.completedInternalFuture(
             new QueryFilterContext()
                 .addCondition("experiment_run.id = :" + bindingName)
+                .addBind(q -> q.bind(bindingName, value.getStringValue())));
+      case "project_id":
+        return InternalFuture.completedInternalFuture(
+            new QueryFilterContext()
+                .addCondition("experiment_run.project_id = :" + bindingName)
+                .addBind(q -> q.bind(bindingName, value.getStringValue())));
+      case "experiment_id":
+        return InternalFuture.completedInternalFuture(
+            new QueryFilterContext()
+                .addCondition("experiment_run.experiment_id = :" + bindingName)
+                .addBind(q -> q.bind(bindingName, value.getStringValue())));
+      case "name":
+        return InternalFuture.completedInternalFuture(
+            new QueryFilterContext()
+                .addCondition("experiment_run.name = :" + bindingName)
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
       case "owner":
         // case time created/updated:
@@ -59,12 +74,12 @@ public class PredicatesHandler {
     // TODO: check length is 2
 
     switch (names[0]) {
+      case ModelDBConstants.METRICS:
+        return processMetricsPredicate(index, predicate, names[1]);
       case ModelDBConstants.ARTIFACTS:
       case ModelDBConstants.DATASETS:
       case ModelDBConstants.ATTRIBUTES:
       case ModelDBConstants.HYPERPARAMETERS:
-      case ModelDBConstants.METRICS:
-        return processMetricsPredicate(index, predicate, names[1]);
       case ModelDBConstants.OBSERVATIONS:
         // case ModelDBConstants.FEATURES: TODO?
       case ModelDBConstants.TAGS:
