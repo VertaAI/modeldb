@@ -474,6 +474,7 @@ public class FutureExperimentRunDAO {
     // TODO: handle ids only?
     // TODO: filter by permission
     // TODO: sort by key
+    // TODO: filter by workspace
 
     final var conditions = new LinkedList<String>();
     final var binds = new LinkedList<Consumer<Query>>();
@@ -486,6 +487,11 @@ public class FutureExperimentRunDAO {
     if (!request.getExperimentId().isEmpty()) {
       conditions.push("experiment_id=:request_experiment_id");
       binds.push(q -> q.bind("request_experiment_id", request.getExperimentId()));
+    }
+
+    if (!request.getExperimentRunIdsList().isEmpty()) {
+      conditions.push("id in (<request_experiment_run_ids>)");
+      binds.push(q -> q.bindList("request_experiment_run_ids", request.getExperimentRunIdsList()));
     }
 
     // TODO: get code version
