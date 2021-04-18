@@ -100,32 +100,23 @@ public class KeyValueHandler {
                     .bind("entity_name", entityName)
                     .map(
                         (rs, ctx) -> {
-                          final var entityId = rs.getString("entity_id");
-                          final var builder =
-                              KeyValue.newBuilder()
-                                  .setKey(rs.getString("k"))
-                                  .setValueTypeValue(rs.getInt("t"));
-                          final var value = rs.getString("v");
-                          return InternalFuture.supplyAsync(
-                              () -> {
-                                try {
-                                  return new AbstractMap.SimpleEntry<>(
-                                      entityId,
-                                      builder
-                                          .setValue(
-                                              (Value.Builder)
-                                                  CommonUtils.getProtoObjectFromString(
-                                                      value, Value.newBuilder()))
-                                          .build());
-                                } catch (InvalidProtocolBufferException e) {
-                                  LOGGER.error("Error generating builder for {}", value);
-                                  throw new ModelDBException(e);
-                                }
-                              },
-                              executor);
+                          try {
+                            return new AbstractMap.SimpleEntry<>(
+                                rs.getString("entity_id"),
+                                KeyValue.newBuilder()
+                                    .setKey(rs.getString("k"))
+                                    .setValue(
+                                        (Value.Builder)
+                                            CommonUtils.getProtoObjectFromString(
+                                                rs.getString("v"), Value.newBuilder()))
+                                    .setValueTypeValue(rs.getInt("t"))
+                                    .build());
+                          } catch (InvalidProtocolBufferException e) {
+                            LOGGER.error("Error generating builder for {}", rs.getString("v"));
+                            throw new ModelDBException(e);
+                          }
                         })
                     .list())
-        .thenCompose(items -> InternalFuture.sequence(items, executor), executor)
         .thenApply(MapSubtypes::from, executor);
   }
 
