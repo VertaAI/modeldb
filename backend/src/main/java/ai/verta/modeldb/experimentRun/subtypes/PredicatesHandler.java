@@ -42,6 +42,7 @@ public class PredicatesHandler {
 
     final var bindingName = String.format("predicate_%d", index);
 
+    // TODO: don't assume that the operator is equality for these
     switch (key) {
       case "id":
         return InternalFuture.completedInternalFuture(
@@ -75,11 +76,13 @@ public class PredicatesHandler {
 
     switch (names[0]) {
       case ModelDBConstants.METRICS:
-        return processMetricsPredicate(index, predicate, names[1]);
+        return processKeyValuePredicate(index, predicate, names[1], "metrics");
+      case ModelDBConstants.HYPERPARAMETERS:
+        return processKeyValuePredicate(index, predicate, names[1], "hyperparameters");
       case ModelDBConstants.ARTIFACTS:
       case ModelDBConstants.DATASETS:
       case ModelDBConstants.ATTRIBUTES:
-      case ModelDBConstants.HYPERPARAMETERS:
+
       case ModelDBConstants.OBSERVATIONS:
         // case ModelDBConstants.FEATURES: TODO?
       case ModelDBConstants.TAGS:
@@ -91,8 +94,8 @@ public class PredicatesHandler {
     return InternalFuture.failedStage(new InvalidArgumentException("Predicate cannot be handled"));
   }
 
-  private InternalFuture<QueryFilterContext> processMetricsPredicate(
-      long index, KeyValueQuery predicate, String name) {
+  private InternalFuture<QueryFilterContext> processKeyValuePredicate(
+      long index, KeyValueQuery predicate, String name, String fieldType) {
     final var value = predicate.getValue();
     final var operator = predicate.getOperator();
 
@@ -100,12 +103,15 @@ public class PredicatesHandler {
     final var valueBindingName = String.format("v_p_%d", index);
 
     var sql =
-        "select distinct experiment_run_id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=\"metrics\"";
+        "select distinct experiment_run_id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=:field_type";
     sql += String.format(" and kv_key=:%s ", valueBindingKey);
     sql += " and ";
 
     final var colValue = "kv_value";
-    var queryContext = new QueryFilterContext().addBind(q -> q.bind(valueBindingKey, name));
+    var queryContext =
+        new QueryFilterContext()
+            .addBind(q -> q.bind(valueBindingKey, name))
+            .addBind(q -> q.bind("field_type", fieldType));
 
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
