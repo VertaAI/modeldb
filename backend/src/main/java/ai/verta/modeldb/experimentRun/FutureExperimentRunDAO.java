@@ -21,6 +21,7 @@ import ai.verta.modeldb.GetObservations;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LogArtifacts;
 import ai.verta.modeldb.LogAttributes;
+import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.LogHyperparameters;
 import ai.verta.modeldb.LogMetrics;
 import ai.verta.modeldb.LogObservations;
@@ -38,6 +39,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
+import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
@@ -86,6 +88,7 @@ public class FutureExperimentRunDAO {
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
   private final Config config = Config.getInstance();
+  private final CodeVersionHandler codeVersionHandler;
 
   public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
     this.executor = executor;
@@ -99,6 +102,7 @@ public class FutureExperimentRunDAO {
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
+    codeVersionHandler = new CodeVersionHandler(executor, jdbi);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -564,8 +568,6 @@ public class FutureExperimentRunDAO {
               runValueMap.put("start_time", newExperimentRun.getStartTime());
               runValueMap.put("end_time", newExperimentRun.getEndTime());
               runValueMap.put("code_version", newExperimentRun.getCodeVersion());
-              // TODO: code version snapshot
-              /*runValueMap.put("code_version_snapshot_id", newExperimentRun.getCodeVersionSnapshot());*/
               runValueMap.put("job_id", newExperimentRun.getJobId());
               runValueMap.put("parent_id", newExperimentRun.getParentId());
               runValueMap.put("owner", newExperimentRun.getOwner());
@@ -630,7 +632,15 @@ public class FutureExperimentRunDAO {
             executor)
         // TODO .thenCompose(handle -> featureHandler.logFeatures(newExperimentRun.getId(),
         // newExperimentRun.getFeaturesList()), executor)
-        // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
+        .thenCompose(
+            handle ->
+                codeVersionHandler.logCodeVersion(
+                    LogExperimentRunCodeVersion.newBuilder()
+                        .setId(newExperimentRun.getId())
+                        .setCodeVersion(newExperimentRun.getCodeVersionSnapshot())
+                        .setOverwrite(false)
+                        .build()),
+            executor)
         // TODO .thenCompose(handle -> versioned_inputs, executor)
 
         .thenCompose(unused -> InternalFuture.completedInternalFuture(newExperimentRun), executor);
