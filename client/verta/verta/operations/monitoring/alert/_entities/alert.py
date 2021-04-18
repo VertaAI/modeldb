@@ -181,11 +181,23 @@ class Alert(entity._ModelDBEntity):
         self._clear_cache()
         return True
 
+    def _update_last_evaluated_at(self, last_evaluated_at=None):
+        if last_evaluated_at is None:
+            last_evaluated_at = time_utils.now()
+
+        alert_msg = _AlertService.Alert()
+        self._fetch_with_no_cache()
+        alert_msg.CopyFrom(self._msg)
+        alert_msg.last_evaluated_at_millis = time_utils.epoch_millis(last_evaluated_at)
+
+        self._update(alert_msg)
+
     def add_notification_channels(self, notification_channels):
         for channel in notification_channels:
             self._validate_notification_channel(channel)
 
         alert_msg = _AlertService.Alert()
+        self._fetch_with_no_cache()
         alert_msg.CopyFrom(self._msg)
         alert_msg.notification_channels.update(
             {channel.id: True for channel in notification_channels}
@@ -194,12 +206,11 @@ class Alert(entity._ModelDBEntity):
         self._update(alert_msg)
 
     def set_status(self, status, event_time=None):
-        msg = _AlertService.UpdateAlertStatusRequest(
-            alert_id=self.id,
-            event_time_millis=time_utils.epoch_millis(event_time) if event_time else None,
-            status=status._ALERT_STATUS,
-            violating_summary_sample_ids=status._sample_ids,
-        )
+        msg = status._to_proto_request()
+        msg.alert_id = self.id
+        if event_time:
+            msg.event_time_millis = time_utils.epoch_millis(event_time)
+
         endpoint = "/api/v1/alerts/updateAlertStatus"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         self._conn.must_response(response)
@@ -228,9 +239,9 @@ class Alerts(object):
         alerter,
         summary_sample_query,
         notification_channels=None,
-        created_at_millis=None,
-        updated_at_millis=None,
-        last_evaluated_at_millis=None,
+        created_at=None,
+        updated_at=None,
+        last_evaluated_at=None,
     ):
         if self._monitored_entity_id is None:
             raise RuntimeError(
@@ -253,9 +264,9 @@ class Alerts(object):
             alerter=alerter,
             summary_sample_query=summary_sample_query,
             notification_channels=notification_channels,
-            created_at_millis=created_at_millis,
-            updated_at_millis=updated_at_millis,
-            last_evaluated_at_millis=last_evaluated_at_millis,
+            created_at_millis=time_utils.epoch_millis(created_at),
+            updated_at_millis=time_utils.epoch_millis(updated_at),
+            last_evaluated_at_millis=time_utils.epoch_millis(last_evaluated_at),
         )
 
     def get(self, name=None, id=None):

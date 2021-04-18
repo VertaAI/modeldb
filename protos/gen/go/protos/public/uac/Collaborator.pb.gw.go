@@ -667,6 +667,112 @@ func local_request_CollaboratorService_GetRegisteredModelCollaborators_0(ctx con
 
 }
 
+func request_CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_0(ctx context.Context, marshaler runtime.Marshaler, client CollaboratorServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq AddCollaboratorRequest
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.AddOrUpdateMonitoredEntityCollaborator(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_0(ctx context.Context, marshaler runtime.Marshaler, server CollaboratorServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq AddCollaboratorRequest
+	var metadata runtime.ServerMetadata
+
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
+	}
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.AddOrUpdateMonitoredEntityCollaborator(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_CollaboratorService_RemoveMonitoredEntityCollaborator_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_CollaboratorService_RemoveMonitoredEntityCollaborator_0(ctx context.Context, marshaler runtime.Marshaler, client CollaboratorServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq RemoveCollaborator
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_RemoveMonitoredEntityCollaborator_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.RemoveMonitoredEntityCollaborator(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_CollaboratorService_RemoveMonitoredEntityCollaborator_0(ctx context.Context, marshaler runtime.Marshaler, server CollaboratorServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq RemoveCollaborator
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_RemoveMonitoredEntityCollaborator_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.RemoveMonitoredEntityCollaborator(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+var (
+	filter_CollaboratorService_GetMonitoredEntityCollaborators_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+)
+
+func request_CollaboratorService_GetMonitoredEntityCollaborators_0(ctx context.Context, marshaler runtime.Marshaler, client CollaboratorServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetCollaborator
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_GetMonitoredEntityCollaborators_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := client.GetMonitoredEntityCollaborators(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_CollaboratorService_GetMonitoredEntityCollaborators_0(ctx context.Context, marshaler runtime.Marshaler, server CollaboratorServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetCollaborator
+	var metadata runtime.ServerMetadata
+
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_CollaboratorService_GetMonitoredEntityCollaborators_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+
+	msg, err := server.GetMonitoredEntityCollaborators(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 // RegisterCollaboratorServiceHandlerServer registers the http handlers for service CollaboratorService to "mux".
 // UnaryRPC     :call CollaboratorServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -1029,6 +1135,66 @@ func RegisterCollaboratorServiceHandlerServer(ctx context.Context, mux *runtime.
 		}
 
 		forward_CollaboratorService_GetRegisteredModelCollaborators_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("POST", pattern_CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("DELETE", pattern_CollaboratorService_RemoveMonitoredEntityCollaborator_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CollaboratorService_RemoveMonitoredEntityCollaborator_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_CollaboratorService_RemoveMonitoredEntityCollaborator_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_CollaboratorService_GetMonitoredEntityCollaborators_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_CollaboratorService_GetMonitoredEntityCollaborators_0(rctx, inboundMarshaler, server, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_CollaboratorService_GetMonitoredEntityCollaborators_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1433,6 +1599,66 @@ func RegisterCollaboratorServiceHandlerClient(ctx context.Context, mux *runtime.
 
 	})
 
+	mux.Handle("POST", pattern_CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("DELETE", pattern_CollaboratorService_RemoveMonitoredEntityCollaborator_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CollaboratorService_RemoveMonitoredEntityCollaborator_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_CollaboratorService_RemoveMonitoredEntityCollaborator_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_CollaboratorService_GetMonitoredEntityCollaborators_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_CollaboratorService_GetMonitoredEntityCollaborators_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_CollaboratorService_GetMonitoredEntityCollaborators_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -1472,6 +1698,12 @@ var (
 	pattern_CollaboratorService_RemoveRegisteredModelCollaborator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "collaborator", "removeRegisteredModelCollaborator"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_CollaboratorService_GetRegisteredModelCollaborators_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "collaborator", "getRegisteredModelCollaborators"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "collaborator", "addOrUpdateMonitoredEntityCollaborator"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_CollaboratorService_RemoveMonitoredEntityCollaborator_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "collaborator", "removeMonitoredEntityCollaborator"}, "", runtime.AssumeColonVerbOpt(true)))
+
+	pattern_CollaboratorService_GetMonitoredEntityCollaborators_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "collaborator", "getMonitoredEntityCollaborators"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
@@ -1510,4 +1742,10 @@ var (
 	forward_CollaboratorService_RemoveRegisteredModelCollaborator_0 = runtime.ForwardResponseMessage
 
 	forward_CollaboratorService_GetRegisteredModelCollaborators_0 = runtime.ForwardResponseMessage
+
+	forward_CollaboratorService_AddOrUpdateMonitoredEntityCollaborator_0 = runtime.ForwardResponseMessage
+
+	forward_CollaboratorService_RemoveMonitoredEntityCollaborator_0 = runtime.ForwardResponseMessage
+
+	forward_CollaboratorService_GetMonitoredEntityCollaborators_0 = runtime.ForwardResponseMessage
 )
