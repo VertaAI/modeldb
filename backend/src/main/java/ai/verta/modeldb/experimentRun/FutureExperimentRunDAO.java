@@ -38,6 +38,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
+import ai.verta.modeldb.experimentRun.subtypes.FeatureHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
@@ -86,6 +87,7 @@ public class FutureExperimentRunDAO {
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
   private final Config config = Config.getInstance();
+  private final FeatureHandler featureHandler;
 
   public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
     this.executor = executor;
@@ -99,6 +101,7 @@ public class FutureExperimentRunDAO {
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
+    featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -628,8 +631,11 @@ public class FutureExperimentRunDAO {
                 observationHandler.logObservations(
                     newExperimentRun.getId(), newExperimentRun.getObservationsList(), now),
             executor)
-        // TODO .thenCompose(handle -> featureHandler.logFeatures(newExperimentRun.getId(),
-        // newExperimentRun.getFeaturesList()), executor)
+        .thenCompose(
+            handle ->
+                featureHandler.logFeatures(
+                    newExperimentRun.getId(), newExperimentRun.getFeaturesList()),
+            executor)
         // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
         // TODO .thenCompose(handle -> versioned_inputs, executor)
 
