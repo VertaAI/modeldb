@@ -3,6 +3,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.Config;
@@ -20,9 +21,8 @@ public class PredicatesHandler {
   public InternalFuture<QueryFilterContext> processPredicates(
       List<KeyValueQuery> predicates, Executor executor) {
     final var futureFilters = new LinkedList<InternalFuture<QueryFilterContext>>();
-    final var iterator = predicates.listIterator();
-    while (iterator.hasNext()) {
-      futureFilters.add(processPredicate(iterator.nextIndex(), iterator.next()));
+    for (final var item : new EnumerateList<>(predicates).getList()) {
+      futureFilters.add(processPredicate(item.getIndex(), item.getValue()));
     }
 
     return InternalFuture.sequence(futureFilters, executor)
@@ -101,9 +101,11 @@ public class PredicatesHandler {
 
     final var valueBindingKey = String.format("k_p_%d", index);
     final var valueBindingName = String.format("v_p_%d", index);
+    final var fieldTypeName = String.format("field_type_%d", index);
 
     var sql =
-        "select distinct experiment_run_id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=:field_type";
+        "select distinct experiment_run_id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=:"
+            + fieldTypeName;
     sql += String.format(" and kv_key=:%s ", valueBindingKey);
     sql += " and ";
 
@@ -111,7 +113,7 @@ public class PredicatesHandler {
     var queryContext =
         new QueryFilterContext()
             .addBind(q -> q.bind(valueBindingKey, name))
-            .addBind(q -> q.bind("field_type", fieldType));
+            .addBind(q -> q.bind(fieldTypeName, fieldType));
 
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
