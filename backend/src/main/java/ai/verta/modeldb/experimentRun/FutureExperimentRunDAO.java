@@ -603,13 +603,17 @@ public class FutureExperimentRunDAO {
                               }
                             }
 
-                            final var offset =
-                                (request.getPageNumber() - 1) * request.getPageLimit();
-                            final var limit = request.getPageLimit();
-                            sql += " LIMIT :limit OFFSET :offset";
+                            // Backwards compatibility: fetch everything
+                            if (request.getPageNumber() != 0 && request.getPageLimit() != 0) {
+                              final var offset =
+                                  (request.getPageNumber() - 1) * request.getPageLimit();
+                              final var limit = request.getPageLimit();
+                              sql += " LIMIT :limit OFFSET :offset";
+                              queryContext.addBind(q -> q.bind("limit", limit));
+                              queryContext.addBind(q -> q.bind("offset", offset));
+                            }
 
-                            var query =
-                                handle.createQuery(sql).bind("limit", limit).bind("offset", offset);
+                            var query = handle.createQuery(sql);
                             queryContext.binds.forEach(b -> b.accept(query));
 
                             return query
