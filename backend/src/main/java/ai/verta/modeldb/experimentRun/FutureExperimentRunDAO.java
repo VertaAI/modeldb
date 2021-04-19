@@ -421,9 +421,10 @@ public class FutureExperimentRunDAO {
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
-  public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request){
+  public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
     return checkPermission(
-            Collections.singletonList(request.getProjectId()), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-            .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
+            Collections.singletonList(request.getProjectId()),
+            ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
   }
 }
