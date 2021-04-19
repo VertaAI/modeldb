@@ -44,8 +44,8 @@ class FixedAlerter(_Alerter):
     --------
     .. code-block:: python
 
-        from verta.operations.monitoring.alert import FixedAlerter
         from verta.common.comparison import GreaterThan
+        from verta.operations.monitoring.alert import FixedAlerter
 
         alerter = FixedAlerter(GreaterThan(.7))
 
