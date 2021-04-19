@@ -2,7 +2,6 @@ package ai.verta.modeldb.utils;
 
 import static java.time.format.DateTimeFormatter.ofPattern;
 
-import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
@@ -48,17 +47,6 @@ public class TrialUtils {
             Code.RESOURCE_EXHAUSTED);
       }
     }
-  }
-
-  public static InternalFuture<ExperimentRun> futureValidateMaxArtifactsForTrial(
-      TrialConfig config,
-      ExperimentRun newExperimentRun,
-      int existingArtifactsCount,
-      Executor executor)
-      throws ModelDBException {
-    // TODO: Implement trial support using InternalFuture
-    return InternalFuture.runAsync(() -> {}, executor)
-        .thenCompose(unused -> InternalFuture.completedInternalFuture(newExperimentRun), executor);
   }
 
   public static void validateExperimentRunPerWorkspaceForTrial(
