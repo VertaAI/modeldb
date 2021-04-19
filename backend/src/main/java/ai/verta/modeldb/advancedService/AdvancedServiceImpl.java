@@ -86,8 +86,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     List<String> resourceIds = new LinkedList<>();
     Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
 
-    projects
-        .parallelStream()
+    projects.parallelStream()
         .forEach(
             (project) -> {
               vertaIds.add(project.getOwner());
@@ -424,7 +423,11 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
 
       FindExperimentRuns findExperimentRuns =
-          FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build();
+          FindExperimentRuns.newBuilder()
+              .addExperimentRunIds(request.getId())
+              .setPageLimit(1)
+              .setPageNumber(1)
+              .build();
       final var experimentRunPaginationDTO =
           futureExperimentRunDAO.findExperimentRuns(findExperimentRuns).get();
       //      ExperimentRunPaginationDTO experimentRunPaginationDTO =
@@ -745,8 +748,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
     List<String> resourceIds = new LinkedList<>();
 
-    datasets
-        .parallelStream()
+    datasets.parallelStream()
         .forEach(
             (dataset) -> {
               vertaIds.add(dataset.getOwner());
