@@ -14,8 +14,10 @@ import com.google.protobuf.Value;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 public class KeyValueHandler {
@@ -79,6 +81,43 @@ public class KeyValueHandler {
                       }
                     })
                 .list());
+  }
+
+  public InternalFuture<MapSubtypes<KeyValue>> getKeyValuesMap(Set<String> entityIds) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "select kv_key as k, kv_value as v, value_type as t, "
+                            + entityIdReferenceColumn
+                            + " as entity_id from "
+                            + getTableName()
+                            + " where entity_name=:entity_name and field_type=:field_type and "
+                            + entityIdReferenceColumn
+                            + " in (<entity_ids>)")
+                    .bindList("entity_ids", entityIds)
+                    .bind("field_type", fieldType)
+                    .bind("entity_name", entityName)
+                    .map(
+                        (rs, ctx) -> {
+                          try {
+                            return new AbstractMap.SimpleEntry<>(
+                                rs.getString("entity_id"),
+                                KeyValue.newBuilder()
+                                    .setKey(rs.getString("k"))
+                                    .setValue(
+                                        (Value.Builder)
+                                            CommonUtils.getProtoObjectFromString(
+                                                rs.getString("v"), Value.newBuilder()))
+                                    .setValueTypeValue(rs.getInt("t"))
+                                    .build());
+                          } catch (InvalidProtocolBufferException e) {
+                            LOGGER.error("Error generating builder for {}", rs.getString("v"));
+                            throw new ModelDBException(e);
+                          }
+                        })
+                    .list())
+        .thenApply(MapSubtypes::from, executor);
   }
 
   public InternalFuture<Void> logKeyValues(String entityId, List<KeyValue> kvs) {

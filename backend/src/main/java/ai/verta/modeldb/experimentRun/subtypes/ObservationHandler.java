@@ -10,11 +10,14 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.AbstractMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Executor;
 
 public class ObservationHandler {
   private static Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
@@ -47,7 +50,7 @@ public class ObservationHandler {
                 handle ->
                     handle
                         .createQuery(
-                            "select k.kv_value value, k.value_type type, o.epoch_number epoch from "
+                            "select k.kv_value _value, k.value_type _type, o.epoch_number epoch from "
                                 + "(select keyvaluemapping_id, epoch_number from observation "
                                 + "where experiment_run_id =:run_id and entity_name = \"ExperimentRunEntity\") o, "
                                 + "(select id, kv_value, value_type from keyvalue where kv_key =:name and entity_name IS NULL) k "
@@ -66,17 +69,54 @@ public class ObservationHandler {
                                             .setValue(
                                                 (Value.Builder)
                                                     CommonUtils.getProtoObjectFromString(
-                                                        rs.getString("value"), Value.newBuilder()))
-                                            .setValueTypeValue(rs.getInt("type")))
+                                                        rs.getString("_value"), Value.newBuilder()))
+                                            .setValueTypeValue(rs.getInt("_type")))
                                     .build();
                               } catch (InvalidProtocolBufferException e) {
                                 LOGGER.error(
-                                    "Error generating builder for {}", rs.getString("value"));
+                                    "Error generating builder for {}", rs.getString("_value"));
                                 throw new ModelDBException(e);
                               }
                             })
                         .list()),
         executor);
+  }
+
+  public InternalFuture<MapSubtypes<Observation>> getObservationsMap(Set<String> runIds) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "select k.kv_key _key, k.kv_value _value, k.value_type _type, o.epoch_number epoch, o.experiment_run_id run_id "
+                            + " from observation as o"
+                            + " join keyvalue as k"
+                            + " on o.keyvaluemapping_id = k.id"
+                            + " where o.experiment_run_id in (<run_ids>) and o.entity_name = \"ExperimentRunEntity\" and k.entity_name IS NULL")
+                    .bindList("run_ids", runIds)
+                    .map(
+                        (rs, ctx) -> {
+                          try {
+                            return new AbstractMap.SimpleEntry<>(
+                                rs.getString("run_id"),
+                                Observation.newBuilder()
+                                    .setEpochNumber(
+                                        Value.newBuilder().setNumberValue(rs.getLong("epoch")))
+                                    .setAttribute(
+                                        KeyValue.newBuilder()
+                                            .setKey(rs.getString("_key"))
+                                            .setValue(
+                                                (Value.Builder)
+                                                    CommonUtils.getProtoObjectFromString(
+                                                        rs.getString("_value"), Value.newBuilder()))
+                                            .setValueTypeValue(rs.getInt("_type")))
+                                    .build());
+                          } catch (InvalidProtocolBufferException e) {
+                            LOGGER.error("Error generating builder for {}", rs.getString("_value"));
+                            throw new ModelDBException(e);
+                          }
+                        })
+                    .list())
+        .thenApply(MapSubtypes::from, executor);
   }
 
   public InternalFuture<Void> logObservations(

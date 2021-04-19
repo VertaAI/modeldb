@@ -4,12 +4,11 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.Executor;
 
 public class TagsHandler {
   private static Logger LOGGER = LogManager.getLogger(TagsHandler.class);
@@ -49,6 +48,27 @@ public class TagsHandler {
                 .bind("entity_name", entityName)
                 .mapTo(String.class)
                 .list());
+  }
+
+  public InternalFuture<MapSubtypes<String>> getTagsMap(Set<String> entityIds) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "select tags, "
+                            + entityIdReferenceColumn
+                            + " as entity_id from tag_mapping "
+                            + "where entity_name=:entity_name and "
+                            + entityIdReferenceColumn
+                            + " in (<entity_ids>)")
+                    .bindList("entity_ids", entityIds)
+                    .bind("entity_name", entityName)
+                    .map(
+                        (rs, ctx) ->
+                            new AbstractMap.SimpleEntry<>(
+                                rs.getString("entity_id"), rs.getString("tags")))
+                    .list())
+        .thenApply(MapSubtypes::from, executor);
   }
 
   public InternalFuture<Void> addTags(String entityId, List<String> tags) {
