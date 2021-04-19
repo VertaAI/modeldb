@@ -402,7 +402,7 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
-    return checkPermission(
+    return checkProjectPermission(
             Collections.singletonList(request.getProjectId()),
             ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
