@@ -207,6 +207,9 @@ public class ExperimentRunEntity {
   @Column(name = "environment", columnDefinition = "TEXT")
   private String environment;
 
+  @Column(name = "created")
+  private Boolean created = false;
+
   @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 
   @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
@@ -464,6 +467,10 @@ public class ExperimentRunEntity {
 
   public void setEnvironment(String environment) {
     this.environment = environment;
+  }
+
+  public void setCreated(Boolean created) {
+    this.created = created;
   }
 
   public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {
