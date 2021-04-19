@@ -10,7 +10,6 @@ import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.UnimplementedException;
 import com.google.protobuf.Value;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -86,12 +85,73 @@ public class PredicatesHandler {
       case ModelDBConstants.OBSERVATIONS:
         // case ModelDBConstants.FEATURES: TODO?
       case ModelDBConstants.TAGS:
+        return processTagsPredicate(index, predicate);
       case ModelDBConstants.VERSIONED_INPUTS:
     }
 
     // TODO: handle arbitrary key
 
     return InternalFuture.failedStage(new InvalidArgumentException("Predicate cannot be handled"));
+  }
+
+  private InternalFuture<QueryFilterContext> processTagsPredicate(
+      long index, KeyValueQuery predicate) {
+    try {
+      final var value = predicate.getValue();
+      var operator = predicate.getOperator();
+      //  We will manage this operator at bottom of method based on `NE` and `NOT_CONTAIN` using
+      // `IN` OR `NOT IN` query
+      if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+        operator = OperatorEnum.Operator.CONTAIN;
+      } else if (operator.equals(OperatorEnum.Operator.NE)) {
+        operator = OperatorEnum.Operator.EQ;
+      }
+      final var finalOperator = operator;
+
+      final var valueBindingName = String.format("v_t_%d", index);
+
+      var sql = "select distinct experiment_run_id from tag_mapping where entity_name=:entity_name";
+      sql += " and ";
+
+      final var colValue = "tags";
+      var queryContext =
+          new QueryFilterContext().addBind(q -> q.bind("entity_name", "ExperimentRunEntity"));
+
+      switch (value.getKindCase()) {
+        case STRING_VALUE:
+          sql += applyOperator(finalOperator, colValue, ":" + valueBindingName);
+          queryContext =
+              queryContext.addBind(
+                  q -> q.bind(valueBindingName, wrapValue(finalOperator, value.getStringValue())));
+          break;
+        case LIST_VALUE:
+          List<Object> valueList = new LinkedList<>();
+          for (final var item : value.getListValue().getValuesList()) {
+            if (item.getKindCase().ordinal() == Value.KindCase.STRING_VALUE.ordinal()) {
+              valueList.add(item.getStringValue());
+            }
+          }
+
+          sql += applyOperator(finalOperator, colValue, "<" + valueBindingName + ">");
+          queryContext = queryContext.addBind(q -> q.bindList(valueBindingName, valueList));
+          break;
+        default:
+          return InternalFuture.failedStage(
+              new UnimplementedException("Unknown 'Value' type recognized"));
+      }
+
+      if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+          || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+        queryContext =
+            queryContext.addCondition(String.format("experiment_run.id NOT IN (%s)", sql));
+      } else {
+        queryContext = queryContext.addCondition(String.format("experiment_run.id IN (%s)", sql));
+      }
+
+      return InternalFuture.completedInternalFuture(queryContext);
+    } catch (Exception ex) {
+      return InternalFuture.failedStage(ex);
+    }
   }
 
   private InternalFuture<QueryFilterContext> processKeyValuePredicate(

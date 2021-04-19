@@ -27,7 +27,6 @@ import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.*;
-
 import java.util.concurrent.Executor;
 
 public class DAOSet {

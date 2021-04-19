@@ -9,14 +9,13 @@ import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import java.util.Optional;
+import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-
-import java.util.Optional;
-import java.util.concurrent.Executor;
 
 public class CodeVersionHandler {
   private static Logger LOGGER = LogManager.getLogger(CodeVersionHandler.class);
