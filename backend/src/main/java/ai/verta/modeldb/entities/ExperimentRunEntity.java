@@ -469,6 +469,7 @@ public class ExperimentRunEntity {
     this.environment = environment;
   }
 
+  // TODO: update indices and code to take this flag into consideration
   public void setCreated(Boolean created) {
     this.created = created;
   }
