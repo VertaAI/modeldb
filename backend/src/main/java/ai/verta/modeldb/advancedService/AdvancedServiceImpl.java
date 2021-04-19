@@ -25,6 +25,7 @@ import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
@@ -35,11 +36,12 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import io.grpc.Metadata;
 import io.grpc.stub.StreamObserver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
@@ -48,6 +50,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   private final RoleService roleService;
   private final ProjectDAO projectDAO;
   private final ExperimentRunDAO experimentRunDAO;
+  private final FutureExperimentRunDAO futureExperimentRunDAO;
   private final CommentDAO commentDAO;
   private final ExperimentDAO experimentDAO;
   private final DatasetDAO datasetDAO;
@@ -62,6 +65,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     this.experimentDAO = daoSet.experimentDAO;
     this.datasetDAO = daoSet.datasetDAO;
     this.datasetVersionDAO = daoSet.datasetVersionDAO;
+    this.futureExperimentRunDAO = daoSet.futureExperimentRunDAO;
   }
 
   private List<HydratedProject> getHydratedProjects(List<Project> projects)
@@ -82,8 +86,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     List<String> resourceIds = new LinkedList<>();
     Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
 
-    projects
-        .parallelStream()
+    projects.parallelStream()
         .forEach(
             (project) -> {
               vertaIds.add(project.getOwner());
@@ -418,17 +421,21 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+
       FindExperimentRuns findExperimentRuns =
           FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build();
-      ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
+      final var experimentRunPaginationDTO =
+          futureExperimentRunDAO.findExperimentRuns(findExperimentRuns).get();
+      //      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+      //          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo,
+      // findExperimentRuns);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
       List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
-      if (!experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
+      if (!experimentRunPaginationDTO.getExperimentRunsList().isEmpty()) {
         hydratedExperimentRuns =
-            getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRuns());
+            getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRunsList());
       }
 
       GetHydratedExperimentRunById.Response.Builder response =
@@ -476,20 +483,22 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-      ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo, request);
+      final var experimentRunPaginationDTO =
+          futureExperimentRunDAO.findExperimentRuns(request).get();
+      //      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+      //          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo, request);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
       List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
       if (request.getIdsOnly()) {
-        for (ExperimentRun experimentRun : experimentRunPaginationDTO.getExperimentRuns()) {
+        for (ExperimentRun experimentRun : experimentRunPaginationDTO.getExperimentRunsList()) {
           hydratedExperimentRuns.add(
               HydratedExperimentRun.newBuilder().setExperimentRun(experimentRun).build());
         }
-      } else if (!experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
+      } else if (!experimentRunPaginationDTO.getExperimentRunsList().isEmpty()) {
         hydratedExperimentRuns =
-            getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRuns());
+            getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRunsList());
       }
 
       LOGGER.debug("hydratedExperimentRuns size {}", hydratedExperimentRuns.size());
@@ -735,8 +744,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
     List<String> resourceIds = new LinkedList<>();
 
-    datasets
-        .parallelStream()
+    datasets.parallelStream()
         .forEach(
             (dataset) -> {
               vertaIds.add(dataset.getOwner());
