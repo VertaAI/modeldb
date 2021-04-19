@@ -64,12 +64,19 @@ class FixedAlerter(_Alerter):
 class ReferenceAlerter(_Alerter):
     _TYPE = _AlertService.AlerterTypeEnum.REFERENCE
 
-    def __init__(self, threshold, reference_sample):
-        self._threshold = threshold
+    def __init__(self, comparison, reference_sample):
+        if not isinstance(comparison, comparison_module._VertaComparison):
+            raise TypeError(
+                "`comparison` must be an object from verta.common.comparison,"
+                " not {}".format(type(comparison))
+            )
+
+        self._comparison = comparison
         self._reference_sample_id = utils.extract_id(reference_sample)
 
     def _as_proto(self):
         return _AlertService.AlertReference(
-            threshold=self._threshold,
+            threshold=self._comparison.value,
             reference_sample_id=self._reference_sample_id,
+            operator=self._comparison._operator_as_proto(),
         )
