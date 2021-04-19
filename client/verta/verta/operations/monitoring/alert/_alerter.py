@@ -28,7 +28,7 @@ class _Alerter(object):
 
 class FixedAlerter(_Alerter):
     """
-    A alerter that compares summary samples with a fixed numerical threshold.
+    An alerter that compares summary samples with a fixed numerical threshold.
 
     .. note::
 
