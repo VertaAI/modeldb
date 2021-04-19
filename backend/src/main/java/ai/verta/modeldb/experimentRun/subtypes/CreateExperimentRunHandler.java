@@ -19,11 +19,10 @@ import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.uac.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.*;
 import java.util.concurrent.Executor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class CreateExperimentRunHandler {
 
@@ -55,28 +54,17 @@ public class CreateExperimentRunHandler {
     artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
   }
 
-  private InternalFuture<UserInfo> getCurrentLoginUserInfo() {
-    return FutureGrpc.ClientRequest(
-        uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor);
-  }
-
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
     // Validate arguments
     var futureTask =
         InternalFuture.runAsync(
             () -> {
-              String errorMessage = null;
-              if (request.getProjectId().isEmpty() && request.getExperimentId().isEmpty()) {
-                errorMessage =
-                    "Project ID and Experiment ID not found in CreateExperimentRun request";
-              } else if (request.getProjectId().isEmpty()) {
-                errorMessage = "Project ID not found in CreateExperimentRun request";
+              if (request.getProjectId().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project ID not found in CreateExperimentRun request");
               } else if (request.getExperimentId().isEmpty()) {
-                errorMessage = "Experiment ID not found in CreateExperimentRun request";
-              }
-
-              if (errorMessage != null) {
-                throw new InvalidArgumentException(errorMessage);
+                throw new InvalidArgumentException(
+                    "Experiment ID not found in CreateExperimentRun request");
               }
             },
             executor);
@@ -225,6 +213,7 @@ public class CreateExperimentRunHandler {
                   "environment", ModelDBUtils.getStringFromProtoObject(environmentBlob));
               runValueMap.put("deleted", false);
 
+              // Created comma separated field names from keys of above map
               String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
               String commaFields = String.join(",", fieldsArr);
 
@@ -233,16 +222,20 @@ public class CreateExperimentRunHandler {
                       .append(commaFields)
                       .append(") values (");
 
-              for (int i = 0; i < fieldsArr.length; i++) {
-                queryStrBuilder.append(":").append(fieldsArr[i]);
-                if (i < fieldsArr.length - 1) {
-                  queryStrBuilder.append(",");
-                }
-              }
+              // Created comma separated query bind arguments for the values based on the keys of
+              // above the map
+              // Ex: VALUES (:project_id, :experiment_id, :name) etc.
+              String bindArguments =
+                  String.join(
+                      ",", Arrays.stream(fieldsArr).map(s -> ":" + s).toArray(String[]::new));
+
+              queryStrBuilder.append(bindArguments);
               queryStrBuilder.append(" ) ");
 
               LOGGER.trace("insert experiment run query string: " + queryStrBuilder.toString());
               var query = handle.createUpdate(queryStrBuilder.toString());
+
+              // Inserting fields arguments based on the keys and value of map
               for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {
                 query.bind(objectEntry.getKey(), objectEntry.getValue());
               }
