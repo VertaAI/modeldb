@@ -291,6 +291,12 @@ class Summaries:
         assert issubclass(data_type_cls, data_types._VertaDataType)
         query = SummaryQuery(names=[name], monitored_entities=[monitored_entity])
         retrieved = self.find(query)
+        if retrieved and len(retrieved) > 1:
+            warnings.warn(
+                "Found multiple summaries with name: {}, for monitored entity: {}.".format(
+                    name, monitored_entity
+                )
+            )
         if retrieved:
             summary = retrieved[0]
         else:
