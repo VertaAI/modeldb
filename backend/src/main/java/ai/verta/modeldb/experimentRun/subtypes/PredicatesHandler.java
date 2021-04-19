@@ -9,11 +9,12 @@ import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.UnimplementedException;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Value;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.regex.Pattern;
 
 public class PredicatesHandler {
   private final Config config = Config.getInstance();
@@ -82,6 +83,7 @@ public class PredicatesHandler {
       case ModelDBConstants.ARTIFACTS:
       case ModelDBConstants.DATASETS:
       case ModelDBConstants.ATTRIBUTES:
+        return processAttributePredicate(index, predicate, names[1], "attributes");
 
       case ModelDBConstants.OBSERVATIONS:
         // case ModelDBConstants.FEATURES: TODO?
@@ -153,6 +155,84 @@ public class PredicatesHandler {
     return InternalFuture.completedInternalFuture(queryContext);
   }
 
+  private InternalFuture<QueryFilterContext> processAttributePredicate(
+      long index, KeyValueQuery predicate, String name, String fieldType) {
+    try {
+      final var value = predicate.getValue();
+      var operator = predicate.getOperator();
+      //  We will manage this operator at bottom of method based on `NE` and `NOT_CONTAIN` using
+      // `IN` OR `NOT IN` query
+      if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+        operator = OperatorEnum.Operator.CONTAIN;
+      } else if (operator.equals(OperatorEnum.Operator.NE)) {
+        operator = OperatorEnum.Operator.EQ;
+      }
+      final var finalOperator = operator;
+
+      final var valueBindingKey = String.format("k_p_%d", index);
+      final var valueBindingName = String.format("v_p_%d", index);
+      final var fieldTypeName = String.format("field_type_%d", index);
+
+      var sql =
+          "select distinct experiment_run_id from attribute where entity_name=\"ExperimentRunEntity\" and field_type=:"
+              + fieldTypeName;
+      sql += String.format(" and kv_key=:%s ", valueBindingKey);
+      sql += " and ";
+
+      final var colValue = "kv_value";
+      var queryContext =
+          new QueryFilterContext()
+              .addBind(q -> q.bind(valueBindingKey, name))
+              .addBind(q -> q.bind(fieldTypeName, fieldType));
+
+      switch (value.getKindCase()) {
+        case STRING_VALUE:
+          sql += applyOperator(finalOperator, colValue, ":" + valueBindingName);
+          var valueStr = ModelDBUtils.getStringFromProtoObject(value);
+          if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
+            valueStr = value.getStringValue();
+          }
+          final var finalValueStr = valueStr;
+          queryContext =
+              queryContext.addBind(
+                  q -> q.bind(valueBindingName, wrapValue(finalOperator, finalValueStr)));
+          break;
+        case LIST_VALUE:
+          List<Object> valueList = new LinkedList<>();
+          for (final var value1 : value.getListValue().getValuesList()) {
+            if (value1.getKindCase().ordinal() == Value.KindCase.STRING_VALUE.ordinal()) {
+              var valueStr1 = ModelDBUtils.getStringFromProtoObject(value1);
+              if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
+                valueStr1 = value.getStringValue();
+              }
+              valueList.add(valueStr1);
+            }
+          }
+
+          if (!valueList.isEmpty()) {
+            sql += applyOperator(finalOperator, colValue, "<" + valueBindingName + ">");
+            queryContext = queryContext.addBind(q -> q.bindList(valueBindingName, valueList));
+          }
+          break;
+        default:
+          return InternalFuture.failedStage(
+              new UnimplementedException("Unknown 'Value' type recognized"));
+      }
+
+      if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+          || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+        queryContext =
+            queryContext.addCondition(String.format("experiment_run.id NOT IN (%s)", sql));
+      } else {
+        queryContext = queryContext.addCondition(String.format("experiment_run.id IN (%s)", sql));
+      }
+
+      return InternalFuture.completedInternalFuture(queryContext);
+    } catch (Exception ex) {
+      return InternalFuture.failedStage(ex);
+    }
+  }
+
   private String columnAsNumber(String colName, boolean isString) {
     if (config.database.RdbConfiguration.isPostgres()) {
       if (isString) {
@@ -179,9 +259,13 @@ public class PredicatesHandler {
       case OperatorEnum.Operator.NE_VALUE:
         return String.format("%s != %s", colName, valueBinding);
       case OperatorEnum.Operator.CONTAIN_VALUE:
-        return String.format("%s LIKE %s", colName, valueBinding);
+        return String.format(
+            "%s LIKE %s",
+            "lower(" + colName + ") ", Pattern.compile(valueBinding).toString().toLowerCase());
       case OperatorEnum.Operator.NOT_CONTAIN_VALUE:
-        return String.format("%s NOT LIKE %s", colName, valueBinding);
+        return String.format(
+            "%s NOT LIKE %s",
+            "lower(" + colName + ") ", Pattern.compile(valueBinding).toString().toLowerCase());
       case OperatorEnum.Operator.IN_VALUE:
         return String.format("%s IN (%s)", colName, valueBinding);
       default:
