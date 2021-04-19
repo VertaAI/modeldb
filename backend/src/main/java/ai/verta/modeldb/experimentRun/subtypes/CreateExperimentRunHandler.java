@@ -7,40 +7,22 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
-import ai.verta.uac.Empty;
-import ai.verta.uac.Entities;
-import ai.verta.uac.ModelDBActionEnum;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.Resources;
-import ai.verta.uac.RoleBinding;
-import ai.verta.uac.RoleScope;
-import ai.verta.uac.ServiceEnum;
-import ai.verta.uac.SetRoleBinding;
-import ai.verta.uac.UserInfo;
+import ai.verta.uac.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Executor;
 
 public class CreateExperimentRunHandler {
@@ -102,50 +84,55 @@ public class CreateExperimentRunHandler {
     return futureTask
         .thenCompose(
             unused ->
-                TrialUtils.futureValidateExperimentRunPerWorkspaceForTrial(config.trial, executor),
-            executor)
-        .thenCompose(
-            unused ->
                 FutureGrpc.ClientRequest(
                     uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
             executor)
         .thenCompose(
-            currentLoginUserInfo -> {
-              final var experimentRun = getExperimentRunFromRequest(request, currentLoginUserInfo);
-              TrialUtils.validateMaxArtifactsForTrial(
-                  config.trial, experimentRun.getArtifactsCount(), 0);
-              checkInsertedEntityAlreadyExists(experimentRun)
-                  .thenAccept(
-                      exists -> {
-                        if (exists) {
-                          throw new AlreadyExistsException(
-                              "ExperimentRun already exists in database");
-                        }
-                      },
-                      executor)
-                  .thenRun(() -> insertExperimentRun(experimentRun), executor);
-            },
-            executor)
-        /*.thenCompose(
+            currentLoginUserInfo ->
+                TrialUtils.futureValidateExperimentRunPerWorkspaceForTrial(config.trial, executor)
+                    .thenCompose(
+                        unused -> {
+                          final var experimentRun =
+                              getExperimentRunFromRequest(request, currentLoginUserInfo);
+
+                          TrialUtils.validateMaxArtifactsForTrial(
+                              config.trial, experimentRun.getArtifactsCount(), 0);
+
+                          return checkInsertedEntityAlreadyExists(experimentRun)
+                              .thenAccept(
+                                  exists -> {
+                                    if (exists) {
+                                      throw new AlreadyExistsException(
+                                          "ExperimentRun already exists in database");
+                                    }
+                                  },
+                                  executor)
+                              .thenCompose(unused2 -> insertExperimentRun(experimentRun), executor)
+                              .thenCompose(
+                                  unused2 -> createRoleBindingsForExperimentRun(experimentRun),
+                                  executor)
+                              .thenApply(unused2 -> experimentRun, executor);
+                        },
+                        executor),
+            executor);
+    /*.thenCompose(
+    experimentRun -> {
+      // TODO: Fix below logic for checking privileges of linked dataset versions
+      */
+    /*if (experimentRun.getDatasetsCount() > 0 && config.populateConnectionsBasedOnPrivileges) {
+      experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
+    }*/
+    /*
+          return InternalFuture.completedInternalFuture(experimentRun);
+        },
+        executor)
+    .thenCompose(
         experimentRun -> {
-          // TODO: Fix below logic for checking privileges of linked dataset versions
-          */
-        /*if (experimentRun.getDatasetsCount() > 0 && config.populateConnectionsBasedOnPrivileges) {
-          experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
-        }*/
-        /*
-              return InternalFuture.completedInternalFuture(experimentRun);
-            },
-            executor)
-        .thenCompose(
-            experimentRun -> {
-              // TODO: Fix populating logic of setVersioned_inputs,
-              // setHyperparameter_element_mappings here
-              return InternalFuture.completedInternalFuture(experimentRun);
-            },
-            executor)*/
-        .thenCompose(this::insertExperimentRun, executor)
-        .thenCompose(experimentRun -> createRoleBindingsForExperimentRun(experimentRun), executor);
+          // TODO: Fix populating logic of setVersioned_inputs,
+          // setHyperparameter_element_mappings here
+          return InternalFuture.completedInternalFuture(experimentRun);
+        },
+        executor)*/
   }
 
   /**
@@ -262,38 +249,37 @@ public class CreateExperimentRunHandler {
               query.execute();
             })
         .thenCompose(
-            handle -> tagsHandler.addTags(newExperimentRun.getId(), newExperimentRun.getTagsList()),
-            executor)
-        .thenCompose(
-            handle ->
-                attributeHandler.logKeyValues(
-                    newExperimentRun.getId(), newExperimentRun.getAttributesList()),
-            executor)
-        .thenCompose(
-            handle ->
-                hyperparametersHandler.logKeyValues(
-                    newExperimentRun.getId(), newExperimentRun.getHyperparametersList()),
-            executor)
-        .thenCompose(
-            handle ->
-                metricsHandler.logKeyValues(
-                    newExperimentRun.getId(), newExperimentRun.getMetricsList()),
-            executor)
-        // TODO .thenCompose(handle -> artifactHandler.logArtifacts(newExperimentRun.getId(),
-        // newExperimentRun.getArtifactsList()), executor)
-        // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
-        // newExperimentRun.getDatasetsList()), executor)
-        .thenCompose(
-            handle ->
-                observationHandler.logObservations(
-                    newExperimentRun.getId(), newExperimentRun.getObservationsList(), now),
-            executor)
-        // TODO .thenCompose(handle -> featureHandler.logFeatures(newExperimentRun.getId(),
-        // newExperimentRun.getFeaturesList()), executor)
-        // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
-        // TODO .thenCompose(handle -> versioned_inputs, executor)
+            unused -> {
+              final var futureLogs = new LinkedList<InternalFuture<Void>>();
 
-        .thenCompose(unused -> InternalFuture.completedInternalFuture(newExperimentRun), executor);
+              futureLogs.add(
+                  tagsHandler.addTags(newExperimentRun.getId(), newExperimentRun.getTagsList()));
+              futureLogs.add(
+                  attributeHandler.logKeyValues(
+                      newExperimentRun.getId(), newExperimentRun.getAttributesList()));
+              futureLogs.add(
+                  hyperparametersHandler.logKeyValues(
+                      newExperimentRun.getId(), newExperimentRun.getHyperparametersList()));
+              futureLogs.add(
+                  metricsHandler.logKeyValues(
+                      newExperimentRun.getId(), newExperimentRun.getMetricsList()));
+              futureLogs.add(
+                  observationHandler.logObservations(
+                      newExperimentRun.getId(), newExperimentRun.getObservationsList(), now));
+
+              return InternalFuture.sequence(futureLogs, executor)
+                  .thenAccept(unused2 -> {}, executor);
+            },
+            executor);
+    // TODO .thenCompose(handle -> artifactHandler.logArtifacts(newExperimentRun.getId(),
+    // newExperimentRun.getArtifactsList()), executor)
+    // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
+    // newExperimentRun.getDatasetsList()), executor)
+
+    // TODO .thenCompose(handle -> featureHandler.logFeatures(newExperimentRun.getId(),
+    // newExperimentRun.getFeaturesList()), executor)
+    // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
+    // TODO .thenCompose(handle -> versioned_inputs, executor)
   }
 
   private EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {
@@ -337,14 +323,7 @@ public class CreateExperimentRunHandler {
           query.bind("experimentId", experimentRun.getExperimentId());
 
           long count = query.mapTo(Long.class).one();
-          boolean existStatus = false;
-          if (count > 0) {
-            existStatus = true;
-          }
-
-          // Throw error if it is an insert request and ExperimentRun with same name already
-          // exists
-          return existStatus;
+          return count > 0;
         });
   }
 
@@ -353,7 +332,7 @@ public class CreateExperimentRunHandler {
     return roleName + "_" + resourceTypeName + "_" + resourceId + "_" + "User_" + vertaId;
   }
 
-  private InternalFuture<ExperimentRun> createRoleBindingsForExperimentRun(
+  private InternalFuture<Void> createRoleBindingsForExperimentRun(
       final ExperimentRun experimentRun) {
     ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceType =
         ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN;
@@ -392,7 +371,6 @@ public class CreateExperimentRunHandler {
             response -> {
               LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response);
             },
-            executor)
-        .thenCompose(unused -> InternalFuture.completedInternalFuture(experimentRun), executor);
+            executor);
   }
 }
