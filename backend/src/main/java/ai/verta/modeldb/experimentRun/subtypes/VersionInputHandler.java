@@ -60,23 +60,19 @@ public class VersionInputHandler {
     }
   }
 
-  public InternalFuture<ExperimentRun> validateAndInsertVersionedInputs(
-      ExperimentRun experimentRun) {
+  public InternalFuture<Void> validateAndInsertVersionedInputs(ExperimentRun experimentRun) {
     if (experimentRun.hasVersionedInputs()) {
       InternalFuture<Map<String, Map.Entry<BlobExpanded, String>>> versionedInputFutureTask =
           validateVersioningEntity(experimentRun.getVersionedInputs());
-      return versionedInputFutureTask
-          .thenCompose(
-              locationBlobWithHashMap ->
-                  insetVersioningInput(
-                      experimentRun.getVersionedInputs(),
-                      locationBlobWithHashMap,
-                      experimentRun.getId()),
-              executor)
-          .thenCompose(unused -> InternalFuture.completedInternalFuture(experimentRun), executor);
-    } else {
-      return InternalFuture.completedInternalFuture(experimentRun);
+      return versionedInputFutureTask.thenCompose(
+          locationBlobWithHashMap ->
+              insetVersioningInput(
+                  experimentRun.getVersionedInputs(),
+                  locationBlobWithHashMap,
+                  experimentRun.getId()),
+          executor);
     }
+    return InternalFuture.runAsync(() -> {}, executor);
   }
 
   private InternalFuture<Void> insetVersioningInput(
