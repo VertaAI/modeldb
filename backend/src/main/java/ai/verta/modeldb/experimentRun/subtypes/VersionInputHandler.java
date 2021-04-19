@@ -20,6 +20,7 @@ import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import com.google.rpc.Code;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +67,7 @@ public class VersionInputHandler {
           validateVersioningEntity(experimentRun.getVersionedInputs());
       return versionedInputFutureTask.thenCompose(
           locationBlobWithHashMap ->
-              insetVersioningInput(
+              insertVersioningInput(
                   experimentRun.getVersionedInputs(),
                   locationBlobWithHashMap,
                   experimentRun.getId()),
@@ -75,7 +76,7 @@ public class VersionInputHandler {
     return InternalFuture.runAsync(() -> {}, executor);
   }
 
-  private InternalFuture<Void> insetVersioningInput(
+  private InternalFuture<Void> insertVersioningInput(
       VersioningEntry versioningEntry,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
       String entityId) {
@@ -190,52 +191,68 @@ public class VersionInputHandler {
    */
   private InternalFuture<Map<String, Map.Entry<BlobExpanded, String>>> validateVersioningEntity(
       VersioningEntry versioningEntry) {
-    String errorMessage = null;
-    if (versioningEntry.getRepositoryId() == 0L) {
-      errorMessage = "Repository Id not found in VersioningEntry";
-    } else if (versioningEntry.getCommit().isEmpty()) {
-      errorMessage = "Commit hash not found in VersioningEntry";
-    }
 
-    if (errorMessage != null) {
-      throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
-    }
-    Map<String, Map.Entry<BlobExpanded, String>> requestedLocationBlobWithHashMap = new HashMap<>();
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryIdentification repositoryIdentification =
-          RepositoryIdentification.newBuilder()
-              .setRepoId(versioningEntry.getRepositoryId())
-              .build();
-      CommitEntity commitEntity =
-          commitDAO.getCommitEntity(
-              session,
-              versioningEntry.getCommit(),
-              (session1) -> repositoryDAO.getRepositoryById(session, repositoryIdentification));
-      if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
-        Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
-            blobDAO.getCommitBlobMapWithHash(
-                session, commitEntity.getRootSha(), new ArrayList<>(), Collections.emptyList());
-        for (Map.Entry<String, Location> locationBlobKeyMap :
-            versioningEntry.getKeyLocationMapMap().entrySet()) {
-          String locationKey = String.join("#", locationBlobKeyMap.getValue().getLocationList());
-          if (!locationBlobWithHashMap.containsKey(locationKey)) {
-            throw new ModelDBException(
-                "Blob Location '"
-                    + locationBlobKeyMap.getValue().getLocationList()
-                    + "' for key '"
-                    + locationBlobKeyMap.getKey()
-                    + "' not found in commit blobs",
-                io.grpc.Status.Code.INVALID_ARGUMENT);
+    final var futureTask =
+        InternalFuture.runAsync(
+            () -> {
+              String errorMessage = null;
+              if (versioningEntry.getRepositoryId() == 0L) {
+                errorMessage = "Repository Id not found in VersioningEntry";
+              } else if (versioningEntry.getCommit().isEmpty()) {
+                errorMessage = "Commit hash not found in VersioningEntry";
+              }
+
+              if (errorMessage != null) {
+                throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+              }
+            },
+            executor);
+
+    return futureTask.thenCompose(
+        unused -> {
+          Map<String, Map.Entry<BlobExpanded, String>> requestedLocationBlobWithHashMap =
+              new HashMap<>();
+          try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+            RepositoryIdentification repositoryIdentification =
+                RepositoryIdentification.newBuilder()
+                    .setRepoId(versioningEntry.getRepositoryId())
+                    .build();
+            CommitEntity commitEntity =
+                commitDAO.getCommitEntity(
+                    session,
+                    versioningEntry.getCommit(),
+                    (session1) ->
+                        repositoryDAO.getRepositoryById(session, repositoryIdentification));
+            if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
+              Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
+                  blobDAO.getCommitBlobMapWithHash(
+                      session,
+                      commitEntity.getRootSha(),
+                      new ArrayList<>(),
+                      Collections.emptyList());
+              for (Map.Entry<String, Location> locationBlobKeyMap :
+                  versioningEntry.getKeyLocationMapMap().entrySet()) {
+                String locationKey =
+                    String.join("#", locationBlobKeyMap.getValue().getLocationList());
+                if (!locationBlobWithHashMap.containsKey(locationKey)) {
+                  return InternalFuture.failedStage(
+                      new ModelDBException(
+                          "Blob Location '"
+                              + locationBlobKeyMap.getValue().getLocationList()
+                              + "' for key '"
+                              + locationBlobKeyMap.getKey()
+                              + "' not found in commit blobs",
+                          Code.INVALID_ARGUMENT));
+                }
+                requestedLocationBlobWithHashMap.put(
+                    locationKey, locationBlobWithHashMap.get(locationKey));
+              }
+            }
+          } catch (Exception ex) {
+            return InternalFuture.failedStage(ex);
           }
-          requestedLocationBlobWithHashMap.put(
-              locationKey, locationBlobWithHashMap.get(locationKey));
-        }
-      }
-    } catch (ModelDBException ex) {
-      throw ex;
-    } catch (Exception ex) {
-      throw new ModelDBException(ex);
-    }
-    return InternalFuture.completedInternalFuture(requestedLocationBlobWithHashMap);
+          return InternalFuture.completedInternalFuture(requestedLocationBlobWithHashMap);
+        },
+        executor);
   }
 }
