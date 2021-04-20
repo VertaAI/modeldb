@@ -45,7 +45,6 @@ class TestNotificationChannel:
 
     def test_crud_workspace(self, client, organization, strs, created_entities):
         strs = iter(strs)
-        organization.add_member(client._conn.auth["Grpc-Metadata-email"])
         name = _utils.generate_default_name()
         workspace = organization.name
         notification_channels = client.operations.notification_channels
