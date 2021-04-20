@@ -14,15 +14,41 @@ from .. import utils
 class _Alerter(object):
     _TYPE = _AlertService.AlerterTypeEnum.UNKNOWN
 
+    def __init__(self, comparison):
+        if not isinstance(comparison, comparison_module._VertaComparison):
+            raise TypeError(
+                "`comparison` must be an object from verta.common.comparison,"
+                " not {}".format(type(comparison))
+            )
+
+        self._comparison = comparison
+
     def __repr__(self):
         return "<{} alert>".format(
             _AlertService.AlerterTypeEnum.AlerterType.Name(self._TYPE).lower()
         )
 
+    @property
+    def comparison(self):
+        return self._comparison
+
     @abc.abstractmethod
     def _as_proto(self):
         raise NotImplementedError
 
+    @staticmethod
+    def _from_proto(msg):
+        comparison = comparison_module._VertaComparison._from_proto(
+            msg.operator,
+            msg.threshold,
+        )
+
+        if isinstance(msg, _AlertService.AlertFixed):
+            return FixedAlerter(comparison)
+        elif isinstance(msg, _AlertService.AlertReference):
+            return ReferenceAlerter(comparison, msg.reference_sample_id)
+
+        raise ValueError("unrecognized alerter type {}".format(type(msg)))
 
 class FixedAlerter(_Alerter):
     """
@@ -41,15 +67,6 @@ class FixedAlerter(_Alerter):
     """
 
     _TYPE = _AlertService.AlerterTypeEnum.FIXED
-
-    def __init__(self, comparison):
-        if not isinstance(comparison, comparison_module._VertaComparison):
-            raise TypeError(
-                "`comparison` must be an object from verta.common.comparison,"
-                " not {}".format(type(comparison))
-            )
-
-        self._comparison = comparison
 
     def __repr__(self):
         return "<fixed alerter ({})>".format(self._comparison)
@@ -100,13 +117,7 @@ class ReferenceAlerter(_Alerter):
     _TYPE = _AlertService.AlerterTypeEnum.REFERENCE
 
     def __init__(self, comparison, reference_sample):
-        if not isinstance(comparison, comparison_module._VertaComparison):
-            raise TypeError(
-                "`comparison` must be an object from verta.common.comparison,"
-                " not {}".format(type(comparison))
-            )
-
-        self._comparison = comparison
+        super(ReferenceAlerter, self).__init__(comparison)
         self._reference_sample_id = utils.extract_id(reference_sample)
 
     def _as_proto(self):
