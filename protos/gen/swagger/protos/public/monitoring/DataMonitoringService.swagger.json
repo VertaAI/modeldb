@@ -667,6 +667,10 @@
         "name": {
           "type": "string"
         },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
         "created_at_timestamp_millis": {
           "type": "string",
           "format": "uint64"
@@ -674,13 +678,6 @@
         "updated_at_timestamp_millis": {
           "type": "string",
           "format": "uint64"
-        },
-        "workspace_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "workspace_name": {
-          "type": "string"
         }
       }
     },

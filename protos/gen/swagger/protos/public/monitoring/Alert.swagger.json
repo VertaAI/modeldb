@@ -846,9 +846,6 @@
         "workspace_id": {
           "type": "string",
           "format": "uint64"
-        },
-        "workspace_name": {
-          "type": "string"
         }
       },
       "title": "Content of an notification channel"
