@@ -56,7 +56,7 @@ message CreateNotificationChannelRequest {
     }
 
     NotificationChannelTypeEnum.NotificationChannelType type = 5;
-    oneof channel {
+    oneof notification_channel {
         NotificationChannelSlackWebhook slack_webhook = 6;
     }
 
