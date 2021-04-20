@@ -2,7 +2,7 @@
 
 import datetime
 
-from verta._internal_utils import time_utils
+from verta._internal_utils import _utils, time_utils
 from verta.operations.monitoring.notification_channel import (
     SlackNotificationChannel,
 )
@@ -42,6 +42,37 @@ class TestNotificationChannel:
         created_entities.append(channel)
         assert channel._msg.created_at_millis == created_at_millis
         assert channel._msg.updated_at_millis == updated_at_millis
+
+    def test_crud_workspace(self, client, organization, strs, created_entities):
+        strs = iter(strs)
+        organization.add_member(client._conn.auth["Grpc-Metadata-email"])
+        name = _utils.generate_default_name()
+        workspace = organization.name
+        notification_channels = client.operations.notification_channels
+
+        personal_channel = notification_channels.create(
+            name,
+            SlackNotificationChannel(next(strs)),
+        )
+        created_entities.append(personal_channel)
+        assert personal_channel.workspace == client.get_workspace()
+        assert personal_channel.id == notification_channels.get(name).id
+        listed_channels = notification_channels.list()
+        assert len(listed_channels) == 1
+        assert personal_channel.id == listed_channels[0].id
+
+        # same name, different workspace
+        org_channel = notification_channels.create(
+            name,
+            SlackNotificationChannel(next(strs)),
+            workspace=workspace,
+        )
+        created_entities.append(org_channel)
+        assert org_channel.workspace == workspace
+        assert org_channel.id == notification_channels.get(name, workspace=workspace).id
+        listed_channels = notification_channels.list(workspace=workspace)
+        assert len(listed_channels) == 1
+        assert org_channel.id == listed_channels[0].id
 
 
 class TestSlack:
