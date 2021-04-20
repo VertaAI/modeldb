@@ -271,13 +271,14 @@ public class CreateExperimentRunHandler {
               futureLogs.add(
                   observationHandler.logObservations(
                       newExperimentRun.getId(), newExperimentRun.getObservationsList(), now));
+              futureLogs.add(
+                  artifactHandler.logArtifacts(
+                      newExperimentRun.getId(), newExperimentRun.getArtifactsList()));
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);
             },
             executor);
-    // TODO .thenCompose(handle -> artifactHandler.logArtifacts(newExperimentRun.getId(),
-    // newExperimentRun.getArtifactsList()), executor)
     // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
     // newExperimentRun.getDatasetsList()), executor)
 
