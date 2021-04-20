@@ -101,6 +101,17 @@ public class CreateExperimentRunHandler {
                               .thenCompose(
                                   unused2 -> createRoleBindingsForExperimentRun(experimentRun),
                                   executor)
+                              .thenCompose(
+                                  unused2 ->
+                                      jdbi.useHandle(
+                                          handle ->
+                                              handle
+                                                  .createUpdate(
+                                                      "UPDATE experiment_run SET created=:created WHERE id=:id")
+                                                  .bind("created", true)
+                                                  .bind("id", experimentRun.getId())
+                                                  .execute()),
+                                  executor)
                               .thenApply(unused2 -> experimentRun, executor);
                         },
                         executor),
@@ -214,6 +225,7 @@ public class CreateExperimentRunHandler {
               runValueMap.put(
                   "environment", ModelDBUtils.getStringFromProtoObject(environmentBlob));
               runValueMap.put("deleted", false);
+              runValueMap.put("created", false);
 
               // Created comma separated field names from keys of above map
               String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
@@ -262,6 +274,9 @@ public class CreateExperimentRunHandler {
                   observationHandler.logObservations(
                       newExperimentRun.getId(), newExperimentRun.getObservationsList(), now));
               futureLogs.add(
+                  artifactHandler.logArtifacts(
+                      newExperimentRun.getId(), newExperimentRun.getArtifactsList()));
+              futureLogs.add(
                   featureHandler.logFeatures(
                       newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
 
@@ -269,8 +284,6 @@ public class CreateExperimentRunHandler {
                   .thenAccept(unused2 -> {}, executor);
             },
             executor);
-    // TODO .thenCompose(handle -> artifactHandler.logArtifacts(newExperimentRun.getId(),
-    // newExperimentRun.getArtifactsList()), executor)
     // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
     // newExperimentRun.getDatasetsList()), executor)
 
