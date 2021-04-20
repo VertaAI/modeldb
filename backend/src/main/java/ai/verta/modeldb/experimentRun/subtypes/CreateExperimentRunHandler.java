@@ -40,6 +40,7 @@ public class CreateExperimentRunHandler {
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
   private final FeatureHandler featureHandler;
+  private final DatasetHandler datasetHandler;
 
   public CreateExperimentRunHandler(Executor executor, FutureJdbi jdbi, UAC uac) {
     this.executor = executor;
@@ -54,6 +55,7 @@ public class CreateExperimentRunHandler {
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
     featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
+    datasetHandler = new DatasetHandler(executor, jdbi, "ExperimentRunEntity");
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
@@ -279,13 +281,14 @@ public class CreateExperimentRunHandler {
               futureLogs.add(
                   featureHandler.logFeatures(
                       newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
+              futureLogs.add(
+                  datasetHandler.logArtifacts(
+                      newExperimentRun.getId(), newExperimentRun.getDatasetsList()));
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);
             },
             executor);
-    // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
-    // newExperimentRun.getDatasetsList()), executor)
     // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
     // TODO .thenCompose(handle -> versioned_inputs, executor)
   }
