@@ -62,8 +62,7 @@ class FixedAlerter(_Alerter):
 
 
 class ReferenceAlerter(_Alerter):
-    """
-    Compare distances between samples and a reference against a threshold.
+    """Compare distances between samples and a reference against a threshold.
 
     Parameters
     ----------
