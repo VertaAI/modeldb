@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+import warnings
 
 import json
 from datetime import datetime
@@ -72,7 +73,9 @@ class SummaryQuery(object):
         )
 
     def __repr__(self):
-        return "SummaryQuery({}, {}, {}, {})".format(self._ids, self._names, self._type_names, self._monitored_entity_ids)
+        return "SummaryQuery({}, {}, {}, {})".format(
+            self._ids, self._names, self._type_names, self._monitored_entity_ids
+        )
 
 
 class SummarySampleQuery(object):
@@ -106,9 +109,15 @@ class SummarySampleQuery(object):
         obj._find_summaries = msg.filter.find_summaries
         obj._sample_ids = msg.filter.sample_ids
         obj._labels = msg.filter.labels
-        obj._time_window_start = time_utils.datetime_from_millis(msg.filter.time_window_start_at_millis)
-        obj._time_window_end = time_utils.datetime_from_millis(msg.filter.time_window_end_at_millis)
-        obj._created_after = time_utils.datetime_from_millis(msg.filter.created_at_after_millis)
+        obj._time_window_start = time_utils.datetime_from_millis(
+            msg.filter.time_window_start_at_millis
+        )
+        obj._time_window_end = time_utils.datetime_from_millis(
+            msg.filter.time_window_end_at_millis
+        )
+        obj._created_after = time_utils.datetime_from_millis(
+            msg.filter.created_at_after_millis
+        )
         obj._page_number = msg.page_number
         obj._page_limit = pagination_utils.page_limit_from_proto(msg.page_limit)
 
@@ -120,8 +129,12 @@ class SummarySampleQuery(object):
                 find_summaries=self._find_summaries,
                 sample_ids=self._sample_ids,
                 labels=self._labels,
-                time_window_start_at_millis=time_utils.epoch_millis(self._time_window_start),
-                time_window_end_at_millis=time_utils.epoch_millis(self._time_window_end),
+                time_window_start_at_millis=time_utils.epoch_millis(
+                    self._time_window_start
+                ),
+                time_window_end_at_millis=time_utils.epoch_millis(
+                    self._time_window_end
+                ),
                 created_at_after_millis=time_utils.epoch_millis(self._created_after),
             ),
             page_number=self._page_number,
@@ -146,14 +159,21 @@ class Summary(entity._ModelDBEntity):
         self.type = msg.type_name
 
     def __repr__(self):
-        return "Summary name:{}, type:{}, monitored_entity_id:{}".format(self.name, self.type, self.monitored_entity_id)
+        return "Summary name:{}, type:{}, monitored_entity_id:{}".format(
+            self.name, self.type, self.monitored_entity_id
+        )
 
-    def log_sample(self, data, labels, time_window_start, time_window_end, created_at=None):
+    def log_sample(
+        self, data, labels, time_window_start, time_window_end, created_at=None
+    ):
         if not isinstance(data, data_types._VertaDataType):
-            raise TypeError("expected a supported VertaDataType, found {}".format(type(data)))
+            raise TypeError(
+                "expected a supported VertaDataType, found {}".format(type(data))
+            )
         if data._type_string() != self.type:
-            raise TypeError("expected a {}, found {}".format(self.type, data._type_string()))
-
+            raise TypeError(
+                "expected a {}, found {}".format(self.type, data._type_string())
+            )
 
         if not created_at:
             created_at = time_utils.now()
@@ -191,8 +211,13 @@ class Summary(entity._ModelDBEntity):
         success = self._conn.must_proto_response(
             response, FindSummarySampleRequest.Response
         )
-        samples = [SummarySample(self._conn, self._conf, record) for record in success.samples]
+        samples = [
+            SummarySample(self._conn, self._conf, record) for record in success.samples
+        ]
         return samples
+
+    def has_type(self, data_type_cls):
+        return self.type == data_type_cls._type_string()
 
     @staticmethod
     def _labels_proto(labels):
@@ -235,7 +260,9 @@ class SummarySample(entity._ModelDBEntity):
                 "sample_id: {}".format(self.id),
                 "content: {}".format(self.content),
                 "labels: {}".format(self.labels),
-                "window: [{}, {})".format(self.time_window_start_at, self.time_window_end_at)
+                "window: [{}, {})".format(
+                    self.time_window_start_at, self.time_window_end_at
+                ),
             )
         )
 
@@ -252,9 +279,11 @@ class Summaries:
         self._conn = conn
         self._conf = conf
 
-
     def create(self, name, data_type_cls, monitored_entity):
-        assert issubclass(data_type_cls, data_types._VertaDataType)
+        if not issubclass(data_type_cls, data_types._VertaDataType):
+            raise TypeError(
+                "expected a supported VertaDataType, found {}".format(type(data_type_cls))
+            )
         msg = CreateSummaryRequest(
             monitored_entity_id=monitored_entity.id,
             name=name,
@@ -264,6 +293,31 @@ class Summaries:
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         proto = self._conn.must_proto_response(response, SummaryProto)
         return Summary(self._conn, self._conf, proto)
+
+    def get_or_create(self, name, data_type_cls, monitored_entity):
+        if not issubclass(data_type_cls, data_types._VertaDataType):
+            raise TypeError(
+                "expected a supported VertaDataType, found {}".format(type(data_type_cls))
+            )
+        query = SummaryQuery(names=[name], monitored_entities=[monitored_entity])
+        retrieved = self.find(query)
+        if retrieved and len(retrieved) > 1:
+            warnings.warn(
+                "found multiple summaries with name: {}, for monitored entity: {}".format(
+                    name, monitored_entity
+                )
+            )
+        if retrieved:
+            summary = retrieved[0]
+        else:
+            summary = self.create(name, data_type_cls, monitored_entity)
+        if not summary.has_type(data_type_cls):
+            warnings.warn(
+                "retrieved summary has type {} although type {} was specified for create".format(
+                    summary.type, data_type_cls._type_string()
+                )
+            )
+        return summary
 
     def find(self, query=None):
         if query is None:
@@ -278,7 +332,9 @@ class Summaries:
         maybe_summaries = self._conn.maybe_proto_response(
             response, FindSummaryRequest.Response
         )
-        maybe_summaries = [Summary(self._conn, self._conf, msg) for msg in maybe_summaries.summaries]
+        maybe_summaries = [
+            Summary(self._conn, self._conf, msg) for msg in maybe_summaries.summaries
+        ]
         return maybe_summaries
 
     def delete(self, summaries):
