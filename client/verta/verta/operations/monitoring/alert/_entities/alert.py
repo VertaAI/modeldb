@@ -27,6 +27,8 @@ class Alert(entity._ModelDBEntity):
         Name of this alert.
     history : list of :class:`AlertHistoryItem`
         History of this alert's status changes.
+    monitored_entity_id : int
+        ID of the monitored entity this alert is associated with.
     status : :class:`~verta.operations.monitoring.alert.status._AlertStatus`
         Current status of this alert.
     summary_sample_query : :class:`~verta.operations.monitoring.summary.SummarySampleQuery`
