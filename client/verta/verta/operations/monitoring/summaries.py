@@ -293,7 +293,7 @@ class Summaries:
         retrieved = self.find(query)
         if retrieved and len(retrieved) > 1:
             warnings.warn(
-                "Found multiple summaries with name: {}, for monitored entity: {}.".format(
+                "found multiple summaries with name: {}, for monitored entity: {}".format(
                     name, monitored_entity
                 )
             )
