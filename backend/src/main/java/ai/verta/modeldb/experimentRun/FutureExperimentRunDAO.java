@@ -47,11 +47,9 @@ import ai.verta.uac.ServiceEnum;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -268,7 +266,7 @@ public class FutureExperimentRunDAO {
                 .execute());
   }
 
-  private InternalFuture<Void> checkProjectPermission(
+  private InternalFuture<Void> checkEntityPermission(
       List<String> projId,
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
@@ -324,12 +322,12 @@ public class FutureExperimentRunDAO {
           switch (action) {
             case DELETE:
               // TODO: check if we should using DELETE for the ER itself
-              return checkProjectPermission(
+              return checkEntityPermission(
                   maybeProjectIds,
                   ModelDBActionEnum.ModelDBServiceActions.UPDATE,
                   ModelDBServiceResourceTypes.PROJECT);
             default:
-              return checkProjectPermission(
+              return checkEntityPermission(
                   maybeProjectIds, action, ModelDBServiceResourceTypes.PROJECT);
           }
         },
@@ -359,26 +357,12 @@ public class FutureExperimentRunDAO {
   }
 
   /**
-   * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false)
-   */
-  private ExperimentRun checkDatasetVersionBasedOnPrivileges(
-      ExperimentRun experimentRun, boolean errorOut) {
-    ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
-    List<Artifact> accessibleDatasetVersions =
-        getPrivilegedDatasets(experimentRun.getDatasetsList(), errorOut);
-    experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasetVersions);
-    return experimentRunBuilder.build();
-  }
-
-  /**
    * @param newDatasets : new datasets for privilege check
    * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false)
    * @return {@link List} : accessible datasets
-   * @throws ModelDBException: modelDBException
    */
-  private List<Artifact> getPrivilegedDatasets(List<Artifact> newDatasets, boolean errorOut) {
-    List<Artifact> accessibleDatasets = new ArrayList<>();
-    List<String> accessibleDatasetVersionIds = new ArrayList<>();
+  private InternalFuture<List<Artifact>> filterAndGetPrivilegedDatasetsOnly(
+      List<Artifact> newDatasets, boolean errorOut) {
     List<String> newDatasetLinkedIds = new ArrayList<>();
     for (Artifact dataset : newDatasets) {
       String datasetVersionId = dataset.getLinkedArtifactId();
@@ -387,52 +371,65 @@ public class FutureExperimentRunDAO {
       }
     }
 
-    jdbi.useHandle(
-        handle -> {
-          Map<String, Long> datasetVersionDatasetMap = new HashMap<>();
-          var query =
+    if (newDatasetLinkedIds.isEmpty()) {
+      return InternalFuture.completedInternalFuture(newDatasets);
+    }
+    return jdbi.withHandle(
+            handle -> {
+              Map<String, Long> datasetVersionDatasetMap = new HashMap<>();
               handle
                   .createQuery(
                       " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<datasetIds>) ")
-                  .bind("datasetIds", newDatasetLinkedIds);
-          query
-              .map(
-                  (rs, ctx) ->
-                      datasetVersionDatasetMap.put(
-                          rs.getString("commit_hash"), rs.getLong("repository_id")))
-              .list();
+                  .bindList("datasetIds", newDatasetLinkedIds)
+                  .map(
+                      (rs, ctx) ->
+                          datasetVersionDatasetMap.put(
+                              rs.getString("commit_hash"), rs.getLong("repository_id")))
+                  .list();
+              return datasetVersionDatasetMap;
+            })
+        .thenCompose(
+            datasetVersionDatasetMap -> {
+              List<String> accessibleDatasetVersionIds = new ArrayList<>();
+              List<InternalFuture<Artifact>> internalFutures = new LinkedList<>();
+              for (Artifact dataset : newDatasets) {
+                String datasetVersionId = dataset.getLinkedArtifactId();
+                if (!datasetVersionId.isEmpty()
+                    && !accessibleDatasetVersionIds.contains(datasetVersionId)) {
+                  try {
+                    if (datasetVersionDatasetMap.containsKey(datasetVersionId)
+                        && datasetVersionDatasetMap.get(datasetVersionId) != null) {
+                      Long datasetId = datasetVersionDatasetMap.get(datasetVersionId);
 
-          for (Artifact dataset : newDatasets) {
-            String datasetVersionId = dataset.getLinkedArtifactId();
-            if (!datasetVersionId.isEmpty()
-                && !accessibleDatasetVersionIds.contains(datasetVersionId)) {
-              try {
-                if (datasetVersionDatasetMap.containsKey(datasetVersionId)
-                    && datasetVersionDatasetMap.get(datasetVersionId) != null) {
-                  Long datasetId = datasetVersionDatasetMap.get(datasetVersionId);
-                  checkEntityPermission(
-                      String.valueOf(datasetId),
-                      ModelDBActionEnum.ModelDBServiceActions.READ,
-                      ModelDBServiceResourceTypes.DATASET);
-                  accessibleDatasets.add(dataset);
-                  accessibleDatasetVersionIds.add(datasetVersionId);
+                      internalFutures.add(
+                          checkEntityPermission(
+                                  Collections.singletonList(String.valueOf(datasetId)),
+                                  ModelDBActionEnum.ModelDBServiceActions.READ,
+                                  ModelDBServiceResourceTypes.DATASET)
+                              .thenCompose(
+                                  unused -> {
+                                    accessibleDatasetVersionIds.add(datasetVersionId);
+                                    return InternalFuture.completedInternalFuture(dataset);
+                                  },
+                                  executor));
+                    } else {
+                      return InternalFuture.failedStage(
+                          new InvalidArgumentException(
+                              "Dataset not found for dataset version: " + datasetVersionId));
+                    }
+                  } catch (Exception ex) {
+                    LOGGER.trace(ex.getMessage());
+                    if (errorOut) {
+                      return InternalFuture.failedStage(ex);
+                    }
+                  }
                 } else {
-                  throw new InvalidArgumentException(
-                      "Dataset not found for dataset version: " + datasetVersionId);
-                }
-              } catch (Exception ex) {
-                LOGGER.debug(ex.getMessage());
-                if (errorOut) {
-                  throw ex;
+                  internalFutures.add(InternalFuture.completedInternalFuture(dataset));
                 }
               }
-            } else {
-              accessibleDatasets.add(dataset);
-            }
-          }
-        });
-
-    return accessibleDatasets;
+              return InternalFuture.sequence(internalFutures, executor);
+            },
+            executor);
   }
 
   private InternalFuture<Void> deleteExperimentRuns(List<String> runIds) {
@@ -486,10 +483,22 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
-    return checkProjectPermission(
+    return checkEntityPermission(
             Collections.singletonList(request.getProjectId()),
             ModelDBActionEnum.ModelDBServiceActions.UPDATE,
             ModelDBServiceResourceTypes.PROJECT)
-        .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
+        .thenCompose(
+            unused ->
+                filterAndGetPrivilegedDatasetsOnly(request.getDatasetsList(), true)
+                    .thenApply(
+                        privilegedDatasets ->
+                            request
+                                .toBuilder()
+                                .clearDatasets()
+                                .addAllDatasets(privilegedDatasets)
+                                .build(),
+                        executor),
+            executor)
+        .thenCompose(createExperimentRunHandler::createExperimentRun, executor);
   }
 }
