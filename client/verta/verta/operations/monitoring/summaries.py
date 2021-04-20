@@ -276,7 +276,10 @@ class Summaries:
         self._conf = conf
 
     def create(self, name, data_type_cls, monitored_entity):
-        assert issubclass(data_type_cls, data_types._VertaDataType)
+        if not issubclass(data_type_cls, data_types._VertaDataType):
+            raise TypeError(
+                "expected a supported VertaDataType, found {}".format(type(data))
+            )
         msg = CreateSummaryRequest(
             monitored_entity_id=monitored_entity.id,
             name=name,
@@ -288,7 +291,10 @@ class Summaries:
         return Summary(self._conn, self._conf, proto)
 
     def get_or_create(self, name, data_type_cls, monitored_entity):
-        assert issubclass(data_type_cls, data_types._VertaDataType)
+        if not issubclass(data_type_cls, data_types._VertaDataType):
+            raise TypeError(
+                "expected a supported VertaDataType, found {}".format(type(data))
+            )
         query = SummaryQuery(names=[name], monitored_entities=[monitored_entity])
         retrieved = self.find(query)
         if retrieved and len(retrieved) > 1:
