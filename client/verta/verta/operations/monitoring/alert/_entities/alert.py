@@ -60,6 +60,12 @@ class Alert(entity._ModelDBEntity):
         return list(map(AlertHistoryItem, history))
 
     @property
+    def monitored_entity_id(self):
+        self._refresh_cache()
+
+        return self._msg.monitored_entity_id
+
+    @property
     def name(self):
         self._refresh_cache()
 
