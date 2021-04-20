@@ -286,9 +286,6 @@ public class CreateExperimentRunHandler {
             executor);
     // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
     // newExperimentRun.getDatasetsList()), executor)
-
-    // TODO .thenCompose(handle -> featureHandler.logFeatures(newExperimentRun.getId(),
-    // newExperimentRun.getFeaturesList()), executor)
     // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
     // TODO .thenCompose(handle -> versioned_inputs, executor)
   }
