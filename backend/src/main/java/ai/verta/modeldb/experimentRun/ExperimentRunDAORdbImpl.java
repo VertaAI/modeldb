@@ -347,6 +347,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
       Transaction transaction = session.beginTransaction();
+      experimentRunObj.setCreated(true);
       session.saveOrUpdate(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun created successfully");

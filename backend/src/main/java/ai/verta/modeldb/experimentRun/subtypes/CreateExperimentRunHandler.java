@@ -39,6 +39,7 @@ public class CreateExperimentRunHandler {
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
+  private final FeatureHandler featureHandler;
   private final DatasetHandler datasetHandler;
 
   public CreateExperimentRunHandler(Executor executor, FutureJdbi jdbi, UAC uac) {
@@ -53,6 +54,7 @@ public class CreateExperimentRunHandler {
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
+    featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
     datasetHandler = new DatasetHandler(executor, jdbi, "ExperimentRunEntity");
   }
 
@@ -100,6 +102,17 @@ public class CreateExperimentRunHandler {
                               .thenCompose(unused2 -> insertExperimentRun(experimentRun), executor)
                               .thenCompose(
                                   unused2 -> createRoleBindingsForExperimentRun(experimentRun),
+                                  executor)
+                              .thenCompose(
+                                  unused2 ->
+                                      jdbi.useHandle(
+                                          handle ->
+                                              handle
+                                                  .createUpdate(
+                                                      "UPDATE experiment_run SET created=:created WHERE id=:id")
+                                                  .bind("created", true)
+                                                  .bind("id", experimentRun.getId())
+                                                  .execute()),
                                   executor)
                               .thenApply(unused2 -> experimentRun, executor);
                         },
@@ -214,6 +227,7 @@ public class CreateExperimentRunHandler {
               runValueMap.put(
                   "environment", ModelDBUtils.getStringFromProtoObject(environmentBlob));
               runValueMap.put("deleted", false);
+              runValueMap.put("created", false);
 
               // Created comma separated field names from keys of above map
               String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
@@ -262,6 +276,12 @@ public class CreateExperimentRunHandler {
                   observationHandler.logObservations(
                       newExperimentRun.getId(), newExperimentRun.getObservationsList(), now));
               futureLogs.add(
+                  artifactHandler.logArtifacts(
+                      newExperimentRun.getId(), newExperimentRun.getArtifactsList()));
+              futureLogs.add(
+                  featureHandler.logFeatures(
+                      newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
+              futureLogs.add(
                   datasetHandler.logArtifacts(
                       newExperimentRun.getId(), newExperimentRun.getDatasetsList()));
 
@@ -269,13 +289,6 @@ public class CreateExperimentRunHandler {
                   .thenAccept(unused2 -> {}, executor);
             },
             executor);
-    // TODO .thenCompose(handle -> artifactHandler.logArtifacts(newExperimentRun.getId(),
-    // newExperimentRun.getArtifactsList()), executor)
-    // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
-    // newExperimentRun.getDatasetsList()), executor)
-
-    // TODO .thenCompose(handle -> featureHandler.logFeatures(newExperimentRun.getId(),
-    // newExperimentRun.getFeaturesList()), executor)
     // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
     // TODO .thenCompose(handle -> versioned_inputs, executor)
   }
