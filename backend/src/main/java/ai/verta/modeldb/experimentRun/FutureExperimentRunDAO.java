@@ -325,9 +325,12 @@ public class FutureExperimentRunDAO {
             case DELETE:
               // TODO: check if we should using DELETE for the ER itself
               return checkProjectPermission(
-                  maybeProjectIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE, ModelDBServiceResourceTypes.PROJECT);
+                  maybeProjectIds,
+                  ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                  ModelDBServiceResourceTypes.PROJECT);
             default:
-              return checkProjectPermission(maybeProjectIds, action, ModelDBServiceResourceTypes.PROJECT);
+              return checkProjectPermission(
+                  maybeProjectIds, action, ModelDBServiceResourceTypes.PROJECT);
           }
         },
         executor);
@@ -359,10 +362,10 @@ public class FutureExperimentRunDAO {
    * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false)
    */
   private ExperimentRun checkDatasetVersionBasedOnPrivileges(
-          ExperimentRun experimentRun, boolean errorOut) {
+      ExperimentRun experimentRun, boolean errorOut) {
     ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
     List<Artifact> accessibleDatasetVersions =
-            getPrivilegedDatasets(experimentRun.getDatasetsList(), errorOut);
+        getPrivilegedDatasets(experimentRun.getDatasetsList(), errorOut);
     experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasetVersions);
     return experimentRunBuilder.build();
   }
@@ -385,49 +388,49 @@ public class FutureExperimentRunDAO {
     }
 
     jdbi.useHandle(
-            handle -> {
-              Map<String, Long> datasetVersionDatasetMap = new HashMap<>();
-              var query =
-                      handle
-                              .createQuery(
-                                      " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<datasetIds>) ")
-                              .bind("datasetIds", newDatasetLinkedIds);
-              query
-                      .map(
-                              (rs, ctx) ->
-                                      datasetVersionDatasetMap.put(
-                                              rs.getString("commit_hash"), rs.getLong("repository_id")))
-                      .list();
+        handle -> {
+          Map<String, Long> datasetVersionDatasetMap = new HashMap<>();
+          var query =
+              handle
+                  .createQuery(
+                      " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<datasetIds>) ")
+                  .bind("datasetIds", newDatasetLinkedIds);
+          query
+              .map(
+                  (rs, ctx) ->
+                      datasetVersionDatasetMap.put(
+                          rs.getString("commit_hash"), rs.getLong("repository_id")))
+              .list();
 
-              for (Artifact dataset : newDatasets) {
-                String datasetVersionId = dataset.getLinkedArtifactId();
-                if (!datasetVersionId.isEmpty()
-                        && !accessibleDatasetVersionIds.contains(datasetVersionId)) {
-                  try {
-                    if (datasetVersionDatasetMap.containsKey(datasetVersionId)
-                            && datasetVersionDatasetMap.get(datasetVersionId) != null) {
-                      Long datasetId = datasetVersionDatasetMap.get(datasetVersionId);
-                      checkEntityPermission(
-                              String.valueOf(datasetId),
-                              ModelDBActionEnum.ModelDBServiceActions.READ,
-                              ModelDBServiceResourceTypes.DATASET);
-                      accessibleDatasets.add(dataset);
-                      accessibleDatasetVersionIds.add(datasetVersionId);
-                    } else {
-                      throw new InvalidArgumentException(
-                              "Dataset not found for dataset version: " + datasetVersionId);
-                    }
-                  } catch (Exception ex) {
-                    LOGGER.debug(ex.getMessage());
-                    if (errorOut) {
-                      throw ex;
-                    }
-                  }
-                } else {
+          for (Artifact dataset : newDatasets) {
+            String datasetVersionId = dataset.getLinkedArtifactId();
+            if (!datasetVersionId.isEmpty()
+                && !accessibleDatasetVersionIds.contains(datasetVersionId)) {
+              try {
+                if (datasetVersionDatasetMap.containsKey(datasetVersionId)
+                    && datasetVersionDatasetMap.get(datasetVersionId) != null) {
+                  Long datasetId = datasetVersionDatasetMap.get(datasetVersionId);
+                  checkEntityPermission(
+                      String.valueOf(datasetId),
+                      ModelDBActionEnum.ModelDBServiceActions.READ,
+                      ModelDBServiceResourceTypes.DATASET);
                   accessibleDatasets.add(dataset);
+                  accessibleDatasetVersionIds.add(datasetVersionId);
+                } else {
+                  throw new InvalidArgumentException(
+                      "Dataset not found for dataset version: " + datasetVersionId);
+                }
+              } catch (Exception ex) {
+                LOGGER.debug(ex.getMessage());
+                if (errorOut) {
+                  throw ex;
                 }
               }
-            });
+            } else {
+              accessibleDatasets.add(dataset);
+            }
+          }
+        });
 
     return accessibleDatasets;
   }
@@ -485,7 +488,8 @@ public class FutureExperimentRunDAO {
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
     return checkProjectPermission(
             Collections.singletonList(request.getProjectId()),
-            ModelDBActionEnum.ModelDBServiceActions.UPDATE, ModelDBServiceResourceTypes.PROJECT)
+            ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+            ModelDBServiceResourceTypes.PROJECT)
         .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
   }
 }
