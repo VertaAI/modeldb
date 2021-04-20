@@ -266,7 +266,7 @@ public class FutureExperimentRunDAO {
                 .execute());
   }
 
-  private InternalFuture<Void> checkEntityPermission(
+  private InternalFuture<Void> checkEntityPermissionBasedOnResourceTypes(
       List<String> projId,
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
@@ -322,12 +322,12 @@ public class FutureExperimentRunDAO {
           switch (action) {
             case DELETE:
               // TODO: check if we should using DELETE for the ER itself
-              return checkEntityPermission(
+              return checkEntityPermissionBasedOnResourceTypes(
                   maybeProjectIds,
                   ModelDBActionEnum.ModelDBServiceActions.UPDATE,
                   ModelDBServiceResourceTypes.PROJECT);
             default:
-              return checkEntityPermission(
+              return checkEntityPermissionBasedOnResourceTypes(
                   maybeProjectIds, action, ModelDBServiceResourceTypes.PROJECT);
           }
         },
@@ -402,7 +402,7 @@ public class FutureExperimentRunDAO {
                       Long datasetId = datasetVersionDatasetMap.get(datasetVersionId);
 
                       internalFutures.add(
-                          checkEntityPermission(
+                          checkEntityPermissionBasedOnResourceTypes(
                                   Collections.singletonList(String.valueOf(datasetId)),
                                   ModelDBActionEnum.ModelDBServiceActions.READ,
                                   ModelDBServiceResourceTypes.DATASET)
@@ -483,7 +483,7 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
-    return checkEntityPermission(
+    return checkEntityPermissionBasedOnResourceTypes(
             Collections.singletonList(request.getProjectId()),
             ModelDBActionEnum.ModelDBServiceActions.UPDATE,
             ModelDBServiceResourceTypes.PROJECT)
