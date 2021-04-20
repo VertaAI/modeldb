@@ -56,8 +56,8 @@ class NotificationChannel(entity._ModelDBEntity):
         channels = conn.must_proto_response(response, msg.Response).channels
         if len(channels) > 1:
             warnings.warn(
-                "unexpectedly found multiple alerts with the same name and"
-                " monitored entity ID"
+                "unexpectedly found multiple notification channels with ID"
+                " {}".format(id)
             )
         return channels[0]
 
@@ -65,15 +65,17 @@ class NotificationChannel(entity._ModelDBEntity):
     def _get_proto_by_name(cls, conn, name, workspace):
         # NOTE: workspace is currently unsupported until https://vertaai.atlassian.net/browse/VR-9792
         msg = _AlertService.FindNotificationChannelRequest(
-            names=[name], page_number=1, page_limit=-1,
+            names=[name],
+            page_number=1, page_limit=-1,
+            workspace_name=workspace,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = conn.make_proto_request("POST", endpoint, body=msg)
         channels = conn.must_proto_response(response, msg.Response).channels
         if len(channels) > 1:
             warnings.warn(
-                "unexpectedly found multiple alerts with the same name and"
-                " monitored entity ID"
+                "unexpectedly found multiple notification channels with name"
+                " {} in workspace {}".format(name, workspace)
             )
         return channels[0]
 
@@ -161,12 +163,20 @@ class NotificationChannels(object):
     def get(self, name=None, workspace=None, id=None):
         if name and id:
             raise ValueError("cannot specify both `name` and `id`")
+        if workspace and id:
+            raise ValueError(
+                "cannot specify both `workspace` and `id`;"
+                " getting by ID does not require a workspace name"
+            )
         elif name:
+            if workspace is None:
+                workspace = self._client.get_workspace()
+
             return NotificationChannel._get_by_name(
                 self._conn,
                 self._conf,
                 name,
-                None,  # TODO: pass workspace instead of None
+                workspace,
             )
         elif id:
             return NotificationChannel._get_by_id(self._conn, self._conf, id)
