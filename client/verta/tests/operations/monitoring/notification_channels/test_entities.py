@@ -25,8 +25,8 @@ class TestNotificationChannel:
         channel = notification_channels.create(
             next(strs),
             SlackNotificationChannel(next(strs)),
-            created_at,
-            updated_at,
+            created_at=created_at,
+            updated_at=updated_at,
         )
         created_entities.append(channel)
         assert channel._msg.created_at_millis == created_at_millis
@@ -36,8 +36,8 @@ class TestNotificationChannel:
         channel = notification_channels.create(
             next(strs),
             SlackNotificationChannel(next(strs)),
-            created_at_millis,
-            updated_at_millis,
+            created_at=created_at_millis,
+            updated_at=updated_at_millis,
         )
         created_entities.append(channel)
         assert channel._msg.created_at_millis == created_at_millis
