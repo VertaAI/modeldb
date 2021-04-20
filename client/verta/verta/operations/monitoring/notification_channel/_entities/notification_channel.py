@@ -115,9 +115,16 @@ class NotificationChannel(entity._ModelDBEntity):
 
 
 class NotificationChannels(object):
-    def __init__(self, conn, conf):
-        self._conn = conn
-        self._conf = conf
+    def __init__(self, client):
+        self._client = client
+
+    @property
+    def _conn(self):
+        return self._client._conn
+
+    @property
+    def _conf(self):
+        return self._client._conf
 
     def create(
         self,

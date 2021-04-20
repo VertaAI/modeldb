@@ -39,7 +39,7 @@ class Client(object):
 
     @property
     def notification_channels(self):
-        return NotificationChannels(self._conn, self._conf)
+        return NotificationChannels(self._client)
 
     def get_or_create_monitored_entity(self, name=None, workspace=None, id=None):
         if name is not None and id is not None:
