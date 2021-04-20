@@ -149,32 +149,22 @@ message MonitoredEntity {
   reserved 3, 4;  // Previously deleted fields
   uint64 id = 1;
   string name = 2;
-  uint64 workspace_id = 5;
   uint64 created_at_timestamp_millis = 6;
   uint64 updated_at_timestamp_millis = 7;
+  oneof workspace_identifier {
+    uint64 workspace_id = 5;
+    string workspace_name = 8;
+  }
 }
 
 message CreateMonitoredEntityRequest {
   reserved 2, 3;  // Previously deleted fields
   string name = 1;
-  uint64 workspace_id = 4;
 
-  message Response {
-    MonitoredEntity monitored_entity = 1;
+  oneof workspace_identifier {
+    uint64 workspace_id = 4;
+    string workspace_name = 5;
   }
-}
-
-message GetMonitoredEntityRequest {
-  uint64 id = 1;
-
-  message Response {
-    MonitoredEntity monitored_entity = 1;
-  }
-}
-
-message GetMonitoredEntityByNameRequest {
-  string name = 1;
-  uint64 workspace_id = 2;
 
   message Response {
     MonitoredEntity monitored_entity = 1;
@@ -191,18 +181,13 @@ message UpdateMonitoredEntityRequest {
   }
 }
 
-message ListMonitoredEntitiesRequest {
-  uint64 workspace_id = 1;
-  message Response {
-    repeated MonitoredEntity monitored_entities = 1;
-  }
-}
-
 message FindMonitoredEntityRequest {
   repeated uint64 ids = 1;
   repeated string names = 2;
-  uint64 workspace_id = 3;
-  string workspace_name = 6;
+  oneof workspace_identifier {
+    uint64 workspace_id = 3;
+    string workspace_name = 6;
+  }
 
     // Pagination
   int32 page_number = 4;
@@ -223,18 +208,6 @@ message DeleteMonitoredEntityRequest {
 
 // Service definitions
 service DataMonitoringService {
-  rpc getMonitoredEntity(GetMonitoredEntityRequest) returns (GetMonitoredEntityRequest.Response) {
-    option (google.api.http) = {
-      get: "/v1/monitored_entity/getMonitoredEntity"
-    };
-  };
-
-  rpc getMonitoredEntityByName(GetMonitoredEntityByNameRequest) returns (GetMonitoredEntityByNameRequest.Response) {
-    option (google.api.http) = {
-      get: "/v1/monitored_entity/getMonitoredEntityByName"
-    };
-  };
-
   rpc createMonitoredEntity(CreateMonitoredEntityRequest) returns (CreateMonitoredEntityRequest.Response) {
     option (google.api.http) = {
       post: "/v1/monitored_entity/createMonitoredEntity"
@@ -246,12 +219,6 @@ service DataMonitoringService {
     option (google.api.http) = {
       patch: "/v1/monitored_entity/updateMonitoredEntity"
       body: "*"
-    };
-  };
-
-  rpc listMonitoredEntities(ListMonitoredEntitiesRequest) returns (ListMonitoredEntitiesRequest.Response) {
-    option (google.api.http) = {
-      get: "/v1/monitored_entity/listMonitoredEntities"
     };
   };
 
