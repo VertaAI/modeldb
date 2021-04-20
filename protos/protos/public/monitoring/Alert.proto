@@ -34,6 +34,10 @@ message NotificationChannel {
     oneof channel {
         NotificationChannelSlackWebhook slack_webhook = 6;
     }
+    oneof workspace_identifier {
+        uint64 workspace_id = 7;
+        string workspace_name = 8;
+    }
 }
 
 // Configuration for an notification channel for slack webhooks
@@ -60,6 +64,11 @@ message FindNotificationChannelRequest {
     // Pagination
     int32 page_number = 4;
     int32 page_limit = 5;
+
+    oneof workspace_identifier {
+        uint64 workspace_id = 6;
+        string workspace_name = 7;
+    }
 
     message Response {
         repeated NotificationChannel channels = 1;

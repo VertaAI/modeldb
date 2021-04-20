@@ -678,6 +678,13 @@
         "page_limit": {
           "type": "integer",
           "format": "int32"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
         }
       },
       "title": "Find an notification channel based on the different fields"
@@ -835,6 +842,13 @@
         },
         "slack_webhook": {
           "$ref": "#/definitions/monitoringNotificationChannelSlackWebhook"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
         }
       },
       "title": "Content of an notification channel"
