@@ -131,6 +131,10 @@ class SummarySampleQuery(object):
     def __repr__(self):
         return "SummarySampleQuery({})".format(self._to_proto_request())
 
+    def _set_created_after(self, created_after):
+        """To avoid having the alerter assign directly to a private attr."""
+        self._created_after = created_after
+
 
 class Summary(entity._ModelDBEntity):
     def __init__(self, conn, conf, msg):
