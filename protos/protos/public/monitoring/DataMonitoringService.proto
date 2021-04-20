@@ -149,12 +149,9 @@ message MonitoredEntity {
   reserved 3, 4;  // Previously deleted fields
   uint64 id = 1;
   string name = 2;
+  uint64 workspace_id = 5;
   uint64 created_at_timestamp_millis = 6;
   uint64 updated_at_timestamp_millis = 7;
-  oneof workspace_identifier {
-    uint64 workspace_id = 5;
-    string workspace_name = 8;
-  }
 }
 
 message CreateMonitoredEntityRequest {

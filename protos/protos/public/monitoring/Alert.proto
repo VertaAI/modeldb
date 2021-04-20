@@ -25,6 +25,7 @@ message NotificationChannelTypeEnum {
 
 // Content of an notification channel
 message NotificationChannel {
+    reserved 8;  // Previously deleted fields
     uint64 id = 1;
     string name = 2;
     uint64 created_at_millis = 3;
@@ -34,10 +35,7 @@ message NotificationChannel {
     oneof channel {
         NotificationChannelSlackWebhook slack_webhook = 6;
     }
-    oneof workspace_identifier {
-        uint64 workspace_id = 7;
-        string workspace_name = 8;
-    }
+    uint64 workspace_id = 7;
 }
 
 // Configuration for an notification channel for slack webhooks
