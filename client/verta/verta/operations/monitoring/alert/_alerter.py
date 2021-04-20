@@ -38,7 +38,8 @@ class FixedAlerter(_Alerter):
     Parameters
     ----------
     comparison : :class:`~verta.common.comparison._VertaComparison`
-        Alert condition.
+        Alert condition. An alert is active if a queried sample meets this
+        condition.
 
     Examples
     --------
