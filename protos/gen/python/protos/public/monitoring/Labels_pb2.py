@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.monitoring',
   syntax='proto3',
   serialized_options=b'P\001ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring',
-  serialized_pb=b'\n\x17monitoring/Labels.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x18monitoring/Summary.proto\"t\n\x17\x46indSampleLabelsRequest\x12=\n\x06\x66ilter\x18\x01 \x01(\x0b\x32-.ai.verta.monitoring.FilterQuerySummarySample\x1a\x1a\n\x08Response\x12\x0e\n\x06labels\x18\x01 \x03(\t\"\xb1\x02\n\x1c\x46indSampleLabelValuesRequest\x12=\n\x06\x66ilter\x18\x01 \x01(\x0b\x32-.ai.verta.monitoring.FilterQuerySummarySample\x12\x0e\n\x06labels\x18\x02 \x03(\t\x1a\xc1\x01\n\x08Response\x12V\n\x06labels\x18\x01 \x03(\x0b\x32\x46.ai.verta.monitoring.FindSampleLabelValuesRequest.Response.LabelsEntry\x1a]\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12=\n\x05value\x18\x02 \x01(\x0b\x32..ai.verta.monitoring.FindSampleLabelValuesItem:\x02\x38\x01\"+\n\x19\x46indSampleLabelValuesItem\x12\x0e\n\x06values\x18\x01 \x03(\t2\xce\x02\n\x0cLabelService\x12\x93\x01\n\nfindLabels\x12,.ai.verta.monitoring.FindSampleLabelsRequest\x1a\x35.ai.verta.monitoring.FindSampleLabelsRequest.Response\" \x82\xd3\xe4\x93\x02\x1a\"\x15/v1/labels/findLabels:\x01*\x12\xa7\x01\n\x0f\x66indLabelValues\x12\x31.ai.verta.monitoring.FindSampleLabelValuesRequest\x1a:.ai.verta.monitoring.FindSampleLabelValuesRequest.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/labels/findLabelValues:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
+  serialized_pb=b'\n\x17monitoring/Labels.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x18monitoring/Summary.proto\"\xb4\x01\n\x17\x46indSampleLabelsRequest\x12=\n\x06\x66ilter\x18\x01 \x01(\x0b\x32-.ai.verta.monitoring.FilterQuerySummarySample\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x1a\x31\n\x08Response\x12\x0e\n\x06labels\x18\x01 \x03(\t\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\"\xf1\x02\n\x1c\x46indSampleLabelValuesRequest\x12=\n\x06\x66ilter\x18\x01 \x01(\x0b\x32-.ai.verta.monitoring.FilterQuerySummarySample\x12\x0e\n\x06labels\x18\x02 \x03(\t\x12\x13\n\x0bpage_number\x18\x03 \x01(\x05\x12\x12\n\npage_limit\x18\x04 \x01(\x05\x1a\xd8\x01\n\x08Response\x12V\n\x06labels\x18\x01 \x03(\x0b\x32\x46.ai.verta.monitoring.FindSampleLabelValuesRequest.Response.LabelsEntry\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\x1a]\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12=\n\x05value\x18\x02 \x01(\x0b\x32..ai.verta.monitoring.FindSampleLabelValuesItem:\x02\x38\x01\"+\n\x19\x46indSampleLabelValuesItem\x12\x0e\n\x06values\x18\x01 \x03(\t2\xce\x02\n\x0cLabelService\x12\x93\x01\n\nfindLabels\x12,.ai.verta.monitoring.FindSampleLabelsRequest\x1a\x35.ai.verta.monitoring.FindSampleLabelsRequest.Response\" \x82\xd3\xe4\x93\x02\x1a\"\x15/v1/labels/findLabels:\x01*\x12\xa7\x01\n\x0f\x66indLabelValues\x12\x31.ai.verta.monitoring.FindSampleLabelValuesRequest\x1a:.ai.verta.monitoring.FindSampleLabelValuesRequest.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/labels/findLabelValues:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,monitoring_dot_Summary__pb2.DESCRIPTOR,])
 
@@ -42,6 +42,13 @@ _FINDSAMPLELABELSREQUEST_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.monitoring.FindSampleLabelsRequest.Response.total_records', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -54,8 +61,8 @@ _FINDSAMPLELABELSREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=224,
-  serialized_end=250,
+  serialized_start=266,
+  serialized_end=315,
 )
 
 _FINDSAMPLELABELSREQUEST = _descriptor.Descriptor(
@@ -72,6 +79,20 @@ _FINDSAMPLELABELSREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='page_number', full_name='ai.verta.monitoring.FindSampleLabelsRequest.page_number', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='page_limit', full_name='ai.verta.monitoring.FindSampleLabelsRequest.page_limit', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -84,8 +105,8 @@ _FINDSAMPLELABELSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=134,
-  serialized_end=250,
+  serialized_start=135,
+  serialized_end=315,
 )
 
 
@@ -122,8 +143,8 @@ _FINDSAMPLELABELVALUESREQUEST_RESPONSE_LABELSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=465,
-  serialized_end=558,
+  serialized_start=594,
+  serialized_end=687,
 )
 
 _FINDSAMPLELABELVALUESREQUEST_RESPONSE = _descriptor.Descriptor(
@@ -140,6 +161,13 @@ _FINDSAMPLELABELVALUESREQUEST_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.monitoring.FindSampleLabelValuesRequest.Response.total_records', index=1,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -152,8 +180,8 @@ _FINDSAMPLELABELVALUESREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=365,
-  serialized_end=558,
+  serialized_start=471,
+  serialized_end=687,
 )
 
 _FINDSAMPLELABELVALUESREQUEST = _descriptor.Descriptor(
@@ -177,6 +205,20 @@ _FINDSAMPLELABELVALUESREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='page_number', full_name='ai.verta.monitoring.FindSampleLabelValuesRequest.page_number', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='page_limit', full_name='ai.verta.monitoring.FindSampleLabelValuesRequest.page_limit', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -189,8 +231,8 @@ _FINDSAMPLELABELVALUESREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=253,
-  serialized_end=558,
+  serialized_start=318,
+  serialized_end=687,
 )
 
 
@@ -220,8 +262,8 @@ _FINDSAMPLELABELVALUESITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=560,
-  serialized_end=603,
+  serialized_start=689,
+  serialized_end=732,
 )
 
 _FINDSAMPLELABELSREQUEST_RESPONSE.containing_type = _FINDSAMPLELABELSREQUEST
@@ -291,8 +333,8 @@ _LABELSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=606,
-  serialized_end=940,
+  serialized_start=735,
+  serialized_end=1069,
   methods=[
   _descriptor.MethodDescriptor(
     name='findLabels',

@@ -69,7 +69,17 @@ class Alert(entity._ModelDBEntity):
     def status(self):
         self._refresh_cache()
 
-        return status_module._AlertStatus._from_proto(self._msg.status)
+        if self._msg.status == status_module.Ok._ALERT_STATUS:
+            # violating samples aren't relevant to a retrieved Ok status
+            sample_ids = None
+        else:
+            sample_ids = self._msg.violating_summary_sample_ids
+
+
+        return status_module._AlertStatus._from_proto(
+            self._msg.status,
+            sample_ids,
+        )
 
     @property
     def summary_sample_query(self):
@@ -91,7 +101,7 @@ class Alert(entity._ModelDBEntity):
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindAlertRequest(
-            ids=[int(id)],
+            ids=[int(id)], page_number=1, page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findAlert"
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -108,6 +118,7 @@ class Alert(entity._ModelDBEntity):
         msg = _AlertService.FindAlertRequest(
             names=[name],
             monitored_entity_ids=[int(monitored_entity_id)],
+            page_number=1, page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findAlert"
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -170,11 +181,23 @@ class Alert(entity._ModelDBEntity):
         self._clear_cache()
         return True
 
+    def _update_last_evaluated_at(self, last_evaluated_at=None):
+        if last_evaluated_at is None:
+            last_evaluated_at = time_utils.now()
+
+        alert_msg = _AlertService.Alert()
+        self._fetch_with_no_cache()
+        alert_msg.CopyFrom(self._msg)
+        alert_msg.last_evaluated_at_millis = time_utils.epoch_millis(last_evaluated_at)
+
+        self._update(alert_msg)
+
     def add_notification_channels(self, notification_channels):
         for channel in notification_channels:
             self._validate_notification_channel(channel)
 
         alert_msg = _AlertService.Alert()
+        self._fetch_with_no_cache()
         alert_msg.CopyFrom(self._msg)
         alert_msg.notification_channels.update(
             {channel.id: True for channel in notification_channels}
@@ -182,14 +205,12 @@ class Alert(entity._ModelDBEntity):
 
         self._update(alert_msg)
 
-    # TODO: alternatively, fire() & resolve()?
-    def set_status(self, status, summary_sample=None, event_time_millis=None):
-        msg = _AlertService.UpdateAlertStatusRequest(
-            alert_id=self.id,
-            event_time_millis=event_time_millis,
-            status=status._ALERT_STATUS,
-            violating_summary_sample_id=summary_sample.id if summary_sample else None,
-        )
+    def set_status(self, status, event_time=None):
+        msg = status._to_proto_request()
+        msg.alert_id = self.id
+        if event_time:
+            msg.event_time_millis = time_utils.epoch_millis(event_time)
+
         endpoint = "/api/v1/alerts/updateAlertStatus"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         self._conn.must_response(response)
@@ -218,9 +239,9 @@ class Alerts(object):
         alerter,
         summary_sample_query,
         notification_channels=None,
-        created_at_millis=None,
-        updated_at_millis=None,
-        last_evaluated_at_millis=None,
+        created_at=None,
+        updated_at=None,
+        last_evaluated_at=None,
     ):
         if self._monitored_entity_id is None:
             raise RuntimeError(
@@ -243,9 +264,9 @@ class Alerts(object):
             alerter=alerter,
             summary_sample_query=summary_sample_query,
             notification_channels=notification_channels,
-            created_at_millis=created_at_millis,
-            updated_at_millis=updated_at_millis,
-            last_evaluated_at_millis=last_evaluated_at_millis,
+            created_at_millis=time_utils.epoch_millis(created_at),
+            updated_at_millis=time_utils.epoch_millis(updated_at),
+            last_evaluated_at_millis=time_utils.epoch_millis(last_evaluated_at),
         )
 
     def get(self, name=None, id=None):
@@ -266,7 +287,9 @@ class Alerts(object):
     # TODO: use lazy list and pagination
     # TODO: a proper find
     def list(self):
-        msg = _AlertService.FindAlertRequest()
+        msg = _AlertService.FindAlertRequest(
+            page_number=1, page_limit=-1,
+        )
         if self._monitored_entity_id is not None:
             msg.monitored_entity_ids.append(self._monitored_entity_id)
         endpoint = "/api/v1/alerts/findAlert"
@@ -286,8 +309,10 @@ class Alerts(object):
 class AlertHistoryItem(object):
     def __init__(self, msg):
         self._event_time = time_utils.datetime_from_millis(msg.event_time_millis)
-        self._status = status_module._AlertStatus._from_proto(msg.status)
-        self._violating_summary_sample_ids = msg.violating_summary_sample_ids
+        self._status = status_module._AlertStatus._from_proto(
+            msg.status,
+            msg.violating_summary_sample_ids,
+        )
 
     def __repr__(self):
         return "\n\t".join(
@@ -295,8 +320,5 @@ class AlertHistoryItem(object):
                 "AlertHistoryItem",
                 "occurred at: {}".format(self._event_time),
                 "status: {}".format(self._status),
-                "associated summary sample IDs: {}".format(
-                    self._violating_summary_sample_ids
-                ),
             )
         )

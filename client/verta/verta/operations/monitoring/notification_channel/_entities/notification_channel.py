@@ -3,10 +3,9 @@
 import warnings
 
 from ....._protos.public.monitoring import Alert_pb2 as _AlertService
-from ....._internal_utils import _utils
+from ....._internal_utils import _utils, time_utils
 from ....._tracking import entity, _Context
 from ... import utils
-from .. import _notification_channel
 
 
 class NotificationChannel(entity._ModelDBEntity):
@@ -41,7 +40,7 @@ class NotificationChannel(entity._ModelDBEntity):
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindNotificationChannelRequest(
-            ids=[int(id)],
+            ids=[int(id)], page_number=1, page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -57,7 +56,7 @@ class NotificationChannel(entity._ModelDBEntity):
     def _get_proto_by_name(cls, conn, name, workspace):
         # NOTE: workspace is currently unsupported until https://vertaai.atlassian.net/browse/VR-9792
         msg = _AlertService.FindNotificationChannelRequest(
-            names=[name],
+            names=[name], page_number=1, page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -124,8 +123,8 @@ class NotificationChannels(object):
         self,
         name,
         channel,
-        created_at_millis=None,
-        updated_at_millis=None,
+        created_at=None,
+        updated_at=None,
     ):
         ctx = _Context(self._conn, self._conf)
         return NotificationChannel._create(
@@ -134,8 +133,8 @@ class NotificationChannels(object):
             ctx,
             name=name,
             channel=channel,
-            created_at_millis=created_at_millis,
-            updated_at_millis=updated_at_millis,
+            created_at_millis=time_utils.epoch_millis(created_at),
+            updated_at_millis=time_utils.epoch_millis(updated_at),
         )
 
     def get(self, name=None, id=None):
@@ -156,7 +155,9 @@ class NotificationChannels(object):
     # TODO: use lazy list and pagination
     # TODO: a proper find
     def list(self):
-        msg = _AlertService.FindNotificationChannelRequest()
+        msg = _AlertService.FindNotificationChannelRequest(
+            page_number=1, page_limit=-1,
+        )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         channels = self._conn.must_proto_response(response, msg.Response).channels

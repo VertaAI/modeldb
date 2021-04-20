@@ -8,56 +8,6 @@ option java_multiple_files = true;
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 
-// Data source
-
-message DataSource {
-  uint64 id = 1;
-  string name = 2;
-  string data_source_reference = 3;
-  uint64 monitored_entity_id = 4;
-  uint64 timestamp_millis = 5;
-}
-
-message CreateDataSourceRequest {
-  string data_source_reference = 1;
-  string name = 2;
-  uint64 monitored_entity_id = 3;
-
-  message Response {
-    DataSource data_source = 1;
-  }
-}
-
-message GetDataSourceRequest {
-  uint64 id = 1;
-
-  message Response {
-    DataSource data_source = 1;
-  }
-}
-
-message FindDataSourcesRequest {
-  uint64 monitored_entity_id = 1;
-
-  message Response {
-    repeated DataSource dataSources = 1;
-  }
-}
-
-message ListDataSourcesRequest {
-  message Response {
-    repeated DataSource dataSource = 1;
-  }
-}
-
-message DeleteDataSourceRequest {
-  uint64 id = 1;
-
-  message Response {
-  }
-}
-
-
 // Profiler
 
 message Profiler {
@@ -200,29 +150,18 @@ message MonitoredEntity {
   uint64 id = 1;
   string name = 2;
   uint64 workspace_id = 5;
+  uint64 created_at_timestamp_millis = 6;
+  uint64 updated_at_timestamp_millis = 7;
 }
 
 message CreateMonitoredEntityRequest {
   reserved 2, 3;  // Previously deleted fields
   string name = 1;
-  uint64 workspace_id = 4;
 
-  message Response {
-    MonitoredEntity monitored_entity = 1;
+  oneof workspace_identifier {
+    uint64 workspace_id = 4;
+    string workspace_name = 5;
   }
-}
-
-message GetMonitoredEntityRequest {
-  uint64 id = 1;
-
-  message Response {
-    MonitoredEntity monitored_entity = 1;
-  }
-}
-
-message GetMonitoredEntityByNameRequest {
-  string name = 1;
-  uint64 workspace_id = 2;
 
   message Response {
     MonitoredEntity monitored_entity = 1;
@@ -239,20 +178,21 @@ message UpdateMonitoredEntityRequest {
   }
 }
 
-message ListMonitoredEntitiesRequest {
-  uint64 workspace_id = 1;
-  message Response {
-    repeated MonitoredEntity monitored_entities = 1;
-  }
-}
-
 message FindMonitoredEntityRequest {
   repeated uint64 ids = 1;
   repeated string names = 2;
-  uint64 workspace_id = 3;
+  oneof workspace_identifier {
+    uint64 workspace_id = 3;
+    string workspace_name = 6;
+  }
+
+    // Pagination
+  int32 page_number = 4;
+  int32 page_limit = 5;
 
   message Response {
       repeated MonitoredEntity monitored_entities = 1;
+      int32 total_records = 2;
   }
 }
 
@@ -265,18 +205,6 @@ message DeleteMonitoredEntityRequest {
 
 // Service definitions
 service DataMonitoringService {
-  rpc getMonitoredEntity(GetMonitoredEntityRequest) returns (GetMonitoredEntityRequest.Response) {
-    option (google.api.http) = {
-      get: "/v1/monitored_entity/getMonitoredEntity"
-    };
-  };
-
-  rpc getMonitoredEntityByName(GetMonitoredEntityByNameRequest) returns (GetMonitoredEntityByNameRequest.Response) {
-    option (google.api.http) = {
-      get: "/v1/monitored_entity/getMonitoredEntityByName"
-    };
-  };
-
   rpc createMonitoredEntity(CreateMonitoredEntityRequest) returns (CreateMonitoredEntityRequest.Response) {
     option (google.api.http) = {
       post: "/v1/monitored_entity/createMonitoredEntity"
@@ -291,12 +219,6 @@ service DataMonitoringService {
     };
   };
 
-  rpc listMonitoredEntities(ListMonitoredEntitiesRequest) returns (ListMonitoredEntitiesRequest.Response) {
-    option (google.api.http) = {
-      get: "/v1/monitored_entity/listMonitoredEntities"
-    };
-  };
-
   rpc findMonitoredEntity(FindMonitoredEntityRequest) returns (FindMonitoredEntityRequest.Response) {
     option (google.api.http) = {
       post: "/v1/monitored_entity/findMonitoredEntity"
@@ -307,38 +229,6 @@ service DataMonitoringService {
   rpc deleteMonitoredEntity(DeleteMonitoredEntityRequest) returns (DeleteMonitoredEntityRequest.Response) {
     option (google.api.http) = {
       delete: "/v1/monitored_entity/deleteMonitoredEntity"
-      body: "*"
-    };
-  };
-
-  rpc getDataSource(GetDataSourceRequest) returns (GetDataSourceRequest.Response) {
-    option (google.api.http) = {
-      get: "/v1/monitored_entity/getDataSource"
-    };
-  };
-
-  rpc findDataSources(FindDataSourcesRequest) returns (FindDataSourcesRequest.Response) {
-    option (google.api.http) = {
-      get: "/v1/monitored_entity/findDataSources"
-    };
-  };
-
-  rpc createDataSource(CreateDataSourceRequest) returns (CreateDataSourceRequest.Response) {
-    option (google.api.http) = {
-      post: "/v1/monitored_entity/createDataSource"
-      body: "*"
-    };
-  };
-
-  rpc listDataSources(ListDataSourcesRequest) returns (ListDataSourcesRequest.Response) {
-    option (google.api.http) = {
-      get: "/v1/monitored_entity/listDataSources"
-    };
-  };
-
-  rpc deleteDataSource(DeleteDataSourceRequest) returns (DeleteDataSourceRequest.Response) {
-    option (google.api.http) = {
-      delete: "/v1/monitored_entity/deleteDataSource"
       body: "*"
     };
   };

@@ -11,38 +11,6 @@
     "application/json"
   ],
   "paths": {
-    "/monitored_entity/createDataSource": {
-      "post": {
-        "operationId": "DataMonitoringService_createDataSource",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringCreateDataSourceRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/monitoringCreateDataSourceRequest"
-            }
-          }
-        ],
-        "tags": [
-          "DataMonitoringService"
-        ]
-      }
-    },
     "/monitored_entity/createMonitoredEntity": {
       "post": {
         "operationId": "DataMonitoringService_createMonitoredEntity",
@@ -99,38 +67,6 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/monitoringCreateProfilerRequest"
-            }
-          }
-        ],
-        "tags": [
-          "DataMonitoringService"
-        ]
-      }
-    },
-    "/monitored_entity/deleteDataSource": {
-      "delete": {
-        "operationId": "DataMonitoringService_deleteDataSource",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringDeleteDataSourceRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/monitoringDeleteDataSourceRequest"
             }
           }
         ],
@@ -267,37 +203,6 @@
         ]
       }
     },
-    "/monitored_entity/findDataSources": {
-      "get": {
-        "operationId": "DataMonitoringService_findDataSources",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringFindDataSourcesRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "monitored_entity_id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          }
-        ],
-        "tags": [
-          "DataMonitoringService"
-        ]
-      }
-    },
     "/monitored_entity/findMonitoredEntity": {
       "post": {
         "operationId": "DataMonitoringService_findMonitoredEntity",
@@ -355,105 +260,6 @@
             "schema": {
               "$ref": "#/definitions/monitoringFindProfilersForMonitoredEntityRequest"
             }
-          }
-        ],
-        "tags": [
-          "DataMonitoringService"
-        ]
-      }
-    },
-    "/monitored_entity/getDataSource": {
-      "get": {
-        "operationId": "DataMonitoringService_getDataSource",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringGetDataSourceRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          }
-        ],
-        "tags": [
-          "DataMonitoringService"
-        ]
-      }
-    },
-    "/monitored_entity/getMonitoredEntity": {
-      "get": {
-        "operationId": "DataMonitoringService_getMonitoredEntity",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringGetMonitoredEntityRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          }
-        ],
-        "tags": [
-          "DataMonitoringService"
-        ]
-      }
-    },
-    "/monitored_entity/getMonitoredEntityByName": {
-      "get": {
-        "operationId": "DataMonitoringService_getMonitoredEntityByName",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringGetMonitoredEntityByNameRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "workspace_id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
           }
         ],
         "tags": [
@@ -523,59 +329,6 @@
             "required": false,
             "type": "integer",
             "format": "int64"
-          }
-        ],
-        "tags": [
-          "DataMonitoringService"
-        ]
-      }
-    },
-    "/monitored_entity/listDataSources": {
-      "get": {
-        "operationId": "DataMonitoringService_listDataSources",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringListDataSourcesRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "tags": [
-          "DataMonitoringService"
-        ]
-      }
-    },
-    "/monitored_entity/listMonitoredEntities": {
-      "get": {
-        "operationId": "DataMonitoringService_listMonitoredEntities",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringListMonitoredEntitiesRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "workspace_id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
           }
         ],
         "tags": [
@@ -694,39 +447,6 @@
       ],
       "default": "UNDEFINED"
     },
-    "ValueTypeEnumValueType": {
-      "type": "string",
-      "enum": [
-        "STRING",
-        "NUMBER",
-        "LIST",
-        "BLOB"
-      ],
-      "default": "STRING"
-    },
-    "monitoringCreateDataSourceRequest": {
-      "type": "object",
-      "properties": {
-        "data_source_reference": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "monitored_entity_id": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "monitoringCreateDataSourceRequestResponse": {
-      "type": "object",
-      "properties": {
-        "data_source": {
-          "$ref": "#/definitions/monitoringDataSource"
-        }
-      }
-    },
     "monitoringCreateMonitoredEntityRequest": {
       "type": "object",
       "properties": {
@@ -736,6 +456,9 @@
         "workspace_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
         }
       }
     },
@@ -765,41 +488,6 @@
           "$ref": "#/definitions/monitoringProfiler"
         }
       }
-    },
-    "monitoringDataSource": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "name": {
-          "type": "string"
-        },
-        "data_source_reference": {
-          "type": "string"
-        },
-        "monitored_entity_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "timestamp_millis": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "monitoringDeleteDataSourceRequest": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "monitoringDeleteDataSourceRequestResponse": {
-      "type": "object"
     },
     "monitoringDeleteMonitoredEntityRequest": {
       "type": "object",
@@ -860,7 +548,7 @@
         "environment": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/monitoringKeyValue"
+            "$ref": "#/definitions/vertamonitoringKeyValue"
           }
         }
       }
@@ -870,17 +558,6 @@
       "properties": {
         "status": {
           "$ref": "#/definitions/monitoringProfilerStatus"
-        }
-      }
-    },
-    "monitoringFindDataSourcesRequestResponse": {
-      "type": "object",
-      "properties": {
-        "dataSources": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/monitoringDataSource"
-          }
         }
       }
     },
@@ -903,6 +580,18 @@
         "workspace_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -914,6 +603,10 @@
           "items": {
             "$ref": "#/definitions/monitoringMonitoredEntity"
           }
+        },
+        "total_records": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -937,30 +630,6 @@
         }
       }
     },
-    "monitoringGetDataSourceRequestResponse": {
-      "type": "object",
-      "properties": {
-        "data_source": {
-          "$ref": "#/definitions/monitoringDataSource"
-        }
-      }
-    },
-    "monitoringGetMonitoredEntityByNameRequestResponse": {
-      "type": "object",
-      "properties": {
-        "monitored_entity": {
-          "$ref": "#/definitions/monitoringMonitoredEntity"
-        }
-      }
-    },
-    "monitoringGetMonitoredEntityRequestResponse": {
-      "type": "object",
-      "properties": {
-        "monitored_entity": {
-          "$ref": "#/definitions/monitoringMonitoredEntity"
-        }
-      }
-    },
     "monitoringGetProfilerRequestResponse": {
       "type": "object",
       "properties": {
@@ -974,43 +643,6 @@
       "properties": {
         "status": {
           "$ref": "#/definitions/monitoringProfilerStatus"
-        }
-      }
-    },
-    "monitoringKeyValue": {
-      "type": "object",
-      "properties": {
-        "key": {
-          "type": "string"
-        },
-        "value": {
-          "type": "object"
-        },
-        "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType",
-          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
-        }
-      }
-    },
-    "monitoringListDataSourcesRequestResponse": {
-      "type": "object",
-      "properties": {
-        "dataSource": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/monitoringDataSource"
-          }
-        }
-      }
-    },
-    "monitoringListMonitoredEntitiesRequestResponse": {
-      "type": "object",
-      "properties": {
-        "monitored_entities": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/monitoringMonitoredEntity"
-          }
         }
       }
     },
@@ -1036,6 +668,14 @@
           "type": "string"
         },
         "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "created_at_timestamp_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "updated_at_timestamp_millis": {
           "type": "string",
           "format": "uint64"
         }
@@ -1158,6 +798,31 @@
           }
         }
       }
+    },
+    "vertamonitoringKeyValue": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/vertamonitoringValueTypeEnumValueType",
+          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "vertamonitoringValueTypeEnumValueType": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "LIST",
+        "BLOB"
+      ],
+      "default": "STRING"
     }
   },
   "basePath": "/v1"

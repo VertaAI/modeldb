@@ -516,6 +516,12 @@
         },
         "registered_model_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "default_monitored_entity_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "default_notification_channel_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         }
       }
     },

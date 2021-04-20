@@ -130,6 +130,18 @@
         "workspace_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -155,6 +167,15 @@
           "items": {
             "type": "string"
           }
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       },
       "title": "Request to fetch the existing label values for a given subset of summary samples"
@@ -167,6 +188,10 @@
           "additionalProperties": {
             "$ref": "#/definitions/monitoringFindSampleLabelValuesItem"
           }
+        },
+        "total_records": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -175,6 +200,15 @@
       "properties": {
         "filter": {
           "$ref": "#/definitions/monitoringFilterQuerySummarySample"
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       },
       "title": "Request to fetch the existing labels for a given subset of summary samples"
@@ -187,6 +221,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "total_records": {
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
@@ -221,6 +259,15 @@
             "type": "string",
             "format": "uint64"
           }
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
         }
       },
       "title": "Request to fetch multiple summaries"

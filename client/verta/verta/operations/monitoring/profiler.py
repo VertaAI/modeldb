@@ -9,6 +9,7 @@ from verta.data_types import (
     FloatHistogram,
 )
 from verta.external import six
+from verta._internal_utils.importer import maybe_dependency
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -167,7 +168,7 @@ class BinaryHistogramProfiler(Profiler):
         keys = list(content.keys())
         values = [content[k] for k in keys]
         values = [v.item() for v in values]
-        return (column + "_histogram", DiscreteHistogram(values, keys))
+        return (column + "_histogram", DiscreteHistogram(keys, values))
 
 
 # TODO: Consider design/interface for different bins
@@ -184,14 +185,16 @@ class ContinuousHistogramProfiler(Profiler):
     def __init__(self, columns, bins=10):
         super(ContinuousHistogramProfiler, self).__init__(columns)
         self._bins = bins
-
+        self._np = maybe_dependency("numpy")
+        if self._np is None:
+            raise ImportError("numpy is not installed; try `pip install numpy`")
 
     def profile_column(self, df, column):
         if isinstance(self._bins, collections.Mapping):
             bins = self._bins[column]
         else:
             bins = self._bins
-        values, limits = np.histogram(df[column], bins=bins)
+        values, limits = self._np.histogram(df[column], bins=bins)
         values = [v.item() for v in values]
         limits = [lim.item() for lim in limits]
         return (column + "_histogram", FloatHistogram(limits, values))

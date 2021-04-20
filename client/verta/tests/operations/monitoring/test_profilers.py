@@ -1,18 +1,25 @@
 # -*- coding: utf-8 -*-
 
+import pytest
+
 from verta.environment import Python
 from verta._internal_utils._utils import generate_default_name
 from verta.operations.monitoring.profiler import ContinuousHistogramProfiler
 from verta.operations.monitoring.profilers import ProfilerReference
 import pytest
 
+
 class TestProfilers(object):
 
     def test_profiler_crud(self, client):
+        requirements = ["numpy", "scipy", "pandas"]
+        for req in requirements:
+            pytest.importorskip(req)
+
         profilers = client.operations.profilers
 
         profiler_name = "age_column_profiler_{}".format(generate_default_name())
-        python_env = Python(requirements=["numpy", "scipy", "pandas"])
+        python_env = Python(requirements=requirements)
 
         created_profiler = profilers.upload(profiler_name, ContinuousHistogramProfiler(columns=["age"]), environment=python_env)
         assert isinstance(created_profiler, ProfilerReference)
