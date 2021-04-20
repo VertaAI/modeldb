@@ -194,3 +194,45 @@ class TestFixed:
 
         retrieved_alert = alerts.get(id=created_alert.id)
         assert repr(retrieved_alert)
+
+
+class TestReference:
+    def test_crud(self, client, monitored_entity, summary_sample):
+        alerts = monitored_entity.alerts
+        name = _utils.generate_default_name()
+        alerter = ReferenceAlerter(comparison.GreaterThan(0.7), summary_sample)
+        sample_query = SummarySampleQuery()
+
+        created_alert = alerts.create(name, alerter, sample_query)
+        assert isinstance(created_alert, _entities.Alert)
+        assert created_alert._msg.alerter_type == alerter._TYPE
+
+        retrieved_alert = alerts.get(id=created_alert.id)
+        client_retrieved_alert = client.operations.alerts.get(id=created_alert.id)
+        assert retrieved_alert.id == client_retrieved_alert.id
+        assert isinstance(retrieved_alert, _entities.Alert)
+        assert retrieved_alert._msg.alerter_type == alerter._TYPE
+        alerter_proto = retrieved_alert._msg.alerter_reference
+        assert alerter_proto == alerter._as_proto()
+        assert alerter_proto.reference_sample_id == summary_sample.id
+
+        listed_alerts = alerts.list()
+        assert created_alert.id in map(lambda a: a.id, listed_alerts)
+        client_listed_alerts = client.operations.alerts.list()
+        assert created_alert.id in map(lambda a: a.id, client_listed_alerts)
+
+        assert alerts.delete([created_alert])
+
+    def test_repr(self, monitored_entity, created_entities, summary_sample):
+        """__repr__() does not raise exceptions"""
+        alerts = monitored_entity.alerts
+        name = _utils.generate_default_name()
+        alerter = ReferenceAlerter(comparison.GreaterThan(0.7), summary_sample)
+        sample_query = SummarySampleQuery()
+
+        created_alert = alerts.create(name, alerter, sample_query)
+        created_entities.append(created_alert)
+        assert repr(created_alert)
+
+        retrieved_alert = alerts.get(id=created_alert.id)
+        assert repr(retrieved_alert)
