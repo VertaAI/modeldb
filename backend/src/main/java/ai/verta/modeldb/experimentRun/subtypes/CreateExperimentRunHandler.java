@@ -39,6 +39,7 @@ public class CreateExperimentRunHandler {
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
+  private final FeatureHandler featureHandler;
 
   public CreateExperimentRunHandler(Executor executor, FutureJdbi jdbi, UAC uac) {
     this.executor = executor;
@@ -52,6 +53,7 @@ public class CreateExperimentRunHandler {
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
+    featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
@@ -274,6 +276,9 @@ public class CreateExperimentRunHandler {
               futureLogs.add(
                   artifactHandler.logArtifacts(
                       newExperimentRun.getId(), newExperimentRun.getArtifactsList()));
+              futureLogs.add(
+                  featureHandler.logFeatures(
+                      newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);
