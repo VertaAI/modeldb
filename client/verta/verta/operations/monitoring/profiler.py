@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-
+import abc
 import collections
-
-import numpy as np
 
 from verta.data_types import (
     DiscreteHistogram,
