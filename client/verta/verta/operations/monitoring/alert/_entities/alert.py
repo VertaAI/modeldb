@@ -8,6 +8,7 @@ from ....._tracking import entity, _Context
 from ... import notification_channel
 from ... import summaries
 from ... import utils
+from .. import _alerter
 from .. import status as status_module
 
 
@@ -49,6 +50,14 @@ class Alert(entity._ModelDBEntity):
                 ),
             )
         )
+
+    @property
+    def alerter(self):
+        self._refresh_cache()
+        alerter_field = self._msg.WhichOneof("alerter")
+        alerter_msg = getattr(self._msg, alerter_field)
+
+        return _alerter._Alerter._from_proto(alerter_msg)
 
     @property
     def history(self):
