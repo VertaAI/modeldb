@@ -383,7 +383,18 @@ type CreateNotificationChannelRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Channel *NotificationChannel `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty"` // ID must be empty
+	Channel         *NotificationChannel `protobuf:"bytes,1,opt,name=channel,proto3" json:"channel,omitempty"` // Deprecated. But keeping for now for compatibility
+	Name            string               `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	CreatedAtMillis uint64               `protobuf:"varint,3,opt,name=created_at_millis,json=createdAtMillis,proto3" json:"created_at_millis,omitempty"`
+	UpdatedAtMillis uint64               `protobuf:"varint,4,opt,name=updated_at_millis,json=updatedAtMillis,proto3" json:"updated_at_millis,omitempty"`
+	// Types that are assignable to WorkspaceIdentifier:
+	//	*CreateNotificationChannelRequest_WorkspaceId
+	//	*CreateNotificationChannelRequest_WorkspaceName
+	WorkspaceIdentifier isCreateNotificationChannelRequest_WorkspaceIdentifier `protobuf_oneof:"workspace_identifier"`
+	Type                NotificationChannelTypeEnum_NotificationChannelType    `protobuf:"varint,5,opt,name=type,proto3,enum=ai.verta.monitoring.NotificationChannelTypeEnum_NotificationChannelType" json:"type,omitempty"`
+	// Types that are assignable to NotificationChannel:
+	//	*CreateNotificationChannelRequest_SlackWebhook
+	NotificationChannel isCreateNotificationChannelRequest_NotificationChannel `protobuf_oneof:"notification_channel"`
 }
 
 func (x *CreateNotificationChannelRequest) Reset() {
@@ -423,6 +434,98 @@ func (x *CreateNotificationChannelRequest) GetChannel() *NotificationChannel {
 		return x.Channel
 	}
 	return nil
+}
+
+func (x *CreateNotificationChannelRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateNotificationChannelRequest) GetCreatedAtMillis() uint64 {
+	if x != nil {
+		return x.CreatedAtMillis
+	}
+	return 0
+}
+
+func (x *CreateNotificationChannelRequest) GetUpdatedAtMillis() uint64 {
+	if x != nil {
+		return x.UpdatedAtMillis
+	}
+	return 0
+}
+
+func (m *CreateNotificationChannelRequest) GetWorkspaceIdentifier() isCreateNotificationChannelRequest_WorkspaceIdentifier {
+	if m != nil {
+		return m.WorkspaceIdentifier
+	}
+	return nil
+}
+
+func (x *CreateNotificationChannelRequest) GetWorkspaceId() uint64 {
+	if x, ok := x.GetWorkspaceIdentifier().(*CreateNotificationChannelRequest_WorkspaceId); ok {
+		return x.WorkspaceId
+	}
+	return 0
+}
+
+func (x *CreateNotificationChannelRequest) GetWorkspaceName() string {
+	if x, ok := x.GetWorkspaceIdentifier().(*CreateNotificationChannelRequest_WorkspaceName); ok {
+		return x.WorkspaceName
+	}
+	return ""
+}
+
+func (x *CreateNotificationChannelRequest) GetType() NotificationChannelTypeEnum_NotificationChannelType {
+	if x != nil {
+		return x.Type
+	}
+	return NotificationChannelTypeEnum_UNKNOWN
+}
+
+func (m *CreateNotificationChannelRequest) GetNotificationChannel() isCreateNotificationChannelRequest_NotificationChannel {
+	if m != nil {
+		return m.NotificationChannel
+	}
+	return nil
+}
+
+func (x *CreateNotificationChannelRequest) GetSlackWebhook() *NotificationChannelSlackWebhook {
+	if x, ok := x.GetNotificationChannel().(*CreateNotificationChannelRequest_SlackWebhook); ok {
+		return x.SlackWebhook
+	}
+	return nil
+}
+
+type isCreateNotificationChannelRequest_WorkspaceIdentifier interface {
+	isCreateNotificationChannelRequest_WorkspaceIdentifier()
+}
+
+type CreateNotificationChannelRequest_WorkspaceId struct {
+	WorkspaceId uint64 `protobuf:"varint,7,opt,name=workspace_id,json=workspaceId,proto3,oneof"`
+}
+
+type CreateNotificationChannelRequest_WorkspaceName struct {
+	WorkspaceName string `protobuf:"bytes,8,opt,name=workspace_name,json=workspaceName,proto3,oneof"`
+}
+
+func (*CreateNotificationChannelRequest_WorkspaceId) isCreateNotificationChannelRequest_WorkspaceIdentifier() {
+}
+
+func (*CreateNotificationChannelRequest_WorkspaceName) isCreateNotificationChannelRequest_WorkspaceIdentifier() {
+}
+
+type isCreateNotificationChannelRequest_NotificationChannel interface {
+	isCreateNotificationChannelRequest_NotificationChannel()
+}
+
+type CreateNotificationChannelRequest_SlackWebhook struct {
+	SlackWebhook *NotificationChannelSlackWebhook `protobuf:"bytes,6,opt,name=slack_webhook,json=slackWebhook,proto3,oneof"`
+}
+
+func (*CreateNotificationChannelRequest_SlackWebhook) isCreateNotificationChannelRequest_NotificationChannel() {
 }
 
 // Updates an notification channel. The matching with a previous one happens from the id being the same
@@ -1640,7 +1743,7 @@ var file_monitoring_Alert_proto_rawDesc = []byte{
 	0x0a, 0x17, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x68,
 	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b,
 	0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x09, 0x0a, 0x05, 0x53, 0x4c, 0x41, 0x43, 0x4b, 0x10,
-	0x01, 0x22, 0x80, 0x03, 0x0a, 0x13, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69,
+	0x01, 0x22, 0xfa, 0x02, 0x0a, 0x13, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69,
 	0x6f, 0x6e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d,
 	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x2a, 0x0a,
@@ -1663,17 +1766,43 @@ var file_monitoring_Alert_proto_rawDesc = []byte{
 	0x48, 0x00, 0x52, 0x0c, 0x73, 0x6c, 0x61, 0x63, 0x6b, 0x57, 0x65, 0x62, 0x68, 0x6f, 0x6f, 0x6b,
 	0x12, 0x21, 0x0a, 0x0c, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69, 0x64,
 	0x18, 0x07, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63,
-	0x65, 0x49, 0x64, 0x42, 0x09, 0x0a, 0x07, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x4a, 0x04,
-	0x08, 0x08, 0x10, 0x09, 0x22, 0x33, 0x0a, 0x1f, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x6c, 0x61, 0x63, 0x6b,
-	0x57, 0x65, 0x62, 0x68, 0x6f, 0x6f, 0x6b, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x6c, 0x22, 0x66, 0x0a, 0x20, 0x43, 0x72, 0x65,
-	0x61, 0x74, 0x65, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43,
-	0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x42, 0x0a,
-	0x07, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x28,
-	0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f,
-	0x72, 0x69, 0x6e, 0x67, 0x2e, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x07, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65,
+	0x65, 0x49, 0x64, 0x42, 0x09, 0x0a, 0x07, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x22, 0x33,
+	0x0a, 0x1f, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x68,
+	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x6c, 0x61, 0x63, 0x6b, 0x57, 0x65, 0x62, 0x68, 0x6f, 0x6f,
+	0x6b, 0x12, 0x10, 0x0a, 0x03, 0x75, 0x72, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03,
+	0x75, 0x72, 0x6c, 0x22, 0x8b, 0x04, 0x0a, 0x20, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4e, 0x6f,
+	0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65,
+	0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x42, 0x0a, 0x07, 0x63, 0x68, 0x61, 0x6e,
+	0x6e, 0x65, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x61, 0x69, 0x2e, 0x76,
+	0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e,
+	0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x68, 0x61, 0x6e,
+	0x6e, 0x65, 0x6c, 0x52, 0x07, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x12, 0x12, 0x0a, 0x04,
+	0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65,
+	0x12, 0x2a, 0x0a, 0x11, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x5f, 0x6d,
+	0x69, 0x6c, 0x6c, 0x69, 0x73, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0f, 0x63, 0x72, 0x65,
+	0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x4d, 0x69, 0x6c, 0x6c, 0x69, 0x73, 0x12, 0x2a, 0x0a, 0x11,
+	0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x61, 0x74, 0x5f, 0x6d, 0x69, 0x6c, 0x6c, 0x69,
+	0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0f, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64,
+	0x41, 0x74, 0x4d, 0x69, 0x6c, 0x6c, 0x69, 0x73, 0x12, 0x23, 0x0a, 0x0c, 0x77, 0x6f, 0x72, 0x6b,
+	0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x04, 0x48, 0x00,
+	0x52, 0x0b, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64, 0x12, 0x27, 0x0a,
+	0x0e, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18,
+	0x08, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x0d, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61,
+	0x63, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x5c, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x0e, 0x32, 0x48, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
+	0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x4e, 0x6f, 0x74, 0x69, 0x66,
+	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x54, 0x79,
+	0x70, 0x65, 0x45, 0x6e, 0x75, 0x6d, 0x2e, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04,
+	0x74, 0x79, 0x70, 0x65, 0x12, 0x5b, 0x0a, 0x0d, 0x73, 0x6c, 0x61, 0x63, 0x6b, 0x5f, 0x77, 0x65,
+	0x62, 0x68, 0x6f, 0x6f, 0x6b, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x34, 0x2e, 0x61, 0x69,
+	0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e,
+	0x67, 0x2e, 0x4e, 0x6f, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x68,
+	0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x53, 0x6c, 0x61, 0x63, 0x6b, 0x57, 0x65, 0x62, 0x68, 0x6f, 0x6f,
+	0x6b, 0x48, 0x01, 0x52, 0x0c, 0x73, 0x6c, 0x61, 0x63, 0x6b, 0x57, 0x65, 0x62, 0x68, 0x6f, 0x6f,
+	0x6b, 0x42, 0x16, 0x0a, 0x14, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69,
+	0x64, 0x65, 0x6e, 0x74, 0x69, 0x66, 0x69, 0x65, 0x72, 0x42, 0x16, 0x0a, 0x14, 0x6e, 0x6f, 0x74,
+	0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65,
 	0x6c, 0x22, 0x66, 0x0a, 0x20, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x4e, 0x6f, 0x74, 0x69, 0x66,
 	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c, 0x52, 0x65,
 	0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x42, 0x0a, 0x07, 0x63, 0x68, 0x61, 0x6e, 0x6e, 0x65, 0x6c,
@@ -2028,50 +2157,52 @@ var file_monitoring_Alert_proto_depIdxs = []int32{
 	0,  // 0: ai.verta.monitoring.NotificationChannel.type:type_name -> ai.verta.monitoring.NotificationChannelTypeEnum.NotificationChannelType
 	5,  // 1: ai.verta.monitoring.NotificationChannel.slack_webhook:type_name -> ai.verta.monitoring.NotificationChannelSlackWebhook
 	4,  // 2: ai.verta.monitoring.CreateNotificationChannelRequest.channel:type_name -> ai.verta.monitoring.NotificationChannel
-	4,  // 3: ai.verta.monitoring.UpdateNotificationChannelRequest.channel:type_name -> ai.verta.monitoring.NotificationChannel
-	3,  // 4: ai.verta.monitoring.FindNotificationChannelRequest.types:type_name -> ai.verta.monitoring.NotificationChannelTypeEnum
-	23, // 5: ai.verta.monitoring.Alert.notification_channels:type_name -> ai.verta.monitoring.Alert.NotificationChannelsEntry
-	26, // 6: ai.verta.monitoring.Alert.sample_find_base:type_name -> ai.verta.monitoring.FindSummarySampleRequest
-	2,  // 7: ai.verta.monitoring.Alert.status:type_name -> ai.verta.monitoring.AlertStatusEnum.AlertStatus
-	1,  // 8: ai.verta.monitoring.Alert.alerter_type:type_name -> ai.verta.monitoring.AlerterTypeEnum.AlerterType
-	13, // 9: ai.verta.monitoring.Alert.alerter_fixed:type_name -> ai.verta.monitoring.AlertFixed
-	14, // 10: ai.verta.monitoring.Alert.alerter_reference:type_name -> ai.verta.monitoring.AlertReference
-	27, // 11: ai.verta.monitoring.AlertFixed.operator:type_name -> ai.verta.common.OperatorEnum.Operator
-	27, // 12: ai.verta.monitoring.AlertReference.operator:type_name -> ai.verta.common.OperatorEnum.Operator
-	12, // 13: ai.verta.monitoring.CreateAlertRequest.alert:type_name -> ai.verta.monitoring.Alert
-	12, // 14: ai.verta.monitoring.UpdateAlertRequest.alert:type_name -> ai.verta.monitoring.Alert
-	1,  // 15: ai.verta.monitoring.FindAlertRequest.alerter_types:type_name -> ai.verta.monitoring.AlerterTypeEnum.AlerterType
-	2,  // 16: ai.verta.monitoring.FindAlertRequest.status:type_name -> ai.verta.monitoring.AlertStatusEnum.AlertStatus
-	2,  // 17: ai.verta.monitoring.UpdateAlertStatusRequest.status:type_name -> ai.verta.monitoring.AlertStatusEnum.AlertStatus
-	2,  // 18: ai.verta.monitoring.ListAlertHistoryItem.status:type_name -> ai.verta.monitoring.AlertStatusEnum.AlertStatus
-	4,  // 19: ai.verta.monitoring.FindNotificationChannelRequest.Response.channels:type_name -> ai.verta.monitoring.NotificationChannel
-	12, // 20: ai.verta.monitoring.FindAlertRequest.Response.alerts:type_name -> ai.verta.monitoring.Alert
-	21, // 21: ai.verta.monitoring.ListAlertHistoryRequest.Response.history:type_name -> ai.verta.monitoring.ListAlertHistoryItem
-	6,  // 22: ai.verta.monitoring.AlertService.createNotificationChannel:input_type -> ai.verta.monitoring.CreateNotificationChannelRequest
-	7,  // 23: ai.verta.monitoring.AlertService.updateNotificationChannel:input_type -> ai.verta.monitoring.UpdateNotificationChannelRequest
-	8,  // 24: ai.verta.monitoring.AlertService.findNotificationChannel:input_type -> ai.verta.monitoring.FindNotificationChannelRequest
-	9,  // 25: ai.verta.monitoring.AlertService.deleteNotificationChannel:input_type -> ai.verta.monitoring.DeleteNotificationChannelRequest
-	15, // 26: ai.verta.monitoring.AlertService.createAlert:input_type -> ai.verta.monitoring.CreateAlertRequest
-	16, // 27: ai.verta.monitoring.AlertService.updateAlert:input_type -> ai.verta.monitoring.UpdateAlertRequest
-	19, // 28: ai.verta.monitoring.AlertService.updateAlertStatus:input_type -> ai.verta.monitoring.UpdateAlertStatusRequest
-	17, // 29: ai.verta.monitoring.AlertService.findAlert:input_type -> ai.verta.monitoring.FindAlertRequest
-	20, // 30: ai.verta.monitoring.AlertService.listAlertHistory:input_type -> ai.verta.monitoring.ListAlertHistoryRequest
-	18, // 31: ai.verta.monitoring.AlertService.deleteAlert:input_type -> ai.verta.monitoring.DeleteAlertRequest
-	4,  // 32: ai.verta.monitoring.AlertService.createNotificationChannel:output_type -> ai.verta.monitoring.NotificationChannel
-	4,  // 33: ai.verta.monitoring.AlertService.updateNotificationChannel:output_type -> ai.verta.monitoring.NotificationChannel
-	22, // 34: ai.verta.monitoring.AlertService.findNotificationChannel:output_type -> ai.verta.monitoring.FindNotificationChannelRequest.Response
-	28, // 35: ai.verta.monitoring.AlertService.deleteNotificationChannel:output_type -> ai.verta.monitoring.Empty
-	12, // 36: ai.verta.monitoring.AlertService.createAlert:output_type -> ai.verta.monitoring.Alert
-	12, // 37: ai.verta.monitoring.AlertService.updateAlert:output_type -> ai.verta.monitoring.Alert
-	28, // 38: ai.verta.monitoring.AlertService.updateAlertStatus:output_type -> ai.verta.monitoring.Empty
-	24, // 39: ai.verta.monitoring.AlertService.findAlert:output_type -> ai.verta.monitoring.FindAlertRequest.Response
-	25, // 40: ai.verta.monitoring.AlertService.listAlertHistory:output_type -> ai.verta.monitoring.ListAlertHistoryRequest.Response
-	28, // 41: ai.verta.monitoring.AlertService.deleteAlert:output_type -> ai.verta.monitoring.Empty
-	32, // [32:42] is the sub-list for method output_type
-	22, // [22:32] is the sub-list for method input_type
-	22, // [22:22] is the sub-list for extension type_name
-	22, // [22:22] is the sub-list for extension extendee
-	0,  // [0:22] is the sub-list for field type_name
+	0,  // 3: ai.verta.monitoring.CreateNotificationChannelRequest.type:type_name -> ai.verta.monitoring.NotificationChannelTypeEnum.NotificationChannelType
+	5,  // 4: ai.verta.monitoring.CreateNotificationChannelRequest.slack_webhook:type_name -> ai.verta.monitoring.NotificationChannelSlackWebhook
+	4,  // 5: ai.verta.monitoring.UpdateNotificationChannelRequest.channel:type_name -> ai.verta.monitoring.NotificationChannel
+	3,  // 6: ai.verta.monitoring.FindNotificationChannelRequest.types:type_name -> ai.verta.monitoring.NotificationChannelTypeEnum
+	23, // 7: ai.verta.monitoring.Alert.notification_channels:type_name -> ai.verta.monitoring.Alert.NotificationChannelsEntry
+	26, // 8: ai.verta.monitoring.Alert.sample_find_base:type_name -> ai.verta.monitoring.FindSummarySampleRequest
+	2,  // 9: ai.verta.monitoring.Alert.status:type_name -> ai.verta.monitoring.AlertStatusEnum.AlertStatus
+	1,  // 10: ai.verta.monitoring.Alert.alerter_type:type_name -> ai.verta.monitoring.AlerterTypeEnum.AlerterType
+	13, // 11: ai.verta.monitoring.Alert.alerter_fixed:type_name -> ai.verta.monitoring.AlertFixed
+	14, // 12: ai.verta.monitoring.Alert.alerter_reference:type_name -> ai.verta.monitoring.AlertReference
+	27, // 13: ai.verta.monitoring.AlertFixed.operator:type_name -> ai.verta.common.OperatorEnum.Operator
+	27, // 14: ai.verta.monitoring.AlertReference.operator:type_name -> ai.verta.common.OperatorEnum.Operator
+	12, // 15: ai.verta.monitoring.CreateAlertRequest.alert:type_name -> ai.verta.monitoring.Alert
+	12, // 16: ai.verta.monitoring.UpdateAlertRequest.alert:type_name -> ai.verta.monitoring.Alert
+	1,  // 17: ai.verta.monitoring.FindAlertRequest.alerter_types:type_name -> ai.verta.monitoring.AlerterTypeEnum.AlerterType
+	2,  // 18: ai.verta.monitoring.FindAlertRequest.status:type_name -> ai.verta.monitoring.AlertStatusEnum.AlertStatus
+	2,  // 19: ai.verta.monitoring.UpdateAlertStatusRequest.status:type_name -> ai.verta.monitoring.AlertStatusEnum.AlertStatus
+	2,  // 20: ai.verta.monitoring.ListAlertHistoryItem.status:type_name -> ai.verta.monitoring.AlertStatusEnum.AlertStatus
+	4,  // 21: ai.verta.monitoring.FindNotificationChannelRequest.Response.channels:type_name -> ai.verta.monitoring.NotificationChannel
+	12, // 22: ai.verta.monitoring.FindAlertRequest.Response.alerts:type_name -> ai.verta.monitoring.Alert
+	21, // 23: ai.verta.monitoring.ListAlertHistoryRequest.Response.history:type_name -> ai.verta.monitoring.ListAlertHistoryItem
+	6,  // 24: ai.verta.monitoring.AlertService.createNotificationChannel:input_type -> ai.verta.monitoring.CreateNotificationChannelRequest
+	7,  // 25: ai.verta.monitoring.AlertService.updateNotificationChannel:input_type -> ai.verta.monitoring.UpdateNotificationChannelRequest
+	8,  // 26: ai.verta.monitoring.AlertService.findNotificationChannel:input_type -> ai.verta.monitoring.FindNotificationChannelRequest
+	9,  // 27: ai.verta.monitoring.AlertService.deleteNotificationChannel:input_type -> ai.verta.monitoring.DeleteNotificationChannelRequest
+	15, // 28: ai.verta.monitoring.AlertService.createAlert:input_type -> ai.verta.monitoring.CreateAlertRequest
+	16, // 29: ai.verta.monitoring.AlertService.updateAlert:input_type -> ai.verta.monitoring.UpdateAlertRequest
+	19, // 30: ai.verta.monitoring.AlertService.updateAlertStatus:input_type -> ai.verta.monitoring.UpdateAlertStatusRequest
+	17, // 31: ai.verta.monitoring.AlertService.findAlert:input_type -> ai.verta.monitoring.FindAlertRequest
+	20, // 32: ai.verta.monitoring.AlertService.listAlertHistory:input_type -> ai.verta.monitoring.ListAlertHistoryRequest
+	18, // 33: ai.verta.monitoring.AlertService.deleteAlert:input_type -> ai.verta.monitoring.DeleteAlertRequest
+	4,  // 34: ai.verta.monitoring.AlertService.createNotificationChannel:output_type -> ai.verta.monitoring.NotificationChannel
+	4,  // 35: ai.verta.monitoring.AlertService.updateNotificationChannel:output_type -> ai.verta.monitoring.NotificationChannel
+	22, // 36: ai.verta.monitoring.AlertService.findNotificationChannel:output_type -> ai.verta.monitoring.FindNotificationChannelRequest.Response
+	28, // 37: ai.verta.monitoring.AlertService.deleteNotificationChannel:output_type -> ai.verta.monitoring.Empty
+	12, // 38: ai.verta.monitoring.AlertService.createAlert:output_type -> ai.verta.monitoring.Alert
+	12, // 39: ai.verta.monitoring.AlertService.updateAlert:output_type -> ai.verta.monitoring.Alert
+	28, // 40: ai.verta.monitoring.AlertService.updateAlertStatus:output_type -> ai.verta.monitoring.Empty
+	24, // 41: ai.verta.monitoring.AlertService.findAlert:output_type -> ai.verta.monitoring.FindAlertRequest.Response
+	25, // 42: ai.verta.monitoring.AlertService.listAlertHistory:output_type -> ai.verta.monitoring.ListAlertHistoryRequest.Response
+	28, // 43: ai.verta.monitoring.AlertService.deleteAlert:output_type -> ai.verta.monitoring.Empty
+	34, // [34:44] is the sub-list for method output_type
+	24, // [24:34] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_monitoring_Alert_proto_init() }
@@ -2348,6 +2479,11 @@ func file_monitoring_Alert_proto_init() {
 	}
 	file_monitoring_Alert_proto_msgTypes[1].OneofWrappers = []interface{}{
 		(*NotificationChannel_SlackWebhook)(nil),
+	}
+	file_monitoring_Alert_proto_msgTypes[3].OneofWrappers = []interface{}{
+		(*CreateNotificationChannelRequest_WorkspaceId)(nil),
+		(*CreateNotificationChannelRequest_WorkspaceName)(nil),
+		(*CreateNotificationChannelRequest_SlackWebhook)(nil),
 	}
 	file_monitoring_Alert_proto_msgTypes[5].OneofWrappers = []interface{}{
 		(*FindNotificationChannelRequest_WorkspaceId)(nil),
