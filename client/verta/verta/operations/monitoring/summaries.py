@@ -268,6 +268,10 @@ class Summaries:
     def find(self, query=None):
         if query is None:
             query = SummaryQuery()
+        elif not isinstance(query, SummaryQuery):
+            raise TypeError(
+                "`query` must be a SummaryQuery, not {}".format(type(query))
+            )
         msg = query._to_proto_request()
         endpoint = "/api/v1/summaries/findSummary"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
@@ -297,6 +301,10 @@ class SummarySamples:
     def find(self, query=None):
         if query is None:
             query = SummarySampleQuery()
+        elif not isinstance(query, SummarySampleQuery):
+            raise TypeError(
+                "`query` must be a SummarySampleQuery, not {}".format(type(query))
+            )
         msg = query._to_proto_request()
         endpoint = "/api/v1/summaries/findSample"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
