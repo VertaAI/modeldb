@@ -186,8 +186,12 @@ class NotificationChannels(object):
     # TODO: use lazy list and pagination
     # TODO: a proper find
     def list(self, workspace=None):
+        if workspace is None:
+            workspace = self._client.get_workspace()
+
         msg = _AlertService.FindNotificationChannelRequest(
             page_number=1, page_limit=-1,
+            workspace_name=workspace,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
