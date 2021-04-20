@@ -74,6 +74,14 @@ class TestSummaries(object):
         )
         assert len(blue_samples) == 1
 
+    def test_summary_get_or_create(self, client):
+        summaries = client.operations.summaries
+
+        monitored_entity = client.operations.get_or_create_monitored_entity()
+        summary_name = "summary:{}".format(generate_default_name())
+        created_summary = summaries.get_or_create(summary_name, data_types.DiscreteHistogram, monitored_entity)
+        retrieved_summary = summaries.get_or_create(summary_name, data_types.DiscreteHistogram, monitored_entity)
+        assert created_summary.id == retrieved_summary.id
 
 class TestSummarySampleQuery:
     def test_creation_datetime(self):
