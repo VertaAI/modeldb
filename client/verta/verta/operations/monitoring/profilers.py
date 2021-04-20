@@ -275,10 +275,7 @@ class ProfilerReference(entity._ModelDBEntity):
 
 
 class Profilers(object):
-    """Repository object for creating and finding profilers.
-
-    TODO: EXTENDED DESCRIPTION MENTIONING DEFAULT_ENVIRONMENT
-    """
+    """Repository object for creating and finding profilers."""
 
     def __init__(self, conn, conf, client):
         self._conn = conn
@@ -304,22 +301,6 @@ class Profilers(object):
         return ref
 
     def upload(self, name, profiler, attrs={}, environment=None):
-        """Short summary.
-
-        Extended summary explaining functionality.
-
-        Parameters
-        ----------
-        x : type, optional
-            Description of parameter `x`.
-        y
-            Description of parameter `y` (with type not specified).
-
-        Returns
-        -------
-        int
-            Description of anonymous integer return value.
-        """
         environment = environment if environment else self.default_environment()
         model = self._client.get_or_create_registered_model()
         version = model.get_or_create_version()
@@ -345,12 +326,10 @@ class Profilers(object):
         reference._set_client(self._client)
         return reference
 
-    # TODO: Document behavior which happens if this is a deployed profiler?
-    # TODO: Document the error raised by a failure
     def delete(self, profiler_reference):
         """Delete the provided profiler reference.
 
-        Instructs Verta Services to delete .
+        Instructs Verta Services to delete the specified profiler.
 
         Parameters
         ----------
