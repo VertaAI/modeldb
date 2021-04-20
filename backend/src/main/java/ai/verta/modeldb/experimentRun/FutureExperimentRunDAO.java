@@ -25,6 +25,8 @@ import ai.verta.modeldb.LogHyperparameters;
 import ai.verta.modeldb.LogMetrics;
 import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.Observation;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -68,7 +70,12 @@ public class FutureExperimentRunDAO {
   private final ArtifactHandler artifactHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
 
-  public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
+  public FutureExperimentRunDAO(
+      Executor executor,
+      FutureJdbi jdbi,
+      UAC uac,
+      AuthService authService,
+      RoleService roleService) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -80,7 +87,8 @@ public class FutureExperimentRunDAO {
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
-    createExperimentRunHandler = new CreateExperimentRunHandler(executor, jdbi, uac);
+    createExperimentRunHandler =
+        new CreateExperimentRunHandler(executor, jdbi, uac, authService, roleService);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {

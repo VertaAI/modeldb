@@ -5,6 +5,9 @@ import ai.verta.modeldb.CreateExperimentRun;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
+import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.RoleService;
+import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -31,6 +34,8 @@ public class CreateExperimentRunHandler {
   private final Executor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
+  private final RoleService roleService;
+  private final AuthService authService;
   private final Config config = Config.getInstance();
 
   private final AttributeHandler attributeHandler;
@@ -40,10 +45,17 @@ public class CreateExperimentRunHandler {
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
 
-  public CreateExperimentRunHandler(Executor executor, FutureJdbi jdbi, UAC uac) {
+  public CreateExperimentRunHandler(
+      Executor executor,
+      FutureJdbi jdbi,
+      UAC uac,
+      AuthService authService,
+      RoleService roleService) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
+    this.authService = authService;
+    this.roleService = roleService;
 
     attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
     hyperparametersHandler =
@@ -332,50 +344,51 @@ public class CreateExperimentRunHandler {
         });
   }
 
-  private String buildRoleBindingName(
-      String roleName, String resourceId, String vertaId, String resourceTypeName) {
-    return roleName + "_" + resourceTypeName + "_" + resourceId + "_" + "User_" + vertaId;
-  }
-
   private InternalFuture<Void> createRoleBindingsForExperimentRun(
       final ExperimentRun experimentRun) {
     ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceType =
         ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN;
-    String roleName = ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER;
-    return FutureGrpc.ClientRequest(
-            uac.getRoleService()
-                .setRoleBinding(
-                    SetRoleBinding.newBuilder()
-                        .setRoleBinding(
-                            RoleBinding.newBuilder()
-                                .setName(
-                                    buildRoleBindingName(
-                                        roleName,
-                                        experimentRun.getId(),
-                                        experimentRun.getOwner(),
-                                        modelDBServiceResourceType.name()))
-                                .setScope(RoleScope.newBuilder().build())
-                                .setRoleName(roleName)
-                                .addEntities(
-                                    Entities.newBuilder()
-                                        .addUserIds(experimentRun.getOwner())
-                                        .build())
-                                .addResources(
-                                    Resources.newBuilder()
-                                        .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                                        .setResourceType(
-                                            ResourceType.newBuilder()
-                                                .setModeldbServiceResourceType(
-                                                    modelDBServiceResourceType))
-                                        .addResourceIds(experimentRun.getId())
-                                        .build())
-                                .build())
-                        .build()),
-            executor)
-        .thenAccept(
-            response -> {
-              LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response);
-            },
+    var roleName = ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER;
+    var roleBindingNameFuture =
+        InternalFuture.supplyAsync(
+            () ->
+                roleService.buildRoleBindingName(
+                    roleName,
+                    experimentRun.getId(),
+                    new CollaboratorUser(authService, experimentRun.getOwner()),
+                    modelDBServiceResourceType.name()),
             executor);
+    return roleBindingNameFuture.thenAccept(
+        roleBindingName ->
+            FutureGrpc.ClientRequest(
+                    uac.getRoleService()
+                        .setRoleBinding(
+                            SetRoleBinding.newBuilder()
+                                .setRoleBinding(
+                                    RoleBinding.newBuilder()
+                                        .setName(roleBindingName)
+                                        .setScope(RoleScope.newBuilder().build())
+                                        .setRoleName(roleName)
+                                        .addEntities(
+                                            Entities.newBuilder()
+                                                .addUserIds(experimentRun.getOwner())
+                                                .build())
+                                        .addResources(
+                                            Resources.newBuilder()
+                                                .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                                                .setResourceType(
+                                                    ResourceType.newBuilder()
+                                                        .setModeldbServiceResourceType(
+                                                            modelDBServiceResourceType))
+                                                .addResourceIds(experimentRun.getId())
+                                                .build())
+                                        .build())
+                                .build()),
+                    executor)
+                .thenAccept(
+                    response ->
+                        LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response),
+                    executor),
+        executor);
   }
 }
