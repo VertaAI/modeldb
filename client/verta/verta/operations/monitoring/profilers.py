@@ -31,6 +31,18 @@ class ProfilerReference(entity._ModelDBEntity):
     A ProfilerReference represents an uploaded data profiler and provides
     methods to deploy, disable, and check the deployment status of profilers.
 
+    Users should obtain ``ProfilerReference`` objects through the get and
+    create methods available in the ``client.operations.profilers`` object.
+
+    Parameters
+    ----------
+    conn
+        A connection object to the backend service.
+    conf
+        A configuration object used by conn methods.
+    msg
+        A protobuf message ai.verta.monitoring.Profiler
+
     Attributes
     ----------
     id : int
@@ -40,25 +52,6 @@ class ProfilerReference(entity._ModelDBEntity):
     """
 
     def __init__(self, conn, conf, msg):
-        """Intended for internal use.
-
-        Users should obtain ``ProfilerReference`` objects through the get and
-        create methods available in the ``client.operations.profilers`` object.
-
-        Parameters
-        ----------
-        conn
-            A connection object to the backend service.
-        conf
-            A configuration object used by conn methods.
-        msg
-            A protobuf message ai.verta.monitoring.Profiler
-
-        Returns
-        -------
-        ProfilerReference
-            A reference to an uploaded profiler.
-        """
         super(ProfilerReference, self).__init__(
             conn, conf, _DataMonitoringService, "profiler", msg
         )

@@ -82,6 +82,11 @@ class MissingValuesProfiler(Profiler):
     values and returns DiscreteHistogram summary data for the specified
     columns.
 
+    Parameters
+    ----------
+    columns : :obj:`list` of :obj:`str`
+        The list of data frame columns which will be profiled.
+
     Attributes
     ----------
     columns : :obj:`list` of :obj:`str`
@@ -89,13 +94,6 @@ class MissingValuesProfiler(Profiler):
     """
 
     def __init__(self, columns):
-        """Initialize a MissingValuesProfiler for the specified columns.
-
-        Parameters
-        ----------
-        columns : :obj:`list` of :obj:`str`
-            The list of data frame columns which will be profiled.
-        """
         super(MissingValuesProfiler, self).__init__(columns)
 
     def profile_column(self, df, column):
@@ -131,6 +129,11 @@ class BinaryHistogramProfiler(Profiler):
     columns containing continuously measured values but should be used when the
     set of possible values in a column is small, e.g. boolean valued columns.
 
+    Parameters
+    ----------
+    columns : :obj:`list` of :obj:`str`
+        The list of data frame columns which will be profiled.
+
     Attributes
     ----------
     columns : :obj:`list` of :obj:`str`
@@ -138,13 +141,6 @@ class BinaryHistogramProfiler(Profiler):
     """
 
     def __init__(self, columns):
-        """Initialize a BinaryHistogramProfiler for the specified columns.
-
-        Parameters
-        ----------
-        columns : :obj:`list` of :obj:`str`
-            The list of data frame columns which will be profiled.
-        """
         super(BinaryHistogramProfiler, self).__init__(columns)
 
     def profile_column(self, df, column):

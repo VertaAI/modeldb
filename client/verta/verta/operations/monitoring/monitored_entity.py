@@ -19,7 +19,18 @@ class MonitoredEntity(entity._ModelDBEntity):
     """A monitored entity persisted to Verta.
 
     A monitored entity provides a named context to gather together data
-    summaries and alert configurations.
+    summaries and alert configurations. Users should obtain a monitored entity
+    through the :meth:`~verta.opertaions.monitoring.client.Client.get_or_create_monitored_entity`
+    method of the operations sub-client.
+
+    Parameters
+    ----------
+    conn
+        A connection object to the backend service.
+    conf
+        A configuration object used by conn methods.
+    msg
+        A protobuf message ai.verta.monitoring.MonitoredEntity
 
     Attributes
     ----------
@@ -29,25 +40,6 @@ class MonitoredEntity(entity._ModelDBEntity):
     """
 
     def __init__(self, conn, conf, msg):
-        """Intended for internal use only.
-
-        Users should obtain a monitored entity through the
-        :meth:`~verta.opertaions.monitoring.client.Client.get_or_create_monitored_entity`
-        method of the operations sub-client.
-
-        Parameters
-        ----------
-        conn
-            A connection object to the backend service.
-        conf
-            A configuration object used by conn methods.
-        msg
-            A protobuf message ai.verta.monitoring.MonitoredEntity
-        Returns
-        -------
-        MonitoredEntity
-            A monitored entity which is persisted by Verta.
-        """
         super(MonitoredEntity, self).__init__(
             conn, conf, _DataMonitoringService, "monitored_entity", msg
         )

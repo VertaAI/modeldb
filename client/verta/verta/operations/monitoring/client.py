@@ -17,7 +17,13 @@ class Client(object):
     """The sub-client aggregating repositories for monitoring features.
 
     This sub-client acts as a namespace for the repository objects used
-    to interact with Verta's profiling and data monitoring features.
+    to interact with Verta's profiling and data monitoring features. Users
+    should access instances of this client through the base Verta Client.
+
+    Parameters
+    ----------
+    verta_client : verta.client.Client
+        An instance of the base Verta client.
 
     Attributes
     ----------
@@ -30,16 +36,6 @@ class Client(object):
     """
 
     def __init__ (self, verta_client):
-        """Intended for internal use.
-
-        Users should access instances of this client through the base Verta
-        Client.
-
-        Parameters
-        ----------
-        verta_client : verta.client.Client
-            An instance of the base Verta client.
-        """
         self._client = verta_client
 
     @property
@@ -88,7 +84,7 @@ class Client(object):
         """Get or create a monitored entity by name.
 
         Gets or creates a monitored entity. A name will be auto-generated if one
-        is not provided. Either `name` or ``id` can be provided but not both.
+        is not provided. Either `name` or `id` can be provided but not both.
         If `id` is provided, this will act only as a get method and no object will
         be created.
 
@@ -100,10 +96,10 @@ class Client(object):
             A workspace for this entity. Defaults to the client's default workspace.
         id : int, optional
             This should not be provided if ``name`` is provided.
-        
+
         Returns
         -------
-        verta.operations.monitoring.monitored_entity.MonitoredEntity
+        :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
             A monitored entity object.
         """
         if name is not None and id is not None:
