@@ -62,6 +62,41 @@ class FixedAlerter(_Alerter):
 
 
 class ReferenceAlerter(_Alerter):
+    """
+    Compare distances between samples and a reference against a threshold.
+
+    Parameters
+    ----------
+    comparison : :class:`~verta.common.comparison._VertaComparison`
+        Alert condition. An alert is active if the distance between a queried
+        sample and `reference_sample` meets this condition.
+    reference_sample : :class:`~verta.operations.monitoring.summarySummarySample`
+        An existing summary sample to compare queried samples with.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta import Client
+        from verta.common.comparison import GreaterThan
+        from verta.operations.monitoring.alert import ReferenceAlerter
+        from verta.operations.monitoring.summaries import SummarySampleQuery
+
+        ref_sample = summary.find_samples(SummarySampleQuery(ids=[123]))[0]
+        alerter = ReferenceAlerter(
+            GreaterThan(.7),
+            ref_sample,
+        )
+
+        alert = monitored_entity.alerts.create(
+            name="MSE",
+            alerter=alerter,
+            summary_sample_query=sample_query,
+            notification_channels=[channel],
+        )
+
+    """
+
     _TYPE = _AlertService.AlerterTypeEnum.REFERENCE
 
     def __init__(self, comparison, reference_sample):
