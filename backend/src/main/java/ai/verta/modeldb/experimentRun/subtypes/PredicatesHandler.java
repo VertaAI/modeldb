@@ -99,30 +99,26 @@ public class PredicatesHandler {
     try {
       final var value = predicate.getValue();
       var operator = predicate.getOperator();
-      //  We will manage this operator at bottom of method based on `NE` and `NOT_CONTAIN` using
-      // `IN` OR `NOT IN` query
-      if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-        operator = OperatorEnum.Operator.CONTAIN;
-      } else if (operator.equals(OperatorEnum.Operator.NE)) {
-        operator = OperatorEnum.Operator.EQ;
-      }
-      final var finalOperator = operator;
 
       final var valueBindingName = String.format("v_t_%d", index);
+      final var entityNameBindingName = String.format("entity_name_%d", index);
 
-      var sql = "select distinct experiment_run_id from tag_mapping where entity_name=:entity_name";
+      var sql =
+          "select distinct experiment_run_id from tag_mapping where entity_name=:"
+              + entityNameBindingName;
       sql += " and ";
 
       final var colValue = "tags";
       var queryContext =
-          new QueryFilterContext().addBind(q -> q.bind("entity_name", "ExperimentRunEntity"));
+          new QueryFilterContext()
+              .addBind(q -> q.bind(entityNameBindingName, "ExperimentRunEntity"));
 
       switch (value.getKindCase()) {
         case STRING_VALUE:
-          sql += applyOperator(finalOperator, colValue, ":" + valueBindingName);
+          sql += applyOperator(operator, colValue, ":" + valueBindingName);
           queryContext =
               queryContext.addBind(
-                  q -> q.bind(valueBindingName, wrapValue(finalOperator, value.getStringValue())));
+                  q -> q.bind(valueBindingName, wrapValue(operator, value.getStringValue())));
           break;
         case LIST_VALUE:
           List<Object> valueList = new LinkedList<>();
@@ -132,16 +128,16 @@ public class PredicatesHandler {
             }
           }
 
-          sql += applyOperator(finalOperator, colValue, "<" + valueBindingName + ">");
+          sql += applyOperator(operator, colValue, "<" + valueBindingName + ">");
           queryContext = queryContext.addBind(q -> q.bindList(valueBindingName, valueList));
           break;
         default:
           return InternalFuture.failedStage(
-              new UnimplementedException("Unknown 'Value' type recognized"));
+              new UnimplementedException("Unknown 'Value' type: " + value.getKindCase().name()));
       }
 
-      if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
-          || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+      if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)
+          || operator.equals(OperatorEnum.Operator.NE)) {
         queryContext =
             queryContext.addCondition(String.format("experiment_run.id NOT IN (%s)", sql));
       } else {
@@ -227,6 +223,10 @@ public class PredicatesHandler {
 
   private String applyOperator(
       OperatorEnum.Operator operator, String colName, String valueBinding) {
+    /* NOTE: Here we have used reverse conversion of `NE` and `NOT_CONTAIN` to `EQ` and `CONTAIN` respectively
+    We will manage `NE` and `NOT_CONTAIN` operator at bottom of the calling method of this function
+    using `IN` OR `NOT IN` query
+    */
     switch (operator.ordinal()) {
       case OperatorEnum.Operator.GT_VALUE:
         return String.format("%s > %s", colName, valueBinding);
@@ -237,11 +237,10 @@ public class PredicatesHandler {
       case OperatorEnum.Operator.LTE_VALUE:
         return String.format("%s <= %s", colName, valueBinding);
       case OperatorEnum.Operator.NE_VALUE:
-        return String.format("%s != %s", colName, valueBinding);
+        return String.format("%s = %s", colName, valueBinding);
       case OperatorEnum.Operator.CONTAIN_VALUE:
-        return String.format("%s LIKE %s", colName, valueBinding);
       case OperatorEnum.Operator.NOT_CONTAIN_VALUE:
-        return String.format("%s NOT LIKE %s", colName, valueBinding);
+        return String.format("%s LIKE %s", colName, valueBinding);
       case OperatorEnum.Operator.IN_VALUE:
         return String.format("%s IN (%s)", colName, valueBinding);
       default:
