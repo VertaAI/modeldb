@@ -329,8 +329,6 @@ class Profilers(object):
     def delete(self, profiler_reference):
         """Delete the provided profiler reference.
 
-        Instructs Verta Services to delete the specified profiler.
-
         Parameters
         ----------
         profiler_reference : ProfilerReference
