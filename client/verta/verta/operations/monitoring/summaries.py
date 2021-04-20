@@ -81,9 +81,9 @@ class SummarySampleQuery(object):
         summary_query=None,
         ids=None,
         labels=None,
-        time_window_start_at_millis=None,
-        time_window_end_at_millis=None,
-        created_at_after_millis=None,
+        time_window_start=None,
+        time_window_end=None,
+        created_after=None,
         page_number=1,
         page_limit=None,
     ):
@@ -93,9 +93,9 @@ class SummarySampleQuery(object):
         self._find_summaries = summary_query._to_proto_request()
         self._sample_ids = extract_ids(ids) if ids else None
         self._labels = maybe(Summary._labels_proto, labels)
-        self._time_window_start_at_millis = time_window_start_at_millis
-        self._time_window_end_at_millis = time_window_end_at_millis
-        self._created_at_after_millis = created_at_after_millis
+        self._time_window_start = time_window_start
+        self._time_window_end = time_window_end
+        self._created_after = created_after
         self._page_number = page_number
         self._page_limit = page_limit
 
@@ -106,9 +106,9 @@ class SummarySampleQuery(object):
         obj._find_summaries = msg.filter.find_summaries
         obj._sample_ids = msg.filter.sample_ids
         obj._labels = msg.filter.labels
-        obj._time_window_start_at_millis = msg.filter.time_window_start_at_millis
-        obj._time_window_end_at_millis = msg.filter.time_window_end_at_millis
-        obj._created_at_after_millis = msg.filter.created_at_after_millis
+        obj._time_window_start = time_utils.datetime_from_millis(msg.filter.time_window_start_at_millis)
+        obj._time_window_end = time_utils.datetime_from_millis(msg.filter.time_window_end_at_millis)
+        obj._created_after = time_utils.datetime_from_millis(msg.filter.created_at_after_millis)
         obj._page_number = msg.page_number
         obj._page_limit = pagination_utils.page_limit_from_proto(msg.page_limit)
 
@@ -120,9 +120,9 @@ class SummarySampleQuery(object):
                 find_summaries=self._find_summaries,
                 sample_ids=self._sample_ids,
                 labels=self._labels,
-                time_window_start_at_millis=self._time_window_start_at_millis,
-                time_window_end_at_millis=self._time_window_end_at_millis,
-                created_at_after_millis=self._created_at_after_millis,
+                time_window_start_at_millis=time_utils.epoch_millis(self._time_window_start),
+                time_window_end_at_millis=time_utils.epoch_millis(self._time_window_end),
+                created_at_after_millis=time_utils.epoch_millis(self._created_after),
             ),
             page_number=self._page_number,
             page_limit=pagination_utils.page_limit_to_proto(self._page_limit),

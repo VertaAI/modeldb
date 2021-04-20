@@ -275,4 +275,23 @@ service CollaboratorService {
             get: "/v1/collaborator/getRegisteredModelCollaborators"
         };
     };
+
+    rpc addOrUpdateMonitoredEntityCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
+        option (google.api.http) = {
+            post: "/v1/collaborator/addOrUpdateMonitoredEntityCollaborator"
+            body: "*"
+        };
+    };
+
+    rpc removeMonitoredEntityCollaborator (RemoveCollaborator) returns (RemoveCollaborator.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeMonitoredEntityCollaborator"
+        };
+    };
+
+    rpc getMonitoredEntityCollaborators (GetCollaborator) returns (GetCollaborator.Response){
+        option (google.api.http) = {
+            get: "/v1/collaborator/getMonitoredEntityCollaborators"
+        };
+    };
 }
