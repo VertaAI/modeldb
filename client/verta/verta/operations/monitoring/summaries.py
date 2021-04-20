@@ -303,7 +303,7 @@ class Summaries:
             summary = self.create(name, data_type_cls, monitored_entity)
         if not summary.has_type(data_type_cls):
             warnings.warn(
-                "Retrieved summary has type {} although type {} was specified for create".format(
+                "retrieved summary has type {} although type {} was specified for create".format(
                     summary.type, data_type_cls._type_string()
                 )
             )
