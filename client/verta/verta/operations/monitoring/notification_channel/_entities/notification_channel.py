@@ -37,6 +37,15 @@ class NotificationChannel(entity._ModelDBEntity):
             )
         )
 
+    @property
+    def workspace(self):
+        self._refresh_cache()
+
+        if self._msg.workspace_id:
+            return self._conn._get_workspace_name_by_id(self._msg.workspace_id)
+        else:
+            return self._conn._OSS_DEFAULT_WORKSPACE
+
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindNotificationChannelRequest(
@@ -75,19 +84,19 @@ class NotificationChannel(entity._ModelDBEntity):
         ctx,
         name,
         channel,
+        workspace,
         created_at_millis,
         updated_at_millis,
     ):
         msg = _AlertService.CreateNotificationChannelRequest(
-            channel=_AlertService.NotificationChannel(
-                name=name,
-                created_at_millis=created_at_millis,
-                updated_at_millis=updated_at_millis,
-                type=channel._TYPE,
-            )
+            name=name,
+            created_at_millis=created_at_millis,
+            updated_at_millis=updated_at_millis,
+            workspace_name=workspace,
+            type=channel._TYPE,
         )
-        if msg.channel.type == _AlertService.NotificationChannelTypeEnum.SLACK:
-            msg.channel.slack_webhook.CopyFrom(channel._as_proto())
+        if msg.type == _AlertService.NotificationChannelTypeEnum.SLACK:
+            msg.slack_webhook.CopyFrom(channel._as_proto())
         else:
             raise ValueError(
                 "unrecognized notification channel type enum value {}".format(
@@ -130,9 +139,13 @@ class NotificationChannels(object):
         self,
         name,
         channel,
+        workspace=None,
         created_at=None,
         updated_at=None,
     ):
+        if workspace is None:
+            workspace = self._client.get_workspace()
+
         ctx = _Context(self._conn, self._conf)
         return NotificationChannel._create(
             self._conn,
@@ -140,11 +153,12 @@ class NotificationChannels(object):
             ctx,
             name=name,
             channel=channel,
+            workspace=workspace,
             created_at_millis=time_utils.epoch_millis(created_at),
             updated_at_millis=time_utils.epoch_millis(updated_at),
         )
 
-    def get(self, name=None, id=None):
+    def get(self, name=None, workspace=None, id=None):
         if name and id:
             raise ValueError("cannot specify both `name` and `id`")
         elif name:
@@ -161,7 +175,7 @@ class NotificationChannels(object):
 
     # TODO: use lazy list and pagination
     # TODO: a proper find
-    def list(self):
+    def list(self, workspace=None):
         msg = _AlertService.FindNotificationChannelRequest(
             page_number=1, page_limit=-1,
         )
