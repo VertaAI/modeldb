@@ -10,9 +10,13 @@ import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.WorkspaceServiceGrpc;
 import io.grpc.*;
+import io.grpc.stub.AbstractStub;
 import io.grpc.stub.MetadataUtils;
+import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Optional;
 
 public class UAC {
   private static final Logger LOGGER = LogManager.getLogger(UAC.class);
@@ -21,7 +25,8 @@ public class UAC {
   private final String serviceUserEmail;
   private final String serviceUserDevKey;
 
-  private ClientInterceptor clientInterceptor = null;
+  private Optional<ClientInterceptor> clientInterceptor = Optional.empty();
+  private final Optional<TracingClientInterceptor> tracingClientInterceptor;
 
   private final CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorServiceFutureStub;
   private final UACServiceGrpc.UACServiceFutureStub uacServiceFutureStub;
@@ -38,10 +43,12 @@ public class UAC {
         config.authService.host,
         config.authService.port,
         config.service_user.email,
-        config.service_user.devKey);
+        config.service_user.devKey,
+        config);
   }
 
-  public UAC(String host, Integer port, String serviceUserEmail, String serviceUserDevKey) {
+  public UAC(
+      String host, Integer port, String serviceUserEmail, String serviceUserDevKey, Config config) {
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
     if (host != null && port != null) { // AuthService not available.
       authServiceChannel =
@@ -60,6 +67,8 @@ public class UAC {
     uacServiceFutureStub = UACServiceGrpc.newFutureStub(authServiceChannel);
     workspaceServiceFutureStub = WorkspaceServiceGrpc.newFutureStub(authServiceChannel);
     authzServiceFutureStub = AuthzServiceGrpc.newFutureStub(authServiceChannel);
+
+    tracingClientInterceptor = config.getTracingClientInterceptor();
   }
 
   private UAC(UAC other) {
@@ -71,6 +80,8 @@ public class UAC {
     uacServiceFutureStub = other.uacServiceFutureStub;
     workspaceServiceFutureStub = other.workspaceServiceFutureStub;
     authzServiceFutureStub = other.authzServiceFutureStub;
+
+    tracingClientInterceptor = other.tracingClientInterceptor;
   }
 
   private Metadata serviceAccountMetadata() {
@@ -102,7 +113,10 @@ public class UAC {
   // because if a method is reliant on our previous context and we've changed it like this,
   // code'll break
   public void updateClientInterceptor(String serviceUserEmail, String serviceUserDevKey) {
-    this.clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(serviceAccountMetadata(serviceUserEmail, serviceUserDevKey));
+    this.clientInterceptor =
+        Optional.of(
+            MetadataUtils.newAttachHeadersInterceptor(
+                serviceAccountMetadata(serviceUserEmail, serviceUserDevKey)));
   }
 
   public UAC withServiceAccount() {
@@ -112,41 +126,42 @@ public class UAC {
   public UAC withServiceAccount(String serviceUserEmail, String serviceUserDevKey) {
     UAC c = new UAC(this);
     c.clientInterceptor =
-        MetadataUtils.newAttachHeadersInterceptor(
-            serviceAccountMetadata(serviceUserEmail, serviceUserDevKey));
+        Optional.of(
+            MetadataUtils.newAttachHeadersInterceptor(
+                serviceAccountMetadata(serviceUserEmail, serviceUserDevKey)));
 
     return c;
   }
 
-  public CollaboratorServiceGrpc.CollaboratorServiceFutureStub getCollaboratorService() {
-    if (clientInterceptor != null) {
-      return collaboratorServiceFutureStub.withInterceptors(clientInterceptor);
+  private <T extends AbstractStub<T>> T attachInterceptors(io.grpc.stub.AbstractStub<T> stub) {
+    if (tracingClientInterceptor.isPresent()) {
+      stub = stub.withInterceptors(tracingClientInterceptor.get());
     }
-    return collaboratorServiceFutureStub.withInterceptors(
-        MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
+
+    if (clientInterceptor.isPresent()) {
+      stub = stub.withInterceptors(clientInterceptor.get());
+    } else {
+      stub =
+          stub.withInterceptors(
+              MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
+    }
+
+    return (T) stub;
+  }
+
+  public CollaboratorServiceGrpc.CollaboratorServiceFutureStub getCollaboratorService() {
+    return attachInterceptors(collaboratorServiceFutureStub);
   }
 
   public UACServiceGrpc.UACServiceFutureStub getUACService() {
-    if (clientInterceptor != null) {
-      return uacServiceFutureStub.withInterceptors(clientInterceptor);
-    }
-    return uacServiceFutureStub.withInterceptors(
-        MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
+    return attachInterceptors(uacServiceFutureStub);
   }
 
   public WorkspaceServiceGrpc.WorkspaceServiceFutureStub getWorkspaceService() {
-    if (clientInterceptor != null) {
-      return workspaceServiceFutureStub.withInterceptors(clientInterceptor);
-    }
-    return workspaceServiceFutureStub.withInterceptors(
-        MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
+    return attachInterceptors(workspaceServiceFutureStub);
   }
 
   public AuthzServiceGrpc.AuthzServiceFutureStub getAuthzService() {
-    if (clientInterceptor != null) {
-      return authzServiceFutureStub.withInterceptors(clientInterceptor);
-    }
-    return authzServiceFutureStub.withInterceptors(
-        MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
+    return attachInterceptors(authzServiceFutureStub);
   }
 }
