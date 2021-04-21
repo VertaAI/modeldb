@@ -12,10 +12,7 @@ from ... import utils
 # TODO: move into separate files
 @six.add_metaclass(abc.ABCMeta)
 class _AlertStatus(object):
-    """
-    Base class for alert status. Not for external use.
-
-    """
+    """Base class for an alert status. Not for external use."""
 
     _ALERT_STATUS = _AlertService.AlertStatusEnum.UNKNOWN
 
@@ -42,13 +39,13 @@ class _AlertStatus(object):
     @classmethod
     def _from_proto(cls, msg, sample_ids=None):
         """
-        Returns an alert status object.
+        Return an alert status object.
 
         Parameters
         ----------
         msg : int
             Variant of ``AlertStatusEnum``.
-        sample_ids : list of int
+        sample_ids : list of int, optional
             Summary Sample IDs that triggered the status.
 
         Returns
