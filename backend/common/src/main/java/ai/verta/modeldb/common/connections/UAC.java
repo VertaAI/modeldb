@@ -102,6 +102,13 @@ public class UAC {
     return ctx.withValue(AuthInterceptor.METADATA_INFO, serviceAccountMetadata());
   }
 
+  // TODO: Get rid of this method and use Context.attach() and .detach() instead
+  // because if a method is reliant on our previous context and we've changed it like this,
+  // code'll break
+  public void updateClientInterceptor(String serviceUserEmail, String serviceUserDevKey) {
+    this.clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(serviceAccountMetadata(serviceUserEmail, serviceUserDevKey));
+  }
+
   public UAC withServiceAccount() {
     return this.withServiceAccount(this.serviceUserEmail, this.serviceUserDevKey);
   }

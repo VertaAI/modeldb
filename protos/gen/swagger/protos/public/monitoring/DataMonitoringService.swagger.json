@@ -267,74 +267,6 @@
         ]
       }
     },
-    "/monitored_entity/getMonitoredEntity": {
-      "get": {
-        "operationId": "DataMonitoringService_getMonitoredEntity",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringGetMonitoredEntityRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          }
-        ],
-        "tags": [
-          "DataMonitoringService"
-        ]
-      }
-    },
-    "/monitored_entity/getMonitoredEntityByName": {
-      "get": {
-        "operationId": "DataMonitoringService_getMonitoredEntityByName",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringGetMonitoredEntityByNameRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "workspace_id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          }
-        ],
-        "tags": [
-          "DataMonitoringService"
-        ]
-      }
-    },
     "/monitored_entity/getProfiler": {
       "get": {
         "operationId": "DataMonitoringService_getProfiler",
@@ -397,37 +329,6 @@
             "required": false,
             "type": "integer",
             "format": "int64"
-          }
-        ],
-        "tags": [
-          "DataMonitoringService"
-        ]
-      }
-    },
-    "/monitored_entity/listMonitoredEntities": {
-      "get": {
-        "operationId": "DataMonitoringService_listMonitoredEntities",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringListMonitoredEntitiesRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "workspace_id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
           }
         ],
         "tags": [
@@ -555,6 +456,9 @@
         "workspace_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
         }
       }
     },
@@ -726,22 +630,6 @@
         }
       }
     },
-    "monitoringGetMonitoredEntityByNameRequestResponse": {
-      "type": "object",
-      "properties": {
-        "monitored_entity": {
-          "$ref": "#/definitions/monitoringMonitoredEntity"
-        }
-      }
-    },
-    "monitoringGetMonitoredEntityRequestResponse": {
-      "type": "object",
-      "properties": {
-        "monitored_entity": {
-          "$ref": "#/definitions/monitoringMonitoredEntity"
-        }
-      }
-    },
     "monitoringGetProfilerRequestResponse": {
       "type": "object",
       "properties": {
@@ -755,17 +643,6 @@
       "properties": {
         "status": {
           "$ref": "#/definitions/monitoringProfilerStatus"
-        }
-      }
-    },
-    "monitoringListMonitoredEntitiesRequestResponse": {
-      "type": "object",
-      "properties": {
-        "monitored_entities": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/monitoringMonitoredEntity"
-          }
         }
       }
     },
