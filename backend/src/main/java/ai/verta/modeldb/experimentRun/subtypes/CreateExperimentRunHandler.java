@@ -38,7 +38,7 @@ public class CreateExperimentRunHandler {
   private final KeyValueHandler metricsHandler;
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
-  private final ArtifactHandler artifactHandler;
+  private final ArtifactHandlerBase artifactHandler;
   private final FeatureHandler featureHandler;
 
   public CreateExperimentRunHandler(Executor executor, FutureJdbi jdbi, UAC uac) {
@@ -52,7 +52,7 @@ public class CreateExperimentRunHandler {
     metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", "ExperimentRunEntity");
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
-    artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
+    artifactHandler = new ArtifactHandlerBase(executor, jdbi, "artifacts", "ExperimentRunEntity");
     featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
   }
 
@@ -275,7 +275,7 @@ public class CreateExperimentRunHandler {
                       newExperimentRun.getId(), newExperimentRun.getObservationsList(), now));
               futureLogs.add(
                   artifactHandler.logArtifacts(
-                      newExperimentRun.getId(), newExperimentRun.getArtifactsList()));
+                      newExperimentRun.getId(), newExperimentRun.getArtifactsList(), false));
               futureLogs.add(
                   featureHandler.logFeatures(
                       newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
