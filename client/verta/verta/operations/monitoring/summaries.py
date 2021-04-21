@@ -79,6 +79,53 @@ class SummaryQuery(object):
 
 
 class SummarySampleQuery(object):
+    """
+    A query for summary samples.
+
+    Parameters
+    ----------
+    summary_query : :class:`~verta.operations.monitoring.summary.SummaryQuery`, optional
+        Only fetch samples whose summaries match this query.
+    ids : list of str, optional
+        Only fetch these samples.
+    labels : dict of str to list of str, optional
+        Only fetch samples that have at least one of these labels. A mapping
+        between label keys and lists of corresponding label values.
+    time_window_start : datetime.datetime or int, optional
+        Only fetch samples whose time windows start at or after this time.
+        Either a timezone aware datetime object or unix epoch milliseconds.
+    time_window_end : datetime.datetime or int, optional
+        Only fetch samples whose time windows end at or before this time.
+        Either a timezone aware datetime object or unix epoch milliseconds.
+    created_after : datetime.datetime or int, optional
+        Only fetch samples created at or after this time. Either a timezone
+        aware datetime object or unix epoch milliseconds.
+    page_number : int, default 1
+        Pagination page number for the backend query request. Used in
+        conjunction with `page_limit`.
+    page_limit : int, optional
+        Number of samples to fetch from the backend in a single query. If not
+        provided, all accessible samples will be fetched.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from datetime import datetime, timezone
+        from verta.operations.monitoring.summary import SummaryQuery, SummarySampleQuery
+
+        samples = Client().operations.summary_samples
+        sample_query = SummarySampleQuery(
+            summary_query=SummaryQuery(names=["Income Distributions"]),
+            labels={"datasource": ["census2010", "census2020"]},
+            created_after=datetime(year=2021, month=2, day=22, tzinfo=timezone.utc),
+        )
+
+        for sample in samples.find(sample_query):
+            print(sample.content)
+
+    """
+
     def __init__(
         self,
         summary_query=None,

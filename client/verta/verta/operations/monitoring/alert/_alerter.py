@@ -12,6 +12,8 @@ from .. import utils
 # TODO: move into separate files
 @six.add_metaclass(abc.ABCMeta)
 class _Alerter(object):
+    """Base class for an alerter. Not for external use."""
+
     _TYPE = _AlertService.AlerterTypeEnum.UNKNOWN
 
     def __repr__(self):
@@ -26,7 +28,7 @@ class _Alerter(object):
 
 class FixedAlerter(_Alerter):
     """
-    A alerter with a fixed numerical threshold.
+    Compare summary samples with a fixed numerical threshold.
 
     .. note::
 
@@ -36,7 +38,24 @@ class FixedAlerter(_Alerter):
     Parameters
     ----------
     comparison : :class:`~verta.common.comparison._VertaComparison`
-        Alert condition.
+        Alert condition. An alert is active if a queried sample meets this
+        condition.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.common.comparison import GreaterThan
+        from verta.operations.monitoring.alert import FixedAlerter
+
+        alerter = FixedAlerter(GreaterThan(.7))
+
+        alert = monitored_entity.alerts.create(
+            name="MSE",
+            alerter=alerter,
+            summary_sample_query=sample_query,
+            notification_channels=[channel],
+        )
 
     """
 
