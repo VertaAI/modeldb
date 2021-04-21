@@ -175,14 +175,17 @@ public class CreateExperimentRunHandler {
             .addAllObservations(request.getObservationsList())
             .addAllFeatures(request.getFeaturesList());
 
+    var now = Calendar.getInstance().getTimeInMillis();
     if (request.getDateCreated() != 0L) {
-      experimentRunBuilder
-          .setDateCreated(request.getDateCreated())
-          .setDateUpdated(request.getDateCreated());
+      experimentRunBuilder.setDateCreated(request.getDateCreated());
     } else {
-      experimentRunBuilder
-          .setDateCreated(Calendar.getInstance().getTimeInMillis())
-          .setDateUpdated(Calendar.getInstance().getTimeInMillis());
+      experimentRunBuilder.setDateCreated(now);
+    }
+
+    if (request.getDateUpdated() != 0L) {
+      experimentRunBuilder.setDateUpdated(request.getDateCreated());
+    } else {
+      experimentRunBuilder.setDateUpdated(now);
     }
 
     if (request.getCodeVersionSnapshot() != null) {
