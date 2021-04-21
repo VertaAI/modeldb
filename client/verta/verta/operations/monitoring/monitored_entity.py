@@ -16,6 +16,29 @@ from .alert._entities import Alerts
 
 
 class MonitoredEntity(entity._ModelDBEntity):
+    """A monitored entity persisted to Verta.
+
+    A monitored entity provides a named context to gather together data
+    summaries and alert configurations. Users should obtain a monitored entity
+    through the :meth:`~verta.opertaions.monitoring.client.Client.get_or_create_monitored_entity`
+    method of the operations sub-client.
+
+    Parameters
+    ----------
+    conn
+        A connection object to the backend service.
+    conf
+        A configuration object used by conn methods.
+    msg
+        A protobuf message ai.verta.monitoring.MonitoredEntity
+
+    Attributes
+    ----------
+    name
+    workspace
+    alerts
+    """
+
     def __init__(self, conn, conf, msg):
         super(MonitoredEntity, self).__init__(
             conn, conf, _DataMonitoringService, "monitored_entity", msg
@@ -34,11 +57,23 @@ class MonitoredEntity(entity._ModelDBEntity):
 
     @property
     def name(self):
+        """The name of this monitored entity.
+
+        Returns
+        -------
+        string
+        """
         self._refresh_cache()
         return self._msg.name
 
     @property
     def workspace(self):
+        """The name of the workspace which this monitored entity belongs to.
+
+        Returns
+        -------
+        string
+        """
         self._refresh_cache()
 
         if self._msg.workspace_id:
@@ -48,6 +83,12 @@ class MonitoredEntity(entity._ModelDBEntity):
 
     @property
     def alerts(self):
+        """The sub-client for managing alerts defined for this monitored entity.
+
+        Returns
+        -------
+        verta.operations.monitoring.alert._entities.Alerts
+        """
         return Alerts(self._conn, self._conf, self.id)
 
     @classmethod
@@ -120,6 +161,20 @@ class MonitoredEntity(entity._ModelDBEntity):
         raise NotImplementedError()
 
     def delete(self):
+        """Delete this monitored entity.
+
+        Instructs Verta's services to delete this monitored entity.
+
+        Returns
+        -------
+        bool
+            True if the delete was successful.
+
+        Raises
+        ------
+        Error
+            Raises an error if the delete failed for any reason.
+        """
         msg = _DataMonitoringService.DeleteMonitoredEntityRequest(id=self.id)
         endpoint = "/api/v1/monitored_entity/deleteMonitoredEntity"
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
