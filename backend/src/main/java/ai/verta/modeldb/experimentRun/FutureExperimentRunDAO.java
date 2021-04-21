@@ -580,7 +580,6 @@ public class FutureExperimentRunDAO {
       FindExperimentRuns request) {
     // TODO: handle ids only?
     // TODO: filter by permission
-    // TODO: filter by workspace
 
     List<InternalFuture<QueryFilterContext>> queryFilterContextList = new LinkedList<>();
 
