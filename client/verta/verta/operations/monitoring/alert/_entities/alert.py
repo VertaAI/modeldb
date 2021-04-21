@@ -60,6 +60,19 @@ class Alert(entity._ModelDBEntity):
         return list(map(AlertHistoryItem, history))
 
     @property
+    def _last_evaluated_or_created_millis(self):
+        """For the alerter to filter for new summary samples."""
+        self._refresh_cache()
+
+        return self._msg.last_evaluated_at_millis or self._msg.created_at_millis
+
+    @property
+    def monitored_entity_id(self):
+        self._refresh_cache()
+
+        return self._msg.monitored_entity_id
+
+    @property
     def name(self):
         self._refresh_cache()
 

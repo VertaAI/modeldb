@@ -68,9 +68,11 @@ class TestIntegration:
         alert = alerts.create(name, alerter, sample_query)
         created_entities.append(alert)
         assert alert.status == Ok()
+        assert alert._last_evaluated_or_created_millis == alert._msg.created_at_millis
 
         alert.set_status(Alerting([summary_sample]))
         assert alert.status == Alerting([summary_sample])
+        assert alert._last_evaluated_or_created_millis == alert._msg.last_evaluated_at_millis
 
         alert.set_status(Ok())
         assert alert.status == Ok()
@@ -166,6 +168,7 @@ class TestFixed:
         created_alert = alerts.create(name, alerter, sample_query)
         assert isinstance(created_alert, _entities.Alert)
         assert created_alert._msg.alerter_type == alerter._TYPE
+        assert created_alert.monitored_entity_id == monitored_entity.id
 
         retrieved_alert = alerts.get(id=created_alert.id)
         client_retrieved_alert = client.operations.alerts.get(id=created_alert.id)
@@ -206,6 +209,7 @@ class TestReference:
         created_alert = alerts.create(name, alerter, sample_query)
         assert isinstance(created_alert, _entities.Alert)
         assert created_alert._msg.alerter_type == alerter._TYPE
+        assert created_alert.monitored_entity_id == monitored_entity.id
 
         retrieved_alert = alerts.get(id=created_alert.id)
         client_retrieved_alert = client.operations.alerts.get(id=created_alert.id)
