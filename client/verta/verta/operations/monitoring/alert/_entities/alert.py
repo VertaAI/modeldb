@@ -8,6 +8,7 @@ from ....._tracking import entity, _Context
 from ... import notification_channel
 from ... import summaries
 from ... import utils
+from .. import _alerter
 from .. import status as status_module
 
 
@@ -75,6 +76,14 @@ class Alert(entity._ModelDBEntity):
         )
 
     @property
+    def alerter(self):
+        self._refresh_cache()
+        alerter_field = self._msg.WhichOneof("alerter")
+        alerter_msg = getattr(self._msg, alerter_field)
+
+        return _alerter._Alerter._from_proto(alerter_msg)
+
+    @property
     def history(self):
         # TODO: implement lazy list and pagination
         msg = _AlertService.ListAlertHistoryRequest(id=self.id)
@@ -82,6 +91,19 @@ class Alert(entity._ModelDBEntity):
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         history = self._conn.must_proto_response(response, msg.Response).history
         return list(map(AlertHistoryItem, history))
+
+    @property
+    def _last_evaluated_or_created_millis(self):
+        """For the alerter to filter for new summary samples."""
+        self._refresh_cache()
+
+        return self._msg.last_evaluated_at_millis or self._msg.created_at_millis
+
+    @property
+    def monitored_entity_id(self):
+        self._refresh_cache()
+
+        return self._msg.monitored_entity_id
 
     @property
     def name(self):
