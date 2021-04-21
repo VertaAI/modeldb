@@ -217,14 +217,6 @@ public class PredicatesHandler {
     try {
       final var value = predicate.getValue();
       var operator = predicate.getOperator();
-      //  We will manage this operator at bottom of method based on `NE` and `NOT_CONTAIN` using
-      // `IN` OR `NOT IN` query
-      if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-        operator = OperatorEnum.Operator.CONTAIN;
-      } else if (operator.equals(OperatorEnum.Operator.NE)) {
-        operator = OperatorEnum.Operator.EQ;
-      }
-      final var finalOperator = operator;
 
       final var valueBindingKey = String.format("k_p_%d", index);
       final var valueBindingName = String.format("v_p_%d", index);
@@ -244,7 +236,7 @@ public class PredicatesHandler {
 
       switch (value.getKindCase()) {
         case STRING_VALUE:
-          sql += applyOperator(finalOperator, colValue, ":" + valueBindingName);
+          sql += applyOperator(operator, colValue, ":" + valueBindingName);
           var valueStr = ModelDBUtils.getStringFromProtoObject(value);
           if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
             valueStr = value.getStringValue();
@@ -252,7 +244,7 @@ public class PredicatesHandler {
           final var finalValueStr = valueStr;
           queryContext =
               queryContext.addBind(
-                  q -> q.bind(valueBindingName, wrapValue(finalOperator, finalValueStr)));
+                  q -> q.bind(valueBindingName, wrapValue(operator, finalValueStr)));
           break;
         case LIST_VALUE:
           List<Object> valueList = new LinkedList<>();
@@ -267,7 +259,7 @@ public class PredicatesHandler {
           }
 
           if (!valueList.isEmpty()) {
-            sql += applyOperator(finalOperator, colValue, "<" + valueBindingName + ">");
+            sql += applyOperator(operator, colValue, "<" + valueBindingName + ">");
             queryContext = queryContext.addBind(q -> q.bindList(valueBindingName, valueList));
           }
           break;
