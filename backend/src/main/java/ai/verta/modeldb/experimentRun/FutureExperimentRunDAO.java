@@ -113,7 +113,17 @@ public class FutureExperimentRunDAO {
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
-    createExperimentRunHandler = new CreateExperimentRunHandler(executor, jdbi, uac);
+    createExperimentRunHandler =
+        new CreateExperimentRunHandler(
+            executor,
+            jdbi,
+            uac,
+            attributeHandler,
+            hyperparametersHandler,
+            metricsHandler,
+            observationHandler,
+            tagsHandler,
+            artifactHandler);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {

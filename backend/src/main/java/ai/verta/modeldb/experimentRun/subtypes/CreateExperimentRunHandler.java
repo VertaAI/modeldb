@@ -41,19 +41,27 @@ public class CreateExperimentRunHandler {
   private final ArtifactHandlerBase artifactHandler;
   private final FeatureHandler featureHandler;
 
-  public CreateExperimentRunHandler(Executor executor, FutureJdbi jdbi, UAC uac) {
+  public CreateExperimentRunHandler(
+      Executor executor,
+      FutureJdbi jdbi,
+      UAC uac,
+      AttributeHandler attributeHandler,
+      KeyValueHandler hyperparametersHandler,
+      KeyValueHandler metricsHandler,
+      ObservationHandler observationHandler,
+      TagsHandler tagsHandler,
+      ArtifactHandlerBase artifactHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
 
-    attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
-    hyperparametersHandler =
-        new KeyValueHandler(executor, jdbi, "hyperparameters", "ExperimentRunEntity");
-    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", "ExperimentRunEntity");
-    observationHandler = new ObservationHandler(executor, jdbi);
-    tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
-    artifactHandler = new ArtifactHandlerBase(executor, jdbi, "artifacts", "ExperimentRunEntity");
-    featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
+    this.attributeHandler = attributeHandler;
+    this.hyperparametersHandler = hyperparametersHandler;
+    this.metricsHandler = metricsHandler;
+    this.observationHandler = observationHandler;
+    this.tagsHandler = tagsHandler;
+    this.artifactHandler = artifactHandler;
+    this.featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
