@@ -34,6 +34,7 @@ message NotificationChannel {
     oneof channel {
         NotificationChannelSlackWebhook slack_webhook = 6;
     }
+    uint64 workspace_id = 7;
 }
 
 // Configuration for an notification channel for slack webhooks
@@ -43,7 +44,22 @@ message NotificationChannelSlackWebhook {
 
 // Create a new notification channel. Names must be unique
 message CreateNotificationChannelRequest {
-    NotificationChannel channel = 1; // ID must be empty
+    NotificationChannel channel = 1; // Deprecated. But keeping for now for compatibility
+
+    string name = 2;
+    uint64 created_at_millis = 3;
+    uint64 updated_at_millis = 4;
+
+    oneof workspace_identifier {
+        uint64 workspace_id = 7;
+        string workspace_name = 8;
+    }
+
+    NotificationChannelTypeEnum.NotificationChannelType type = 5;
+    oneof notification_channel {
+        NotificationChannelSlackWebhook slack_webhook = 6;
+    }
+
 }
 
 // Updates an notification channel. The matching with a previous one happens from the id being the same
@@ -60,6 +76,11 @@ message FindNotificationChannelRequest {
     // Pagination
     int32 page_number = 4;
     int32 page_limit = 5;
+
+    oneof workspace_identifier {
+        uint64 workspace_id = 6;
+        string workspace_name = 7;
+    }
 
     message Response {
         repeated NotificationChannel channels = 1;
@@ -186,7 +207,7 @@ message UpdateAlertStatusRequest {
     AlertStatusEnum.AlertStatus status = 3;
     repeated uint64 alerting_sample_ids = 5; // If status is ALERTING, adds these sample IDs to the violating samples
     repeated uint64 ok_sample_ids = 6; // If status is OK, clears these sample IDs from the violating samples
-    bool clear_alerting_sample_ids = 7; // If status is OK clears all samples IDs from the violating samples  
+    bool clear_alerting_sample_ids = 7; // If status is OK clears all samples IDs from the violating samples
 }
 
 // History of the status of the alerts

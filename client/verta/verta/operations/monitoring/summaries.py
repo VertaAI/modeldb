@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+import warnings
 
 import json
 from datetime import datetime
@@ -72,18 +73,67 @@ class SummaryQuery(object):
         )
 
     def __repr__(self):
-        return "SummaryQuery({}, {}, {}, {})".format(self._ids, self._names, self._type_names, self._monitored_entity_ids)
+        return "SummaryQuery({}, {}, {}, {})".format(
+            self._ids, self._names, self._type_names, self._monitored_entity_ids
+        )
 
 
 class SummarySampleQuery(object):
+    """
+    A query for summary samples.
+
+    Parameters
+    ----------
+    summary_query : :class:`~verta.operations.monitoring.summary.SummaryQuery`, optional
+        Only fetch samples whose summaries match this query.
+    ids : list of str, optional
+        Only fetch these samples.
+    labels : dict of str to list of str, optional
+        Only fetch samples that have at least one of these labels. A mapping
+        between label keys and lists of corresponding label values.
+    time_window_start : datetime.datetime or int, optional
+        Only fetch samples whose time windows start at or after this time.
+        Either a timezone aware datetime object or unix epoch milliseconds.
+    time_window_end : datetime.datetime or int, optional
+        Only fetch samples whose time windows end at or before this time.
+        Either a timezone aware datetime object or unix epoch milliseconds.
+    created_after : datetime.datetime or int, optional
+        Only fetch samples created at or after this time. Either a timezone
+        aware datetime object or unix epoch milliseconds.
+    page_number : int, default 1
+        Pagination page number for the backend query request. Used in
+        conjunction with `page_limit`.
+    page_limit : int, optional
+        Number of samples to fetch from the backend in a single query. If not
+        provided, all accessible samples will be fetched.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from datetime import datetime, timezone
+        from verta.operations.monitoring.summary import SummaryQuery, SummarySampleQuery
+
+        samples = Client().operations.summary_samples
+        sample_query = SummarySampleQuery(
+            summary_query=SummaryQuery(names=["Income Distributions"]),
+            labels={"datasource": ["census2010", "census2020"]},
+            created_after=datetime(year=2021, month=2, day=22, tzinfo=timezone.utc),
+        )
+
+        for sample in samples.find(sample_query):
+            print(sample.content)
+
+    """
+
     def __init__(
         self,
         summary_query=None,
         ids=None,
         labels=None,
-        time_window_start_at_millis=None,
-        time_window_end_at_millis=None,
-        created_at_after_millis=None,
+        time_window_start=None,
+        time_window_end=None,
+        created_after=None,
         page_number=1,
         page_limit=None,
     ):
@@ -93,9 +143,9 @@ class SummarySampleQuery(object):
         self._find_summaries = summary_query._to_proto_request()
         self._sample_ids = extract_ids(ids) if ids else None
         self._labels = maybe(Summary._labels_proto, labels)
-        self._time_window_start_at_millis = time_window_start_at_millis
-        self._time_window_end_at_millis = time_window_end_at_millis
-        self._created_at_after_millis = created_at_after_millis
+        self._time_window_start = time_window_start
+        self._time_window_end = time_window_end
+        self._created_after = created_after
         self._page_number = page_number
         self._page_limit = page_limit
 
@@ -106,9 +156,15 @@ class SummarySampleQuery(object):
         obj._find_summaries = msg.filter.find_summaries
         obj._sample_ids = msg.filter.sample_ids
         obj._labels = msg.filter.labels
-        obj._time_window_start_at_millis = msg.filter.time_window_start_at_millis
-        obj._time_window_end_at_millis = msg.filter.time_window_end_at_millis
-        obj._created_at_after_millis = msg.filter.created_at_after_millis
+        obj._time_window_start = time_utils.datetime_from_millis(
+            msg.filter.time_window_start_at_millis
+        )
+        obj._time_window_end = time_utils.datetime_from_millis(
+            msg.filter.time_window_end_at_millis
+        )
+        obj._created_after = time_utils.datetime_from_millis(
+            msg.filter.created_at_after_millis
+        )
         obj._page_number = msg.page_number
         obj._page_limit = pagination_utils.page_limit_from_proto(msg.page_limit)
 
@@ -120,9 +176,13 @@ class SummarySampleQuery(object):
                 find_summaries=self._find_summaries,
                 sample_ids=self._sample_ids,
                 labels=self._labels,
-                time_window_start_at_millis=self._time_window_start_at_millis,
-                time_window_end_at_millis=self._time_window_end_at_millis,
-                created_at_after_millis=self._created_at_after_millis,
+                time_window_start_at_millis=time_utils.epoch_millis(
+                    self._time_window_start
+                ),
+                time_window_end_at_millis=time_utils.epoch_millis(
+                    self._time_window_end
+                ),
+                created_at_after_millis=time_utils.epoch_millis(self._created_after),
             ),
             page_number=self._page_number,
             page_limit=pagination_utils.page_limit_to_proto(self._page_limit),
@@ -130,6 +190,10 @@ class SummarySampleQuery(object):
 
     def __repr__(self):
         return "SummarySampleQuery({})".format(self._to_proto_request())
+
+    def _set_created_after(self, created_after):
+        """To avoid having the alerter assign directly to a private attr."""
+        self._created_after = created_after
 
 
 class Summary(entity._ModelDBEntity):
@@ -142,14 +206,21 @@ class Summary(entity._ModelDBEntity):
         self.type = msg.type_name
 
     def __repr__(self):
-        return "Summary name:{}, type:{}, monitored_entity_id:{}".format(self.name, self.type, self.monitored_entity_id)
+        return "Summary name:{}, type:{}, monitored_entity_id:{}".format(
+            self.name, self.type, self.monitored_entity_id
+        )
 
-    def log_sample(self, data, labels, time_window_start, time_window_end, created_at=None):
+    def log_sample(
+        self, data, labels, time_window_start, time_window_end, created_at=None
+    ):
         if not isinstance(data, data_types._VertaDataType):
-            raise TypeError("expected a supported VertaDataType, found {}".format(type(data)))
+            raise TypeError(
+                "expected a supported VertaDataType, found {}".format(type(data))
+            )
         if data._type_string() != self.type:
-            raise TypeError("expected a {}, found {}".format(self.type, data._type_string()))
-
+            raise TypeError(
+                "expected a {}, found {}".format(self.type, data._type_string())
+            )
 
         if not created_at:
             created_at = time_utils.now()
@@ -187,8 +258,13 @@ class Summary(entity._ModelDBEntity):
         success = self._conn.must_proto_response(
             response, FindSummarySampleRequest.Response
         )
-        samples = [SummarySample(self._conn, self._conf, record) for record in success.samples]
+        samples = [
+            SummarySample(self._conn, self._conf, record) for record in success.samples
+        ]
         return samples
+
+    def has_type(self, data_type_cls):
+        return self.type == data_type_cls._type_string()
 
     @staticmethod
     def _labels_proto(labels):
@@ -231,7 +307,9 @@ class SummarySample(entity._ModelDBEntity):
                 "sample_id: {}".format(self.id),
                 "content: {}".format(self.content),
                 "labels: {}".format(self.labels),
-                "window: [{}, {})".format(self.time_window_start_at, self.time_window_end_at)
+                "window: [{}, {})".format(
+                    self.time_window_start_at, self.time_window_end_at
+                ),
             )
         )
 
@@ -248,9 +326,11 @@ class Summaries:
         self._conn = conn
         self._conf = conf
 
-
     def create(self, name, data_type_cls, monitored_entity):
-        assert issubclass(data_type_cls, data_types._VertaDataType)
+        if not issubclass(data_type_cls, data_types._VertaDataType):
+            raise TypeError(
+                "expected a supported VertaDataType, found {}".format(type(data_type_cls))
+            )
         msg = CreateSummaryRequest(
             monitored_entity_id=monitored_entity.id,
             name=name,
@@ -261,16 +341,47 @@ class Summaries:
         proto = self._conn.must_proto_response(response, SummaryProto)
         return Summary(self._conn, self._conf, proto)
 
+    def get_or_create(self, name, data_type_cls, monitored_entity):
+        if not issubclass(data_type_cls, data_types._VertaDataType):
+            raise TypeError(
+                "expected a supported VertaDataType, found {}".format(type(data_type_cls))
+            )
+        query = SummaryQuery(names=[name], monitored_entities=[monitored_entity])
+        retrieved = self.find(query)
+        if retrieved and len(retrieved) > 1:
+            warnings.warn(
+                "found multiple summaries with name: {}, for monitored entity: {}".format(
+                    name, monitored_entity
+                )
+            )
+        if retrieved:
+            summary = retrieved[0]
+        else:
+            summary = self.create(name, data_type_cls, monitored_entity)
+        if not summary.has_type(data_type_cls):
+            warnings.warn(
+                "retrieved summary has type {} although type {} was specified for create".format(
+                    summary.type, data_type_cls._type_string()
+                )
+            )
+        return summary
+
     def find(self, query=None):
         if query is None:
             query = SummaryQuery()
+        elif not isinstance(query, SummaryQuery):
+            raise TypeError(
+                "`query` must be a SummaryQuery, not {}".format(type(query))
+            )
         msg = query._to_proto_request()
         endpoint = "/api/v1/summaries/findSummary"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         maybe_summaries = self._conn.maybe_proto_response(
             response, FindSummaryRequest.Response
         )
-        maybe_summaries = [Summary(self._conn, self._conf, msg) for msg in maybe_summaries.summaries]
+        maybe_summaries = [
+            Summary(self._conn, self._conf, msg) for msg in maybe_summaries.summaries
+        ]
         return maybe_summaries
 
     def delete(self, summaries):
@@ -293,6 +404,10 @@ class SummarySamples:
     def find(self, query=None):
         if query is None:
             query = SummarySampleQuery()
+        elif not isinstance(query, SummarySampleQuery):
+            raise TypeError(
+                "`query` must be a SummarySampleQuery, not {}".format(type(query))
+            )
         msg = query._to_proto_request()
         endpoint = "/api/v1/summaries/findSample"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)

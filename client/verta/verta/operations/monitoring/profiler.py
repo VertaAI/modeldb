@@ -53,7 +53,7 @@ class BinaryHistogramProfiler(Profiler):
         keys = list(content.keys())
         values = [content[k] for k in keys]
         values = [v.item() for v in values]
-        return (column + "_histogram", DiscreteHistogram(values, keys))
+        return (column + "_histogram", DiscreteHistogram(keys, values))
 
 
 class ContinuousHistogramProfiler(Profiler):

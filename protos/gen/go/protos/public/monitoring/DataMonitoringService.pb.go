@@ -1066,8 +1066,11 @@ type CreateMonitoredEntityRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Name        string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	WorkspaceId uint64 `protobuf:"varint,4,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
+	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// Types that are assignable to WorkspaceIdentifier:
+	//	*CreateMonitoredEntityRequest_WorkspaceId
+	//	*CreateMonitoredEntityRequest_WorkspaceName
+	WorkspaceIdentifier isCreateMonitoredEntityRequest_WorkspaceIdentifier `protobuf_oneof:"workspace_identifier"`
 }
 
 func (x *CreateMonitoredEntityRequest) Reset() {
@@ -1109,113 +1112,43 @@ func (x *CreateMonitoredEntityRequest) GetName() string {
 	return ""
 }
 
+func (m *CreateMonitoredEntityRequest) GetWorkspaceIdentifier() isCreateMonitoredEntityRequest_WorkspaceIdentifier {
+	if m != nil {
+		return m.WorkspaceIdentifier
+	}
+	return nil
+}
+
 func (x *CreateMonitoredEntityRequest) GetWorkspaceId() uint64 {
-	if x != nil {
+	if x, ok := x.GetWorkspaceIdentifier().(*CreateMonitoredEntityRequest_WorkspaceId); ok {
 		return x.WorkspaceId
 	}
 	return 0
 }
 
-type GetMonitoredEntityRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (x *GetMonitoredEntityRequest) Reset() {
-	*x = GetMonitoredEntityRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[17]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetMonitoredEntityRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMonitoredEntityRequest) ProtoMessage() {}
-
-func (x *GetMonitoredEntityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[17]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMonitoredEntityRequest.ProtoReflect.Descriptor instead.
-func (*GetMonitoredEntityRequest) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *GetMonitoredEntityRequest) GetId() uint64 {
-	if x != nil {
-		return x.Id
-	}
-	return 0
-}
-
-type GetMonitoredEntityByNameRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name        string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	WorkspaceId uint64 `protobuf:"varint,2,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-}
-
-func (x *GetMonitoredEntityByNameRequest) Reset() {
-	*x = GetMonitoredEntityByNameRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[18]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetMonitoredEntityByNameRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMonitoredEntityByNameRequest) ProtoMessage() {}
-
-func (x *GetMonitoredEntityByNameRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[18]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMonitoredEntityByNameRequest.ProtoReflect.Descriptor instead.
-func (*GetMonitoredEntityByNameRequest) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *GetMonitoredEntityByNameRequest) GetName() string {
-	if x != nil {
-		return x.Name
+func (x *CreateMonitoredEntityRequest) GetWorkspaceName() string {
+	if x, ok := x.GetWorkspaceIdentifier().(*CreateMonitoredEntityRequest_WorkspaceName); ok {
+		return x.WorkspaceName
 	}
 	return ""
 }
 
-func (x *GetMonitoredEntityByNameRequest) GetWorkspaceId() uint64 {
-	if x != nil {
-		return x.WorkspaceId
-	}
-	return 0
+type isCreateMonitoredEntityRequest_WorkspaceIdentifier interface {
+	isCreateMonitoredEntityRequest_WorkspaceIdentifier()
+}
+
+type CreateMonitoredEntityRequest_WorkspaceId struct {
+	WorkspaceId uint64 `protobuf:"varint,4,opt,name=workspace_id,json=workspaceId,proto3,oneof"`
+}
+
+type CreateMonitoredEntityRequest_WorkspaceName struct {
+	WorkspaceName string `protobuf:"bytes,5,opt,name=workspace_name,json=workspaceName,proto3,oneof"`
+}
+
+func (*CreateMonitoredEntityRequest_WorkspaceId) isCreateMonitoredEntityRequest_WorkspaceIdentifier() {
+}
+
+func (*CreateMonitoredEntityRequest_WorkspaceName) isCreateMonitoredEntityRequest_WorkspaceIdentifier() {
 }
 
 type UpdateMonitoredEntityRequest struct {
@@ -1230,7 +1163,7 @@ type UpdateMonitoredEntityRequest struct {
 func (x *UpdateMonitoredEntityRequest) Reset() {
 	*x = UpdateMonitoredEntityRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[19]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1243,7 +1176,7 @@ func (x *UpdateMonitoredEntityRequest) String() string {
 func (*UpdateMonitoredEntityRequest) ProtoMessage() {}
 
 func (x *UpdateMonitoredEntityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[19]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1256,7 +1189,7 @@ func (x *UpdateMonitoredEntityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMonitoredEntityRequest.ProtoReflect.Descriptor instead.
 func (*UpdateMonitoredEntityRequest) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{19}
+	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *UpdateMonitoredEntityRequest) GetId() uint64 {
@@ -1273,62 +1206,17 @@ func (x *UpdateMonitoredEntityRequest) GetName() string {
 	return ""
 }
 
-type ListMonitoredEntitiesRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	WorkspaceId uint64 `protobuf:"varint,1,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-}
-
-func (x *ListMonitoredEntitiesRequest) Reset() {
-	*x = ListMonitoredEntitiesRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[20]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ListMonitoredEntitiesRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListMonitoredEntitiesRequest) ProtoMessage() {}
-
-func (x *ListMonitoredEntitiesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[20]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListMonitoredEntitiesRequest.ProtoReflect.Descriptor instead.
-func (*ListMonitoredEntitiesRequest) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{20}
-}
-
-func (x *ListMonitoredEntitiesRequest) GetWorkspaceId() uint64 {
-	if x != nil {
-		return x.WorkspaceId
-	}
-	return 0
-}
-
 type FindMonitoredEntityRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Ids           []uint64 `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
-	Names         []string `protobuf:"bytes,2,rep,name=names,proto3" json:"names,omitempty"`
-	WorkspaceId   uint64   `protobuf:"varint,3,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
-	WorkspaceName string   `protobuf:"bytes,6,opt,name=workspace_name,json=workspaceName,proto3" json:"workspace_name,omitempty"`
+	Ids   []uint64 `protobuf:"varint,1,rep,packed,name=ids,proto3" json:"ids,omitempty"`
+	Names []string `protobuf:"bytes,2,rep,name=names,proto3" json:"names,omitempty"`
+	// Types that are assignable to WorkspaceIdentifier:
+	//	*FindMonitoredEntityRequest_WorkspaceId
+	//	*FindMonitoredEntityRequest_WorkspaceName
+	WorkspaceIdentifier isFindMonitoredEntityRequest_WorkspaceIdentifier `protobuf_oneof:"workspace_identifier"`
 	// Pagination
 	PageNumber int32 `protobuf:"varint,4,opt,name=page_number,json=pageNumber,proto3" json:"page_number,omitempty"`
 	PageLimit  int32 `protobuf:"varint,5,opt,name=page_limit,json=pageLimit,proto3" json:"page_limit,omitempty"`
@@ -1337,7 +1225,7 @@ type FindMonitoredEntityRequest struct {
 func (x *FindMonitoredEntityRequest) Reset() {
 	*x = FindMonitoredEntityRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[21]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1350,7 +1238,7 @@ func (x *FindMonitoredEntityRequest) String() string {
 func (*FindMonitoredEntityRequest) ProtoMessage() {}
 
 func (x *FindMonitoredEntityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[21]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1363,7 +1251,7 @@ func (x *FindMonitoredEntityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindMonitoredEntityRequest.ProtoReflect.Descriptor instead.
 func (*FindMonitoredEntityRequest) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{21}
+	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *FindMonitoredEntityRequest) GetIds() []uint64 {
@@ -1380,15 +1268,22 @@ func (x *FindMonitoredEntityRequest) GetNames() []string {
 	return nil
 }
 
+func (m *FindMonitoredEntityRequest) GetWorkspaceIdentifier() isFindMonitoredEntityRequest_WorkspaceIdentifier {
+	if m != nil {
+		return m.WorkspaceIdentifier
+	}
+	return nil
+}
+
 func (x *FindMonitoredEntityRequest) GetWorkspaceId() uint64 {
-	if x != nil {
+	if x, ok := x.GetWorkspaceIdentifier().(*FindMonitoredEntityRequest_WorkspaceId); ok {
 		return x.WorkspaceId
 	}
 	return 0
 }
 
 func (x *FindMonitoredEntityRequest) GetWorkspaceName() string {
-	if x != nil {
+	if x, ok := x.GetWorkspaceIdentifier().(*FindMonitoredEntityRequest_WorkspaceName); ok {
 		return x.WorkspaceName
 	}
 	return ""
@@ -1408,6 +1303,22 @@ func (x *FindMonitoredEntityRequest) GetPageLimit() int32 {
 	return 0
 }
 
+type isFindMonitoredEntityRequest_WorkspaceIdentifier interface {
+	isFindMonitoredEntityRequest_WorkspaceIdentifier()
+}
+
+type FindMonitoredEntityRequest_WorkspaceId struct {
+	WorkspaceId uint64 `protobuf:"varint,3,opt,name=workspace_id,json=workspaceId,proto3,oneof"`
+}
+
+type FindMonitoredEntityRequest_WorkspaceName struct {
+	WorkspaceName string `protobuf:"bytes,6,opt,name=workspace_name,json=workspaceName,proto3,oneof"`
+}
+
+func (*FindMonitoredEntityRequest_WorkspaceId) isFindMonitoredEntityRequest_WorkspaceIdentifier() {}
+
+func (*FindMonitoredEntityRequest_WorkspaceName) isFindMonitoredEntityRequest_WorkspaceIdentifier() {}
+
 type DeleteMonitoredEntityRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1419,7 +1330,7 @@ type DeleteMonitoredEntityRequest struct {
 func (x *DeleteMonitoredEntityRequest) Reset() {
 	*x = DeleteMonitoredEntityRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[22]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1432,7 +1343,7 @@ func (x *DeleteMonitoredEntityRequest) String() string {
 func (*DeleteMonitoredEntityRequest) ProtoMessage() {}
 
 func (x *DeleteMonitoredEntityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[22]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1445,7 +1356,7 @@ func (x *DeleteMonitoredEntityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteMonitoredEntityRequest.ProtoReflect.Descriptor instead.
 func (*DeleteMonitoredEntityRequest) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{22}
+	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *DeleteMonitoredEntityRequest) GetId() uint64 {
@@ -1466,7 +1377,7 @@ type CreateProfilerRequest_Response struct {
 func (x *CreateProfilerRequest_Response) Reset() {
 	*x = CreateProfilerRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[23]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1479,7 +1390,7 @@ func (x *CreateProfilerRequest_Response) String() string {
 func (*CreateProfilerRequest_Response) ProtoMessage() {}
 
 func (x *CreateProfilerRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[23]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1513,7 +1424,7 @@ type GetProfilerRequest_Response struct {
 func (x *GetProfilerRequest_Response) Reset() {
 	*x = GetProfilerRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[24]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1526,7 +1437,7 @@ func (x *GetProfilerRequest_Response) String() string {
 func (*GetProfilerRequest_Response) ProtoMessage() {}
 
 func (x *GetProfilerRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[24]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1560,7 +1471,7 @@ type UpdateProfilerRequest_Response struct {
 func (x *UpdateProfilerRequest_Response) Reset() {
 	*x = UpdateProfilerRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[25]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1573,7 +1484,7 @@ func (x *UpdateProfilerRequest_Response) String() string {
 func (*UpdateProfilerRequest_Response) ProtoMessage() {}
 
 func (x *UpdateProfilerRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[25]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1607,7 +1518,7 @@ type ListProfilersRequest_Response struct {
 func (x *ListProfilersRequest_Response) Reset() {
 	*x = ListProfilersRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[26]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1620,7 +1531,7 @@ func (x *ListProfilersRequest_Response) String() string {
 func (*ListProfilersRequest_Response) ProtoMessage() {}
 
 func (x *ListProfilersRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[26]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1652,7 +1563,7 @@ type DeleteProfilerRequest_Response struct {
 func (x *DeleteProfilerRequest_Response) Reset() {
 	*x = DeleteProfilerRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[27]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1665,7 +1576,7 @@ func (x *DeleteProfilerRequest_Response) String() string {
 func (*DeleteProfilerRequest_Response) ProtoMessage() {}
 
 func (x *DeleteProfilerRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[27]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1692,7 +1603,7 @@ type GetProfilerStatusRequest_Response struct {
 func (x *GetProfilerStatusRequest_Response) Reset() {
 	*x = GetProfilerStatusRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[28]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1705,7 +1616,7 @@ func (x *GetProfilerStatusRequest_Response) String() string {
 func (*GetProfilerStatusRequest_Response) ProtoMessage() {}
 
 func (x *GetProfilerStatusRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[28]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1739,7 +1650,7 @@ type FindProfilersForMonitoredEntityRequest_Response struct {
 func (x *FindProfilersForMonitoredEntityRequest_Response) Reset() {
 	*x = FindProfilersForMonitoredEntityRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[29]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1752,7 +1663,7 @@ func (x *FindProfilersForMonitoredEntityRequest_Response) String() string {
 func (*FindProfilersForMonitoredEntityRequest_Response) ProtoMessage() {}
 
 func (x *FindProfilersForMonitoredEntityRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[29]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1786,7 +1697,7 @@ type EnableProfilerRequest_Response struct {
 func (x *EnableProfilerRequest_Response) Reset() {
 	*x = EnableProfilerRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[30]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1799,7 +1710,7 @@ func (x *EnableProfilerRequest_Response) String() string {
 func (*EnableProfilerRequest_Response) ProtoMessage() {}
 
 func (x *EnableProfilerRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[30]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1833,7 +1744,7 @@ type DisableProfilerRequest_Response struct {
 func (x *DisableProfilerRequest_Response) Reset() {
 	*x = DisableProfilerRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[31]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1846,7 +1757,7 @@ func (x *DisableProfilerRequest_Response) String() string {
 func (*DisableProfilerRequest_Response) ProtoMessage() {}
 
 func (x *DisableProfilerRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[31]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1880,7 +1791,7 @@ type CreateMonitoredEntityRequest_Response struct {
 func (x *CreateMonitoredEntityRequest_Response) Reset() {
 	*x = CreateMonitoredEntityRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[32]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1893,7 +1804,7 @@ func (x *CreateMonitoredEntityRequest_Response) String() string {
 func (*CreateMonitoredEntityRequest_Response) ProtoMessage() {}
 
 func (x *CreateMonitoredEntityRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[32]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1916,100 +1827,6 @@ func (x *CreateMonitoredEntityRequest_Response) GetMonitoredEntity() *MonitoredE
 	return nil
 }
 
-type GetMonitoredEntityRequest_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	MonitoredEntity *MonitoredEntity `protobuf:"bytes,1,opt,name=monitored_entity,json=monitoredEntity,proto3" json:"monitored_entity,omitempty"`
-}
-
-func (x *GetMonitoredEntityRequest_Response) Reset() {
-	*x = GetMonitoredEntityRequest_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[33]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetMonitoredEntityRequest_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMonitoredEntityRequest_Response) ProtoMessage() {}
-
-func (x *GetMonitoredEntityRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[33]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMonitoredEntityRequest_Response.ProtoReflect.Descriptor instead.
-func (*GetMonitoredEntityRequest_Response) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{17, 0}
-}
-
-func (x *GetMonitoredEntityRequest_Response) GetMonitoredEntity() *MonitoredEntity {
-	if x != nil {
-		return x.MonitoredEntity
-	}
-	return nil
-}
-
-type GetMonitoredEntityByNameRequest_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	MonitoredEntity *MonitoredEntity `protobuf:"bytes,1,opt,name=monitored_entity,json=monitoredEntity,proto3" json:"monitored_entity,omitempty"`
-}
-
-func (x *GetMonitoredEntityByNameRequest_Response) Reset() {
-	*x = GetMonitoredEntityByNameRequest_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[34]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetMonitoredEntityByNameRequest_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetMonitoredEntityByNameRequest_Response) ProtoMessage() {}
-
-func (x *GetMonitoredEntityByNameRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[34]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetMonitoredEntityByNameRequest_Response.ProtoReflect.Descriptor instead.
-func (*GetMonitoredEntityByNameRequest_Response) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{18, 0}
-}
-
-func (x *GetMonitoredEntityByNameRequest_Response) GetMonitoredEntity() *MonitoredEntity {
-	if x != nil {
-		return x.MonitoredEntity
-	}
-	return nil
-}
-
 type UpdateMonitoredEntityRequest_Response struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2021,7 +1838,7 @@ type UpdateMonitoredEntityRequest_Response struct {
 func (x *UpdateMonitoredEntityRequest_Response) Reset() {
 	*x = UpdateMonitoredEntityRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[35]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2034,7 +1851,7 @@ func (x *UpdateMonitoredEntityRequest_Response) String() string {
 func (*UpdateMonitoredEntityRequest_Response) ProtoMessage() {}
 
 func (x *UpdateMonitoredEntityRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[35]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2047,59 +1864,12 @@ func (x *UpdateMonitoredEntityRequest_Response) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use UpdateMonitoredEntityRequest_Response.ProtoReflect.Descriptor instead.
 func (*UpdateMonitoredEntityRequest_Response) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{19, 0}
+	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{17, 0}
 }
 
 func (x *UpdateMonitoredEntityRequest_Response) GetMonitoredEntity() *MonitoredEntity {
 	if x != nil {
 		return x.MonitoredEntity
-	}
-	return nil
-}
-
-type ListMonitoredEntitiesRequest_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	MonitoredEntities []*MonitoredEntity `protobuf:"bytes,1,rep,name=monitored_entities,json=monitoredEntities,proto3" json:"monitored_entities,omitempty"`
-}
-
-func (x *ListMonitoredEntitiesRequest_Response) Reset() {
-	*x = ListMonitoredEntitiesRequest_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[36]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ListMonitoredEntitiesRequest_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ListMonitoredEntitiesRequest_Response) ProtoMessage() {}
-
-func (x *ListMonitoredEntitiesRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[36]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ListMonitoredEntitiesRequest_Response.ProtoReflect.Descriptor instead.
-func (*ListMonitoredEntitiesRequest_Response) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{20, 0}
-}
-
-func (x *ListMonitoredEntitiesRequest_Response) GetMonitoredEntities() []*MonitoredEntity {
-	if x != nil {
-		return x.MonitoredEntities
 	}
 	return nil
 }
@@ -2116,7 +1886,7 @@ type FindMonitoredEntityRequest_Response struct {
 func (x *FindMonitoredEntityRequest_Response) Reset() {
 	*x = FindMonitoredEntityRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[37]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2129,7 +1899,7 @@ func (x *FindMonitoredEntityRequest_Response) String() string {
 func (*FindMonitoredEntityRequest_Response) ProtoMessage() {}
 
 func (x *FindMonitoredEntityRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[37]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2142,7 +1912,7 @@ func (x *FindMonitoredEntityRequest_Response) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use FindMonitoredEntityRequest_Response.ProtoReflect.Descriptor instead.
 func (*FindMonitoredEntityRequest_Response) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{21, 0}
+	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{18, 0}
 }
 
 func (x *FindMonitoredEntityRequest_Response) GetMonitoredEntities() []*MonitoredEntity {
@@ -2168,7 +1938,7 @@ type DeleteMonitoredEntityRequest_Response struct {
 func (x *DeleteMonitoredEntityRequest_Response) Reset() {
 	*x = DeleteMonitoredEntityRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[38]
+		mi := &file_monitoring_DataMonitoringService_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2181,7 +1951,7 @@ func (x *DeleteMonitoredEntityRequest_Response) String() string {
 func (*DeleteMonitoredEntityRequest_Response) ProtoMessage() {}
 
 func (x *DeleteMonitoredEntityRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[38]
+	mi := &file_monitoring_DataMonitoringService_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2194,7 +1964,7 @@ func (x *DeleteMonitoredEntityRequest_Response) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use DeleteMonitoredEntityRequest_Response.ProtoReflect.Descriptor instead.
 func (*DeleteMonitoredEntityRequest_Response) Descriptor() ([]byte, []int) {
-	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{22, 0}
+	return file_monitoring_DataMonitoringService_proto_rawDescGZIP(), []int{19, 0}
 }
 
 var File_monitoring_DataMonitoringService_proto protoreflect.FileDescriptor
@@ -2359,39 +2129,23 @@ var file_monitoring_DataMonitoringService_proto_rawDesc = []byte{
 	0x69, 0x6c, 0x6c, 0x69, 0x73, 0x18, 0x07, 0x20, 0x01, 0x28, 0x04, 0x52, 0x18, 0x75, 0x70, 0x64,
 	0x61, 0x74, 0x65, 0x64, 0x41, 0x74, 0x54, 0x69, 0x6d, 0x65, 0x73, 0x74, 0x61, 0x6d, 0x70, 0x4d,
 	0x69, 0x6c, 0x6c, 0x69, 0x73, 0x4a, 0x04, 0x08, 0x03, 0x10, 0x04, 0x4a, 0x04, 0x08, 0x04, 0x10,
-	0x05, 0x22, 0xbe, 0x01, 0x0a, 0x1c, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69,
+	0x05, 0x22, 0x81, 0x02, 0x0a, 0x1c, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69,
 	0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70,
-	0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x77, 0x6f,
-	0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64, 0x1a, 0x5b, 0x0a, 0x08, 0x52, 0x65, 0x73,
-	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4f, 0x0a, 0x10, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72,
-	0x65, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x24, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74,
-	0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45,
-	0x6e, 0x74, 0x69, 0x74, 0x79, 0x52, 0x0f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64,
-	0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x4a, 0x04, 0x08, 0x02, 0x10, 0x03, 0x4a, 0x04, 0x08, 0x03,
-	0x10, 0x04, 0x22, 0x88, 0x01, 0x0a, 0x19, 0x47, 0x65, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f,
-	0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64,
-	0x1a, 0x5b, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4f, 0x0a, 0x10,
-	0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74,
-	0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x4d, 0x6f, 0x6e,
-	0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x52, 0x0f, 0x6d, 0x6f,
-	0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x22, 0xb5, 0x01,
-	0x0a, 0x1f, 0x47, 0x65, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e,
-	0x74, 0x69, 0x74, 0x79, 0x42, 0x79, 0x4e, 0x61, 0x6d, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61,
-	0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x77, 0x6f, 0x72,
-	0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64, 0x1a, 0x5b, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4f, 0x0a, 0x10, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65,
-	0x64, 0x5f, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24,
-	0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f,
-	0x72, 0x69, 0x6e, 0x67, 0x2e, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e,
-	0x74, 0x69, 0x74, 0x79, 0x52, 0x0f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45,
-	0x6e, 0x74, 0x69, 0x74, 0x79, 0x22, 0xa5, 0x01, 0x0a, 0x1c, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
+	0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x23, 0x0a, 0x0c, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70,
+	0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x48, 0x00, 0x52, 0x0b,
+	0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64, 0x12, 0x27, 0x0a, 0x0e, 0x77,
+	0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x0d, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65,
+	0x4e, 0x61, 0x6d, 0x65, 0x1a, 0x5b, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x4f, 0x0a, 0x10, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e,
+	0x74, 0x69, 0x74, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x61, 0x69, 0x2e,
+	0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67,
+	0x2e, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79,
+	0x52, 0x0f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74,
+	0x79, 0x42, 0x16, 0x0a, 0x14, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69,
+	0x64, 0x65, 0x6e, 0x74, 0x69, 0x66, 0x69, 0x65, 0x72, 0x4a, 0x04, 0x08, 0x02, 0x10, 0x03, 0x4a,
+	0x04, 0x08, 0x03, 0x10, 0x04, 0x22, 0xa5, 0x01, 0x0a, 0x1c, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
 	0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x52,
 	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01,
 	0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02,
@@ -2401,104 +2155,60 @@ var file_monitoring_DataMonitoringService_proto_rawDesc = []byte{
 	0x32, 0x24, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69,
 	0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64,
 	0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x52, 0x0f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65,
-	0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x4a, 0x04, 0x08, 0x04, 0x10, 0x07, 0x22, 0xa2, 0x01,
-	0x0a, 0x1c, 0x4c, 0x69, 0x73, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45,
-	0x6e, 0x74, 0x69, 0x74, 0x69, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x21,
-	0x0a, 0x0c, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49,
-	0x64, 0x1a, 0x5f, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x53, 0x0a,
-	0x12, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x69, 0x74,
-	0x69, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x61, 0x69, 0x2e, 0x76,
-	0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e,
-	0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x52,
-	0x11, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x69,
-	0x65, 0x73, 0x22, 0xd5, 0x02, 0x0a, 0x1a, 0x46, 0x69, 0x6e, 0x64, 0x4d, 0x6f, 0x6e, 0x69, 0x74,
+	0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x4a, 0x04, 0x08, 0x04, 0x10, 0x07, 0x22, 0xf1, 0x02,
+	0x0a, 0x1a, 0x46, 0x69, 0x6e, 0x64, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45,
+	0x6e, 0x74, 0x69, 0x74, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03,
+	0x69, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x04, 0x52, 0x03, 0x69, 0x64, 0x73, 0x12, 0x14,
+	0x0a, 0x05, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x09, 0x52, 0x05, 0x6e,
+	0x61, 0x6d, 0x65, 0x73, 0x12, 0x23, 0x0a, 0x0c, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63,
+	0x65, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x48, 0x00, 0x52, 0x0b, 0x77, 0x6f,
+	0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64, 0x12, 0x27, 0x0a, 0x0e, 0x77, 0x6f, 0x72,
+	0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28,
+	0x09, 0x48, 0x00, 0x52, 0x0d, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x4e, 0x61,
+	0x6d, 0x65, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x61, 0x67, 0x65, 0x5f, 0x6e, 0x75, 0x6d, 0x62, 0x65,
+	0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0a, 0x70, 0x61, 0x67, 0x65, 0x4e, 0x75, 0x6d,
+	0x62, 0x65, 0x72, 0x12, 0x1d, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x65, 0x5f, 0x6c, 0x69, 0x6d, 0x69,
+	0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x70, 0x61, 0x67, 0x65, 0x4c, 0x69, 0x6d,
+	0x69, 0x74, 0x1a, 0x84, 0x01, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
+	0x53, 0x0a, 0x12, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e, 0x74,
+	0x69, 0x74, 0x69, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x61, 0x69,
+	0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e,
+	0x67, 0x2e, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74,
+	0x79, 0x52, 0x11, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69,
+	0x74, 0x69, 0x65, 0x73, 0x12, 0x23, 0x0a, 0x0d, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x72, 0x65,
+	0x63, 0x6f, 0x72, 0x64, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0c, 0x74, 0x6f, 0x74,
+	0x61, 0x6c, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x42, 0x16, 0x0a, 0x14, 0x77, 0x6f, 0x72,
+	0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x66, 0x69, 0x65,
+	0x72, 0x22, 0x3a, 0x0a, 0x1c, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74,
 	0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x12, 0x10, 0x0a, 0x03, 0x69, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x04, 0x52, 0x03,
-	0x69, 0x64, 0x73, 0x12, 0x14, 0x0a, 0x05, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03,
-	0x28, 0x09, 0x52, 0x05, 0x6e, 0x61, 0x6d, 0x65, 0x73, 0x12, 0x21, 0x0a, 0x0c, 0x77, 0x6f, 0x72,
-	0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52,
-	0x0b, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64, 0x12, 0x25, 0x0a, 0x0e,
-	0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x06,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x4e,
-	0x61, 0x6d, 0x65, 0x12, 0x1f, 0x0a, 0x0b, 0x70, 0x61, 0x67, 0x65, 0x5f, 0x6e, 0x75, 0x6d, 0x62,
-	0x65, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0a, 0x70, 0x61, 0x67, 0x65, 0x4e, 0x75,
-	0x6d, 0x62, 0x65, 0x72, 0x12, 0x1d, 0x0a, 0x0a, 0x70, 0x61, 0x67, 0x65, 0x5f, 0x6c, 0x69, 0x6d,
-	0x69, 0x74, 0x18, 0x05, 0x20, 0x01, 0x28, 0x05, 0x52, 0x09, 0x70, 0x61, 0x67, 0x65, 0x4c, 0x69,
-	0x6d, 0x69, 0x74, 0x1a, 0x84, 0x01, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x12, 0x53, 0x0a, 0x12, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e,
-	0x74, 0x69, 0x74, 0x69, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x61,
-	0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69,
-	0x6e, 0x67, 0x2e, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69,
-	0x74, 0x79, 0x52, 0x11, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74,
-	0x69, 0x74, 0x69, 0x65, 0x73, 0x12, 0x23, 0x0a, 0x0d, 0x74, 0x6f, 0x74, 0x61, 0x6c, 0x5f, 0x72,
-	0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x05, 0x52, 0x0c, 0x74, 0x6f,
-	0x74, 0x61, 0x6c, 0x52, 0x65, 0x63, 0x6f, 0x72, 0x64, 0x73, 0x22, 0x3a, 0x0a, 0x1c, 0x44, 0x65,
-	0x6c, 0x65, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74,
-	0x69, 0x74, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x1a, 0x0a, 0x0a, 0x08, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0xc4, 0x16, 0x0a, 0x15, 0x44, 0x61, 0x74, 0x61, 0x4d,
-	0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x12, 0xae, 0x01, 0x0a, 0x12, 0x67, 0x65, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65,
-	0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x12, 0x2e, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
-	0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x47, 0x65,
-	0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x37, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
-	0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x47, 0x65,
-	0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x22, 0x2f, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x29, 0x12, 0x27, 0x2f, 0x76, 0x31, 0x2f, 0x6d, 0x6f,
-	0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x2f, 0x67,
-	0x65, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74,
-	0x79, 0x12, 0xc6, 0x01, 0x0a, 0x18, 0x67, 0x65, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72,
-	0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x42, 0x79, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x34,
-	0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f,
-	0x72, 0x69, 0x6e, 0x67, 0x2e, 0x47, 0x65, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65,
-	0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x42, 0x79, 0x4e, 0x61, 0x6d, 0x65, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x3d, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
-	0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x47, 0x65, 0x74, 0x4d, 0x6f,
-	0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x42, 0x79, 0x4e,
-	0x61, 0x6d, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x35, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2f, 0x12, 0x2d, 0x2f, 0x76, 0x31,
-	0x2f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x69, 0x74,
-	0x79, 0x2f, 0x67, 0x65, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e,
-	0x74, 0x69, 0x74, 0x79, 0x42, 0x79, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0xbd, 0x01, 0x0a, 0x15, 0x63,
-	0x72, 0x65, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e,
-	0x74, 0x69, 0x74, 0x79, 0x12, 0x31, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
+	0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69,
+	0x64, 0x1a, 0x0a, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x32, 0x8d, 0x12,
+	0x0a, 0x15, 0x44, 0x61, 0x74, 0x61, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67,
+	0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0xbd, 0x01, 0x0a, 0x15, 0x63, 0x72, 0x65, 0x61,
+	0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74,
+	0x79, 0x12, 0x31, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e,
+	0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4d, 0x6f,
+	0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x3a, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
 	0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74,
 	0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x3a, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
-	0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x43, 0x72,
-	0x65, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74,
-	0x69, 0x74, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x35, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2f, 0x22, 0x2a, 0x2f, 0x76, 0x31,
-	0x2f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x69, 0x74,
-	0x79, 0x2f, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65,
-	0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x3a, 0x01, 0x2a, 0x12, 0xbd, 0x01, 0x0a, 0x15, 0x75,
-	0x70, 0x64, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e,
-	0x74, 0x69, 0x74, 0x79, 0x12, 0x31, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x22, 0x35, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2f, 0x22, 0x2a, 0x2f, 0x76, 0x31, 0x2f, 0x6d, 0x6f,
+	0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x2f, 0x63,
+	0x72, 0x65, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e,
+	0x74, 0x69, 0x74, 0x79, 0x3a, 0x01, 0x2a, 0x12, 0xbd, 0x01, 0x0a, 0x15, 0x75, 0x70, 0x64, 0x61,
+	0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74,
+	0x79, 0x12, 0x31, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e,
+	0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x4d, 0x6f,
+	0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x3a, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
 	0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74,
 	0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x3a, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
-	0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x55, 0x70,
-	0x64, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74,
-	0x69, 0x74, 0x79, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x35, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2f, 0x32, 0x2a, 0x2f, 0x76, 0x31,
-	0x2f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x69, 0x74,
-	0x79, 0x2f, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65,
-	0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x3a, 0x01, 0x2a, 0x12, 0xba, 0x01, 0x0a, 0x15, 0x6c,
-	0x69, 0x73, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69,
-	0x74, 0x69, 0x65, 0x73, 0x12, 0x31, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
-	0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x4c, 0x69, 0x73, 0x74, 0x4d,
-	0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x69, 0x65, 0x73,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x3a, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
-	0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x4c, 0x69,
-	0x73, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74,
-	0x69, 0x65, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x32, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2c, 0x12, 0x2a, 0x2f, 0x76, 0x31,
-	0x2f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x69, 0x74,
-	0x79, 0x2f, 0x6c, 0x69, 0x73, 0x74, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45,
-	0x6e, 0x74, 0x69, 0x74, 0x69, 0x65, 0x73, 0x12, 0xb5, 0x01, 0x0a, 0x13, 0x66, 0x69, 0x6e, 0x64,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x22, 0x35, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2f, 0x32, 0x2a, 0x2f, 0x76, 0x31, 0x2f, 0x6d, 0x6f,
+	0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x5f, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x2f, 0x75,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e,
+	0x74, 0x69, 0x74, 0x79, 0x3a, 0x01, 0x2a, 0x12, 0xb5, 0x01, 0x0a, 0x13, 0x66, 0x69, 0x6e, 0x64,
 	0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x65, 0x64, 0x45, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x12,
 	0x2f, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74,
 	0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x46, 0x69, 0x6e, 0x64, 0x4d, 0x6f, 0x6e, 0x69, 0x74, 0x6f,
@@ -2638,7 +2348,7 @@ func file_monitoring_DataMonitoringService_proto_rawDescGZIP() []byte {
 }
 
 var file_monitoring_DataMonitoringService_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_monitoring_DataMonitoringService_proto_msgTypes = make([]protoimpl.MessageInfo, 39)
+var file_monitoring_DataMonitoringService_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
 var file_monitoring_DataMonitoringService_proto_goTypes = []interface{}{
 	(BuildStatusEnum_BuildStatus)(0),                        // 0: ai.verta.monitoring.BuildStatusEnum.BuildStatus
 	(DeployStatusEnum_DeployStatus)(0),                      // 1: ai.verta.monitoring.DeployStatusEnum.DeployStatus
@@ -2660,34 +2370,28 @@ var file_monitoring_DataMonitoringService_proto_goTypes = []interface{}{
 	(*DisableProfilerRequest)(nil),                          // 17: ai.verta.monitoring.DisableProfilerRequest
 	(*MonitoredEntity)(nil),                                 // 18: ai.verta.monitoring.MonitoredEntity
 	(*CreateMonitoredEntityRequest)(nil),                    // 19: ai.verta.monitoring.CreateMonitoredEntityRequest
-	(*GetMonitoredEntityRequest)(nil),                       // 20: ai.verta.monitoring.GetMonitoredEntityRequest
-	(*GetMonitoredEntityByNameRequest)(nil),                 // 21: ai.verta.monitoring.GetMonitoredEntityByNameRequest
-	(*UpdateMonitoredEntityRequest)(nil),                    // 22: ai.verta.monitoring.UpdateMonitoredEntityRequest
-	(*ListMonitoredEntitiesRequest)(nil),                    // 23: ai.verta.monitoring.ListMonitoredEntitiesRequest
-	(*FindMonitoredEntityRequest)(nil),                      // 24: ai.verta.monitoring.FindMonitoredEntityRequest
-	(*DeleteMonitoredEntityRequest)(nil),                    // 25: ai.verta.monitoring.DeleteMonitoredEntityRequest
-	(*CreateProfilerRequest_Response)(nil),                  // 26: ai.verta.monitoring.CreateProfilerRequest.Response
-	(*GetProfilerRequest_Response)(nil),                     // 27: ai.verta.monitoring.GetProfilerRequest.Response
-	(*UpdateProfilerRequest_Response)(nil),                  // 28: ai.verta.monitoring.UpdateProfilerRequest.Response
-	(*ListProfilersRequest_Response)(nil),                   // 29: ai.verta.monitoring.ListProfilersRequest.Response
-	(*DeleteProfilerRequest_Response)(nil),                  // 30: ai.verta.monitoring.DeleteProfilerRequest.Response
-	(*GetProfilerStatusRequest_Response)(nil),               // 31: ai.verta.monitoring.GetProfilerStatusRequest.Response
-	(*FindProfilersForMonitoredEntityRequest_Response)(nil), // 32: ai.verta.monitoring.FindProfilersForMonitoredEntityRequest.Response
-	(*EnableProfilerRequest_Response)(nil),                  // 33: ai.verta.monitoring.EnableProfilerRequest.Response
-	(*DisableProfilerRequest_Response)(nil),                 // 34: ai.verta.monitoring.DisableProfilerRequest.Response
-	(*CreateMonitoredEntityRequest_Response)(nil),           // 35: ai.verta.monitoring.CreateMonitoredEntityRequest.Response
-	(*GetMonitoredEntityRequest_Response)(nil),              // 36: ai.verta.monitoring.GetMonitoredEntityRequest.Response
-	(*GetMonitoredEntityByNameRequest_Response)(nil),        // 37: ai.verta.monitoring.GetMonitoredEntityByNameRequest.Response
-	(*UpdateMonitoredEntityRequest_Response)(nil),           // 38: ai.verta.monitoring.UpdateMonitoredEntityRequest.Response
-	(*ListMonitoredEntitiesRequest_Response)(nil),           // 39: ai.verta.monitoring.ListMonitoredEntitiesRequest.Response
-	(*FindMonitoredEntityRequest_Response)(nil),             // 40: ai.verta.monitoring.FindMonitoredEntityRequest.Response
-	(*DeleteMonitoredEntityRequest_Response)(nil),           // 41: ai.verta.monitoring.DeleteMonitoredEntityRequest.Response
-	(*_struct.Value)(nil),                                   // 42: google.protobuf.Value
+	(*UpdateMonitoredEntityRequest)(nil),                    // 20: ai.verta.monitoring.UpdateMonitoredEntityRequest
+	(*FindMonitoredEntityRequest)(nil),                      // 21: ai.verta.monitoring.FindMonitoredEntityRequest
+	(*DeleteMonitoredEntityRequest)(nil),                    // 22: ai.verta.monitoring.DeleteMonitoredEntityRequest
+	(*CreateProfilerRequest_Response)(nil),                  // 23: ai.verta.monitoring.CreateProfilerRequest.Response
+	(*GetProfilerRequest_Response)(nil),                     // 24: ai.verta.monitoring.GetProfilerRequest.Response
+	(*UpdateProfilerRequest_Response)(nil),                  // 25: ai.verta.monitoring.UpdateProfilerRequest.Response
+	(*ListProfilersRequest_Response)(nil),                   // 26: ai.verta.monitoring.ListProfilersRequest.Response
+	(*DeleteProfilerRequest_Response)(nil),                  // 27: ai.verta.monitoring.DeleteProfilerRequest.Response
+	(*GetProfilerStatusRequest_Response)(nil),               // 28: ai.verta.monitoring.GetProfilerStatusRequest.Response
+	(*FindProfilersForMonitoredEntityRequest_Response)(nil), // 29: ai.verta.monitoring.FindProfilersForMonitoredEntityRequest.Response
+	(*EnableProfilerRequest_Response)(nil),                  // 30: ai.verta.monitoring.EnableProfilerRequest.Response
+	(*DisableProfilerRequest_Response)(nil),                 // 31: ai.verta.monitoring.DisableProfilerRequest.Response
+	(*CreateMonitoredEntityRequest_Response)(nil),           // 32: ai.verta.monitoring.CreateMonitoredEntityRequest.Response
+	(*UpdateMonitoredEntityRequest_Response)(nil),           // 33: ai.verta.monitoring.UpdateMonitoredEntityRequest.Response
+	(*FindMonitoredEntityRequest_Response)(nil),             // 34: ai.verta.monitoring.FindMonitoredEntityRequest.Response
+	(*DeleteMonitoredEntityRequest_Response)(nil),           // 35: ai.verta.monitoring.DeleteMonitoredEntityRequest.Response
+	(*_struct.Value)(nil),                                   // 36: google.protobuf.Value
 }
 var file_monitoring_DataMonitoringService_proto_depIdxs = []int32{
 	0,  // 0: ai.verta.monitoring.ProfilerStatus.build_status:type_name -> ai.verta.monitoring.BuildStatusEnum.BuildStatus
 	1,  // 1: ai.verta.monitoring.ProfilerStatus.deploy_status:type_name -> ai.verta.monitoring.DeployStatusEnum.DeployStatus
-	42, // 2: ai.verta.monitoring.KeyValue.value:type_name -> google.protobuf.Value
+	36, // 2: ai.verta.monitoring.KeyValue.value:type_name -> google.protobuf.Value
 	2,  // 3: ai.verta.monitoring.KeyValue.value_type:type_name -> ai.verta.monitoring.ValueTypeEnum.ValueType
 	14, // 4: ai.verta.monitoring.EnableProfilerRequest.environment:type_name -> ai.verta.monitoring.KeyValue
 	3,  // 5: ai.verta.monitoring.CreateProfilerRequest.Response.profiler:type_name -> ai.verta.monitoring.Profiler
@@ -2699,48 +2403,39 @@ var file_monitoring_DataMonitoringService_proto_depIdxs = []int32{
 	11, // 11: ai.verta.monitoring.EnableProfilerRequest.Response.status:type_name -> ai.verta.monitoring.ProfilerStatus
 	11, // 12: ai.verta.monitoring.DisableProfilerRequest.Response.status:type_name -> ai.verta.monitoring.ProfilerStatus
 	18, // 13: ai.verta.monitoring.CreateMonitoredEntityRequest.Response.monitored_entity:type_name -> ai.verta.monitoring.MonitoredEntity
-	18, // 14: ai.verta.monitoring.GetMonitoredEntityRequest.Response.monitored_entity:type_name -> ai.verta.monitoring.MonitoredEntity
-	18, // 15: ai.verta.monitoring.GetMonitoredEntityByNameRequest.Response.monitored_entity:type_name -> ai.verta.monitoring.MonitoredEntity
-	18, // 16: ai.verta.monitoring.UpdateMonitoredEntityRequest.Response.monitored_entity:type_name -> ai.verta.monitoring.MonitoredEntity
-	18, // 17: ai.verta.monitoring.ListMonitoredEntitiesRequest.Response.monitored_entities:type_name -> ai.verta.monitoring.MonitoredEntity
-	18, // 18: ai.verta.monitoring.FindMonitoredEntityRequest.Response.monitored_entities:type_name -> ai.verta.monitoring.MonitoredEntity
-	20, // 19: ai.verta.monitoring.DataMonitoringService.getMonitoredEntity:input_type -> ai.verta.monitoring.GetMonitoredEntityRequest
-	21, // 20: ai.verta.monitoring.DataMonitoringService.getMonitoredEntityByName:input_type -> ai.verta.monitoring.GetMonitoredEntityByNameRequest
-	19, // 21: ai.verta.monitoring.DataMonitoringService.createMonitoredEntity:input_type -> ai.verta.monitoring.CreateMonitoredEntityRequest
-	22, // 22: ai.verta.monitoring.DataMonitoringService.updateMonitoredEntity:input_type -> ai.verta.monitoring.UpdateMonitoredEntityRequest
-	23, // 23: ai.verta.monitoring.DataMonitoringService.listMonitoredEntities:input_type -> ai.verta.monitoring.ListMonitoredEntitiesRequest
-	24, // 24: ai.verta.monitoring.DataMonitoringService.findMonitoredEntity:input_type -> ai.verta.monitoring.FindMonitoredEntityRequest
-	25, // 25: ai.verta.monitoring.DataMonitoringService.deleteMonitoredEntity:input_type -> ai.verta.monitoring.DeleteMonitoredEntityRequest
-	5,  // 26: ai.verta.monitoring.DataMonitoringService.getProfiler:input_type -> ai.verta.monitoring.GetProfilerRequest
-	4,  // 27: ai.verta.monitoring.DataMonitoringService.createProfiler:input_type -> ai.verta.monitoring.CreateProfilerRequest
-	6,  // 28: ai.verta.monitoring.DataMonitoringService.updateProfiler:input_type -> ai.verta.monitoring.UpdateProfilerRequest
-	7,  // 29: ai.verta.monitoring.DataMonitoringService.listProfilers:input_type -> ai.verta.monitoring.ListProfilersRequest
-	8,  // 30: ai.verta.monitoring.DataMonitoringService.deleteProfiler:input_type -> ai.verta.monitoring.DeleteProfilerRequest
-	12, // 31: ai.verta.monitoring.DataMonitoringService.getProfilerStatus:input_type -> ai.verta.monitoring.GetProfilerStatusRequest
-	13, // 32: ai.verta.monitoring.DataMonitoringService.findProfilersForMonitoredEntity:input_type -> ai.verta.monitoring.FindProfilersForMonitoredEntityRequest
-	16, // 33: ai.verta.monitoring.DataMonitoringService.enableProfiler:input_type -> ai.verta.monitoring.EnableProfilerRequest
-	17, // 34: ai.verta.monitoring.DataMonitoringService.disableProfiler:input_type -> ai.verta.monitoring.DisableProfilerRequest
-	36, // 35: ai.verta.monitoring.DataMonitoringService.getMonitoredEntity:output_type -> ai.verta.monitoring.GetMonitoredEntityRequest.Response
-	37, // 36: ai.verta.monitoring.DataMonitoringService.getMonitoredEntityByName:output_type -> ai.verta.monitoring.GetMonitoredEntityByNameRequest.Response
-	35, // 37: ai.verta.monitoring.DataMonitoringService.createMonitoredEntity:output_type -> ai.verta.monitoring.CreateMonitoredEntityRequest.Response
-	38, // 38: ai.verta.monitoring.DataMonitoringService.updateMonitoredEntity:output_type -> ai.verta.monitoring.UpdateMonitoredEntityRequest.Response
-	39, // 39: ai.verta.monitoring.DataMonitoringService.listMonitoredEntities:output_type -> ai.verta.monitoring.ListMonitoredEntitiesRequest.Response
-	40, // 40: ai.verta.monitoring.DataMonitoringService.findMonitoredEntity:output_type -> ai.verta.monitoring.FindMonitoredEntityRequest.Response
-	41, // 41: ai.verta.monitoring.DataMonitoringService.deleteMonitoredEntity:output_type -> ai.verta.monitoring.DeleteMonitoredEntityRequest.Response
-	27, // 42: ai.verta.monitoring.DataMonitoringService.getProfiler:output_type -> ai.verta.monitoring.GetProfilerRequest.Response
-	26, // 43: ai.verta.monitoring.DataMonitoringService.createProfiler:output_type -> ai.verta.monitoring.CreateProfilerRequest.Response
-	28, // 44: ai.verta.monitoring.DataMonitoringService.updateProfiler:output_type -> ai.verta.monitoring.UpdateProfilerRequest.Response
-	29, // 45: ai.verta.monitoring.DataMonitoringService.listProfilers:output_type -> ai.verta.monitoring.ListProfilersRequest.Response
-	30, // 46: ai.verta.monitoring.DataMonitoringService.deleteProfiler:output_type -> ai.verta.monitoring.DeleteProfilerRequest.Response
-	31, // 47: ai.verta.monitoring.DataMonitoringService.getProfilerStatus:output_type -> ai.verta.monitoring.GetProfilerStatusRequest.Response
-	32, // 48: ai.verta.monitoring.DataMonitoringService.findProfilersForMonitoredEntity:output_type -> ai.verta.monitoring.FindProfilersForMonitoredEntityRequest.Response
-	33, // 49: ai.verta.monitoring.DataMonitoringService.enableProfiler:output_type -> ai.verta.monitoring.EnableProfilerRequest.Response
-	34, // 50: ai.verta.monitoring.DataMonitoringService.disableProfiler:output_type -> ai.verta.monitoring.DisableProfilerRequest.Response
-	35, // [35:51] is the sub-list for method output_type
-	19, // [19:35] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	18, // 14: ai.verta.monitoring.UpdateMonitoredEntityRequest.Response.monitored_entity:type_name -> ai.verta.monitoring.MonitoredEntity
+	18, // 15: ai.verta.monitoring.FindMonitoredEntityRequest.Response.monitored_entities:type_name -> ai.verta.monitoring.MonitoredEntity
+	19, // 16: ai.verta.monitoring.DataMonitoringService.createMonitoredEntity:input_type -> ai.verta.monitoring.CreateMonitoredEntityRequest
+	20, // 17: ai.verta.monitoring.DataMonitoringService.updateMonitoredEntity:input_type -> ai.verta.monitoring.UpdateMonitoredEntityRequest
+	21, // 18: ai.verta.monitoring.DataMonitoringService.findMonitoredEntity:input_type -> ai.verta.monitoring.FindMonitoredEntityRequest
+	22, // 19: ai.verta.monitoring.DataMonitoringService.deleteMonitoredEntity:input_type -> ai.verta.monitoring.DeleteMonitoredEntityRequest
+	5,  // 20: ai.verta.monitoring.DataMonitoringService.getProfiler:input_type -> ai.verta.monitoring.GetProfilerRequest
+	4,  // 21: ai.verta.monitoring.DataMonitoringService.createProfiler:input_type -> ai.verta.monitoring.CreateProfilerRequest
+	6,  // 22: ai.verta.monitoring.DataMonitoringService.updateProfiler:input_type -> ai.verta.monitoring.UpdateProfilerRequest
+	7,  // 23: ai.verta.monitoring.DataMonitoringService.listProfilers:input_type -> ai.verta.monitoring.ListProfilersRequest
+	8,  // 24: ai.verta.monitoring.DataMonitoringService.deleteProfiler:input_type -> ai.verta.monitoring.DeleteProfilerRequest
+	12, // 25: ai.verta.monitoring.DataMonitoringService.getProfilerStatus:input_type -> ai.verta.monitoring.GetProfilerStatusRequest
+	13, // 26: ai.verta.monitoring.DataMonitoringService.findProfilersForMonitoredEntity:input_type -> ai.verta.monitoring.FindProfilersForMonitoredEntityRequest
+	16, // 27: ai.verta.monitoring.DataMonitoringService.enableProfiler:input_type -> ai.verta.monitoring.EnableProfilerRequest
+	17, // 28: ai.verta.monitoring.DataMonitoringService.disableProfiler:input_type -> ai.verta.monitoring.DisableProfilerRequest
+	32, // 29: ai.verta.monitoring.DataMonitoringService.createMonitoredEntity:output_type -> ai.verta.monitoring.CreateMonitoredEntityRequest.Response
+	33, // 30: ai.verta.monitoring.DataMonitoringService.updateMonitoredEntity:output_type -> ai.verta.monitoring.UpdateMonitoredEntityRequest.Response
+	34, // 31: ai.verta.monitoring.DataMonitoringService.findMonitoredEntity:output_type -> ai.verta.monitoring.FindMonitoredEntityRequest.Response
+	35, // 32: ai.verta.monitoring.DataMonitoringService.deleteMonitoredEntity:output_type -> ai.verta.monitoring.DeleteMonitoredEntityRequest.Response
+	24, // 33: ai.verta.monitoring.DataMonitoringService.getProfiler:output_type -> ai.verta.monitoring.GetProfilerRequest.Response
+	23, // 34: ai.verta.monitoring.DataMonitoringService.createProfiler:output_type -> ai.verta.monitoring.CreateProfilerRequest.Response
+	25, // 35: ai.verta.monitoring.DataMonitoringService.updateProfiler:output_type -> ai.verta.monitoring.UpdateProfilerRequest.Response
+	26, // 36: ai.verta.monitoring.DataMonitoringService.listProfilers:output_type -> ai.verta.monitoring.ListProfilersRequest.Response
+	27, // 37: ai.verta.monitoring.DataMonitoringService.deleteProfiler:output_type -> ai.verta.monitoring.DeleteProfilerRequest.Response
+	28, // 38: ai.verta.monitoring.DataMonitoringService.getProfilerStatus:output_type -> ai.verta.monitoring.GetProfilerStatusRequest.Response
+	29, // 39: ai.verta.monitoring.DataMonitoringService.findProfilersForMonitoredEntity:output_type -> ai.verta.monitoring.FindProfilersForMonitoredEntityRequest.Response
+	30, // 40: ai.verta.monitoring.DataMonitoringService.enableProfiler:output_type -> ai.verta.monitoring.EnableProfilerRequest.Response
+	31, // 41: ai.verta.monitoring.DataMonitoringService.disableProfiler:output_type -> ai.verta.monitoring.DisableProfilerRequest.Response
+	29, // [29:42] is the sub-list for method output_type
+	16, // [16:29] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_monitoring_DataMonitoringService_proto_init() }
@@ -2954,30 +2649,6 @@ func file_monitoring_DataMonitoringService_proto_init() {
 			}
 		}
 		file_monitoring_DataMonitoringService_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMonitoredEntityRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMonitoredEntityByNameRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateMonitoredEntityRequest); i {
 			case 0:
 				return &v.state
@@ -2989,19 +2660,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListMonitoredEntitiesRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FindMonitoredEntityRequest); i {
 			case 0:
 				return &v.state
@@ -3013,7 +2672,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteMonitoredEntityRequest); i {
 			case 0:
 				return &v.state
@@ -3025,7 +2684,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateProfilerRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3037,7 +2696,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetProfilerRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3049,7 +2708,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateProfilerRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3061,7 +2720,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ListProfilersRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3073,7 +2732,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteProfilerRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3085,7 +2744,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetProfilerStatusRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3097,7 +2756,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FindProfilersForMonitoredEntityRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3109,7 +2768,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*EnableProfilerRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3121,7 +2780,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DisableProfilerRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3133,7 +2792,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CreateMonitoredEntityRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3145,31 +2804,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMonitoredEntityRequest_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetMonitoredEntityByNameRequest_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateMonitoredEntityRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3181,19 +2816,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ListMonitoredEntitiesRequest_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FindMonitoredEntityRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3205,7 +2828,7 @@ func file_monitoring_DataMonitoringService_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_DataMonitoringService_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_DataMonitoringService_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteMonitoredEntityRequest_Response); i {
 			case 0:
 				return &v.state
@@ -3218,13 +2841,21 @@ func file_monitoring_DataMonitoringService_proto_init() {
 			}
 		}
 	}
+	file_monitoring_DataMonitoringService_proto_msgTypes[16].OneofWrappers = []interface{}{
+		(*CreateMonitoredEntityRequest_WorkspaceId)(nil),
+		(*CreateMonitoredEntityRequest_WorkspaceName)(nil),
+	}
+	file_monitoring_DataMonitoringService_proto_msgTypes[18].OneofWrappers = []interface{}{
+		(*FindMonitoredEntityRequest_WorkspaceId)(nil),
+		(*FindMonitoredEntityRequest_WorkspaceName)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_monitoring_DataMonitoringService_proto_rawDesc,
 			NumEnums:      3,
-			NumMessages:   39,
+			NumMessages:   33,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -3251,11 +2882,8 @@ const _ = grpc.SupportPackageIsVersion6
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type DataMonitoringServiceClient interface {
-	GetMonitoredEntity(ctx context.Context, in *GetMonitoredEntityRequest, opts ...grpc.CallOption) (*GetMonitoredEntityRequest_Response, error)
-	GetMonitoredEntityByName(ctx context.Context, in *GetMonitoredEntityByNameRequest, opts ...grpc.CallOption) (*GetMonitoredEntityByNameRequest_Response, error)
 	CreateMonitoredEntity(ctx context.Context, in *CreateMonitoredEntityRequest, opts ...grpc.CallOption) (*CreateMonitoredEntityRequest_Response, error)
 	UpdateMonitoredEntity(ctx context.Context, in *UpdateMonitoredEntityRequest, opts ...grpc.CallOption) (*UpdateMonitoredEntityRequest_Response, error)
-	ListMonitoredEntities(ctx context.Context, in *ListMonitoredEntitiesRequest, opts ...grpc.CallOption) (*ListMonitoredEntitiesRequest_Response, error)
 	FindMonitoredEntity(ctx context.Context, in *FindMonitoredEntityRequest, opts ...grpc.CallOption) (*FindMonitoredEntityRequest_Response, error)
 	DeleteMonitoredEntity(ctx context.Context, in *DeleteMonitoredEntityRequest, opts ...grpc.CallOption) (*DeleteMonitoredEntityRequest_Response, error)
 	GetProfiler(ctx context.Context, in *GetProfilerRequest, opts ...grpc.CallOption) (*GetProfilerRequest_Response, error)
@@ -3277,24 +2905,6 @@ func NewDataMonitoringServiceClient(cc grpc.ClientConnInterface) DataMonitoringS
 	return &dataMonitoringServiceClient{cc}
 }
 
-func (c *dataMonitoringServiceClient) GetMonitoredEntity(ctx context.Context, in *GetMonitoredEntityRequest, opts ...grpc.CallOption) (*GetMonitoredEntityRequest_Response, error) {
-	out := new(GetMonitoredEntityRequest_Response)
-	err := c.cc.Invoke(ctx, "/ai.verta.monitoring.DataMonitoringService/getMonitoredEntity", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *dataMonitoringServiceClient) GetMonitoredEntityByName(ctx context.Context, in *GetMonitoredEntityByNameRequest, opts ...grpc.CallOption) (*GetMonitoredEntityByNameRequest_Response, error) {
-	out := new(GetMonitoredEntityByNameRequest_Response)
-	err := c.cc.Invoke(ctx, "/ai.verta.monitoring.DataMonitoringService/getMonitoredEntityByName", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *dataMonitoringServiceClient) CreateMonitoredEntity(ctx context.Context, in *CreateMonitoredEntityRequest, opts ...grpc.CallOption) (*CreateMonitoredEntityRequest_Response, error) {
 	out := new(CreateMonitoredEntityRequest_Response)
 	err := c.cc.Invoke(ctx, "/ai.verta.monitoring.DataMonitoringService/createMonitoredEntity", in, out, opts...)
@@ -3307,15 +2917,6 @@ func (c *dataMonitoringServiceClient) CreateMonitoredEntity(ctx context.Context,
 func (c *dataMonitoringServiceClient) UpdateMonitoredEntity(ctx context.Context, in *UpdateMonitoredEntityRequest, opts ...grpc.CallOption) (*UpdateMonitoredEntityRequest_Response, error) {
 	out := new(UpdateMonitoredEntityRequest_Response)
 	err := c.cc.Invoke(ctx, "/ai.verta.monitoring.DataMonitoringService/updateMonitoredEntity", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *dataMonitoringServiceClient) ListMonitoredEntities(ctx context.Context, in *ListMonitoredEntitiesRequest, opts ...grpc.CallOption) (*ListMonitoredEntitiesRequest_Response, error) {
-	out := new(ListMonitoredEntitiesRequest_Response)
-	err := c.cc.Invoke(ctx, "/ai.verta.monitoring.DataMonitoringService/listMonitoredEntities", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -3423,11 +3024,8 @@ func (c *dataMonitoringServiceClient) DisableProfiler(ctx context.Context, in *D
 
 // DataMonitoringServiceServer is the server API for DataMonitoringService service.
 type DataMonitoringServiceServer interface {
-	GetMonitoredEntity(context.Context, *GetMonitoredEntityRequest) (*GetMonitoredEntityRequest_Response, error)
-	GetMonitoredEntityByName(context.Context, *GetMonitoredEntityByNameRequest) (*GetMonitoredEntityByNameRequest_Response, error)
 	CreateMonitoredEntity(context.Context, *CreateMonitoredEntityRequest) (*CreateMonitoredEntityRequest_Response, error)
 	UpdateMonitoredEntity(context.Context, *UpdateMonitoredEntityRequest) (*UpdateMonitoredEntityRequest_Response, error)
-	ListMonitoredEntities(context.Context, *ListMonitoredEntitiesRequest) (*ListMonitoredEntitiesRequest_Response, error)
 	FindMonitoredEntity(context.Context, *FindMonitoredEntityRequest) (*FindMonitoredEntityRequest_Response, error)
 	DeleteMonitoredEntity(context.Context, *DeleteMonitoredEntityRequest) (*DeleteMonitoredEntityRequest_Response, error)
 	GetProfiler(context.Context, *GetProfilerRequest) (*GetProfilerRequest_Response, error)
@@ -3445,20 +3043,11 @@ type DataMonitoringServiceServer interface {
 type UnimplementedDataMonitoringServiceServer struct {
 }
 
-func (*UnimplementedDataMonitoringServiceServer) GetMonitoredEntity(context.Context, *GetMonitoredEntityRequest) (*GetMonitoredEntityRequest_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetMonitoredEntity not implemented")
-}
-func (*UnimplementedDataMonitoringServiceServer) GetMonitoredEntityByName(context.Context, *GetMonitoredEntityByNameRequest) (*GetMonitoredEntityByNameRequest_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetMonitoredEntityByName not implemented")
-}
 func (*UnimplementedDataMonitoringServiceServer) CreateMonitoredEntity(context.Context, *CreateMonitoredEntityRequest) (*CreateMonitoredEntityRequest_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateMonitoredEntity not implemented")
 }
 func (*UnimplementedDataMonitoringServiceServer) UpdateMonitoredEntity(context.Context, *UpdateMonitoredEntityRequest) (*UpdateMonitoredEntityRequest_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateMonitoredEntity not implemented")
-}
-func (*UnimplementedDataMonitoringServiceServer) ListMonitoredEntities(context.Context, *ListMonitoredEntitiesRequest) (*ListMonitoredEntitiesRequest_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListMonitoredEntities not implemented")
 }
 func (*UnimplementedDataMonitoringServiceServer) FindMonitoredEntity(context.Context, *FindMonitoredEntityRequest) (*FindMonitoredEntityRequest_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindMonitoredEntity not implemented")
@@ -3498,42 +3087,6 @@ func RegisterDataMonitoringServiceServer(s *grpc.Server, srv DataMonitoringServi
 	s.RegisterService(&_DataMonitoringService_serviceDesc, srv)
 }
 
-func _DataMonitoringService_GetMonitoredEntity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetMonitoredEntityRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DataMonitoringServiceServer).GetMonitoredEntity(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ai.verta.monitoring.DataMonitoringService/GetMonitoredEntity",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataMonitoringServiceServer).GetMonitoredEntity(ctx, req.(*GetMonitoredEntityRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _DataMonitoringService_GetMonitoredEntityByName_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetMonitoredEntityByNameRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DataMonitoringServiceServer).GetMonitoredEntityByName(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ai.verta.monitoring.DataMonitoringService/GetMonitoredEntityByName",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataMonitoringServiceServer).GetMonitoredEntityByName(ctx, req.(*GetMonitoredEntityByNameRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _DataMonitoringService_CreateMonitoredEntity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateMonitoredEntityRequest)
 	if err := dec(in); err != nil {
@@ -3566,24 +3119,6 @@ func _DataMonitoringService_UpdateMonitoredEntity_Handler(srv interface{}, ctx c
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DataMonitoringServiceServer).UpdateMonitoredEntity(ctx, req.(*UpdateMonitoredEntityRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _DataMonitoringService_ListMonitoredEntities_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListMonitoredEntitiesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DataMonitoringServiceServer).ListMonitoredEntities(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ai.verta.monitoring.DataMonitoringService/ListMonitoredEntities",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DataMonitoringServiceServer).ListMonitoredEntities(ctx, req.(*ListMonitoredEntitiesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3791,24 +3326,12 @@ var _DataMonitoringService_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*DataMonitoringServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "getMonitoredEntity",
-			Handler:    _DataMonitoringService_GetMonitoredEntity_Handler,
-		},
-		{
-			MethodName: "getMonitoredEntityByName",
-			Handler:    _DataMonitoringService_GetMonitoredEntityByName_Handler,
-		},
-		{
 			MethodName: "createMonitoredEntity",
 			Handler:    _DataMonitoringService_CreateMonitoredEntity_Handler,
 		},
 		{
 			MethodName: "updateMonitoredEntity",
 			Handler:    _DataMonitoringService_UpdateMonitoredEntity_Handler,
-		},
-		{
-			MethodName: "listMonitoredEntities",
-			Handler:    _DataMonitoringService_ListMonitoredEntities_Handler,
 		},
 		{
 			MethodName: "findMonitoredEntity",

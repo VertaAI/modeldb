@@ -31,78 +31,6 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = descriptor.ForMessage
 
-var (
-	filter_DataMonitoringService_GetMonitoredEntity_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_DataMonitoringService_GetMonitoredEntity_0(ctx context.Context, marshaler runtime.Marshaler, client DataMonitoringServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetMonitoredEntityRequest
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DataMonitoringService_GetMonitoredEntity_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.GetMonitoredEntity(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_DataMonitoringService_GetMonitoredEntity_0(ctx context.Context, marshaler runtime.Marshaler, server DataMonitoringServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetMonitoredEntityRequest
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DataMonitoringService_GetMonitoredEntity_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.GetMonitoredEntity(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
-var (
-	filter_DataMonitoringService_GetMonitoredEntityByName_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_DataMonitoringService_GetMonitoredEntityByName_0(ctx context.Context, marshaler runtime.Marshaler, client DataMonitoringServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetMonitoredEntityByNameRequest
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DataMonitoringService_GetMonitoredEntityByName_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.GetMonitoredEntityByName(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_DataMonitoringService_GetMonitoredEntityByName_0(ctx context.Context, marshaler runtime.Marshaler, server DataMonitoringServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetMonitoredEntityByNameRequest
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DataMonitoringService_GetMonitoredEntityByName_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.GetMonitoredEntityByName(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
 func request_DataMonitoringService_CreateMonitoredEntity_0(ctx context.Context, marshaler runtime.Marshaler, client DataMonitoringServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq CreateMonitoredEntityRequest
 	var metadata runtime.ServerMetadata
@@ -167,42 +95,6 @@ func local_request_DataMonitoringService_UpdateMonitoredEntity_0(ctx context.Con
 	}
 
 	msg, err := server.UpdateMonitoredEntity(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
-var (
-	filter_DataMonitoringService_ListMonitoredEntities_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
-func request_DataMonitoringService_ListMonitoredEntities_0(ctx context.Context, marshaler runtime.Marshaler, client DataMonitoringServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListMonitoredEntitiesRequest
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DataMonitoringService_ListMonitoredEntities_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := client.ListMonitoredEntities(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_DataMonitoringService_ListMonitoredEntities_0(ctx context.Context, marshaler runtime.Marshaler, server DataMonitoringServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ListMonitoredEntitiesRequest
-	var metadata runtime.ServerMetadata
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_DataMonitoringService_ListMonitoredEntities_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-
-	msg, err := server.ListMonitoredEntities(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -574,46 +466,6 @@ func local_request_DataMonitoringService_DisableProfiler_0(ctx context.Context, 
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 func RegisterDataMonitoringServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server DataMonitoringServiceServer) error {
 
-	mux.Handle("GET", pattern_DataMonitoringService_GetMonitoredEntity_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_DataMonitoringService_GetMonitoredEntity_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DataMonitoringService_GetMonitoredEntity_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_DataMonitoringService_GetMonitoredEntityByName_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_DataMonitoringService_GetMonitoredEntityByName_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DataMonitoringService_GetMonitoredEntityByName_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("POST", pattern_DataMonitoringService_CreateMonitoredEntity_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -651,26 +503,6 @@ func RegisterDataMonitoringServiceHandlerServer(ctx context.Context, mux *runtim
 		}
 
 		forward_DataMonitoringService_UpdateMonitoredEntity_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_DataMonitoringService_ListMonitoredEntities_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_DataMonitoringService_ListMonitoredEntities_0(rctx, inboundMarshaler, server, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DataMonitoringService_ListMonitoredEntities_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -935,46 +767,6 @@ func RegisterDataMonitoringServiceHandler(ctx context.Context, mux *runtime.Serv
 // "DataMonitoringServiceClient" to call the correct interceptors.
 func RegisterDataMonitoringServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client DataMonitoringServiceClient) error {
 
-	mux.Handle("GET", pattern_DataMonitoringService_GetMonitoredEntity_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_DataMonitoringService_GetMonitoredEntity_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DataMonitoringService_GetMonitoredEntity_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_DataMonitoringService_GetMonitoredEntityByName_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_DataMonitoringService_GetMonitoredEntityByName_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DataMonitoringService_GetMonitoredEntityByName_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("POST", pattern_DataMonitoringService_CreateMonitoredEntity_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -1012,26 +804,6 @@ func RegisterDataMonitoringServiceHandlerClient(ctx context.Context, mux *runtim
 		}
 
 		forward_DataMonitoringService_UpdateMonitoredEntity_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
-	mux.Handle("GET", pattern_DataMonitoringService_ListMonitoredEntities_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_DataMonitoringService_ListMonitoredEntities_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DataMonitoringService_ListMonitoredEntities_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1259,15 +1031,9 @@ func RegisterDataMonitoringServiceHandlerClient(ctx context.Context, mux *runtim
 }
 
 var (
-	pattern_DataMonitoringService_GetMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "getMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
-
-	pattern_DataMonitoringService_GetMonitoredEntityByName_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "getMonitoredEntityByName"}, "", runtime.AssumeColonVerbOpt(true)))
-
 	pattern_DataMonitoringService_CreateMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "createMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_DataMonitoringService_UpdateMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "updateMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
-
-	pattern_DataMonitoringService_ListMonitoredEntities_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "listMonitoredEntities"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_DataMonitoringService_FindMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "findMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
 
@@ -1293,15 +1059,9 @@ var (
 )
 
 var (
-	forward_DataMonitoringService_GetMonitoredEntity_0 = runtime.ForwardResponseMessage
-
-	forward_DataMonitoringService_GetMonitoredEntityByName_0 = runtime.ForwardResponseMessage
-
 	forward_DataMonitoringService_CreateMonitoredEntity_0 = runtime.ForwardResponseMessage
 
 	forward_DataMonitoringService_UpdateMonitoredEntity_0 = runtime.ForwardResponseMessage
-
-	forward_DataMonitoringService_ListMonitoredEntities_0 = runtime.ForwardResponseMessage
 
 	forward_DataMonitoringService_FindMonitoredEntity_0 = runtime.ForwardResponseMessage
 

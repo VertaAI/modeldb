@@ -56,11 +56,22 @@ class MonitoredEntity(entity._ModelDBEntity):
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
-        Message = _DataMonitoringService.GetMonitoredEntityRequest
-        msg = Message(id=id)
-        endpoint = "/api/v1/monitored_entity/getMonitoredEntity"
-        response = conn.make_proto_request("GET", endpoint, params=msg)
-        return conn.maybe_proto_response(response, Message.Response).monitored_entity
+        Message = _DataMonitoringService.FindMonitoredEntityRequest
+        msg = Message(
+            ids=[id], page_number=1, page_limit=-1
+        )
+        endpoint = "/api/v1/monitored_entity/findMonitoredEntity"
+        response = conn.make_proto_request("POST", endpoint, body=msg)
+        results = conn.maybe_proto_response(response, Message.Response)
+        count = results.total_records if results else 0
+        if count > 1:
+            warnings.warn(
+                "found more than one monitored entity with id {}".format(id)
+            )
+        if results.monitored_entities:
+            return results.monitored_entities[0]
+        else:
+            return None
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace=None):
@@ -78,6 +89,8 @@ class MonitoredEntity(entity._ModelDBEntity):
             )
         if results.monitored_entities:
             return results.monitored_entities[0]
+        else:
+            return None
 
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name):
