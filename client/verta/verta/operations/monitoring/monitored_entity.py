@@ -74,10 +74,11 @@ class MonitoredEntity(entity._ModelDBEntity):
         -------
         string
         """
-        self._refresh_cache()
+        # TODO: replace with _refresh_cache() when backend returns ID on /create
+        self._fetch_with_no_cache()
 
         if self._msg.workspace_id:
-            return self._conn._get_workspace_name_by_id(self._msg.workspace_id)
+            return self._conn.get_workspace_name_from_id(self._msg.workspace_id)
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
 
