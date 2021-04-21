@@ -558,43 +558,37 @@ public class FutureExperimentRunDAO {
             .thenApply(QueryFilterContext::combine, executor)
             .thenCompose(
                 queryContext -> {
-                  StringBuilder stringBuilder;
+                  String sql;
                   if (request.getIdsOnly()) {
-                    stringBuilder =
-                        new StringBuilder("select experiment_run.id from experiment_run");
+                    sql = "select experiment_run.id from experiment_run";
                   } else {
-                    stringBuilder =
-                        new StringBuilder(
-                            "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner from experiment_run");
+                    sql =
+                        "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner from experiment_run";
                   }
 
                   // Add the sorting tables
                   for (final var item : new EnumerateList<>(queryContext.orderItems).getList()) {
                     if (item.getValue().getTable() != null) {
-                      stringBuilder.append(
+                      sql +=
                           String.format(
                               " left join (%s) as join_table_%d on experiment_run.id=join_table_%d.id ",
-                              item.getValue().getTable(), item.getIndex(), item.getIndex()));
+                              item.getValue().getTable(), item.getIndex(), item.getIndex());
                     }
                   }
 
                   if (!queryContext.conditions.isEmpty()) {
-                    stringBuilder
-                        .append(" WHERE ")
-                        .append(String.join(" AND ", queryContext.conditions));
+                    sql += " WHERE " + String.join(" AND ", queryContext.conditions);
                   }
 
                   if (!queryContext.orderItems.isEmpty()) {
-                    stringBuilder.append(" ORDER BY ");
+                    sql += " ORDER BY ";
                     for (final var item : new EnumerateList<>(queryContext.orderItems).getList()) {
                       if (item.getValue().getTable() != null) {
-                        stringBuilder.append(
-                            String.format(" join_table_%d.value ", item.getIndex()));
+                        sql += String.format(" join_table_%d.value ", item.getIndex());
                       } else if (item.getValue().getColumn() != null) {
-                        stringBuilder.append(String.format(" %s ", item.getValue().getColumn()));
+                        sql += String.format(" %s ", item.getValue().getColumn());
                       }
-                      stringBuilder.append(
-                          String.format(" %s ", item.getValue().getAscending() ? "ASC" : "DESC"));
+                      sql += String.format(" %s ", item.getValue().getAscending() ? "ASC" : "DESC");
                     }
                   }
 
@@ -602,15 +596,15 @@ public class FutureExperimentRunDAO {
                   if (request.getPageNumber() != 0 && request.getPageLimit() != 0) {
                     final var offset = (request.getPageNumber() - 1) * request.getPageLimit();
                     final var limit = request.getPageLimit();
-                    stringBuilder.append(" LIMIT :limit OFFSET :offset");
+                    sql += " LIMIT :limit OFFSET :offset";
                     queryContext.addBind(q -> q.bind("limit", limit));
                     queryContext.addBind(q -> q.bind("offset", offset));
                   }
 
                   if (request.getIdsOnly()) {
-                    return findIdOnlyExperimentRuns(stringBuilder.toString(), queryContext);
+                    return findIdOnlyExperimentRuns(sql, queryContext);
                   } else {
-                    return findEntireExperimentRuns(stringBuilder.toString(), queryContext);
+                    return findEntireExperimentRuns(sql, queryContext);
                   }
                 },
                 executor);
