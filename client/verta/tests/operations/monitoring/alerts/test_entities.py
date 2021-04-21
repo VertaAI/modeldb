@@ -26,7 +26,10 @@ class TestIntegration:
     """Alerts + related entities/objects."""
 
     def test_add_notification_channels(
-        self, client, monitored_entity, created_entities,
+        self,
+        client,
+        monitored_entity,
+        created_entities,
     ):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
@@ -175,7 +178,7 @@ class TestFixed:
         assert retrieved_alert.id == client_retrieved_alert.id
         assert isinstance(retrieved_alert, _entities.Alert)
         assert retrieved_alert._msg.alerter_type == alerter._TYPE
-        assert retrieved_alert._msg.alerter_fixed == alerter._as_proto()
+        assert retrieved_alert.alerter._as_proto() == alerter._as_proto()
 
         listed_alerts = alerts.list()
         assert created_alert.id in map(lambda a: a.id, listed_alerts)
@@ -216,9 +219,8 @@ class TestReference:
         assert retrieved_alert.id == client_retrieved_alert.id
         assert isinstance(retrieved_alert, _entities.Alert)
         assert retrieved_alert._msg.alerter_type == alerter._TYPE
-        alerter_proto = retrieved_alert._msg.alerter_reference
-        assert alerter_proto == alerter._as_proto()
-        assert alerter_proto.reference_sample_id == summary_sample.id
+        assert retrieved_alert.alerter._as_proto() == alerter._as_proto()
+        assert retrieved_alert.alerter._reference_sample_id == summary_sample.id
 
         listed_alerts = alerts.list()
         assert created_alert.id in map(lambda a: a.id, listed_alerts)
