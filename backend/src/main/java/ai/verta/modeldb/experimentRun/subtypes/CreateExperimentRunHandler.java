@@ -39,7 +39,7 @@ public class CreateExperimentRunHandler {
   private final KeyValueHandler metricsHandler;
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
-  private final ArtifactHandler artifactHandler;
+  private final ArtifactHandlerBase artifactHandler;
   private final FeatureHandler featureHandler;
   private final CodeVersionHandler codeVersionHandler;
 
@@ -54,7 +54,7 @@ public class CreateExperimentRunHandler {
     metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", "ExperimentRunEntity");
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
-    artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
+    artifactHandler = new ArtifactHandlerBase(executor, jdbi, "artifacts", "ExperimentRunEntity");
     featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
     codeVersionHandler = new CodeVersionHandler(executor, jdbi);
   }
@@ -178,14 +178,17 @@ public class CreateExperimentRunHandler {
             .addAllObservations(request.getObservationsList())
             .addAllFeatures(request.getFeaturesList());
 
+    var now = Calendar.getInstance().getTimeInMillis();
     if (request.getDateCreated() != 0L) {
-      experimentRunBuilder
-          .setDateCreated(request.getDateCreated())
-          .setDateUpdated(request.getDateCreated());
+      experimentRunBuilder.setDateCreated(request.getDateCreated());
     } else {
-      experimentRunBuilder
-          .setDateCreated(Calendar.getInstance().getTimeInMillis())
-          .setDateUpdated(Calendar.getInstance().getTimeInMillis());
+      experimentRunBuilder.setDateCreated(now);
+    }
+
+    if (request.getDateUpdated() != 0L) {
+      experimentRunBuilder.setDateUpdated(request.getDateCreated());
+    } else {
+      experimentRunBuilder.setDateUpdated(now);
     }
 
     if (request.getCodeVersionSnapshot() != null) {
@@ -276,7 +279,7 @@ public class CreateExperimentRunHandler {
                       newExperimentRun.getId(), newExperimentRun.getObservationsList(), now));
               futureLogs.add(
                   artifactHandler.logArtifacts(
-                      newExperimentRun.getId(), newExperimentRun.getArtifactsList()));
+                      newExperimentRun.getId(), newExperimentRun.getArtifactsList(), false));
               futureLogs.add(
                   featureHandler.logFeatures(
                       newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
