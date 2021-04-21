@@ -21,6 +21,8 @@ class NotificationChannel(entity._ModelDBEntity):
         ID of this notification channel.
     name : str
         Name of this notification channel.
+    workspace : str
+        Name of the workspace which this notification channel belongs to.
 
     Examples
     --------
