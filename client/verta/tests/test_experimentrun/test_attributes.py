@@ -3,8 +3,9 @@ import string
 import pytest
 import six
 
-from verta._internal_utils import _utils
+from verta._internal_utils import _utils, importer
 from verta import data_types
+
 
 class TestSimpleAttributes:
     def test_keys(self, experiment_run):
@@ -76,6 +77,10 @@ class TestSimpleAttributes:
                 experiment_run.log_attribute(key, val)
 
 
+@pytest.mark.skipif(
+    importer.maybe_dependency("scipy") is None,
+    reason="scipy is not installed",
+)
 class TestComplexAttributes:
     def test_creation(self, client, strs):
         key = strs[0]
