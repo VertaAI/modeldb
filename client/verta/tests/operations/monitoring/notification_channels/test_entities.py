@@ -56,8 +56,7 @@ class TestNotificationChannel:
             SlackNotificationChannel(next(strs)),
         )
         created_entities.append(personal_channel)
-        # commented out until backend returns workspace ID in entity
-        # assert personal_channel.workspace == client.get_workspace()
+        assert personal_channel.workspace == client.get_workspace()
         assert personal_channel.id == notification_channels.get(name).id
         listed_channels = notification_channels.list()
         assert personal_channel.id in [c.id for c in listed_channels]
@@ -69,8 +68,7 @@ class TestNotificationChannel:
             workspace=workspace,
         )
         created_entities.append(org_channel)
-        # commented out until backend returns workspace ID in entity
-        # assert org_channel.workspace == workspace
+        assert org_channel.workspace == workspace
         with pytest.warns(None) as record:
             assert org_channel.id == notification_channels.get(name, workspace=workspace).id
         assert not record  # no warning of multiple channels found
