@@ -65,7 +65,9 @@ public class DAOSet {
             set.commitDAO,
             set.blobDAO,
             set.metadataDAO);
-    set.futureExperimentRunDAO = new FutureExperimentRunDAO(executor, jdbi, services.uac);
+    set.futureExperimentRunDAO =
+        new FutureExperimentRunDAO(
+            executor, jdbi, services.uac, services.authService, services.roleService);
     set.projectDAO =
         new ProjectDAORdbImpl(
             services.authService, services.roleService, set.experimentDAO, set.experimentRunDAO);
