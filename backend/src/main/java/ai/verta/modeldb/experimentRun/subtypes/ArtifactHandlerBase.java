@@ -7,7 +7,6 @@ import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
-
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Optional;

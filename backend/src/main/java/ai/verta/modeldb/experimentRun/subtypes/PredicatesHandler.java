@@ -88,12 +88,69 @@ public class PredicatesHandler {
       case ModelDBConstants.OBSERVATIONS:
         // case ModelDBConstants.FEATURES: TODO?
       case ModelDBConstants.TAGS:
+        return processTagsPredicate(index, predicate);
       case ModelDBConstants.VERSIONED_INPUTS:
     }
 
     // TODO: handle arbitrary key
 
     return InternalFuture.failedStage(new InvalidArgumentException("Predicate cannot be handled"));
+  }
+
+  private InternalFuture<QueryFilterContext> processTagsPredicate(
+      long index, KeyValueQuery predicate) {
+    try {
+      final var value = predicate.getValue();
+      var operator = predicate.getOperator();
+
+      final var valueBindingName = String.format("v_t_%d", index);
+      final var entityNameBindingName = String.format("entity_name_%d", index);
+
+      var sql =
+          "select distinct experiment_run_id from tag_mapping where entity_name=:"
+              + entityNameBindingName;
+      sql += " and ";
+
+      final var colValue = "tags";
+      var queryContext =
+          new QueryFilterContext()
+              .addBind(q -> q.bind(entityNameBindingName, "ExperimentRunEntity"));
+
+      switch (value.getKindCase()) {
+        case STRING_VALUE:
+          sql += applyOperator(operator, colValue, ":" + valueBindingName);
+          queryContext =
+              queryContext.addBind(
+                  q -> q.bind(valueBindingName, wrapValue(operator, value.getStringValue())));
+          break;
+        case LIST_VALUE:
+          List<Object> valueList = new LinkedList<>();
+          for (final var item : value.getListValue().getValuesList()) {
+            if (item.getKindCase().ordinal() == Value.KindCase.STRING_VALUE.ordinal()) {
+              valueList.add(item.getStringValue());
+            }
+          }
+
+          sql += applyOperator(operator, colValue, "<" + valueBindingName + ">");
+          queryContext = queryContext.addBind(q -> q.bindList(valueBindingName, valueList));
+          break;
+        default:
+          return InternalFuture.failedStage(
+              new UnimplementedException("Unknown 'Value' type: " + value.getKindCase().name()));
+      }
+
+      if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)
+          || operator.equals(OperatorEnum.Operator.NE)) {
+        queryContext =
+            queryContext.addCondition(String.format("experiment_run.id NOT IN (%s)", sql));
+      } else {
+        queryContext = queryContext.addCondition(String.format("experiment_run.id IN (%s)", sql));
+      }
+
+      return InternalFuture.completedInternalFuture(queryContext);
+    } catch (Exception ex) {
+      return InternalFuture.failedStage(ex);
+    }
   }
 
   private InternalFuture<QueryFilterContext> processKeyValuePredicate(
@@ -247,6 +304,10 @@ public class PredicatesHandler {
 
   private String applyOperator(
       OperatorEnum.Operator operator, String colName, String valueBinding) {
+    /* NOTE: Here we have used reverse conversion of `NE` and `NOT_CONTAIN` to `EQ` and `CONTAIN` respectively
+    We will manage `NE` and `NOT_CONTAIN` operator at bottom of the calling method of this function
+    using `IN` OR `NOT IN` query
+    */
     switch (operator.ordinal()) {
       case OperatorEnum.Operator.GT_VALUE:
         return String.format("%s > %s", colName, valueBinding);
@@ -257,14 +318,11 @@ public class PredicatesHandler {
       case OperatorEnum.Operator.LTE_VALUE:
         return String.format("%s <= %s", colName, valueBinding);
       case OperatorEnum.Operator.NE_VALUE:
-        return String.format("%s != %s", colName, valueBinding);
+        return String.format("%s = %s", colName, valueBinding);
       case OperatorEnum.Operator.CONTAIN_VALUE:
-        return String.format(
-            "%s LIKE %s",
-            "lower(" + colName + ") ", Pattern.compile(valueBinding).toString().toLowerCase());
       case OperatorEnum.Operator.NOT_CONTAIN_VALUE:
         return String.format(
-            "%s NOT LIKE %s",
+            "%s LIKE %s",
             "lower(" + colName + ") ", Pattern.compile(valueBinding).toString().toLowerCase());
       case OperatorEnum.Operator.IN_VALUE:
         return String.format("%s IN (%s)", colName, valueBinding);
