@@ -3,7 +3,37 @@ package ai.verta.modeldb.experimentRun;
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.modeldb.*;
+import ai.verta.modeldb.AddExperimentRunTags;
+import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitMultipartArtifact;
+import ai.verta.modeldb.DeleteArtifact;
+import ai.verta.modeldb.DeleteExperimentRunAttributes;
+import ai.verta.modeldb.DeleteExperimentRunTags;
+import ai.verta.modeldb.DeleteExperimentRuns;
+import ai.verta.modeldb.DeleteHyperparameters;
+import ai.verta.modeldb.DeleteMetrics;
+import ai.verta.modeldb.DeleteObservations;
+import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.FindExperimentRuns;
+import ai.verta.modeldb.GetArtifacts;
+import ai.verta.modeldb.GetAttributes;
+import ai.verta.modeldb.GetCommittedArtifactParts;
+import ai.verta.modeldb.GetDatasets;
+import ai.verta.modeldb.GetExperimentRunCodeVersion;
+import ai.verta.modeldb.GetHyperparameters;
+import ai.verta.modeldb.GetMetrics;
+import ai.verta.modeldb.GetObservations;
+import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.LogArtifacts;
+import ai.verta.modeldb.LogAttributes;
+import ai.verta.modeldb.LogDatasets;
+import ai.verta.modeldb.LogExperimentRunCodeVersion;
+import ai.verta.modeldb.LogHyperparameters;
+import ai.verta.modeldb.LogMetrics;
+import ai.verta.modeldb.LogObservations;
+import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.connections.UAC;
@@ -15,9 +45,31 @@ import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.experimentRun.subtypes.*;
-import ai.verta.uac.*;
-import java.util.*;
+import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
+import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
+import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
+import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
+import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
+import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
+import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
+import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
+import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.uac.Action;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedResources;
+import ai.verta.uac.GetWorkspaceByName;
+import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ResourceType;
+import ai.verta.uac.Resources;
+import ai.verta.uac.ServiceEnum;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -344,6 +396,34 @@ public class FutureExperimentRunDAO {
             executor);
   }
 
+  private InternalFuture<List<GetResourcesResponseItem>> getAllowedResourceItems(
+      List<String> resourceIds,
+      Long workspaceId,
+      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    ResourceType resourceType =
+        ResourceType.newBuilder()
+            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
+            .build();
+    Resources.Builder resources =
+        Resources.newBuilder()
+            .setResourceType(resourceType)
+            .setService(ServiceEnum.Service.MODELDB_SERVICE);
+
+    if (resourceIds != null && !resourceIds.isEmpty()) {
+      resources.addAllResourceIds(resourceIds);
+    }
+
+    return FutureGrpc.ClientRequest(
+            uac.getCollaboratorService()
+                .getResources(
+                    GetResources.newBuilder()
+                        .setResources(resources.build())
+                        .setWorkspaceId(workspaceId)
+                        .build()),
+            executor)
+        .thenApply(GetResources.Response::getItemList, executor);
+  }
+
   public InternalFuture<Void> deleteExperimentRuns(DeleteExperimentRuns request) {
     final var runIds = request.getIdsList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -502,6 +582,8 @@ public class FutureExperimentRunDAO {
     // TODO: filter by permission
     // TODO: filter by workspace
 
+    List<InternalFuture<QueryFilterContext>> queryFilterContextList = new LinkedList<>();
+
     final var futureLocalContext =
         InternalFuture.supplyAsync(
             () -> {
@@ -532,30 +614,89 @@ public class FutureExperimentRunDAO {
               return localQueryContext;
             },
             executor);
+    queryFilterContextList.add(futureLocalContext);
 
-    final var futurePredicatesContext =
-        predicatesHandler.processPredicates(request.getPredicatesList(), executor);
+    // futurePredicatesContext
+    queryFilterContextList.add(
+        predicatesHandler.processPredicates(request.getPredicatesList(), executor));
 
-    final var futureSortingContext =
-        sortingHandler.processSort(request.getSortKey(), request.getAscending());
+    // futureSortingContext
+    queryFilterContextList.add(
+        sortingHandler.processSort(request.getSortKey(), request.getAscending()));
 
-    final var futureProjectIds =
-        getAllowedProjects(ModelDBActionEnum.ModelDBServiceActions.READ)
-            .thenApply(
-                projIds ->
-                    new QueryFilterContext()
-                        .addCondition("experiment_run.project_id in (<authz_project_ids>)")
-                        .addBind(q -> q.bindList("authz_project_ids", projIds)),
-                executor);
+    // futureProjectIds based on workspace
+    if (request.getWorkspaceName().isEmpty()) {
+      queryFilterContextList.add(
+          getAllowedProjects(ModelDBActionEnum.ModelDBServiceActions.READ)
+              .thenCompose(
+                  projectIds -> {
+                    if (projectIds.isEmpty()) {
+                      // TODO: This is not works, need to update it.
+                      /*return InternalFuture.failedStage(new PermissionDeniedException(
+                      "Accessible projects not found in workspace: "
+                              + request.getWorkspaceName()));*/
+                    }
+                    return InternalFuture.completedInternalFuture(projectIds);
+                  },
+                  executor)
+              .thenApply(
+                  projIds ->
+                      new QueryFilterContext()
+                          .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                          .addBind(q -> q.bindList("authz_project_ids", projIds)),
+                  executor));
+    } else {
+      var requestProjectIds = new ArrayList<String>();
+      if (!request.getProjectId().isEmpty()) {
+        requestProjectIds.add(request.getProjectId());
+      }
+
+      final var futureProjectIds =
+          FutureGrpc.ClientRequest(
+                  uac.getWorkspaceService()
+                      .getWorkspaceByName(
+                          GetWorkspaceByName.newBuilder()
+                              .setName(request.getWorkspaceName())
+                              .build()),
+                  executor)
+              .thenCompose(
+                  workspace ->
+                      getAllowedResourceItems(
+                              requestProjectIds,
+                              workspace.getId(),
+                              ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                          .thenCompose(
+                              getResourcesResponseItems -> {
+                                if (getResourcesResponseItems.isEmpty()) {
+                                  // TODO: This is not works, need to update it.
+                                  /*return InternalFuture.failedStage(
+                                  new PermissionDeniedException(
+                                      "Accessible project not found in workspace: "
+                                          + request.getWorkspaceName()));*/
+                                }
+                                return InternalFuture.completedInternalFuture(
+                                    getResourcesResponseItems);
+                              },
+                              executor)
+                          .thenApply(
+                              getResourcesItems ->
+                                  new QueryFilterContext()
+                                      .addCondition(
+                                          "experiment_run.project_id in (<authz_project_ids>)")
+                                      .addBind(
+                                          q ->
+                                              q.bindList(
+                                                  "authz_project_ids",
+                                                  getResourcesItems.stream()
+                                                      .map(GetResourcesResponseItem::getResourceId)
+                                                      .collect(Collectors.toList()))),
+                              executor),
+                  executor);
+      queryFilterContextList.add(futureProjectIds);
+    }
 
     final var futureExperimentRuns =
-        InternalFuture.sequence(
-                Arrays.asList(
-                    futureLocalContext,
-                    futurePredicatesContext,
-                    futureSortingContext,
-                    futureProjectIds),
-                executor)
+        InternalFuture.sequence(queryFilterContextList, executor)
             .thenApply(QueryFilterContext::combine, executor)
             .thenCompose(
                 queryContext -> {
@@ -744,9 +885,7 @@ public class FutureExperimentRunDAO {
                 executor);
 
     final var futureCount =
-        InternalFuture.sequence(
-                Arrays.asList(futureLocalContext, futurePredicatesContext, futureProjectIds),
-                executor)
+        InternalFuture.sequence(queryFilterContextList, executor)
             .thenApply(QueryFilterContext::combine, executor)
             .thenCompose(
                 queryContext ->
