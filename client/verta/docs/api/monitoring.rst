@@ -1,6 +1,9 @@
 Monitoring
 ==========
 
+.. note::
+    .. versionadded:: 0.17.6
+
 Verta offers a comprehensive suite of tools for data monitoring and alerting,
 with support for labeling, filtering, and customization.
 
