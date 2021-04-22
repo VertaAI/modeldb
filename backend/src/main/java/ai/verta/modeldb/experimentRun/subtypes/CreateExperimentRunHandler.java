@@ -15,12 +15,9 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
-import ai.verta.modeldb.versioning.BlobDAO;
-import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
-import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.*;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -46,12 +43,7 @@ public class CreateExperimentRunHandler {
   private final VersionInputHandler versionInputHandler;
 
   public CreateExperimentRunHandler(
-      Executor executor,
-      FutureJdbi jdbi,
-      UAC uac,
-      RepositoryDAO repositoryDAO,
-      CommitDAO commitDAO,
-      BlobDAO blobDAO) {
+      Executor executor, FutureJdbi jdbi, UAC uac, VersionInputHandler versionInputHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -64,9 +56,7 @@ public class CreateExperimentRunHandler {
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandlerBase(executor, jdbi, "artifacts", "ExperimentRunEntity");
     featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
-    versionInputHandler =
-        new VersionInputHandler(
-            executor, jdbi, "ExperimentRunEntity", repositoryDAO, commitDAO, blobDAO);
+    this.versionInputHandler = versionInputHandler;
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {

@@ -48,6 +48,7 @@ import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
@@ -85,6 +86,7 @@ public class FutureExperimentRunDAO {
   private final DatasetHandler datasetHandler;
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
+  private final VersionInputHandler versionInputHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
 
   public FutureExperimentRunDAO(
@@ -119,8 +121,11 @@ public class FutureExperimentRunDAO {
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
+    versionInputHandler =
+        new VersionInputHandler(
+            executor, jdbi, "ExperimentRunEntity", repositoryDAO, commitDAO, blobDAO);
     createExperimentRunHandler =
-        new CreateExperimentRunHandler(executor, jdbi, uac, repositoryDAO, commitDAO, blobDAO);
+        new CreateExperimentRunHandler(executor, jdbi, uac, versionInputHandler);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -613,7 +618,6 @@ public class FutureExperimentRunDAO {
                   // TODO: get environment
                   // TODO: get features?
                   // TODO: get job id?
-                  // TODO: get versioned inputs
                   // TODO: get code version from blob
                   return jdbi.withHandle(
                           handle -> {
@@ -780,6 +784,22 @@ public class FutureExperimentRunDAO {
                                             builder ->
                                                 builder.addAllObservations(
                                                     observations.get(builder.getId()))),
+                                    executor);
+
+                            // Get observations
+                            final var futureVersionedInputs =
+                                versionInputHandler.getVersionedInputs(ids);
+                            futureBuildersStream =
+                                futureBuildersStream.thenCombine(
+                                    futureVersionedInputs,
+                                    (stream, versionInputsMap) ->
+                                        stream.peek(
+                                            builder -> {
+                                              if (versionInputsMap.containsKey(builder.getId())) {
+                                                builder.setVersionedInputs(
+                                                    versionInputsMap.get(builder.getId()));
+                                              }
+                                            }),
                                     executor);
 
                             return futureBuildersStream.thenApply(

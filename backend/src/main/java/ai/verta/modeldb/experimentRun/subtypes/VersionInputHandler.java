@@ -6,6 +6,7 @@ import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -19,12 +20,16 @@ import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -380,5 +385,64 @@ public class VersionInputHandler {
           return InternalFuture.completedInternalFuture(requestedLocationBlobWithHashMap);
         },
         executor);
+  }
+
+  public InternalFuture<Map<String, VersioningEntry>> getVersionedInputs(Set<String> runIds) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "select vm.experiment_run_id, vm.repository_id, vm.commit, vm.versioning_key, vm.versioning_location  "
+                            + " from versioning_modeldb_entity_mapping as vm "
+                            + " where vm.experiment_run_id in (<run_ids>) "
+                            + " and vm.entity_type = :entityType")
+                    .bindList("run_ids", runIds)
+                    .bind("entityType", entity_type)
+                    .map(
+                        (rs, ctx) -> {
+                          try {
+                            VersioningEntry.Builder versioningEntryBuilder =
+                                VersioningEntry.newBuilder()
+                                    .setRepositoryId(rs.getLong("repository_id"))
+                                    .setCommit(rs.getString("commit"));
+
+                            if (rs.getString("versioning_key") != null
+                                && !rs.getString("versioning_key").isEmpty()) {
+                              Location.Builder locationBuilder = Location.newBuilder();
+                              CommonUtils.getProtoObjectFromString(
+                                  rs.getString("versioning_location"), locationBuilder);
+                              versioningEntryBuilder.putKeyLocationMap(
+                                  rs.getString("versioning_key"), locationBuilder.build());
+                            }
+
+                            return new AbstractMap.SimpleEntry<>(
+                                rs.getString("experiment_run_id"), versioningEntryBuilder.build());
+                          } catch (InvalidProtocolBufferException e) {
+                            LOGGER.error(
+                                "Error generating builder for {}",
+                                rs.getString("versioning_location"));
+                            throw new ModelDBException(e);
+                          }
+                        })
+                    .list())
+        .thenCompose(
+            simpleEntries -> {
+              Map<String, VersioningEntry> entryMap = new LinkedHashMap<>();
+              for (Map.Entry<String, VersioningEntry> entry : simpleEntries) {
+                if (entryMap.containsKey(entry.getKey())) {
+                  VersioningEntry versioningEntry = entryMap.get(entry.getKey());
+                  versioningEntry =
+                      versioningEntry
+                          .toBuilder()
+                          .putAllKeyLocationMap(entry.getValue().getKeyLocationMapMap())
+                          .build();
+                  entryMap.put(entry.getKey(), versioningEntry);
+                } else {
+                  entryMap.put(entry.getKey(), entry.getValue());
+                }
+              }
+              return InternalFuture.completedInternalFuture(entryMap);
+            },
+            executor);
   }
 }
