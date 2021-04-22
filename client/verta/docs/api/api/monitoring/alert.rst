@@ -5,7 +5,7 @@ Alert
 .. module:: verta.operations.monitoring.alert._entities
 
 .. autosummary::
-    :toctree: alert
+    :toctree: _autogen
     :template: class.rst
     :nosignatures:
 

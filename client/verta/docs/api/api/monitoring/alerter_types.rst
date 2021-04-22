@@ -5,7 +5,7 @@ Alerter Types
 .. module:: verta.operations.monitoring.alert
 
 .. autosummary::
-    :toctree: alerter_types
+    :toctree: _autogen
     :template: class.rst
     :nosignatures:
 
