@@ -2,7 +2,7 @@ Alerter Types
 =============
 
 
-.. module:: verta.operations.monitoring.alert
+.. currentmodule:: verta.operations.monitoring.alert
 
 .. autosummary::
     :toctree: _autogen

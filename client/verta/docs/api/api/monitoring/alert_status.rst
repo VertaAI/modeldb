@@ -2,7 +2,7 @@ Alert Status
 ============
 
 
-.. module:: verta.operations.monitoring.alert.status
+.. currentmodule:: verta.operations.monitoring.alert.status
 
 .. autosummary::
     :toctree: _autogen

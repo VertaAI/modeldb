@@ -2,7 +2,7 @@ Alert
 =====
 
 
-.. module:: verta.operations.monitoring.alert._entities
+.. currentmodule:: verta.operations.monitoring.alert._entities
 
 .. autosummary::
     :toctree: _autogen
