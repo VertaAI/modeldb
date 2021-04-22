@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.common',
   syntax='proto3',
   serialized_options=b'P\001Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/common',
-  serialized_pb=b'\n\x1a\x63ommon/CommonService.proto\x12\x0f\x61i.verta.common\x1a\x1cgoogle/protobuf/struct.proto\":\n\x0bTernaryEnum\"+\n\x07Ternary\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04TRUE\x10\x01\x12\t\n\x05\x46\x41LSE\x10\x02\"|\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\"H\n\rValueTypeEnum\"7\n\tValueType\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x08\n\x04LIST\x10\x02\x12\x08\n\x04\x42LOB\x10\x03\"I\n\x14\x43ollaboratorTypeEnum\"1\n\x10\x43ollaboratorType\x12\r\n\tREAD_ONLY\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\"p\n\x1f\x43ollaboratorTypeEnumWithDefault\"M\n\x1f\x43ollaboratorTypeEnumWithDefault\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\x12\r\n\tREAD_ONLY\x10\x02\"R\n\x0c\x45ntitiesEnum\"B\n\rEntitiesTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04TEAM\x10\x02\x12\x08\n\x04USER\x10\x03\"\xa1\x02\n\x13ModelDBResourceEnum\"\x89\x02\n\x1bModelDBServiceResourceTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x0b\n\x07PROJECT\x10\x02\x12\x0e\n\nEXPERIMENT\x10\x03\x12\x12\n\x0e\x45XPERIMENT_RUN\x10\x04\x12\x0b\n\x07\x44\x41TASET\x10\x05\x12\x13\n\x0f\x44\x41TASET_VERSION\x10\x06\x12\r\n\tDASHBOARD\x10\x07\x12\x0e\n\nREPOSITORY\x10\x08\x12\x14\n\x10REGISTERED_MODEL\x10\t\x12\x1c\n\x18REGISTERED_MODEL_VERSION\x10\n\x12\x14\n\x10MONITORED_ENTITY\x10\x0b\x12\x18\n\x14NOTIFICATION_CHANNEL\x10\x0c\"5\n\nPagination\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\"M\n\x11WorkspaceTypeEnum\"8\n\rWorkspaceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04USER\x10\x02\"\x82\x01\n\x10\x41rtifactTypeEnum\"n\n\x0c\x41rtifactType\x12\t\n\x05IMAGE\x10\x00\x12\t\n\x05MODEL\x10\x01\x12\x0f\n\x0bTENSORBOARD\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\x08\n\x04\x42LOB\x10\x04\x12\n\n\x06STRING\x10\x05\x12\x08\n\x04\x43ODE\x10\x06\x12\r\n\tCONTAINER\x10\x07\"\xb7\x01\n\x08\x41rtifact\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x11\n\tpath_only\x18\x03 \x01(\x08\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x1a\n\x12linked_artifact_id\x18\x05 \x01(\t\x12\x1a\n\x12\x66ilename_extension\x18\x06 \x01(\t\"\xbb\x01\n\rKeyValueQuery\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12\x38\n\x08operator\x18\x04 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"1\n\x0c\x41rtifactPart\x12\x13\n\x0bpart_number\x18\x01 \x01(\x04\x12\x0c\n\x04\x65tag\x18\x02 \x01(\t\"r\n\x0cOperatorEnum\"b\n\x08Operator\x12\x06\n\x02\x45Q\x10\x00\x12\x06\n\x02NE\x10\x01\x12\x06\n\x02GT\x10\x02\x12\x07\n\x03GTE\x10\x03\x12\x06\n\x02LT\x10\x04\x12\x07\n\x03LTE\x10\x05\x12\x0b\n\x07\x43ONTAIN\x10\x06\x12\x0f\n\x0bNOT_CONTAIN\x10\x07\x12\x06\n\x02IN\x10\x08\"_\n\x0eVisibilityEnum\"M\n\nVisibility\x12\x0b\n\x07PRIVATE\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x15\n\x11ORG_SCOPED_PUBLIC\x10\x02\x12\x0f\n\x0bORG_DEFAULT\x10\x03\x42\x41P\x01Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/commonb\x06proto3'
+  serialized_pb=b'\n\x1a\x63ommon/CommonService.proto\x12\x0f\x61i.verta.common\x1a\x1cgoogle/protobuf/struct.proto\":\n\x0bTernaryEnum\"+\n\x07Ternary\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04TRUE\x10\x01\x12\t\n\x05\x46\x41LSE\x10\x02\"|\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\"H\n\rValueTypeEnum\"7\n\tValueType\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x08\n\x04LIST\x10\x02\x12\x08\n\x04\x42LOB\x10\x03\"I\n\x14\x43ollaboratorTypeEnum\"1\n\x10\x43ollaboratorType\x12\r\n\tREAD_ONLY\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\"t\n#CollaboratorTypeEnumWithDefaultEnum\"M\n\x1f\x43ollaboratorTypeEnumWithDefault\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\x12\r\n\tREAD_ONLY\x10\x02\"R\n\x0c\x45ntitiesEnum\"B\n\rEntitiesTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04TEAM\x10\x02\x12\x08\n\x04USER\x10\x03\"\xa1\x02\n\x13ModelDBResourceEnum\"\x89\x02\n\x1bModelDBServiceResourceTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x0b\n\x07PROJECT\x10\x02\x12\x0e\n\nEXPERIMENT\x10\x03\x12\x12\n\x0e\x45XPERIMENT_RUN\x10\x04\x12\x0b\n\x07\x44\x41TASET\x10\x05\x12\x13\n\x0f\x44\x41TASET_VERSION\x10\x06\x12\r\n\tDASHBOARD\x10\x07\x12\x0e\n\nREPOSITORY\x10\x08\x12\x14\n\x10REGISTERED_MODEL\x10\t\x12\x1c\n\x18REGISTERED_MODEL_VERSION\x10\n\x12\x14\n\x10MONITORED_ENTITY\x10\x0b\x12\x18\n\x14NOTIFICATION_CHANNEL\x10\x0c\"5\n\nPagination\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\"M\n\x11WorkspaceTypeEnum\"8\n\rWorkspaceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04USER\x10\x02\"\x82\x01\n\x10\x41rtifactTypeEnum\"n\n\x0c\x41rtifactType\x12\t\n\x05IMAGE\x10\x00\x12\t\n\x05MODEL\x10\x01\x12\x0f\n\x0bTENSORBOARD\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\x08\n\x04\x42LOB\x10\x04\x12\n\n\x06STRING\x10\x05\x12\x08\n\x04\x43ODE\x10\x06\x12\r\n\tCONTAINER\x10\x07\"\xb7\x01\n\x08\x41rtifact\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x11\n\tpath_only\x18\x03 \x01(\x08\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x1a\n\x12linked_artifact_id\x18\x05 \x01(\t\x12\x1a\n\x12\x66ilename_extension\x18\x06 \x01(\t\"\xbb\x01\n\rKeyValueQuery\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12\x38\n\x08operator\x18\x04 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"1\n\x0c\x41rtifactPart\x12\x13\n\x0bpart_number\x18\x01 \x01(\x04\x12\x0c\n\x04\x65tag\x18\x02 \x01(\t\"r\n\x0cOperatorEnum\"b\n\x08Operator\x12\x06\n\x02\x45Q\x10\x00\x12\x06\n\x02NE\x10\x01\x12\x06\n\x02GT\x10\x02\x12\x07\n\x03GTE\x10\x03\x12\x06\n\x02LT\x10\x04\x12\x07\n\x03LTE\x10\x05\x12\x0b\n\x07\x43ONTAIN\x10\x06\x12\x0f\n\x0bNOT_CONTAIN\x10\x07\x12\x06\n\x02IN\x10\x08\"_\n\x0eVisibilityEnum\"M\n\nVisibility\x12\x0b\n\x07PRIVATE\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x15\n\x11ORG_SCOPED_PUBLIC\x10\x02\x12\x0f\n\x0bORG_DEFAULT\x10\x03\x42\x41P\x01Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/commonb\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
 
@@ -103,9 +103,9 @@ _COLLABORATORTYPEENUM_COLLABORATORTYPE = _descriptor.EnumDescriptor(
 )
 _sym_db.RegisterEnumDescriptor(_COLLABORATORTYPEENUM_COLLABORATORTYPE)
 
-_COLLABORATORTYPEENUMWITHDEFAULT_COLLABORATORTYPEENUMWITHDEFAULT = _descriptor.EnumDescriptor(
+_COLLABORATORTYPEENUMWITHDEFAULTENUM_COLLABORATORTYPEENUMWITHDEFAULT = _descriptor.EnumDescriptor(
   name='CollaboratorTypeEnumWithDefault',
-  full_name='ai.verta.common.CollaboratorTypeEnumWithDefault.CollaboratorTypeEnumWithDefault',
+  full_name='ai.verta.common.CollaboratorTypeEnumWithDefaultEnum.CollaboratorTypeEnumWithDefault',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -124,10 +124,10 @@ _COLLABORATORTYPEENUMWITHDEFAULT_COLLABORATORTYPEENUMWITHDEFAULT = _descriptor.E
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=447,
-  serialized_end=524,
+  serialized_start=451,
+  serialized_end=528,
 )
-_sym_db.RegisterEnumDescriptor(_COLLABORATORTYPEENUMWITHDEFAULT_COLLABORATORTYPEENUMWITHDEFAULT)
+_sym_db.RegisterEnumDescriptor(_COLLABORATORTYPEENUMWITHDEFAULTENUM_COLLABORATORTYPEENUMWITHDEFAULT)
 
 _ENTITIESENUM_ENTITIESTYPES = _descriptor.EnumDescriptor(
   name='EntitiesTypes',
@@ -154,8 +154,8 @@ _ENTITIESENUM_ENTITIESTYPES = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=542,
-  serialized_end=608,
+  serialized_start=546,
+  serialized_end=612,
 )
 _sym_db.RegisterEnumDescriptor(_ENTITIESENUM_ENTITIESTYPES)
 
@@ -220,8 +220,8 @@ _MODELDBRESOURCEENUM_MODELDBSERVICERESOURCETYPES = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=635,
-  serialized_end=900,
+  serialized_start=639,
+  serialized_end=904,
 )
 _sym_db.RegisterEnumDescriptor(_MODELDBRESOURCEENUM_MODELDBSERVICERESOURCETYPES)
 
@@ -246,8 +246,8 @@ _WORKSPACETYPEENUM_WORKSPACETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=978,
-  serialized_end=1034,
+  serialized_start=982,
+  serialized_end=1038,
 )
 _sym_db.RegisterEnumDescriptor(_WORKSPACETYPEENUM_WORKSPACETYPE)
 
@@ -292,8 +292,8 @@ _ARTIFACTTYPEENUM_ARTIFACTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1057,
-  serialized_end=1167,
+  serialized_start=1061,
+  serialized_end=1171,
 )
 _sym_db.RegisterEnumDescriptor(_ARTIFACTTYPEENUM_ARTIFACTTYPE)
 
@@ -342,8 +342,8 @@ _OPERATORENUM_OPERATOR = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1612,
-  serialized_end=1710,
+  serialized_start=1616,
+  serialized_end=1714,
 )
 _sym_db.RegisterEnumDescriptor(_OPERATORENUM_OPERATOR)
 
@@ -372,8 +372,8 @@ _VISIBILITYENUM_VISIBILITY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1730,
-  serialized_end=1807,
+  serialized_start=1734,
+  serialized_end=1811,
 )
 _sym_db.RegisterEnumDescriptor(_VISIBILITYENUM_VISIBILITY)
 
@@ -498,9 +498,9 @@ _COLLABORATORTYPEENUM = _descriptor.Descriptor(
 )
 
 
-_COLLABORATORTYPEENUMWITHDEFAULT = _descriptor.Descriptor(
-  name='CollaboratorTypeEnumWithDefault',
-  full_name='ai.verta.common.CollaboratorTypeEnumWithDefault',
+_COLLABORATORTYPEENUMWITHDEFAULTENUM = _descriptor.Descriptor(
+  name='CollaboratorTypeEnumWithDefaultEnum',
+  full_name='ai.verta.common.CollaboratorTypeEnumWithDefaultEnum',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
@@ -510,7 +510,7 @@ _COLLABORATORTYPEENUMWITHDEFAULT = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
-    _COLLABORATORTYPEENUMWITHDEFAULT_COLLABORATORTYPEENUMWITHDEFAULT,
+    _COLLABORATORTYPEENUMWITHDEFAULTENUM_COLLABORATORTYPEENUMWITHDEFAULT,
   ],
   serialized_options=None,
   is_extendable=False,
@@ -519,7 +519,7 @@ _COLLABORATORTYPEENUMWITHDEFAULT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=412,
-  serialized_end=524,
+  serialized_end=528,
 )
 
 
@@ -543,8 +543,8 @@ _ENTITIESENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=526,
-  serialized_end=608,
+  serialized_start=530,
+  serialized_end=612,
 )
 
 
@@ -568,8 +568,8 @@ _MODELDBRESOURCEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=611,
-  serialized_end=900,
+  serialized_start=615,
+  serialized_end=904,
 )
 
 
@@ -606,8 +606,8 @@ _PAGINATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=902,
-  serialized_end=955,
+  serialized_start=906,
+  serialized_end=959,
 )
 
 
@@ -631,8 +631,8 @@ _WORKSPACETYPEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=957,
-  serialized_end=1034,
+  serialized_start=961,
+  serialized_end=1038,
 )
 
 
@@ -656,8 +656,8 @@ _ARTIFACTTYPEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1037,
-  serialized_end=1167,
+  serialized_start=1041,
+  serialized_end=1171,
 )
 
 
@@ -722,8 +722,8 @@ _ARTIFACT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1170,
-  serialized_end=1353,
+  serialized_start=1174,
+  serialized_end=1357,
 )
 
 
@@ -774,8 +774,8 @@ _KEYVALUEQUERY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1356,
-  serialized_end=1543,
+  serialized_start=1360,
+  serialized_end=1547,
 )
 
 
@@ -812,8 +812,8 @@ _ARTIFACTPART = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1545,
-  serialized_end=1594,
+  serialized_start=1549,
+  serialized_end=1598,
 )
 
 
@@ -837,8 +837,8 @@ _OPERATORENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1596,
-  serialized_end=1710,
+  serialized_start=1600,
+  serialized_end=1714,
 )
 
 
@@ -862,8 +862,8 @@ _VISIBILITYENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1712,
-  serialized_end=1807,
+  serialized_start=1716,
+  serialized_end=1811,
 )
 
 _TERNARYENUM_TERNARY.containing_type = _TERNARYENUM
@@ -871,7 +871,7 @@ _KEYVALUE.fields_by_name['value'].message_type = google_dot_protobuf_dot_struct_
 _KEYVALUE.fields_by_name['value_type'].enum_type = _VALUETYPEENUM_VALUETYPE
 _VALUETYPEENUM_VALUETYPE.containing_type = _VALUETYPEENUM
 _COLLABORATORTYPEENUM_COLLABORATORTYPE.containing_type = _COLLABORATORTYPEENUM
-_COLLABORATORTYPEENUMWITHDEFAULT_COLLABORATORTYPEENUMWITHDEFAULT.containing_type = _COLLABORATORTYPEENUMWITHDEFAULT
+_COLLABORATORTYPEENUMWITHDEFAULTENUM_COLLABORATORTYPEENUMWITHDEFAULT.containing_type = _COLLABORATORTYPEENUMWITHDEFAULTENUM
 _ENTITIESENUM_ENTITIESTYPES.containing_type = _ENTITIESENUM
 _MODELDBRESOURCEENUM_MODELDBSERVICERESOURCETYPES.containing_type = _MODELDBRESOURCEENUM
 _WORKSPACETYPEENUM_WORKSPACETYPE.containing_type = _WORKSPACETYPEENUM
@@ -886,7 +886,7 @@ DESCRIPTOR.message_types_by_name['TernaryEnum'] = _TERNARYENUM
 DESCRIPTOR.message_types_by_name['KeyValue'] = _KEYVALUE
 DESCRIPTOR.message_types_by_name['ValueTypeEnum'] = _VALUETYPEENUM
 DESCRIPTOR.message_types_by_name['CollaboratorTypeEnum'] = _COLLABORATORTYPEENUM
-DESCRIPTOR.message_types_by_name['CollaboratorTypeEnumWithDefault'] = _COLLABORATORTYPEENUMWITHDEFAULT
+DESCRIPTOR.message_types_by_name['CollaboratorTypeEnumWithDefaultEnum'] = _COLLABORATORTYPEENUMWITHDEFAULTENUM
 DESCRIPTOR.message_types_by_name['EntitiesEnum'] = _ENTITIESENUM
 DESCRIPTOR.message_types_by_name['ModelDBResourceEnum'] = _MODELDBRESOURCEENUM
 DESCRIPTOR.message_types_by_name['Pagination'] = _PAGINATION
@@ -927,12 +927,12 @@ CollaboratorTypeEnum = _reflection.GeneratedProtocolMessageType('CollaboratorTyp
   })
 _sym_db.RegisterMessage(CollaboratorTypeEnum)
 
-CollaboratorTypeEnumWithDefault = _reflection.GeneratedProtocolMessageType('CollaboratorTypeEnumWithDefault', (_message.Message,), {
-  'DESCRIPTOR' : _COLLABORATORTYPEENUMWITHDEFAULT,
+CollaboratorTypeEnumWithDefaultEnum = _reflection.GeneratedProtocolMessageType('CollaboratorTypeEnumWithDefaultEnum', (_message.Message,), {
+  'DESCRIPTOR' : _COLLABORATORTYPEENUMWITHDEFAULTENUM,
   '__module__' : 'common.CommonService_pb2'
-  # @@protoc_insertion_point(class_scope:ai.verta.common.CollaboratorTypeEnumWithDefault)
+  # @@protoc_insertion_point(class_scope:ai.verta.common.CollaboratorTypeEnumWithDefaultEnum)
   })
-_sym_db.RegisterMessage(CollaboratorTypeEnumWithDefault)
+_sym_db.RegisterMessage(CollaboratorTypeEnumWithDefaultEnum)
 
 EntitiesEnum = _reflection.GeneratedProtocolMessageType('EntitiesEnum', (_message.Message,), {
   'DESCRIPTOR' : _ENTITIESENUM,
