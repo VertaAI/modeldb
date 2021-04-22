@@ -326,10 +326,11 @@
     "CollaboratorTypeEnumCollaboratorType": {
       "type": "string",
       "enum": [
-        "READ_ONLY",
-        "READ_WRITE"
+        "UNKNOWN",
+        "READ_WRITE",
+        "READ_ONLY"
       ],
-      "default": "READ_ONLY"
+      "default": "UNKNOWN"
     },
     "TernaryEnumTernary": {
       "type": "string",

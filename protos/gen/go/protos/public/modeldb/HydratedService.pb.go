@@ -192,7 +192,7 @@ func (x *CollaboratorUserInfo) GetCollaboratorType() common.CollaboratorTypeEnum
 	if x != nil {
 		return x.CollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 func (x *CollaboratorUserInfo) GetCanDeploy() common.TernaryEnum_Ternary {

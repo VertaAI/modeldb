@@ -180,7 +180,7 @@ func (x *CollaboratorPermissions) GetCollaboratorType() common.CollaboratorTypeE
 	if x != nil {
 		return x.CollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 func (x *CollaboratorPermissions) GetCanDeploy() common.TernaryEnum_Ternary {
@@ -256,7 +256,7 @@ func (x *AddCollaboratorRequest) GetCollaboratorType() common.CollaboratorTypeEn
 	if x != nil {
 		return x.CollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 func (x *AddCollaboratorRequest) GetMessage() string {
@@ -431,7 +431,7 @@ func (x *GetCollaboratorResponseItem) GetCollaboratorType() common.CollaboratorT
 	if x != nil {
 		return x.CollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 func (x *GetCollaboratorResponseItem) GetShareViaType() ShareViaEnum {
@@ -851,7 +851,7 @@ func (x *SetResource) GetCollaboratorType() common.CollaboratorTypeEnum_Collabor
 	if x != nil {
 		return x.CollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 func (x *SetResource) GetCanDeploy() common.TernaryEnum_Ternary {

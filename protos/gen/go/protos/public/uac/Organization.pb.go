@@ -140,7 +140,7 @@ func (x *Organization) GetGlobalCollaboratorType() common.CollaboratorTypeEnum_C
 	if x != nil {
 		return x.GlobalCollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 func (x *Organization) GetGlobalCanDeploy() common.TernaryEnum_Ternary {
@@ -154,28 +154,28 @@ func (x *Organization) GetDefaultRepoCollaboratorType() common.CollaboratorTypeE
 	if x != nil {
 		return x.DefaultRepoCollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 func (x *Organization) GetDefaultEndpointCollaboratorType() common.CollaboratorTypeEnum_CollaboratorType {
 	if x != nil {
 		return x.DefaultEndpointCollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 func (x *Organization) GetDefaultDatasetCollaboratorType() common.CollaboratorTypeEnum_CollaboratorType {
 	if x != nil {
 		return x.DefaultDatasetCollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 func (x *Organization) GetDefaultRegisteredModelCollaboratorType() common.CollaboratorTypeEnum_CollaboratorType {
 	if x != nil {
 		return x.DefaultRegisteredModelCollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 func (x *Organization) GetWorkspaceId() string {
@@ -196,14 +196,14 @@ func (x *Organization) GetDefaultMonitoredEntityCollaboratorType() common.Collab
 	if x != nil {
 		return x.DefaultMonitoredEntityCollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 func (x *Organization) GetDefaultNotificationChannelCollaboratorType() common.CollaboratorTypeEnum_CollaboratorType {
 	if x != nil {
 		return x.DefaultNotificationChannelCollaboratorType
 	}
-	return common.CollaboratorTypeEnum_READ_ONLY
+	return common.CollaboratorTypeEnum_UNKNOWN
 }
 
 type GetOrganizationById struct {
