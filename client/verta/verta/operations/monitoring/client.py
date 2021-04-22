@@ -109,10 +109,6 @@ class Client(object):
         if workspace is None:
             workspace = self._client.get_workspace()
 
-        ctx = self._ctx
-        ctx.workspace_name = workspace
-
-        resource_name = "MonitoredEntity"
         if id is not None:
             entity = MonitoredEntity._get_by_id(self._conn, self._conf, id)
         else:
@@ -123,7 +119,7 @@ class Client(object):
                     self._conn, self._conf, name=name, parent=workspace
                 ),
                 lambda name: MonitoredEntity._create(
-                    self._conn, self._conf, ctx, name=name
+                    self._conn, self._conf, self._ctx, name=name, workspace_name=workspace
                 ),
                 lambda: self.__noop_checker(),
             )
