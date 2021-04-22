@@ -77,7 +77,7 @@ class MonitoredEntity(entity._ModelDBEntity):
         self._refresh_cache()
 
         if self._msg.workspace_id:
-            return self._conn._get_workspace_name_by_id(self._msg.workspace_id)
+            return self._conn.get_workspace_name_by_id(self._msg.workspace_id)
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
 
@@ -134,16 +134,15 @@ class MonitoredEntity(entity._ModelDBEntity):
             return None
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name):
+    def _create_proto_internal(cls, conn, ctx, name, workspace_name):
         Message = _DataMonitoringService.CreateMonitoredEntityRequest
-        msg = Message(name=name)
-
+        msg = Message(name=name, workspace_name=workspace_name)
         endpoint = "/api/v1/monitored_entity/createMonitoredEntity"
         response = conn.make_proto_request("POST", endpoint, body=msg)
         obj = conn.must_proto_response(response, Message.Response).monitored_entity
 
-        if ctx.workspace_name is not None:
-            WORKSPACE_PRINT_MSG = "workspace: {}".format(ctx.workspace_name)
+        if workspace_name is not None:
+            WORKSPACE_PRINT_MSG = "workspace: {}".format(workspace_name)
         else:
             WORKSPACE_PRINT_MSG = "personal workspace"
 
