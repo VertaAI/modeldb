@@ -28,6 +28,44 @@ from verta import data_types
 
 
 class SummaryQuery(object):
+    """
+    A query for summaries.
+
+    Parameters
+    ----------
+    ids : list of int, optional
+        Only fetch these summaries.
+    names : list of str, optional
+        Only fetch these summaries with one of these names.
+    data_type_classes : list of :class:`_VertaDataType`, optional
+        Only fetch summaries with one of these data types.
+    monitored_entities : list of :class:`MonitoredEntity`, optional
+        Only fetch summaries belonging to one of these monitored entities.
+    page_number : int, default 1
+        Pagination page number for the backend query request. Used in
+        conjunction with `page_limit`.
+    page_limit : int, optional
+        Number of samples to fetch from the backend in a single query. If not
+        provided, all accessible samples will be fetched.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from datetime import datetime, timezone
+        from verta.operations.monitoring.summary import SummaryQuery, SummarySampleQuery
+        from verta.data_types import FloatHistogram, DiscreteHistogram
+
+        summary_query = SummaryQuery(
+            names=["Income Distributions"]),
+            data_types=[FloatHistogram, DiscreteHistogram]
+        )
+
+        client = Client()
+        for summary in client.operations.summaries.find(sample_query):
+            print(summary)
+    """
+
     def __init__(
         self,
         ids=None,
@@ -88,7 +126,7 @@ class SummarySampleQuery(object):
     ----------
     summary_query : :class:`SummaryQuery`, optional
         Only fetch samples whose summaries match this query.
-    ids : list of str, optional
+    ids : list of int, optional
         Only fetch these samples.
     labels : dict of str to list of str, optional
         Only fetch samples that have at least one of these labels. A mapping
@@ -199,6 +237,7 @@ class SummarySampleQuery(object):
 
 
 class Summary(entity._ModelDBEntity):
+
     def __init__(self, conn, conf, msg):
         super(Summary, self).__init__(conn, conf, SummaryService, "summary", msg)
         self._conn = conn
@@ -249,6 +288,7 @@ class Summary(entity._ModelDBEntity):
         return SummarySample(self._conn, self._conf, result_msg)
 
     def find_samples(self, query=None):
+
         if query is None:
             query = SummarySampleQuery()
         msg = query._to_proto_request()
@@ -276,6 +316,7 @@ class Summary(entity._ModelDBEntity):
         }
 
     def delete(self, summary_records):
+
         try:
             ids = [record.id for record in summary_records]
         except:
@@ -288,6 +329,7 @@ class Summary(entity._ModelDBEntity):
 
 
 class SummarySample(entity._ModelDBEntity):
+
     def __init__(self, conn, conf, msg):
         super(SummarySample, self).__init__(conn, conf, SummaryService, "summary", msg)
         self.summary_id = msg.summary_id
