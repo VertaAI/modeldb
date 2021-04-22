@@ -22,7 +22,7 @@ class Client(object):
 
     Parameters
     ----------
-    verta_client : verta.client.Client
+    verta_client : :class:`verta.client.Client`
         An instance of the base Verta client.
 
     Attributes
@@ -39,6 +39,19 @@ class Client(object):
         Alerts repository for configuring and managing alert objects.
     notification_channels : :class:`~verta.operations.monitoring.notification_channel._entities.NotificationChannels`
         Notification channel repository.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta import Client
+
+        monitoring_client = Client().operations
+
+        monitored_entity = monitoring_client.get_or_create_monitored_entity(
+            "My Data Pipeline",
+        )
+
     """
 
     def __init__ (self, verta_client):

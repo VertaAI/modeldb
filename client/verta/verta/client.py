@@ -119,6 +119,8 @@ class Client(object):
     debug : bool
         Whether to print extra verbose information to aid in debugging. Changes to this value propagate
         to any objects that are/were created from this Client.
+    operations : :class:`verta.operations.monitoring.client.Client`
+        Monitoring sub-client
     proj : :class:`~verta._tracking.project.Project` or None
         Currently active Project.
     expt : :class:`~verta._tracking.experiment.Experiment` or None
@@ -207,8 +209,6 @@ class Client(object):
         self._ctx = _Context(self._conn, self._conf)
         self._workspace = None
 
-        self.operations = MonitoringClient(self)
-
     @property
     def proj(self):
         return self._ctx.proj
@@ -249,6 +249,10 @@ class Client(object):
     @debug.setter
     def debug(self, value):
         self._conf.debug = value
+
+    @property
+    def operations(self):
+        return MonitoringClient(self)
 
     @property
     def projects(self):
