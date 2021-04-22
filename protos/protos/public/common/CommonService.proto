@@ -44,8 +44,9 @@ message ValueTypeEnum {
 
 message CollaboratorTypeEnum {
     enum CollaboratorType {
-        READ_ONLY = 0;
+        UNKNOWN = 0;
         READ_WRITE = 1;
+        READ_ONLY = 2;
     }
 }
 
