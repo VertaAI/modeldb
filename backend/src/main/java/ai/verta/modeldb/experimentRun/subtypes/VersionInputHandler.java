@@ -68,6 +68,15 @@ public class VersionInputHandler {
     }
   }
 
+  /**
+   * - This function validate requested version_input if exists - it will validate repository and
+   * commit exists or not and also if request has KeyLocationMap then it will fetch commit blobs and
+   * check those requested key and location blobs are exists or not and if those blobs are exists
+   * then we will prepare map for further mapping entry with run in mapping table called
+   * `versioning_modeldb_entity_mapping_config_blob`. - Also if we found the blob with CONFIG type
+   * then again we are keep hyperparameter element blob mapping for those run in separate mapping
+   * table called `hyperparameter_element_mapping`
+   */
   public InternalFuture<Void> validateAndInsertVersionedInputs(ExperimentRun experimentRun) {
     if (experimentRun.hasVersionedInputs()) {
       InternalFuture<Map<String, Map.Entry<BlobExpanded, String>>> versionedInputFutureTask =
@@ -98,6 +107,11 @@ public class VersionInputHandler {
     }
   }
 
+  /**
+   * If KeyLocationMap exists in request then it will take locationBlobWithHashMap fetched by
+   * previous function based on requested repository, commit, and key - locations and insert it in
+   * run and config_blob mapping table called `versioning_modeldb_entity_mapping_config_blob`
+   */
   private InternalFuture<Void> insertVersioningInputMappingConfigBlob(
       VersioningEntry versioningEntry,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
@@ -164,6 +178,11 @@ public class VersionInputHandler {
     }
   }
 
+  /**
+   * If found blob with type config then we will check hyperparameter_type in config blob. it has
+   * hyperparameter then we will keep run and hyperparameter element mapping in separate mapping
+   * table.
+   */
   private InternalFuture<Void> insertHyperparameterElementMapping(
       VersioningEntry versioningEntry,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
@@ -286,6 +305,12 @@ public class VersionInputHandler {
   }
 
   /**
+   * This function validate requested parameters for version_input it will validate repository and
+   * commit exists or not and also if request has KeyLocationMap then it will fetch commit blobs and
+   * check those requested key and location blobs are exists or not and if those blobs are exists
+   * then we will prepare map for further mapping entry with run in mapping table called
+   * `versioning_modeldb_entity_mapping_config_blob` and return that map
+   *
    * @param versioningEntry : versioningEntry
    * @return returns a map from location to an Entry of BlobExpanded and sha
    * @throws ModelDBException ModelDBException
