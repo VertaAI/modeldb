@@ -32,7 +32,7 @@ class Alert(entity._ModelDBEntity):
         ID of the monitored entity this alert is associated with.
     status : :class:`~verta.operations.monitoring.alert.status._AlertStatus`
         Current status of this alert.
-    summary_sample_query : :class:`~verta.operations.monitoring.summary.SummarySampleQuery`
+    summary_sample_query : :class:`~verta.operations.monitoring.summaries.SummarySampleQuery`
         The summary samples this alert monitors.
 
     """
@@ -369,11 +369,12 @@ class Alerts(object):
         ----------
         name : str
             A unique name for this alert.
-        alerter : :class:`~verta.operations.monitoring.alert.Alerter`
+        alerter : :class:`~verta.operations.monitoring.alert._Alerter`
             The configuration for this alert.
         summary_sample_query : :class:`~verta.operations.monitoring.summaries.SummarySampleQuery`
             Summary samples for this alert to monitor for threshold violations.
         notification_channels : list of :class:`~verta.operations.monitoring.notification_channel._entities.NotificationChannel`, optional
+            Channels for this alert to propagate notifications to.
         created_at : datetime.datetime or int, optional
             An override creation time to assign to this alert. Either a
             timezone aware datetime object or unix epoch milliseconds.

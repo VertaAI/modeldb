@@ -86,7 +86,7 @@ class SummarySampleQuery(object):
 
     Parameters
     ----------
-    summary_query : :class:`~verta.operations.monitoring.summary.SummaryQuery`, optional
+    summary_query : :class:`SummaryQuery`, optional
         Only fetch samples whose summaries match this query.
     ids : list of str, optional
         Only fetch these samples.

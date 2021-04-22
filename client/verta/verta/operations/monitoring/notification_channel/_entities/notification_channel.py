@@ -220,7 +220,7 @@ class NotificationChannels(object):
         ----------
         name : str
             A unique name for this notification channel.
-        channel : :class:`verta.operations.monitoring.notification_channel._NotificationChannel`
+        channel : :class:`~verta.operations.monitoring.notification_channel._NotificationChannel`
             The configuration for this notification channel.
         created_at : datetime.datetime or int, optional
             An override creation time to assign to this channel. Either a
@@ -333,7 +333,7 @@ class NotificationChannels(object):
 
         Parameters
         ----------
-        list of :class:`NotificationChannel`
+        channels : list of :class:`NotificationChannel`
             Notification channels.
 
         Returns
