@@ -21,6 +21,8 @@ class NotificationChannel(entity._ModelDBEntity):
         ID of this notification channel.
     name : str
         Name of this notification channel.
+    workspace : str
+        Name of the workspace which this notification channel belongs to.
 
     Examples
     --------
@@ -77,6 +79,16 @@ class NotificationChannel(entity._ModelDBEntity):
 
         return self._msg.name
 
+    @property
+    def workspace(self):
+        # TODO: replace with _refresh_cache() when backend returns ID on /create
+        self._fetch_with_no_cache()
+
+        if self._msg.workspace_id:
+            return self._conn.get_workspace_name_from_id(self._msg.workspace_id)
+        else:
+            return self._conn._OSS_DEFAULT_WORKSPACE
+
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindNotificationChannelRequest(
@@ -87,8 +99,8 @@ class NotificationChannel(entity._ModelDBEntity):
         channels = conn.must_proto_response(response, msg.Response).channels
         if len(channels) > 1:
             warnings.warn(
-                "unexpectedly found multiple alerts with the same name and"
-                " monitored entity ID"
+                "unexpectedly found multiple notification channels with ID"
+                " {}".format(id)
             )
         return channels[0]
 
@@ -96,15 +108,17 @@ class NotificationChannel(entity._ModelDBEntity):
     def _get_proto_by_name(cls, conn, name, workspace):
         # NOTE: workspace is currently unsupported until https://vertaai.atlassian.net/browse/VR-9792
         msg = _AlertService.FindNotificationChannelRequest(
-            names=[name], page_number=1, page_limit=-1,
+            names=[name],
+            page_number=1, page_limit=-1,
+            workspace_name=workspace,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = conn.make_proto_request("POST", endpoint, body=msg)
         channels = conn.must_proto_response(response, msg.Response).channels
         if len(channels) > 1:
             warnings.warn(
-                "unexpectedly found multiple alerts with the same name and"
-                " monitored entity ID"
+                "unexpectedly found multiple notification channels with name"
+                " {} in workspace {}".format(name, workspace)
             )
         return channels[0]
 
@@ -115,19 +129,19 @@ class NotificationChannel(entity._ModelDBEntity):
         ctx,
         name,
         channel,
+        workspace,
         created_at_millis,
         updated_at_millis,
     ):
         msg = _AlertService.CreateNotificationChannelRequest(
-            channel=_AlertService.NotificationChannel(
-                name=name,
-                created_at_millis=created_at_millis,
-                updated_at_millis=updated_at_millis,
-                type=channel._TYPE,
-            )
+            name=name,
+            created_at_millis=created_at_millis,
+            updated_at_millis=updated_at_millis,
+            workspace_name=workspace,
+            type=channel._TYPE,
         )
-        if msg.channel.type == _AlertService.NotificationChannelTypeEnum.SLACK:
-            msg.channel.slack_webhook.CopyFrom(channel._as_proto())
+        if msg.type == _AlertService.NotificationChannelTypeEnum.SLACK:
+            msg.slack_webhook.CopyFrom(channel._as_proto())
         else:
             raise ValueError(
                 "unrecognized notification channel type enum value {}".format(
@@ -180,14 +194,22 @@ class NotificationChannels(object):
 
     """
 
-    def __init__(self, conn, conf):
-        self._conn = conn
-        self._conf = conf
+    def __init__(self, client):
+        self._client = client
+
+    @property
+    def _conn(self):
+        return self._client._conn
+
+    @property
+    def _conf(self):
+        return self._client._conf
 
     def create(
         self,
         name,
         channel,
+        workspace=None,
         created_at=None,
         updated_at=None,
     ):
@@ -226,6 +248,9 @@ class NotificationChannels(object):
             )
 
         """
+        if workspace is None:
+            workspace = self._client.get_workspace()
+
         ctx = _Context(self._conn, self._conf)
         return NotificationChannel._create(
             self._conn,
@@ -233,11 +258,12 @@ class NotificationChannels(object):
             ctx,
             name=name,
             channel=channel,
+            workspace=workspace,
             created_at_millis=time_utils.epoch_millis(created_at),
             updated_at_millis=time_utils.epoch_millis(updated_at),
         )
 
-    def get(self, name=None, id=None):
+    def get(self, name=None, workspace=None, id=None):
         """
         Get an existing notification channel.
 
@@ -258,12 +284,20 @@ class NotificationChannels(object):
         """
         if name and id:
             raise ValueError("cannot specify both `name` and `id`")
+        if workspace and id:
+            raise ValueError(
+                "cannot specify both `workspace` and `id`;"
+                " getting by ID does not require a workspace name"
+            )
         elif name:
+            if workspace is None:
+                workspace = self._client.get_workspace()
+
             return NotificationChannel._get_by_name(
                 self._conn,
                 self._conf,
                 name,
-                None,  # TODO: pass workspace instead of None
+                workspace,
             )
         elif id:
             return NotificationChannel._get_by_id(self._conn, self._conf, id)
@@ -272,7 +306,7 @@ class NotificationChannels(object):
 
     # TODO: use lazy list and pagination
     # TODO: a proper find
-    def list(self):
+    def list(self, workspace=None):
         """
         Return all accesible notification channels.
 
@@ -284,6 +318,7 @@ class NotificationChannels(object):
         """
         msg = _AlertService.FindNotificationChannelRequest(
             page_number=1, page_limit=-1,
+            workspace_name=workspace,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)

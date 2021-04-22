@@ -5,8 +5,10 @@ import warnings
 
 import json
 from datetime import datetime
+
+from verta._internal_utils._utils import as_list_of_str
 from verta._internal_utils import pagination_utils, time_utils
-from .utils import extract_ids, maybe
+from .utils import extract_ids, extract_id, maybe
 from verta._protos.public.monitoring import Summary_pb2 as SummaryService
 from verta._protos.public.monitoring.Summary_pb2 import (
     CreateSummaryRequest,
@@ -269,7 +271,7 @@ class Summary(entity._ModelDBEntity):
     @staticmethod
     def _labels_proto(labels):
         return {
-            key: LabelFilterQuerySummarySample(label_value=values)
+            key: LabelFilterQuerySummarySample(label_value=as_list_of_str(values))
             for key, values in labels.items()
         }
 
@@ -348,12 +350,16 @@ class Summaries:
             )
         query = SummaryQuery(names=[name], monitored_entities=[monitored_entity])
         retrieved = self.find(query)
-        if retrieved and len(retrieved) > 1:
-            warnings.warn(
-                "found multiple summaries with name: {}, for monitored entity: {}".format(
-                    name, monitored_entity
-                )
-            )
+        # if retrieved and len(retrieved) > 1:
+        #     warnings.warn(
+        #         "found multiple summaries with name: {}, for monitored entity: {}".format(
+        #             name, monitored_entity
+        #         )
+        #     )
+        if retrieved:
+            monitored_entity_id = extract_id(monitored_entity)
+            cond = lambda s: s.name == name and s.monitored_entity_id == monitored_entity_id
+            retrieved = list(filter(cond, retrieved))
         if retrieved:
             summary = retrieved[0]
         else:

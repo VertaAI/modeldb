@@ -7,14 +7,26 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class QueryFilterContext {
-  public final List<String> conditions;
-  public final List<Consumer<Query>> binds;
-  public final List<OrderItem> orderItems;
+  private final List<String> conditions;
+  private final List<Consumer<Query>> binds;
+  private final List<OrderItem> orderItems;
 
   public QueryFilterContext() {
     conditions = new LinkedList<>();
     binds = new LinkedList<>();
     orderItems = new LinkedList<>();
+  }
+
+  public List<String> getConditions() {
+    return conditions;
+  }
+
+  public List<Consumer<Query>> getBinds() {
+    return binds;
+  }
+
+  public List<OrderItem> getOrderItems() {
+    return orderItems;
   }
 
   public QueryFilterContext addCondition(String condition) {
