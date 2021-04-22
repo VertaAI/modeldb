@@ -559,7 +559,6 @@ public class FutureExperimentRunDAO {
             .thenApply(QueryFilterContext::combine, executor)
             .thenCompose(
                 queryContext -> {
-                  // TODO: get code version
                   // TODO: get environment
                   // TODO: get features?
                   // TODO: get job id?
@@ -568,7 +567,7 @@ public class FutureExperimentRunDAO {
                   return jdbi.withHandle(
                           handle -> {
                             var sql =
-                                "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner from experiment_run";
+                                "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.code_version from experiment_run";
 
                             // Add the sorting tables
                             for (final var item :
@@ -632,7 +631,9 @@ public class FutureExperimentRunDAO {
                                                 rs.getLong("experiment_run.date_created"))
                                             .setStartTime(rs.getLong("experiment_run.start_time"))
                                             .setEndTime(rs.getLong("experiment_run.end_time"))
-                                            .setOwner(rs.getString("experiment_run.owner")))
+                                            .setOwner(rs.getString("experiment_run.owner"))
+                                            .setCodeVersion(
+                                                rs.getString("experiment_run.code_version")))
                                 .list();
                           })
                       .thenCompose(
