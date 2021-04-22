@@ -34,9 +34,13 @@ class MonitoredEntity(entity._ModelDBEntity):
 
     Attributes
     ----------
-    name
-    workspace
-    alerts
+    name : str
+        The name of this monitored entity.
+    workspace : str
+        The name of the workspace which this monitored entity belongs to.
+    alerts : :class:`~verta.operations.monitoring.alert._entities.Alerts`
+        The sub-client for managing alerts defined for this monitored entity.
+
     """
 
     def __init__(self, conn, conf, msg):
@@ -57,23 +61,11 @@ class MonitoredEntity(entity._ModelDBEntity):
 
     @property
     def name(self):
-        """The name of this monitored entity.
-
-        Returns
-        -------
-        string
-        """
         self._refresh_cache()
         return self._msg.name
 
     @property
     def workspace(self):
-        """The name of the workspace which this monitored entity belongs to.
-
-        Returns
-        -------
-        string
-        """
         self._refresh_cache()
 
         if self._msg.workspace_id:
@@ -83,12 +75,6 @@ class MonitoredEntity(entity._ModelDBEntity):
 
     @property
     def alerts(self):
-        """The sub-client for managing alerts defined for this monitored entity.
-
-        Returns
-        -------
-        verta.operations.monitoring.alert._entities.Alerts
-        """
         return Alerts(self._conn, self._conf, self.id)
 
     @classmethod

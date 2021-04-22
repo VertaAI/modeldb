@@ -27,12 +27,18 @@ class Client(object):
 
     Attributes
     ----------
-    profilers
-    summaries
-    summary_samples
-    labels
-    alerts
-    notification_channels
+    profilers : :class:`~verta.operations.monitoring.profilers.Profilers`
+        Profilers repository.
+    summaries : :class:`~verta.operations.monitoring.summaries.Summaries`
+        Summaries repository.
+    summary_samples : :class:`~verta.operations.monitoring.summaries.SummarySamples`
+        Summary samples repository.
+    labels : :class:`~verta.operations.monitoring.labels.Labels`
+        Labels repository for finding label keys and values.
+    alerts : :class:`~verta.operations.monitoring.alert._entities.Alerts`
+        Alerts repository for configuring and managing alert objects.
+    notification_channels : :class:`~verta.operations.monitoring.notification_channel._entities.NotificationChannels`
+        Notification channel repository.
     """
 
     def __init__ (self, verta_client):
@@ -52,32 +58,26 @@ class Client(object):
 
     @property
     def profilers(self):
-        """Profilers repository."""
         return Profilers(self._conn, self._conf, self._client)
 
     @property
     def summaries(self):
-        """Summaries repository."""
         return Summaries(self._conn, self._conf)
 
     @property
     def summary_samples(self):
-        """Summary samples repository."""
         return SummarySamples(self._conn, self._conf)
 
     @property
     def labels(self):
-        """Labels repository for finding label keys and values."""
         return Labels(self._conn, self._conf)
 
     @property
     def alerts(self):
-        """Alerts repository for configuring and managing alert objects."""
         return Alerts(self._conn, self._conf)
 
     @property
     def notification_channels(self):
-        """Notification channel repository."""
         return NotificationChannels(self._client)
 
     def get_or_create_monitored_entity(self, name=None, workspace=None, id=None):
@@ -92,7 +92,7 @@ class Client(object):
         ----------
         name : str, optional
             A unique name for this monitored entity.
-        workspace: string, optional
+        workspace: str, optional
             A workspace for this entity. Defaults to the client's default workspace.
         id : int, optional
             This should not be provided if ``name`` is provided.
