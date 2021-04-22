@@ -17,7 +17,7 @@ class TestClient(object):
     def test_create_ME_in_workspace(self, client):
         ops = client.operations
         team_workspace = "Demos"
-        default_workspace = client._conn.get_default_workspace()
+        default_workspace = client.get_workspace()
         assert team_workspace != default_workspace
 
         monitored_in_default = ops.get_or_create_monitored_entity()
