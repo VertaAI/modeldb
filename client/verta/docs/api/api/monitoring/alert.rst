@@ -4,14 +4,11 @@ Alert
 
 .. currentmodule:: verta.operations.monitoring.alert._entities
 
-.. autoclass:: Alert
-    :members:
-    :inherited-members:
+.. autosummary::
+    :toctree: alert
+    :template: class.rst
+    :nosignatures:
 
-.. autoclass:: Alerts
-    :members:
-    :inherited-members:
-
-.. autoclass:: AlertHistoryItem
-    :members:
-    :inherited-members:
+    Alert
+    Alerts
+    AlertHistoryItem
