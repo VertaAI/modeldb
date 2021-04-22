@@ -1004,6 +1004,15 @@
         }
       }
     },
+    "commonCollaboratorTypeEnumWithDefaultCollaboratorTypeEnumWithDefault": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "READ_WRITE",
+        "READ_ONLY"
+      ],
+      "default": "UNKNOWN"
+    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -2328,10 +2337,10 @@
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_monitored_entity_collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+          "$ref": "#/definitions/commonCollaboratorTypeEnumWithDefaultCollaboratorTypeEnumWithDefault"
         },
         "default_notification_channel_collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+          "$ref": "#/definitions/commonCollaboratorTypeEnumWithDefaultCollaboratorTypeEnumWithDefault"
         }
       }
     },
