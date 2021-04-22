@@ -74,7 +74,7 @@ class MonitoredEntity(entity._ModelDBEntity):
         -------
         string
         """
-        self._refresh_cache()
+        self._fetch_with_no_cache()
 
         if self._msg.workspace_id:
             return self._conn.get_workspace_name_by_id(self._msg.workspace_id)
