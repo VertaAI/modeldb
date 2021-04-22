@@ -49,6 +49,14 @@ message CollaboratorTypeEnum {
     }
 }
 
+message CollaboratorTypeEnumWithDefault {
+    enum CollaboratorTypeEnumWithDefault {
+        UNKNOWN = 0;
+        READ_WRITE = 1;
+        READ_ONLY = 2;
+    }
+}
+
 message EntitiesEnum {
     enum EntitiesTypes {
         UNKNOWN = 0; // Resource 0 should always cause an error
