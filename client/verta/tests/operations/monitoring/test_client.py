@@ -14,9 +14,9 @@ class TestClient(object):
         retrieved_entity = client.operations.get_or_create_monitored_entity(name=name)
         assert monitored_entity.id == retrieved_entity.id
 
-    def test_create_ME_in_workspace(self, client):
+    def test_create_ME_in_workspace(self, client, organization):
         ops = client.operations
-        team_workspace = "Demos"
+        team_workspace = organization.name
         default_workspace = client.get_workspace()
         assert team_workspace != default_workspace
 
