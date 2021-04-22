@@ -2,7 +2,6 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
-import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
@@ -45,14 +44,20 @@ public class VersionInputHandler {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
 
-  public VersionInputHandler(Executor executor, FutureJdbi jdbi, String entityName, DAOSet daoSet) {
+  public VersionInputHandler(
+      Executor executor,
+      FutureJdbi jdbi,
+      String entityName,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      BlobDAO blobDAO) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.entity_type = entityName;
 
-    this.repositoryDAO = daoSet.repositoryDAO;
-    this.commitDAO = daoSet.commitDAO;
-    this.blobDAO = daoSet.blobDAO;
+    this.repositoryDAO = repositoryDAO;
+    this.commitDAO = commitDAO;
+    this.blobDAO = blobDAO;
 
     switch (entityName) {
       case "ExperimentRunEntity":

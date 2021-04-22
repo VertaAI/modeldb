@@ -7,7 +7,6 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.CreateExperimentRun;
-import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.DeleteArtifact;
 import ai.verta.modeldb.DeleteExperimentRunAttributes;
 import ai.verta.modeldb.DeleteExperimentRunTags;
@@ -49,6 +48,9 @@ import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.versioning.BlobDAO;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.Action;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.IsSelfAllowed;
@@ -90,7 +92,10 @@ public class FutureExperimentRunDAO {
       FutureJdbi jdbi,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      DatasetVersionDAO datasetVersionDAO,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      BlobDAO blobDAO) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -114,7 +119,8 @@ public class FutureExperimentRunDAO {
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
-    createExperimentRunHandler = new CreateExperimentRunHandler(executor, jdbi, uac);
+    createExperimentRunHandler =
+        new CreateExperimentRunHandler(executor, jdbi, uac, repositoryDAO, commitDAO, blobDAO);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
