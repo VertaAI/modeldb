@@ -78,7 +78,7 @@ class Client(object):
     @property
     def notification_channels(self):
         """Notification channel repository."""
-        return NotificationChannels(self._conn, self._conf)
+        return NotificationChannels(self._client)
 
     def get_or_create_monitored_entity(self, name=None, workspace=None, id=None):
         """Get or create a monitored entity by name.
