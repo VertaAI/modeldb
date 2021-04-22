@@ -26,7 +26,10 @@ class TestIntegration:
     """Alerts + related entities/objects."""
 
     def test_add_notification_channels(
-        self, client, monitored_entity, created_entities,
+        self,
+        client,
+        monitored_entity,
+        created_entities,
     ):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
@@ -68,9 +71,11 @@ class TestIntegration:
         alert = alerts.create(name, alerter, sample_query)
         created_entities.append(alert)
         assert alert.status == Ok()
+        assert alert._last_evaluated_or_created_millis == alert._msg.created_at_millis
 
         alert.set_status(Alerting([summary_sample]))
         assert alert.status == Alerting([summary_sample])
+        assert alert._last_evaluated_or_created_millis == alert._msg.last_evaluated_at_millis
 
         alert.set_status(Ok())
         assert alert.status == Ok()
@@ -166,13 +171,14 @@ class TestFixed:
         created_alert = alerts.create(name, alerter, sample_query)
         assert isinstance(created_alert, _entities.Alert)
         assert created_alert._msg.alerter_type == alerter._TYPE
+        assert created_alert.monitored_entity_id == monitored_entity.id
 
         retrieved_alert = alerts.get(id=created_alert.id)
         client_retrieved_alert = client.operations.alerts.get(id=created_alert.id)
         assert retrieved_alert.id == client_retrieved_alert.id
         assert isinstance(retrieved_alert, _entities.Alert)
         assert retrieved_alert._msg.alerter_type == alerter._TYPE
-        assert retrieved_alert._msg.alerter_fixed == alerter._as_proto()
+        assert retrieved_alert.alerter._as_proto() == alerter._as_proto()
 
         listed_alerts = alerts.list()
         assert created_alert.id in map(lambda a: a.id, listed_alerts)
@@ -186,6 +192,48 @@ class TestFixed:
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
+        sample_query = SummarySampleQuery()
+
+        created_alert = alerts.create(name, alerter, sample_query)
+        created_entities.append(created_alert)
+        assert repr(created_alert)
+
+        retrieved_alert = alerts.get(id=created_alert.id)
+        assert repr(retrieved_alert)
+
+
+class TestReference:
+    def test_crud(self, client, monitored_entity, summary_sample):
+        alerts = monitored_entity.alerts
+        name = _utils.generate_default_name()
+        alerter = ReferenceAlerter(comparison.GreaterThan(0.7), summary_sample)
+        sample_query = SummarySampleQuery()
+
+        created_alert = alerts.create(name, alerter, sample_query)
+        assert isinstance(created_alert, _entities.Alert)
+        assert created_alert._msg.alerter_type == alerter._TYPE
+        assert created_alert.monitored_entity_id == monitored_entity.id
+
+        retrieved_alert = alerts.get(id=created_alert.id)
+        client_retrieved_alert = client.operations.alerts.get(id=created_alert.id)
+        assert retrieved_alert.id == client_retrieved_alert.id
+        assert isinstance(retrieved_alert, _entities.Alert)
+        assert retrieved_alert._msg.alerter_type == alerter._TYPE
+        assert retrieved_alert.alerter._as_proto() == alerter._as_proto()
+        assert retrieved_alert.alerter._reference_sample_id == summary_sample.id
+
+        listed_alerts = alerts.list()
+        assert created_alert.id in map(lambda a: a.id, listed_alerts)
+        client_listed_alerts = client.operations.alerts.list()
+        assert created_alert.id in map(lambda a: a.id, client_listed_alerts)
+
+        assert alerts.delete([created_alert])
+
+    def test_repr(self, monitored_entity, created_entities, summary_sample):
+        """__repr__() does not raise exceptions"""
+        alerts = monitored_entity.alerts
+        name = _utils.generate_default_name()
+        alerter = ReferenceAlerter(comparison.GreaterThan(0.7), summary_sample)
         sample_query = SummarySampleQuery()
 
         created_alert = alerts.create(name, alerter, sample_query)
