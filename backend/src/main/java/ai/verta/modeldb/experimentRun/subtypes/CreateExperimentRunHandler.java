@@ -38,7 +38,7 @@ public class CreateExperimentRunHandler {
   private final KeyValueHandler metricsHandler;
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
-  private final ArtifactHandlerBase artifactHandler;
+  private final ArtifactHandler artifactHandler;
   private final FeatureHandler featureHandler;
 
   public CreateExperimentRunHandler(
@@ -50,7 +50,7 @@ public class CreateExperimentRunHandler {
       KeyValueHandler metricsHandler,
       ObservationHandler observationHandler,
       TagsHandler tagsHandler,
-      ArtifactHandlerBase artifactHandler) {
+      ArtifactHandler artifactHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
