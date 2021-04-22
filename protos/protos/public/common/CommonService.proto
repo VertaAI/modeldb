@@ -49,7 +49,7 @@ message CollaboratorTypeEnum {
     }
 }
 
-message CollaboratorTypeEnumWithDefault {
+message CollaboratorTypeEnumWithDefaultEnum {
     enum CollaboratorTypeEnumWithDefault {
         UNKNOWN = 0;
         READ_WRITE = 1;
