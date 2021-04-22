@@ -25,8 +25,8 @@ message Organization {
     common.CollaboratorTypeEnum.CollaboratorType default_registered_model_collaborator_type = 13;
     string workspace_id = 14;
     common.TernaryEnum.Ternary registered_model_can_deploy = 15;
-    common.CollaboratorTypeEnumWithDefault.CollaboratorTypeEnumWithDefault default_monitored_entity_collaborator_type = 16;
-    common.CollaboratorTypeEnumWithDefault.CollaboratorTypeEnumWithDefault default_notification_channel_collaborator_type = 17;
+    common.CollaboratorTypeEnumWithDefaultEnum.CollaboratorTypeEnumWithDefault default_monitored_entity_collaborator_type = 16;
+    common.CollaboratorTypeEnumWithDefaultEnum.CollaboratorTypeEnumWithDefault default_notification_channel_collaborator_type = 17;
 }
 
 message GetOrganizationById {
