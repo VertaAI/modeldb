@@ -10,7 +10,6 @@ python:
   - method: pip
     path: client/verta
   - requirements: client/verta/docs/requirements.txt
-  system_packages: true
 
 sphinx:
   builder: html
