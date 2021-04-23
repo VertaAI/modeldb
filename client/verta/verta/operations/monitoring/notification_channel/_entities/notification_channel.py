@@ -92,7 +92,9 @@ class NotificationChannel(entity._ModelDBEntity):
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindNotificationChannelRequest(
-            ids=[int(id)], page_number=1, page_limit=-1,
+            ids=[int(id)],
+            page_number=1,
+            page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -102,14 +104,17 @@ class NotificationChannel(entity._ModelDBEntity):
                 "unexpectedly found multiple notification channels with ID"
                 " {}".format(id)
             )
-        return channels[0]
+        if channels:
+            return channels[0]
+        else:
+            return None
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
-        # NOTE: workspace is currently unsupported until https://vertaai.atlassian.net/browse/VR-9792
         msg = _AlertService.FindNotificationChannelRequest(
             names=[name],
-            page_number=1, page_limit=-1,
+            page_number=1,
+            page_limit=-1,
             workspace_name=workspace,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
@@ -120,7 +125,10 @@ class NotificationChannel(entity._ModelDBEntity):
                 "unexpectedly found multiple notification channels with name"
                 " {} in workspace {}".format(name, workspace)
             )
-        return channels[0]
+        if channels:
+            return channels[0]
+        else:
+            return None
 
     @classmethod
     def _create_proto_internal(
@@ -310,6 +318,68 @@ class NotificationChannels(object):
         else:
             raise ValueError("must specify either `name` or `id`")
 
+    def get_or_create(
+        self,
+        name=None,
+        channel=None,
+        workspace=None,
+        created_at=None,
+        updated_at=None,
+        id=None,
+    ):
+        if name and id:
+            raise ValueError("cannot specify both `name` and `id`")
+        if workspace and id:
+            raise ValueError(
+                "cannot specify both `workspace` and `id`;"
+                " getting by ID does not require a workspace name"
+            )
+
+        name = self._client._set_from_config_if_none(name, "notification_channel")
+        if workspace is None:
+            workspace = self._client.get_workspace()
+
+        resource_name = "Notification Channel"
+        param_names = "`channel`, `created_at`, or `updated_at`"
+        params = (channel, created_at, updated_at)
+        if id is not None:
+            channel = NotificationChannel._get_by_id(self._conn, self._conf, id)
+            _utils.check_unnecessary_params_warning(
+                resource_name,
+                "id {}".format(id),
+                param_names,
+                params,
+            )
+        else:
+            channel = NotificationChannel._get_or_create_by_name(
+                self._conn,
+                name,
+                lambda name: NotificationChannel._get_by_name(
+                    self._conn,
+                    self._conf,
+                    name,
+                    workspace,
+                ),
+                lambda name: NotificationChannel._create(
+                    self._conn,
+                    self._conf,
+                    _Context(self._conn, self._conf),
+                    name=name,
+                    channel=channel,
+                    workspace=workspace,
+                    created_at_millis=time_utils.epoch_millis(created_at),
+                    updated_at_millis=time_utils.epoch_millis(updated_at),
+                ),
+                lambda: _utils.check_unnecessary_params_warning(
+                    resource_name,
+                    "name {}".format(name),
+                    param_names,
+                    params,
+                ),
+            )
+
+        return channel
+
     # TODO: use lazy list and pagination
     # TODO: a proper find
     def list(self, workspace=None):
@@ -329,7 +399,8 @@ class NotificationChannels(object):
 
         """
         msg = _AlertService.FindNotificationChannelRequest(
-            page_number=1, page_limit=-1,
+            page_number=1,
+            page_limit=-1,
             workspace_name=workspace,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
