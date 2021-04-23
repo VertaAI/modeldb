@@ -83,4 +83,26 @@ public class QueryFilterContext {
     }
     return ret;
   }
+
+  private static long calculatePageIndex(long pageNumber) {
+    // page numbers are 1-based, SQL offset is 0-based
+    return pageNumber == 0 ? 0L : pageNumber - 1;
+  }
+
+  private static long calculateOffset(long pageIndex, long pageLimit) {
+    final var offset = pageLimit * pageIndex;
+    return offset;
+  }
+
+  public String getLimitString() {
+    return pageSize.map(
+        size -> {
+          var ret = " LIMIT " + size;
+          return ret + pageNumber.map(number -> {
+            final var pageIndex = calculatePageIndex(number);
+            final var offset = calculateOffset(pageIndex, size);
+            return " OFFSET " + offset;
+          }).orElse("");
+        }).orElse("");
+  }
 }
