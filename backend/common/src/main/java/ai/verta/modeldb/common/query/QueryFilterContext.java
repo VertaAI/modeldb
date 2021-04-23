@@ -11,8 +11,8 @@ public class QueryFilterContext {
   private final List<String> conditions;
   private final List<Consumer<Query>> binds;
   private final List<OrderItem> orderItems;
-  private Optional<Long> pageNumber;
-  private Optional<Long> pageSize;
+  private Optional<Integer> pageNumber;
+  private Optional<Integer> pageSize;
 
   public QueryFilterContext() {
     conditions = new LinkedList<>();
@@ -34,11 +34,11 @@ public class QueryFilterContext {
     return orderItems;
   }
 
-  public Optional<Long> getPageNumber() {
+  public Optional<Integer> getPageNumber() {
     return pageNumber;
   }
 
-  public Optional<Long> getPageSize() {
+  public Optional<Integer> getPageSize() {
     return pageSize;
   }
 
@@ -57,12 +57,12 @@ public class QueryFilterContext {
     return this;
   }
 
-  public QueryFilterContext setPageSize(Long pageSize) {
+  public QueryFilterContext setPageSize(Integer pageSize) {
     this.pageSize = Optional.ofNullable(pageSize);
     return this;
   }
 
-  public QueryFilterContext setPageNumber(Long pageNumber) {
+  public QueryFilterContext setPageNumber(Integer pageNumber) {
     this.pageNumber = Optional.ofNullable(pageNumber);
     return this;
   }
