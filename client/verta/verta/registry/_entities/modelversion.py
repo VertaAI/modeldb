@@ -437,6 +437,7 @@ class RegisteredModelVersion(_DeployableEntity):
         return artifact_stream
 
     def download_artifact(self, key, download_to_path):
+        download_to_path = os.path.abspath(download_to_path)
         artifact = self._get_artifact_msg(key)
 
         # create parent dirs

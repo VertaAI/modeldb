@@ -700,6 +700,7 @@ class TestArbitraryModels:
         strs,
         in_tempdir,
     ):
+        """Dir model logged to run is unpacked by model ver."""
         dirpath, _ = dir_and_files
         download_path = strs[0]
 
