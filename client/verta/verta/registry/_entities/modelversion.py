@@ -674,7 +674,7 @@ class RegisteredModelVersion(_DeployableEntity):
 
     def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists
-        _ = self._get_artifact_msg(key)
+        self._get_artifact_msg(key)
 
         # download artifact from artifact store
         url = self._get_url_for_artifact(key, "GET", artifact_type).url
