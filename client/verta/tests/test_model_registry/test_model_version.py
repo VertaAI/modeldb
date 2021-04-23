@@ -692,6 +692,26 @@ class TestArbitraryModels:
         # contents match
         utils.assert_dirs_match(dirpath, download_path)
 
+    def test_from_run_download_arbitrary_directory(
+        self,
+        experiment_run,
+        registered_model,
+        dir_and_files,
+        strs,
+        in_tempdir,
+    ):
+        dirpath, _ = dir_and_files
+        download_path = strs[0]
+
+        experiment_run.log_model(dirpath)
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id,
+            name="From Run {}".format(experiment_run.id),
+        )
+        model_version.download_model(download_path)
+
+        utils.assert_dirs_match(dirpath, download_path)
+
     def test_download_arbitrary_zip(self, model_version, dir_and_files, strs, in_tempdir):
         """Model that was originally a ZIP is not unpacked on download."""
         model_dir, _ = dir_and_files
