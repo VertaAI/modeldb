@@ -62,7 +62,7 @@ class RegisteredModelVersion(_DeployableEntity):
         msg = self._msg
         artifact_keys = self.get_artifact_keys()
         if self.has_model:
-            artifact_keys.append("model")
+            artifact_keys.append(_artifact_utils.REGISTRY_MODEL_KEY)
 
         return '\n'.join((
             "version: {}".format(msg.version),
@@ -249,7 +249,7 @@ class RegisteredModelVersion(_DeployableEntity):
 
         # Create artifact message and update ModelVersion's message:
         model_msg = self._create_artifact_msg(
-            "model", serialized_model,
+            _artifact_utils.REGISTRY_MODEL_KEY, serialized_model,
             artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension,
         )
         model_version_update = self.ModelVersionMessage(model=model_msg)
@@ -257,7 +257,7 @@ class RegisteredModelVersion(_DeployableEntity):
 
         # Upload the artifact to ModelDB:
         self._upload_artifact(
-            "model", serialized_model,
+            _artifact_utils.REGISTRY_MODEL_KEY, serialized_model,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
 
@@ -295,7 +295,10 @@ class RegisteredModelVersion(_DeployableEntity):
             model.
 
         """
-        model_artifact = self._get_artifact("model", _CommonCommonService.ArtifactTypeEnum.MODEL)
+        model_artifact = self._get_artifact(
+            _artifact_utils.REGISTRY_MODEL_KEY,
+            _CommonCommonService.ArtifactTypeEnum.MODEL,
+        )
         return _artifact_utils.deserialize_model(model_artifact, error_ok=True)
 
     def del_model(self):
@@ -326,8 +329,13 @@ class RegisteredModelVersion(_DeployableEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
-        if key == "model":
-            raise ValueError("the key \"model\" is reserved for model; consider using log_model() instead")
+        if key == _artifact_utils.REGISTRY_MODEL_KEY:
+            raise ValueError(
+                "the key \"{}\" is reserved for model;"
+                " consider using log_model() instead".format(
+                    _artifact_utils.REGISTRY_MODEL_KEY
+                )
+            )
 
         self._fetch_with_no_cache()
         same_key_ind = -1
@@ -413,7 +421,7 @@ class RegisteredModelVersion(_DeployableEntity):
             Name of the artifact.
 
         """
-        if key == "model":
+        if key == _artifact_utils.REGISTRY_MODEL_KEY:
             raise ValueError("model can't be deleted through del_artifact(); consider using del_model() instead")
 
         self._fetch_with_no_cache()
@@ -617,7 +625,7 @@ class RegisteredModelVersion(_DeployableEntity):
     def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists
         self._refresh_cache()
-        if key == "model":
+        if key == _artifact_utils.REGISTRY_MODEL_KEY:
             # get model artifact
             if not self.has_model:
                 raise KeyError("no model associated with this version")
