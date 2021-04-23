@@ -2,6 +2,8 @@
 
 from __future__ import division
 
+from collections import defaultdict
+
 from ..external import six
 
 from .._internal_utils.importer import maybe_dependency
@@ -52,6 +54,7 @@ class DiscreteHistogram(_VertaDataType):
 
         self._buckets = buckets
         self._data = data
+        self._data_dict = defaultdict(int, zip(buckets, data))
 
     def _as_dict(self):
         return self._as_dict_inner(
@@ -74,24 +77,13 @@ class DiscreteHistogram(_VertaDataType):
             raise TypeError(
                 "`other` must be type {}, not {}".format(type(self), type(other))
             )
-
-        self_sorted_buckets = self.sorted_buckets()
-        other_sorted_buckets = other.sorted_buckets()
-        if self_sorted_buckets != other_sorted_buckets:
-            raise ValueError(
-                "buckets must match (self: {}, other: {})".format(
-                    self_sorted_buckets, other_sorted_buckets,
-                )
-            )
-
+        keys = list(set(self._buckets + other._buckets))
         return self._scipy_spatial.distance.cosine(
-            self.normalized_data(),
-            other.normalized_data(),
+            self.normalized_data(keys),
+            other.normalized_data(keys),
         )
 
-    def sorted_buckets(self):
-        return sorted(self._buckets)
-
-    def normalized_data(self):
+    def normalized_data(self, keys=None):
         total = sum(self._data)
-        return [x / total for x in self._data]
+        keys = keys if keys else self._buckets
+        return [self._data_dict[k] / total for k in keys]
