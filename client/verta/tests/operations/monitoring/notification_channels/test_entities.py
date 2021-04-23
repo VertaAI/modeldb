@@ -14,6 +14,53 @@ from verta.operations.monitoring.notification_channel import _entities
 class TestNotificationChannel:
     """Tests that aren't specific to a channel type."""
 
+    def test_get_or_create_workspace(self, client, strs, organization, created_entities):
+        strs = iter(strs)
+        workspace = organization.name
+        notification_channels = client.operations.notification_channels
+
+        created_channel = notification_channels.get_or_create(
+            name=next(strs),
+            channel=SlackNotificationChannel(next(strs)),
+            workspace=workspace,
+        )
+        created_entities.append(created_channel)
+        assert created_channel.workspace == workspace
+
+        # extraneous params
+        with pytest.warns(UserWarning):
+            retrieved_channel = notification_channels.get_or_create(
+                name=created_channel.name,
+                channel=SlackNotificationChannel(next(strs)),
+                workspace=workspace,
+            )
+        assert retrieved_channel.id == created_channel.id
+
+        # name only
+        with pytest.warns(None) as record:
+            retrieved_channel = notification_channels.get_or_create(
+                name=created_channel.name,
+                workspace=workspace,
+            )
+        assert not record  # no warning of extraneous params
+        assert retrieved_channel.id == created_channel.id
+
+        # ID only
+        with pytest.warns(None) as record:
+            retrieved_channel = notification_channels.get_or_create(
+                id=created_channel.id,
+            )
+        assert not record  # no warning of extraneous params
+        assert retrieved_channel.id == created_channel.id
+
+        new_channel = notification_channels.get_or_create(
+            next(strs),
+            SlackNotificationChannel(next(strs)),
+            workspace=workspace,
+        )
+        created_entities.append(new_channel)
+        assert new_channel.id != created_channel.id
+
     def test_creation_datetime(self, client, strs, created_entities):
         strs = iter(strs)
         notification_channels = client.operations.notification_channels

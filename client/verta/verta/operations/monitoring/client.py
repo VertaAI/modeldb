@@ -102,8 +102,13 @@ class Client(object):
         :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
             A monitored entity object.
         """
-        if name is not None and id is not None:
+        if name and id:
             raise ValueError("cannot specify both `name` and `id`")
+        if workspace and id:
+            raise ValueError(
+                "cannot specify both `workspace` and `id`;"
+                " getting by ID does not require a workspace name"
+            )
 
         name = self._client._set_from_config_if_none(name, "monitored_entity")
         if workspace is None:
