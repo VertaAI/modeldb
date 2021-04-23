@@ -104,7 +104,10 @@ class NotificationChannel(entity._ModelDBEntity):
                 "unexpectedly found multiple notification channels with ID"
                 " {}".format(id)
             )
-        return channels[0]
+        if channels:
+            return channels[0]
+        else:
+            return None
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
@@ -122,7 +125,10 @@ class NotificationChannel(entity._ModelDBEntity):
                 "unexpectedly found multiple notification channels with name"
                 " {} in workspace {}".format(name, workspace)
             )
-        return channels[0]
+        if channels:
+            return channels[0]
+        else:
+            return None
 
     @classmethod
     def _create_proto_internal(
