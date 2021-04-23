@@ -1,23 +1,21 @@
-import six
+# -*- coding: utf-8 -*-
 
-import tarfile
-
-import pytest
-import requests
-import zipfile
+import filecmp
 import glob
+import os
+import pickle
 import shutil
 import sys
+import tarfile
 import tempfile
-import json
+import zipfile
 
 import cloudpickle
+import pytest
+import requests
+import six
 
 import verta
-
-from .. import utils
-import os
-
 import verta.dataset
 from verta import visibility
 from verta.environment import Python
@@ -28,6 +26,9 @@ from verta._internal_utils import (
     _artifact_utils,
     _utils,
 )
+
+from .. import utils
+
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
@@ -138,108 +139,6 @@ class TestModelVersion:
         retrieved_model_version_by_id = client.get_registered_model_version(model_version.id)
 
         assert retrieved_model_version_by_id.id == model_version.id
-
-    def test_log_artifact(self, model_version):
-        np = pytest.importorskip("numpy")
-        sklearn = pytest.importorskip("sklearn")
-        from sklearn.linear_model import LogisticRegression
-
-        classifier = LogisticRegression()
-        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        original_coef = classifier.coef_
-        model_version.log_artifact("coef", original_coef)
-
-        # retrieve the artifact:
-        retrieved_coef = model_version.get_artifact("coef")
-        assert np.array_equal(retrieved_coef, original_coef)
-        assert model_version._msg.artifacts[0].filename_extension == "pkl"
-
-        # Overwrite should work:
-        new_classifier = LogisticRegression()
-        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_artifact("coef", new_classifier.coef_, True)
-        retrieved_coef = model_version.get_artifact("coef")
-        assert np.array_equal(retrieved_coef, new_classifier.coef_)
-
-        # when overwrite = false, overwriting should fail
-        with pytest.raises(ValueError) as excinfo:
-            model_version.log_artifact("coef", new_classifier.coef_)
-
-        assert "The key has been set" in str(excinfo.value)
-
-    def test_add_artifact_file(self, model_version, in_tempdir, random_data):
-        filename = "tiny1.bin"
-        FILE_CONTENTS = random_data
-        with open(filename, 'wb') as f:
-            f.write(FILE_CONTENTS)
-        model_version.log_artifact("file", filename)
-
-        # retrieve the artifact:
-        retrieved_file = model_version.get_artifact("file")
-        assert retrieved_file.getvalue() == FILE_CONTENTS
-
-    def test_wrong_key(self, model_version):
-        with pytest.raises(KeyError) as excinfo:
-            model_version.get_model()
-
-        assert "no model associated with this version" in str(excinfo.value)
-
-        with pytest.raises(KeyError) as excinfo:
-            model_version.get_artifact("non-existing")
-
-        assert "no artifact found with key non-existing" in str(excinfo.value)
-
-        np = pytest.importorskip("numpy")
-        with pytest.raises(ValueError) as excinfo:
-            model_version.log_artifact("model", np.random.random((36, 12)))
-
-        assert "the key \"model\" is reserved for model; consider using log_model() instead" in str(excinfo.value)
-
-        with pytest.raises(ValueError) as excinfo:
-            model_version.del_artifact("model")
-
-        assert "model can't be deleted through del_artifact(); consider using del_model() instead" in str(excinfo.value)
-
-    def test_del_artifact(self, registered_model):
-        np = pytest.importorskip("numpy")
-        sklearn = pytest.importorskip("sklearn")
-        from sklearn.linear_model import LogisticRegression
-
-        model_version = registered_model.get_or_create_version(name="my version")
-        classifier = LogisticRegression()
-        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-
-        model_version.log_artifact("coef", classifier.coef_)
-        model_version.log_artifact("coef-2", classifier.coef_)
-        model_version.log_artifact("coef-3", classifier.coef_)
-
-
-        model_version.del_artifact("coef-2")
-        assert len(model_version.get_artifact_keys()) == 2
-
-        model_version.del_artifact("coef")
-        assert len(model_version.get_artifact_keys()) == 1
-
-        model_version.del_artifact("coef-3")
-        assert len(model_version.get_artifact_keys()) == 0
-
-    def test_del_model(self, registered_model):
-        np = pytest.importorskip("numpy")
-        sklearn = pytest.importorskip("sklearn")
-        from sklearn.linear_model import LogisticRegression
-
-        model_version = registered_model.get_or_create_version(name="my version")
-        classifier = LogisticRegression()
-        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_model(classifier)
-
-        model_version = registered_model.get_version(id=model_version.id)
-        assert model_version.has_model
-        model_version.del_model()
-        assert (not model_version.has_model)
-
-        model_version = registered_model.get_version(id=model_version.id)
-        assert (not model_version.has_model)
 
     def test_log_environment(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
@@ -437,6 +336,145 @@ class TestFind:
         assert len(reg_model.versions.find("stage == staging")) == 0
 
 
+class TestArtifacts:
+    def test_log_artifact(self, model_version):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        original_coef = classifier.coef_
+        model_version.log_artifact("coef", original_coef)
+
+        # retrieve the artifact:
+        retrieved_coef = model_version.get_artifact("coef")
+        assert np.array_equal(retrieved_coef, original_coef)
+        assert model_version._msg.artifacts[0].filename_extension == "pkl"
+
+        # Overwrite should work:
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_artifact("coef", new_classifier.coef_, True)
+        retrieved_coef = model_version.get_artifact("coef")
+        assert np.array_equal(retrieved_coef, new_classifier.coef_)
+
+        # when overwrite = false, overwriting should fail
+        with pytest.raises(ValueError) as excinfo:
+            model_version.log_artifact("coef", new_classifier.coef_)
+
+        assert "The key has been set" in str(excinfo.value)
+
+    def test_add_artifact_file(self, model_version, in_tempdir, random_data):
+        filename = "tiny1.bin"
+        FILE_CONTENTS = random_data
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+        model_version.log_artifact("file", filename)
+
+        # retrieve the artifact:
+        retrieved_file = model_version.get_artifact("file")
+        assert retrieved_file.getvalue() == FILE_CONTENTS
+
+    def test_download(self, model_version, strs, in_tempdir, random_data):
+        key = strs[0]
+        filename = strs[1]
+        new_filename = strs[2]
+        FILE_CONTENTS = random_data
+
+        # create file and upload as artifact
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+        model_version.log_artifact(key, filename)
+        os.remove(filename)
+
+        # download artifact and verify contents
+        new_filepath = model_version.download_artifact(key, new_filename)
+        assert new_filepath == os.path.abspath(new_filename)
+        with open(new_filepath, 'rb') as f:
+            assert f.read() == FILE_CONTENTS
+
+        # object as well
+        obj = {'some': ["arbitrary", "object"]}
+        model_version.log_artifact(key, obj, overwrite=True)
+        new_filepath = model_version.download_artifact(key, new_filename)
+        with open(new_filepath, 'rb') as f:
+            assert pickle.load(f) == obj
+
+    def test_download_directory(self, model_version, strs, dir_and_files, in_tempdir):
+        key, download_path = strs[:2]
+        dirpath, _ = dir_and_files
+
+        model_version.log_artifact(key, dirpath)
+        model_version.download_artifact(key, download_path)
+
+        # contents match
+        utils.assert_dirs_match(dirpath, download_path)
+
+    def test_wrong_key(self, model_version):
+        with pytest.raises(KeyError) as excinfo:
+            model_version.get_model()
+
+        assert "no model associated with this version" in str(excinfo.value)
+
+        with pytest.raises(KeyError) as excinfo:
+            model_version.get_artifact("non-existing")
+
+        assert "no artifact found with key non-existing" in str(excinfo.value)
+
+        np = pytest.importorskip("numpy")
+        with pytest.raises(ValueError) as excinfo:
+            model_version.log_artifact("model", np.random.random((36, 12)))
+
+        assert "the key \"model\" is reserved for model; consider using log_model() instead" in str(excinfo.value)
+
+        with pytest.raises(ValueError) as excinfo:
+            model_version.del_artifact("model")
+
+        assert "model can't be deleted through del_artifact(); consider using del_model() instead" in str(excinfo.value)
+
+    def test_del_artifact(self, registered_model):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        model_version = registered_model.get_or_create_version(name="my version")
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+
+        model_version.log_artifact("coef", classifier.coef_)
+        model_version.log_artifact("coef-2", classifier.coef_)
+        model_version.log_artifact("coef-3", classifier.coef_)
+
+
+        model_version.del_artifact("coef-2")
+        assert len(model_version.get_artifact_keys()) == 2
+
+        model_version.del_artifact("coef")
+        assert len(model_version.get_artifact_keys()) == 1
+
+        model_version.del_artifact("coef-3")
+        assert len(model_version.get_artifact_keys()) == 0
+
+    def test_del_model(self, registered_model):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        model_version = registered_model.get_or_create_version(name="my version")
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier)
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert model_version.has_model
+        model_version.del_model()
+        assert (not model_version.has_model)
+
+        model_version = registered_model.get_version(id=model_version.id)
+        assert (not model_version.has_model)
+
+
 class TestDeployability:
     """Deployment-related functionality"""
     def test_log_model(self, model_version):
@@ -493,6 +531,24 @@ class TestDeployability:
         custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
         with zipfile.ZipFile(custom_modules, 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+
+    def test_download_sklearn(self, model_version, in_tempdir):
+        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+
+        upload_filepath = "model.pkl"
+        download_filepath = "retrieved_model.pkl"
+
+        model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
+        with open(upload_filepath, 'wb') as f:
+            pickle.dump(model, f)
+
+        model_version.log_model(model, custom_modules=[])
+        model_version.download_model(download_filepath)
+
+        with open(download_filepath, 'rb') as f:
+            downloaded_model = pickle.load(f)
+
+        assert downloaded_model.get_params() == model.get_params()
 
     def test_log_model_with_custom_modules(self, model_version, model_for_deployment):
         custom_modules_dir = "."
@@ -621,6 +677,35 @@ class TestArbitraryModels:
         assert model_version.get_model() == model
 
         self._assert_no_deployment_artifacts(model_version)
+
+    def test_download_arbitrary_directory(self, model_version, dir_and_files, strs, in_tempdir):
+        """Model that was originally a dir is unpacked on download."""
+        dirpath, _ = dir_and_files
+        download_path = strs[0]
+
+        model_version.log_model(dirpath)
+        model_version.download_model(download_path)
+
+        # contents match
+        utils.assert_dirs_match(dirpath, download_path)
+
+    def test_download_arbitrary_zip(self, model_version, dir_and_files, strs, in_tempdir):
+        """Model that was originally a ZIP is not unpacked on download."""
+        model_dir, _ = dir_and_files
+        upload_path, download_path = strs[:2]
+
+        # zip `model_dir` into `upload_path`
+        with open(upload_path, 'wb') as f:
+            shutil.copyfileobj(
+                _artifact_utils.zip_dir(model_dir),
+                f,
+            )
+
+        model_version.log_model(upload_path)
+        model_version.download_model(download_path)
+
+        assert zipfile.is_zipfile(download_path)
+        assert filecmp.cmp(upload_path, download_path)
 
 
 class TestLockLevels:
