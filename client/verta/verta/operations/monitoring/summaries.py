@@ -476,7 +476,6 @@ class Summaries:
         from datetime import datetime, timedelta, timezone
 
         from verta import Client
-        from verta._internal_utils._utils import generate_default_name
         from verta.operations.monitoring.summaries import SummaryQuery, SummarySampleQuery
         from verta import data_types
 
