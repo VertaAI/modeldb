@@ -3,6 +3,8 @@
 from __future__ import print_function
 
 import os
+import logging
+import pathlib2
 import pickle
 from google.protobuf.struct_pb2 import Value
 
@@ -28,6 +30,9 @@ from ..._tracking.entity import _MODEL_ARTIFACTS_ATTR_KEY
 from ..._tracking.deployable_entity import _DeployableEntity
 from ...environment import _Environment, Python
 from .. import lock
+
+
+logger = logging.getLogger(__name__)
 
 
 class RegisteredModelVersion(_DeployableEntity):
@@ -189,6 +194,20 @@ class RegisteredModelVersion(_DeployableEntity):
 
         print("created new ModelVersion: {}".format(model_version.version))
         return model_version
+
+    def _get_artifact_msg(self, key):
+        self._refresh_cache()
+
+        if key == _artifact_utils.REGISTRY_MODEL_KEY:
+            if not self.has_model:
+                raise KeyError("no model associated with this version")
+            return self._msg.model
+
+        for artifact_msg in self._msg.artifacts:
+            if artifact_msg.key == key:
+                return artifact_msg
+
+        raise KeyError("no artifact found with key {}".format(key))
 
     def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
         """
@@ -414,6 +433,30 @@ class RegisteredModelVersion(_DeployableEntity):
 
         return artifact_stream
 
+    def download_artifact(self, key, download_to_path):
+        artifact = self._get_artifact_msg(key)
+
+        # create parent dirs
+        pathlib2.Path(download_to_path).parent.mkdir(
+            parents=True, exist_ok=True)
+        # TODO: clean up empty parent dirs if something later fails
+
+        # get a stream of the file bytes, without loading into memory, and write to file
+        # TODO: consolidate this with _get_artifact() and get_artifact()
+        logger.info("downloading %s from Registry", key)
+        # download artifact from artifact store
+        url = self._get_url_for_artifact(key, "GET").url
+        with _utils.make_request("GET", url, self._conn, stream=True) as response:
+            _utils.raise_for_http_error(response)
+
+            if artifact.filename_extension == _artifact_utils.ZIP_EXTENSION:  # verta-created ZIP
+                downloader = _request_utils.download_zipped_dir
+            else:
+                downloader = _request_utils.download_file
+            downloader(response, download_to_path, overwrite_ok=True)
+
+        return download_to_path
+
     def del_artifact(self, key):
         """
         Deletes the artifact with name `key` from this Model Version.
@@ -627,13 +670,7 @@ class RegisteredModelVersion(_DeployableEntity):
 
     def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists
-        self._refresh_cache()
-        if key == _artifact_utils.REGISTRY_MODEL_KEY:
-            # get model artifact
-            if not self.has_model:
-                raise KeyError("no model associated with this version")
-        elif len(list(filter(lambda artifact: artifact.key == key, self._msg.artifacts))) == 0:
-            raise KeyError("no artifact found with key {}".format(key))
+        _ = self._get_artifact_msg(key)
 
         # download artifact from artifact store
         url = self._get_url_for_artifact(key, "GET", artifact_type).url

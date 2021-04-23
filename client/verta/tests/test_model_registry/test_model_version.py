@@ -341,27 +341,30 @@ class TestArtifacts:
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
+        key = "coef"
 
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
         original_coef = classifier.coef_
-        model_version.log_artifact("coef", original_coef)
+        model_version.log_artifact(key, original_coef)
 
         # retrieve the artifact:
-        retrieved_coef = model_version.get_artifact("coef")
+        retrieved_coef = model_version.get_artifact(key)
         assert np.array_equal(retrieved_coef, original_coef)
-        assert model_version._msg.artifacts[0].filename_extension == "pkl"
+        artifact_msg = model_version._get_artifact_msg(key)
+        assert artifact_msg.key == key
+        assert artifact_msg.filename_extension == "pkl"
 
         # Overwrite should work:
         new_classifier = LogisticRegression()
         new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_artifact("coef", new_classifier.coef_, True)
-        retrieved_coef = model_version.get_artifact("coef")
+        model_version.log_artifact(key, new_classifier.coef_, overwrite=True)
+        retrieved_coef = model_version.get_artifact(key)
         assert np.array_equal(retrieved_coef, new_classifier.coef_)
 
         # when overwrite = false, overwriting should fail
         with pytest.raises(ValueError) as excinfo:
-            model_version.log_artifact("coef", new_classifier.coef_)
+            model_version.log_artifact(key, new_classifier.coef_)
 
         assert "The key has been set" in str(excinfo.value)
 
