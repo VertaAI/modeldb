@@ -2,7 +2,7 @@ Comparison
 ==========
 
 .. note::
-    .. versionadded:: 0.17.6
+    .. versionadded:: 0.17.7
 
 .. currentmodule:: verta.common.comparison
 
