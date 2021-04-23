@@ -327,6 +327,55 @@ class NotificationChannels(object):
         updated_at=None,
         id=None,
     ):
+        """Get or create a notification channel by name.
+
+        Either `name` or `id` can be provided but not both. If `id` is
+        provided, this will act only as a get method and no object will be
+        created.
+
+        Parameters
+        ----------
+        name : str, optional
+            A unique name for this notification channel.
+        channel : :class:`~verta.operations.monitoring.notification_channel._NotificationChannel`, optional
+            The configuration for this notification channel.
+        workspace : str, optional
+            Workspace in which to create this notification channel. Defaults to
+            the client's default workspace.
+        created_at : datetime.datetime or int, optional
+            An override creation time to assign to this channel. Either a
+            timezone aware datetime object or unix epoch milliseconds.
+        updated_at : datetime.datetime or int, optional
+            An override update time to assign to this channel. Either a
+            timezone aware datetime object or unix epoch milliseconds.
+        id : int, optional
+            Notification channel ID. This should not be provided if `name`
+            is provided.
+
+        Returns
+        -------
+        :class:`NotificationChannel`
+            Notification channel.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.operations.monitoring.notification_channel import SlackNotificationChannel
+
+            channels = Client().operations.notification_channels
+
+            channel = notification_channels.get_or_create(
+                "Slack alerts",
+                SlackNotificationChannel("https://hooks.slack.com/services/.../.../......"),
+            )
+
+            # get it back later with the same method
+            channel = notification_channels.get_or_create(
+                "Slack alerts",
+            )
+
+        """
         if name and id:
             raise ValueError("cannot specify both `name` and `id`")
         if workspace and id:
