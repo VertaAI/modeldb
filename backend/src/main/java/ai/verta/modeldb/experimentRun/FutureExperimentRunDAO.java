@@ -5,8 +5,10 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -16,7 +18,9 @@ import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.*;
+import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.uac.*;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -559,7 +563,6 @@ public class FutureExperimentRunDAO {
             .thenApply(QueryFilterContext::combine, executor)
             .thenCompose(
                 queryContext -> {
-                  // TODO: get code version
                   // TODO: get environment
                   // TODO: get features?
                   // TODO: get versioned inputs
@@ -567,7 +570,7 @@ public class FutureExperimentRunDAO {
                   return jdbi.withHandle(
                           handle -> {
                             var sql =
-                                "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.job_id from experiment_run";
+                                "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id from experiment_run";
 
                             // Add the sorting tables
                             for (final var item :
@@ -616,23 +619,44 @@ public class FutureExperimentRunDAO {
 
                             return query
                                 .map(
-                                    (rs, ctx) ->
-                                        ExperimentRun.newBuilder()
-                                            .setId(rs.getString("experiment_run.id"))
-                                            .setProjectId(rs.getString("experiment_run.project_id"))
-                                            .setExperimentId(
-                                                rs.getString("experiment_run.experiment_id"))
-                                            .setName(rs.getString("experiment_run.name"))
-                                            .setDescription(
-                                                rs.getString("experiment_run.description"))
-                                            .setDateUpdated(
-                                                rs.getLong("experiment_run.date_updated"))
-                                            .setDateCreated(
-                                                rs.getLong("experiment_run.date_created"))
-                                            .setStartTime(rs.getLong("experiment_run.start_time"))
-                                            .setEndTime(rs.getLong("experiment_run.end_time"))
-                                            .setOwner(rs.getString("experiment_run.owner"))
-                                            .setJobId(rs.getString("experiment_run.job_id")))
+                                    (rs, ctx) -> {
+                                      ExperimentRun.Builder runBuilder =
+                                          ExperimentRun.newBuilder()
+                                              .setId(rs.getString("experiment_run.id"))
+                                              .setProjectId(
+                                                  rs.getString("experiment_run.project_id"))
+                                              .setExperimentId(
+                                                  rs.getString("experiment_run.experiment_id"))
+                                              .setName(rs.getString("experiment_run.name"))
+                                              .setDescription(
+                                                  rs.getString("experiment_run.description"))
+                                              .setDateUpdated(
+                                                  rs.getLong("experiment_run.date_updated"))
+                                              .setDateCreated(
+                                                  rs.getLong("experiment_run.date_created"))
+                                              .setStartTime(rs.getLong("experiment_run.start_time"))
+                                              .setEndTime(rs.getLong("experiment_run.end_time"))
+                                              .setOwner(rs.getString("experiment_run.owner"))
+                                              .setCodeVersion(
+                                                  rs.getString("experiment_run.code_version"))
+                                              .setJobId(rs.getString("experiment_run.job_id"));
+
+                                      var environment = rs.getString("experiment_run.environment");
+                                      if (environment != null && !environment.isEmpty()) {
+                                        EnvironmentBlob.Builder environmentBlobBuilder =
+                                            EnvironmentBlob.newBuilder();
+                                        try {
+                                          CommonUtils.getProtoObjectFromString(
+                                              environment, environmentBlobBuilder);
+                                        } catch (InvalidProtocolBufferException e) {
+                                          LOGGER.error("Error generating builder for environment");
+                                          throw new ModelDBException(e);
+                                        }
+                                        runBuilder.setEnvironment(environmentBlobBuilder.build());
+                                      }
+
+                                      return runBuilder;
+                                    })
                                 .list();
                           })
                       .thenCompose(
