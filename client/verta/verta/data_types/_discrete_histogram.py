@@ -41,8 +41,8 @@ class DiscreteHistogram(_VertaDataType):
 
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, buckets, data):
-        self._scipy = maybe_dependency("scipy")
-        if self._scipy is None:
+        self._scipy_spatial = maybe_dependency("scipy.spatial")
+        if self._scipy_spatial is None:
             raise ImportError("scipy is not installed; try `pip install scipy`")
 
         if len(buckets) != len(set(buckets)):
@@ -77,9 +77,8 @@ class DiscreteHistogram(_VertaDataType):
             raise TypeError(
                 "`other` must be type {}, not {}".format(type(self), type(other))
             )
-
         keys = list(set(self._buckets + other._buckets))
-        return self._scipy.spatial.distance.cosine(
+        return self._scipy_spatial.distance.cosine(
             self.normalized_data(keys),
             other.normalized_data(keys),
         )
