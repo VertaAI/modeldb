@@ -35,13 +35,14 @@ import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
-import java.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.AbstractMap.SimpleEntry;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
@@ -178,7 +179,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
    * @param responseObserver : CreateExperimentRun.Response response
    */
   @Override
-  public void createExperimentRun(
+  public synchronized void createExperimentRun(
       CreateExperimentRun request, StreamObserver<CreateExperimentRun.Response> responseObserver) {
     try {
 
@@ -217,7 +218,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void deleteExperimentRun(
+  public synchronized void deleteExperimentRun(
       DeleteExperimentRun request, StreamObserver<DeleteExperimentRun.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
@@ -253,7 +254,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getExperimentRunsInProject(
+  public synchronized void getExperimentRunsInProject(
       GetExperimentRunsInProject request,
       StreamObserver<GetExperimentRunsInProject.Response> responseObserver) {
     try {
@@ -306,7 +307,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getExperimentRunsInExperiment(
+  public synchronized void getExperimentRunsInExperiment(
       GetExperimentRunsInExperiment request,
       StreamObserver<GetExperimentRunsInExperiment.Response> responseObserver) {
     try {
@@ -366,7 +367,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getExperimentRunById(
+  public synchronized void getExperimentRunById(
       GetExperimentRunById request,
       StreamObserver<GetExperimentRunById.Response> responseObserver) {
     try {
@@ -413,7 +414,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getExperimentRunByName(
+  public synchronized void getExperimentRunByName(
       GetExperimentRunByName request,
       StreamObserver<GetExperimentRunByName.Response> responseObserver) {
     try {
@@ -489,7 +490,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void updateExperimentRunDescription(
+  public synchronized void updateExperimentRunDescription(
       UpdateExperimentRunDescription request,
       StreamObserver<UpdateExperimentRunDescription.Response> responseObserver) {
     try {
@@ -530,7 +531,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void updateExperimentRunName(
+  public synchronized void updateExperimentRunName(
       UpdateExperimentRunName request,
       StreamObserver<UpdateExperimentRunName.Response> responseObserver) {
     try {
@@ -567,7 +568,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void addExperimentRunTags(
+  public synchronized void addExperimentRunTags(
       AddExperimentRunTags request,
       StreamObserver<AddExperimentRunTags.Response> responseObserver) {
     try {
@@ -614,7 +615,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void addExperimentRunTag(
+  public synchronized void addExperimentRunTag(
       AddExperimentRunTag request, StreamObserver<AddExperimentRunTag.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -661,7 +662,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getExperimentRunTags(
+  public synchronized void getExperimentRunTags(
       GetTags request, StreamObserver<GetTags.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
@@ -695,7 +696,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void deleteExperimentRunTags(
+  public synchronized void deleteExperimentRunTags(
       DeleteExperimentRunTags request,
       StreamObserver<DeleteExperimentRunTags.Response> responseObserver) {
     try {
@@ -744,7 +745,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void deleteExperimentRunTag(
+  public synchronized void deleteExperimentRunTag(
       DeleteExperimentRunTag request,
       StreamObserver<DeleteExperimentRunTag.Response> responseObserver) {
     try {
@@ -793,7 +794,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void addExperimentRunAttributes(
+  public synchronized void addExperimentRunAttributes(
       AddExperimentRunAttributes request,
       StreamObserver<AddExperimentRunAttributes.Response> responseObserver) {
     try {
@@ -839,7 +840,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void deleteExperimentRunAttributes(
+  public synchronized void deleteExperimentRunAttributes(
       DeleteExperimentRunAttributes request,
       StreamObserver<DeleteExperimentRunAttributes.Response> responseObserver) {
     try {
@@ -888,7 +889,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logObservation(
+  public synchronized void logObservation(
       LogObservation request, StreamObserver<LogObservation.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -933,7 +934,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logObservations(
+  public synchronized void logObservations(
       LogObservations request, StreamObserver<LogObservations.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -974,7 +975,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getObservations(
+  public synchronized void getObservations(
       GetObservations request, StreamObserver<GetObservations.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -1017,7 +1018,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logMetric(LogMetric request, StreamObserver<LogMetric.Response> responseObserver) {
+  public synchronized void logMetric(
+      LogMetric request, StreamObserver<LogMetric.Response> responseObserver) {
     try {
       String errorMessage = null;
       if (request.getId().isEmpty()
@@ -1059,7 +1061,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logMetrics(LogMetrics request, StreamObserver<LogMetrics.Response> responseObserver) {
+  public synchronized void logMetrics(
+      LogMetrics request, StreamObserver<LogMetrics.Response> responseObserver) {
     try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getMetricsList().isEmpty()) {
@@ -1099,7 +1102,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getMetrics(GetMetrics request, StreamObserver<GetMetrics.Response> responseObserver) {
+  public synchronized void getMetrics(
+      GetMetrics request, StreamObserver<GetMetrics.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetMetrics request";
@@ -1132,7 +1136,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getDatasets(
+  public synchronized void getDatasets(
       GetDatasets request, StreamObserver<GetDatasets.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
@@ -1166,7 +1170,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getUrlForArtifact(
+  public synchronized void getUrlForArtifact(
       GetUrlForArtifact request, StreamObserver<GetUrlForArtifact.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -1299,7 +1303,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logArtifact(
+  public synchronized void logArtifact(
       LogArtifact request, StreamObserver<LogArtifact.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -1356,7 +1360,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logArtifacts(
+  public synchronized void logArtifacts(
       LogArtifacts request, StreamObserver<LogArtifacts.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -1400,7 +1404,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getArtifacts(
+  public synchronized void getArtifacts(
       GetArtifacts request, StreamObserver<GetArtifacts.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
@@ -1434,7 +1438,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logExperimentRunCodeVersion(
+  public synchronized void logExperimentRunCodeVersion(
       LogExperimentRunCodeVersion request,
       StreamObserver<LogExperimentRunCodeVersion.Response> responseObserver) {
     try {
@@ -1497,7 +1501,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getExperimentRunCodeVersion(
+  public synchronized void getExperimentRunCodeVersion(
       GetExperimentRunCodeVersion request,
       StreamObserver<GetExperimentRunCodeVersion.Response> responseObserver) {
     try {
@@ -1540,7 +1544,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logHyperparameter(
+  public synchronized void logHyperparameter(
       LogHyperparameter request, StreamObserver<LogHyperparameter.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -1584,7 +1588,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logHyperparameters(
+  public synchronized void logHyperparameters(
       LogHyperparameters request, StreamObserver<LogHyperparameters.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -1627,7 +1631,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getHyperparameters(
+  public synchronized void getHyperparameters(
       GetHyperparameters request, StreamObserver<GetHyperparameters.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
@@ -1665,7 +1669,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logAttribute(
+  public synchronized void logAttribute(
       LogAttribute request, StreamObserver<LogAttribute.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -1708,7 +1712,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logAttributes(
+  public synchronized void logAttributes(
       LogAttributes request, StreamObserver<LogAttributes.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -1749,7 +1753,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getExperimentRunAttributes(
+  public synchronized void getExperimentRunAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -1795,7 +1799,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void findExperimentRuns(
+  public synchronized void findExperimentRuns(
       FindExperimentRuns request, StreamObserver<FindExperimentRuns.Response> responseObserver) {
     try {
       if (!request.getProjectId().isEmpty()) {
@@ -1848,7 +1852,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void sortExperimentRuns(
+  public synchronized void sortExperimentRuns(
       SortExperimentRuns request, StreamObserver<SortExperimentRuns.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -1920,7 +1924,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getTopExperimentRuns(
+  public synchronized void getTopExperimentRuns(
       TopExperimentRunsSelector request,
       StreamObserver<TopExperimentRunsSelector.Response> responseObserver) {
     try {
@@ -1962,7 +1966,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logJobId(LogJobId request, StreamObserver<LogJobId.Response> responseObserver) {
+  public synchronized void logJobId(
+      LogJobId request, StreamObserver<LogJobId.Response> responseObserver) {
     try {
       String errorMessage = null;
       if (request.getId().isEmpty() && request.getJobId().isEmpty()) {
@@ -2002,7 +2007,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getJobId(GetJobId request, StreamObserver<GetJobId.Response> responseObserver) {
+  public synchronized void getJobId(
+      GetJobId request, StreamObserver<GetJobId.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
         String errorMessage = "ExperimentRun ID not found in GetJobId request";
@@ -2034,7 +2040,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getChildrenExperimentRuns(
+  public synchronized void getChildrenExperimentRuns(
       GetChildrenExperimentRuns request,
       StreamObserver<GetChildrenExperimentRuns.Response> responseObserver) {
     try {
@@ -2087,7 +2093,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void setParentExperimentRunId(
+  public synchronized void setParentExperimentRunId(
       SetParentExperimentRunId request,
       StreamObserver<SetParentExperimentRunId.Response> responseObserver) {
     try {
@@ -2145,7 +2151,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logDataset(LogDataset request, StreamObserver<LogDataset.Response> responseObserver) {
+  public synchronized void logDataset(
+      LogDataset request, StreamObserver<LogDataset.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()
           && request.getDataset().getLinkedArtifactId().isEmpty()
@@ -2188,7 +2195,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logDatasets(
+  public synchronized void logDatasets(
       LogDatasets request, StreamObserver<ai.verta.modeldb.LogDatasets.Response> responseObserver) {
     try {
       if (request.getId().isEmpty() && request.getDatasetsList().isEmpty()) {
@@ -2226,7 +2233,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void deleteArtifact(
+  public synchronized void deleteArtifact(
       DeleteArtifact request, StreamObserver<DeleteArtifact.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -2267,7 +2274,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void deleteExperimentRuns(
+  public synchronized void deleteExperimentRuns(
       DeleteExperimentRuns request,
       StreamObserver<DeleteExperimentRuns.Response> responseObserver) {
     try {
@@ -2315,7 +2322,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logVersionedInput(
+  public synchronized void logVersionedInput(
       LogVersionedInput request, StreamObserver<LogVersionedInput.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -2353,7 +2360,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getVersionedInputs(
+  public synchronized void getVersionedInputs(
       GetVersionedInput request, StreamObserver<GetVersionedInput.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -2385,7 +2392,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void commitArtifactPart(
+  public synchronized void commitArtifactPart(
       CommitArtifactPart request, StreamObserver<CommitArtifactPart.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -2425,7 +2432,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getCommittedArtifactParts(
+  public synchronized void getCommittedArtifactParts(
       GetCommittedArtifactParts request,
       StreamObserver<GetCommittedArtifactParts.Response> responseObserver) {
     try {
@@ -2465,7 +2472,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void commitMultipartArtifact(
+  public synchronized void commitMultipartArtifact(
       CommitMultipartArtifact request,
       StreamObserver<CommitMultipartArtifact.Response> responseObserver) {
     try {
@@ -2505,7 +2512,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void deleteHyperparameters(
+  public synchronized void deleteHyperparameters(
       DeleteHyperparameters request,
       StreamObserver<DeleteHyperparameters.Response> responseObserver) {
     try {
@@ -2546,7 +2553,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void deleteMetrics(
+  public synchronized void deleteMetrics(
       DeleteMetrics request, StreamObserver<DeleteMetrics.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -2585,7 +2592,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void deleteObservations(
+  public synchronized void deleteObservations(
       DeleteObservations request, StreamObserver<DeleteObservations.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -2622,7 +2629,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void listCommitExperimentRuns(
+  public synchronized void listCommitExperimentRuns(
       ListCommitExperimentRunsRequest request,
       StreamObserver<ListCommitExperimentRunsRequest.Response> responseObserver) {
     try {
@@ -2666,7 +2673,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void listBlobExperimentRuns(
+  public synchronized void listBlobExperimentRuns(
       ListBlobExperimentRunsRequest request,
       StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
     try {
@@ -2710,7 +2717,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void getExperimentRunsByDatasetVersionId(
+  public synchronized void getExperimentRunsByDatasetVersionId(
       GetExperimentRunsByDatasetVersionId request,
       StreamObserver<GetExperimentRunsByDatasetVersionId.Response> responseObserver) {
     try {
@@ -2755,7 +2762,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void cloneExperimentRun(
+  public synchronized void cloneExperimentRun(
       CloneExperimentRun request, StreamObserver<CloneExperimentRun.Response> responseObserver) {
     try {
       if (request.getSrcExperimentRunId().isEmpty()) {
@@ -2787,7 +2794,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   @Override
-  public void logEnvironment(
+  public synchronized void logEnvironment(
       LogEnvironment request, StreamObserver<LogEnvironment.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
