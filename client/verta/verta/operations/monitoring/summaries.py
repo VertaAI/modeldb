@@ -343,7 +343,6 @@ class Summary(entity._ModelDBEntity):
             A list of summary samples belonging to this summary and matching the
             query.
         """
-
         if query is None:
             query = SummarySampleQuery()
         msg = query._to_proto_request()
@@ -509,7 +508,7 @@ class Summaries:
         self._conn = conn
         self._conf = conf
 
-    def create(self, name, data_type_cls, monitored_entity):
+    def create(self, name, data_type_cls, monitored_entity): # TODO: hideme
         if not issubclass(data_type_cls, data_types._VertaDataType):
             raise TypeError(
                 "expected a supported VertaDataType, found {}".format(
@@ -527,6 +526,22 @@ class Summaries:
         return Summary(self._conn, self._conf, proto)
 
     def get_or_create(self, name, data_type_cls, monitored_entity):
+        """Get or create a summary by name and data type.
+
+        Parameters
+        ----------
+        name : str
+            The name of this summary.
+        data_type_cls: :class:`_VertaDataType`
+            The class of data type which summary samples must conform to.
+        monitored_entity: :class:`MonitoredEntity`
+            A monitored entity object.
+
+        Returns
+        -------
+        :class:`Summary`
+            A retrieved or created summary.
+        """
         if not issubclass(data_type_cls, data_types._VertaDataType):
             raise TypeError(
                 "expected a supported VertaDataType, found {}".format(
@@ -561,6 +576,18 @@ class Summaries:
         return summary
 
     def find(self, query=None):
+        """Find summaries.
+
+        Parameters
+        ----------
+        query : :class:`SummarySampleQuery`, optional
+            A query object which filters the set of summary samples.
+
+        Returns
+        -------
+        list of :class:`SummarySample`
+            A list of summary samples matching the query.
+        """
         if query is None:
             query = SummaryQuery()
         elif not isinstance(query, SummaryQuery):
@@ -579,6 +606,18 @@ class Summaries:
         return maybe_summaries
 
     def delete(self, summaries):
+        """Delete the specified summaries.
+
+        Parameters
+        ----------
+        summaries : list of :class:`Summary`
+            The summaries which should be deleted.
+
+        Returns
+        -------
+        bool
+            True if the delete was successful.
+        """
         summary_ids = [summary.id for summary in summaries]
         msg = DeleteSummaryRequest(ids=summary_ids)
         endpoint = "/api/v1/summaries/deleteSummary"
@@ -588,6 +627,16 @@ class Summaries:
 
 
 class SummarySamples:
+    """Repository object for creating and finding summary samples.
+
+    Parameters
+    ----------
+    conn
+        A connection object to the backend service.
+    conf
+        A configuration object used by conn methods.
+    """
+
     def __init__(self, conn, conf):
         # TODO: potentially summary_id
         self._conn = conn
@@ -596,6 +645,18 @@ class SummarySamples:
     # TODO: potentially create()
 
     def find(self, query=None):
+        """Find summary samples.
+
+        Parameters
+        ----------
+        query : :class:`SummarySampleQuery`, optional
+            A query object which filters the set of summary samples.
+
+        Returns
+        -------
+        list of :class:`SummarySample`
+            A list of summary samples matching the query.
+        """
         if query is None:
             query = SummarySampleQuery()
         elif not isinstance(query, SummarySampleQuery):
@@ -611,9 +672,21 @@ class SummarySamples:
             for sample in maybe_samples.samples
         ]
 
-    def delete(self, summaries):
-        summary_ids = extract_ids(summaries)
-        msg = DeleteSummarySampleRequest(ids=summary_ids)
+    def delete(self, summary_samples):
+        """Delete the specified summary samples.
+
+        Parameters
+        ----------
+        summary_samples : list of :class:`SummarySample`
+            The summary samples which should be deleted from this summary.
+
+        Returns
+        -------
+        bool
+            True if the delete was successful.
+        """
+        summary_sample_ids = extract_ids(summary_samples)
+        msg = DeleteSummarySampleRequest(ids=summary_sample_ids)
         endpoint = "/api/v1/summaries/deleteSample"
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
         self._conn.must_response(response)
