@@ -373,9 +373,9 @@ class RegisteredModelVersion(_DeployableEntity):
         artifact_type = _CommonCommonService.ArtifactTypeEnum.BLOB
 
         if isinstance(artifact, six.string_types):
-            if os.path.isdir(artifact):  # dirpath: zip
+            if os.path.isdir(artifact):  # zip dirpath
                 artifact = _artifact_utils.zip_dir(artifact)
-            else:  # filepath: open
+            else:  # open filepath
                 artifact = open(artifact, 'rb')
         artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
