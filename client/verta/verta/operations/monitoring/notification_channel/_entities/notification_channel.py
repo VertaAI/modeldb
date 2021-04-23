@@ -222,6 +222,9 @@ class NotificationChannels(object):
             A unique name for this notification channel.
         channel : :class:`~verta.operations.monitoring.notification_channel._NotificationChannel`
             The configuration for this notification channel.
+        workspace : str, optional
+            Workspace in which to create this notification channel. Defaults to
+            the client's default workspace.
         created_at : datetime.datetime or int, optional
             An override creation time to assign to this channel. Either a
             timezone aware datetime object or unix epoch milliseconds.
@@ -273,6 +276,9 @@ class NotificationChannels(object):
         ----------
         name : str, optional
             Notification channel name.
+        workspace : str, optional
+            Workspace in which the notification channel exists. Defaults to the
+            client's default workspace.
         id : int, optional
             Notification channel ID.
 
@@ -308,7 +314,13 @@ class NotificationChannels(object):
     # TODO: a proper find
     def list(self, workspace=None):
         """
-        Return all accesible notification channels.
+        Return accesible notification channels.
+
+        Parameters
+        ----------
+        workspace : str, optional
+            Workspace from which to list notification channels. Defaults to the
+            client's default workspace.
 
         Returns
         -------
