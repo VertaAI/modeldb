@@ -1,7 +1,6 @@
 Label
 =====
 
-
 .. currentmodule:: verta.operations.monitoring.labels
 
 .. autosummary::

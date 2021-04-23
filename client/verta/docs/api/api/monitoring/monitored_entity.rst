@@ -1,6 +1,8 @@
 Monitored Entity
 ================
 
+Entities
+--------
 
 .. currentmodule:: verta.operations.monitoring.monitored_entity
 

@@ -13,12 +13,8 @@ with support for labeling, filtering, and customization.
 
     api/monitoring/client
     api/monitoring/alert
-    api/monitoring/alerter_types
-    api/monitoring/alert_status
     api/monitoring/label
     api/monitoring/monitored_entity
     api/monitoring/notification_channel
-    api/monitoring/notification_channel_types
     api/monitoring/profiler
-    api/monitoring/profiler_classes
     api/monitoring/summary

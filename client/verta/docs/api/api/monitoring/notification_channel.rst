@@ -1,6 +1,8 @@
 Notification Channel
 ====================
 
+Entities
+--------
 
 .. currentmodule:: verta.operations.monitoring.notification_channel._entities
 
@@ -11,3 +13,16 @@ Notification Channel
 
     NotificationChannel
     NotificationChannels
+
+Types
+-----
+
+.. currentmodule:: verta.operations.monitoring.notification_channel
+
+.. autosummary::
+    :toctree: _autogen
+    :template: class.rst
+    :nosignatures:
+
+    _NotificationChannel
+    SlackNotificationChannel

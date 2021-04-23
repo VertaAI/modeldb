@@ -1,7 +1,11 @@
-Monitoring Sub-client
-=====================
+Sub-client
+==========
 
+.. currentmodule:: verta.operations.monitoring.client
 
-.. autoclass:: verta.operations.monitoring.client.Client
-    :members:
-    :inherited-members:
+.. autosummary::
+    :toctree: _autogen
+    :template: class.rst
+    :nosignatures:
+
+    Client
