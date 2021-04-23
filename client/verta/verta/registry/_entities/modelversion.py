@@ -446,9 +446,7 @@ class RegisteredModelVersion(_DeployableEntity):
         # TODO: clean up empty parent dirs if something later fails
 
         # get a stream of the file bytes, without loading into memory, and write to file
-        # TODO: consolidate this with _get_artifact() and get_artifact()
         logger.info("downloading %s from Registry", key)
-        # download artifact from artifact store
         url = self._get_url_for_artifact(key, "GET").url
         with _utils.make_request("GET", url, self._conn, stream=True) as response:
             _utils.raise_for_http_error(response)
