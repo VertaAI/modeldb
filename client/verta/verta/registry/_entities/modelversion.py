@@ -301,6 +301,9 @@ class RegisteredModelVersion(_DeployableEntity):
         )
         return _artifact_utils.deserialize_model(model_artifact, error_ok=True)
 
+    def download_model(self, download_to_path):
+        self.download_artifact(_artifact_utils.REGISTRY_MODEL_KEY, download_to_path)
+
     def del_model(self):
         """
         Deletes model of this Model Version.
