@@ -37,9 +37,9 @@ class SummaryQuery(object):
         Only fetch these summaries.
     names : list of str, optional
         Only fetch these summaries with one of these names.
-    data_type_classes : list of :class:`_VertaDataType`, optional
+    data_type_classes : list of :class:`~verta.data_types._VertaDataType`, optional
         Only fetch summaries with one of these data types.
-    monitored_entities : list of :class:`MonitoredEntity`, optional
+    monitored_entities : list of :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`, optional
         Only fetch summaries belonging to one of these monitored entities.
     page_number : int, default 1
         Pagination page number for the backend query request. Used in
@@ -279,7 +279,7 @@ class Summary(entity._ModelDBEntity):
         Parameters
         ----------
         data
-            A :class:`_VertaDataType` consistent with the type of this summary.
+            A :class:`~verta.data_types._VertaDataType` consistent with the type of this summary.
         labels : dict of str to str, optional
             A mapping between label keys and values.
         time_window_start : datetime.datetime or int
@@ -413,7 +413,7 @@ class SummarySample(entity._ModelDBEntity):
     Attributes
     ----------
     content
-        A :class:`_VertaDataType` consistent with the type of this summary.
+        A :class:`~verta.data_types._VertaDataType` consistent with the type of this summary.
     labels : dict of str to str, optional
         A mapping between label keys and values.
     time_window_start : datetime.datetime or int
@@ -531,9 +531,9 @@ class Summaries:
         ----------
         name : str
             The name of this summary.
-        data_type_cls: :class:`_VertaDataType`
+        data_type_cls: :class:`~verta.data_types._VertaDataType`
             The class of data type which summary samples must conform to.
-        monitored_entity: :class:`MonitoredEntity`
+        monitored_entity: :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
             A monitored entity object.
 
         Returns
