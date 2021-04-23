@@ -9,6 +9,10 @@ import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
@@ -113,6 +117,36 @@ public class CodeVersionHandler {
                             .bind("code_id", snapshotId)
                             .bind("run_id", request.getId())
                             .execute()),
+            executor);
+  }
+
+  public InternalFuture<Map<String, CodeVersion>> getCodeVersionMap(List<String> entityIds) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "select id, code_version_snapshot_id from experiment_run where id IN (<run_ids>) ")
+                    .bindList("run_ids", entityIds)
+                    .map(
+                        (rs, ctx) ->
+                            new AbstractMap.SimpleEntry<>(
+                                rs.getString("id"), rs.getLong("code_version_snapshot_id")))
+                    .list())
+        .thenCompose(
+            maybeSnapshotIds -> {
+              Map<String, CodeVersion> codeVersionMap = new HashMap<>();
+              for (AbstractMap.SimpleEntry<String, Long> entry : maybeSnapshotIds) {
+                if (entry.getValue() != null && entry.getValue() != 0) {
+                  try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                    final CodeVersionEntity entity =
+                        session.get(
+                            CodeVersionEntity.class, entry.getValue(), LockMode.PESSIMISTIC_WRITE);
+                    codeVersionMap.put(entry.getKey(), entity.getProtoObject());
+                  }
+                }
+              }
+              return InternalFuture.completedInternalFuture(codeVersionMap);
+            },
             executor);
   }
 }
