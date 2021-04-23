@@ -14,6 +14,7 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -44,6 +45,7 @@ public class FutureExperimentRunDAO {
   private final DatasetHandler datasetHandler;
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
+  private final Config config = Config.getInstance();
 
   public FutureExperimentRunDAO(
       Executor executor,
@@ -323,8 +325,9 @@ public class FutureExperimentRunDAO {
         executor);
   }
 
-  private InternalFuture<List<String>> getAllowedProjects(
-      ModelDBActionEnum.ModelDBServiceActions action) {
+  private InternalFuture<List<String>> getAllowedEntitiesByResourceType(
+      ModelDBActionEnum.ModelDBServiceActions action,
+      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()
                 .getSelfAllowedResources(
@@ -336,8 +339,7 @@ public class FutureExperimentRunDAO {
                         .setService(ServiceEnum.Service.MODELDB_SERVICE)
                         .setResourceType(
                             ResourceType.newBuilder()
-                                .setModeldbServiceResourceType(
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                                .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                         .build()),
             executor)
         .thenApply(
@@ -544,7 +546,9 @@ public class FutureExperimentRunDAO {
         sortingHandler.processSort(request.getSortKey(), request.getAscending());
 
     final var futureProjectIds =
-        getAllowedProjects(ModelDBActionEnum.ModelDBServiceActions.READ)
+        getAllowedEntitiesByResourceType(
+                ModelDBActionEnum.ModelDBServiceActions.READ,
+                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
             .thenApply(
                 projIds ->
                     new QueryFilterContext()
@@ -693,6 +697,42 @@ public class FutureExperimentRunDAO {
                                             builder ->
                                                 builder.addAllHyperparameters(
                                                     hyperparams.get(builder.getId()))),
+                                    executor);
+
+                            final var futureHyperparamsFromConfigBlobs =
+                                InternalFuture.completedInternalFuture(
+                                        config.populateConnectionsBasedOnPrivileges)
+                                    .thenCompose(
+                                        populateConnectionsBasedOnPrivileges -> {
+                                          if (populateConnectionsBasedOnPrivileges) {
+                                            return getAllowedEntitiesByResourceType(
+                                                ModelDBActionEnum.ModelDBServiceActions.READ,
+                                                ModelDBResourceEnum.ModelDBServiceResourceTypes
+                                                    .REPOSITORY);
+                                          } else {
+                                            return InternalFuture.completedInternalFuture(
+                                                new ArrayList<>());
+                                          }
+                                        },
+                                        executor)
+                                    .thenCompose(
+                                        repositoryIds ->
+                                            hyperparametersHandler
+                                                .getExperimentRunHyperparameterConfigBlobMap(
+                                                    new ArrayList<>(ids), repositoryIds),
+                                        executor);
+                            futureBuildersStream =
+                                futureBuildersStream.thenCombine(
+                                    futureHyperparamsFromConfigBlobs,
+                                    (stream, hyperparamsFromConfigBlob) ->
+                                        stream.peek(
+                                            builder -> {
+                                              List<KeyValue> hypFromConfigs =
+                                                  hyperparamsFromConfigBlob.get(builder.getId());
+                                              if (hypFromConfigs != null) {
+                                                builder.addAllHyperparameters(hypFromConfigs);
+                                              }
+                                            }),
                                     executor);
 
                             // Get metrics
