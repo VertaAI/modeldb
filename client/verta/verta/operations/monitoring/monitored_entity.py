@@ -41,6 +41,15 @@ class MonitoredEntity(entity._ModelDBEntity):
     alerts : :class:`~verta.operations.monitoring.alert._entities.Alerts`
         The sub-client for managing alerts defined for this monitored entity.
 
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta import Client
+
+        client = Client()
+        monitored_entity = client.operations.get_or_create_monitored_entity()
+
     """
 
     def __init__(self, conn, conf, msg):

@@ -35,6 +35,17 @@ class Alert(entity._ModelDBEntity):
     summary_sample_query : :class:`~verta.operations.monitoring.summaries.SummarySampleQuery`
         The summary samples this alert monitors.
 
+    Examples
+    --------
+    .. code-block:: python
+
+        alert = monitored_entity.alerts.create(
+            name="MSE",
+            alerter=alerter,
+            summary_sample_query=sample_query,
+            notification_channels=[channel],
+        )
+
     """
 
     def __init__(self, conn, conf, msg):

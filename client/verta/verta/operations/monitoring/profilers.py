@@ -32,7 +32,8 @@ class ProfilerReference(entity._ModelDBEntity):
     methods to deploy, disable, and check the deployment status of profilers.
 
     Users should obtain ``ProfilerReference`` objects through the get and
-    create methods available in the ``client.operations.profilers`` object.
+    create methods available from :class:`Profilers`, accessible as the
+    ``profilers`` attribute on the operations sub-:class:`~verta.opertaions.monitoring.client.Client`.
 
     Parameters
     ----------
@@ -268,7 +269,18 @@ class ProfilerReference(entity._ModelDBEntity):
 
 
 class Profilers(object):
-    """Repository object for creating and finding profilers."""
+    """Repository object for creating and finding profilers.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta import Client
+
+        client = Client()
+        profilers = client.operations.profilers
+
+    """
 
     def __init__(self, conn, conf, client):
         self._conn = conn

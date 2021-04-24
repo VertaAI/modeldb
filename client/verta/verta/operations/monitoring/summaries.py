@@ -58,7 +58,7 @@ class SummaryQuery(object):
 
         summary_query = SummaryQuery(
             names=["Income Distributions"]),
-            data_types=[FloatHistogram, DiscreteHistogram]
+            data_types=[FloatHistogram, DiscreteHistogram],
         )
 
         client = Client()
@@ -240,8 +240,9 @@ class Summary(entity._ModelDBEntity):
     """A summary object to validate and aggregate summary samples.
 
     Users should obtain summaries through one of the query or create methods of
-    the :attr:`~verta.opertaions.monitoring.client.Client.summaries` attribute
-    on the operations sub-client instead of initializing Summary objects.
+    the ``summaries`` attribute on the operations
+    sub-:class:`~verta.opertaions.monitoring.client.Client` instead of
+    initializing Summary objects.
 
     Parameters
     ----------
@@ -397,9 +398,9 @@ class SummarySample(entity._ModelDBEntity):
     """A summary sample object capturing data for later comparison.
 
     Users should obtain summary samples through one of the query or create
-    methods on a :class:`Summary` or the :attr:`~verta.opertaions.monitoring.client.Client.summary_samples`
-    attribute on the operations sub-client instead of initializing SummarySample
-    objects directly.
+    methods on a :class:`Summary` or the ``summary_samples`` attribute on the
+    operations sub-:class:`~verta.opertaions.monitoring.client.Client` instead
+    of initializing SummarySample objects directly.
 
     Parameters
     ----------
@@ -422,6 +423,18 @@ class SummarySample(entity._ModelDBEntity):
         Either a timezone aware datetime object or unix epoch milliseconds.
     created_after : datetime.datetime or int, optional
         Either a timezone aware datetime object or unix epoch milliseconds.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        sample = summary.log_sample(
+            predicted_classes,
+            labels=labels,
+            time_window_start=yesterday,
+            time_window_end=now,
+        )
+
     """
 
     def __init__(self, conn, conf, msg):
@@ -626,7 +639,7 @@ class Summaries:
 
 
 class SummarySamples:
-    """Repository object for creating and finding summary samples.
+    """Repository object for finding summary samples.
 
     Parameters
     ----------
@@ -634,6 +647,16 @@ class SummarySamples:
         A connection object to the backend service.
     conf
         A configuration object used by conn methods.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta import Client
+
+        client = Client()
+        summary_samples = client.operations.summary_samples
+
     """
 
     def __init__(self, conn, conf):
