@@ -81,10 +81,7 @@ public class AuthServiceChannel implements AutoCloseable {
     LOGGER.trace("Header attaching with stub : {}", requestHeaders);
     ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
     uacServiceBlockingStub =
-        UACServiceGrpc.newBlockingStub(authServiceChannel)
-            .withInterceptors(
-                MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()),
-                clientInterceptor);
+        UACServiceGrpc.newBlockingStub(authServiceChannel).withInterceptors(clientInterceptor);
     Config.getInstance()
         .getTracingClientInterceptor()
         .ifPresent(

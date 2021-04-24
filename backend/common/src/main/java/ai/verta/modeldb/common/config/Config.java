@@ -66,7 +66,8 @@ public abstract class Config {
 
     if (tracingServerInterceptor == null) {
       Tracer tracer = Configuration.fromEnv().getTracer();
-      tracingServerInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
+      tracingServerInterceptor =
+          TracingServerInterceptor.newBuilder().withTracer(tracer).withVerbosity().build();
       GlobalTracer.register(tracer);
       TracingDriver.load();
       TracingDriver.setInterceptorMode(true);
@@ -78,6 +79,7 @@ public abstract class Config {
               .withTracer(GlobalTracer.get())
               .withActiveSpanContextSource(ActiveSpanContextSource.GRPC_CONTEXT)
               .withActiveSpanSource(ActiveSpanSource.GRPC_CONTEXT)
+              .withVerbosity()
               .build();
     }
   }
