@@ -3,9 +3,9 @@ package ai.verta.modeldb.common.authservice;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
-import ai.verta.modeldb.config.Config;
 import ai.verta.uac.*;
 import ai.verta.uac.versioning.AuditLogServiceGrpc;
 import io.grpc.*;
@@ -30,9 +30,11 @@ public class AuthServiceChannel implements AutoCloseable {
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
   private String serviceUserEmail;
   private String serviceUserDevKey;
+  private final Config config;
   public final Context.Key<Metadata> metadataInfo;
 
   public AuthServiceChannel(
+      Config config,
       String host,
       Integer port,
       String serviceUserEmail,
@@ -52,6 +54,7 @@ public class AuthServiceChannel implements AutoCloseable {
           "Host OR Port not found for contacting authentication service");
     }
     this.metadataInfo = metadataInfo;
+    this.config = config;
   }
 
   private Metadata getMetadataHeaders() {
@@ -82,11 +85,7 @@ public class AuthServiceChannel implements AutoCloseable {
     if (requestHeaders == null) requestHeaders = getMetadataHeaders();
 
     ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
-    stub =
-        Config.getInstance()
-            .getTracingClientInterceptor()
-            .map(stub::withInterceptors)
-            .orElse((T) stub);
+    stub = config.getTracingClientInterceptor().map(stub::withInterceptors).orElse((T) stub);
     stub = stub.withInterceptors(clientInterceptor);
     return (T) stub;
   }
