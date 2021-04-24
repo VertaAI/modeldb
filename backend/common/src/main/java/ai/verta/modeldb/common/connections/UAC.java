@@ -133,6 +133,8 @@ public class UAC {
     return c;
   }
 
+  // Place the interceptors in the reverse order of their stacking (the ones attached later will be
+  // used first)
   private <T extends AbstractStub<T>> T attachInterceptors(io.grpc.stub.AbstractStub<T> stub) {
     if (tracingClientInterceptor.isPresent()) {
       stub = stub.withInterceptors(tracingClientInterceptor.get());
