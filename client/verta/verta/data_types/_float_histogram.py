@@ -41,8 +41,8 @@ class FloatHistogram(_VertaDataType):
 
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, bucket_limits, data):
-        self._scipy = maybe_dependency("scipy")
-        if self._scipy is None:
+        self._scipy_spatial = maybe_dependency("scipy.spatial")
+        if self._scipy_spatial is None:
             raise ImportError("scipy is not installed; try `pip install scipy`")
 
         if len(bucket_limits) != len(data) + 1:
@@ -85,7 +85,7 @@ class FloatHistogram(_VertaDataType):
                 )
             )
 
-        return self._scipy.spatial.distance.cosine(
+        return self._scipy_spatial.distance.cosine(
             self.normalized_data(),
             other.normalized_data(),
         )
