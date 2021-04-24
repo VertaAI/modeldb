@@ -75,6 +75,38 @@
         ]
       }
     },
+    "/collaborator/addOrUpdateMonitoredEntityCollaborator": {
+      "post": {
+        "operationId": "CollaboratorService_addOrUpdateMonitoredEntityCollaborator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
     "/collaborator/addOrUpdateProjectCollaborator": {
       "post": {
         "operationId": "CollaboratorService_addOrUpdateProjectCollaborator",
@@ -204,6 +236,36 @@
     "/collaborator/getEndpointCollaborators": {
       "get": {
         "operationId": "CollaboratorService_getEndpointCollaborators",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/getMonitoredEntityCollaborators": {
+      "get": {
+        "operationId": "CollaboratorService_getMonitoredEntityCollaborators",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -398,7 +460,8 @@
               "ORGANIZATION",
               "TEAM",
               "WORKSPACE",
-              "USER"
+              "USER",
+              "SERVICE_ACCOUNT"
             ],
             "default": "UNKNOWN"
           },
@@ -419,7 +482,8 @@
               "REPOSITORY",
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
-              "MONITORED_ENTITY"
+              "MONITORED_ENTITY",
+              "NOTIFICATION_CHANNEL"
             ],
             "default": "UNKNOWN"
           },
@@ -538,7 +602,8 @@
               "ORGANIZATION",
               "TEAM",
               "WORKSPACE",
-              "USER"
+              "USER",
+              "SERVICE_ACCOUNT"
             ],
             "default": "UNKNOWN"
           },
@@ -559,7 +624,8 @@
               "REPOSITORY",
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
-              "MONITORED_ENTITY"
+              "MONITORED_ENTITY",
+              "NOTIFICATION_CHANNEL"
             ],
             "default": "UNKNOWN"
           },
@@ -660,6 +726,62 @@
     "/collaborator/removeEndpointCollaborator": {
       "delete": {
         "operationId": "CollaboratorService_removeEndpointCollaborator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacRemoveCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "date_deleted",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "authz_entity_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ORGANIZATION",
+              "TEAM",
+              "USER"
+            ],
+            "default": "UNKNOWN"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/removeMonitoredEntityCollaborator": {
+      "delete": {
+        "operationId": "CollaboratorService_removeMonitoredEntityCollaborator",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -938,7 +1060,8 @@
         "ORGANIZATION",
         "TEAM",
         "WORKSPACE",
-        "USER"
+        "USER",
+        "SERVICE_ACCOUNT"
       ],
       "default": "UNKNOWN"
     },
@@ -949,6 +1072,15 @@
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
+    },
+    "CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "READ_WRITE",
+        "READ_ONLY"
+      ],
+      "default": "UNKNOWN"
     },
     "DeploymentActionEnumDeploymentServiceActions": {
       "type": "string",
@@ -1026,7 +1158,8 @@
         "REPOSITORY",
         "REGISTERED_MODEL",
         "REGISTERED_MODEL_VERSION",
-        "MONITORED_ENTITY"
+        "MONITORED_ENTITY",
+        "NOTIFICATION_CHANNEL"
       ],
       "default": "UNKNOWN"
     },
@@ -1344,6 +1477,12 @@
         },
         "registered_model_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "default_monitored_entity_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
+        },
+        "default_notification_channel_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
         }
       }
     },

@@ -64,7 +64,8 @@
               "ORGANIZATION",
               "TEAM",
               "WORKSPACE",
-              "USER"
+              "USER",
+              "SERVICE_ACCOUNT"
             ],
             "default": "UNKNOWN"
           },
@@ -85,7 +86,8 @@
               "REPOSITORY",
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
-              "MONITORED_ENTITY"
+              "MONITORED_ENTITY",
+              "NOTIFICATION_CHANNEL"
             ],
             "default": "UNKNOWN"
           },
@@ -513,7 +515,8 @@
         "ORGANIZATION",
         "TEAM",
         "WORKSPACE",
-        "USER"
+        "USER",
+        "SERVICE_ACCOUNT"
       ],
       "default": "UNKNOWN"
     },
@@ -571,7 +574,8 @@
         "REPOSITORY",
         "REGISTERED_MODEL",
         "REGISTERED_MODEL_VERSION",
-        "MONITORED_ENTITY"
+        "MONITORED_ENTITY",
+        "NOTIFICATION_CHANNEL"
       ],
       "default": "UNKNOWN"
     },

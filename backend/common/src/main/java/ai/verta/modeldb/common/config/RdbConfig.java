@@ -8,6 +8,7 @@ public class RdbConfig {
   public String RdbUrl;
   public String RdbUsername;
   public String RdbPassword;
+  public String sslMode = "DISABLED";
 
   public void Validate(String base) throws InvalidConfigException {
     if (RdbDatabaseName == null || RdbDatabaseName.isEmpty())
@@ -20,6 +21,8 @@ public class RdbConfig {
       throw new InvalidConfigException(base + ".RdbUrl", Config.MISSING_REQUIRED);
     if (RdbUsername == null || RdbUsername.isEmpty())
       throw new InvalidConfigException(base + ".RdbUsername", Config.MISSING_REQUIRED);
+    if (sslMode == null || sslMode.isEmpty())
+      throw new InvalidConfigException(base + ".sslMode", Config.MISSING_REQUIRED);
   }
 
   public boolean isPostgres() {

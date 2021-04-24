@@ -69,8 +69,12 @@ public class RdbmsUtils {
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     List<Project> projects = new ArrayList<>();
     if (projectEntityList != null) {
+      Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
+      Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
       for (ProjectEntity projectEntity : projectEntityList) {
-        projects.add(projectEntity.getProtoObject(roleService, authService));
+        projects.add(
+            projectEntity.getProtoObject(
+                roleService, authService, cacheWorkspaceMap, getResourcesMap));
       }
     }
     return projects;
@@ -2110,7 +2114,7 @@ public class RdbmsUtils {
           new VersioningModeldbEntityMapping(
               versioningEntry.getRepositoryId(),
               versioningEntry.getCommit(),
-              null,
+              ModelDBConstants.EMPTY_STRING,
               null,
               null,
               null,

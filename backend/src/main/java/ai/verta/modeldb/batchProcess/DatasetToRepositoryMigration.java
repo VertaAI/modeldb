@@ -63,7 +63,6 @@ public class DatasetToRepositoryMigration {
   private static MetadataDAO metadataDAO;
   private static BlobDAO blobDAO;
   private static int recordUpdateLimit = 100;
-  private static Role readOnlyRole;
   private static Role writeOnlyRole;
 
   public static void execute(int recordUpdateLimit) {
@@ -71,9 +70,6 @@ public class DatasetToRepositoryMigration {
     authService = AuthServiceUtils.FromConfig(ai.verta.modeldb.config.Config.getInstance());
     uac = UAC.FromConfig(Config.getInstance());
     roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
-
-    readOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_ONLY, null);
-    writeOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_WRITE, null);
 
     commitDAO = new CommitDAORdbImpl(authService, roleService);
     repositoryDAO = new RepositoryDAORdbImpl(authService, roleService, commitDAO, metadataDAO);
@@ -337,13 +333,13 @@ public class DatasetToRepositoryMigration {
             .getCollaboratorType()
             .equals(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)) {
           roleService.createRoleBinding(
-              readOnlyRole,
+              ModelDBConstants.ROLE_REPOSITORY_READ_ONLY,
               collaboratorBase,
               dataset.getId(),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
         } else {
           roleService.createRoleBinding(
-              writeOnlyRole,
+              ModelDBConstants.ROLE_REPOSITORY_READ_WRITE,
               collaboratorBase,
               dataset.getId(),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);

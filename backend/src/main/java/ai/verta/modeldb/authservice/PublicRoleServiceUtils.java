@@ -23,8 +23,6 @@ import ai.verta.modeldb.versioning.CommitDAORdbImpl;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Metadata;
@@ -71,15 +69,7 @@ public class PublicRoleServiceUtils implements RoleService {
 
   @Override
   public void createRoleBinding(
-      Role role,
-      CollaboratorBase collaborator,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
-
-  @Override
-  public void createRoleBinding(
       String roleName,
-      RoleScope roleBindingScope,
       CollaboratorBase collaborator,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
@@ -94,11 +84,6 @@ public class PublicRoleServiceUtils implements RoleService {
   public Map<String, Actions> getSelfAllowedActionsBatch(
       List<String> resourceIds, ModelDBServiceResourceTypes type) {
     return new HashMap<>();
-  }
-
-  @Override
-  public Role getRoleByName(String roleName, RoleScope roleScope) {
-    return null;
   }
 
   @Override
@@ -236,12 +221,11 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public ListenableFuture<GetResourcesResponseItem> getEntityResource(
+  public GetResourcesResponseItem getEntityResource(
       Optional<String> entityId,
       Optional<String> workspaceName,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return Futures.immediateFuture(
-        GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build());
+    return GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build();
   }
 
   @Override

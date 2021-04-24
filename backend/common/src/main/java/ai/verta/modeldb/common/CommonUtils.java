@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.LockAcquisitionException;
 
 import java.net.SocketException;
+import java.util.concurrent.CompletionException;
 
 public class CommonUtils {
   private static final Logger LOGGER = LogManager.getLogger(CommonUtils.class);
@@ -126,11 +127,14 @@ public class CommonUtils {
   }
 
   public static <T extends GeneratedMessageV3> StatusRuntimeException logError(
-          Throwable e, T defaultInstance) {
+      Throwable e, T defaultInstance) {
     Status status;
     StatusRuntimeException statusRuntimeException;
     if (e instanceof StatusRuntimeException) {
       statusRuntimeException = (StatusRuntimeException) e;
+    } else if (e instanceof CompletionException) {
+      CompletionException ex = (CompletionException) e;
+      return logError(ex.getCause(), defaultInstance);
     } else {
       Throwable throwable = findRootCause(e);
       // Condition 'throwable != null' covered by below condition 'throwable instanceof
@@ -140,34 +144,34 @@ public class CommonUtils {
         String errorMessage = "Database Connection not found: ";
         LOGGER.info(errorMessage + "{}", e.getMessage());
         status =
-                Status.newBuilder()
-                        .setCode(Code.UNAVAILABLE_VALUE)
-                        .setMessage(errorMessage + throwable.getMessage())
-                        .build();
+            Status.newBuilder()
+                .setCode(Code.UNAVAILABLE_VALUE)
+                .setMessage(errorMessage + throwable.getMessage())
+                .build();
       } else if (e instanceof LockAcquisitionException) {
         String errorMessage = "Encountered deadlock in database connection.";
         LOGGER.info(errorMessage + "{}", e.getMessage());
         status =
-                Status.newBuilder()
-                        .setCode(Code.ABORTED_VALUE)
-                        .setMessage(errorMessage + throwable.getMessage())
-                        .build();
+            Status.newBuilder()
+                .setCode(Code.ABORTED_VALUE)
+                .setMessage(errorMessage + throwable.getMessage())
+                .build();
       } else if (e instanceof ModelDBException) {
         ModelDBException modelDBException = (ModelDBException) e;
         logBasedOnTheErrorCode(isClientError(modelDBException.getCode().value()), modelDBException);
         status =
-                Status.newBuilder()
-                        .setCode(modelDBException.getCode().value())
-                        .setMessage(modelDBException.getMessage())
-                        .build();
+            Status.newBuilder()
+                .setCode(modelDBException.getCode().value())
+                .setMessage(modelDBException.getMessage())
+                .build();
       } else {
         LOGGER.error(
-                "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());
+            "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());
         status =
-                Status.newBuilder()
-                        .setCode(Code.INTERNAL_VALUE)
-                        .setMessage(CommonConstants.INTERNAL_ERROR)
-                        .build();
+            Status.newBuilder()
+                .setCode(Code.INTERNAL_VALUE)
+                .setMessage(CommonConstants.INTERNAL_ERROR)
+                .build();
       }
       int n = 0;
       boolean isLongStack = stack.length > STACKTRACE_LENGTH;
@@ -188,12 +192,12 @@ public class CommonUtils {
   }
 
   public static <T extends GeneratedMessageV3> void observeError(
-          StreamObserver<T> responseObserver, Throwable e) {
+      StreamObserver<T> responseObserver, Throwable e) {
     responseObserver.onError(logError(e));
   }
 
   public static <T extends GeneratedMessageV3> void observeError(
-          StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
+      StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
     responseObserver.onError(logError(e, defaultInstance));
   }
 

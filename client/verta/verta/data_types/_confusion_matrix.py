@@ -58,9 +58,17 @@ class ConfusionMatrix(_VertaDataType):
         )
 
     @classmethod
-    def _from_dict(cls, d):
+    def _from_dict_inner(cls, d):
         data = d[cls._TYPE_NAME]
         return cls(
             value=data["value"],
             labels=data["labels"],
         )
+
+    def dist(self, other):
+        if not isinstance(other, type(self)):
+            raise TypeError(
+                "`other` must be type {}, not {}".format(type(self), type(other))
+            )
+
+        raise NotImplementedError  # TODO

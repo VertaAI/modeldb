@@ -5,4 +5,6 @@ from ._discrete_histogram import DiscreteHistogram
 from ._float_histogram import FloatHistogram
 from ._line import Line
 from ._matrix import Matrix
+from ._numeric_value import NumericValue
+from ._string_value import StringValue
 from ._table import Table

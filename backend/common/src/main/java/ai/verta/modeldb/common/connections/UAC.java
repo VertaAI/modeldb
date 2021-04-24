@@ -5,13 +5,11 @@ import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.WorkspaceServiceGrpc;
-import io.grpc.ClientInterceptor;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.Metadata;
+import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,6 +26,7 @@ public class UAC {
   private final CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorServiceFutureStub;
   private final UACServiceGrpc.UACServiceFutureStub uacServiceFutureStub;
   private final WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspaceServiceFutureStub;
+  private final AuthzServiceGrpc.AuthzServiceFutureStub authzServiceFutureStub;
 
   public static UAC FromConfig(Config config) {
     if (!config.hasAuth()) return null;
@@ -60,6 +59,7 @@ public class UAC {
     collaboratorServiceFutureStub = CollaboratorServiceGrpc.newFutureStub(authServiceChannel);
     uacServiceFutureStub = UACServiceGrpc.newFutureStub(authServiceChannel);
     workspaceServiceFutureStub = WorkspaceServiceGrpc.newFutureStub(authServiceChannel);
+    authzServiceFutureStub = AuthzServiceGrpc.newFutureStub(authServiceChannel);
   }
 
   private UAC(UAC other) {
@@ -70,14 +70,14 @@ public class UAC {
     collaboratorServiceFutureStub = other.collaboratorServiceFutureStub;
     uacServiceFutureStub = other.uacServiceFutureStub;
     workspaceServiceFutureStub = other.workspaceServiceFutureStub;
+    authzServiceFutureStub = other.authzServiceFutureStub;
   }
 
-  public UAC withServiceAccount() {
-    return this.withServiceAccount(this.serviceUserEmail, this.serviceUserDevKey);
+  private Metadata serviceAccountMetadata() {
+    return serviceAccountMetadata(serviceUserEmail, serviceUserDevKey);
   }
 
-  public UAC withServiceAccount(String serviceUserEmail, String serviceUserDevKey) {
-    UAC c = new UAC(this);
+  private Metadata serviceAccountMetadata(String serviceUserEmail, String serviceUserDevKey) {
     Metadata requestHeaders = new Metadata();
     Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> dev_key =
@@ -91,7 +91,29 @@ public class UAC {
     requestHeaders.put(dev_key_hyphen, serviceUserDevKey);
     requestHeaders.put(source_key, "PythonClient");
 
-    c.clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
+    return requestHeaders;
+  }
+
+  public Context withServiceAccountMetadata(Context ctx) {
+    return ctx.withValue(AuthInterceptor.METADATA_INFO, serviceAccountMetadata());
+  }
+
+  // TODO: Get rid of this method and use Context.attach() and .detach() instead
+  // because if a method is reliant on our previous context and we've changed it like this,
+  // code'll break
+  public void updateClientInterceptor(String serviceUserEmail, String serviceUserDevKey) {
+    this.clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(serviceAccountMetadata(serviceUserEmail, serviceUserDevKey));
+  }
+
+  public UAC withServiceAccount() {
+    return this.withServiceAccount(this.serviceUserEmail, this.serviceUserDevKey);
+  }
+
+  public UAC withServiceAccount(String serviceUserEmail, String serviceUserDevKey) {
+    UAC c = new UAC(this);
+    c.clientInterceptor =
+        MetadataUtils.newAttachHeadersInterceptor(
+            serviceAccountMetadata(serviceUserEmail, serviceUserDevKey));
 
     return c;
   }
@@ -117,6 +139,14 @@ public class UAC {
       return workspaceServiceFutureStub.withInterceptors(clientInterceptor);
     }
     return workspaceServiceFutureStub.withInterceptors(
+        MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
+  }
+
+  public AuthzServiceGrpc.AuthzServiceFutureStub getAuthzService() {
+    if (clientInterceptor != null) {
+      return authzServiceFutureStub.withInterceptors(clientInterceptor);
+    }
+    return authzServiceFutureStub.withInterceptors(
         MetadataUtils.newAttachHeadersInterceptor(AuthInterceptor.METADATA_INFO.get()));
   }
 }

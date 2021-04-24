@@ -361,9 +361,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private void createRoleBindingsForExperimentRun(ExperimentRun experimentRun, UserInfo userInfo) {
-    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
     roleService.createRoleBinding(
-        ownerRole,
+        ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
         new CollaboratorUser(authService, userInfo),
         experimentRun.getId(),
         ModelDBServiceResourceTypes.EXPERIMENT_RUN);
@@ -402,10 +401,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<String> deleteExperimentRuns(List<String> experimentRunIds) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      List<String> allowedProjectIds =
+          roleService.getSelfAllowedResources(
+              ModelDBServiceResourceTypes.PROJECT, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
       List<String> accessibleExperimentRunIds =
-          getAccessibleExperimentRunIDs(
-              experimentRunIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+          getAccessibleExperimentRunIDs(experimentRunIds, new HashSet<>(allowedProjectIds));
       if (accessibleExperimentRunIds.isEmpty()) {
         throw new PermissionDeniedException(
             "Access is denied. User is unauthorized for given ExperimentRun entities : "
@@ -1287,8 +1288,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
    * @return List<String> : list of accessible ExperimentRun Id
    */
   public List<String> getAccessibleExperimentRunIDs(
-      List<String> requestedExperimentRunIds,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
+      List<String> requestedExperimentRunIds, Set<String> allowedProjectIds) {
     List<String> accessibleExperimentRunIds = new ArrayList<>();
 
     Map<String, String> projectIdExperimentRunIdMap =
@@ -1298,25 +1298,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           "Access is denied. ExperimentRun not found for given ids : " + requestedExperimentRunIds);
     }
     Set<String> projectIdSet = new HashSet<>(projectIdExperimentRunIdMap.values());
-
-    List<String> allowedProjectIds;
-    // Validate if current user has access to the entity or not
-    if (projectIdSet.size() == 1) {
-      roleService.isSelfAllowed(
-          ModelDBServiceResourceTypes.PROJECT,
-          modelDBServiceActions,
-          new ArrayList<>(projectIdSet).get(0));
-      accessibleExperimentRunIds.addAll(requestedExperimentRunIds);
-    } else {
-      allowedProjectIds =
-          roleService.getSelfAllowedResources(
-              ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
-      // Validate if current user has access to the entity or not
-      allowedProjectIds.retainAll(projectIdSet);
-      for (Map.Entry<String, String> entry : projectIdExperimentRunIdMap.entrySet()) {
-        if (allowedProjectIds.contains(entry.getValue())) {
-          accessibleExperimentRunIds.add(entry.getKey());
-        }
+    allowedProjectIds.retainAll(projectIdSet);
+    for (Map.Entry<String, String> entry : projectIdExperimentRunIdMap.entrySet()) {
+      if (allowedProjectIds.contains(entry.getValue())) {
+        accessibleExperimentRunIds.add(entry.getKey());
       }
     }
     return accessibleExperimentRunIds;
@@ -1331,12 +1316,29 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       LOGGER.trace("Starting to find experimentRuns");
 
+      Workspace workspace = null;
+      if (!queryParameters.getWorkspaceName().isEmpty()) {
+        workspace =
+            roleService.getWorkspaceByWorkspaceName(
+                currentLoginUserInfo, queryParameters.getWorkspaceName());
+      }
+      List<GetResourcesResponseItem> accessibleProjectResourceByWorkspace =
+          roleService.getResourceItems(
+              workspace,
+              !queryParameters.getProjectId().isEmpty()
+                  ? new HashSet<>(Collections.singletonList(queryParameters.getProjectId()))
+                  : Collections.emptySet(),
+              ModelDBServiceResourceTypes.PROJECT);
+      Set<String> accessibleProjectIds =
+          accessibleProjectResourceByWorkspace.stream()
+              .map(GetResourcesResponseItem::getResourceId)
+              .collect(Collectors.toSet());
+
       List<String> accessibleExperimentRunIds = new ArrayList<>();
       if (!queryParameters.getExperimentRunIdsList().isEmpty()) {
         accessibleExperimentRunIds.addAll(
             getAccessibleExperimentRunIDs(
-                queryParameters.getExperimentRunIdsList(),
-                ModelDBActionEnum.ModelDBServiceActions.READ));
+                queryParameters.getExperimentRunIdsList(), accessibleProjectIds));
         if (accessibleExperimentRunIds.isEmpty()) {
           throw new PermissionDeniedException(
               "Access is denied. User is unauthorized for given ExperimentRun IDs : "
@@ -1350,7 +1352,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           List<String> accessibleExperimentRunId =
               getAccessibleExperimentRunIDs(
                   Collections.singletonList(predicate.getValue().getStringValue()),
-                  ModelDBActionEnum.ModelDBServiceActions.READ);
+                  accessibleProjectIds);
           accessibleExperimentRunIds.addAll(accessibleExperimentRunId);
           // Validate if current user has access to the entity or not where predicate key has an id
           RdbmsUtils.validatePredicates(
@@ -1382,23 +1384,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               experimentEntityRoot.get(ModelDBConstants.ID)));
 
       List<String> projectIds = new ArrayList<>();
-      if (!queryParameters.getProjectId().isEmpty()) {
+      if (!queryParameters.getProjectId().isEmpty()
+          && accessibleProjectIds.contains(queryParameters.getProjectId())) {
         projectIds.add(queryParameters.getProjectId());
       } else if (accessibleExperimentRunIds.isEmpty()
           && queryParameters.getExperimentId().isEmpty()) {
-        List<String> workspaceProjectIDs =
-            projectDAO.getWorkspaceProjectIDs(
-                queryParameters.getWorkspaceName(), currentLoginUserInfo);
-        if (workspaceProjectIDs == null || workspaceProjectIDs.isEmpty()) {
-          LOGGER.info(
-              "accessible project for the experimentRuns not found for given workspace : {}",
-              queryParameters.getWorkspaceName());
-          ExperimentRunPaginationDTO experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
-          experimentRunPaginationDTO.setExperimentRuns(Collections.emptyList());
-          experimentRunPaginationDTO.setTotalRecords(0L);
-          return experimentRunPaginationDTO;
-        }
-        projectIds.addAll(workspaceProjectIDs);
+        projectIds.addAll(accessibleProjectIds);
       }
 
       if (accessibleExperimentRunIds.isEmpty()
@@ -2033,16 +2024,20 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public Map<String, String> getProjectIdsFromExperimentRunIds(List<String> experimentRunIds) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery(GET_EXP_RUN_BY_IDS_HQL);
+      Query query =
+          session.createQuery(
+              "Select exr.id, exr.project_id From ExperimentRunEntity exr where exr.id IN (:ids) AND exr."
+                  + ModelDBConstants.DELETED
+                  + " = false ");
       query.setParameterList("ids", experimentRunIds);
 
       @SuppressWarnings("unchecked")
-      List<ExperimentRunEntity> experimentRunEntities = query.list();
-      LOGGER.debug("Got ExperimentRun by Ids. Size : {}", experimentRunEntities.size());
+      List<Object[]> selectedFieldsFromQuery = query.list();
+      LOGGER.debug("Got ExperimentRun by Ids. Size : {}", selectedFieldsFromQuery.size());
       Map<String, String> experimentRunIdToProjectIdMap = new HashMap<>();
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
+      for (Object[] selectedFields : selectedFieldsFromQuery) {
         experimentRunIdToProjectIdMap.put(
-            experimentRunEntity.getId(), experimentRunEntity.getProject_id());
+            String.valueOf(selectedFields[0]), String.valueOf(selectedFields[1]));
       }
       return experimentRunIdToProjectIdMap;
     } catch (Exception ex) {
@@ -2339,12 +2334,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
         GetResourcesResponseItem entityResource =
-            roleService
-                .getEntityResource(
-                    Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
-                    Optional.empty(),
-                    ModelDBServiceResourceTypes.REPOSITORY)
-                .get();
+            roleService.getEntityResource(
+                Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
+                Optional.empty(),
+                ModelDBServiceResourceTypes.REPOSITORY);
         Workspace workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
         if (workspace != null) {
           findExperimentRuns.setWorkspaceName(
@@ -2422,12 +2415,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
         GetResourcesResponseItem entityResource =
-            roleService
-                .getEntityResource(
-                    Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
-                    Optional.empty(),
-                    ModelDBServiceResourceTypes.REPOSITORY)
-                .get();
+            roleService.getEntityResource(
+                Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
+                Optional.empty(),
+                ModelDBServiceResourceTypes.REPOSITORY);
         Workspace workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
         if (workspace != null) {
           findExperimentRuns.setWorkspaceName(
