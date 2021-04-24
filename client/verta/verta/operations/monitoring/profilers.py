@@ -269,7 +269,7 @@ class ProfilerReference(entity._ModelDBEntity):
 
 
 class Profilers(object):
-    """Repository object for creating and finding profilers.
+    """Collection object for creating and finding profilers.
 
     Examples
     --------

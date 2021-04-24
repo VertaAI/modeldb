@@ -16,7 +16,7 @@ from .alert._entities import Alerts
 class Client(object):
     """The sub-client aggregating repositories for monitoring features.
 
-    This sub-client acts as a namespace for the repository objects used
+    This sub-client acts as a namespace for the collection objects used
     to interact with Verta's profiling and data monitoring features. Users
     should access instances of this client through the base Verta Client.
 
@@ -28,17 +28,17 @@ class Client(object):
     Attributes
     ----------
     profilers : :class:`~verta.operations.monitoring.profilers.Profilers`
-        Profilers repository.
+        Profilers collection.
     summaries : :class:`~verta.operations.monitoring.summaries.Summaries`
-        Summaries repository.
+        Summaries collection.
     summary_samples : :class:`~verta.operations.monitoring.summaries.SummarySamples`
-        Summary samples repository.
+        Summary samples collection.
     labels : :class:`~verta.operations.monitoring.labels.Labels`
-        Labels repository for finding label keys and values.
+        Labels collection for finding label keys and values.
     alerts : :class:`~verta.operations.monitoring.alert._entities.Alerts`
-        Alerts repository for configuring and managing alert objects.
+        Alerts collection for configuring and managing alert objects.
     notification_channels : :class:`~verta.operations.monitoring.notification_channel._entities.NotificationChannels`
-        Notification channel repository.
+        Notification channel collection.
 
     Examples
     --------

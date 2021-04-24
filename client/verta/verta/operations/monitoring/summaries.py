@@ -473,7 +473,7 @@ class SummarySample(entity._ModelDBEntity):
 
 
 class Summaries:
-    """Repository object for creating and finding summaries.
+    """Collection object for creating and finding summaries.
 
     Parameters
     ----------
@@ -639,7 +639,7 @@ class Summaries:
 
 
 class SummarySamples:
-    """Repository object for finding summary samples.
+    """Collection object for finding summary samples.
 
     Parameters
     ----------

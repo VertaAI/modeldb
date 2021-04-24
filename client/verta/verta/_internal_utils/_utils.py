@@ -256,7 +256,7 @@ class Configuration:
         Parameters
         ----------
         use_git : bool, default True
-            Whether to use a local Git repository for certain operations.
+            Whether to use a local Git collection for certain operations.
 
         """
         self.use_git = use_git

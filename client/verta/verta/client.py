@@ -102,7 +102,7 @@ class Client(object):
     ignore_conn_err : bool, default False
         Whether to ignore connection errors and instead return successes with empty contents.
     use_git : bool, default True
-        Whether to use a local Git repository for certain operations such as Code Versioning.
+        Whether to use a local Git collection for certain operations such as Code Versioning.
     debug : bool, default False
         Whether to print extra verbose information to aid in debugging.
     _connect : str, default True
