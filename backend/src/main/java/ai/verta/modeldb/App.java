@@ -33,22 +33,9 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
-import io.jaegertracing.Configuration;
-import io.opentracing.Tracer;
-import io.opentracing.contrib.grpc.TracingServerInterceptor;
-import io.opentracing.contrib.jdbc.TracingDriver;
-import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Optional;
-import java.util.TimerTask;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -63,6 +50,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.Optional;
+import java.util.TimerTask;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
@@ -214,17 +210,7 @@ public class App implements ApplicationContextAware {
       serverBuilder.addService(healthStatusManager.getHealthService());
 
       // Add middleware/interceptors
-      if (config.enableTrace) {
-        Tracer tracer = Configuration.fromEnv().getTracer();
-        TracingServerInterceptor tracingInterceptor =
-            TracingServerInterceptor.newBuilder().withTracer(tracer).build();
-        GlobalTracer.register(tracer);
-        TracingDriver.load();
-        TracingDriver.setInterceptorMode(true);
-        TracingDriver.setInterceptorProperty(true);
-        serverBuilder.intercept(tracingInterceptor);
-      }
-
+      config.getTracingServerInterceptor().map(serverBuilder::intercept);
       serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());
       serverBuilder.intercept(new AuthInterceptor());
