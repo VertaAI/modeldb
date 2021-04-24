@@ -1623,22 +1623,6 @@ class ExperimentRun(_DeployableEntity):
         return list(map(lambda artifact: artifact.key, self._msg.artifacts))
 
     def download_artifact(self, key, download_to_path):
-        """
-        Downloads the artifact with name `key` to path `download_to_path`.
-
-        Parameters
-        ----------
-        key : str
-            Name of the artifact.
-        download_to_path : str
-            Path to download to.
-
-        Returns
-        -------
-        downloaded_to_path : str
-            Absolute path where artifact was downloaded to. Matches `download_to_path`.
-
-        """
         download_to_path = os.path.abspath(download_to_path)
 
         # get key-path from ModelDB
@@ -1692,22 +1676,6 @@ class ExperimentRun(_DeployableEntity):
         return download_to_path
 
     def download_model(self, download_to_path):
-        """
-        Downloads the model logged with :meth:`log_model` to path `download_to_path`.
-
-        .. versionadded:: 0.17.1
-
-        Parameters
-        ----------
-        download_to_path : str
-            Path to download to.
-
-        Returns
-        -------
-        downloaded_to_path : str
-            Absolute path where artifact was downloaded to. Matches `download_to_path`.
-
-        """
         self.download_artifact(_artifact_utils.MODEL_KEY, download_to_path)
 
     def get_artifact_parts(self, key):
