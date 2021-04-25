@@ -211,6 +211,7 @@ public class App implements ApplicationContextAware {
 
       // Add middleware/interceptors
       config.getTracingServerInterceptor().map(serverBuilder::intercept);
+      serverBuilder.intercept(new MetadataForwarder());
       serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());
       serverBuilder.intercept(new AuthInterceptor());
