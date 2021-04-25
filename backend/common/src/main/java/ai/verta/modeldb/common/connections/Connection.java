@@ -12,6 +12,8 @@ import io.opentracing.contrib.grpc.TracingClientInterceptor;
 
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public abstract class Connection {
   private final Optional<TracingClientInterceptor> tracingClientInterceptor;
@@ -32,16 +34,28 @@ public abstract class Connection {
     return (T) stub;
   }
 
-  public static InternalFuture<Void> setContextCredentials(
-      ServiceUserConfig config, Executor executor) {
-    return InternalFuture.runAsync(
-        () -> {
-          inplaceSetContextCredentials(config);
-        },
-        executor);
+  public static <T> T withContextCredentials(ServiceUserConfig config, Supplier<T> supplier) {
+    Context previous = inplaceSetContextCredentials(config);
+
+    try {
+      return supplier.get();
+    } finally {
+      Context.current().detach(previous);
+    }
   }
 
-  public static void inplaceSetContextCredentials(ServiceUserConfig config) {
+  public static void withContextCredentials(ServiceUserConfig config, Runnable run) {
+    Context previous = inplaceSetContextCredentials(config);
+
+    try {
+      run.run();
+    } finally {
+      Context.current().detach(previous);
+    }
+  }
+
+  // DO NOT use outside of tests as this causes nasty grpc error messages
+  public static Context inplaceSetContextCredentials(ServiceUserConfig config) {
     final Metadata authHeaders = new Metadata();
     Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> dev_key =
@@ -56,6 +70,6 @@ public abstract class Connection {
     authHeaders.put(source_key, "PythonClient");
 
     // Force using the ROOT context so that we must lose any context of the current execution
-    Context.ROOT.withValue(MetadataForwarder.METADATA_INFO, authHeaders).attach();
+    return Context.ROOT.withValue(MetadataForwarder.METADATA_INFO, authHeaders).attach();
   }
 }
