@@ -10,6 +10,7 @@ import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
@@ -211,6 +212,7 @@ public class App implements ApplicationContextAware {
 
       // Add middleware/interceptors
       config.getTracingServerInterceptor().map(serverBuilder::intercept);
+      serverBuilder.intercept(new MetadataForwarder());
       serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());
       serverBuilder.intercept(new AuthInterceptor());
