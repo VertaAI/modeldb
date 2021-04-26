@@ -51,7 +51,8 @@ public class CreateExperimentRunHandler {
       UAC uac,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
-      BlobDAO blobDAO) {
+      BlobDAO blobDAO,
+      VersionInputHandler versionInputHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -64,9 +65,7 @@ public class CreateExperimentRunHandler {
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
     artifactHandler = new ArtifactHandlerBase(executor, jdbi, "artifacts", "ExperimentRunEntity");
     featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
-    versionInputHandler =
-        new VersionInputHandler(
-            executor, jdbi, "ExperimentRunEntity", repositoryDAO, commitDAO, blobDAO);
+    this.versionInputHandler = versionInputHandler;
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
@@ -296,7 +295,8 @@ public class CreateExperimentRunHandler {
                   featureHandler.logFeatures(
                       newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
               futureLogs.add(
-                  versionInputHandler.validateAndInsertVersionedInputs(newExperimentRun));
+                  versionInputHandler.validateAndInsertVersionedInputs(
+                      newExperimentRun.getId(), newExperimentRun.getVersionedInputs()));
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);

@@ -2,7 +2,6 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
-import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
@@ -77,29 +76,23 @@ public class VersionInputHandler {
    * then again we are keep hyperparameter element blob mapping for those run in separate mapping
    * table called `hyperparameter_element_mapping`
    */
-  public InternalFuture<Void> validateAndInsertVersionedInputs(ExperimentRun experimentRun) {
-    if (experimentRun.hasVersionedInputs()) {
+  public InternalFuture<Void> validateAndInsertVersionedInputs(
+      String runId, VersioningEntry versioningEntry) {
+    if (versioningEntry != null) {
       InternalFuture<Map<String, Map.Entry<BlobExpanded, String>>> versionedInputFutureTask =
-          validateVersioningEntity(experimentRun.getVersionedInputs());
+          validateVersioningEntity(versioningEntry);
       return versionedInputFutureTask.thenCompose(
           locationBlobWithHashMap ->
-              insertVersioningInput(
-                      experimentRun.getVersionedInputs(),
-                      locationBlobWithHashMap,
-                      experimentRun.getId())
+              insertVersioningInput(versioningEntry, locationBlobWithHashMap, runId)
                   .thenCompose(
                       unused ->
                           insertVersioningInputMappingConfigBlob(
-                              experimentRun.getVersionedInputs(),
-                              locationBlobWithHashMap,
-                              experimentRun.getId()),
+                              versioningEntry, locationBlobWithHashMap, runId),
                       executor)
                   .thenCompose(
                       unused ->
                           insertHyperparameterElementMapping(
-                              experimentRun.getVersionedInputs(),
-                              locationBlobWithHashMap,
-                              experimentRun.getId()),
+                              versioningEntry, locationBlobWithHashMap, runId),
                       executor),
           executor);
     } else {

@@ -48,6 +48,7 @@ import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
@@ -85,6 +86,7 @@ public class FutureExperimentRunDAO {
   private final DatasetHandler datasetHandler;
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
+  private final VersionInputHandler versionInputHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
 
   public FutureExperimentRunDAO(
@@ -119,8 +121,12 @@ public class FutureExperimentRunDAO {
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
+    versionInputHandler =
+        new VersionInputHandler(
+            executor, jdbi, "ExperimentRunEntity", repositoryDAO, commitDAO, blobDAO);
     createExperimentRunHandler =
-        new CreateExperimentRunHandler(executor, jdbi, uac, repositoryDAO, commitDAO, blobDAO);
+        new CreateExperimentRunHandler(
+            executor, jdbi, uac, repositoryDAO, commitDAO, blobDAO, versionInputHandler);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -830,5 +836,23 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(request.getProjectId()),
             ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
+  }
+
+  public InternalFuture<Void> logVersionedInputs(LogVersionedInput request) {
+    final var runId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    if (!request.hasVersionedInputs()) {
+      throw new InvalidArgumentException("VersionedInput not found in request");
+    } else if (!request.getId().isEmpty()) {
+      throw new InvalidArgumentException("ExperimentRun ID not found in request");
+    }
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(
+            unused ->
+                versionInputHandler.validateAndInsertVersionedInputs(
+                    request.getId(), request.getVersionedInputs()),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 }
