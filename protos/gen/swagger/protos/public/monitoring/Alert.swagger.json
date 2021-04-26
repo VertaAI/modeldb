@@ -480,6 +480,30 @@
       "properties": {
         "channel": {
           "$ref": "#/definitions/monitoringNotificationChannel"
+        },
+        "name": {
+          "type": "string"
+        },
+        "created_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "updated_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/NotificationChannelTypeEnumNotificationChannelType"
+        },
+        "slack_webhook": {
+          "$ref": "#/definitions/monitoringNotificationChannelSlackWebhook"
         }
       },
       "title": "Create a new notification channel. Names must be unique"
@@ -678,6 +702,13 @@
         "page_limit": {
           "type": "integer",
           "format": "int32"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
         }
       },
       "title": "Find an notification channel based on the different fields"
@@ -835,6 +866,10 @@
         },
         "slack_webhook": {
           "$ref": "#/definitions/monitoringNotificationChannelSlackWebhook"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
         }
       },
       "title": "Content of an notification channel"

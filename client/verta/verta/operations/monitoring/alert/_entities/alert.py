@@ -8,10 +8,35 @@ from ....._tracking import entity, _Context
 from ... import notification_channel
 from ... import summaries
 from ... import utils
+from .. import _alerter
 from .. import status as status_module
 
 
 class Alert(entity._ModelDBEntity):
+    """
+    An alert persisted to Verta.
+
+    An alert periodically queries matching summary samples to determine if
+    a threshold has been exceeded and if so, propagates a notification to
+    configured channels.
+
+    Attributes
+    ----------
+    id : int
+        ID of this alert.
+    name : str
+        Name of this alert.
+    history : list of :class:`AlertHistoryItem`
+        History of this alert's status changes.
+    monitored_entity_id : int
+        ID of the monitored entity this alert is associated with.
+    status : :class:`~verta.operations.monitoring.alert.status._AlertStatus`
+        Current status of this alert.
+    summary_sample_query : :class:`~verta.operations.monitoring.summary.SummarySampleQuery`
+        The summary samples this alert monitors.
+
+    """
+
     def __init__(self, conn, conf, msg):
         super(Alert, self).__init__(
             conn,
@@ -51,6 +76,14 @@ class Alert(entity._ModelDBEntity):
         )
 
     @property
+    def alerter(self):
+        self._refresh_cache()
+        alerter_field = self._msg.WhichOneof("alerter")
+        alerter_msg = getattr(self._msg, alerter_field)
+
+        return _alerter._Alerter._from_proto(alerter_msg)
+
+    @property
     def history(self):
         # TODO: implement lazy list and pagination
         msg = _AlertService.ListAlertHistoryRequest(id=self.id)
@@ -58,6 +91,19 @@ class Alert(entity._ModelDBEntity):
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         history = self._conn.must_proto_response(response, msg.Response).history
         return list(map(AlertHistoryItem, history))
+
+    @property
+    def _last_evaluated_or_created_millis(self):
+        """For the alerter to filter for new summary samples."""
+        self._refresh_cache()
+
+        return self._msg.last_evaluated_at_millis or self._msg.created_at_millis
+
+    @property
+    def monitored_entity_id(self):
+        self._refresh_cache()
+
+        return self._msg.monitored_entity_id
 
     @property
     def name(self):
@@ -193,6 +239,29 @@ class Alert(entity._ModelDBEntity):
         self._update(alert_msg)
 
     def add_notification_channels(self, notification_channels):
+        """
+        Add notification channels to this alert.
+
+        Parameters
+        ----------
+        notification_channels : list of :class:`~verta.operations.monitoring.notification_channel._entities.NotificationChannel`
+            Notification channels.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.operations.monitoring.notification_channel import SlackNotificationChannel
+
+            channels = Client().operations.notification_channels
+            channel = notification_channels.create(
+                "Slack alerts",
+                SlackNotificationChannel("https://hooks.slack.com/services/.../.../......"),
+            )
+
+            alert.add_notification_channels([channel])
+
+        """
         for channel in notification_channels:
             self._validate_notification_channel(channel)
 
@@ -206,6 +275,31 @@ class Alert(entity._ModelDBEntity):
         self._update(alert_msg)
 
     def set_status(self, status, event_time=None):
+        """
+        Set the status of this alert.
+
+        .. note::
+
+            There should usually be no need to manually set an alert to
+            alerting, as the Verta platform monitors alerts and their summary
+            samples.
+
+        Parameters
+        ----------
+        status : :class:`~verta.operations.monitoring.alert.status._AlertStatus`
+            Alert status.
+        event_time : datetime.datetime or int, optional
+            An override event time to assign to this alert status update.
+            Either a timezone aware datetime object or unix epoch milliseconds.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.operations.monitoring.alert.status import Ok
+            alert.set_status(Ok())
+
+        """
         msg = status._to_proto_request()
         msg.alert_id = self.id
         if event_time:
@@ -218,6 +312,20 @@ class Alert(entity._ModelDBEntity):
         return True
 
     def delete(self):
+        """
+        Delete this alert.
+
+        Returns
+        -------
+        bool
+            ``True`` if the delete was successful.
+
+        Raises
+        ------
+        :class:`requests.HTTPError`
+            If the delete failed.
+
+        """
         msg = _AlertService.DeleteAlertRequest(ids=[self.id])
         endpoint = "/api/v1/alerts/deleteAlert"
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
@@ -226,6 +334,17 @@ class Alert(entity._ModelDBEntity):
 
 
 class Alerts(object):
+    """
+    Collection object for creating and finding alerts.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        alerts = monitored_entity.alerts
+
+    """
+
     def __init__(self, conn, conf, monitored_entity_id=None):
         self._conn = conn
         self._conf = conf
@@ -243,6 +362,45 @@ class Alerts(object):
         updated_at=None,
         last_evaluated_at=None,
     ):
+        """
+        Create a new alert.
+
+        Parameters
+        ----------
+        name : str
+            A unique name for this alert.
+        alerter : :class:`~verta.operations.monitoring.alert.Alerter`
+            The configuration for this alert.
+        summary_sample_query : :class:`~verta.operations.monitoring.summaries.SummarySampleQuery`
+            Summary samples for this alert to monitor for threshold violations.
+        notification_channels : list of :class:`~verta.operations.monitoring.notification_channel._entities.NotificationChannel`, optional
+        created_at : datetime.datetime or int, optional
+            An override creation time to assign to this alert. Either a
+            timezone aware datetime object or unix epoch milliseconds.
+        updated_at : datetime.datetime or int, optional
+            An override update time to assign to this alert. Either a
+            timezone aware datetime object or unix epoch milliseconds.
+        last_evaluated_at : datetime.datetime or int, optional
+            An override evaluation time to assign to this alert. Either a
+            timezone aware datetime object or unix epoch milliseconds.
+
+        Returns
+        -------
+        :class:`Alert`
+            Alert.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            alert = monitored_entity.alerts.create(
+                name="MSE",
+                alerter=alerter,
+                summary_sample_query=sample_query,
+                notification_channels=[channel],
+            )
+
+        """
         if self._monitored_entity_id is None:
             raise RuntimeError(
                 "this Alert cannot be used to create because it was not"
@@ -270,6 +428,24 @@ class Alerts(object):
         )
 
     def get(self, name=None, id=None):
+        """
+        Get an existing alert.
+
+        Either `name` or `id` can be provided but not both.
+
+        Parameters
+        ----------
+        name : str, optional
+            Alert name.
+        id : int, optional
+            Alert ID.
+
+        Returns
+        -------
+        :class:`Alert`
+            Alert.
+
+        """
         if name and id:
             raise ValueError("cannot specify both `name` and `id`")
         elif name:
@@ -287,6 +463,15 @@ class Alerts(object):
     # TODO: use lazy list and pagination
     # TODO: a proper find
     def list(self):
+        """
+        Return all accesible alerts.
+
+        Returns
+        -------
+        list of :class:`Alert`
+            Alerts.
+
+        """
         msg = _AlertService.FindAlertRequest(
             page_number=1, page_limit=-1,
         )
@@ -298,6 +483,25 @@ class Alerts(object):
         return [Alert(self._conn, self._conf, alert) for alert in alerts]
 
     def delete(self, alerts):
+        """
+        Delete the given alerts in a single request.
+
+        Parameters
+        ----------
+        list of :class:`Alert`
+            Alerts.
+
+        Returns
+        -------
+        bool
+            ``True`` if the delete was successful.
+
+        Raises
+        ------
+        :class:`requests.HTTPError`
+            If the delete failed.
+
+        """
         alert_ids = utils.extract_ids(alerts)
         msg = _AlertService.DeleteAlertRequest(ids=alert_ids)
         endpoint = "/api/v1/alerts/deleteAlert"
@@ -307,6 +511,16 @@ class Alerts(object):
 
 
 class AlertHistoryItem(object):
+    """
+    The history of an alert's status changes.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        alert.history
+
+    """
     def __init__(self, msg):
         self._event_time = time_utils.datetime_from_millis(msg.event_time_millis)
         self._status = status_module._AlertStatus._from_proto(

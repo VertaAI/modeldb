@@ -9,6 +9,40 @@ from ... import utils
 
 
 class NotificationChannel(entity._ModelDBEntity):
+    """
+    A notification channel persisted to Verta.
+
+    A notification channel directs a triggered alert to propagate a message to
+    some destination to notify interested parties.
+
+    Attributes
+    ----------
+    id : int
+        ID of this notification channel.
+    name : str
+        Name of this notification channel.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.operations.monitoring.notification_channel import SlackNotificationChannel
+
+        channels = Client().operations.notification_channels
+        channel = notification_channels.create(
+            "Slack alerts",
+            SlackNotificationChannel("https://hooks.slack.com/services/.../.../......"),
+        )
+
+        alert = monitored_entity.alerts.create(
+            name="MSE",
+            alerter=alerter,
+            summary_sample_query=sample_query,
+            notification_channels=[channel],
+        )
+
+    """
+
     def __init__(self, conn, conf, msg):
         super(NotificationChannel, self).__init__(
             conn,
@@ -36,6 +70,12 @@ class NotificationChannel(entity._ModelDBEntity):
                 ),
             )
         )
+
+    @property
+    def name(self):
+        self._refresh_cache()
+
+        return self._msg.name
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
@@ -107,6 +147,20 @@ class NotificationChannel(entity._ModelDBEntity):
         raise NotImplementedError
 
     def delete(self):
+        """
+        Delete this notification channel.
+
+        Returns
+        -------
+        bool
+            ``True`` if the delete was successful.
+
+        Raises
+        ------
+        :class:`requests.HTTPError`
+            If the delete failed.
+
+        """
         msg = _AlertService.DeleteNotificationChannelRequest(ids=[self.id])
         endpoint = "/api/v1/alerts/deleteNotificationChannel"
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
@@ -115,6 +169,17 @@ class NotificationChannel(entity._ModelDBEntity):
 
 
 class NotificationChannels(object):
+    """
+    Collection object for creating and finding notification channels.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        channels = Client().operations.notification_channels
+
+    """
+
     def __init__(self, conn, conf):
         self._conn = conn
         self._conf = conf
@@ -126,6 +191,41 @@ class NotificationChannels(object):
         created_at=None,
         updated_at=None,
     ):
+        """
+        Create a new notification channel.
+
+        Parameters
+        ----------
+        name : str
+            A unique name for this notification channel.
+        channel : :class:`verta.operations.monitoring.notification_channel._NotificationChannel`
+            The configuration for this notification channel.
+        created_at : datetime.datetime or int, optional
+            An override creation time to assign to this channel. Either a
+            timezone aware datetime object or unix epoch milliseconds.
+        updated_at : datetime.datetime or int, optional
+            An override update time to assign to this channel. Either a
+            timezone aware datetime object or unix epoch milliseconds.
+
+        Returns
+        -------
+        :class:`NotificationChannel`
+            Notification channel.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.operations.monitoring.notification_channel import SlackNotificationChannel
+
+            channels = Client().operations.notification_channels
+
+            channel = notification_channels.create(
+                "Slack alerts",
+                SlackNotificationChannel("https://hooks.slack.com/services/.../.../......"),
+            )
+
+        """
         ctx = _Context(self._conn, self._conf)
         return NotificationChannel._create(
             self._conn,
@@ -138,6 +238,24 @@ class NotificationChannels(object):
         )
 
     def get(self, name=None, id=None):
+        """
+        Get an existing notification channel.
+
+        Either `name` or `id` can be provided but not both.
+
+        Parameters
+        ----------
+        name : str, optional
+            Notification channel name.
+        id : int, optional
+            Notification channel ID.
+
+        Returns
+        -------
+        :class:`NotificationChannel`
+            Notification channel.
+
+        """
         if name and id:
             raise ValueError("cannot specify both `name` and `id`")
         elif name:
@@ -155,6 +273,15 @@ class NotificationChannels(object):
     # TODO: use lazy list and pagination
     # TODO: a proper find
     def list(self):
+        """
+        Return all accesible notification channels.
+
+        Returns
+        -------
+        list of :class:`NotificationChannel`
+            Notification channels.
+
+        """
         msg = _AlertService.FindNotificationChannelRequest(
             page_number=1, page_limit=-1,
         )
@@ -166,6 +293,25 @@ class NotificationChannels(object):
         ]
 
     def delete(self, channels):
+        """
+        Delete the given notification channels in a single request.
+
+        Parameters
+        ----------
+        list of :class:`NotificationChannel`
+            Notification channels.
+
+        Returns
+        -------
+        bool
+            ``True`` if the delete was successful.
+
+        Raises
+        ------
+        :class:`requests.HTTPError`
+            If the delete failed.
+
+        """
         channel_ids = utils.extract_ids(channels)
         msg = _AlertService.DeleteNotificationChannelRequest(ids=channel_ids)
         endpoint = "/api/v1/alerts/deleteNotificationChannel"

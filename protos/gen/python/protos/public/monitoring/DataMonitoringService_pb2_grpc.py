@@ -14,16 +14,6 @@ class DataMonitoringServiceStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.getMonitoredEntity = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/getMonitoredEntity',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.GetMonitoredEntityRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.GetMonitoredEntityRequest.Response.FromString,
-        )
-    self.getMonitoredEntityByName = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/getMonitoredEntityByName',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.GetMonitoredEntityByNameRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.GetMonitoredEntityByNameRequest.Response.FromString,
-        )
     self.createMonitoredEntity = channel.unary_unary(
         '/ai.verta.monitoring.DataMonitoringService/createMonitoredEntity',
         request_serializer=monitoring_dot_DataMonitoringService__pb2.CreateMonitoredEntityRequest.SerializeToString,
@@ -33,11 +23,6 @@ class DataMonitoringServiceStub(object):
         '/ai.verta.monitoring.DataMonitoringService/updateMonitoredEntity',
         request_serializer=monitoring_dot_DataMonitoringService__pb2.UpdateMonitoredEntityRequest.SerializeToString,
         response_deserializer=monitoring_dot_DataMonitoringService__pb2.UpdateMonitoredEntityRequest.Response.FromString,
-        )
-    self.listMonitoredEntities = channel.unary_unary(
-        '/ai.verta.monitoring.DataMonitoringService/listMonitoredEntities',
-        request_serializer=monitoring_dot_DataMonitoringService__pb2.ListMonitoredEntitiesRequest.SerializeToString,
-        response_deserializer=monitoring_dot_DataMonitoringService__pb2.ListMonitoredEntitiesRequest.Response.FromString,
         )
     self.findMonitoredEntity = channel.unary_unary(
         '/ai.verta.monitoring.DataMonitoringService/findMonitoredEntity',
@@ -100,20 +85,6 @@ class DataMonitoringServiceServicer(object):
   """Service definitions
   """
 
-  def getMonitoredEntity(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getMonitoredEntityByName(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def createMonitoredEntity(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -122,13 +93,6 @@ class DataMonitoringServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def updateMonitoredEntity(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def listMonitoredEntities(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -215,16 +179,6 @@ class DataMonitoringServiceServicer(object):
 
 def add_DataMonitoringServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'getMonitoredEntity': grpc.unary_unary_rpc_method_handler(
-          servicer.getMonitoredEntity,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.GetMonitoredEntityRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.GetMonitoredEntityRequest.Response.SerializeToString,
-      ),
-      'getMonitoredEntityByName': grpc.unary_unary_rpc_method_handler(
-          servicer.getMonitoredEntityByName,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.GetMonitoredEntityByNameRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.GetMonitoredEntityByNameRequest.Response.SerializeToString,
-      ),
       'createMonitoredEntity': grpc.unary_unary_rpc_method_handler(
           servicer.createMonitoredEntity,
           request_deserializer=monitoring_dot_DataMonitoringService__pb2.CreateMonitoredEntityRequest.FromString,
@@ -234,11 +188,6 @@ def add_DataMonitoringServiceServicer_to_server(servicer, server):
           servicer.updateMonitoredEntity,
           request_deserializer=monitoring_dot_DataMonitoringService__pb2.UpdateMonitoredEntityRequest.FromString,
           response_serializer=monitoring_dot_DataMonitoringService__pb2.UpdateMonitoredEntityRequest.Response.SerializeToString,
-      ),
-      'listMonitoredEntities': grpc.unary_unary_rpc_method_handler(
-          servicer.listMonitoredEntities,
-          request_deserializer=monitoring_dot_DataMonitoringService__pb2.ListMonitoredEntitiesRequest.FromString,
-          response_serializer=monitoring_dot_DataMonitoringService__pb2.ListMonitoredEntitiesRequest.Response.SerializeToString,
       ),
       'findMonitoredEntity': grpc.unary_unary_rpc_method_handler(
           servicer.findMonitoredEntity,
