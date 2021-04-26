@@ -30,11 +30,13 @@ import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -61,6 +63,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -84,6 +87,7 @@ public class FutureExperimentRunDAO {
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
+  private final Config config = Config.getInstance();
 
   public FutureExperimentRunDAO(
       Executor executor,
@@ -838,9 +842,36 @@ public class FutureExperimentRunDAO {
                                     futureDatasets,
                                     (stream, datasets) ->
                                         stream.map(
-                                            builder ->
-                                                builder.addAllDatasets(
-                                                    datasets.get(builder.getId()))),
+                                            builder -> {
+                                              List<Artifact> datasetList =
+                                                  datasets.get(builder.getId());
+                                              if (datasetList != null && !datasetList.isEmpty()) {
+                                                if (config.populateConnectionsBasedOnPrivileges) {
+                                                  try {
+                                                    return filterAndGetPrivilegedDatasetsOnly(
+                                                            datasetList, true)
+                                                        .thenCompose(
+                                                            artifacts -> {
+                                                              builder
+                                                                  .clearDatasets()
+                                                                  .addAllDatasets(artifacts);
+                                                              return InternalFuture
+                                                                  .completedInternalFuture(builder);
+                                                            },
+                                                            executor)
+                                                        .get();
+                                                  } catch (ExecutionException
+                                                      | InterruptedException ex) {
+                                                    throw new ModelDBException(ex.getMessage());
+                                                  }
+                                                } else {
+                                                  return builder
+                                                      .clearDatasets()
+                                                      .addAllDatasets(datasetList);
+                                                }
+                                              }
+                                              return builder;
+                                            }),
                                     executor);
 
                             // Get observations
