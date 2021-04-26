@@ -30,6 +30,7 @@ import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -64,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -786,6 +788,8 @@ public class FutureExperimentRunDAO {
                                                     observations.get(builder.getId()))),
                                     executor);
 
+                            Set<Long> accessibleRepoIdsSet = new HashSet<>();
+                            Set<Long> notAccessibleRepoIdIdsSet = new HashSet<>();
                             // Get observations
                             final var futureVersionedInputs =
                                 versionInputHandler.getVersionedInputs(ids);
@@ -798,6 +802,10 @@ public class FutureExperimentRunDAO {
                                               if (versionInputsMap.containsKey(builder.getId())) {
                                                 builder.setVersionedInputs(
                                                     versionInputsMap.get(builder.getId()));
+                                                checkVersionInputBasedOnPrivileges(
+                                                    builder,
+                                                    accessibleRepoIdsSet,
+                                                    notAccessibleRepoIdIdsSet);
                                               }
                                             }),
                                     executor);
@@ -843,6 +851,59 @@ public class FutureExperimentRunDAO {
                 .setTotalRecords(count)
                 .build(),
         executor);
+  }
+
+  private void checkVersionInputBasedOnPrivileges(
+      ExperimentRun.Builder experimentRunBuilder,
+      Set<Long> accessibleRepoIdsSet,
+      Set<Long> notAccessibleRepoIdIdsSet) {
+    Long repoId = experimentRunBuilder.getVersionedInputs().getRepositoryId();
+    if (accessibleRepoIdsSet.contains(repoId)) {
+      accessibleRepoIdsSet.add(repoId);
+    } else if (notAccessibleRepoIdIdsSet.contains(repoId)) {
+      notAccessibleRepoIdIdsSet.add(repoId);
+      experimentRunBuilder.clearVersionedInputs().build();
+    } else {
+      try {
+        Boolean isSelfAllowed =
+            IsRepositorySelfAllowed(
+                    Collections.singletonList(String.valueOf(repoId)),
+                    ModelDBActionEnum.ModelDBServiceActions.READ)
+                .get();
+        if (isSelfAllowed) {
+          accessibleRepoIdsSet.add(repoId);
+        } else {
+          experimentRunBuilder.clearVersionedInputs().build();
+          notAccessibleRepoIdIdsSet.add(repoId);
+        }
+      } catch (ExecutionException | InterruptedException ex) {
+        throw new ModelDBException(ex);
+      }
+    }
+  }
+
+  private InternalFuture<Boolean> IsRepositorySelfAllowed(
+      List<String> repoId, ModelDBActionEnum.ModelDBServiceActions action) {
+    return FutureGrpc.ClientRequest(
+            uac.getAuthzService()
+                .isSelfAllowed(
+                    IsSelfAllowed.newBuilder()
+                        .addActions(
+                            Action.newBuilder()
+                                .setModeldbServiceAction(action)
+                                .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                        .addResources(
+                            Resources.newBuilder()
+                                .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                                .setResourceType(
+                                    ResourceType.newBuilder()
+                                        .setModeldbServiceResourceType(
+                                            ModelDBServiceResourceTypes.REPOSITORY))
+                                .addAllResourceIds(repoId))
+                        .build()),
+            executor)
+        .thenCompose(
+            response -> InternalFuture.completedInternalFuture(response.getAllowed()), executor);
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
