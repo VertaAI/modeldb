@@ -157,7 +157,7 @@ message Alert {
     // Information about the alerters that should be used to evaluate this alert
     AlerterTypeEnum.AlerterType alerter_type = 11;
 
-    // All configured alerts for this alert.  Must all be of the same type, and
+    // All configured alerters for this alert.  Must all be of the same type, and
     // must be of the alerter_type
     repeated Alerter alerters = 14;
 }
