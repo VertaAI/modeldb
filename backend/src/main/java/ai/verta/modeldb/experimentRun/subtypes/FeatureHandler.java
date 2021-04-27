@@ -5,8 +5,10 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -98,5 +100,27 @@ public class FeatureHandler {
                   });
             },
             executor);
+  }
+
+  public InternalFuture<MapSubtypes<Feature>> getFeaturesMap(Set<String> entityIds) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "select feature, "
+                            + entityIdReferenceColumn
+                            + " as entity_id from feature "
+                            + "where entity_name=:entity_name and "
+                            + entityIdReferenceColumn
+                            + " in (<entity_ids>)")
+                    .bindList("entity_ids", entityIds)
+                    .bind("entity_name", entityName)
+                    .map(
+                        (rs, ctx) ->
+                            new AbstractMap.SimpleEntry<>(
+                                rs.getString("entity_id"),
+                                Feature.newBuilder().setName(rs.getString("feature")).build()))
+                    .list())
+        .thenApply(MapSubtypes::from, executor);
   }
 }

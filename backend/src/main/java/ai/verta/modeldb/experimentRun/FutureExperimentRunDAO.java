@@ -43,6 +43,7 @@ import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CreateExperimentRunHandler;
 import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
+import ai.verta.modeldb.experimentRun.subtypes.FeatureHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
@@ -82,6 +83,7 @@ public class FutureExperimentRunDAO {
   private final DatasetHandler datasetHandler;
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
+  private final FeatureHandler featureHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
 
   public FutureExperimentRunDAO(
@@ -113,7 +115,19 @@ public class FutureExperimentRunDAO {
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
-    createExperimentRunHandler = new CreateExperimentRunHandler(executor, jdbi, uac);
+    featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
+    createExperimentRunHandler =
+        new CreateExperimentRunHandler(
+            executor,
+            jdbi,
+            uac,
+            attributeHandler,
+            hyperparametersHandler,
+            metricsHandler,
+            observationHandler,
+            tagsHandler,
+            artifactHandler,
+            featureHandler);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -604,7 +618,6 @@ public class FutureExperimentRunDAO {
                 queryContext -> {
                   // TODO: get code version
                   // TODO: get environment
-                  // TODO: get features?
                   // TODO: get job id?
                   // TODO: get versioned inputs
                   // TODO: get code version from blob
@@ -773,6 +786,18 @@ public class FutureExperimentRunDAO {
                                             builder ->
                                                 builder.addAllObservations(
                                                     observations.get(builder.getId()))),
+                                    executor);
+
+                            // Get features
+                            final var futureFeatures = featureHandler.getFeaturesMap(ids);
+                            futureBuildersStream =
+                                futureBuildersStream.thenCombine(
+                                    futureFeatures,
+                                    (stream, features) ->
+                                        stream.map(
+                                            builder ->
+                                                builder.addAllFeatures(
+                                                    features.get(builder.getId()))),
                                     executor);
 
                             return futureBuildersStream.thenApply(
