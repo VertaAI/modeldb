@@ -427,13 +427,14 @@
         },
         "alerter_type": {
           "$ref": "#/definitions/AlerterTypeEnumAlerterType",
-          "title": "Information about the alerter that should be used to evaluate this alert"
+          "title": "Information about the alerters that should be used to evaluate this alert"
         },
-        "alerter_fixed": {
-          "$ref": "#/definitions/monitoringAlertFixed"
-        },
-        "alerter_reference": {
-          "$ref": "#/definitions/monitoringAlertReference"
+        "alerters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringAlerter"
+          },
+          "title": "All configured alerts for this alert.  Must all be of the same type, and\nmust be of the alerter_type"
         }
       }
     },
@@ -447,6 +448,28 @@
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
+        },
+        "alert_level": {
+          "$ref": "#/definitions/monitoringAlertLevel"
+        }
+      }
+    },
+    "monitoringAlertLevel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "label_color_hex": {
+          "type": "string"
         }
       }
     },
@@ -464,6 +487,21 @@
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
+        },
+        "alert_level": {
+          "$ref": "#/definitions/monitoringAlertLevel",
+          "title": "TODO: add some information about the comparison type\nFor now, assume it's the default defined in the data format"
+        }
+      }
+    },
+    "monitoringAlerter": {
+      "type": "object",
+      "properties": {
+        "alerter_fixed": {
+          "$ref": "#/definitions/monitoringAlertFixed"
+        },
+        "alerter_reference": {
+          "$ref": "#/definitions/monitoringAlertReference"
         }
       }
     },
