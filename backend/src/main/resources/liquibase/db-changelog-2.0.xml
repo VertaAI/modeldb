@@ -653,8 +653,6 @@
             ALTER TABLE metadata_property_mapping MODIFY COLUMN metadata_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
             ALTER TABLE metadata_property_mapping MODIFY COLUMN metadata_value text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
             ALTER TABLE migration_status MODIFY COLUMN migration_name varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-            ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-            ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
             ALTER TABLE observation MODIFY COLUMN entity_name varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
             ALTER TABLE observation MODIFY COLUMN field_type varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
             ALTER TABLE path_dataset_component_blob MODIFY COLUMN md5 text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
@@ -698,9 +696,6 @@
             ALTER TABLE tag MODIFY COLUMN tag varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
             ALTER TABLE tag_mapping MODIFY COLUMN entity_name varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
             ALTER TABLE tag_mapping MODIFY COLUMN tags text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-            ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-            ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
-            ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
             ALTER TABLE user_comment MODIFY COLUMN entity_name varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
             ALTER TABLE user_comment MODIFY COLUMN message varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
             ALTER TABLE user_comment MODIFY COLUMN owner varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
