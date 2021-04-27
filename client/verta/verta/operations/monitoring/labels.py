@@ -15,9 +15,19 @@ from .utils import maybe
 
 class Labels(object):
     """
-    Repository object for finding labels.
+    Collection object for finding labels.
 
     A label is a key-value pair associated with a summary.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta import Client
+
+        client = Client()
+        labels = client.operations.labels
+
     """
 
     def __init__(self, conn, conf):
@@ -34,7 +44,7 @@ class Labels(object):
 
         Parameters
         ----------
-        summary_query : verta.operations.monitoring.SummaryQuery, optional
+        summary_query : :class:`~verta.operations.monitoring.summaries.SummaryQuery`, optional
             A query object specifying a set of summaries.
         sample_ids : list, optional
              A list of integer sample ids.
@@ -77,7 +87,7 @@ class Labels(object):
         keys : list
             A list of strings specifying the label keys to retrieve label values
             for.
-        summary_query : verta.operations.monitoring.SummaryQuery, optional
+        summary_query : :class:`~verta.operations.monitoring.summaries.SummaryQuery`, optional
             A query object specifying a set of summaries.
         sample_ids : list, optional
              A list of integer sample ids.

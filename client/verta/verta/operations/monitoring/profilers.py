@@ -32,7 +32,8 @@ class ProfilerReference(entity._ModelDBEntity):
     methods to deploy, disable, and check the deployment status of profilers.
 
     Users should obtain ``ProfilerReference`` objects through the get and
-    create methods available in the ``client.operations.profilers`` object.
+    create methods available from :class:`Profilers`, accessible as the
+    ``profilers`` attribute on the operations sub-:class:`~verta.opertaions.monitoring.client.Client`.
 
     Parameters
     ----------
@@ -47,7 +48,7 @@ class ProfilerReference(entity._ModelDBEntity):
     ----------
     id : int
         The id of this profiler.
-    name : string
+    name : str
         The name of this profiler.
     """
 
@@ -81,7 +82,7 @@ class ProfilerReference(entity._ModelDBEntity):
 
         Parameters
         ----------
-        monitored_entity : verta.operations.monitoring.monitored_entity.MonitoredEntity
+        monitored_entity : :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
             The monitored entity for which this profiler should be enabled.
         environment : dict, optional
             Dictionary from strings to strings specifying environment variables.
@@ -159,7 +160,7 @@ class ProfilerReference(entity._ModelDBEntity):
 
         Parameters
         ----------
-        monitored_entity : verta.operations.monitoring.monitored_entity.MonitoredEntity
+        monitored_entity : :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
             The monitored entity for which this profiler should be disabled.
 
         Returns
@@ -188,7 +189,7 @@ class ProfilerReference(entity._ModelDBEntity):
 
         Parameters
         ----------
-        monitored_entity : verta.operations.monitoring.monitored_entity.MonitoredEntity
+        monitored_entity : :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
             The monitored entity for which the status should be returned.
 
         Returns
@@ -222,7 +223,7 @@ class ProfilerReference(entity._ModelDBEntity):
 
         Parameters
         ----------
-        name : string
+        name : str
             A new name for this profiler.
 
         Returns
@@ -268,7 +269,18 @@ class ProfilerReference(entity._ModelDBEntity):
 
 
 class Profilers(object):
-    """Repository object for creating and finding profilers."""
+    """Collection object for creating and finding profilers.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta import Client
+
+        client = Client()
+        profilers = client.operations.profilers
+
+    """
 
     def __init__(self, conn, conf, client):
         self._conn = conn

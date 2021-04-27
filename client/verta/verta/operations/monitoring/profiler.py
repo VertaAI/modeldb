@@ -64,7 +64,7 @@ class Profiler(object):
         ----------
         df : pandas.core.frame.DataFrame
             A data frame to profile.
-        column : string
+        column : str
             The column in the data frame to profile.
 
         Returns
@@ -84,12 +84,12 @@ class MissingValuesProfiler(Profiler):
 
     Parameters
     ----------
-    columns : :obj:`list` of :obj:`str`
+    columns : list of str
         The list of data frame columns which will be profiled.
 
     Attributes
     ----------
-    columns : :obj:`list` of :obj:`str`
+    columns : list of str
         The list of data frame columns which will be profiled.
     """
 
@@ -103,7 +103,7 @@ class MissingValuesProfiler(Profiler):
         ----------
         df : pandas.core.frame.DataFrame
             A data frame to profile.
-        column : string
+        column : str
             The column in the data frame to profile.
 
         Returns
@@ -131,12 +131,12 @@ class BinaryHistogramProfiler(Profiler):
 
     Parameters
     ----------
-    columns : :obj:`list` of :obj:`str`
+    columns : list of str
         The list of data frame columns which will be profiled.
 
     Attributes
     ----------
-    columns : :obj:`list` of :obj:`str`
+    columns : list of str
         The list of data frame columns which will be profiled.
     """
 
@@ -150,7 +150,7 @@ class BinaryHistogramProfiler(Profiler):
         ----------
         df : pandas.core.frame.DataFrame
             A data frame to profile.
-        column : string
+        column : str
             The column in the data frame to profile.
 
         Returns

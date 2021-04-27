@@ -28,6 +28,44 @@ from verta import data_types
 
 
 class SummaryQuery(object):
+    """
+    A query for summaries.
+
+    Parameters
+    ----------
+    ids : list of int, optional
+        Only fetch these summaries.
+    names : list of str, optional
+        Only fetch these summaries with one of these names.
+    data_type_classes : list of :class:`~verta.data_types._VertaDataType`, optional
+        Only fetch summaries with one of these data types.
+    monitored_entities : list of :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`, optional
+        Only fetch summaries belonging to one of these monitored entities.
+    page_number : int, default 1
+        Pagination page number for the backend query request. Used in
+        conjunction with `page_limit`.
+    page_limit : int, optional
+        Number of samples to fetch from the backend in a single query. If not
+        provided, all accessible samples will be fetched.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from datetime import datetime, timezone
+        from verta.operations.monitoring.summary import SummaryQuery, SummarySampleQuery
+        from verta.data_types import FloatHistogram, DiscreteHistogram
+
+        summary_query = SummaryQuery(
+            names=["Income Distributions"]),
+            data_types=[FloatHistogram, DiscreteHistogram],
+        )
+
+        client = Client()
+        for summary in client.operations.summaries.find(sample_query):
+            print(summary)
+    """
+
     def __init__(
         self,
         ids=None,
@@ -86,9 +124,9 @@ class SummarySampleQuery(object):
 
     Parameters
     ----------
-    summary_query : :class:`~verta.operations.monitoring.summary.SummaryQuery`, optional
+    summary_query : :class:`SummaryQuery`, optional
         Only fetch samples whose summaries match this query.
-    ids : list of str, optional
+    ids : list of int, optional
         Only fetch these samples.
     labels : dict of str to list of str, optional
         Only fetch samples that have at least one of these labels. A mapping
@@ -199,13 +237,35 @@ class SummarySampleQuery(object):
 
 
 class Summary(entity._ModelDBEntity):
+    """A summary object to validate and aggregate summary samples.
+
+    Users should obtain summaries through one of the query or create methods of
+    the ``summaries`` attribute on the operations
+    sub-:class:`~verta.opertaions.monitoring.client.Client` instead of
+    initializing Summary objects.
+
+    Parameters
+    ----------
+    conn
+        A connection object to the backend service.
+    conf
+        A configuration object used by conn methods.
+    msg
+        A protobuf message ai.verta.monitoring.Summary
+
+    Attributes
+    ----------
+    name: str
+        The name of this summary.
+    """
+
     def __init__(self, conn, conf, msg):
         super(Summary, self).__init__(conn, conf, SummaryService, "summary", msg)
         self._conn = conn
         self._conf = conf
-        self.monitored_entity_id = msg.monitored_entity_id
+        self.monitored_entity_id = msg.monitored_entity_id  # TODO: hide me
         self.name = msg.name
-        self.type = msg.type_name
+        self.type = msg.type_name  # TODO: hide me
 
     def __repr__(self):
         return "Summary name:{}, type:{}, monitored_entity_id:{}".format(
@@ -215,6 +275,28 @@ class Summary(entity._ModelDBEntity):
     def log_sample(
         self, data, labels, time_window_start, time_window_end, created_at=None
     ):
+        """Log a summary sample for this summary.
+
+        Parameters
+        ----------
+        data
+            A :class:`~verta.data_types._VertaDataType` consistent with the type of this summary.
+        labels : dict of str to str, optional
+            A mapping between label keys and values.
+        time_window_start : datetime.datetime or int
+            Either a timezone aware datetime object or unix epoch milliseconds.
+        time_window_end : datetime.datetime or int
+            Either a timezone aware datetime object or unix epoch milliseconds.
+        created_after : datetime.datetime or int, optional
+            Either a timezone aware datetime object or unix epoch milliseconds.
+            Defaults to now, but offered as a parameter to permit backfilling of
+            summary samples.
+
+        Returns
+        -------
+        :class:`SummarySample`
+            A persisted summary sample.
+        """
         if not isinstance(data, data_types._VertaDataType):
             raise TypeError(
                 "expected a supported VertaDataType, found {}".format(type(data))
@@ -249,6 +331,19 @@ class Summary(entity._ModelDBEntity):
         return SummarySample(self._conn, self._conf, result_msg)
 
     def find_samples(self, query=None):
+        """Find summary samples belonging to this summary.
+
+        Parameters
+        ----------
+        query : :class:`SummarySampleQuery`, optional
+            A query object which filters the set of summary samples.
+
+        Returns
+        -------
+        list of :class:`SummarySample`
+            A list of summary samples belonging to this summary and matching the
+            query.
+        """
         if query is None:
             query = SummarySampleQuery()
         msg = query._to_proto_request()
@@ -265,7 +360,7 @@ class Summary(entity._ModelDBEntity):
         ]
         return samples
 
-    def has_type(self, data_type_cls):
+    def has_type(self, data_type_cls):  # TODO: hideme
         return self.type == data_type_cls._type_string()
 
     @staticmethod
@@ -275,11 +370,23 @@ class Summary(entity._ModelDBEntity):
             for key, values in labels.items()
         }
 
-    def delete(self, summary_records):
+    def delete(self, summary_samples):
+        """Delete summary samples from this summary.
+
+        Parameters
+        ----------
+        summary_samples : list of :class:`SummarySample`
+            The summary samples which should be deleted from this summary.
+
+        Returns
+        -------
+        bool
+            True if the delete was successful.
+        """
         try:
-            ids = [record.id for record in summary_records]
+            ids = [sample.id for sample in summary_samples]
         except:
-            ids = summary_records
+            ids = summary_samples
         endpoint = "/api/v1/summaries/deleteSample"
         msg = DeleteSummarySampleRequest(ids=ids)
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
@@ -288,6 +395,48 @@ class Summary(entity._ModelDBEntity):
 
 
 class SummarySample(entity._ModelDBEntity):
+    """A summary sample object capturing data for later comparison.
+
+    Users should obtain summary samples through one of the query or create
+    methods on a :class:`Summary` or the ``summary_samples`` attribute on the
+    operations sub-:class:`~verta.opertaions.monitoring.client.Client` instead
+    of initializing SummarySample objects directly.
+
+    Parameters
+    ----------
+    conn
+        A connection object to the backend service.
+    conf
+        A configuration object used by conn methods.
+    msg
+        A protobuf message ai.verta.monitoring.SummarySample
+
+    Attributes
+    ----------
+    content
+        A :class:`~verta.data_types._VertaDataType` consistent with the type of this summary.
+    labels : dict of str to str, optional
+        A mapping between label keys and values.
+    time_window_start : datetime.datetime or int
+        Either a timezone aware datetime object or unix epoch milliseconds.
+    time_window_end : datetime.datetime or int
+        Either a timezone aware datetime object or unix epoch milliseconds.
+    created_after : datetime.datetime or int, optional
+        Either a timezone aware datetime object or unix epoch milliseconds.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        sample = summary.log_sample(
+            predicted_classes,
+            labels=labels,
+            time_window_start=yesterday,
+            time_window_end=now,
+        )
+
+    """
+
     def __init__(self, conn, conf, msg):
         super(SummarySample, self).__init__(conn, conf, SummaryService, "summary", msg)
         self.summary_id = msg.summary_id
@@ -324,14 +473,59 @@ class SummarySample(entity._ModelDBEntity):
 
 
 class Summaries:
+    """Collection object for creating and finding summaries.
+
+    Parameters
+    ----------
+    conn
+        A connection object to the backend service.
+    conf
+        A configuration object used by conn methods.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from datetime import datetime, timedelta, timezone
+
+        from verta import Client
+        from verta.operations.monitoring.summaries import SummaryQuery, SummarySampleQuery
+        from verta import data_types
+
+        client = Client()
+        monitored = client.operations.get_or_create_monitored_entity()
+        summary = client.operations.summaries.create(
+            "predicted class", data_types.DiscreteHistogram, monitored
+        )
+
+        now = datetime.now(timezone.utc)
+        yesterday = now - timedelta(days=1)
+
+        predicted_classes = data_types.DiscreteHistogram(
+            buckets=["spam", "important", "other"], data=[100, 20, 800]
+        )
+        labels = {"source": "training"}
+        summary.log_sample(
+            predicted_classes,
+            labels=labels,
+            time_window_start=yesterday,
+            time_window_end=now
+        )
+        summary_samples = summary.find_samples(SummarySampleQuery(labels={"source": ["training"]}))
+        for sample in summary_samples:
+            print(sample)
+    """
+
     def __init__(self, conn, conf):
         self._conn = conn
         self._conf = conf
 
-    def create(self, name, data_type_cls, monitored_entity):
+    def create(self, name, data_type_cls, monitored_entity): # TODO: hideme
         if not issubclass(data_type_cls, data_types._VertaDataType):
             raise TypeError(
-                "expected a supported VertaDataType, found {}".format(type(data_type_cls))
+                "expected a supported VertaDataType, found {}".format(
+                    type(data_type_cls)
+                )
             )
         msg = CreateSummaryRequest(
             monitored_entity_id=monitored_entity.id,
@@ -344,9 +538,27 @@ class Summaries:
         return Summary(self._conn, self._conf, proto)
 
     def get_or_create(self, name, data_type_cls, monitored_entity):
+        """Get or create a summary by name and data type.
+
+        Parameters
+        ----------
+        name : str
+            The name of this summary.
+        data_type_cls: :class:`~verta.data_types._VertaDataType`
+            The class of data type which summary samples must conform to.
+        monitored_entity: :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
+            A monitored entity object.
+
+        Returns
+        -------
+        :class:`Summary`
+            A retrieved or created summary.
+        """
         if not issubclass(data_type_cls, data_types._VertaDataType):
             raise TypeError(
-                "expected a supported VertaDataType, found {}".format(type(data_type_cls))
+                "expected a supported VertaDataType, found {}".format(
+                    type(data_type_cls)
+                )
             )
         query = SummaryQuery(names=[name], monitored_entities=[monitored_entity])
         retrieved = self.find(query)
@@ -358,7 +570,10 @@ class Summaries:
         #     )
         if retrieved:
             monitored_entity_id = extract_id(monitored_entity)
-            cond = lambda s: s.name == name and s.monitored_entity_id == monitored_entity_id
+            cond = (
+                lambda s: s.name == name
+                and s.monitored_entity_id == monitored_entity_id
+            )
             retrieved = list(filter(cond, retrieved))
         if retrieved:
             summary = retrieved[0]
@@ -373,6 +588,18 @@ class Summaries:
         return summary
 
     def find(self, query=None):
+        """Find summaries.
+
+        Parameters
+        ----------
+        query : :class:`SummarySampleQuery`, optional
+            A query object which filters the set of summary samples.
+
+        Returns
+        -------
+        list of :class:`SummarySample`
+            A list of summary samples matching the query.
+        """
         if query is None:
             query = SummaryQuery()
         elif not isinstance(query, SummaryQuery):
@@ -391,6 +618,18 @@ class Summaries:
         return maybe_summaries
 
     def delete(self, summaries):
+        """Delete the specified summaries.
+
+        Parameters
+        ----------
+        summaries : list of :class:`Summary`
+            The summaries which should be deleted.
+
+        Returns
+        -------
+        bool
+            True if the delete was successful.
+        """
         summary_ids = [summary.id for summary in summaries]
         msg = DeleteSummaryRequest(ids=summary_ids)
         endpoint = "/api/v1/summaries/deleteSummary"
@@ -400,6 +639,26 @@ class Summaries:
 
 
 class SummarySamples:
+    """Collection object for finding summary samples.
+
+    Parameters
+    ----------
+    conn
+        A connection object to the backend service.
+    conf
+        A configuration object used by conn methods.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta import Client
+
+        client = Client()
+        summary_samples = client.operations.summary_samples
+
+    """
+
     def __init__(self, conn, conf):
         # TODO: potentially summary_id
         self._conn = conn
@@ -408,6 +667,18 @@ class SummarySamples:
     # TODO: potentially create()
 
     def find(self, query=None):
+        """Find summary samples.
+
+        Parameters
+        ----------
+        query : :class:`SummarySampleQuery`, optional
+            A query object which filters the set of summary samples.
+
+        Returns
+        -------
+        list of :class:`SummarySample`
+            A list of summary samples matching the query.
+        """
         if query is None:
             query = SummarySampleQuery()
         elif not isinstance(query, SummarySampleQuery):
@@ -423,9 +694,21 @@ class SummarySamples:
             for sample in maybe_samples.samples
         ]
 
-    def delete(self, summaries):
-        summary_ids = extract_ids(summaries)
-        msg = DeleteSummarySampleRequest(ids=summary_ids)
+    def delete(self, summary_samples):
+        """Delete the specified summary samples.
+
+        Parameters
+        ----------
+        summary_samples : list of :class:`SummarySample`
+            The summary samples which should be deleted from this summary.
+
+        Returns
+        -------
+        bool
+            True if the delete was successful.
+        """
+        summary_sample_ids = extract_ids(summary_samples)
+        msg = DeleteSummarySampleRequest(ids=summary_sample_ids)
         endpoint = "/api/v1/summaries/deleteSample"
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
         self._conn.must_response(response)
