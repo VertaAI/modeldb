@@ -35,7 +35,8 @@ public class EnvironmentHandler {
     this.entityName = entityName;
   }
 
-  public String getEnvironmentStringFromBlob(EnvironmentBlob runEnvironmentBlob) throws InvalidProtocolBufferException {
+  public String getEnvironmentStringFromBlob(EnvironmentBlob runEnvironmentBlob)
+      throws InvalidProtocolBufferException {
     if (runEnvironmentBlob != null) {
       EnvironmentBlob sortedEnvironmentBlob = sortPythonEnvironmentBlob(runEnvironmentBlob);
       return ModelDBUtils.getStringFromProtoObject(sortedEnvironmentBlob);
@@ -43,28 +44,28 @@ public class EnvironmentHandler {
     return null;
   }
 
-    private EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {
-        EnvironmentBlob.Builder builder = environmentBlob.toBuilder();
-        if (builder.hasPython()) {
-            PythonEnvironmentBlob.Builder pythonEnvironmentBlobBuilder = builder.getPython().toBuilder();
+  private EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {
+    EnvironmentBlob.Builder builder = environmentBlob.toBuilder();
+    if (builder.hasPython()) {
+      PythonEnvironmentBlob.Builder pythonEnvironmentBlobBuilder = builder.getPython().toBuilder();
 
-            // Compare requirementEnvironmentBlobs
-            List<PythonRequirementEnvironmentBlob> requirementEnvironmentBlobs =
-                    new ArrayList<>(pythonEnvironmentBlobBuilder.getRequirementsList());
-            requirementEnvironmentBlobs.sort(
-                    Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
-            pythonEnvironmentBlobBuilder
-                    .clearRequirements()
-                    .addAllRequirements(requirementEnvironmentBlobs);
+      // Compare requirementEnvironmentBlobs
+      List<PythonRequirementEnvironmentBlob> requirementEnvironmentBlobs =
+          new ArrayList<>(pythonEnvironmentBlobBuilder.getRequirementsList());
+      requirementEnvironmentBlobs.sort(
+          Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
+      pythonEnvironmentBlobBuilder
+          .clearRequirements()
+          .addAllRequirements(requirementEnvironmentBlobs);
 
-            // Compare
-            List<PythonRequirementEnvironmentBlob> constraintsBlobs =
-                    new ArrayList<>(pythonEnvironmentBlobBuilder.getConstraintsList());
-            constraintsBlobs.sort(Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
-            pythonEnvironmentBlobBuilder.clearConstraints().addAllConstraints(constraintsBlobs);
+      // Compare
+      List<PythonRequirementEnvironmentBlob> constraintsBlobs =
+          new ArrayList<>(pythonEnvironmentBlobBuilder.getConstraintsList());
+      constraintsBlobs.sort(Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
+      pythonEnvironmentBlobBuilder.clearConstraints().addAllConstraints(constraintsBlobs);
 
-            builder.setPython(pythonEnvironmentBlobBuilder.build());
-        }
-        return builder.build();
+      builder.setPython(pythonEnvironmentBlobBuilder.build());
     }
+    return builder.build();
+  }
 }

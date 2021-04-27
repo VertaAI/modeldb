@@ -881,18 +881,26 @@ public class FutureExperimentRunDAO {
   public InternalFuture<Void> logEnvironment(LogEnvironment request) {
     final var runId = request.getId();
 
-    if (!request.hasEnvironment()){
-      return InternalFuture.failedStage(new InvalidArgumentException("Environment should not be empty"));
+    if (!request.hasEnvironment()) {
+      return InternalFuture.failedStage(
+          new InvalidArgumentException("Environment should not be empty"));
     }
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-            .thenCompose(unused ->
-                    jdbi.useHandle(handle ->
-                            handle.createUpdate("UPDATE experiment_run SET environment = :environment WHERE id = :runId")
-                                    .bind("runId", request.getId())
-                                    .bind("environment", environmentHandler.getEnvironmentStringFromBlob(request.getEnvironment()))
-                                    .execute()
-                    ), executor);
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        handle
+                            .createUpdate(
+                                "UPDATE experiment_run SET environment = :environment WHERE id = :runId")
+                            .bind("runId", request.getId())
+                            .bind(
+                                "environment",
+                                environmentHandler.getEnvironmentStringFromBlob(
+                                    request.getEnvironment()))
+                            .execute()),
+            executor);
   }
 }
