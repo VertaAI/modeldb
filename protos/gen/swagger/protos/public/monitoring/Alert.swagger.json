@@ -434,7 +434,7 @@
           "items": {
             "$ref": "#/definitions/monitoringAlerter"
           },
-          "title": "All configured alerts for this alert.  Must all be of the same type, and\nmust be of the alerter_type"
+          "title": "All configured alerters for this alert.  Must all be of the same type, and\nmust be of the alerter_type"
         }
       }
     },

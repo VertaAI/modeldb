@@ -997,7 +997,7 @@ type Alert struct {
 	ViolatingSummarySampleIds []uint64 `protobuf:"varint,10,rep,packed,name=violating_summary_sample_ids,json=violatingSummarySampleIds,proto3" json:"violating_summary_sample_ids,omitempty"`
 	// Information about the alerters that should be used to evaluate this alert
 	AlerterType AlerterTypeEnum_AlerterType `protobuf:"varint,11,opt,name=alerter_type,json=alerterType,proto3,enum=ai.verta.monitoring.AlerterTypeEnum_AlerterType" json:"alerter_type,omitempty"`
-	// All configured alerts for this alert.  Must all be of the same type, and
+	// All configured alerters for this alert.  Must all be of the same type, and
 	// must be of the alerter_type
 	Alerters []*Alerter `protobuf:"bytes,14,rep,name=alerters,proto3" json:"alerters,omitempty"`
 }
