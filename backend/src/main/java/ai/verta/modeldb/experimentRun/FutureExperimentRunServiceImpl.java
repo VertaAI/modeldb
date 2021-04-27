@@ -71,35 +71,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void getExperimentRunByName(
       GetExperimentRunByName request,
       StreamObserver<GetExperimentRunByName.Response> responseObserver) {
-    try {
-      final var response =
-          futureExperimentRunDAO
-              .findExperimentRuns(
-                  FindExperimentRuns.newBuilder()
-                      .addPredicates(
-                          KeyValueQuery.newBuilder()
-                              .setKey("name")
-                              .setValue(
-                                  Value.newBuilder().setStringValue(request.getName()).build())
-                              .setOperator(OperatorEnum.Operator.EQ)
-                              .setValueType(ValueTypeEnum.ValueType.STRING)
-                              .build())
-                      .build())
-              .thenApply(
-                  findResponse -> {
-                    if (findResponse.getExperimentRunsCount() == 0) {
-                      return GetExperimentRunByName.Response.newBuilder().build();
-                    } else {
-                      return GetExperimentRunByName.Response.newBuilder()
-                          .setExperimentRun(findResponse.getExperimentRuns(0))
-                          .build();
-                    }
-                  },
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
-    } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e);
-    }
+    super.getExperimentRunByName(request, responseObserver);
   }
 
   @Override
