@@ -7,9 +7,8 @@ from information_schema.columns col
 join information_schema.tables tab on tab.table_schema = col.table_schema
                                    and tab.table_name = col.table_name
                                    and tab.table_type = 'BASE TABLE'
-where col.data_type in ('char', 'varchar', 'binary', 'varbinary',
-                        'text', 'tinytext', 'mediumtext', 'longtext'
-                        'enum', 'set', 'longtext')
+where col.data_type in ('char', 'varchar',
+                        'text', 'longtext')
       and col.table_schema not in ('information_schema', 'sys',
                                    'performance_schema', 'mysql')
       and col.table_name not in ('DATABASECHANGELOG', 'DATABASECHANGELOGLOCK', 'database_change_log', 'database_change_log_lock')
