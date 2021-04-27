@@ -50,7 +50,8 @@ public class CreateExperimentRunHandler {
       KeyValueHandler metricsHandler,
       ObservationHandler observationHandler,
       TagsHandler tagsHandler,
-      ArtifactHandler artifactHandler) {
+      ArtifactHandler artifactHandler,
+      FeatureHandler featureHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -61,7 +62,7 @@ public class CreateExperimentRunHandler {
     this.observationHandler = observationHandler;
     this.tagsHandler = tagsHandler;
     this.artifactHandler = artifactHandler;
-    this.featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
+    this.featureHandler = featureHandler;
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
