@@ -60,7 +60,21 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void getExperimentRunById(
       GetExperimentRunById request,
       StreamObserver<GetExperimentRunById.Response> responseObserver) {
-    super.getExperimentRunById(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .findExperimentRuns(
+                  FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build())
+              .thenApply(
+                  findResponse ->
+                      GetExperimentRunById.Response.newBuilder()
+                          .setExperimentRun(findResponse.getExperimentRuns(0))
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
