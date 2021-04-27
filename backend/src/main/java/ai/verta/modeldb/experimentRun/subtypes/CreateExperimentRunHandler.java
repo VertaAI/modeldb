@@ -232,10 +232,7 @@ public class CreateExperimentRunHandler {
               runValueMap.put("parent_id", newExperimentRun.getParentId());
               runValueMap.put("owner", newExperimentRun.getOwner());
 
-              EnvironmentBlob environmentBlob =
-                  sortPythonEnvironmentBlob(newExperimentRun.getEnvironment());
-              runValueMap.put(
-                  "environment", ModelDBUtils.getStringFromProtoObject(environmentBlob));
+              runValueMap.put("environment", null);
               runValueMap.put("deleted", false);
               runValueMap.put("created", false);
 
@@ -300,31 +297,6 @@ public class CreateExperimentRunHandler {
     // newExperimentRun.getDatasetsList()), executor)
     // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
     // TODO .thenCompose(handle -> versioned_inputs, executor)
-  }
-
-  private EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {
-    EnvironmentBlob.Builder builder = environmentBlob.toBuilder();
-    if (builder.hasPython()) {
-      PythonEnvironmentBlob.Builder pythonEnvironmentBlobBuilder = builder.getPython().toBuilder();
-
-      // Compare requirementEnvironmentBlobs
-      List<PythonRequirementEnvironmentBlob> requirementEnvironmentBlobs =
-          new ArrayList<>(pythonEnvironmentBlobBuilder.getRequirementsList());
-      requirementEnvironmentBlobs.sort(
-          Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
-      pythonEnvironmentBlobBuilder
-          .clearRequirements()
-          .addAllRequirements(requirementEnvironmentBlobs);
-
-      // Compare
-      List<PythonRequirementEnvironmentBlob> constraintsBlobs =
-          new ArrayList<>(pythonEnvironmentBlobBuilder.getConstraintsList());
-      constraintsBlobs.sort(Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
-      pythonEnvironmentBlobBuilder.clearConstraints().addAllConstraints(constraintsBlobs);
-
-      builder.setPython(pythonEnvironmentBlobBuilder.build());
-    }
-    return builder.build();
   }
 
   private InternalFuture<Boolean> checkInsertedEntityAlreadyExists(ExperimentRun experimentRun) {
