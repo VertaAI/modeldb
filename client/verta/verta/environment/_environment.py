@@ -30,6 +30,16 @@ class _Environment(blob.Blob):
         if autocapture:
             self._capture_cmd_line_args()
 
+    def _as_env_proto(self):
+        """Returns this environment blob as an environment protobuf message.
+
+        Returns
+        -------
+        env_msg : _EnvironmentService.EnvironmentBlob
+
+        """
+        return self._msg
+
     def _capture_env_vars(self, env_vars):
         if env_vars is None:
             return
