@@ -825,6 +825,22 @@ public class FutureExperimentRunDAO {
                                                     features.get(builder.getId()))),
                                     executor);
 
+                            // Get code version snapshot
+                            final var futureCodeVersionSnapshots =
+                                codeVersionHandler.getCodeVersionMap(new ArrayList<>(ids));
+                            futureBuildersStream =
+                                futureBuildersStream.thenCombine(
+                                    futureCodeVersionSnapshots,
+                                    (stream, codeVersionsMap) ->
+                                        stream.peek(
+                                            builder -> {
+                                              if (codeVersionsMap.containsKey(builder.getId())) {
+                                                builder.setCodeVersionSnapshot(
+                                                    codeVersionsMap.get(builder.getId()));
+                                              }
+                                            }),
+                                    executor);
+
                             return futureBuildersStream.thenApply(
                                 experimentRunBuilders ->
                                     experimentRunBuilders

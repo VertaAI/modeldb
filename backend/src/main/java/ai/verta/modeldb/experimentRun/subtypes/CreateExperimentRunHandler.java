@@ -3,6 +3,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.CreateExperimentRun;
 import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.connections.UAC;
@@ -43,6 +44,7 @@ public class CreateExperimentRunHandler {
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
   private final FeatureHandler featureHandler;
+  private final CodeVersionHandler codeVersionHandler;
 
   public CreateExperimentRunHandler(
       Executor executor,
@@ -66,6 +68,7 @@ public class CreateExperimentRunHandler {
     this.tagsHandler = tagsHandler;
     this.artifactHandler = artifactHandler;
     this.featureHandler = featureHandler;
+    this.codeVersionHandler = new CodeVersionHandler(executor, jdbi);
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
@@ -237,8 +240,6 @@ public class CreateExperimentRunHandler {
                                   runValueMap.put("end_time", newExperimentRun.getEndTime());
                                   runValueMap.put(
                                       "code_version", newExperimentRun.getCodeVersion());
-                                  // TODO: code version snapshot
-                                  /*runValueMap.put("code_version_snapshot_id", newExperimentRun.getCodeVersionSnapshot());*/
                                   runValueMap.put("job_id", newExperimentRun.getJobId());
                                   runValueMap.put("parent_id", newExperimentRun.getParentId());
                                   runValueMap.put("owner", newExperimentRun.getOwner());
@@ -316,6 +317,13 @@ public class CreateExperimentRunHandler {
               futureLogs.add(
                   featureHandler.logFeatures(
                       newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
+              futureLogs.add(
+                  codeVersionHandler.logCodeVersion(
+                      LogExperimentRunCodeVersion.newBuilder()
+                          .setId(newExperimentRun.getId())
+                          .setCodeVersion(newExperimentRun.getCodeVersionSnapshot())
+                          .setOverwrite(false)
+                          .build()));
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);
@@ -323,7 +331,6 @@ public class CreateExperimentRunHandler {
             executor);
     // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
     // newExperimentRun.getDatasetsList()), executor)
-    // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
     // TODO .thenCompose(handle -> versioned_inputs, executor)
   }
 
