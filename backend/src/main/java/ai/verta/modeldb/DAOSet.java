@@ -65,7 +65,6 @@ public class DAOSet {
             set.commitDAO,
             set.blobDAO,
             set.metadataDAO);
-    set.futureExperimentRunDAO = new FutureExperimentRunDAO(executor, jdbi, services.uac);
     set.projectDAO =
         new ProjectDAORdbImpl(
             services.authService, services.roleService, set.experimentDAO, set.experimentRunDAO);
@@ -86,6 +85,10 @@ public class DAOSet {
     } else {
       set.auditLogLocalDAO = new AuditLogLocalDAORdbImpl();
     }
+
+    set.futureExperimentRunDAO =
+        new FutureExperimentRunDAO(
+            executor, jdbi, services.uac, set.artifactStoreDAO, set.datasetVersionDAO);
 
     return set;
   }

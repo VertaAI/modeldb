@@ -6,10 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 public class InternalFuture<T> {
@@ -65,6 +62,13 @@ public class InternalFuture<T> {
 
   public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, Executor executor) {
     return from(stage.thenApplyAsync(fn, executor));
+  }
+
+  public <U, V> InternalFuture<V> thenCombine(
+      InternalFuture<? extends U> other,
+      BiFunction<? super T, ? super U, ? extends V> fn,
+      Executor executor) {
+    return from(stage.thenCombineAsync(other.stage, fn, executor));
   }
 
   public InternalFuture<Void> thenAccept(Consumer<? super T> action, Executor executor) {

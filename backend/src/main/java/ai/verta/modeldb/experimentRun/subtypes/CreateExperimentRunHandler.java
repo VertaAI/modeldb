@@ -42,19 +42,30 @@ public class CreateExperimentRunHandler {
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
+  private final FeatureHandler featureHandler;
 
-  public CreateExperimentRunHandler(Executor executor, FutureJdbi jdbi, UAC uac) {
+  public CreateExperimentRunHandler(
+      Executor executor,
+      FutureJdbi jdbi,
+      UAC uac,
+      AttributeHandler attributeHandler,
+      KeyValueHandler hyperparametersHandler,
+      KeyValueHandler metricsHandler,
+      ObservationHandler observationHandler,
+      TagsHandler tagsHandler,
+      ArtifactHandler artifactHandler,
+      FeatureHandler featureHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
 
-    attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
-    hyperparametersHandler =
-        new KeyValueHandler(executor, jdbi, "hyperparameters", "ExperimentRunEntity");
-    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", "ExperimentRunEntity");
-    observationHandler = new ObservationHandler(executor, jdbi);
-    tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
-    artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
+    this.attributeHandler = attributeHandler;
+    this.hyperparametersHandler = hyperparametersHandler;
+    this.metricsHandler = metricsHandler;
+    this.observationHandler = observationHandler;
+    this.tagsHandler = tagsHandler;
+    this.artifactHandler = artifactHandler;
+    this.featureHandler = featureHandler;
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
@@ -92,6 +103,17 @@ public class CreateExperimentRunHandler {
                           return insertExperimentRun(experimentRun)
                               .thenCompose(
                                   unused2 -> createRoleBindingsForExperimentRun(experimentRun),
+                                  executor)
+                              .thenCompose(
+                                  unused2 ->
+                                      jdbi.useHandle(
+                                          handle ->
+                                              handle
+                                                  .createUpdate(
+                                                      "UPDATE experiment_run SET created=:created WHERE id=:id")
+                                                  .bind("created", true)
+                                                  .bind("id", experimentRun.getId())
+                                                  .execute()),
                                   executor)
                               .thenApply(unused2 -> experimentRun, executor);
                         },
@@ -156,14 +178,17 @@ public class CreateExperimentRunHandler {
             .addAllObservations(request.getObservationsList())
             .addAllFeatures(request.getFeaturesList());
 
+    var now = Calendar.getInstance().getTimeInMillis();
     if (request.getDateCreated() != 0L) {
-      experimentRunBuilder
-          .setDateCreated(request.getDateCreated())
-          .setDateUpdated(request.getDateCreated());
+      experimentRunBuilder.setDateCreated(request.getDateCreated());
     } else {
-      experimentRunBuilder
-          .setDateCreated(Calendar.getInstance().getTimeInMillis())
-          .setDateUpdated(Calendar.getInstance().getTimeInMillis());
+      experimentRunBuilder.setDateCreated(now);
+    }
+
+    if (request.getDateUpdated() != 0L) {
+      experimentRunBuilder.setDateUpdated(request.getDateCreated());
+    } else {
+      experimentRunBuilder.setDateUpdated(now);
     }
 
     if (request.getCodeVersionSnapshot() != null) {
@@ -228,6 +253,7 @@ public class CreateExperimentRunHandler {
                                     throw new ModelDBException(e);
                                   }
                                   runValueMap.put("deleted", false);
+                                  runValueMap.put("created", false);
 
                                   // Created comma separated field names from keys of above map
                                   String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
@@ -284,18 +310,19 @@ public class CreateExperimentRunHandler {
               futureLogs.add(
                   observationHandler.logObservations(
                       newExperimentRun.getId(), newExperimentRun.getObservationsList(), now));
+              futureLogs.add(
+                  artifactHandler.logArtifacts(
+                      newExperimentRun.getId(), newExperimentRun.getArtifactsList(), false));
+              futureLogs.add(
+                  featureHandler.logFeatures(
+                      newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);
             },
             executor);
-    // TODO .thenCompose(handle -> artifactHandler.logArtifacts(newExperimentRun.getId(),
-    // newExperimentRun.getArtifactsList()), executor)
     // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
     // newExperimentRun.getDatasetsList()), executor)
-
-    // TODO .thenCompose(handle -> featureHandler.logFeatures(newExperimentRun.getId(),
-    // newExperimentRun.getFeaturesList()), executor)
     // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
     // TODO .thenCompose(handle -> versioned_inputs, executor)
   }
