@@ -18,6 +18,7 @@ message Summary {
     uint64 monitored_entity_id = 2;
     string name = 3;
     string type_name = 4;
+    map<string, string> attributes = 5;
 }
 
 // Request to create a summary sample
@@ -25,6 +26,7 @@ message CreateSummaryRequest {
     uint64 monitored_entity_id = 1;
     string name = 2;
     string type_name = 3;
+    map<string, string> attributes = 4;
 }
 
 // Request to fetch multiple summaries
@@ -39,6 +41,9 @@ message FindSummaryRequest {
     // Pagination
     int32 page_number = 6;
     int32 page_limit = 7;
+
+    repeated string attribute_keys = 8;
+    repeated string attribute_values = 9;
 
     message Response {
         repeated Summary summaries = 1;
