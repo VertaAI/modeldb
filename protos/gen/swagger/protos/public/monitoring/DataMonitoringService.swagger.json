@@ -459,6 +459,12 @@
         },
         "workspace_name": {
           "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },
@@ -592,6 +598,18 @@
         "page_limit": {
           "type": "integer",
           "format": "int32"
+        },
+        "attribute_keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "attribute_values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -678,6 +696,12 @@
         "updated_at_timestamp_millis": {
           "type": "string",
           "format": "uint64"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },
@@ -724,6 +748,12 @@
         },
         "name": {
           "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },
