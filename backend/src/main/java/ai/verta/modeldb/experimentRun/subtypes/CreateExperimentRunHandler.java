@@ -3,10 +3,12 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.CreateExperimentRun;
 import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -19,10 +21,12 @@ import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.uac.*;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class CreateExperimentRunHandler {
 
@@ -38,24 +42,36 @@ public class CreateExperimentRunHandler {
   private final KeyValueHandler metricsHandler;
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
-  private final ArtifactHandlerBase artifactHandler;
+  private final ArtifactHandler artifactHandler;
   private final FeatureHandler featureHandler;
+  private final CodeVersionHandler codeVersionHandler;
   private final DatasetHandler datasetHandler;
 
-  public CreateExperimentRunHandler(Executor executor, FutureJdbi jdbi, UAC uac) {
+  public CreateExperimentRunHandler(
+      Executor executor,
+      FutureJdbi jdbi,
+      UAC uac,
+      AttributeHandler attributeHandler,
+      KeyValueHandler hyperparametersHandler,
+      KeyValueHandler metricsHandler,
+      ObservationHandler observationHandler,
+      TagsHandler tagsHandler,
+      ArtifactHandler artifactHandler,
+      FeatureHandler featureHandler,
+      DatasetHandler datasetHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
 
-    attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
-    hyperparametersHandler =
-        new KeyValueHandler(executor, jdbi, "hyperparameters", "ExperimentRunEntity");
-    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", "ExperimentRunEntity");
-    observationHandler = new ObservationHandler(executor, jdbi);
-    tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
-    artifactHandler = new ArtifactHandlerBase(executor, jdbi, "artifacts", "ExperimentRunEntity");
-    featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
-    datasetHandler = new DatasetHandler(executor, jdbi, "ExperimentRunEntity");
+    this.attributeHandler = attributeHandler;
+    this.hyperparametersHandler = hyperparametersHandler;
+    this.metricsHandler = metricsHandler;
+    this.observationHandler = observationHandler;
+    this.tagsHandler = tagsHandler;
+    this.artifactHandler = artifactHandler;
+    this.featureHandler = featureHandler;
+    this.codeVersionHandler = new CodeVersionHandler(executor, jdbi);
+    this.datasetHandler = datasetHandler;
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
@@ -90,16 +106,7 @@ public class CreateExperimentRunHandler {
                           TrialUtils.validateMaxArtifactsForTrial(
                               config.trial, experimentRun.getArtifactsCount(), 0);
 
-                          return checkInsertedEntityAlreadyExists(experimentRun)
-                              .thenAccept(
-                                  exists -> {
-                                    if (exists) {
-                                      throw new AlreadyExistsException(
-                                          "ExperimentRun already exists in database");
-                                    }
-                                  },
-                                  executor)
-                              .thenCompose(unused2 -> insertExperimentRun(experimentRun), executor)
+                          return insertExperimentRun(experimentRun)
                               .thenCompose(
                                   unused2 -> createRoleBindingsForExperimentRun(experimentRun),
                                   executor)
@@ -177,14 +184,17 @@ public class CreateExperimentRunHandler {
             .addAllObservations(request.getObservationsList())
             .addAllFeatures(request.getFeaturesList());
 
+    var now = Calendar.getInstance().getTimeInMillis();
     if (request.getDateCreated() != 0L) {
-      experimentRunBuilder
-          .setDateCreated(request.getDateCreated())
-          .setDateUpdated(request.getDateCreated());
+      experimentRunBuilder.setDateCreated(request.getDateCreated());
     } else {
-      experimentRunBuilder
-          .setDateCreated(Calendar.getInstance().getTimeInMillis())
-          .setDateUpdated(Calendar.getInstance().getTimeInMillis());
+      experimentRunBuilder.setDateCreated(now);
+    }
+
+    if (request.getDateUpdated() != 0L) {
+      experimentRunBuilder.setDateUpdated(request.getDateCreated());
+    } else {
+      experimentRunBuilder.setDateUpdated(now);
     }
 
     if (request.getCodeVersionSnapshot() != null) {
@@ -204,59 +214,88 @@ public class CreateExperimentRunHandler {
   private InternalFuture<Void> insertExperimentRun(ExperimentRun newExperimentRun) {
     final var now = Calendar.getInstance().getTimeInMillis();
     return jdbi.useHandle(
-            handle -> {
-              Map<String, Object> runValueMap = new LinkedHashMap<>();
-              runValueMap.put("id", newExperimentRun.getId());
-              runValueMap.put("project_id", newExperimentRun.getProjectId());
-              runValueMap.put("experiment_id", newExperimentRun.getExperimentId());
-              runValueMap.put("name", newExperimentRun.getName());
-              runValueMap.put("description", newExperimentRun.getDescription());
-              runValueMap.put("date_created", newExperimentRun.getDateCreated());
-              runValueMap.put("date_updated", newExperimentRun.getDateUpdated());
-              runValueMap.put("start_time", newExperimentRun.getStartTime());
-              runValueMap.put("end_time", newExperimentRun.getEndTime());
-              runValueMap.put("code_version", newExperimentRun.getCodeVersion());
-              // TODO: code version snapshot
-              /*runValueMap.put("code_version_snapshot_id", newExperimentRun.getCodeVersionSnapshot());*/
-              runValueMap.put("job_id", newExperimentRun.getJobId());
-              runValueMap.put("parent_id", newExperimentRun.getParentId());
-              runValueMap.put("owner", newExperimentRun.getOwner());
+            handle ->
+                handle.useTransaction(
+                    TransactionIsolationLevel.SERIALIZABLE,
+                    handle1 ->
+                        checkInsertedEntityAlreadyExists(newExperimentRun)
+                            .thenAccept(
+                                exists -> {
+                                  if (exists) {
+                                    throw new AlreadyExistsException(
+                                        "ExperimentRun '"
+                                            + newExperimentRun.getName()
+                                            + "' already exists in database");
+                                  }
 
-              EnvironmentBlob environmentBlob =
-                  sortPythonEnvironmentBlob(newExperimentRun.getEnvironment());
-              runValueMap.put(
-                  "environment", ModelDBUtils.getStringFromProtoObject(environmentBlob));
-              runValueMap.put("deleted", false);
-              runValueMap.put("created", false);
+                                  Map<String, Object> runValueMap = new LinkedHashMap<>();
+                                  runValueMap.put("id", newExperimentRun.getId());
+                                  runValueMap.put("project_id", newExperimentRun.getProjectId());
+                                  runValueMap.put(
+                                      "experiment_id", newExperimentRun.getExperimentId());
+                                  runValueMap.put("name", newExperimentRun.getName());
+                                  runValueMap.put("description", newExperimentRun.getDescription());
+                                  runValueMap.put(
+                                      "date_created", newExperimentRun.getDateCreated());
+                                  runValueMap.put(
+                                      "date_updated", newExperimentRun.getDateUpdated());
+                                  runValueMap.put("start_time", newExperimentRun.getStartTime());
+                                  runValueMap.put("end_time", newExperimentRun.getEndTime());
+                                  runValueMap.put(
+                                      "code_version", newExperimentRun.getCodeVersion());
+                                  runValueMap.put("job_id", newExperimentRun.getJobId());
+                                  runValueMap.put("parent_id", newExperimentRun.getParentId());
+                                  runValueMap.put("owner", newExperimentRun.getOwner());
 
-              // Created comma separated field names from keys of above map
-              String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
-              String commaFields = String.join(",", fieldsArr);
+                                  EnvironmentBlob environmentBlob =
+                                      sortPythonEnvironmentBlob(newExperimentRun.getEnvironment());
+                                  try {
+                                    runValueMap.put(
+                                        "environment",
+                                        ModelDBUtils.getStringFromProtoObject(environmentBlob));
+                                  } catch (InvalidProtocolBufferException e) {
+                                    throw new ModelDBException(e);
+                                  }
+                                  runValueMap.put("deleted", false);
+                                  runValueMap.put("created", false);
 
-              StringBuilder queryStrBuilder =
-                  new StringBuilder("insert into experiment_run ( ")
-                      .append(commaFields)
-                      .append(") values (");
+                                  // Created comma separated field names from keys of above map
+                                  String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
+                                  String commaFields = String.join(",", fieldsArr);
 
-              // Created comma separated query bind arguments for the values based on the keys of
-              // above the map
-              // Ex: VALUES (:project_id, :experiment_id, :name) etc.
-              String bindArguments =
-                  String.join(
-                      ",", Arrays.stream(fieldsArr).map(s -> ":" + s).toArray(String[]::new));
+                                  StringBuilder queryStrBuilder =
+                                      new StringBuilder("insert into experiment_run ( ")
+                                          .append(commaFields)
+                                          .append(") values (");
 
-              queryStrBuilder.append(bindArguments);
-              queryStrBuilder.append(" ) ");
+                                  // Created comma separated query bind arguments for the values
+                                  // based on the
+                                  // keys of
+                                  // above the map
+                                  // Ex: VALUES (:project_id, :experiment_id, :name) etc.
+                                  String bindArguments =
+                                      String.join(
+                                          ",",
+                                          Arrays.stream(fieldsArr)
+                                              .map(s -> ":" + s)
+                                              .toArray(String[]::new));
 
-              LOGGER.trace("insert experiment run query string: " + queryStrBuilder.toString());
-              var query = handle.createUpdate(queryStrBuilder.toString());
+                                  queryStrBuilder.append(bindArguments);
+                                  queryStrBuilder.append(" ) ");
 
-              // Inserting fields arguments based on the keys and value of map
-              for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {
-                query.bind(objectEntry.getKey(), objectEntry.getValue());
-              }
-              query.execute();
-            })
+                                  LOGGER.trace(
+                                      "insert experiment run query string: "
+                                          + queryStrBuilder.toString());
+                                  var query = handle1.createUpdate(queryStrBuilder.toString());
+
+                                  // Inserting fields arguments based on the keys and value of map
+                                  for (Map.Entry<String, Object> objectEntry :
+                                      runValueMap.entrySet()) {
+                                    query.bind(objectEntry.getKey(), objectEntry.getValue());
+                                  }
+                                  query.execute();
+                                },
+                                executor)))
         .thenCompose(
             unused -> {
               final var futureLogs = new LinkedList<InternalFuture<Void>>();
@@ -282,6 +321,13 @@ public class CreateExperimentRunHandler {
                   featureHandler.logFeatures(
                       newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
               futureLogs.add(
+                  codeVersionHandler.logCodeVersion(
+                      LogExperimentRunCodeVersion.newBuilder()
+                          .setId(newExperimentRun.getId())
+                          .setCodeVersion(newExperimentRun.getCodeVersionSnapshot())
+                          .setOverwrite(false)
+                          .build()));
+              futureLogs.add(
                   datasetHandler.logArtifacts(
                       newExperimentRun.getId(), newExperimentRun.getDatasetsList(), false));
 
@@ -289,7 +335,6 @@ public class CreateExperimentRunHandler {
                   .thenAccept(unused2 -> {}, executor);
             },
             executor);
-    // TODO .thenCompose(handle -> addCodeVersionSnapShot(), executor)
     // TODO .thenCompose(handle -> versioned_inputs, executor)
   }
 
