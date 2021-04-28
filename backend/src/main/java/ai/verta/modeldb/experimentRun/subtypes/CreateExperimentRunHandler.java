@@ -57,7 +57,8 @@ public class CreateExperimentRunHandler {
       ObservationHandler observationHandler,
       TagsHandler tagsHandler,
       ArtifactHandler artifactHandler,
-      FeatureHandler featureHandler) {
+      FeatureHandler featureHandler,
+      DatasetHandler datasetHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -70,7 +71,7 @@ public class CreateExperimentRunHandler {
     this.artifactHandler = artifactHandler;
     this.featureHandler = featureHandler;
     this.codeVersionHandler = new CodeVersionHandler(executor, jdbi);
-    this.datasetHandler = new DatasetHandler(executor, jdbi, "ExperimentRunEntity");
+    this.datasetHandler = datasetHandler;
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {

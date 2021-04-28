@@ -131,7 +131,8 @@ public class FutureExperimentRunDAO {
             observationHandler,
             tagsHandler,
             artifactHandler,
-            featureHandler);
+            featureHandler,
+            datasetHandler);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
