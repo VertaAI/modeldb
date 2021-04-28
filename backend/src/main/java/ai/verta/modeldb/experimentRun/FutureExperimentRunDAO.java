@@ -434,77 +434,115 @@ public class FutureExperimentRunDAO {
   }
 
   /**
-   * @param newDatasets : new datasets for privilege check
-   * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false)
+   * @param datasets : datasets for privilege check
+   * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false) at
+   *     fetch time
    * @return {@link List} : accessible datasets
    */
   private InternalFuture<List<Artifact>> filterAndGetPrivilegedDatasetsOnly(
-      List<Artifact> newDatasets, boolean errorOut) {
-    List<String> newDatasetLinkedIds = new ArrayList<>();
-    for (Artifact dataset : newDatasets) {
+      List<Artifact> datasets, boolean errorOut) {
+    Set<String> linkedDatasetVersionIds = new HashSet<>();
+    for (Artifact dataset : datasets) {
       String datasetVersionId = dataset.getLinkedArtifactId();
       if (!datasetVersionId.isEmpty()) {
-        newDatasetLinkedIds.add(datasetVersionId);
+        linkedDatasetVersionIds.add(datasetVersionId);
       }
     }
 
-    if (newDatasetLinkedIds.isEmpty()) {
-      return InternalFuture.completedInternalFuture(newDatasets);
+    // If linked dataset version ids are not exists in dataset then no need to check dataset
+    // authorization.
+    if (linkedDatasetVersionIds.isEmpty()) {
+      return InternalFuture.completedInternalFuture(datasets);
     }
     return jdbi.withHandle(
             handle -> {
-              Map<String, Long> datasetVersionDatasetMap = new HashMap<>();
-              handle
+              // We have dataset version as a commit and dataset as a repository in MDB so added
+              // commit_hash filter here
+              return handle
                   .createQuery(
-                      " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<datasetIds>) ")
-                  .bindList("datasetIds", newDatasetLinkedIds)
+                      " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<linkedDatasetVersionIds>) ")
+                  .bindList("linkedDatasetVersionIds", linkedDatasetVersionIds)
                   .map(
                       (rs, ctx) ->
-                          datasetVersionDatasetMap.put(
+                          new AbstractMap.SimpleEntry<>(
                               rs.getString("commit_hash"), rs.getLong("repository_id")))
                   .list();
-              return datasetVersionDatasetMap;
             })
         .thenCompose(
+            datasetVersionDatasetList -> {
+              // Convert list of dataset and dataset version mapping into Map
+              Map<String, String> datasetVersionDatasetMap = new HashMap<>();
+              for (var entry : datasetVersionDatasetList) {
+                datasetVersionDatasetMap.put(entry.getKey(), String.valueOf(entry.getValue()));
+              }
+              return InternalFuture.completedInternalFuture(datasetVersionDatasetMap);
+            },
+            executor)
+        .thenCompose(
             datasetVersionDatasetMap -> {
-              List<String> accessibleDatasetVersionIds = new ArrayList<>();
-              List<InternalFuture<Artifact>> internalFutures = new LinkedList<>();
-              for (Artifact dataset : newDatasets) {
+              // Validate linked dataset in dataset version exists in database records if not then
+              // we will throw the error
+              Set<String> datasetIds = new HashSet<>();
+              for (Artifact dataset : datasets) {
                 String datasetVersionId = dataset.getLinkedArtifactId();
-                if (!datasetVersionId.isEmpty()
-                    && !accessibleDatasetVersionIds.contains(datasetVersionId)) {
-                  try {
-                    if (datasetVersionDatasetMap.containsKey(datasetVersionId)
-                        && datasetVersionDatasetMap.get(datasetVersionId) != null) {
-                      Long datasetId = datasetVersionDatasetMap.get(datasetVersionId);
-
-                      internalFutures.add(
-                          checkEntityPermissionBasedOnResourceTypes(
-                                  Collections.singletonList(String.valueOf(datasetId)),
-                                  ModelDBActionEnum.ModelDBServiceActions.READ,
-                                  ModelDBServiceResourceTypes.DATASET)
-                              .thenCompose(
-                                  unused -> {
-                                    accessibleDatasetVersionIds.add(datasetVersionId);
-                                    return InternalFuture.completedInternalFuture(dataset);
-                                  },
-                                  executor));
-                    } else {
-                      return InternalFuture.failedStage(
-                          new InvalidArgumentException(
-                              "Dataset not found for dataset version: " + datasetVersionId));
-                    }
-                  } catch (Exception ex) {
-                    LOGGER.trace(ex.getMessage());
-                    if (errorOut) {
-                      return InternalFuture.failedStage(ex);
-                    }
-                  }
+                if (datasetVersionDatasetMap.containsKey(datasetVersionId)
+                    && datasetVersionDatasetMap.get(datasetVersionId) != null) {
+                  datasetIds.add(datasetVersionDatasetMap.get(datasetVersionId));
                 } else {
-                  internalFutures.add(InternalFuture.completedInternalFuture(dataset));
+                  return InternalFuture.failedStage(
+                      new InvalidArgumentException(
+                          "Dataset not found for dataset version: " + datasetVersionId));
                 }
               }
-              return InternalFuture.sequence(internalFutures, executor);
+
+              // If all dataset with linked dataset versions found in database then checking
+              // authorization for the current user for those datasets
+              List<InternalFuture<String>> internalFutures = new LinkedList<>();
+              for (String datasetId : datasetIds) {
+                try {
+                  internalFutures.add(
+                      InternalFuture.completedInternalFuture(datasetId)
+                          .thenCompose(
+                              id ->
+                                  checkEntityPermissionBasedOnResourceTypes(
+                                          Collections.singletonList(datasetId),
+                                          ModelDBActionEnum.ModelDBServiceActions.READ,
+                                          ModelDBServiceResourceTypes.DATASET)
+                                      .thenCompose(
+                                          unused -> InternalFuture.completedInternalFuture(id),
+                                          executor),
+                              executor));
+
+                } catch (PermissionDeniedException ex) {
+                  LOGGER.trace(ex.getMessage());
+                  // We are throws error while creating entities
+                  // if we are fetching entities then we are just skip those datasets from response
+                  // and skipped PermissionDeniedException on fetch
+                  if (errorOut) {
+                    return InternalFuture.failedStage(ex);
+                  }
+                }
+              }
+
+              // If all mapped datasets are allowed for the user then we will filter datasets based
+              // on linked dataset version and allowed dataset ids.
+              InternalFuture<Set<String>> accessibleDatasetIdsFutures =
+                  InternalFuture.sequence(internalFutures, executor)
+                      .thenCompose(
+                          strings -> InternalFuture.completedInternalFuture(new HashSet<>(strings)),
+                          executor);
+              return accessibleDatasetIdsFutures.thenCompose(
+                  accessibleDatasetIds -> {
+                    List<Artifact> accessibleDatasets = new ArrayList<>();
+                    for (Artifact artifact : datasets) {
+                      if (accessibleDatasetIds.contains(
+                          datasetVersionDatasetMap.get(artifact.getLinkedArtifactId()))) {
+                        accessibleDatasets.add(artifact);
+                      }
+                    }
+                    return InternalFuture.completedInternalFuture(accessibleDatasets);
+                  },
+                  executor);
             },
             executor);
   }
@@ -871,10 +909,38 @@ public class FutureExperimentRunDAO {
                                     executor);
 
                             // Get datasets
-                            final var futureDatasets = datasetHandler.getArtifactsMap(ids);
+                            final var futureDatasetsMap = datasetHandler.getArtifactsMap(ids);
+                            final var filterDatasetsMap =
+                                futureDatasetsMap.thenCompose(
+                                    artifactMapSubtypes -> {
+                                      List<InternalFuture<Map<String, List<Artifact>>>>
+                                          internalFutureList = new ArrayList<>();
+                                      for (ExperimentRun.Builder builder : builders) {
+                                        internalFutureList.add(
+                                            filterAndGetPrivilegedDatasetsOnly(
+                                                    builder.getDatasetsList(), true)
+                                                .thenCompose(
+                                                    artifacts ->
+                                                        InternalFuture.completedInternalFuture(
+                                                            Collections.singletonMap(
+                                                                builder.getId(), artifacts)),
+                                                    executor));
+                                      }
+                                      return InternalFuture.sequence(internalFutureList, executor)
+                                          .thenCompose(
+                                              maps -> {
+                                                Map<String, List<Artifact>> finalDatasetMap =
+                                                    new HashMap<>();
+                                                maps.forEach(finalDatasetMap::putAll);
+                                                return InternalFuture.completedInternalFuture(
+                                                    finalDatasetMap);
+                                              },
+                                              executor);
+                                    },
+                                    executor);
                             futureBuildersStream =
                                 futureBuildersStream.thenCombine(
-                                    futureDatasets,
+                                    filterDatasetsMap,
                                     (stream, datasets) ->
                                         stream.map(
                                             builder ->
