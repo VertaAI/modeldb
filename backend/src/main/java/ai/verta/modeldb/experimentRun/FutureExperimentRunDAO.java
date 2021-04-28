@@ -918,7 +918,7 @@ public class FutureExperimentRunDAO {
                                       for (ExperimentRun.Builder builder : builders) {
                                         internalFutureList.add(
                                             filterAndGetPrivilegedDatasetsOnly(
-                                                    builder.getDatasetsList(), true)
+                                                    artifactMapSubtypes.get(builder.getId()), true)
                                                 .thenCompose(
                                                     artifacts ->
                                                         InternalFuture.completedInternalFuture(
