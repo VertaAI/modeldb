@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/monitored_entity/createMonitoredEntity": {
+    "/monitoring/monitored_entity/createMonitoredEntity": {
       "post": {
         "operationId": "DataMonitoringService_createMonitoredEntity",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/monitored_entity/createProfiler": {
+    "/monitoring/monitored_entity/createProfiler": {
       "post": {
         "operationId": "DataMonitoringService_createProfiler",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/monitored_entity/deleteMonitoredEntity": {
+    "/monitoring/monitored_entity/deleteMonitoredEntity": {
       "delete": {
         "operationId": "DataMonitoringService_deleteMonitoredEntity",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/monitored_entity/deleteProfile": {
+    "/monitoring/monitored_entity/deleteProfile": {
       "delete": {
         "operationId": "DataMonitoringService_deleteProfiler",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/monitored_entity/disableProfiler": {
+    "/monitoring/monitored_entity/disableProfiler": {
       "post": {
         "operationId": "DataMonitoringService_disableProfiler",
         "responses": {
@@ -171,7 +171,7 @@
         ]
       }
     },
-    "/monitored_entity/enableProfiler": {
+    "/monitoring/monitored_entity/enableProfiler": {
       "post": {
         "operationId": "DataMonitoringService_enableProfiler",
         "responses": {
@@ -203,7 +203,7 @@
         ]
       }
     },
-    "/monitored_entity/findMonitoredEntity": {
+    "/monitoring/monitored_entity/findMonitoredEntity": {
       "post": {
         "operationId": "DataMonitoringService_findMonitoredEntity",
         "responses": {
@@ -235,7 +235,7 @@
         ]
       }
     },
-    "/monitored_entity/findProfilersForMonitoredEntity": {
+    "/monitoring/monitored_entity/findProfilersForMonitoredEntity": {
       "post": {
         "operationId": "DataMonitoringService_findProfilersForMonitoredEntity",
         "responses": {
@@ -267,7 +267,7 @@
         ]
       }
     },
-    "/monitored_entity/getProfiler": {
+    "/monitoring/monitored_entity/getProfiler": {
       "get": {
         "operationId": "DataMonitoringService_getProfiler",
         "responses": {
@@ -298,7 +298,7 @@
         ]
       }
     },
-    "/monitored_entity/getProfilerStatus": {
+    "/monitoring/monitored_entity/getProfilerStatus": {
       "get": {
         "operationId": "DataMonitoringService_getProfilerStatus",
         "responses": {
@@ -336,7 +336,7 @@
         ]
       }
     },
-    "/monitored_entity/listProfilers": {
+    "/monitoring/monitored_entity/listProfilers": {
       "get": {
         "operationId": "DataMonitoringService_listProfilers",
         "responses": {
@@ -358,7 +358,7 @@
         ]
       }
     },
-    "/monitored_entity/updateMonitoredEntity": {
+    "/monitoring/monitored_entity/updateMonitoredEntity": {
       "patch": {
         "operationId": "DataMonitoringService_updateMonitoredEntity",
         "responses": {
@@ -390,7 +390,7 @@
         ]
       }
     },
-    "/monitored_entity/updateProfiler": {
+    "/monitoring/monitored_entity/updateProfiler": {
       "patch": {
         "operationId": "DataMonitoringService_updateProfiler",
         "responses": {

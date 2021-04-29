@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/alerts/createAlert": {
+    "/monitoring/alerts/createAlert": {
       "post": {
         "operationId": "AlertService_createAlert",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/alerts/createNotificationChannel": {
+    "/monitoring/alerts/createNotificationChannel": {
       "post": {
         "operationId": "AlertService_createNotificationChannel",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/alerts/deleteAlert": {
+    "/monitoring/alerts/deleteAlert": {
       "delete": {
         "operationId": "AlertService_deleteAlert",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/alerts/deleteNotificationChannel": {
+    "/monitoring/alerts/deleteNotificationChannel": {
       "delete": {
         "operationId": "AlertService_deleteNotificationChannel",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/alerts/findAlert": {
+    "/monitoring/alerts/findAlert": {
       "post": {
         "operationId": "AlertService_findAlert",
         "responses": {
@@ -171,7 +171,7 @@
         ]
       }
     },
-    "/alerts/findNotificationChannel": {
+    "/monitoring/alerts/findNotificationChannel": {
       "post": {
         "operationId": "AlertService_findNotificationChannel",
         "responses": {
@@ -203,7 +203,7 @@
         ]
       }
     },
-    "/alerts/listAlertHistory": {
+    "/monitoring/alerts/listAlertHistory": {
       "post": {
         "operationId": "AlertService_listAlertHistory",
         "responses": {
@@ -235,7 +235,7 @@
         ]
       }
     },
-    "/alerts/updateAlert": {
+    "/monitoring/alerts/updateAlert": {
       "post": {
         "operationId": "AlertService_updateAlert",
         "responses": {
@@ -267,7 +267,7 @@
         ]
       }
     },
-    "/alerts/updateAlertStatus": {
+    "/monitoring/alerts/updateAlertStatus": {
       "post": {
         "operationId": "AlertService_updateAlertStatus",
         "responses": {
@@ -299,7 +299,7 @@
         ]
       }
     },
-    "/alerts/updateNotificationChannel": {
+    "/monitoring/alerts/updateNotificationChannel": {
       "post": {
         "operationId": "AlertService_updateNotificationChannel",
         "responses": {
