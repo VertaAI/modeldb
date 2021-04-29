@@ -45,17 +45,19 @@ public class FutureExperimentRunDAO {
   private final DatasetHandler datasetHandler;
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
-  private final Config config = Config.getInstance();
+  private final boolean populateConnectionsBasedOnPrivileges;
 
   public FutureExperimentRunDAO(
       Executor executor,
       FutureJdbi jdbi,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      DatasetVersionDAO datasetVersionDAO,
+      boolean populateConnectionsBasedOnPrivileges) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
+    this.populateConnectionsBasedOnPrivileges = populateConnectionsBasedOnPrivileges;
 
     attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
     hyperparametersHandler =
@@ -701,7 +703,7 @@ public class FutureExperimentRunDAO {
 
                             final var futureHyperparamsFromConfigBlobs =
                                 InternalFuture.completedInternalFuture(
-                                        config.populateConnectionsBasedOnPrivileges)
+                                        populateConnectionsBasedOnPrivileges)
                                     .thenCompose(
                                         populateConnectionsBasedOnPrivileges -> {
                                           if (populateConnectionsBasedOnPrivileges) {
