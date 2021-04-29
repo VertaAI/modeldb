@@ -46,6 +46,7 @@ public class FutureExperimentRunDAO {
   private final SortingHandler sortingHandler;
   private final HyperparametersFromConfigHandler hyperparametersFromConfigHandler;
   private final boolean populateConnectionsBasedOnPrivileges;
+  private final CodeVersionFromBlobHandler codeVersionFromBlobHandler;
 
   public FutureExperimentRunDAO(
       Executor executor,
@@ -81,6 +82,8 @@ public class FutureExperimentRunDAO {
     hyperparametersFromConfigHandler =
         new HyperparametersFromConfigHandler(
             executor, jdbi, "hyperparameters", "ExperimentRunEntity");
+    codeVersionFromBlobHandler =
+        new CodeVersionFromBlobHandler(executor, jdbi, populateConnectionsBasedOnPrivileges);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -704,7 +707,7 @@ public class FutureExperimentRunDAO {
                                                     hyperparams.get(builder.getId()))),
                                     executor);
 
-                            final var futureHyperparamsFromConfigBlobs =
+                            final var repoIdsFutureTasks =
                                 InternalFuture.completedInternalFuture(
                                         populateConnectionsBasedOnPrivileges)
                                     .thenCompose(
@@ -719,23 +722,24 @@ public class FutureExperimentRunDAO {
                                                 new ArrayList<>());
                                           }
                                         },
-                                        executor)
-                                    .thenCompose(
-                                        selfAllowedRepositoryIds -> {
-                                          if (selfAllowedRepositoryIds == null
-                                              || selfAllowedRepositoryIds.isEmpty()) {
-                                            return InternalFuture.completedInternalFuture(
-                                                    new ArrayList<
-                                                        AbstractMap.SimpleEntry<
-                                                            String, KeyValue>>())
-                                                .thenApply(MapSubtypes::from, executor);
-                                          } else {
-                                            return hyperparametersFromConfigHandler
-                                                .getExperimentRunHyperparameterConfigBlobMap(
-                                                    new ArrayList<>(ids), selfAllowedRepositoryIds);
-                                          }
-                                        },
                                         executor);
+
+                            final var futureHyperparamsFromConfigBlobs =
+                                repoIdsFutureTasks.thenCompose(
+                                    selfAllowedRepositoryIds -> {
+                                      if (selfAllowedRepositoryIds == null
+                                          || selfAllowedRepositoryIds.isEmpty()) {
+                                        return InternalFuture.completedInternalFuture(
+                                                new ArrayList<
+                                                    AbstractMap.SimpleEntry<String, KeyValue>>())
+                                            .thenApply(MapSubtypes::from, executor);
+                                      } else {
+                                        return hyperparametersFromConfigHandler
+                                            .getExperimentRunHyperparameterConfigBlobMap(
+                                                new ArrayList<>(ids), selfAllowedRepositoryIds);
+                                      }
+                                    },
+                                    executor);
                             futureBuildersStream =
                                 futureBuildersStream.thenCombine(
                                     futureHyperparamsFromConfigBlobs,
@@ -746,6 +750,28 @@ public class FutureExperimentRunDAO {
                                                   hyperparamsFromConfigBlob.get(builder.getId());
                                               if (hypFromConfigs != null) {
                                                 builder.addAllHyperparameters(hypFromConfigs);
+                                              }
+                                              return builder;
+                                            }),
+                                    executor);
+
+                            final var futureCodeVersionFromBlob =
+                                repoIdsFutureTasks.thenCompose(
+                                    selfAllowedRepositoryIds ->
+                                        codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
+                                            ids, selfAllowedRepositoryIds),
+                                    executor);
+                            futureBuildersStream =
+                                futureBuildersStream.thenCombine(
+                                    futureCodeVersionFromBlob,
+                                    (stream, runCodeVersionConfigBlob) ->
+                                        stream.map(
+                                            builder -> {
+                                              if (!runCodeVersionConfigBlob.isEmpty()
+                                                  && runCodeVersionConfigBlob.containsKey(
+                                                      builder.getId())) {
+                                                builder.putAllCodeVersionFromBlob(
+                                                    runCodeVersionConfigBlob.get(builder.getId()));
                                               }
                                               return builder;
                                             }),
