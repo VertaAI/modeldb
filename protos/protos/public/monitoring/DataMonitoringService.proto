@@ -195,9 +195,6 @@ message FindMonitoredEntityRequest {
   int32 page_number = 4;
   int32 page_limit = 5;
 
-  repeated string attribute_keys = 7;
-  repeated string attribute_values = 8;
-
   message Response {
       repeated MonitoredEntity monitored_entities = 1;
       int32 total_records = 2;
