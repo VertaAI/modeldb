@@ -8,7 +8,6 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -16,7 +15,6 @@ import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -33,7 +31,6 @@ public class KeyValueHandler {
   private final String fieldType;
   private final String entityName;
   private final String entityIdReferenceColumn;
-  private final Config config = Config.getInstance();
 
   protected String getTableName() {
     return "keyvalue";
@@ -267,25 +264,21 @@ public class KeyValueHandler {
                       + "INNER JOIN versioning_modeldb_entity_mapping vme ON vme.blob_hash = cb.blob_hash "
                       + "WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experiment_run_id IN (<expRunIds>) ";
 
-              if (config.populateConnectionsBasedOnPrivileges) {
-                if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
-                  return new ArrayList<AbstractMap.SimpleEntry<String, KeyValue>>();
-                } else {
-                  queryStr = queryStr + " AND vme.repository_id IN (<repoIds>)";
-                }
+              if (selfAllowedRepositoryIds != null && !selfAllowedRepositoryIds.isEmpty()) {
+                queryStr = queryStr + " AND vme.repository_id IN (<repoIds>)";
               }
 
               var query = handle.createQuery(queryStr);
               query.bind("hyperparameterType", HYPERPARAMETER);
               query.bindList("expRunIds", expRunIds);
-              if (config.populateConnectionsBasedOnPrivileges) {
+              if (selfAllowedRepositoryIds != null && !selfAllowedRepositoryIds.isEmpty()) {
                 query.bindList(
                     "repoIds",
                     selfAllowedRepositoryIds.stream()
                         .map(Long::parseLong)
                         .collect(Collectors.toList()));
               }
-              LOGGER.debug(
+              LOGGER.trace(
                   "Final experimentRuns hyperparameter config blob final query : {}", queryStr);
               return query
                   .map(

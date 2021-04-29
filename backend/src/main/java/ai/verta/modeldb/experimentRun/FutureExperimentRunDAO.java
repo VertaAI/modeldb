@@ -14,7 +14,6 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -718,22 +717,33 @@ public class FutureExperimentRunDAO {
                                         },
                                         executor)
                                     .thenCompose(
-                                        repositoryIds ->
-                                            hyperparametersHandler
+                                        selfAllowedRepositoryIds -> {
+                                          if (selfAllowedRepositoryIds == null
+                                              || selfAllowedRepositoryIds.isEmpty()) {
+                                            return InternalFuture.completedInternalFuture(
+                                                    new ArrayList<
+                                                        AbstractMap.SimpleEntry<
+                                                            String, KeyValue>>())
+                                                .thenApply(MapSubtypes::from, executor);
+                                          } else {
+                                            return hyperparametersHandler
                                                 .getExperimentRunHyperparameterConfigBlobMap(
-                                                    new ArrayList<>(ids), repositoryIds),
+                                                    new ArrayList<>(ids), selfAllowedRepositoryIds);
+                                          }
+                                        },
                                         executor);
                             futureBuildersStream =
                                 futureBuildersStream.thenCombine(
                                     futureHyperparamsFromConfigBlobs,
                                     (stream, hyperparamsFromConfigBlob) ->
-                                        stream.peek(
+                                        stream.map(
                                             builder -> {
                                               List<KeyValue> hypFromConfigs =
                                                   hyperparamsFromConfigBlob.get(builder.getId());
                                               if (hypFromConfigs != null) {
                                                 builder.addAllHyperparameters(hypFromConfigs);
                                               }
+                                              return builder;
                                             }),
                                     executor);
 
