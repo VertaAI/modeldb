@@ -83,12 +83,15 @@ public class VersionInputHandler {
           validateVersioningEntity(experimentRun.getVersionedInputs());
       return versionedInputFutureTask.thenCompose(
           locationBlobWithHashMap ->
+              // Insert version input for run in versioning_modeldb_entity_mapping mapping table
               insertVersioningInput(
                       experimentRun.getVersionedInputs(),
                       locationBlobWithHashMap,
                       experimentRun.getId())
                   .thenCompose(
                       unused ->
+                          // Insert config blob and version input mapping in
+                          // versioning_modeldb_entity_mapping_config_blob mapping table
                           insertVersioningInputMappingConfigBlob(
                               experimentRun.getVersionedInputs(),
                               locationBlobWithHashMap,
@@ -96,6 +99,8 @@ public class VersionInputHandler {
                       executor)
                   .thenCompose(
                       unused ->
+                          // Insert hyperparameter element and run mapping in
+                          // hyperparameter_element_mapping table
                           insertHyperparameterElementMapping(
                               experimentRun.getVersionedInputs(),
                               locationBlobWithHashMap,
@@ -122,11 +127,16 @@ public class VersionInputHandler {
             List<Map<String, Object>> argsMaps = new ArrayList<>();
             for (Map.Entry<String, Location> locationEntry :
                 versioningEntry.getKeyLocationMapMap().entrySet()) {
+              // Prepare location key from list of locations in Versioning entry
               String locationKey = String.join("#", locationEntry.getValue().getLocationList());
               Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
                   locationBlobWithHashMap.get(locationKey);
 
+              // Get blob from blob map for location key build from Versioning entry locations
               Blob blob = blobExpandedWithHashMap.getKey().getBlob();
+
+              // If blob type have the config then we will add mapping entry in
+              // versioning_modeldb_entity_mapping_config_blob
               if (blob.getContentCase().equals(Blob.ContentCase.CONFIG)) {
                 var configBlobQuery =
                     "SELECT cb.blob_hash, cb.config_seq_number, cb.hyperparameter_type, hecbs.name, hecbs.int_value, hecbs.float_value, hecbs.string_value "
@@ -193,11 +203,16 @@ public class VersionInputHandler {
             List<Map<String, Object>> argsMaps = new ArrayList<>();
             for (Map.Entry<String, Location> locationEntry :
                 versioningEntry.getKeyLocationMapMap().entrySet()) {
+              // Prepare location key from list of locations in Versioning entry
               String locationKey = String.join("#", locationEntry.getValue().getLocationList());
               Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
                   locationBlobWithHashMap.get(locationKey);
 
+              // Get blob from blob map for location key build from Versioning entry locations
               Blob blob = blobExpandedWithHashMap.getKey().getBlob();
+
+              // If blob type have the config and it has the HYPERPARAMETER then we will add mapping
+              // entry in hyperparameter_element_mapping
               if (blob.getContentCase().equals(Blob.ContentCase.CONFIG)) {
                 var configBlobQuery =
                     "SELECT hecbs.name, hecbs.int_value, hecbs.float_value, hecbs.string_value "
@@ -339,16 +354,21 @@ public class VersionInputHandler {
           Map<String, Map.Entry<BlobExpanded, String>> requestedLocationBlobWithHashMap =
               new HashMap<>();
           try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+            // Fetch version input mapped repository
             RepositoryIdentification repositoryIdentification =
                 RepositoryIdentification.newBuilder()
                     .setRepoId(versioningEntry.getRepositoryId())
                     .build();
+            // Fetch version input mapped commit
             CommitEntity commitEntity =
                 commitDAO.getCommitEntity(
                     session,
                     versioningEntry.getCommit(),
                     (session1) ->
                         repositoryDAO.getRepositoryById(session, repositoryIdentification));
+
+            // If key and location mapping exists in the  versioned input request then we will fetch
+            // those mapping based location key and validate
             if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
               Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
                   blobDAO.getCommitBlobMapWithHash(
@@ -360,6 +380,8 @@ public class VersionInputHandler {
                   versioningEntry.getKeyLocationMapMap().entrySet()) {
                 String locationKey =
                     String.join("#", locationBlobKeyMap.getValue().getLocationList());
+                // If requested locations and commit blob locations are not matched then we will
+                // throw error for logging invalid versioned input
                 if (!locationBlobWithHashMap.containsKey(locationKey)) {
                   return InternalFuture.failedStage(
                       new ModelDBException(
