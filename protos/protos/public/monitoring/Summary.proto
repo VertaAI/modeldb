@@ -42,9 +42,6 @@ message FindSummaryRequest {
     int32 page_number = 6;
     int32 page_limit = 7;
 
-    repeated string attribute_keys = 8;
-    repeated string attribute_values = 9;
-
     message Response {
         repeated Summary summaries = 1;
         int32 total_records = 2;
