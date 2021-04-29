@@ -1078,7 +1078,7 @@ type AlertRange struct {
 
 	LowerBound          float32 `protobuf:"fixed32,1,opt,name=lower_bound,json=lowerBound,proto3" json:"lower_bound,omitempty"`
 	UpperBound          float32 `protobuf:"fixed32,2,opt,name=upper_bound,json=upperBound,proto3" json:"upper_bound,omitempty"`
-	AlertIfOutsideRange bool    `protobuf:"varint,3,opt,name=alert_if_outside_range,json=alertIfOutsideRange,proto3" json:"alert_if_outside_range,omitempty"` // if true, alert when exiting the range.  If false, alert when entering the range.
+	AlertIfOutsideRange bool    `protobuf:"varint,3,opt,name=alert_if_outside_range,json=alertIfOutsideRange,proto3" json:"alert_if_outside_range,omitempty"` // if true, alert when sample value is outside the range.  If false, alert when sample value is inside the range.
 }
 
 func (x *AlertRange) Reset() {
