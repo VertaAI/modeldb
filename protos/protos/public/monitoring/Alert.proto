@@ -157,7 +157,7 @@ message AlertFixed {
 message AlertRange {
     float lower_bound = 1;
     float upper_bound = 2;
-    bool alert_if_outside_range = 3; // if true, alert when exiting the range.  If false, alert when entering the range.
+    bool alert_if_outside_range = 3; // if true, alert when sample value is outside the range.  If false, alert when sample value is inside the range.
 }
 
 message AlertReference {
