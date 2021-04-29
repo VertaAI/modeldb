@@ -51,6 +51,7 @@ import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
@@ -91,6 +92,7 @@ public class FutureExperimentRunDAO {
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
   private final FeatureHandler featureHandler;
+  private final VersionInputHandler versionInputHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
 
   public FutureExperimentRunDAO(
@@ -126,21 +128,22 @@ public class FutureExperimentRunDAO {
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
     featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
+    versionInputHandler =
+        new VersionInputHandler(
+            executor, jdbi, "ExperimentRunEntity", repositoryDAO, commitDAO, blobDAO);
     createExperimentRunHandler =
         new CreateExperimentRunHandler(
             executor,
             jdbi,
             uac,
-            repositoryDAO,
-            commitDAO,
-            blobDAO,
             attributeHandler,
             hyperparametersHandler,
             metricsHandler,
             observationHandler,
             tagsHandler,
             artifactHandler,
-            featureHandler);
+            featureHandler,
+            versionInputHandler);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
