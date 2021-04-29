@@ -47,7 +47,8 @@ public class DAOSet {
   public ProjectDAO projectDAO;
   public RepositoryDAO repositoryDAO;
 
-  public static DAOSet fromServices(ServiceSet services, FutureJdbi jdbi, Executor executor, Config config) {
+  public static DAOSet fromServices(
+      ServiceSet services, FutureJdbi jdbi, Executor executor, Config config) {
     DAOSet set = new DAOSet();
 
     set.metadataDAO = new MetadataDAORdbImpl();
@@ -89,7 +90,12 @@ public class DAOSet {
 
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(
-            executor, jdbi, services.uac, set.artifactStoreDAO, set.datasetVersionDAO, config.populateConnectionsBasedOnPrivileges);
+            executor,
+            jdbi,
+            services.uac,
+            set.artifactStoreDAO,
+            set.datasetVersionDAO,
+            config.populateConnectionsBasedOnPrivileges);
 
     return set;
   }
