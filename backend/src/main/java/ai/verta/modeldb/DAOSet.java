@@ -10,6 +10,7 @@ import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
@@ -46,7 +47,8 @@ public class DAOSet {
   public ProjectDAO projectDAO;
   public RepositoryDAO repositoryDAO;
 
-  public static DAOSet fromServices(ServiceSet services, FutureJdbi jdbi, Executor executor) {
+  public static DAOSet fromServices(
+      ServiceSet services, FutureJdbi jdbi, Executor executor, Config config) {
     DAOSet set = new DAOSet();
 
     set.metadataDAO = new MetadataDAORdbImpl();
@@ -88,7 +90,12 @@ public class DAOSet {
 
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(
-            executor, jdbi, services.uac, set.artifactStoreDAO, set.datasetVersionDAO);
+            executor,
+            jdbi,
+            services.uac,
+            set.artifactStoreDAO,
+            set.datasetVersionDAO,
+            config.populateConnectionsBasedOnPrivileges);
 
     return set;
   }

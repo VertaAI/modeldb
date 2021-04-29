@@ -15,7 +15,6 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
@@ -57,7 +56,8 @@ public class FutureExperimentRunDAO {
   private final DatasetHandler datasetHandler;
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
-  private final Config config = Config.getInstance();
+  private final HyperparametersFromConfigHandler hyperparametersFromConfigHandler;
+  private final boolean populateConnectionsBasedOnPrivileges;
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
 
   public FutureExperimentRunDAO(
@@ -65,10 +65,12 @@ public class FutureExperimentRunDAO {
       FutureJdbi jdbi,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      DatasetVersionDAO datasetVersionDAO,
+      boolean populateConnectionsBasedOnPrivileges) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
+    this.populateConnectionsBasedOnPrivileges = populateConnectionsBasedOnPrivileges;
 
     attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
     hyperparametersHandler =
@@ -89,6 +91,9 @@ public class FutureExperimentRunDAO {
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
+    hyperparametersFromConfigHandler =
+        new HyperparametersFromConfigHandler(
+            executor, jdbi, "hyperparameters", "ExperimentRunEntity");
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -714,7 +719,7 @@ public class FutureExperimentRunDAO {
 
                             var repoIdsFutureTasks =
                                 InternalFuture.completedInternalFuture(
-                                        config.populateConnectionsBasedOnPrivileges)
+                                        populateConnectionsBasedOnPrivileges)
                                     .thenCompose(
                                         populateConnectionsBasedOnPrivileges -> {
                                           if (populateConnectionsBasedOnPrivileges) {
@@ -731,22 +736,32 @@ public class FutureExperimentRunDAO {
 
                             final var futureHyperparamsFromConfigBlobs =
                                 repoIdsFutureTasks.thenCompose(
-                                    repositoryIds ->
-                                        hyperparametersHandler
+                                    selfAllowedRepositoryIds -> {
+                                      if (selfAllowedRepositoryIds == null
+                                          || selfAllowedRepositoryIds.isEmpty()) {
+                                        return InternalFuture.completedInternalFuture(
+                                                new ArrayList<
+                                                    AbstractMap.SimpleEntry<String, KeyValue>>())
+                                            .thenApply(MapSubtypes::from, executor);
+                                      } else {
+                                        return hyperparametersFromConfigHandler
                                             .getExperimentRunHyperparameterConfigBlobMap(
-                                                new ArrayList<>(ids), repositoryIds),
+                                                new ArrayList<>(ids), selfAllowedRepositoryIds);
+                                      }
+                                    },
                                     executor);
                             futureBuildersStream =
                                 futureBuildersStream.thenCombine(
                                     futureHyperparamsFromConfigBlobs,
                                     (stream, hyperparamsFromConfigBlob) ->
-                                        stream.peek(
+                                        stream.map(
                                             builder -> {
                                               List<KeyValue> hypFromConfigs =
                                                   hyperparamsFromConfigBlob.get(builder.getId());
                                               if (hypFromConfigs != null) {
                                                 builder.addAllHyperparameters(hypFromConfigs);
                                               }
+                                              return builder;
                                             }),
                                     executor);
 
@@ -892,7 +907,7 @@ public class FutureExperimentRunDAO {
               + " LEFT JOIN PathDatasetComponentBlobEntity pdcb ON ncb.path_dataset_blob_hash = pdcb.id.path_dataset_blob_id "
               + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
-      if (config.populateConnectionsBasedOnPrivileges) {
+      if (populateConnectionsBasedOnPrivileges) {
         if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
           return InternalFuture.completedInternalFuture(new HashMap<>());
         } else {
@@ -903,7 +918,7 @@ public class FutureExperimentRunDAO {
       Query query = session.createQuery(queryBuilder);
       query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
       query.setParameterList("expRunIds", expRunIds);
-      if (config.populateConnectionsBasedOnPrivileges) {
+      if (populateConnectionsBasedOnPrivileges) {
         query.setParameterList(
             "repoIds",
             selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
