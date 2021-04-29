@@ -44,6 +44,7 @@ public class FutureExperimentRunDAO {
   private final DatasetHandler datasetHandler;
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
+  private final HyperparametersFromConfigHandler hyperparametersFromConfigHandler;
   private final boolean populateConnectionsBasedOnPrivileges;
 
   public FutureExperimentRunDAO(
@@ -77,6 +78,9 @@ public class FutureExperimentRunDAO {
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
+    hyperparametersFromConfigHandler =
+        new HyperparametersFromConfigHandler(
+            executor, jdbi, "hyperparameters", "ExperimentRunEntity");
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -726,7 +730,7 @@ public class FutureExperimentRunDAO {
                                                             String, KeyValue>>())
                                                 .thenApply(MapSubtypes::from, executor);
                                           } else {
-                                            return hyperparametersHandler
+                                            return hyperparametersFromConfigHandler
                                                 .getExperimentRunHyperparameterConfigBlobMap(
                                                     new ArrayList<>(ids), selfAllowedRepositoryIds);
                                           }
