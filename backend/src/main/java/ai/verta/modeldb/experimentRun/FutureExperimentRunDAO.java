@@ -67,7 +67,6 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -950,29 +949,9 @@ public class FutureExperimentRunDAO {
                                               List<Artifact> datasetList =
                                                   datasets.get(builder.getId());
                                               if (datasetList != null && !datasetList.isEmpty()) {
-                                                if (config.populateConnectionsBasedOnPrivileges) {
-                                                  try {
-                                                    return filterAndGetPrivilegedDatasetsOnly(
-                                                            datasetList, true)
-                                                        .thenCompose(
-                                                            artifacts -> {
-                                                              builder
-                                                                  .clearDatasets()
-                                                                  .addAllDatasets(artifacts);
-                                                              return InternalFuture
-                                                                  .completedInternalFuture(builder);
-                                                            },
-                                                            executor)
-                                                        .get();
-                                                  } catch (ExecutionException
-                                                      | InterruptedException ex) {
-                                                    throw new ModelDBException(ex.getMessage());
-                                                  }
-                                                } else {
-                                                  return builder
-                                                      .clearDatasets()
-                                                      .addAllDatasets(datasetList);
-                                                }
+                                                return builder
+                                                    .clearDatasets()
+                                                    .addAllDatasets(datasetList);
                                               }
                                               return builder;
                                             }),
