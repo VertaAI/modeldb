@@ -409,6 +409,9 @@ public class VersionInputHandler {
         executor);
   }
 
+  // We have a mapping table for the runs and VersionedInput called
+  // versioning_modeldb_entity_mapping so while getting runs we will fetch versioned inout from
+  // there.
   public InternalFuture<Map<String, VersioningEntry>> getVersionedInputs(Set<String> runIds) {
     return jdbi.withHandle(
             handle ->
@@ -423,6 +426,11 @@ public class VersionInputHandler {
                     .map(
                         (rs, ctx) -> {
                           try {
+                            // Preparing VersionedInput (VersioningEntry) from the mapping table
+                            // based on run ids but
+                            // here we have store multiple locations key for single version key see
+                            // line 299 loop so
+                            // we are creating SimpleEntry based on each location key.
                             VersioningEntry.Builder versioningEntryBuilder =
                                 VersioningEntry.newBuilder()
                                     .setRepositoryId(rs.getLong("repository_id"))
@@ -449,7 +457,11 @@ public class VersionInputHandler {
                     .list())
         .thenCompose(
             simpleEntries -> {
+              // Key= experiment_run_id, Value = VersionedInput
               Map<String, VersioningEntry> entryMap = new LinkedHashMap<>();
+
+              // We have multiple location keys for single versionedInput in `simpleEntries` map so
+              // now we are adding all location map in to single VersionedInput for runs.
               for (Map.Entry<String, VersioningEntry> entry : simpleEntries) {
                 if (entryMap.containsKey(entry.getKey())) {
                   VersioningEntry versioningEntry = entryMap.get(entry.getKey());
