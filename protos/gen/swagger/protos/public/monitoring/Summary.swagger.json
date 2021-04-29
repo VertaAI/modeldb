@@ -420,18 +420,6 @@
         "page_limit": {
           "type": "integer",
           "format": "int32"
-        },
-        "attribute_keys": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "attribute_values": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       },
       "title": "Request to fetch multiple summaries"
