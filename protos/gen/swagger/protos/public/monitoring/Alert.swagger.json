@@ -465,7 +465,7 @@
           "type": "number",
           "format": "float"
         },
-        "range_inclusive": {
+        "alert_if_outside_range": {
           "type": "boolean",
           "format": "boolean"
         }
