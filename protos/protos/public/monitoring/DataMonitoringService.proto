@@ -152,6 +152,7 @@ message MonitoredEntity {
   uint64 workspace_id = 5;
   uint64 created_at_timestamp_millis = 6;
   uint64 updated_at_timestamp_millis = 7;
+  map<string, string> attributes = 8;
 }
 
 message CreateMonitoredEntityRequest {
@@ -163,6 +164,8 @@ message CreateMonitoredEntityRequest {
     string workspace_name = 5;
   }
 
+  map<string, string> attributes = 6;
+
   message Response {
     MonitoredEntity monitored_entity = 1;
   }
@@ -172,6 +175,8 @@ message UpdateMonitoredEntityRequest {
   reserved 4 to 6;  // Previously deleted fields
   uint64 id = 1;
   string name = 2;
+
+  map<string, string> attributes = 7;
 
   message Response {
     MonitoredEntity monitored_entity = 1;
