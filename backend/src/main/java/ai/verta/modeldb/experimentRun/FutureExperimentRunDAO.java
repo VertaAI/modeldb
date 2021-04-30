@@ -14,6 +14,7 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -45,7 +46,7 @@ public class FutureExperimentRunDAO {
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
   private final HyperparametersFromConfigHandler hyperparametersFromConfigHandler;
-  private final boolean populateConnectionsBasedOnPrivileges;
+  private final Config config;
 
   public FutureExperimentRunDAO(
       Executor executor,
@@ -53,11 +54,11 @@ public class FutureExperimentRunDAO {
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
       DatasetVersionDAO datasetVersionDAO,
-      boolean populateConnectionsBasedOnPrivileges) {
+      Config config) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
-    this.populateConnectionsBasedOnPrivileges = populateConnectionsBasedOnPrivileges;
+    this.config = config;
 
     attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
     hyperparametersHandler =
@@ -705,37 +706,7 @@ public class FutureExperimentRunDAO {
                                     executor);
 
                             final var futureHyperparamsFromConfigBlobs =
-                                InternalFuture.completedInternalFuture(
-                                        populateConnectionsBasedOnPrivileges)
-                                    .thenCompose(
-                                        populateConnectionsBasedOnPrivileges -> {
-                                          if (populateConnectionsBasedOnPrivileges) {
-                                            return getAllowedEntitiesByResourceType(
-                                                ModelDBActionEnum.ModelDBServiceActions.READ,
-                                                ModelDBResourceEnum.ModelDBServiceResourceTypes
-                                                    .REPOSITORY);
-                                          } else {
-                                            return InternalFuture.completedInternalFuture(
-                                                new ArrayList<>());
-                                          }
-                                        },
-                                        executor)
-                                    .thenCompose(
-                                        selfAllowedRepositoryIds -> {
-                                          if (selfAllowedRepositoryIds == null
-                                              || selfAllowedRepositoryIds.isEmpty()) {
-                                            return InternalFuture.completedInternalFuture(
-                                                    new ArrayList<
-                                                        AbstractMap.SimpleEntry<
-                                                            String, KeyValue>>())
-                                                .thenApply(MapSubtypes::from, executor);
-                                          } else {
-                                            return hyperparametersFromConfigHandler
-                                                .getExperimentRunHyperparameterConfigBlobMap(
-                                                    new ArrayList<>(ids), selfAllowedRepositoryIds);
-                                          }
-                                        },
-                                        executor);
+                                getFutureHyperparamsFromConfigBlobs(ids);
                             futureBuildersStream =
                                 futureBuildersStream.thenCombine(
                                     futureHyperparamsFromConfigBlobs,
@@ -853,5 +824,38 @@ public class FutureExperimentRunDAO {
                 .setTotalRecords(count)
                 .build(),
         executor);
+  }
+
+  private InternalFuture<MapSubtypes<KeyValue>> getFutureHyperparamsFromConfigBlobs(
+      Set<String> ids) {
+    return InternalFuture.completedInternalFuture(config.populateConnectionsBasedOnPrivileges)
+        .thenCompose(
+            populateConnectionsBasedOnPrivileges -> {
+              // If populateConnectionsBasedOnPrivileges = true then fetch all accessible
+              // repositories from UAC
+              if (populateConnectionsBasedOnPrivileges) {
+                return getAllowedEntitiesByResourceType(
+                    ModelDBActionEnum.ModelDBServiceActions.READ,
+                    ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+              } else {
+                // return empty list if populateConnectionsBasedOnPrivileges = false
+                return InternalFuture.completedInternalFuture(new ArrayList<>());
+              }
+            },
+            executor)
+        .thenCompose(
+            selfAllowedRepositoryIds -> {
+              // If self allowed repositories list will empty then no need to fetch hyperparameters
+              // from config blob
+              if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
+                return InternalFuture.completedInternalFuture(MapSubtypes.from(new ArrayList<>()));
+              } else {
+                // If self allowed repositories list is not empty then fetch hyperparameters from
+                // config blob
+                return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
+                    new ArrayList<>(ids), selfAllowedRepositoryIds);
+              }
+            },
+            executor);
   }
 }
