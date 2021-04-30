@@ -634,38 +634,8 @@ public class FutureExperimentRunDAO {
         sortingHandler.processSort(request.getSortKey(), request.getAscending());
 
     // futureProjectIds based on workspace
-    final InternalFuture<List<String>> futureProjectIds;
-    if (request.getWorkspaceName().isEmpty()) {
-      futureProjectIds = getAllowedProjects(ModelDBActionEnum.ModelDBServiceActions.READ);
-    } else {
-      var requestProjectIds = new ArrayList<String>();
-      if (!request.getProjectId().isEmpty()) {
-        requestProjectIds.add(request.getProjectId());
-      }
-
-      futureProjectIds =
-          FutureGrpc.ClientRequest(
-                  uac.getWorkspaceService()
-                      .getWorkspaceByName(
-                          GetWorkspaceByName.newBuilder()
-                              .setName(request.getWorkspaceName())
-                              .build()),
-                  executor)
-              .thenCompose(
-                  workspace ->
-                      getAllowedResourceItems(
-                              requestProjectIds,
-                              workspace.getId(),
-                              ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
-                          .thenCompose(
-                              getResourcesItems ->
-                                  InternalFuture.completedInternalFuture(
-                                      getResourcesItems.stream()
-                                          .map(GetResourcesResponseItem::getResourceId)
-                                          .collect(Collectors.toList())),
-                              executor),
-                  executor);
-    }
+    final InternalFuture<List<String>> futureProjectIds =
+        getAccessibleProjectIdsBasedOnWorkspace(request.getWorkspaceName(), request.getProjectId());
 
     final var futureExperimentRuns =
         futureProjectIds.thenCompose(
@@ -964,5 +934,37 @@ public class FutureExperimentRunDAO {
                 .setTotalRecords(count)
                 .build(),
         executor);
+  }
+
+  private InternalFuture<List<String>> getAccessibleProjectIdsBasedOnWorkspace(
+      String workspaceName, String projectId) {
+    if (workspaceName.isEmpty()) {
+      return getAllowedProjects(ModelDBActionEnum.ModelDBServiceActions.READ);
+    } else {
+      var requestProjectIds = new ArrayList<String>();
+      if (!projectId.isEmpty()) {
+        requestProjectIds.add(projectId);
+      }
+
+      return FutureGrpc.ClientRequest(
+              uac.getWorkspaceService()
+                  .getWorkspaceByName(
+                      GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
+              executor)
+          .thenCompose(
+              workspace ->
+                  getAllowedResourceItems(
+                          requestProjectIds,
+                          workspace.getId(),
+                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                      .thenCompose(
+                          getResourcesItems ->
+                              InternalFuture.completedInternalFuture(
+                                  getResourcesItems.stream()
+                                      .map(GetResourcesResponseItem::getResourceId)
+                                      .collect(Collectors.toList())),
+                          executor),
+              executor);
+    }
   }
 }
