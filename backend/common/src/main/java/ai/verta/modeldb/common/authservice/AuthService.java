@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.authservice;
 
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
+import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 
@@ -35,7 +36,7 @@ public interface AuthService {
 
   UserInfoPaginationDTO getFuzzyUserInfoList(String username_char);
 
-  Workspace workspaceIdByName(boolean retry, String workspaceName);
+  InternalFuture<Workspace> workspaceIdByName(boolean retry, String workspaceName);
 
-  Workspace workspaceById(boolean retry, Long workspaceId);
+  InternalFuture<Workspace> workspaceById(boolean retry, Long workspaceId);
 }

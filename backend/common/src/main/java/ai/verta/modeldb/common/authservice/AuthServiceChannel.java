@@ -26,7 +26,7 @@ public class AuthServiceChannel implements AutoCloseable {
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
   private AuditLogServiceGrpc.AuditLogServiceBlockingStub auditLogServiceBlockingStub;
-  private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStub;
+  private WorkspaceServiceGrpc.WorkspaceServiceFutureStub getWorkspaceServiceFutureStub;
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
   private String serviceUserEmail;
   private String serviceUserDevKey;
@@ -165,15 +165,15 @@ public class AuthServiceChannel implements AutoCloseable {
   }
 
   private void initWorkspaceServiceStubChannel() {
-    workspaceServiceBlockingStub =
-        attachInterceptors(WorkspaceServiceGrpc.newBlockingStub(authServiceChannel), null);
+    getWorkspaceServiceFutureStub =
+        attachInterceptors(WorkspaceServiceGrpc.newFutureStub(authServiceChannel), null);
   }
 
-  public WorkspaceServiceGrpc.WorkspaceServiceBlockingStub getWorkspaceServiceBlockingStub() {
-    if (workspaceServiceBlockingStub == null) {
+  public WorkspaceServiceGrpc.WorkspaceServiceFutureStub getWorkspaceServiceFutureStub() {
+    if (getWorkspaceServiceFutureStub == null) {
       initWorkspaceServiceStubChannel();
     }
-    return workspaceServiceBlockingStub;
+    return getWorkspaceServiceFutureStub;
   }
 
   private void initCollaboratorServiceStubChannel() {

@@ -7,14 +7,18 @@ import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.uac.*;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Jdbi;
 
 import java.util.*;
+import java.util.concurrent.Executor;
 
 public class AuthServiceUtils implements AuthService {
   private final String host;
@@ -24,6 +28,8 @@ public class AuthServiceUtils implements AuthService {
   private final Context.Key<Metadata> metadataInfo;
   private Integer timeout;
   private final Config config;
+  private final Jdbi jdbi;
+  private final Executor executor;
 
   public AuthServiceUtils(
       Config config,
@@ -32,7 +38,9 @@ public class AuthServiceUtils implements AuthService {
       String serviceUserEmail,
       String serviceUserDevKey,
       Integer timeout,
-      Context.Key<Metadata> metadataInfo) {
+      Context.Key<Metadata> metadataInfo,
+      Jdbi jdbi,
+      Executor executor) {
     this.config = config;
     this.host = host;
     this.port = port;
@@ -40,6 +48,8 @@ public class AuthServiceUtils implements AuthService {
     this.serviceUserDevKey = serviceUserDevKey;
     this.timeout = timeout;
     this.metadataInfo = metadataInfo;
+    this.jdbi = jdbi;
+    this.executor = executor;
   }
 
   private static final Logger LOGGER = LogManager.getLogger(AuthServiceUtils.class);
@@ -258,48 +268,47 @@ public class AuthServiceUtils implements AuthService {
   }
 
   @Override
-  public Workspace workspaceIdByName(boolean retry, String workspaceName) {
+  public InternalFuture<Workspace> workspaceIdByName(boolean retry, String workspaceName) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       GetWorkspaceByName.Builder getWorkspaceByName =
           GetWorkspaceByName.newBuilder().setName(workspaceName);
 
       LOGGER.trace("workspace : {}", workspaceName);
       // Get the user info from the Context
-      Workspace workspace =
-          authServiceChannel
-              .getWorkspaceServiceBlockingStub()
-              .getWorkspaceByName(getWorkspaceByName.build());
+      final var futureWorkspace = FutureGrpc.ClientRequest(
+              authServiceChannel
+              .getWorkspaceServiceFutureStub()
+              .getWorkspaceByName(getWorkspaceByName.build()), executor);
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
-      return workspace;
+      return futureWorkspace;
     } catch (StatusRuntimeException ex) {
-      return (Workspace)
+      return (InternalFuture<Workspace>)
           CommonUtils.retryOrThrowException(
               ex,
               retry,
-              (RetryCallInterface<Workspace>) (retry1) -> workspaceIdByName(retry1, workspaceName),
+              (RetryCallInterface<InternalFuture<Workspace>>) (retry1) -> workspaceIdByName(retry1, workspaceName),
               timeout);
     }
   }
 
   @Override
-  public Workspace workspaceById(boolean retry, Long workspaceId) {
+  public InternalFuture<Workspace> workspaceById(boolean retry, Long workspaceId) {
     try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       GetWorkspaceById.Builder getWorkspaceById = GetWorkspaceById.newBuilder().setId(workspaceId);
 
       LOGGER.trace("get workspaceById: ID : {}", workspaceId);
       // Get the user info from the Context
-      Workspace workspace =
-          authServiceChannel
-              .getWorkspaceServiceBlockingStub()
-              .getWorkspaceById(getWorkspaceById.build());
+      final var futureWorkspace = FutureGrpc.ClientRequest(authServiceChannel
+              .getWorkspaceServiceFutureStub()
+              .getWorkspaceById(getWorkspaceById.build()), executor);
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
-      return workspace;
+      return futureWorkspace;
     } catch (StatusRuntimeException ex) {
-      return (Workspace)
+      return (InternalFuture<Workspace>)
           CommonUtils.retryOrThrowException(
               ex,
               retry,
-              (CommonUtils.RetryCallInterface<Workspace>)
+              (CommonUtils.RetryCallInterface<InternalFuture<Workspace>>)
                   (retry1) -> workspaceById(retry1, workspaceId),
               timeout);
     }
