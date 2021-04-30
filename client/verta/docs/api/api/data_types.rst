@@ -1,31 +1,22 @@
-.. _data-types-api:
-
 Data Types
 ==========
 
 .. note::
     .. versionadded:: 0.17.4
 
-.. autoclass:: verta.data_types.ConfusionMatrix
-    :members:
-    :inherited-members:
+.. currentmodule:: verta.data_types
 
-.. autoclass:: verta.data_types.DiscreteHistogram
-    :members:
-    :inherited-members:
+.. autosummary::
+    :toctree: _autogen
+    :template: class.rst
+    :nosignatures:
 
-.. autoclass:: verta.data_types.FloatHistogram
-    :members:
-    :inherited-members:
-
-.. autoclass:: verta.data_types.Line
-    :members:
-    :inherited-members:
-
-.. autoclass:: verta.data_types.Matrix
-    :members:
-    :inherited-members:
-
-.. autoclass:: verta.data_types.Table
-    :members:
-    :inherited-members:
+    _VertaDataType
+    ConfusionMatrix
+    DiscreteHistogram
+    FloatHistogram
+    Line
+    Matrix
+    NumericValue
+    StringValue
+    Table
