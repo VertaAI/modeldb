@@ -941,6 +941,9 @@ public class FutureExperimentRunDAO {
           for (String runId : runIds) {
             // Get VersionEntry from fetched map
             VersioningEntry versioningEntry = versionedInputsMap.get(runId);
+            if (versioningEntry == null) {
+              continue;
+            }
             String repoId = String.valueOf(versioningEntry.getRepositoryId());
             // Check repository is accessible or not from versionedInputs If not then we will remove
             // it from fetched map
