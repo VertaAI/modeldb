@@ -889,18 +889,7 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused ->
-                jdbi.useHandle(
-                    handle ->
-                        handle
-                            .createUpdate(
-                                "UPDATE experiment_run SET environment = :environment WHERE id = :runId")
-                            .bind("runId", request.getId())
-                            .bind(
-                                "environment",
-                                environmentHandler.getEnvironmentStringFromBlob(
-                                    request.getEnvironment()))
-                            .execute()),
+            unused -> environmentHandler.logEnvironment(request.getId(), request.getEnvironment()),
             executor);
   }
 }

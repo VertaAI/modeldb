@@ -1,6 +1,7 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
@@ -58,5 +59,16 @@ public class EnvironmentHandler {
       builder.setPython(pythonEnvironmentBlobBuilder.build());
     }
     return builder.build();
+  }
+
+  public InternalFuture<Void> logEnvironment(String runId, EnvironmentBlob environmentBlob) {
+    return jdbi.useHandle(
+        handle ->
+            handle
+                .createUpdate(
+                    "UPDATE experiment_run SET environment = :environment WHERE id = :runId")
+                .bind("runId", runId)
+                .bind("environment", getEnvironmentStringFromBlob(environmentBlob))
+                .execute());
   }
 }
