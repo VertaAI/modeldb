@@ -183,7 +183,7 @@ message AddExperimentRunTags {
     repeated string tags = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
+        reserved 1;
     }
 }
 
@@ -193,7 +193,7 @@ message DeleteExperimentRunTags {
     bool delete_all = 3;
 
     message Response {
-        ExperimentRun experiment_run = 1;
+        reserved 1;
     }
 }
 
@@ -203,7 +203,7 @@ message AddExperimentRunTag {
     string tag = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
+        reserved 1;
     }
 }
 
@@ -212,7 +212,7 @@ message DeleteExperimentRunTag {
     string tag = 2;
 
     message Response {
-        ExperimentRun experiment_run = 1;
+        reserved 1;
     }
 }
 
