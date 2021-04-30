@@ -5,6 +5,7 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -76,6 +77,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
           futureExperimentRunDAO
               .findExperimentRuns(
                   FindExperimentRuns.newBuilder()
+                      .setExperimentId(request.getExperimentId())
                       .addPredicates(
                           KeyValueQuery.newBuilder()
                               .setKey("name")
@@ -88,7 +90,8 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenApply(
                   findResponse -> {
                     if (findResponse.getExperimentRunsCount() == 0) {
-                      return GetExperimentRunByName.Response.newBuilder().build();
+                      throw new NotFoundException(
+                          "ExperimentRun not found for the name: " + request.getName());
                     } else {
                       return GetExperimentRunByName.Response.newBuilder()
                           .setExperimentRun(findResponse.getExperimentRuns(0))
