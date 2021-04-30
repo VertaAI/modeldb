@@ -102,6 +102,7 @@ message AlerterTypeEnum {
         UNKNOWN = 0;
         FIXED = 1;
         REFERENCE = 2;
+        RANGE = 3;
     }
 }
 
@@ -143,6 +144,7 @@ message Alert {
     oneof alerter {
         AlertFixed alerter_fixed = 12;
         AlertReference alerter_reference = 13;
+        AlertRange alerter_range = 14;
     }
 }
 
@@ -150,6 +152,12 @@ message AlertFixed {
     // Alert is fired if summary sample is $operator $threshold
     float threshold = 1;
     common.OperatorEnum.Operator operator = 2; // Default = GTE
+}
+
+message AlertRange {
+    float lower_bound = 1;
+    float upper_bound = 2;
+    bool alert_if_outside_range = 3; // if true, alert when sample value is outside the range.  If false, alert when sample value is inside the range.
 }
 
 message AlertReference {

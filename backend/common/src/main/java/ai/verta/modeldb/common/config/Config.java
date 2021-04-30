@@ -1,7 +1,17 @@
 package ai.verta.modeldb.common.config;
 
+import io.jaegertracing.Configuration;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.grpc.ActiveSpanContextSource;
+import io.opentracing.contrib.grpc.ActiveSpanSource;
+import io.opentracing.contrib.grpc.TracingClientInterceptor;
+import io.opentracing.contrib.grpc.TracingServerInterceptor;
+import io.opentracing.contrib.jdbc.TracingDriver;
+import io.opentracing.util.GlobalTracer;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public abstract class Config {
   public static String MISSING_REQUIRED = "required field is missing";
@@ -15,6 +25,7 @@ public abstract class Config {
   public SpringServerConfig springServer;
   public TestConfig test;
   public ServiceUserConfig service_user;
+  public boolean disabled_audits = false;
 
   public void Validate() throws InvalidConfigException {
 
@@ -47,4 +58,38 @@ public abstract class Config {
   }
 
   public abstract boolean hasServiceAccount();
+
+  private TracingServerInterceptor tracingServerInterceptor = null;
+  private TracingClientInterceptor tracingClientInterceptor = null;
+
+  private void initializeTracing() {
+    if (!enableTrace) return;
+
+    if (tracingServerInterceptor == null) {
+      Tracer tracer = Configuration.fromEnv().getTracer();
+      tracingServerInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
+      GlobalTracer.register(tracer);
+      TracingDriver.load();
+      TracingDriver.setInterceptorMode(true);
+      TracingDriver.setInterceptorProperty(true);
+    }
+    if (tracingClientInterceptor == null) {
+      tracingClientInterceptor =
+          TracingClientInterceptor.newBuilder()
+              .withTracer(GlobalTracer.get())
+              .withActiveSpanContextSource(ActiveSpanContextSource.GRPC_CONTEXT)
+              .withActiveSpanSource(ActiveSpanSource.GRPC_CONTEXT)
+              .build();
+    }
+  }
+
+  public Optional<TracingServerInterceptor> getTracingServerInterceptor() {
+    initializeTracing();
+    return Optional.ofNullable(tracingServerInterceptor);
+  }
+
+  public Optional<TracingClientInterceptor> getTracingClientInterceptor() {
+    initializeTracing();
+    return Optional.ofNullable(tracingClientInterceptor);
+  }
 }

@@ -10,6 +10,7 @@ public class AuthServiceChannel extends ai.verta.modeldb.common.authservice.Auth
 
   private AuthServiceChannel(Config config) {
     super(
+        config,
         config.authService.host,
         config.authService.port,
         config.service_user.email,
