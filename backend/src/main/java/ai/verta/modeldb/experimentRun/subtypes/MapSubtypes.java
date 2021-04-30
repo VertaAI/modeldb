@@ -7,7 +7,7 @@ public class MapSubtypes<T> {
 
   private MapSubtypes() {}
 
-  static <T> MapSubtypes<T> from(List<AbstractMap.SimpleEntry<String, T>> entries) {
+  public static <T> MapSubtypes<T> from(List<AbstractMap.SimpleEntry<String, T>> entries) {
     final var map = new HashMap<String, List<T>>();
     for (final var entry : entries) {
       final var key = entry.getKey();

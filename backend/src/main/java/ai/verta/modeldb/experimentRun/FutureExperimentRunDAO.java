@@ -14,6 +14,7 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -44,16 +45,20 @@ public class FutureExperimentRunDAO {
   private final DatasetHandler datasetHandler;
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
+  private final HyperparametersFromConfigHandler hyperparametersFromConfigHandler;
+  private final Config config;
 
   public FutureExperimentRunDAO(
       Executor executor,
       FutureJdbi jdbi,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      DatasetVersionDAO datasetVersionDAO,
+      Config config) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
+    this.config = config;
 
     attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
     hyperparametersHandler =
@@ -74,6 +79,9 @@ public class FutureExperimentRunDAO {
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
+    hyperparametersFromConfigHandler =
+        new HyperparametersFromConfigHandler(
+            executor, jdbi, "hyperparameters", "ExperimentRunEntity");
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -323,8 +331,9 @@ public class FutureExperimentRunDAO {
         executor);
   }
 
-  private InternalFuture<List<String>> getAllowedProjects(
-      ModelDBActionEnum.ModelDBServiceActions action) {
+  private InternalFuture<List<String>> getAllowedEntitiesByResourceType(
+      ModelDBActionEnum.ModelDBServiceActions action,
+      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()
                 .getSelfAllowedResources(
@@ -336,8 +345,7 @@ public class FutureExperimentRunDAO {
                         .setService(ServiceEnum.Service.MODELDB_SERVICE)
                         .setResourceType(
                             ResourceType.newBuilder()
-                                .setModeldbServiceResourceType(
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                                .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                         .build()),
             executor)
         .thenApply(
@@ -552,7 +560,9 @@ public class FutureExperimentRunDAO {
         sortingHandler.processSort(request.getSortKey(), request.getAscending());
 
     final var futureProjectIds =
-        getAllowedProjects(ModelDBActionEnum.ModelDBServiceActions.READ)
+        getAllowedEntitiesByResourceType(
+                ModelDBActionEnum.ModelDBServiceActions.READ,
+                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
             .thenApply(
                 projIds ->
                     new QueryFilterContext()
@@ -703,6 +713,23 @@ public class FutureExperimentRunDAO {
                                                     hyperparams.get(builder.getId()))),
                                     executor);
 
+                            final var futureHyperparamsFromConfigBlobs =
+                                getFutureHyperparamsFromConfigBlobs(ids);
+                            futureBuildersStream =
+                                futureBuildersStream.thenCombine(
+                                    futureHyperparamsFromConfigBlobs,
+                                    (stream, hyperparamsFromConfigBlob) ->
+                                        stream.map(
+                                            builder -> {
+                                              List<KeyValue> hypFromConfigs =
+                                                  hyperparamsFromConfigBlob.get(builder.getId());
+                                              if (hypFromConfigs != null) {
+                                                builder.addAllHyperparameters(hypFromConfigs);
+                                              }
+                                              return builder;
+                                            }),
+                                    executor);
+
                             // Get metrics
                             final var futureMetrics = metricsHandler.getKeyValuesMap(ids);
                             futureBuildersStream =
@@ -805,5 +832,38 @@ public class FutureExperimentRunDAO {
                 .setTotalRecords(count)
                 .build(),
         executor);
+  }
+
+  private InternalFuture<MapSubtypes<KeyValue>> getFutureHyperparamsFromConfigBlobs(
+      Set<String> ids) {
+    return InternalFuture.completedInternalFuture(config.populateConnectionsBasedOnPrivileges)
+        .thenCompose(
+            populateConnectionsBasedOnPrivileges -> {
+              // If populateConnectionsBasedOnPrivileges = true then fetch all accessible
+              // repositories from UAC
+              if (populateConnectionsBasedOnPrivileges) {
+                return getAllowedEntitiesByResourceType(
+                    ModelDBActionEnum.ModelDBServiceActions.READ,
+                    ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY);
+              } else {
+                // return empty list if populateConnectionsBasedOnPrivileges = false
+                return InternalFuture.completedInternalFuture(new ArrayList<>());
+              }
+            },
+            executor)
+        .thenCompose(
+            selfAllowedRepositoryIds -> {
+              // If self allowed repositories list will empty then no need to fetch hyperparameters
+              // from config blob
+              if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
+                return InternalFuture.completedInternalFuture(MapSubtypes.from(new ArrayList<>()));
+              } else {
+                // If self allowed repositories list is not empty then fetch hyperparameters from
+                // config blob
+                return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
+                    new ArrayList<>(ids), selfAllowedRepositoryIds);
+              }
+            },
+            executor);
   }
 }
