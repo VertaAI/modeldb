@@ -124,6 +124,7 @@ cron_job:
     record_update_limit: 100
 
 populateConnectionsBasedOnPrivileges: false
+disabled_audits: true
 
 trial:
   enable: true

@@ -572,25 +572,33 @@ public class FutureExperimentRunDAO {
               final var localQueryContext = new QueryFilterContext();
 
               if (!request.getProjectId().isEmpty()) {
-                localQueryContext.conditions.add("experiment_run.project_id=:request_project_id");
-                localQueryContext.binds.add(
-                    q -> q.bind("request_project_id", request.getProjectId()));
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.project_id=:request_project_id");
+                localQueryContext
+                    .getBinds()
+                    .add(q -> q.bind("request_project_id", request.getProjectId()));
               }
 
               if (!request.getExperimentId().isEmpty()) {
-                localQueryContext.conditions.add(
-                    "experiment_run.experiment_id=:request_experiment_id");
-                localQueryContext.binds.add(
-                    q -> q.bind("request_experiment_id", request.getExperimentId()));
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.experiment_id=:request_experiment_id");
+                localQueryContext
+                    .getBinds()
+                    .add(q -> q.bind("request_experiment_id", request.getExperimentId()));
               }
 
               if (!request.getExperimentRunIdsList().isEmpty()) {
-                localQueryContext.conditions.add(
-                    "experiment_run.id in (<request_experiment_run_ids>)");
-                localQueryContext.binds.add(
-                    q ->
-                        q.bindList(
-                            "request_experiment_run_ids", request.getExperimentRunIdsList()));
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.id in (<request_experiment_run_ids>)");
+                localQueryContext
+                    .getBinds()
+                    .add(
+                        q ->
+                            q.bindList(
+                                "request_experiment_run_ids", request.getExperimentRunIdsList()));
               }
 
               return localQueryContext;
@@ -634,7 +642,7 @@ public class FutureExperimentRunDAO {
 
                             // Add the sorting tables
                             for (final var item :
-                                new EnumerateList<>(queryContext.orderItems).getList()) {
+                                new EnumerateList<>(queryContext.getOrderItems()).getList()) {
                               if (item.getValue().getTable() != null) {
                                 sql +=
                                     String.format(
@@ -645,14 +653,14 @@ public class FutureExperimentRunDAO {
                               }
                             }
 
-                            if (!queryContext.conditions.isEmpty()) {
-                              sql += " WHERE " + String.join(" AND ", queryContext.conditions);
+                            if (!queryContext.getConditions().isEmpty()) {
+                              sql += " WHERE " + String.join(" AND ", queryContext.getConditions());
                             }
 
-                            if (!queryContext.orderItems.isEmpty()) {
+                            if (!queryContext.getOrderItems().isEmpty()) {
                               sql += " ORDER BY ";
                               for (final var item :
-                                  new EnumerateList<>(queryContext.orderItems).getList()) {
+                                  new EnumerateList<>(queryContext.getOrderItems()).getList()) {
                                 if (item.getValue().getTable() != null) {
                                   sql += String.format(" join_table_%d.value ", item.getIndex());
                                 } else if (item.getValue().getColumn() != null) {
@@ -675,7 +683,7 @@ public class FutureExperimentRunDAO {
                             }
 
                             var query = handle.createQuery(sql);
-                            queryContext.binds.forEach(b -> b.accept(query));
+                            queryContext.getBinds().forEach(b -> b.accept(query));
 
                             return query
                                 .map(
@@ -828,6 +836,22 @@ public class FutureExperimentRunDAO {
                                                     features.get(builder.getId()))),
                                     executor);
 
+                            // Get code version snapshot
+                            final var futureCodeVersionSnapshots =
+                                codeVersionHandler.getCodeVersionMap(new ArrayList<>(ids));
+                            futureBuildersStream =
+                                futureBuildersStream.thenCombine(
+                                    futureCodeVersionSnapshots,
+                                    (stream, codeVersionsMap) ->
+                                        stream.peek(
+                                            builder -> {
+                                              if (codeVersionsMap.containsKey(builder.getId())) {
+                                                builder.setCodeVersionSnapshot(
+                                                    codeVersionsMap.get(builder.getId()));
+                                              }
+                                            }),
+                                    executor);
+
                             return futureBuildersStream.thenApply(
                                 experimentRunBuilders ->
                                     experimentRunBuilders
@@ -850,12 +874,12 @@ public class FutureExperimentRunDAO {
                         handle -> {
                           var sql = "select count(experiment_run.id) from experiment_run";
 
-                          if (!queryContext.conditions.isEmpty()) {
-                            sql += " WHERE " + String.join(" AND ", queryContext.conditions);
+                          if (!queryContext.getConditions().isEmpty()) {
+                            sql += " WHERE " + String.join(" AND ", queryContext.getConditions());
                           }
 
                           var query = handle.createQuery(sql);
-                          queryContext.binds.forEach(b -> b.accept(query));
+                          queryContext.getBinds().forEach(b -> b.accept(query));
 
                           return query.mapTo(Long.class).one();
                         }),
