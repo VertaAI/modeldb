@@ -28,8 +28,10 @@ import ai.verta.modeldb.LogMetrics;
 import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -43,6 +45,7 @@ import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CreateExperimentRunHandler;
 import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
+import ai.verta.modeldb.experimentRun.subtypes.FeatureHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
@@ -51,6 +54,7 @@ import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.Action;
 import ai.verta.uac.GetSelfAllowedResources;
@@ -59,6 +63,7 @@ import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
+import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -86,6 +91,7 @@ public class FutureExperimentRunDAO {
   private final DatasetHandler datasetHandler;
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
+  private final FeatureHandler featureHandler;
   private final VersionInputHandler versionInputHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
 
@@ -121,12 +127,23 @@ public class FutureExperimentRunDAO {
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
+    featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
     versionInputHandler =
         new VersionInputHandler(
             executor, jdbi, "ExperimentRunEntity", repositoryDAO, commitDAO, blobDAO);
     createExperimentRunHandler =
         new CreateExperimentRunHandler(
-            executor, jdbi, uac, repositoryDAO, commitDAO, blobDAO, versionInputHandler);
+            executor,
+            jdbi,
+            uac,
+            attributeHandler,
+            hyperparametersHandler,
+            metricsHandler,
+            observationHandler,
+            tagsHandler,
+            artifactHandler,
+            featureHandler,
+            versionInputHandler);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -615,16 +632,14 @@ public class FutureExperimentRunDAO {
             .thenApply(QueryFilterContext::combine, executor)
             .thenCompose(
                 queryContext -> {
-                  // TODO: get code version
                   // TODO: get environment
                   // TODO: get features?
-                  // TODO: get job id?
                   // TODO: get versioned inputs
                   // TODO: get code version from blob
                   return jdbi.withHandle(
                           handle -> {
                             var sql =
-                                "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner from experiment_run";
+                                "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id from experiment_run";
 
                             // Add the sorting tables
                             for (final var item :
@@ -673,22 +688,44 @@ public class FutureExperimentRunDAO {
 
                             return query
                                 .map(
-                                    (rs, ctx) ->
-                                        ExperimentRun.newBuilder()
-                                            .setId(rs.getString("experiment_run.id"))
-                                            .setProjectId(rs.getString("experiment_run.project_id"))
-                                            .setExperimentId(
-                                                rs.getString("experiment_run.experiment_id"))
-                                            .setName(rs.getString("experiment_run.name"))
-                                            .setDescription(
-                                                rs.getString("experiment_run.description"))
-                                            .setDateUpdated(
-                                                rs.getLong("experiment_run.date_updated"))
-                                            .setDateCreated(
-                                                rs.getLong("experiment_run.date_created"))
-                                            .setStartTime(rs.getLong("experiment_run.start_time"))
-                                            .setEndTime(rs.getLong("experiment_run.end_time"))
-                                            .setOwner(rs.getString("experiment_run.owner")))
+                                    (rs, ctx) -> {
+                                      ExperimentRun.Builder runBuilder =
+                                          ExperimentRun.newBuilder()
+                                              .setId(rs.getString("experiment_run.id"))
+                                              .setProjectId(
+                                                  rs.getString("experiment_run.project_id"))
+                                              .setExperimentId(
+                                                  rs.getString("experiment_run.experiment_id"))
+                                              .setName(rs.getString("experiment_run.name"))
+                                              .setDescription(
+                                                  rs.getString("experiment_run.description"))
+                                              .setDateUpdated(
+                                                  rs.getLong("experiment_run.date_updated"))
+                                              .setDateCreated(
+                                                  rs.getLong("experiment_run.date_created"))
+                                              .setStartTime(rs.getLong("experiment_run.start_time"))
+                                              .setEndTime(rs.getLong("experiment_run.end_time"))
+                                              .setOwner(rs.getString("experiment_run.owner"))
+                                              .setCodeVersion(
+                                                  rs.getString("experiment_run.code_version"))
+                                              .setJobId(rs.getString("experiment_run.job_id"));
+
+                                      var environment = rs.getString("experiment_run.environment");
+                                      if (environment != null && !environment.isEmpty()) {
+                                        EnvironmentBlob.Builder environmentBlobBuilder =
+                                            EnvironmentBlob.newBuilder();
+                                        try {
+                                          CommonUtils.getProtoObjectFromString(
+                                              environment, environmentBlobBuilder);
+                                        } catch (InvalidProtocolBufferException e) {
+                                          LOGGER.error("Error generating builder for environment");
+                                          throw new ModelDBException(e);
+                                        }
+                                        runBuilder.setEnvironment(environmentBlobBuilder.build());
+                                      }
+
+                                      return runBuilder;
+                                    })
                                 .list();
                           })
                       .thenCompose(
@@ -786,6 +823,34 @@ public class FutureExperimentRunDAO {
                                             builder ->
                                                 builder.addAllObservations(
                                                     observations.get(builder.getId()))),
+                                    executor);
+
+                            // Get features
+                            final var futureFeatures = featureHandler.getFeaturesMap(ids);
+                            futureBuildersStream =
+                                futureBuildersStream.thenCombine(
+                                    futureFeatures,
+                                    (stream, features) ->
+                                        stream.map(
+                                            builder ->
+                                                builder.addAllFeatures(
+                                                    features.get(builder.getId()))),
+                                    executor);
+
+                            // Get code version snapshot
+                            final var futureCodeVersionSnapshots =
+                                codeVersionHandler.getCodeVersionMap(new ArrayList<>(ids));
+                            futureBuildersStream =
+                                futureBuildersStream.thenCombine(
+                                    futureCodeVersionSnapshots,
+                                    (stream, codeVersionsMap) ->
+                                        stream.peek(
+                                            builder -> {
+                                              if (codeVersionsMap.containsKey(builder.getId())) {
+                                                builder.setCodeVersionSnapshot(
+                                                    codeVersionsMap.get(builder.getId()));
+                                              }
+                                            }),
                                     executor);
 
                             return futureBuildersStream.thenApply(
