@@ -1,6 +1,7 @@
 package ai.verta.modeldb.common.futures;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -17,6 +18,10 @@ public class InternalFuture<T> {
   // Convert a list of futures to a future of a list
   public static <T> InternalFuture<List<T>> sequence(
       final List<InternalFuture<T>> futures, Executor executor) {
+    if (futures.isEmpty()) {
+      return InternalFuture.completedInternalFuture(new LinkedList<>());
+    }
+
     final var promise = new CompletableFuture<List<T>>();
     final var values = new ArrayList<T>(futures.size());
     final CompletableFuture<T>[] futuresArray =
@@ -26,8 +31,13 @@ public class InternalFuture<T> {
             .toArray(new CompletableFuture[futures.size()]);
 
     CompletableFuture.allOf(futuresArray)
-        .thenRunAsync(
-            () -> {
+        .whenCompleteAsync(
+            (ignored, throwable) -> {
+              if (throwable != null) {
+                promise.completeExceptionally(throwable);
+                return;
+              }
+
               try {
                 for (final var future : futuresArray) {
                   values.add(future.get());

@@ -16,6 +16,42 @@ from .alert._entities import Alerts
 
 
 class MonitoredEntity(entity._ModelDBEntity):
+    """A monitored entity persisted to Verta.
+
+    A monitored entity provides a named context to gather together data
+    summaries and alert configurations. Users should obtain a monitored entity
+    through the :meth:`~verta.opertaions.monitoring.client.Client.get_or_create_monitored_entity`
+    method of the operations sub-client.
+
+    Parameters
+    ----------
+    conn
+        A connection object to the backend service.
+    conf
+        A configuration object used by conn methods.
+    msg
+        A protobuf message ai.verta.monitoring.MonitoredEntity
+
+    Attributes
+    ----------
+    name : str
+        The name of this monitored entity.
+    workspace : str
+        The name of the workspace which this monitored entity belongs to.
+    alerts : :class:`~verta.operations.monitoring.alert._entities.Alerts`
+        The sub-client for managing alerts defined for this monitored entity.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta import Client
+
+        client = Client()
+        monitored_entity = client.operations.get_or_create_monitored_entity()
+
+    """
+
     def __init__(self, conn, conf, msg):
         super(MonitoredEntity, self).__init__(
             conn, conf, _DataMonitoringService, "monitored_entity", msg
@@ -39,10 +75,10 @@ class MonitoredEntity(entity._ModelDBEntity):
 
     @property
     def workspace(self):
-        self._refresh_cache()
+        self._fetch_with_no_cache()
 
         if self._msg.workspace_id:
-            return self._conn._get_workspace_name_by_id(self._msg.workspace_id)
+            return self._conn.get_workspace_name_from_id(self._msg.workspace_id)
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
 
@@ -93,16 +129,15 @@ class MonitoredEntity(entity._ModelDBEntity):
             return None
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name):
+    def _create_proto_internal(cls, conn, ctx, name, workspace_name):
         Message = _DataMonitoringService.CreateMonitoredEntityRequest
-        msg = Message(name=name)
-
+        msg = Message(name=name, workspace_name=workspace_name)
         endpoint = "/api/v1/monitored_entity/createMonitoredEntity"
         response = conn.make_proto_request("POST", endpoint, body=msg)
         obj = conn.must_proto_response(response, Message.Response).monitored_entity
 
-        if ctx.workspace_name is not None:
-            WORKSPACE_PRINT_MSG = "workspace: {}".format(ctx.workspace_name)
+        if workspace_name is not None:
+            WORKSPACE_PRINT_MSG = "workspace: {}".format(workspace_name)
         else:
             WORKSPACE_PRINT_MSG = "personal workspace"
 
@@ -120,6 +155,20 @@ class MonitoredEntity(entity._ModelDBEntity):
         raise NotImplementedError()
 
     def delete(self):
+        """Delete this monitored entity.
+
+        Instructs Verta's services to delete this monitored entity.
+
+        Returns
+        -------
+        bool
+            True if the delete was successful.
+
+        Raises
+        ------
+        Error
+            Raises an error if the delete failed for any reason.
+        """
         msg = _DataMonitoringService.DeleteMonitoredEntityRequest(id=self.id)
         endpoint = "/api/v1/monitored_entity/deleteMonitoredEntity"
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)

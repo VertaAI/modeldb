@@ -66,7 +66,7 @@ class Alerting(_AlertStatus):
 
     Parameters
     ----------
-    summary_samples : list of :class:`~verta.operations.monitoring.summary.SummarySample`
+    summary_samples : list of :class:`~verta.operations.monitoring.summaries.SummarySample`
         Summary samples that triggered the alert.
 
     Examples
@@ -93,7 +93,7 @@ class Ok(_AlertStatus):
 
     Parameters
     ----------
-    summary_samples : list of :class:`~verta.operations.monitoring.summary.SummarySample`, optional
+    summary_samples : list of :class:`~verta.operations.monitoring.summaries.SummarySample`, optional
         Summary samples to be removed from the alert's list of violating
         summary samples. If not provided, all summary samples will be cleared
         from the list.
