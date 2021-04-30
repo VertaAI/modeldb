@@ -2428,12 +2428,7 @@
       "title": "tag"
     },
     "modeldbAddExperimentRunTagResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbAddExperimentRunTags": {
       "type": "object",
@@ -2451,12 +2446,7 @@
       "title": "tags"
     },
     "modeldbAddExperimentRunTagsResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbCloneExperimentRun": {
       "type": "object",
@@ -2695,12 +2685,7 @@
       }
     },
     "modeldbDeleteExperimentRunTagResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbDeleteExperimentRunTags": {
       "type": "object",
@@ -2721,12 +2706,7 @@
       }
     },
     "modeldbDeleteExperimentRunTagsResponse": {
-      "type": "object",
-      "properties": {
-        "experiment_run": {
-          "$ref": "#/definitions/modeldbExperimentRun"
-        }
-      }
+      "type": "object"
     },
     "modeldbDeleteExperimentRuns": {
       "type": "object",
