@@ -328,8 +328,10 @@ public class FutureExperimentRunDAO {
                 .execute());
   }
 
-  private InternalFuture<Void> checkProjectPermission(
-      List<String> projId, ModelDBActionEnum.ModelDBServiceActions action) {
+  private InternalFuture<Boolean> checkEntityPermissionBasedOnResourceTypes(
+      List<String> entityIds,
+      ModelDBActionEnum.ModelDBServiceActions action,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(
@@ -343,18 +345,12 @@ public class FutureExperimentRunDAO {
                                 .setService(ServiceEnum.Service.MODELDB_SERVICE)
                                 .setResourceType(
                                     ResourceType.newBuilder()
-                                        .setModeldbServiceResourceType(
-                                            ModelDBServiceResourceTypes.PROJECT))
-                                .addAllResourceIds(projId))
+                                        .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                                .addAllResourceIds(entityIds))
                         .build()),
             executor)
-        .thenAccept(
-            response -> {
-              if (!response.getAllowed()) {
-                throw new PermissionDeniedException("Permission denied");
-              }
-            },
-            executor);
+        .thenCompose(
+            response -> InternalFuture.completedInternalFuture(response.getAllowed()), executor);
   }
 
   private InternalFuture<Void> checkPermission(
@@ -383,10 +379,27 @@ public class FutureExperimentRunDAO {
           switch (action) {
             case DELETE:
               // TODO: check if we should using DELETE for the ER itself
-              return checkProjectPermission(
-                  maybeProjectIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+              return checkEntityPermissionBasedOnResourceTypes(
+                      maybeProjectIds,
+                      ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                      ModelDBServiceResourceTypes.PROJECT)
+                  .thenAccept(
+                      allowed -> {
+                        if (!allowed) {
+                          throw new PermissionDeniedException("Permission denied");
+                        }
+                      },
+                      executor);
             default:
-              return checkProjectPermission(maybeProjectIds, action);
+              return checkEntityPermissionBasedOnResourceTypes(
+                      maybeProjectIds, action, ModelDBServiceResourceTypes.PROJECT)
+                  .thenAccept(
+                      allowed -> {
+                        if (!allowed) {
+                          throw new PermissionDeniedException("Permission denied");
+                        }
+                      },
+                      executor);
           }
         },
         executor);
@@ -853,6 +866,30 @@ public class FutureExperimentRunDAO {
                                             }),
                                     executor);
 
+                            // Get VersionedInputs
+                            final var futureVersionedInputs =
+                                versionInputHandler.getVersionedInputs(ids);
+                            final InternalFuture<Map<String, VersioningEntry>>
+                                filterPrivilegeVersionedInputMap =
+                                    filterVersionedInputsBasedOnPrivileges(
+                                        ids, futureVersionedInputs);
+                            futureBuildersStream =
+                                futureBuildersStream.thenCombine(
+                                    filterPrivilegeVersionedInputMap,
+                                    (stream, versionInputsMap) ->
+                                        stream.map(
+                                            builder -> {
+                                              VersioningEntry finalVersionedInputs =
+                                                  versionInputsMap.get(builder.getId());
+                                              if (finalVersionedInputs != null) {
+                                                builder.setVersionedInputs(finalVersionedInputs);
+                                              } else {
+                                                builder.clearVersionedInputs();
+                                              }
+                                              return builder;
+                                            }),
+                                    executor);
+
                             return futureBuildersStream.thenApply(
                                 experimentRunBuilders ->
                                     experimentRunBuilders
@@ -896,10 +933,59 @@ public class FutureExperimentRunDAO {
         executor);
   }
 
+  private InternalFuture<Map<String, VersioningEntry>> filterVersionedInputsBasedOnPrivileges(
+      Set<String> runIds, InternalFuture<Map<String, VersioningEntry>> futureVersionedInputs) {
+    return futureVersionedInputs.thenCompose(
+        versionedInputsMap -> {
+          List<InternalFuture<Map<String, VersioningEntry>>> internalFutureList = new ArrayList<>();
+          for (String runId : runIds) {
+            // Get VersionEntry from fetched map
+            VersioningEntry versioningEntry = versionedInputsMap.get(runId);
+            if (versioningEntry == null) {
+              continue;
+            }
+            String repoId = String.valueOf(versioningEntry.getRepositoryId());
+            // Check repository is accessible or not from versionedInputs If not then we will remove
+            // it from fetched map
+            internalFutureList.add(
+                InternalFuture.completedInternalFuture(versioningEntry)
+                    .thenCompose(
+                        versioningEntry1 ->
+                            checkEntityPermissionBasedOnResourceTypes(
+                                    Collections.singletonList(repoId),
+                                    ModelDBActionEnum.ModelDBServiceActions.READ,
+                                    ModelDBServiceResourceTypes.REPOSITORY)
+                                .thenCompose(
+                                    isSelfAllowed -> {
+                                      // Set null into map if repository is not accessible to the
+                                      // current user
+                                      VersioningEntry allowedVersioningEntry = null;
+                                      if (isSelfAllowed) {
+                                        allowedVersioningEntry = versioningEntry1;
+                                      }
+                                      return InternalFuture.completedInternalFuture(
+                                          Collections.singletonMap(runId, allowedVersioningEntry));
+                                    },
+                                    executor),
+                        executor));
+          }
+          return InternalFuture.sequence(internalFutureList, executor)
+              .thenCompose(
+                  maps -> {
+                    Map<String, VersioningEntry> finalVersionedInputsMap = new HashMap<>();
+                    maps.forEach(finalVersionedInputsMap::putAll);
+                    return InternalFuture.completedInternalFuture(finalVersionedInputsMap);
+                  },
+                  executor);
+        },
+        executor);
+  }
+
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
-    return checkProjectPermission(
+    return checkEntityPermissionBasedOnResourceTypes(
             Collections.singletonList(request.getProjectId()),
-            ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+            ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+            ModelDBServiceResourceTypes.PROJECT)
         .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
   }
 }
