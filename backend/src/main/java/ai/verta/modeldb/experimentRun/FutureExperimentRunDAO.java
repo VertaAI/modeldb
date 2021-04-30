@@ -906,11 +906,6 @@ public class FutureExperimentRunDAO {
   public InternalFuture<Void> logVersionedInputs(LogVersionedInput request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
-    if (!request.hasVersionedInputs()) {
-      throw new InvalidArgumentException("VersionedInput not found in request");
-    } else if (!request.getId().isEmpty()) {
-      throw new InvalidArgumentException("ExperimentRun ID not found in request");
-    }
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(

@@ -10,6 +10,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
@@ -78,7 +79,10 @@ public class VersionInputHandler {
    */
   public InternalFuture<Void> validateAndInsertVersionedInputs(
       String runId, VersioningEntry versioningEntry) {
-    if (versioningEntry != null) {
+    if (versioningEntry == null) {
+      return InternalFuture.failedStage(
+          new InvalidArgumentException("VersionedInput not found in request"));
+    } else {
       InternalFuture<Map<String, Map.Entry<BlobExpanded, String>>> versionedInputFutureTask =
           validateVersioningEntity(versioningEntry);
       return versionedInputFutureTask.thenCompose(
@@ -100,8 +104,6 @@ public class VersionInputHandler {
                               versioningEntry, locationBlobWithHashMap, runId),
                       executor),
           executor);
-    } else {
-      return InternalFuture.runAsync(() -> {}, executor);
     }
   }
 
