@@ -45,6 +45,7 @@ public class CreateExperimentRunHandler {
   private final ArtifactHandler artifactHandler;
   private final FeatureHandler featureHandler;
   private final CodeVersionHandler codeVersionHandler;
+  private final VersionInputHandler versionInputHandler;
 
   public CreateExperimentRunHandler(
       Executor executor,
@@ -56,7 +57,8 @@ public class CreateExperimentRunHandler {
       ObservationHandler observationHandler,
       TagsHandler tagsHandler,
       ArtifactHandler artifactHandler,
-      FeatureHandler featureHandler) {
+      FeatureHandler featureHandler,
+      VersionInputHandler versionInputHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -69,6 +71,7 @@ public class CreateExperimentRunHandler {
     this.artifactHandler = artifactHandler;
     this.featureHandler = featureHandler;
     this.codeVersionHandler = new CodeVersionHandler(executor, jdbi);
+    this.versionInputHandler = versionInputHandler;
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
@@ -324,6 +327,8 @@ public class CreateExperimentRunHandler {
                           .setCodeVersion(newExperimentRun.getCodeVersionSnapshot())
                           .setOverwrite(false)
                           .build()));
+              futureLogs.add(
+                  versionInputHandler.validateAndInsertVersionedInputs(newExperimentRun));
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);

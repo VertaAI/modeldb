@@ -51,7 +51,11 @@ import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
+import ai.verta.modeldb.versioning.BlobDAO;
+import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
+import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.Action;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.IsSelfAllowed;
@@ -88,6 +92,7 @@ public class FutureExperimentRunDAO {
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
   private final FeatureHandler featureHandler;
+  private final VersionInputHandler versionInputHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
 
   public FutureExperimentRunDAO(
@@ -95,7 +100,10 @@ public class FutureExperimentRunDAO {
       FutureJdbi jdbi,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      DatasetVersionDAO datasetVersionDAO,
+      RepositoryDAO repositoryDAO,
+      CommitDAO commitDAO,
+      BlobDAO blobDAO) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -120,6 +128,9 @@ public class FutureExperimentRunDAO {
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
     featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
+    versionInputHandler =
+        new VersionInputHandler(
+            executor, jdbi, "ExperimentRunEntity", repositoryDAO, commitDAO, blobDAO);
     createExperimentRunHandler =
         new CreateExperimentRunHandler(
             executor,
@@ -131,7 +142,8 @@ public class FutureExperimentRunDAO {
             observationHandler,
             tagsHandler,
             artifactHandler,
-            featureHandler);
+            featureHandler,
+            versionInputHandler);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
