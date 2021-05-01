@@ -192,6 +192,12 @@ class Python(_environment._Environment):
             in req_specs
         )
 
+        for req in self._msg.python.requirements:
+            if req.library == "torch":
+                # torch adds metadata to its version number during installation
+                # that results in a non-pip-installable specifier
+                req.version.ClearField("suffix")
+
     def _capture_constraints(self, constraints):
         if constraints is None:
             return
@@ -239,13 +245,4 @@ class Python(_environment._Environment):
             Requirement specifiers.
 
         """
-        req_specs = _pip_requirements_utils.get_pip_freeze()
-
-        for i, req_spec in enumerate(req_specs):
-            library, _, _ = _pip_requirements_utils.parse_req_spec(req_spec)
-            if library == "torch":
-                # torch adds metadata to its version number during installation
-                # that results in a non-pip-installable specifier
-                req_specs[i] = req_spec.split("+")[0]
-
-        return req_specs
+        return _pip_requirements_utils.get_pip_freeze()
