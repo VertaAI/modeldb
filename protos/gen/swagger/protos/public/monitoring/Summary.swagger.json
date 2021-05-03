@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/summaries/createSample": {
+    "/api/v1/summaries/createSample": {
       "post": {
         "operationId": "SummaryService_createSample",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/summaries/createSummary": {
+    "/api/v1/summaries/createSummary": {
       "post": {
         "operationId": "SummaryService_createSummary",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/summaries/deleteSample": {
+    "/api/v1/summaries/deleteSample": {
       "delete": {
         "operationId": "SummaryService_deleteSample",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/summaries/deleteSummary": {
+    "/api/v1/summaries/deleteSummary": {
       "delete": {
         "operationId": "SummaryService_deleteSummary",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/summaries/findSample": {
+    "/api/v1/summaries/findSample": {
       "post": {
         "operationId": "SummaryService_findSample",
         "responses": {
@@ -171,7 +171,7 @@
         ]
       }
     },
-    "/summaries/findSummary": {
+    "/api/v1/summaries/findSummary": {
       "post": {
         "operationId": "SummaryService_findSummary",
         "responses": {
