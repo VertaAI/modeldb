@@ -328,7 +328,8 @@ public class CreateExperimentRunHandler {
                           .setOverwrite(false)
                           .build()));
               futureLogs.add(
-                  versionInputHandler.validateAndInsertVersionedInputs(newExperimentRun));
+                  versionInputHandler.validateAndInsertVersionedInputs(
+                      newExperimentRun.getId(), newExperimentRun.getVersionedInputs()));
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);
@@ -336,7 +337,6 @@ public class CreateExperimentRunHandler {
             executor);
     // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
     // newExperimentRun.getDatasetsList()), executor)
-    // TODO .thenCompose(handle -> versioned_inputs, executor)
   }
 
   private EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {

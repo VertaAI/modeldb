@@ -902,4 +902,17 @@ public class FutureExperimentRunDAO {
             ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
   }
+
+  public InternalFuture<Void> logVersionedInputs(LogVersionedInput request) {
+    final var runId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(
+            unused ->
+                versionInputHandler.validateAndInsertVersionedInputs(
+                    request.getId(), request.getVersionedInputs()),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
 }
