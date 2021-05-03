@@ -3,6 +3,7 @@ package ai.verta.modeldb.experimentRun;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -71,10 +72,14 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     if (findResponse.getExperimentRunsCount() > 1) {
                       throw new InternalErrorException(
                           "More than one ExperimentRun found for ID: " + request.getId());
+                    } else if (findResponse.getExperimentRunsCount() == 0) {
+                      throw new NotFoundException(
+                          "ExperimentRun not found for the ID: " + request.getId());
+                    } else {
+                      return GetExperimentRunById.Response.newBuilder()
+                          .setExperimentRun(findResponse.getExperimentRuns(0))
+                          .build();
                     }
-                    return GetExperimentRunById.Response.newBuilder()
-                        .setExperimentRun(findResponse.getExperimentRuns(0))
-                        .build();
                   },
                   executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
