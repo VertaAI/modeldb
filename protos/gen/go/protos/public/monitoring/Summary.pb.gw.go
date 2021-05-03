@@ -525,17 +525,17 @@ func RegisterSummaryServiceHandlerClient(ctx context.Context, mux *runtime.Serve
 }
 
 var (
-	pattern_SummaryService_CreateSummary_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "monitoring", "summaries", "createSummary"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_SummaryService_CreateSummary_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "summaries", "createSummary"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_SummaryService_FindSummary_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "monitoring", "summaries", "findSummary"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_SummaryService_FindSummary_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "summaries", "findSummary"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_SummaryService_DeleteSummary_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "monitoring", "summaries", "deleteSummary"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_SummaryService_DeleteSummary_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "summaries", "deleteSummary"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_SummaryService_CreateSample_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "monitoring", "summaries", "createSample"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_SummaryService_CreateSample_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "summaries", "createSample"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_SummaryService_FindSample_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "monitoring", "summaries", "findSample"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_SummaryService_FindSample_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "summaries", "findSample"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_SummaryService_DeleteSample_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"v1", "monitoring", "summaries", "deleteSample"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_SummaryService_DeleteSample_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "summaries", "deleteSample"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
