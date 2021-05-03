@@ -49,9 +49,9 @@ public class TelemetryUtils {
           LOGGER.info("Table modeldb_deployment_info creating");
 
           String createModelDBDeploymentInfoQuery =
-              "create table modeldb_deployment_info (md_key varchar(50),md_value varchar(255), creation_timestamp BIGINT)";
+              "create table modeldb_deployment_info (md_key varchar(50),md_value varchar(255), creation_timestamp BIGINT) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
           String createTelemetryInformationQuery =
-              "Create table telemetry_information (tel_key varchar(50),tel_value varchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer varchar(256))";
+              "Create table telemetry_information (tel_key varchar(50),tel_value varchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer varchar(256)) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
 
           try (Statement statement = connection.createStatement()) {
             statement.executeUpdate(createModelDBDeploymentInfoQuery);
@@ -66,6 +66,16 @@ public class TelemetryUtils {
           LOGGER.info("Table modeldb_deployment_info created successfully");
         } else {
           try (Statement stmt = connection.createStatement()) {
+            String[] updateStatements = {
+              "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+              "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+              "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+              "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+              "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
+            };
+            for (String updateStatement : updateStatements) {
+              stmt.executeUpdate(updateStatement);
+            }
             String selectQuery = "Select * from modeldb_deployment_info where md_key = 'id'";
             ResultSet rs = stmt.executeQuery(selectQuery);
             if (rs.next()) {
