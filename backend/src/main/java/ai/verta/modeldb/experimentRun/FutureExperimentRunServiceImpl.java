@@ -506,7 +506,15 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void logEnvironment(
       LogEnvironment request, StreamObserver<LogEnvironment.Response> responseObserver) {
-    super.logEnvironment(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logEnvironment(request)
+              .thenApply(unused -> LogEnvironment.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

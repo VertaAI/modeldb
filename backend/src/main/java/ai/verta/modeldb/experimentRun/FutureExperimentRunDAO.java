@@ -45,6 +45,7 @@ import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CreateExperimentRunHandler;
 import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
+import ai.verta.modeldb.experimentRun.subtypes.EnvironmentHandler;
 import ai.verta.modeldb.experimentRun.subtypes.FeatureHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
@@ -88,6 +89,7 @@ public class FutureExperimentRunDAO {
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
   private final FeatureHandler featureHandler;
+  private final EnvironmentHandler environmentHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
 
   public FutureExperimentRunDAO(
@@ -120,6 +122,7 @@ public class FutureExperimentRunDAO {
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
     featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
+    environmentHandler = new EnvironmentHandler(executor, jdbi, "ExperimentRunEntity");
     createExperimentRunHandler =
         new CreateExperimentRunHandler(
             executor,
@@ -897,5 +900,20 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(request.getProjectId()),
             ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
+  }
+
+  public InternalFuture<Void> logEnvironment(LogEnvironment request) {
+    final var runId = request.getId();
+
+    if (!request.hasEnvironment()) {
+      return InternalFuture.failedStage(
+          new InvalidArgumentException("Environment should not be empty"));
+    }
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(
+            unused -> environmentHandler.logEnvironment(request.getId(), request.getEnvironment()),
+            executor);
   }
 }

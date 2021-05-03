@@ -8,7 +8,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -17,11 +16,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
-import ai.verta.modeldb.versioning.EnvironmentBlob;
-import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
-import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.uac.*;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
@@ -244,15 +239,7 @@ public class CreateExperimentRunHandler {
                                   runValueMap.put("parent_id", newExperimentRun.getParentId());
                                   runValueMap.put("owner", newExperimentRun.getOwner());
 
-                                  EnvironmentBlob environmentBlob =
-                                      sortPythonEnvironmentBlob(newExperimentRun.getEnvironment());
-                                  try {
-                                    runValueMap.put(
-                                        "environment",
-                                        ModelDBUtils.getStringFromProtoObject(environmentBlob));
-                                  } catch (InvalidProtocolBufferException e) {
-                                    throw new ModelDBException(e);
-                                  }
+                                  runValueMap.put("environment", null);
                                   runValueMap.put("deleted", false);
                                   runValueMap.put("created", false);
 
@@ -332,31 +319,6 @@ public class CreateExperimentRunHandler {
     // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
     // newExperimentRun.getDatasetsList()), executor)
     // TODO .thenCompose(handle -> versioned_inputs, executor)
-  }
-
-  private EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {
-    EnvironmentBlob.Builder builder = environmentBlob.toBuilder();
-    if (builder.hasPython()) {
-      PythonEnvironmentBlob.Builder pythonEnvironmentBlobBuilder = builder.getPython().toBuilder();
-
-      // Compare requirementEnvironmentBlobs
-      List<PythonRequirementEnvironmentBlob> requirementEnvironmentBlobs =
-          new ArrayList<>(pythonEnvironmentBlobBuilder.getRequirementsList());
-      requirementEnvironmentBlobs.sort(
-          Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
-      pythonEnvironmentBlobBuilder
-          .clearRequirements()
-          .addAllRequirements(requirementEnvironmentBlobs);
-
-      // Compare
-      List<PythonRequirementEnvironmentBlob> constraintsBlobs =
-          new ArrayList<>(pythonEnvironmentBlobBuilder.getConstraintsList());
-      constraintsBlobs.sort(Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
-      pythonEnvironmentBlobBuilder.clearConstraints().addAllConstraints(constraintsBlobs);
-
-      builder.setPython(pythonEnvironmentBlobBuilder.build());
-    }
-    return builder.build();
   }
 
   private InternalFuture<Boolean> checkInsertedEntityAlreadyExists(ExperimentRun experimentRun) {
