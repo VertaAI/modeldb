@@ -105,7 +105,7 @@ class ReferenceAlerter(_Alerter):
     comparison : :class:`~verta.common.comparison._VertaComparison`
         Alert condition. An alert is active if the distance between a queried
         sample and `reference_sample` meets this condition.
-    reference_sample : :class:`~verta.operations.monitoring.summarySummarySample`
+    reference_sample : :class:`~verta.operations.monitoring.summaries.SummarySample`
         An existing summary sample to compare queried samples with.
 
     Examples

@@ -50,6 +50,46 @@ class _DeployableEntity(_ModelDBEntity):
             self.id,
         )
 
+    @abc.abstractmethod
+    def _get_artifact(self, key):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def download_artifact(self, key, download_to_path):
+        """Downloads the artifact with name `key` to path `download_to_path`.
+
+        Parameters
+        ----------
+        key : str
+            Name of the artifact.
+        download_to_path : str
+            Path to download to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where artifact was downloaded to. Matches `download_to_path`.
+
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def download_model(self, download_to_path):
+        """Downloads the model logged with :meth:`log_model` to path `download_to_path`.
+
+        Parameters
+        ----------
+        download_to_path : str
+            Path to download to.
+
+        Returns
+        -------
+        downloaded_to_path : str
+            Absolute path where artifact was downloaded to. Matches `download_to_path`.
+
+        """
+        raise NotImplementedError
+
     def _cache_file(self, filename, contents):
         """
         Caches `contents` to `filename` within ``_CACHE_DIR``.
@@ -135,10 +175,6 @@ class _DeployableEntity(_ModelDBEntity):
 
         path = os.path.join(_CACHE_DIR, name)
         return path if os.path.exists(path) else None
-
-    @abc.abstractmethod
-    def _get_artifact(self, key):
-        raise NotImplementedError
 
     def fetch_artifacts(self, keys):
         """

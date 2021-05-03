@@ -15,6 +15,7 @@ public class AuthServiceUtils extends ai.verta.modeldb.common.authservice.AuthSe
 
   private AuthServiceUtils(Config config) {
     super(
+        config,
         config.authService.host,
         config.authService.port,
         config.service_user.email,

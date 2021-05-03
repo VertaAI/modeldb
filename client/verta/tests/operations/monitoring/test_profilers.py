@@ -6,6 +6,7 @@ from verta.environment import Python
 from verta._internal_utils._utils import generate_default_name
 from verta.operations.monitoring.profiler import ContinuousHistogramProfiler
 from verta.operations.monitoring.profilers import ProfilerReference
+import pytest
 
 
 class TestProfilers(object):
@@ -44,6 +45,6 @@ class TestProfilers(object):
         delete = profilers.delete(created_profiler)
         assert delete
 
-    # TODO: Write a test plan for this "heavy" operation
+    @pytest.mark.skip(reason="heavy remote operation, plan TBD")
     def test_deploy(self, client):
         pass
