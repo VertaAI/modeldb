@@ -5,6 +5,7 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import com.google.protobuf.Value;
@@ -65,7 +66,30 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void getExperimentRunById(
       GetExperimentRunById request,
       StreamObserver<GetExperimentRunById.Response> responseObserver) {
-    super.getExperimentRunById(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .findExperimentRuns(
+                  FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build())
+              .thenApply(
+                  findResponse -> {
+                    if (findResponse.getExperimentRunsCount() > 1) {
+                      throw new InternalErrorException(
+                          "More than one ExperimentRun found for ID: " + request.getId());
+                    } else if (findResponse.getExperimentRunsCount() == 0) {
+                      throw new NotFoundException(
+                          "ExperimentRun not found for the ID: " + request.getId());
+                    } else {
+                      return GetExperimentRunById.Response.newBuilder()
+                          .setExperimentRun(findResponse.getExperimentRuns(0))
+                          .build();
+                    }
+                  },
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
