@@ -134,6 +134,15 @@ public abstract class CommonHibernateUtil {
     }
   }
 
+  public static void changeCharsetToUtf(JdbcConnection jdbcCon) throws DatabaseException, SQLException {
+    Statement stmt = jdbcCon.createStatement();
+    String dbName = jdbcCon.getCatalog();
+    String sql = String
+        .format("ALTER DATABASE %s CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
+    int result = stmt.executeUpdate(sql);
+    LOGGER.info("ALTER charset execute result: {}", result);
+  }
+
   public SessionFactory getSessionFactory() {
     return createOrGetSessionFactory(config.database);
   }
@@ -278,6 +287,7 @@ public abstract class CommonHibernateUtil {
     // Get database connection
     try (Connection con = getDBConnection(rdb)) {
       JdbcConnection jdbcCon = new JdbcConnection(con);
+      changeCharsetToUtf(jdbcCon);
 
       // Overwrite default liquibase table names by custom
       GlobalConfiguration liquibaseConfiguration =
