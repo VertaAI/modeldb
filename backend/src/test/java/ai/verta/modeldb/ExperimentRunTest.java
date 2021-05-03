@@ -94,6 +94,14 @@ public class ExperimentRunTest extends TestsInit {
 
   @After
   public void removeEntities() {
+    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
+      DeleteExperimentRun deleteExperimentRun =
+          DeleteExperimentRun.newBuilder().setId(run.getId()).build();
+      DeleteExperimentRun.Response deleteExperimentRunResponse =
+          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
+      assertTrue(deleteExperimentRunResponse.getStatus());
+    }
+
     for (String projectId : projectMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
       DeleteProject.Response deleteProjectResponse =
@@ -101,14 +109,6 @@ public class ExperimentRunTest extends TestsInit {
       LOGGER.info("Project deleted successfully");
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
-    }
-
-    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
-      DeleteExperimentRun deleteExperimentRun =
-          DeleteExperimentRun.newBuilder().setId(run.getId()).build();
-      DeleteExperimentRun.Response deleteExperimentRunResponse =
-          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-      assertTrue(deleteExperimentRunResponse.getStatus());
     }
 
     project = null;
@@ -420,16 +420,17 @@ public class ExperimentRunTest extends TestsInit {
             .build());
 
     List<Observation> observations = new ArrayList<>();
-    observations.add(
-        Observation.newBuilder()
-            .setArtifact(
-                Artifact.newBuilder()
-                    .setKey("Google developer Observation artifact")
-                    .setPath("This is data artifact type in Google developer Observation artifact")
-                    .setArtifactType(ArtifactType.DATA))
-            .setTimestamp(Calendar.getInstance().getTimeInMillis() + 1)
-            .setEpochNumber(Value.newBuilder().setNumberValue(1))
-            .build());
+    // TODO: uncomment after supporting artifact on observation
+    /*observations.add(
+    Observation.newBuilder()
+        .setArtifact(
+            Artifact.newBuilder()
+                .setKey("Google developer Observation artifact")
+                .setPath("This is data artifact type in Google developer Observation artifact")
+                .setArtifactType(ArtifactType.DATA))
+        .setTimestamp(Calendar.getInstance().getTimeInMillis() + 1)
+        .setEpochNumber(Value.newBuilder().setNumberValue(1))
+        .build());*/
     stringValue =
         Value.newBuilder()
             .setStringValue("Observation_value_" + Calendar.getInstance().getTimeInMillis())
@@ -5313,7 +5314,7 @@ public class ExperimentRunTest extends TestsInit {
             .setCommit(commit)
             .addBlobs(
                 BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.CONFIG))
                     .addLocation("dataset")
                     .addLocation("train")
                     .build())
@@ -5569,6 +5570,12 @@ public class ExperimentRunTest extends TestsInit {
           getVersionedInputResponse.getVersionedInputs());
 
       if (config.hasAuth()) {
+        AddCollaboratorRequest addCollaboratorRequest =
+            CollaboratorTest.addCollaboratorRequestProject(
+                project, authClientInterceptor.getClient2Email(), CollaboratorType.READ_WRITE);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("\n Collaborator1 added in project successfully \n");
+
         getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
         getVersionedInputResponse =
             experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
@@ -6066,7 +6073,7 @@ public class ExperimentRunTest extends TestsInit {
             .setCommit(commit)
             .addBlobs(
                 BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.CONFIG))
                     .addLocation("dataset")
                     .addLocation("train")
                     .build())
@@ -7642,6 +7649,15 @@ public class ExperimentRunTest extends TestsInit {
               .build();
       artifacts.add(artifact2);
       artifactMap.put(artifact2.getKey(), artifact2);
+
+      createExperimentRunRequest =
+          getCreateExperimentRunRequestSimple(
+              project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
+      createExperimentRunRequest =
+          createExperimentRunRequest.toBuilder().addAllDatasets(artifacts).build();
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      ExperimentRun test = createExperimentRunResponse.getExperimentRun();
 
       LogDatasets logDatasetRequest =
           LogDatasets.newBuilder().setId(experimentRun11.getId()).addAllDatasets(artifacts).build();
