@@ -1,8 +1,13 @@
 package ai.verta.modeldb.experimentRun;
 
+import ai.verta.common.KeyValueQuery;
+import ai.verta.common.OperatorEnum;
+import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
+import com.google.protobuf.Value;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.util.concurrent.Executor;
@@ -67,7 +72,37 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void getExperimentRunByName(
       GetExperimentRunByName request,
       StreamObserver<GetExperimentRunByName.Response> responseObserver) {
-    super.getExperimentRunByName(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .findExperimentRuns(
+                  FindExperimentRuns.newBuilder()
+                      .setExperimentId(request.getExperimentId())
+                      .addPredicates(
+                          KeyValueQuery.newBuilder()
+                              .setKey("name")
+                              .setValue(
+                                  Value.newBuilder().setStringValue(request.getName()).build())
+                              .setOperator(OperatorEnum.Operator.EQ)
+                              .setValueType(ValueTypeEnum.ValueType.STRING)
+                              .build())
+                      .build())
+              .thenApply(
+                  findResponse -> {
+                    if (findResponse.getExperimentRunsCount() == 0) {
+                      throw new NotFoundException(
+                          "ExperimentRun not found for the name: " + request.getName());
+                    } else {
+                      return GetExperimentRunByName.Response.newBuilder()
+                          .setExperimentRun(findResponse.getExperimentRuns(0))
+                          .build();
+                    }
+                  },
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
