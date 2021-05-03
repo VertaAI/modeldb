@@ -237,70 +237,70 @@ message ListAlertHistoryItem {
 service AlertService {
     rpc createNotificationChannel(CreateNotificationChannelRequest) returns (NotificationChannel) {
         option (google.api.http) = {
-            post: "/api/v1/alerts/createNotificationChannel"
+            post: "/api/v1/monitoring/alerts/createNotificationChannel"
             body: "*"
         };
     };
 
     rpc updateNotificationChannel(UpdateNotificationChannelRequest) returns (NotificationChannel) {
         option (google.api.http) = {
-            post: "/api/v1/alerts/updateNotificationChannel"
+            post: "/api/v1/monitoring/alerts/updateNotificationChannel"
             body: "*"
         };
     };
 
     rpc findNotificationChannel(FindNotificationChannelRequest) returns (FindNotificationChannelRequest.Response) {
         option (google.api.http) = {
-            post: "/api/v1/alerts/findNotificationChannel"
+            post: "/api/v1/monitoring/alerts/findNotificationChannel"
             body: "*"
         };
     };
 
     rpc deleteNotificationChannel(DeleteNotificationChannelRequest) returns (Empty) {
         option (google.api.http) = {
-            delete: "/api/v1/alerts/deleteNotificationChannel"
+            delete: "/api/v1/monitoring/alerts/deleteNotificationChannel"
             body: "*"
         };
     };
 
     rpc createAlert(CreateAlertRequest) returns (Alert) {
         option (google.api.http) = {
-            post: "/api/v1/alerts/createAlert"
+            post: "/api/v1/monitoring/alerts/createAlert"
             body: "*"
         };
     };
 
     rpc updateAlert(UpdateAlertRequest) returns (Alert) {
         option (google.api.http) = {
-            post: "/api/v1/alerts/updateAlert"
+            post: "/api/v1/monitoring/alerts/updateAlert"
             body: "*"
         };
     };
 
     rpc updateAlertStatus(UpdateAlertStatusRequest) returns (Empty) {
         option (google.api.http) = {
-            post: "/api/v1/alerts/updateAlertStatus"
+            post: "/api/v1/monitoring/alerts/updateAlertStatus"
             body: "*"
         };
     };
 
     rpc findAlert(FindAlertRequest) returns (FindAlertRequest.Response) {
         option (google.api.http) = {
-            post: "/api/v1/alerts/findAlert"
+            post: "/api/v1/monitoring/alerts/findAlert"
             body: "*"
         };
     };
 
     rpc listAlertHistory(ListAlertHistoryRequest) returns (ListAlertHistoryRequest.Response) {
     option (google.api.http) = {
-            post: "/api/v1/alerts/listAlertHistory"
+            post: "/api/v1/monitoring/alerts/listAlertHistory"
             body: "*"
         };
     };
 
     rpc deleteAlert(DeleteAlertRequest) returns (Empty) {
         option (google.api.http) = {
-            delete: "/api/v1/alerts/deleteAlert"
+            delete: "/api/v1/monitoring/alerts/deleteAlert"
             body: "*"
         };
     };

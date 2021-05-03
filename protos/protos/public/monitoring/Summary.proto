@@ -120,42 +120,42 @@ message DeleteSummarySampleRequest {
 service SummaryService {
     rpc createSummary(CreateSummaryRequest) returns (Summary) {
         option (google.api.http) = {
-            post: "/api/v1/summaries/createSummary"
+            post: "/api/v1/monitoring/summaries/createSummary"
             body: "*"
         };
     };
 
     rpc findSummary(FindSummaryRequest) returns (FindSummaryRequest.Response) {
         option (google.api.http) = {
-            post: "/api/v1/summaries/findSummary"
+            post: "/api/v1/monitoring/summaries/findSummary"
             body: "*"
         };
     };
 
     rpc deleteSummary(DeleteSummaryRequest) returns (Empty) {
         option (google.api.http) = {
-            delete: "/api/v1/summaries/deleteSummary"
+            delete: "/api/v1/monitoring/summaries/deleteSummary"
             body: "*"
         };
     };
 
     rpc createSample(CreateSummarySample) returns (SummarySample) {
         option (google.api.http) = {
-            post: "/api/v1/summaries/createSample"
+            post: "/api/v1/monitoring/summaries/createSample"
             body: "*"
         };
     };
 
     rpc findSample(FindSummarySampleRequest) returns (FindSummarySampleRequest.Response) {
         option (google.api.http) = {
-            post: "/api/v1/summaries/findSample"
+            post: "/api/v1/monitoring/summaries/findSample"
             body: "*"
         };
     };
 
     rpc deleteSample(DeleteSummarySampleRequest) returns (Empty) {
         option (google.api.http) = {
-            delete: "/api/v1/summaries/deleteSample"
+            delete: "/api/v1/monitoring/summaries/deleteSample"
             body: "*"
         };
     };
