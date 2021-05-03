@@ -328,7 +328,7 @@ public class FutureExperimentRunDAO {
                 .execute());
   }
 
-  private InternalFuture<Boolean> checkEntityPermissionBasedOnResourceTypes(
+  private InternalFuture<Boolean> getEntityPermissionBasedOnResourceTypes(
       List<String> entityIds,
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
@@ -379,7 +379,7 @@ public class FutureExperimentRunDAO {
           switch (action) {
             case DELETE:
               // TODO: check if we should using DELETE for the ER itself
-              return checkEntityPermissionBasedOnResourceTypes(
+              return getEntityPermissionBasedOnResourceTypes(
                       maybeProjectIds,
                       ModelDBActionEnum.ModelDBServiceActions.UPDATE,
                       ModelDBServiceResourceTypes.PROJECT)
@@ -391,7 +391,7 @@ public class FutureExperimentRunDAO {
                       },
                       executor);
             default:
-              return checkEntityPermissionBasedOnResourceTypes(
+              return getEntityPermissionBasedOnResourceTypes(
                       maybeProjectIds, action, ModelDBServiceResourceTypes.PROJECT)
                   .thenAccept(
                       allowed -> {
@@ -951,7 +951,7 @@ public class FutureExperimentRunDAO {
                 InternalFuture.completedInternalFuture(versioningEntry)
                     .thenCompose(
                         versioningEntry1 ->
-                            checkEntityPermissionBasedOnResourceTypes(
+                            getEntityPermissionBasedOnResourceTypes(
                                     Collections.singletonList(repoId),
                                     ModelDBActionEnum.ModelDBServiceActions.READ,
                                     ModelDBServiceResourceTypes.REPOSITORY)
@@ -959,12 +959,13 @@ public class FutureExperimentRunDAO {
                                     isSelfAllowed -> {
                                       // Set null into map if repository is not accessible to the
                                       // current user
-                                      VersioningEntry allowedVersioningEntry = null;
                                       if (isSelfAllowed) {
-                                        allowedVersioningEntry = versioningEntry1;
+                                        return InternalFuture.completedInternalFuture(
+                                            Collections.singletonMap(runId, versioningEntry1));
+                                      } else {
+                                        return InternalFuture.completedInternalFuture(
+                                            Collections.emptyMap());
                                       }
-                                      return InternalFuture.completedInternalFuture(
-                                          Collections.singletonMap(runId, allowedVersioningEntry));
                                     },
                                     executor),
                         executor));
@@ -982,7 +983,7 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
-    return checkEntityPermissionBasedOnResourceTypes(
+    return getEntityPermissionBasedOnResourceTypes(
             Collections.singletonList(request.getProjectId()),
             ModelDBActionEnum.ModelDBServiceActions.UPDATE,
             ModelDBServiceResourceTypes.PROJECT)
