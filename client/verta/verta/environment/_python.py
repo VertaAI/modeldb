@@ -193,10 +193,10 @@ class Python(_environment._Environment):
         )
 
         for req in self._msg.python.requirements:
-            if req.library == "torch":
+            if req.library == "torch" and req.version.suffix.startswith("+"):
                 # torch adds metadata to its version number during installation
                 # that results in a non-pip-installable specifier
-                req.version.ClearField("suffix")
+                req.version.suffix = ""
 
     def _capture_constraints(self, constraints):
         if constraints is None:
