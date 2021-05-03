@@ -459,6 +459,12 @@
         },
         "workspace_name": {
           "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },
@@ -678,6 +684,12 @@
         "updated_at_timestamp_millis": {
           "type": "string",
           "format": "uint64"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },
@@ -724,6 +736,12 @@
         },
         "name": {
           "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     },

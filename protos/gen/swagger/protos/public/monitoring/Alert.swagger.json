@@ -347,7 +347,8 @@
       "enum": [
         "UNKNOWN",
         "FIXED",
-        "REFERENCE"
+        "REFERENCE",
+        "RANGE"
       ],
       "default": "UNKNOWN"
     },
@@ -434,6 +435,9 @@
         },
         "alerter_reference": {
           "$ref": "#/definitions/monitoringAlertReference"
+        },
+        "alerter_range": {
+          "$ref": "#/definitions/monitoringAlertRange"
         }
       }
     },
@@ -447,6 +451,23 @@
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
+        }
+      }
+    },
+    "monitoringAlertRange": {
+      "type": "object",
+      "properties": {
+        "lower_bound": {
+          "type": "number",
+          "format": "float"
+        },
+        "upper_bound": {
+          "type": "number",
+          "format": "float"
+        },
+        "alert_if_outside_range": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
