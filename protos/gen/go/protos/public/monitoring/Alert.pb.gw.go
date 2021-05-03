@@ -821,25 +821,25 @@ func RegisterAlertServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_AlertService_CreateNotificationChannel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "alerts", "createNotificationChannel"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AlertService_CreateNotificationChannel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "alerts", "createNotificationChannel"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AlertService_UpdateNotificationChannel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "alerts", "updateNotificationChannel"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AlertService_UpdateNotificationChannel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "alerts", "updateNotificationChannel"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AlertService_FindNotificationChannel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "alerts", "findNotificationChannel"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AlertService_FindNotificationChannel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "alerts", "findNotificationChannel"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AlertService_DeleteNotificationChannel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "alerts", "deleteNotificationChannel"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AlertService_DeleteNotificationChannel_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "alerts", "deleteNotificationChannel"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AlertService_CreateAlert_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "alerts", "createAlert"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AlertService_CreateAlert_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "alerts", "createAlert"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AlertService_UpdateAlert_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "alerts", "updateAlert"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AlertService_UpdateAlert_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "alerts", "updateAlert"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AlertService_UpdateAlertStatus_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "alerts", "updateAlertStatus"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AlertService_UpdateAlertStatus_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "alerts", "updateAlertStatus"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AlertService_FindAlert_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "alerts", "findAlert"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AlertService_FindAlert_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "alerts", "findAlert"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AlertService_ListAlertHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "alerts", "listAlertHistory"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AlertService_ListAlertHistory_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "alerts", "listAlertHistory"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_AlertService_DeleteAlert_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "alerts", "deleteAlert"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_AlertService_DeleteAlert_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "alerts", "deleteAlert"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
