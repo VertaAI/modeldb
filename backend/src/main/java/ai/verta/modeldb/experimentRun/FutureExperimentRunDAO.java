@@ -402,7 +402,7 @@ public class FutureExperimentRunDAO {
   }
 
   private InternalFuture<List<GetResourcesResponseItem>> getAllowedResourceItems(
-      List<String> resourceIds,
+      Optional<List<String>> resourceIds,
       Long workspaceId,
       ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     ResourceType resourceType =
@@ -414,8 +414,8 @@ public class FutureExperimentRunDAO {
             .setResourceType(resourceType)
             .setService(ServiceEnum.Service.MODELDB_SERVICE);
 
-    if (resourceIds != null && !resourceIds.isEmpty()) {
-      resources.addAllResourceIds(resourceIds);
+    if (resourceIds.isPresent() && !resourceIds.get().isEmpty()) {
+      resources.addAllResourceIds(resourceIds.get());
     }
 
     return FutureGrpc.ClientRequest(
@@ -635,7 +635,8 @@ public class FutureExperimentRunDAO {
 
     // futureProjectIds based on workspace
     final InternalFuture<List<String>> futureProjectIds =
-        getAccessibleProjectIdsBasedOnWorkspace(request.getWorkspaceName(), request.getProjectId());
+        getAccessibleProjectIdsBasedOnWorkspace(
+            request.getWorkspaceName(), Optional.of(request.getProjectId()));
 
     final var futureExperimentRuns =
         futureProjectIds.thenCompose(
@@ -937,13 +938,13 @@ public class FutureExperimentRunDAO {
   }
 
   private InternalFuture<List<String>> getAccessibleProjectIdsBasedOnWorkspace(
-      String workspaceName, String projectId) {
+      String workspaceName, Optional<String> projectId) {
     if (workspaceName.isEmpty()) {
       return getAllowedProjects(ModelDBActionEnum.ModelDBServiceActions.READ);
     } else {
       var requestProjectIds = new ArrayList<String>();
-      if (!projectId.isEmpty()) {
-        requestProjectIds.add(projectId);
+      if (projectId.isPresent()) {
+        requestProjectIds.add(projectId.get());
       }
 
       return FutureGrpc.ClientRequest(
@@ -954,7 +955,7 @@ public class FutureExperimentRunDAO {
           .thenCompose(
               workspace ->
                   getAllowedResourceItems(
-                          requestProjectIds,
+                          Optional.of(requestProjectIds),
                           workspace.getId(),
                           ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
                       .thenCompose(
