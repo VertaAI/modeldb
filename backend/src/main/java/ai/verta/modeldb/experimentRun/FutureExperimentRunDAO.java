@@ -853,6 +853,23 @@ public class FutureExperimentRunDAO {
                                             }),
                                     executor);
 
+                            // Get VersionedInputs
+                            final var futureVersionedInputs =
+                                versionInputHandler.getVersionedInputs(ids);
+                            futureBuildersStream =
+                                futureBuildersStream.thenCombine(
+                                    futureVersionedInputs,
+                                    (stream, versionInputsMap) ->
+                                        stream.map(
+                                            builder -> {
+                                              if (versionInputsMap.containsKey(builder.getId())) {
+                                                builder.setVersionedInputs(
+                                                    versionInputsMap.get(builder.getId()));
+                                              }
+                                              return builder;
+                                            }),
+                                    executor);
+
                             return futureBuildersStream.thenApply(
                                 experimentRunBuilders ->
                                     experimentRunBuilders
