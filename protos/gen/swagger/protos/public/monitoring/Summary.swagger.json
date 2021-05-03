@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/summaries/createSample": {
+    "/summaries/createSample": {
       "post": {
         "operationId": "SummaryService_createSample",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/api/v1/summaries/createSummary": {
+    "/summaries/createSummary": {
       "post": {
         "operationId": "SummaryService_createSummary",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/api/v1/summaries/deleteSample": {
+    "/summaries/deleteSample": {
       "delete": {
         "operationId": "SummaryService_deleteSample",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/api/v1/summaries/deleteSummary": {
+    "/summaries/deleteSummary": {
       "delete": {
         "operationId": "SummaryService_deleteSummary",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/api/v1/summaries/findSample": {
+    "/summaries/findSample": {
       "post": {
         "operationId": "SummaryService_findSample",
         "responses": {
@@ -171,7 +171,7 @@
         ]
       }
     },
-    "/api/v1/summaries/findSummary": {
+    "/summaries/findSummary": {
       "post": {
         "operationId": "SummaryService_findSummary",
         "responses": {
@@ -217,12 +217,6 @@
         },
         "type_name": {
           "type": "string"
-        },
-        "attributes": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
         }
       },
       "title": "Request to create a summary sample"
@@ -488,12 +482,6 @@
         },
         "type_name": {
           "type": "string"
-        },
-        "attributes": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
         }
       },
       "description": "Summary is a collection of multiple samples through time with a shared name and type. It's used to make sure the multiple samples are consistent with each other."

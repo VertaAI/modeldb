@@ -18,7 +18,6 @@ message Summary {
     uint64 monitored_entity_id = 2;
     string name = 3;
     string type_name = 4;
-    map<string, string> attributes = 5;
 }
 
 // Request to create a summary sample
@@ -26,7 +25,6 @@ message CreateSummaryRequest {
     uint64 monitored_entity_id = 1;
     string name = 2;
     string type_name = 3;
-    map<string, string> attributes = 4;
 }
 
 // Request to fetch multiple summaries
@@ -120,42 +118,42 @@ message DeleteSummarySampleRequest {
 service SummaryService {
     rpc createSummary(CreateSummaryRequest) returns (Summary) {
         option (google.api.http) = {
-            post: "/api/v1/summaries/createSummary"
+            post: "/v1/summaries/createSummary"
             body: "*"
         };
     };
 
     rpc findSummary(FindSummaryRequest) returns (FindSummaryRequest.Response) {
         option (google.api.http) = {
-            post: "/api/v1/summaries/findSummary"
+            post: "/v1/summaries/findSummary"
             body: "*"
         };
     };
 
     rpc deleteSummary(DeleteSummaryRequest) returns (Empty) {
         option (google.api.http) = {
-            delete: "/api/v1/summaries/deleteSummary"
+            delete: "/v1/summaries/deleteSummary"
             body: "*"
         };
     };
 
     rpc createSample(CreateSummarySample) returns (SummarySample) {
         option (google.api.http) = {
-            post: "/api/v1/summaries/createSample"
+            post: "/v1/summaries/createSample"
             body: "*"
         };
     };
 
     rpc findSample(FindSummarySampleRequest) returns (FindSummarySampleRequest.Response) {
         option (google.api.http) = {
-            post: "/api/v1/summaries/findSample"
+            post: "/v1/summaries/findSample"
             body: "*"
         };
     };
 
     rpc deleteSample(DeleteSummarySampleRequest) returns (Empty) {
         option (google.api.http) = {
-            delete: "/api/v1/summaries/deleteSample"
+            delete: "/v1/summaries/deleteSample"
             body: "*"
         };
     };

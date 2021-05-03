@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/alerts/createAlert": {
+    "/alerts/createAlert": {
       "post": {
         "operationId": "AlertService_createAlert",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/api/v1/alerts/createNotificationChannel": {
+    "/alerts/createNotificationChannel": {
       "post": {
         "operationId": "AlertService_createNotificationChannel",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/api/v1/alerts/deleteAlert": {
+    "/alerts/deleteAlert": {
       "delete": {
         "operationId": "AlertService_deleteAlert",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/api/v1/alerts/deleteNotificationChannel": {
+    "/alerts/deleteNotificationChannel": {
       "delete": {
         "operationId": "AlertService_deleteNotificationChannel",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/api/v1/alerts/findAlert": {
+    "/alerts/findAlert": {
       "post": {
         "operationId": "AlertService_findAlert",
         "responses": {
@@ -171,7 +171,7 @@
         ]
       }
     },
-    "/api/v1/alerts/findNotificationChannel": {
+    "/alerts/findNotificationChannel": {
       "post": {
         "operationId": "AlertService_findNotificationChannel",
         "responses": {
@@ -203,7 +203,7 @@
         ]
       }
     },
-    "/api/v1/alerts/listAlertHistory": {
+    "/alerts/listAlertHistory": {
       "post": {
         "operationId": "AlertService_listAlertHistory",
         "responses": {
@@ -235,7 +235,7 @@
         ]
       }
     },
-    "/api/v1/alerts/updateAlert": {
+    "/alerts/updateAlert": {
       "post": {
         "operationId": "AlertService_updateAlert",
         "responses": {
@@ -267,7 +267,7 @@
         ]
       }
     },
-    "/api/v1/alerts/updateAlertStatus": {
+    "/alerts/updateAlertStatus": {
       "post": {
         "operationId": "AlertService_updateAlertStatus",
         "responses": {
@@ -299,7 +299,7 @@
         ]
       }
     },
-    "/api/v1/alerts/updateNotificationChannel": {
+    "/alerts/updateNotificationChannel": {
       "post": {
         "operationId": "AlertService_updateNotificationChannel",
         "responses": {
@@ -347,8 +347,7 @@
       "enum": [
         "UNKNOWN",
         "FIXED",
-        "REFERENCE",
-        "RANGE"
+        "REFERENCE"
       ],
       "default": "UNKNOWN"
     },
@@ -435,9 +434,6 @@
         },
         "alerter_reference": {
           "$ref": "#/definitions/monitoringAlertReference"
-        },
-        "alerter_range": {
-          "$ref": "#/definitions/monitoringAlertRange"
         }
       }
     },
@@ -451,23 +447,6 @@
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
-        }
-      }
-    },
-    "monitoringAlertRange": {
-      "type": "object",
-      "properties": {
-        "lower_bound": {
-          "type": "number",
-          "format": "float"
-        },
-        "upper_bound": {
-          "type": "number",
-          "format": "float"
-        },
-        "alert_if_outside_range": {
-          "type": "boolean",
-          "format": "boolean"
         }
       }
     },
