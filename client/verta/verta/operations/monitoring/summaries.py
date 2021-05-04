@@ -25,6 +25,7 @@ from verta._protos.public.monitoring.Summary_pb2 import (
 )
 from verta._tracking import entity
 from verta import data_types
+from verta.operations.monitoring.alert import _entities
 
 
 class SummaryQuery(object):
@@ -79,7 +80,10 @@ class SummaryQuery(object):
         self._names = names
 
         if data_type_classes:
-            self._type_names = [cls._type_string() for cls in data_type_classes]
+            try:
+                self._type_names = [cls._type_string() for cls in data_type_classes]
+            except AttributeError:
+                self._type_names = [type_string for type_string in data_type_classes]
         else:
             self._type_names = None
 
@@ -88,6 +92,38 @@ class SummaryQuery(object):
         )
         self._page_number = page_number
         self._page_limit = page_limit
+
+    @property
+    def monitored_entity_ids(self):
+        return self._monitored_entity_ids
+
+    @property
+    def data_type_classes(self):
+        return self._data_type_classes
+
+    @data_type_classes.setter
+    def data_type_classes(self, type_classes):
+        if type_classes:
+            type_names = [cls._type_string() for cls in data_type_classes]
+            self._type_names = type_names
+            self._data_type_classes = type_classes
+        else:
+            self._type_names = None
+            self._data_type_classes = None
+
+    @property
+    def type_names(self):
+        return self._type_names
+
+    @type_names.setter
+    def type_names(self, names):
+        if names:
+            type_classes = data_types._VertaDataType._from_type_strings(names)
+            self._data_type_classes = type_classes
+            self._type_names = names
+        else:
+            self._data_type_classes = None
+            self._type_names = None
 
     @classmethod
     def _from_proto_request(cls, msg):
@@ -115,6 +151,23 @@ class SummaryQuery(object):
     def __repr__(self):
         return "SummaryQuery({}, {}, {}, {})".format(
             self._ids, self._names, self._type_names, self._monitored_entity_ids
+        )
+
+    def __add__(self, other):
+        assert isinstance(other, self.__class__)
+        ids = self._ids or other._ids
+        names = self._names or other._names
+        data_type_classes = self._type_names or other._type_names
+        monitored_entities = self._monitored_entity_ids or other._monitored_entity_ids
+        page_number = self._page_number or other._page_number
+        page_limit = self._page_limit or other._page_limit
+        return SummaryQuery(
+            ids=ids,
+            names=names,
+            data_type_classes=data_type_classes,
+            monitored_entities=monitored_entities,
+            page_number=page_number,
+            page_limit=page_limit,
         )
 
 
@@ -180,7 +233,7 @@ class SummarySampleQuery(object):
         if summary_query is None:
             summary_query = SummaryQuery()
 
-        self._find_summaries = summary_query._to_proto_request()
+        self._summary_query = summary_query
         self._sample_ids = extract_ids(ids) if ids else None
         self._labels = maybe(Summary._labels_proto, labels)
         self._time_window_start = time_window_start
@@ -188,6 +241,23 @@ class SummarySampleQuery(object):
         self._created_after = created_after
         self._page_number = page_number
         self._page_limit = page_limit
+
+    @property
+    def summary_query(self):
+        return self._summary_query
+
+    @summary_query.setter
+    def summary_query(self, query):
+        self._summary_query = query
+
+    @property
+    def _find_summaries(self):
+        return self.summary_query._to_proto_request()
+
+    @_find_summaries.setter
+    def _find_summaries(self, proto_summary_query):
+        summary_query = SummaryQuery._from_proto_request(proto_summary_query)
+        self._summary_query = summary_query
 
     @classmethod
     def _from_proto_request(cls, msg):
@@ -267,10 +337,19 @@ class Summary(entity._ModelDBEntity):
         self.name = msg.name
         self.type = msg.type_name  # TODO: hide me
 
+        alerts_query = SummaryQuery(ids=[self.id])
+        self._alerts = _entities.Alerts(
+            conn, conf, self.monitored_entity_id, base_summary_query=alerts_query
+        )
+
     def __repr__(self):
         return "Summary name:{}, type:{}, monitored_entity_id:{}".format(
             self.name, self.type, self.monitored_entity_id
         )
+
+    @property
+    def alerts(self):
+        return self._alerts
 
     def log_sample(
         self, data, labels, time_window_start, time_window_end, created_at=None
@@ -520,7 +599,7 @@ class Summaries:
         self._conn = conn
         self._conf = conf
 
-    def create(self, name, data_type_cls, monitored_entity): # TODO: hideme
+    def create(self, name, data_type_cls, monitored_entity):  # TODO: hideme
         if not issubclass(data_type_cls, data_types._VertaDataType):
             raise TypeError(
                 "expected a supported VertaDataType, found {}".format(

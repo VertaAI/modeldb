@@ -17,7 +17,6 @@ from verta import data_types
 
 
 class TestSummaries(object):
-
     def test_summary_labels(self, client):
         pytest.importorskip("scipy")
 
@@ -25,11 +24,15 @@ class TestSummaries(object):
 
         monitored_entity = client.operations.get_or_create_monitored_entity()
         summary_name = "summary_v2_{}".format(generate_default_name())
-        summary = summaries.create(summary_name, data_types.DiscreteHistogram, monitored_entity)
+        summary = summaries.create(
+            summary_name, data_types.DiscreteHistogram, monitored_entity
+        )
 
         assert isinstance(summary, Summary)
 
-        summaries_for_monitored_entity = SummaryQuery(monitored_entities=[monitored_entity])
+        summaries_for_monitored_entity = SummaryQuery(
+            monitored_entities=[monitored_entity]
+        )
         retrieved_summaries = summaries.find(summaries_for_monitored_entity)
         assert len(retrieved_summaries) > 0
         for s in retrieved_summaries:
@@ -43,7 +46,10 @@ class TestSummaries(object):
         )
         labels = {"env": "test", "color": "blue"}
         summary_sample = summary.log_sample(
-            discrete_histogram, labels=labels, time_window_start=yesterday, time_window_end=now
+            discrete_histogram,
+            labels=labels,
+            time_window_start=yesterday,
+            time_window_end=now,
         )
         assert isinstance(summary_sample, SummarySample)
 
@@ -54,12 +60,17 @@ class TestSummaries(object):
         labels2 = {"env": "test", "color": "red"}
         with pytest.raises(TypeError):
             summary_sample_2 = summary.log_sample(
-                float_histogram, labels=labels2, time_window_start=yesterday, time_window_end=now
+                float_histogram,
+                labels=labels2,
+                time_window_start=yesterday,
+                time_window_end=now,
             )
 
         labels = client.operations.labels
 
-        retrieved_label_keys = labels.find_keys(summary_query=summaries_for_monitored_entity)
+        retrieved_label_keys = labels.find_keys(
+            summary_query=summaries_for_monitored_entity
+        )
         assert len(retrieved_label_keys) > 0
 
         if retrieved_label_keys:
@@ -82,15 +93,48 @@ class TestSummaries(object):
 
         monitored_entity = client.operations.get_or_create_monitored_entity()
         summary_name = "summary:{}".format(generate_default_name())
-        created_summary = summaries.get_or_create(summary_name, data_types.DiscreteHistogram, monitored_entity)
-        retrieved_summary = summaries.get_or_create(summary_name, data_types.DiscreteHistogram, monitored_entity)
+        created_summary = summaries.get_or_create(
+            summary_name, data_types.DiscreteHistogram, monitored_entity
+        )
+        retrieved_summary = summaries.get_or_create(
+            summary_name, data_types.DiscreteHistogram, monitored_entity
+        )
         assert created_summary.id == retrieved_summary.id
+
+
+class TestSummaryQuery:
+    def test_add(self):
+        ids = [1, 2]
+        names = ["example"]
+        monitored_entities = [5]
+        data_type_classes = [data_types.DiscreteHistogram, data_types.FloatHistogram]
+
+        first = SummaryQuery(ids=ids, monitored_entities=monitored_entities)
+        first_proto = first._to_proto_request()
+        second = SummaryQuery(
+            names=names, ids=[10, 12], data_type_classes=data_type_classes
+        )
+        second_proto = second._to_proto_request()
+
+        merged = first + second
+        merged_proto = merged._to_proto_request()
+
+        assert (
+            first._to_proto_request() == first_proto
+        ), "adding should not mutate its arguments"
+        assert (
+            second._to_proto_request() == second_proto
+        ), "adding should not mutate its arguments"
+        assert (
+            merged._ids == first._ids
+        ), "query attributes should not overwrite earlier attributes"
+
 
 class TestSummarySampleQuery:
     def test_creation_datetime(self):
         time_window_start = time_utils.now() - datetime.timedelta(weeks=1)
         time_window_end = time_utils.now() - datetime.timedelta(days=1)
-        created_after =  time_utils.now() - datetime.timedelta(hours=1)
+        created_after = time_utils.now() - datetime.timedelta(hours=1)
         time_window_start_millis = time_utils.epoch_millis(time_window_start)
         time_window_end_millis = time_utils.epoch_millis(time_window_end)
         created_after_millis = time_utils.epoch_millis(created_after)
@@ -102,7 +146,9 @@ class TestSummarySampleQuery:
             created_after=created_after,
         )
         proto_request = sample_query._to_proto_request()
-        assert proto_request.filter.time_window_start_at_millis == time_window_start_millis
+        assert (
+            proto_request.filter.time_window_start_at_millis == time_window_start_millis
+        )
         assert proto_request.filter.time_window_end_at_millis == time_window_end_millis
         assert proto_request.filter.created_at_after_millis == created_after_millis
 
@@ -113,6 +159,8 @@ class TestSummarySampleQuery:
             created_after=created_after_millis,
         )
         proto_request = sample_query._to_proto_request()
-        assert proto_request.filter.time_window_start_at_millis == time_window_start_millis
+        assert (
+            proto_request.filter.time_window_start_at_millis == time_window_start_millis
+        )
         assert proto_request.filter.time_window_end_at_millis == time_window_end_millis
         assert proto_request.filter.created_at_after_millis == created_after_millis

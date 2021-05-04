@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import warnings
+import copy
 
 from ....._protos.public.monitoring import Alert_pb2 as _AlertService
 from ....._internal_utils import _utils, time_utils
@@ -10,6 +11,7 @@ from ... import summaries
 from ... import utils
 from .. import _alerter
 from .. import status as status_module
+from verta.operations.monitoring.summaries import SummaryQuery, SummarySampleQuery
 
 
 class Alert(entity._ModelDBEntity):
@@ -132,7 +134,6 @@ class Alert(entity._ModelDBEntity):
         else:
             sample_ids = self._msg.violating_summary_sample_ids
 
-
         return status_module._AlertStatus._from_proto(
             self._msg.status,
             sample_ids,
@@ -158,7 +159,9 @@ class Alert(entity._ModelDBEntity):
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindAlertRequest(
-            ids=[int(id)], page_number=1, page_limit=-1,
+            ids=[int(id)],
+            page_number=1,
+            page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findAlert"
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -175,7 +178,8 @@ class Alert(entity._ModelDBEntity):
         msg = _AlertService.FindAlertRequest(
             names=[name],
             monitored_entity_ids=[int(monitored_entity_id)],
-            page_number=1, page_limit=-1,
+            page_number=1,
+            page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findAlert"
         response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -348,6 +352,17 @@ class Alerts(object):
     """
     Collection object for creating and finding alerts.
 
+    Parameters
+    ----------
+    conn
+        A connection object to the backend service.
+    conf
+        A configuration object used by conn methods.
+    monitored_entity_id : int
+        A monitored entity id to use for all alerts in this collection
+    base_summary_query : :class:`~verta.operations.monitoring.summaries.SummaryQuery`
+        A base query to use for creating and finding alerts in this collection.
+
     Examples
     --------
     .. code-block:: python
@@ -356,18 +371,24 @@ class Alerts(object):
 
     """
 
-    def __init__(self, conn, conf, monitored_entity_id=None):
+    def __init__(self, conn, conf, monitored_entity_id=None, base_summary_query=None):
         self._conn = conn
         self._conf = conf
         self._monitored_entity_id = (
             int(monitored_entity_id) if monitored_entity_id else None
         )
+        monitored_entities = (
+            [self._monitored_entity_id] if self._monitored_entity_id else []
+        )
+        self._base_summary_query = SummaryQuery(monitored_entities=monitored_entities)
+        if base_summary_query:
+            self._base_summary_query = self._base_summary_query + base_summary_query
 
     def create(
         self,
         name,
         alerter,
-        summary_sample_query,
+        summary_sample_query=None,
         notification_channels=None,
         created_at=None,
         updated_at=None,
@@ -382,7 +403,7 @@ class Alerts(object):
             A unique name for this alert.
         alerter : :class:`~verta.operations.monitoring.alert._Alerter`
             The configuration for this alert.
-        summary_sample_query : :class:`~verta.operations.monitoring.summaries.SummarySampleQuery`
+        summary_sample_query : :class:`~verta.operations.monitoring.summaries.SummarySampleQuery`, optional
             Summary samples for this alert to monitor for threshold violations.
         notification_channels : list of :class:`~verta.operations.monitoring.notification_channel._entities.NotificationChannel`, optional
             Channels for this alert to propagate notifications to.
@@ -419,6 +440,11 @@ class Alerts(object):
                 " obtained via monitored_entity.alerts"
             )
 
+        summary_sample_query = (
+            summary_sample_query if summary_sample_query else SummarySampleQuery()
+        )
+        combined_query = self._add_query_to_default_query(summary_sample_query)
+
         if notification_channels is None:
             notification_channels = []
         for channel in notification_channels:
@@ -432,12 +458,22 @@ class Alerts(object):
             name=name,
             monitored_entity_id=self._monitored_entity_id,
             alerter=alerter,
-            summary_sample_query=summary_sample_query,
+            summary_sample_query=combined_query,
             notification_channels=notification_channels,
             created_at_millis=time_utils.epoch_millis(created_at),
             updated_at_millis=time_utils.epoch_millis(updated_at),
             last_evaluated_at_millis=time_utils.epoch_millis(last_evaluated_at),
         )
+
+    @property
+    def base_summary_query(self):
+        return self._base_summary_query
+
+    def _add_query_to_default_query(self, summary_sample_query):
+        summary_query = self._base_summary_query + summary_sample_query.summary_query
+        updated_summary_sample_query = copy.copy(summary_sample_query)
+        updated_summary_sample_query.summary_query = summary_query
+        return updated_summary_sample_query
 
     def get(self, name=None, id=None):
         """
@@ -485,7 +521,8 @@ class Alerts(object):
 
         """
         msg = _AlertService.FindAlertRequest(
-            page_number=1, page_limit=-1,
+            page_number=1,
+            page_limit=-1,
         )
         if self._monitored_entity_id is not None:
             msg.monitored_entity_ids.append(self._monitored_entity_id)
@@ -533,6 +570,7 @@ class AlertHistoryItem(object):
         alert.history
 
     """
+
     def __init__(self, msg):
         self._event_time = time_utils.datetime_from_millis(msg.event_time_millis)
         self._status = status_module._AlertStatus._from_proto(

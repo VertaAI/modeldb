@@ -16,10 +16,12 @@ from verta.operations.monitoring.alert.status import (
     Ok,
 )
 from verta.operations.monitoring.alert import _entities
-from verta.operations.monitoring.summaries import SummarySampleQuery
+from verta.operations.monitoring.alert._entities import Alert, Alerts
+from verta.operations.monitoring.summaries import SummaryQuery, SummarySampleQuery
 from verta.operations.monitoring.notification_channel import (
     SlackNotificationChannel,
 )
+from verta import data_types
 
 
 class TestIntegration:
@@ -61,7 +63,7 @@ class TestIntegration:
         retrieved_channel_ids = alert._msg.notification_channels.keys()
         assert set(retrieved_channel_ids) == {channel1.id, channel2.id}
 
-    def test_set_status(self, monitored_entity, summary_sample, created_entities):
+    def test_set_status(self, monitored_entity, summary_sample):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
@@ -73,21 +75,35 @@ class TestIntegration:
 
         alert.set_status(Alerting([summary_sample]))
         assert alert.status == Alerting([summary_sample])
-        assert alert._last_evaluated_or_created_millis == alert._msg.last_evaluated_at_millis
+        assert (
+            alert._last_evaluated_or_created_millis
+            == alert._msg.last_evaluated_at_millis
+        )
 
         alert.set_status(Ok())
         assert alert.status == Ok()
 
-    def test_summary_sample_query(self, monitored_entity, created_entities):
+    def test_summary_sample_query(self, monitored_entity):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
         sample_query = SummarySampleQuery()
 
         alert = alerts.create(name, alerter, sample_query)
-        created_query_proto = sample_query._to_proto_request()
+        created_query_proto = alerts._add_query_to_default_query(
+            sample_query
+        )._to_proto_request()
         retrieved_query_proto = alert.summary_sample_query._to_proto_request()
         assert created_query_proto == retrieved_query_proto
+
+    def test_alert_from_monitored_summary(self, client, monitored_entity):
+        ops = client.operations
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
+        test_summary = ops.summaries.get_or_create(
+            "test_summary", data_types.FloatHistogram, monitored_entity
+        )
+        alert = test_summary.alerts.create("test_alert", alerter)
+        assert isinstance(alert, Alert)
 
 
 class TestAlert:
@@ -153,6 +169,39 @@ class TestAlert:
         assert alert._msg.created_at_millis == created_at_millis
         assert alert._msg.updated_at_millis == updated_at_millis
         assert alert._msg.last_evaluated_at_millis == last_evaluated_at_millis
+
+    def test_alerts_base_query(self):
+        monitored_entity_id = 5
+        base_summary_query = SummaryQuery(ids=[123], names=["my_test_summary"])
+        offline_alerts = Alerts(
+            None,
+            None,
+            monitored_entity_id=monitored_entity_id,
+            base_summary_query=base_summary_query,
+        )
+        assert (
+            monitored_entity_id
+            in offline_alerts.base_summary_query.monitored_entity_ids
+        )
+
+        empty_sample_query = SummarySampleQuery()
+        has_other_summary_query = SummarySampleQuery(summary_query=SummaryQuery())
+
+        combined_empty_query = offline_alerts._add_query_to_default_query(
+            empty_sample_query
+        )
+        combined_simple_query = offline_alerts._add_query_to_default_query(
+            has_other_summary_query
+        )
+
+        assert (
+            combined_empty_query.summary_query._to_proto_request()
+            == offline_alerts.base_summary_query._to_proto_request()
+        ), "alert uses the base summary query"
+        assert (
+            combined_simple_query.summary_query._to_proto_request()
+            == offline_alerts.base_summary_query._to_proto_request()
+        ), "alert should always use the base summary query"
 
 
 class TestFixed:

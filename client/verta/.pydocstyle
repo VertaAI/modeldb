@@ -1,4 +1,3 @@
 [pydocstyle]
 convention = numpy
-match = .*\.py
 add-ignore = D100,D104,D105
