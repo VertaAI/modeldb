@@ -13,7 +13,7 @@ ModelDB is an end-to-end system for managing machine learning models. It ingests
 In this directory run:
 
 ```
-helm install . --name <release-name> --namespace <k8s namespace>
+helm install <release-name> --namespace <k8s namespace> .
 ```
 By default, the "default" namespace on your Kubernetes cluster is used.
 
