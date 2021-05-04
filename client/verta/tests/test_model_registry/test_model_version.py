@@ -225,17 +225,6 @@ class TestModelVersion:
         model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
         assert len(model_version._msg.artifacts) == 4
 
-    def test_training_data(self, model_version, model_for_deployment):
-        X_train = model_for_deployment['train_features']
-        y_train = model_for_deployment['train_targets']
-        col_names = set(X_train.columns) | set([y_train.name])
-
-        model_version.log_training_data(X_train, y_train)
-        histogram = model_version._get_histogram()
-        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
-
-        assert set(retrieved_col_names) == col_names
-
     def test_attributes(self, client, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
 
