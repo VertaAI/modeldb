@@ -104,7 +104,7 @@ class SummaryQuery(object):
     @data_type_classes.setter
     def data_type_classes(self, type_classes):
         if type_classes:
-            type_names = [cls._type_string() for cls in data_type_classes]
+            type_names = [cls._type_string() for cls in type_classes]
             self._type_names = type_names
             self._data_type_classes = type_classes
         else:

@@ -13,6 +13,7 @@ from verta._internal_utils import (
     _utils,
 )
 from .alert._entities import Alerts
+from .summaries import Summaries
 
 
 class MonitoredEntity(entity._ModelDBEntity):
@@ -88,7 +89,7 @@ class MonitoredEntity(entity._ModelDBEntity):
 
     @property
     def summaries(self):
-        return Summaries(self._conn, self._conf, monitored_entity_id=self.id)
+        return Summaries(self._conn, self._conf)
 
     @classmethod
     def _generate_default_name(cls):
