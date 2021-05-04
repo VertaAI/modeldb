@@ -156,13 +156,6 @@ class Summary(entity._ModelDBEntity):
     def has_type(self, data_type_cls):  # TODO: hideme
         return self.type == data_type_cls._type_string()
 
-    # @staticmethod
-    # def _labels_proto(labels):
-    #     return {
-    #         key: LabelFilterQuerySummarySample(label_value=as_list_of_str(values))
-    #         for key, values in labels.items()
-    #     }
-
     def delete(self, summary_samples):
         """Delete summary samples from this summary.
 

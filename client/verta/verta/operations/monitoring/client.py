@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-import itertools
 
-from verta._tracking import _Context
 
 from .monitored_entity import MonitoredEntity
 from .notification_channel._entities import NotificationChannels

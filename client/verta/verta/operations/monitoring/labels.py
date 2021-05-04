@@ -5,7 +5,6 @@ from verta._protos.public.monitoring.Summary_pb2 import FilterQuerySummarySample
 
 from verta._protos.public.monitoring.Labels_pb2 import (
     FindSampleLabelsRequest,
-    FindSampleLabelValuesItem,
     FindSampleLabelValuesRequest,
 )
 from .summaries.queries import _labels_proto

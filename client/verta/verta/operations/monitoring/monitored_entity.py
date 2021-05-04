@@ -8,7 +8,7 @@ from verta._protos.public.monitoring import (
     DataMonitoringService_pb2 as _DataMonitoringService,
 )
 
-from verta._tracking import entity, _Context
+from verta._tracking import entity
 from verta._internal_utils import (
     _utils,
 )
