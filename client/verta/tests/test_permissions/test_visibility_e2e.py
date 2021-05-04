@@ -25,7 +25,7 @@ class TestAccess:
     )
     def test_private(self, client, client_2, organization, created_entities, entity_name):
         """Org member cannot get."""
-        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
+        organization.add_member(client_2._conn.email)
         client.set_workspace(organization.name)
         client_2.set_workspace(organization.name)
         name = _utils.generate_default_name()
@@ -43,7 +43,7 @@ class TestAccess:
     )
     def test_read(self, client, client_2, organization, created_entities, entity_name):
         """Org member can get, but not delete."""
-        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
+        organization.add_member(client_2._conn.email)
         client.set_workspace(organization.name)
         client_2.set_workspace(organization.name)
         name = _utils.generate_default_name()
@@ -60,7 +60,7 @@ class TestAccess:
 
     def test_read_registry(self, client, client_2, organization, created_entities):
         """Registry entities erroneously masked 403s in _update()."""
-        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
+        organization.add_member(client_2._conn.email)
         client.set_workspace(organization.name)
         client_2.set_workspace(organization.name)
         visibility = OrgCustom(write=False)
@@ -81,7 +81,7 @@ class TestAccess:
     )
     def test_read_write(self, client, client_2, organization, created_entities, entity_name):
         """Org member can get, and delete."""
-        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
+        organization.add_member(client_2._conn.email)
         client.set_workspace(organization.name)
         client_2.set_workspace(organization.name)
         name = _utils.generate_default_name()
@@ -101,7 +101,7 @@ class TestAccess:
 
         Because there is no client.create_repository() or client.get_repository().
         """
-        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
+        organization.add_member(client_2._conn.email)
         client.set_workspace(organization.name)
         client_2.set_workspace(organization.name)
 
@@ -131,8 +131,8 @@ class TestAccess:
 class TestLink:
     def test_run_log_commit(self, client_2, client_3, organization, created_entities):
         """Log someone else's commit to my run."""
-        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
-        organization.add_member(client_3._conn.auth['Grpc-Metadata-email'])
+        organization.add_member(client_2._conn.email)
+        organization.add_member(client_3._conn.email)
         client_2.set_workspace(organization.name)
         client_3.set_workspace(organization.name)
 
@@ -155,8 +155,8 @@ class TestLink:
 
     def test_run_log_dataset_version(self, client_2, client_3, organization, created_entities):
         """Log someone else's dataset version to my run."""
-        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
-        organization.add_member(client_3._conn.auth['Grpc-Metadata-email'])
+        organization.add_member(client_2._conn.email)
+        organization.add_member(client_3._conn.email)
         client_2.set_workspace(organization.name)
         client_3.set_workspace(organization.name)
 
@@ -179,8 +179,8 @@ class TestLink:
 
     def test_model_version_from_run(self, client_2, client_3, organization, created_entities):
         """Create model version from someone else's run."""
-        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
-        organization.add_member(client_3._conn.auth['Grpc-Metadata-email'])
+        organization.add_member(client_2._conn.email)
+        organization.add_member(client_3._conn.email)
         client_2.set_workspace(organization.name)
         client_3.set_workspace(organization.name)
 
@@ -203,8 +203,8 @@ class TestLink:
         """Update endpoint from someone else's run."""
         LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
 
-        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
-        organization.add_member(client_3._conn.auth['Grpc-Metadata-email'])
+        organization.add_member(client_2._conn.email)
+        organization.add_member(client_3._conn.email)
         client_2.set_workspace(organization.name)
         client_3.set_workspace(organization.name)
 
@@ -238,8 +238,8 @@ class TestLink:
         """Update endpoint from someone else's model version."""
         LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
 
-        organization.add_member(client_2._conn.auth['Grpc-Metadata-email'])
-        organization.add_member(client_3._conn.auth['Grpc-Metadata-email'])
+        organization.add_member(client_2._conn.email)
+        organization.add_member(client_3._conn.email)
         client_2.set_workspace(organization.name)
         client_3.set_workspace(organization.name)
 
