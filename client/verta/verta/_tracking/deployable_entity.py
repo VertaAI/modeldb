@@ -4,14 +4,13 @@ from __future__ import print_function
 
 import abc
 import copy
-import glob
 import importlib
 import os
-import re
 import shutil
 import sys
 import tarfile
 import tempfile
+import warnings
 import zipfile
 
 import requests
@@ -388,7 +387,7 @@ class _DeployableEntity(_ModelDBEntity):
         """
         warnings.warn(
             "This method is no longer supported. Please see our documentation"
-            " for information about our platform's data monitoring features".,
+            " for information about our platform's data monitoring features",
             category=FutureWarning,
         )
 
