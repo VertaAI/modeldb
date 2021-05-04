@@ -17,7 +17,7 @@ from verta._protos.public.monitoring.Summary_pb2 import (
     DeleteSummarySampleRequest,
     Empty as EmptyProto,
     FilterQuerySummarySample,
-    FindSummaryRequest,
+    FindSummaryRequest
     FindSummarySampleRequest,
     LabelFilterQuerySummarySample,
     Summary as SummaryProto,
