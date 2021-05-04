@@ -8,7 +8,8 @@ from verta._tracking import _Context
 from .monitored_entity import MonitoredEntity
 from .notification_channel._entities import NotificationChannels
 from .profilers import Profilers
-from .summaries import Summaries, SummarySamples
+from .summaries.summaries import Summaries
+from .summaries.summary_samples import SummarySamples
 from .labels import Labels
 from .alert._entities import Alerts
 
@@ -54,7 +55,7 @@ class Client(object):
 
     """
 
-    def __init__ (self, verta_client):
+    def __init__(self, verta_client):
         self._client = verta_client
 
     @property
@@ -137,14 +138,17 @@ class Client(object):
                     self._conn, self._conf, name=name, parent=workspace
                 ),
                 lambda name: MonitoredEntity._create(
-                    self._conn, self._conf, self._ctx, name=name, workspace_name=workspace
+                    self._conn,
+                    self._conf,
+                    self._ctx,
+                    name=name,
+                    workspace_name=workspace,
                 ),
                 lambda: self.__noop_checker(),
             )
 
         entity._set_client(self)
         return entity
-
 
     @staticmethod
     def __error():

@@ -8,7 +8,7 @@ from verta._protos.public.monitoring.Labels_pb2 import (
     FindSampleLabelValuesItem,
     FindSampleLabelValuesRequest,
 )
-from .summaries import Summary
+from .summaries.queries import _labels_proto
 from verta._internal_utils import time_utils
 from .utils import maybe
 
@@ -65,7 +65,9 @@ class Labels(object):
         """
         summary_filter = self._build_summary_filter(**kwargs)
         msg = FindSampleLabelsRequest(
-            filter=summary_filter, page_number=1, page_limit=-1,
+            filter=summary_filter,
+            page_number=1,
+            page_limit=-1,
         )
         endpoint = "/api/v1/labels/findLabels"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
@@ -112,8 +114,10 @@ class Labels(object):
         else:
             keys = []
         msg = FindSampleLabelValuesRequest(
-            filter=summary_filter, labels=keys,
-            page_number=1, page_limit=-1,
+            filter=summary_filter,
+            labels=keys,
+            page_number=1,
+            page_limit=-1,
         )
         endpoint = "/api/v1/labels/findLabelValues"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
@@ -137,7 +141,7 @@ class Labels(object):
         window_end_at_millis = maybe(lambda t: time_utils.epoch_millis(t), window_end)
 
         labels = kwargs.get("labels", None)
-        labels_proto = maybe(Summary._labels_proto, labels)
+        labels_proto = maybe(_labels_proto, labels)
         return FilterQuerySummarySample(
             find_summaries=summaries_proto,
             sample_ids=sample_ids,

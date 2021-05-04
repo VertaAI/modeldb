@@ -13,7 +13,7 @@ from verta._internal_utils import (
     _utils,
 )
 from .alert._entities import Alerts
-from .summaries import Summaries
+from .summaries.summaries import Summaries
 
 
 class MonitoredEntity(entity._ModelDBEntity):

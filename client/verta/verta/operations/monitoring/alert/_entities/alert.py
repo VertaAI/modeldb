@@ -7,11 +7,13 @@ from ....._protos.public.monitoring import Alert_pb2 as _AlertService
 from ....._internal_utils import _utils, time_utils
 from ....._tracking import entity, _Context
 from ... import notification_channel
-from ... import summaries
 from ... import utils
 from .. import _alerter
 from .. import status as status_module
-from verta.operations.monitoring.summaries import SummaryQuery, SummarySampleQuery
+from verta.operations.monitoring.summaries.queries import (
+    SummaryQuery,
+    SummarySampleQuery,
+)
 
 
 class Alert(entity._ModelDBEntity):
@@ -143,7 +145,7 @@ class Alert(entity._ModelDBEntity):
     def summary_sample_query(self):
         self._refresh_cache()
 
-        return summaries.SummarySampleQuery._from_proto_request(
+        return SummarySampleQuery._from_proto_request(
             self._msg.sample_find_base,
         )
 
