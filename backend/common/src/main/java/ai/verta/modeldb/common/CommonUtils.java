@@ -3,6 +3,7 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import ai.verta.uac.UACServiceException;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -164,6 +165,14 @@ public class CommonUtils {
                 .setCode(modelDBException.getCode().value())
                 .setMessage(modelDBException.getMessage())
                 .build();
+      } else if (e instanceof UACServiceException) {
+        UACServiceException uacServiceException = (UACServiceException) e;
+        logBasedOnTheErrorCode(isClientError(uacServiceException.getCode()), uacServiceException);
+        status =
+                Status.newBuilder()
+                        .setCode(uacServiceException.getCode())
+                        .setMessage(uacServiceException.getMessage())
+                        .build();
       } else {
         LOGGER.error(
             "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());
