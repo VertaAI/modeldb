@@ -919,4 +919,13 @@ public class FutureExperimentRunDAO {
             ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
   }
+
+  public InternalFuture<VersioningEntry> getVersionedInputs(GetVersionedInput request) {
+    Set<String> versionIds = new HashSet<>();
+    versionIds.add(request.getId());
+    return versionInputHandler
+        .getVersionedInputs(versionIds)
+        .thenApply(
+            stringVersioningEntryMap -> stringVersioningEntryMap.get(request.getId()), executor);
+  }
 }
