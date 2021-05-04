@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import abc
 import collections
-
+import pandas as pd
 from verta.data_types import (
     DiscreteHistogram,
     FloatHistogram,
@@ -111,9 +111,16 @@ class MissingValuesProfiler(Profiler):
         dict
             A dictionary from summary data names to DiscreteHistogram instances.
         """
-        total = df.shape[0]
+        if isinstance(df, pd.DataFrame):
+            total = df.shape[0]
+        else:
+            total = df.count()
+        
         try:
-            missing = sum(df[column].isnull())
+            if isinstance(df, pd.DataFrame):
+                missing = sum(df[column].isnull())
+            else:
+                missing = df.filter((df[column] == "") | df[column].isNull() ).count()
         except KeyError:  # pandas raises this if the column doesn't exist
             missing = total
 
@@ -158,10 +165,16 @@ class BinaryHistogramProfiler(Profiler):
         dict
             A dictionary from summary data names to DiscreteHistogram instances.
         """
-        content = df[column].value_counts()
-        keys = list(content.keys())
-        values = [content[k] for k in keys]
-        values = [v.item() for v in values]
+        if isinstance(df, pd.DataFrame):
+            content = df[column].value_counts()
+            keys = list(content.keys())
+            values = [content[k] for k in keys]
+            values = [v.item() for v in values]
+        else:
+            content = df.groupBy(column).count().orderBy('count',ascending=False)
+            content = content.toPandas()
+            keys = content.iloc[:, 0].tolist()
+            values = content.iloc[:, 1].tolist()
         return (column + "_histogram", DiscreteHistogram(keys, values))
 
 
@@ -188,7 +201,11 @@ class ContinuousHistogramProfiler(Profiler):
             bins = self._bins[column]
         else:
             bins = self._bins
-        values, limits = self._np.histogram(df[column], bins=bins)
+        
+        if isinstance(df, pd.DataFrame):
+            values, limits = self._np.histogram(df[column], bins=bins)
+        else:    
+            values, limits = self._np.histogram(df.select(column).collect(), bins=bins)
         values = [v.item() for v in values]
         limits = [lim.item() for lim in limits]
         return (column + "_histogram", FloatHistogram(limits, values))
