@@ -1,29 +1,17 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-import warnings
 
-import json
-from datetime import datetime
 
 from verta._internal_utils._utils import as_list_of_str
 from verta._internal_utils import pagination_utils, time_utils
-from ..utils import extract_ids, extract_id, maybe
-from verta._protos.public.monitoring import Summary_pb2 as SummaryService
+from ..utils import extract_ids, maybe
 from verta._protos.public.monitoring.Summary_pb2 import (
-    CreateSummaryRequest,
-    CreateSummarySample,
-    DeleteSummaryRequest,
-    DeleteSummarySampleRequest,
-    Empty as EmptyProto,
     FilterQuerySummarySample,
     FindSummaryRequest,
     FindSummarySampleRequest,
     LabelFilterQuerySummarySample,
-    Summary as SummaryProto,
-    SummarySample as SummarySampleProto,
 )
-from verta._tracking import entity
 from verta import data_types
 
 
