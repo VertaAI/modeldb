@@ -62,6 +62,7 @@ import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.uac.Action;
 import ai.verta.uac.GetResources;
@@ -298,7 +299,9 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> tagsHandler.addTags(runId, tags), executor)
+        .thenCompose(
+            unused -> tagsHandler.addTags(runId, ModelDBUtils.checkEntityTagsLength(tags)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
@@ -365,7 +368,10 @@ public class FutureExperimentRunDAO {
 
   private InternalFuture<Void> checkPermission(
       List<String> runIds, ModelDBActionEnum.ModelDBServiceActions action) {
-    if (runIds.isEmpty()) {
+    // If request do not have ids and we are passing request.getId() then it will create list record
+    // with `""` string
+    final var finalRunIds = runIds.stream().filter(s -> !s.isEmpty()).collect(Collectors.toList());
+    if (finalRunIds.isEmpty()) {
       return InternalFuture.failedStage(
           new InvalidArgumentException("Experiment run IDs is missing"));
     }
@@ -376,7 +382,7 @@ public class FutureExperimentRunDAO {
                 handle
                     .createQuery(
                         "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=0")
-                    .bindList("ids", runIds)
+                    .bindList("ids", finalRunIds)
                     .mapTo(String.class)
                     .list());
 
@@ -612,6 +618,8 @@ public class FutureExperimentRunDAO {
         InternalFuture.supplyAsync(
             () -> {
               final var localQueryContext = new QueryFilterContext();
+              localQueryContext.getConditions().add("experiment_run.deleted = :deleted");
+              localQueryContext.getBinds().add(q -> q.bind("deleted", false));
 
               if (!request.getProjectId().isEmpty()) {
                 localQueryContext
@@ -1021,9 +1029,42 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
-    return checkProjectPermission(
-            Collections.singletonList(request.getProjectId()),
-            ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    // Validate arguments
+    var futureTask =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getProjectId().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project ID not found in CreateExperimentRun request");
+              } else if (request.getExperimentId().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Experiment ID not found in CreateExperimentRun request");
+              }
+            },
+            executor);
+    return futureTask
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    Collections.singletonList(request.getProjectId()),
+                    ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      Long count =
+                          handle
+                              .createQuery("SELECT COUNT(*) FROM experiment where id = :id")
+                              .bind("id", request.getExperimentId())
+                              .mapTo(Long.class)
+                              .one();
+                      if (count == 0) {
+                        throw new NotFoundException(
+                            "Experiment not found for given ID: " + request.getExperimentId());
+                      }
+                    }),
+            executor)
         .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
   }
 
