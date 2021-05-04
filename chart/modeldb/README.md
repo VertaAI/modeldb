@@ -10,10 +10,13 @@ ModelDB is an end-to-end system for managing machine learning models. It ingests
 
 ### Deploying ModelDB on Kubernetes
 
-In this directory run:
-
+In this directory using Helm v3, run:
 ```
 helm install <release-name> --namespace <k8s namespace> .
+```
+Alternatively, using Helm v2:
+```
+helm install . --name <release-name> --namespace <k8s namespace>
 ```
 By default, the "default" namespace on your Kubernetes cluster is used.
 
