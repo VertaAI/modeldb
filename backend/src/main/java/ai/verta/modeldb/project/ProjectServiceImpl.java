@@ -4,47 +4,9 @@ import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.AddProjectAttributes;
-import ai.verta.modeldb.AddProjectTag;
-import ai.verta.modeldb.AddProjectTags;
-import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.CreateProject;
-import ai.verta.modeldb.DAOSet;
-import ai.verta.modeldb.DeepCopyProject;
-import ai.verta.modeldb.DeleteProject;
-import ai.verta.modeldb.DeleteProjectArtifact;
-import ai.verta.modeldb.DeleteProjectAttributes;
-import ai.verta.modeldb.DeleteProjectTag;
-import ai.verta.modeldb.DeleteProjectTags;
-import ai.verta.modeldb.DeleteProjects;
-import ai.verta.modeldb.Empty;
-import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.FindProjects;
-import ai.verta.modeldb.GetArtifacts;
-import ai.verta.modeldb.GetAttributes;
-import ai.verta.modeldb.GetProjectById;
-import ai.verta.modeldb.GetProjectByName;
-import ai.verta.modeldb.GetProjectCodeVersion;
-import ai.verta.modeldb.GetProjectReadme;
-import ai.verta.modeldb.GetProjectShortName;
-import ai.verta.modeldb.GetProjects;
-import ai.verta.modeldb.GetSummary;
-import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.LastModifiedExperimentRunSummary;
-import ai.verta.modeldb.LogProjectArtifacts;
-import ai.verta.modeldb.LogProjectCodeVersion;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.LogProjectCodeVersion.Response;
-import ai.verta.modeldb.MetricsSummary;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
-import ai.verta.modeldb.ServiceSet;
-import ai.verta.modeldb.SetProjectReadme;
-import ai.verta.modeldb.SetProjectShortName;
-import ai.verta.modeldb.UpdateProjectAttributes;
-import ai.verta.modeldb.UpdateProjectDescription;
-import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
@@ -68,20 +30,12 @@ import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.stub.StreamObserver;
-import java.util.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 public class ProjectServiceImpl extends ProjectServiceImplBase {
 
@@ -133,7 +87,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
    * @return void
    */
   @Override
-  public void createProject(
+  public synchronized void createProject(
       CreateProject request, StreamObserver<CreateProject.Response> responseObserver) {
     try {
       // Validate if current user has access to the entity or not
@@ -170,7 +124,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
    * @return void
    */
   @Override
-  public void updateProjectDescription(
+  public synchronized void updateProjectDescription(
       UpdateProjectDescription request,
       StreamObserver<UpdateProjectDescription.Response> responseObserver) {
     try {
@@ -205,7 +159,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void addProjectAttributes(
+  public synchronized void addProjectAttributes(
       AddProjectAttributes request,
       StreamObserver<AddProjectAttributes.Response> responseObserver) {
     try {
@@ -254,7 +208,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
    * @return void
    */
   @Override
-  public void updateProjectAttributes(
+  public synchronized void updateProjectAttributes(
       UpdateProjectAttributes request,
       StreamObserver<UpdateProjectAttributes.Response> responseObserver) {
     try {
@@ -304,7 +258,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
    * @return void
    */
   @Override
-  public void getProjectAttributes(
+  public synchronized void getProjectAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -351,7 +305,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void deleteProjectAttributes(
+  public synchronized void deleteProjectAttributes(
       DeleteProjectAttributes request,
       StreamObserver<DeleteProjectAttributes.Response> responseObserver) {
     try {
@@ -404,7 +358,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
    * @return void
    */
   @Override
-  public void addProjectTags(
+  public synchronized void addProjectTags(
       AddProjectTags request, StreamObserver<AddProjectTags.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -438,7 +392,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void getProjectTags(GetTags request, StreamObserver<GetTags.Response> responseObserver) {
+  public synchronized void getProjectTags(
+      GetTags request, StreamObserver<GetTags.Response> responseObserver) {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
@@ -476,7 +431,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
    * @return void
    */
   @Override
-  public void deleteProjectTags(
+  public synchronized void deleteProjectTags(
       DeleteProjectTags request, StreamObserver<DeleteProjectTags.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -519,7 +474,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void addProjectTag(
+  public synchronized void addProjectTag(
       AddProjectTag request, StreamObserver<AddProjectTag.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -562,7 +517,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void deleteProjectTag(
+  public synchronized void deleteProjectTag(
       DeleteProjectTag request, StreamObserver<DeleteProjectTag.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -609,7 +564,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
    * @return void
    */
   @Override
-  public void deleteProject(
+  public synchronized void deleteProject(
       DeleteProject request, StreamObserver<DeleteProject.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -648,7 +603,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
    * @return void
    */
   @Override
-  public void getProjects(
+  public synchronized void getProjects(
       GetProjects request, StreamObserver<GetProjects.Response> responseObserver) {
     try {
       LOGGER.debug("getting project");
@@ -698,7 +653,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void getProjectById(
+  public synchronized void getProjectById(
       GetProjectById request, StreamObserver<GetProjectById.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -730,7 +685,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void getProjectByName(
+  public synchronized void getProjectByName(
       GetProjectByName request, StreamObserver<GetProjectByName.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -815,7 +770,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void verifyConnection(
+  public synchronized void verifyConnection(
       Empty request, StreamObserver<VerifyConnectionResponse> responseObserver) {
     AuditLogInterceptor.increaseAuditCountStatic();
     responseObserver.onNext(VerifyConnectionResponse.newBuilder().setStatus(true).build());
@@ -823,7 +778,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void deepCopyProject(
+  public synchronized void deepCopyProject(
       DeepCopyProject request, StreamObserver<DeepCopyProject.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -871,7 +826,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void getSummary(GetSummary request, StreamObserver<GetSummary.Response> responseObserver) {
+  public synchronized void getSummary(
+      GetSummary request, StreamObserver<GetSummary.Response> responseObserver) {
     try {
       // Request Parameter Validation
       if (request.getEntityId().isEmpty()) {
@@ -976,7 +932,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void setProjectReadme(
+  public synchronized void setProjectReadme(
       SetProjectReadme request, StreamObserver<SetProjectReadme.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -1017,7 +973,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void getProjectReadme(
+  public synchronized void getProjectReadme(
       GetProjectReadme request, StreamObserver<GetProjectReadme.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -1048,7 +1004,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void setProjectShortName(
+  public synchronized void setProjectShortName(
       SetProjectShortName request, StreamObserver<SetProjectShortName.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -1098,7 +1054,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void getProjectShortName(
+  public synchronized void getProjectShortName(
       GetProjectShortName request, StreamObserver<GetProjectShortName.Response> responseObserver) {
     try {
       // Request Parameter Validation
@@ -1130,7 +1086,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void logProjectCodeVersion(
+  public synchronized void logProjectCodeVersion(
       LogProjectCodeVersion request, StreamObserver<Response> responseObserver) {
     try {
       /*Parameter validation*/
@@ -1182,7 +1138,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void getProjectCodeVersion(
+  public synchronized void getProjectCodeVersion(
       GetProjectCodeVersion request,
       StreamObserver<GetProjectCodeVersion.Response> responseObserver) {
     try {
@@ -1220,7 +1176,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void findProjects(
+  public synchronized void findProjects(
       FindProjects request, StreamObserver<FindProjects.Response> responseObserver) {
     try {
       /*User validation*/
@@ -1263,7 +1219,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void getUrlForArtifact(
+  public synchronized void getUrlForArtifact(
       GetUrlForArtifact request, StreamObserver<GetUrlForArtifact.Response> responseObserver) {
     try {
       String errorMessage = null;
@@ -1333,7 +1289,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void logArtifacts(
+  public synchronized void logArtifacts(
       LogProjectArtifacts request, StreamObserver<LogProjectArtifacts.Response> responseObserver) {
     try {
       if (request.getId().isEmpty() && request.getArtifactsList().isEmpty()) {
@@ -1371,7 +1327,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void getArtifacts(
+  public synchronized void getArtifacts(
       GetArtifacts request, StreamObserver<GetArtifacts.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
@@ -1403,7 +1359,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void deleteArtifact(
+  public synchronized void deleteArtifact(
       DeleteProjectArtifact request,
       StreamObserver<DeleteProjectArtifact.Response> responseObserver) {
     try {
@@ -1440,7 +1396,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   }
 
   @Override
-  public void deleteProjects(
+  public synchronized void deleteProjects(
       DeleteProjects request, StreamObserver<DeleteProjects.Response> responseObserver) {
     try {
       // Request Parameter Validation

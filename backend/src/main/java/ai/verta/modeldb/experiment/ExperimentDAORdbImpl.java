@@ -13,7 +13,9 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.*;
-import ai.verta.modeldb.exceptions.*;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -23,16 +25,15 @@ import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
-import java.util.*;
-import java.util.Map.Entry;
-import javax.persistence.criteria.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.LockMode;
-import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import javax.persistence.criteria.*;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class ExperimentDAORdbImpl implements ExperimentDAO {
 
@@ -233,8 +234,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   public Experiment updateExperimentName(String experimentId, String experimentName)
       throws InvalidProtocolBufferException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentEntity experimentEntity =
-          session.load(ExperimentEntity.class, experimentId, LockMode.PESSIMISTIC_WRITE);
+      ExperimentEntity experimentEntity = session.load(ExperimentEntity.class, experimentId);
       experimentEntity.setName(experimentName);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentEntity.setDate_updated(currentTimestamp);
@@ -256,8 +256,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   public Experiment updateExperimentDescription(String experimentId, String experimentDescription)
       throws InvalidProtocolBufferException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentEntity experimentEntity =
-          session.load(ExperimentEntity.class, experimentId, LockMode.PESSIMISTIC_WRITE);
+      ExperimentEntity experimentEntity = session.load(ExperimentEntity.class, experimentId);
       experimentEntity.setDescription(experimentDescription);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentEntity.setDate_updated(currentTimestamp);
@@ -341,8 +340,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   public Experiment addExperimentTags(String experimentId, List<String> tagsList)
       throws InvalidProtocolBufferException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentEntity experimentObj =
-          session.load(ExperimentEntity.class, experimentId, LockMode.PESSIMISTIC_WRITE);
+      ExperimentEntity experimentObj = session.load(ExperimentEntity.class, experimentId);
       if (experimentObj == null) {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
         throw new NotFoundException(errorMessage);
@@ -396,10 +394,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       if (deleteAll) {
-        Query query =
-            session
-                .createQuery(DELETE_TAGS_PREFIX_QUERY)
-                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+        Query query = session.createQuery(DELETE_TAGS_PREFIX_QUERY);
         query.setParameter(ModelDBConstants.EXPERIMENT_ID_STR, experimentId);
         query.executeUpdate();
       } else {
@@ -408,10 +403,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
                 .append(" AND tm.")
                 .append(ModelDBConstants.TAGS)
                 .append(" in (:tags)");
-        Query query =
-            session
-                .createQuery(stringQueryBuilder.toString())
-                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+        Query query = session.createQuery(stringQueryBuilder.toString());
         query.setParameter("tags", experimentTagList);
         query.setParameter(ModelDBConstants.EXPERIMENT_ID_STR, experimentId);
         query.executeUpdate();
@@ -436,8 +428,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   public Experiment addExperimentAttributes(String experimentId, List<KeyValue> attributes)
       throws InvalidProtocolBufferException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentEntity experimentObj =
-          session.get(ExperimentEntity.class, experimentId, LockMode.PESSIMISTIC_WRITE);
+      ExperimentEntity experimentObj = session.get(ExperimentEntity.class, experimentId);
       if (experimentObj == null) {
         String errorMessage = ModelDBMessages.EXPERIMENT_NOT_FOUND_ERROR_MSG + experimentId;
         throw new NotFoundException(errorMessage);
@@ -498,18 +489,12 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       if (deleteAll) {
-        Query query =
-            session
-                .createQuery(DELETE_ALL_ATTRIBUTE_QUERY)
-                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+        Query query = session.createQuery(DELETE_ALL_ATTRIBUTE_QUERY);
         query.setParameter(ModelDBConstants.EXPERIMENT_ID_STR, experimentId);
         query.setParameter(ModelDBConstants.FIELD_TYPE_STR, ModelDBConstants.ATTRIBUTES);
         query.executeUpdate();
       } else {
-        Query query =
-            session
-                .createQuery(DELETE_SELECTED_ATTRIBUTE_BY_KEYS_QUERY)
-                .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+        Query query = session.createQuery(DELETE_SELECTED_ATTRIBUTE_BY_KEYS_QUERY);
         query.setParameter("keys", attributeKeyList);
         query.setParameter(ModelDBConstants.EXPERIMENT_ID_STR, experimentId);
         query.setParameter(ModelDBConstants.FIELD_TYPE_STR, ModelDBConstants.ATTRIBUTES);
@@ -544,10 +529,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query deletedExperimentQuery =
-          session
-              .createQuery(DELETED_STATUS_EXPERIMENT_QUERY_STRING)
-              .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+      Query deletedExperimentQuery = session.createQuery(DELETED_STATUS_EXPERIMENT_QUERY_STRING);
       deletedExperimentQuery.setParameter("deleted", true);
       deletedExperimentQuery.setParameter("experimentIds", accessibleExperimentIds);
       int updatedCount = deletedExperimentQuery.executeUpdate();
@@ -709,8 +691,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   public Experiment logExperimentCodeVersion(String experimentId, CodeVersion updatedCodeVersion)
       throws InvalidProtocolBufferException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentEntity experimentEntity =
-          session.get(ExperimentEntity.class, experimentId, LockMode.PESSIMISTIC_WRITE);
+      ExperimentEntity experimentEntity = session.get(ExperimentEntity.class, experimentId);
 
       CodeVersionEntity existingCodeVersionEntity = experimentEntity.getCode_version_snapshot();
       if (existingCodeVersionEntity == null) {
@@ -934,10 +915,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       throws InvalidProtocolBufferException, NotFoundException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      Query query =
-          session
-              .createQuery(GET_EXPERIMENT_BY_ID_QUERY)
-              .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+      Query query = session.createQuery(GET_EXPERIMENT_BY_ID_QUERY);
       query.setParameter("id", experimentId);
       ExperimentEntity experimentEntity = (ExperimentEntity) query.uniqueResult();
       if (experimentEntity == null) {
@@ -1003,10 +981,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 
-      Query query =
-          session
-              .createQuery(DELETE_ARTIFACT_QUERY)
-              .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+      Query query = session.createQuery(DELETE_ARTIFACT_QUERY);
       query.setParameter("keys", Collections.singletonList(artifactKey));
       query.setParameter(ModelDBConstants.EXPERIMENT_ID_STR, experimentId);
       query.executeUpdate();
