@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+from collections import namedtuple
 
 from verta._internal_utils import (
     _utils,
@@ -17,10 +18,7 @@ from verta.operations.monitoring.alert.status import (
 )
 from verta.operations.monitoring.alert import _entities
 from verta.operations.monitoring.alert._entities import Alert, Alerts
-from verta.operations.monitoring.summaries.queries import (
-    SummaryQuery,
-    SummarySampleQuery,
-)
+from verta.operations.monitoring.summaries.queries import SummarySampleQuery
 from verta.operations.monitoring.notification_channel import (
     SlackNotificationChannel,
 )
@@ -173,38 +171,22 @@ class TestAlert:
         assert alert._msg.updated_at_millis == updated_at_millis
         assert alert._msg.last_evaluated_at_millis == last_evaluated_at_millis
 
-    def test_alerts_base_query(self):
+    def test_alerts_summary(self):
+        MockSummary = namedtuple("Summary", ["id", "name", "monitored_entity_id"])
+
         monitored_entity_id = 5
-        base_summary_query = SummaryQuery(ids=[123], names=["my_test_summary"])
+        summary = MockSummary(123, "my_test_summary", monitored_entity_id)
         offline_alerts = Alerts(
             None,
             None,
             monitored_entity_id=monitored_entity_id,
-            base_summary_query=base_summary_query,
+            summary=summary,
         )
-        assert (
-            monitored_entity_id
-            in offline_alerts.base_summary_query.monitored_entity_ids
-        )
-
-        empty_sample_query = SummarySampleQuery()
-        has_other_summary_query = SummarySampleQuery(summary_query=SummaryQuery())
-
-        combined_empty_query = offline_alerts._combine_query_with_default_summary(
-            empty_sample_query
-        )
-        combined_simple_query = offline_alerts._combine_query_with_default_summary(
-            has_other_summary_query
-        )
-
-        assert (
-            combined_empty_query.summary_query._to_proto_request()
-            == offline_alerts.base_summary_query._to_proto_request()
-        ), "alert uses the base summary query"
-        assert (
-            combined_simple_query.summary_query._to_proto_request()
-            == offline_alerts.base_summary_query._to_proto_request()
-        ), "alert should always use the base summary query"
+        query = offline_alerts._build_summary_query()
+        assert query
+        assert summary.id in query._ids
+        assert summary.name in query._names
+        assert summary.monitored_entity_id in query._monitored_entity_ids
 
 
 class TestFixed:
