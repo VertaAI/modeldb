@@ -331,7 +331,7 @@ public class FutureExperimentRunDAO {
         executor);
   }
 
-  private InternalFuture<List<String>> getAllowedEntitiesByResourceType(
+  private InternalFuture<List<Resources>> getAllowedEntitiesByResourceType(
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return FutureGrpc.ClientRequest(
@@ -348,12 +348,7 @@ public class FutureExperimentRunDAO {
                                 .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                         .build()),
             executor)
-        .thenApply(
-            response ->
-                response.getResourcesList().stream()
-                    .flatMap(x -> x.getResourceIdsList().stream())
-                    .collect(Collectors.toList()),
-            executor);
+        .thenApply(GetSelfAllowedResources.Response::getResourcesList, executor);
   }
 
   public InternalFuture<Void> deleteExperimentRuns(DeleteExperimentRuns request) {
@@ -556,10 +551,27 @@ public class FutureExperimentRunDAO {
                 ModelDBActionEnum.ModelDBServiceActions.READ,
                 ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
             .thenApply(
-                projIds ->
-                    new QueryFilterContext()
-                        .addCondition("experiment_run.project_id in (<authz_project_ids>)")
-                        .addBind(q -> q.bindList("authz_project_ids", projIds)),
+                resources -> {
+                  List<Resources> accessAllResources =
+                      resources.stream()
+                          .filter(Resources::getAllResourceIds)
+                          .collect(Collectors.toList());
+                  if (!accessAllResources.isEmpty()) {
+                    return new QueryFilterContext();
+                  } else {
+                    List<String> accessibleProjectIds =
+                        resources.stream()
+                            .flatMap(x -> x.getResourceIdsList().stream())
+                            .collect(Collectors.toList());
+                    if (!accessibleProjectIds.isEmpty()) {
+                      return new QueryFilterContext()
+                          .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                          .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
+                    } else {
+                      throw new PermissionDeniedException("Accessible projects not found");
+                    }
+                  }
+                },
                 executor);
 
     final var futureExperimentRuns =
@@ -844,16 +856,26 @@ public class FutureExperimentRunDAO {
             },
             executor)
         .thenCompose(
-            selfAllowedRepositoryIds -> {
-              // If self allowed repositories list will empty then no need to fetch hyperparameters
-              // from config blob
-              if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
-                return InternalFuture.completedInternalFuture(MapSubtypes.from(new ArrayList<>()));
-              } else {
-                // If self allowed repositories list is not empty then fetch hyperparameters from
-                // config blob
+            resources -> {
+              List<Resources> accessibleAllRepositoryResources =
+                  resources.stream()
+                      .filter(Resources::getAllResourceIds)
+                      .collect(Collectors.toList());
+              // For all repositories are accessible
+              if (!accessibleAllRepositoryResources.isEmpty()) {
                 return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
-                    new ArrayList<>(ids), selfAllowedRepositoryIds);
+                    new ArrayList<>(ids), Collections.emptyList(), true);
+              } else {
+                // If all repositories are not accessible then need to extract accessible from list
+                // of resources
+                List<String> selfAllowedRepositoryIds =
+                    resources.stream()
+                        .flatMap(x -> x.getResourceIdsList().stream())
+                        .collect(Collectors.toList());
+                // If self allowed repositories list is empty then return response by this method
+                // will return empty list otherwise return as per selfAllowedRepositoryIds
+                return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
+                    new ArrayList<>(ids), selfAllowedRepositoryIds, false);
               }
             },
             executor);

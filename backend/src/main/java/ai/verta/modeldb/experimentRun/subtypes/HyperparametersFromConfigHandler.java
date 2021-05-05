@@ -8,6 +8,7 @@ import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -27,7 +28,16 @@ public class HyperparametersFromConfigHandler extends KeyValueHandler {
   }
 
   public InternalFuture<MapSubtypes<KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
-      List<String> expRunIds, List<String> selfAllowedRepositoryIds) {
+      List<String> expRunIds,
+      List<String> selfAllowedRepositoryIds,
+      boolean allowedAllRepositories) {
+    if (!allowedAllRepositories) {
+      // If all repositories are not allowed and some one send empty selfAllowedRepositoryIds list
+      // then this will return empty list from here for security
+      if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
+        return InternalFuture.completedInternalFuture(MapSubtypes.from(new ArrayList<>()));
+      }
+    }
     return jdbi.withHandle(
             handle -> {
               String queryStr =
@@ -36,14 +46,14 @@ public class HyperparametersFromConfigHandler extends KeyValueHandler {
                       + "INNER JOIN versioning_modeldb_entity_mapping vme ON vme.blob_hash = cb.blob_hash "
                       + "WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experiment_run_id IN (<expRunIds>) ";
 
-              if (selfAllowedRepositoryIds != null && !selfAllowedRepositoryIds.isEmpty()) {
+              if (!allowedAllRepositories) {
                 queryStr = queryStr + " AND vme.repository_id IN (<repoIds>)";
               }
 
               var query = handle.createQuery(queryStr);
               query.bind("hyperparameterType", HYPERPARAMETER);
               query.bindList("expRunIds", expRunIds);
-              if (selfAllowedRepositoryIds != null && !selfAllowedRepositoryIds.isEmpty()) {
+              if (!allowedAllRepositories) {
                 query.bindList(
                     "repoIds",
                     selfAllowedRepositoryIds.stream()
