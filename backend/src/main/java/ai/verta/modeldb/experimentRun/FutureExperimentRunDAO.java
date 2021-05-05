@@ -321,13 +321,6 @@ public class FutureExperimentRunDAO {
                 .execute());
   }
 
-  public interface CheckPermissionBasedOnResourceTypesFunction {
-    InternalFuture<Void> checkPermission(
-        List<String> projId,
-        ModelDBActionEnum.ModelDBServiceActions action,
-        ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-  }
-
   private InternalFuture<Void> checkEntityPermissionBasedOnResourceTypes(
       List<String> entityIds,
       ModelDBActionEnum.ModelDBServiceActions action,

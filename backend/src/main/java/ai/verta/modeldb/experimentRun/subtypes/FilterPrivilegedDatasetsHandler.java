@@ -6,7 +6,7 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
+import ai.verta.modeldb.interfaces.CheckEntityPermissionBasedOnResourceTypesFunction;
 import ai.verta.uac.ModelDBActionEnum;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ public class FilterPrivilegedDatasetsHandler {
   public InternalFuture<List<Artifact>> filterAndGetPrivilegedDatasetsOnly(
       List<Artifact> datasets,
       boolean errorOut,
-      FutureExperimentRunDAO.CheckPermissionBasedOnResourceTypesFunction permissionCheck) {
+      CheckEntityPermissionBasedOnResourceTypesFunction permissionCheck) {
     Set<String> linkedDatasetVersionIds = new HashSet<>();
     for (Artifact dataset : datasets) {
       String datasetVersionId = dataset.getLinkedArtifactId();
@@ -131,7 +131,9 @@ public class FilterPrivilegedDatasetsHandler {
               InternalFuture<Set<String>> accessibleDatasetIdsFutures =
                   InternalFuture.sequence(internalFutures, executor)
                       .thenCompose(
-                          strings -> InternalFuture.completedInternalFuture(new HashSet<>(strings)),
+                          accessibleDatasetIds ->
+                              InternalFuture.completedInternalFuture(
+                                  new HashSet<>(accessibleDatasetIds)),
                           executor);
               return accessibleDatasetIdsFutures.thenCompose(
                   accessibleDatasetIds -> {
