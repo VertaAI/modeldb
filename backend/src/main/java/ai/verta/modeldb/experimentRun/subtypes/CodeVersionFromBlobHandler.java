@@ -76,10 +76,10 @@ public class CodeVersionFromBlobHandler {
             selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
       }
 
-      LOGGER.debug(
+      LOGGER.trace(
           "Final experimentRuns code config blob final query : {}", query.getQueryString());
       codeBlobEntities = query.list();
-      LOGGER.debug("Final experimentRuns code config list size : {}", codeBlobEntities.size());
+      LOGGER.trace("Final experimentRuns code config list size : {}", codeBlobEntities.size());
     }
 
     // Map<experimentRunID, Map<LocationString, CodeVersion>> : Map from experimentRunID to Map of
@@ -95,9 +95,9 @@ public class CodeVersionFromBlobHandler {
             (PathDatasetComponentBlobEntity) objects[4];
 
         CodeVersion.Builder codeVersionBuilder = CodeVersion.newBuilder();
-        LOGGER.debug("notebookCodeBlobEntity {}", notebookCodeBlobEntity);
-        LOGGER.debug("pathDatasetComponentBlobEntity {}", pathDatasetComponentBlobEntity);
-        LOGGER.debug("gitBlobEntity {}", gitBlobEntity);
+        LOGGER.trace("notebookCodeBlobEntity {}", notebookCodeBlobEntity);
+        LOGGER.trace("pathDatasetComponentBlobEntity {}", pathDatasetComponentBlobEntity);
+        LOGGER.trace("gitBlobEntity {}", gitBlobEntity);
         if (notebookCodeBlobEntity != null) {
           if (pathDatasetComponentBlobEntity != null) {
             convertGitBlobToGitSnapshot(
