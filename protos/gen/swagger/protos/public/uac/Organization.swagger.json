@@ -514,7 +514,7 @@
         "default_endpoint_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
-        "global_can_predict": {
+        "endpoint_can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_dataset_collaborator_type": {
