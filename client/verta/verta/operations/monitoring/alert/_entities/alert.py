@@ -445,7 +445,7 @@ class Alerts(object):
         summary_sample_query = (
             summary_sample_query if summary_sample_query else SummarySampleQuery()
         )
-        combined_query = self._add_query_to_default_query(summary_sample_query)
+        combined_query = self._combine_query_with_default_summary(summary_sample_query)
 
         if notification_channels is None:
             notification_channels = []
@@ -471,7 +471,7 @@ class Alerts(object):
     def base_summary_query(self):
         return self._base_summary_query
 
-    def _add_query_to_default_query(self, summary_sample_query):
+    def _combine_query_with_default_summary(self, summary_sample_query):
         summary_query = self._base_summary_query + summary_sample_query.summary_query
         updated_summary_sample_query = copy.copy(summary_sample_query)
         updated_summary_sample_query.summary_query = summary_query

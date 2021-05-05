@@ -73,14 +73,7 @@ class SummaryQuery(object):
         self._ids = extract_ids(ids) if ids else None
         self._names = names
 
-        if data_type_classes:
-            try:
-                self._type_names = [cls._type_string() for cls in data_type_classes]
-            except AttributeError:
-                self._type_names = [type_string for type_string in data_type_classes]
-        else:
-            self._type_names = None
-
+        self._initialize_data_types(data_type_classes)
         self._monitored_entity_ids = (
             extract_ids(monitored_entities) if monitored_entities else None
         )
@@ -95,29 +88,22 @@ class SummaryQuery(object):
     def data_type_classes(self):
         return self._data_type_classes
 
-    @data_type_classes.setter
-    def data_type_classes(self, type_classes):
-        if type_classes:
-            type_names = [cls._type_string() for cls in type_classes]
-            self._type_names = type_names
-            self._data_type_classes = type_classes
-        else:
-            self._type_names = None
-            self._data_type_classes = None
-
     @property
     def type_names(self):
         return self._type_names
 
-    @type_names.setter
-    def type_names(self, names):
-        if names:
-            type_classes = data_types._VertaDataType._from_type_strings(names)
-            self._data_type_classes = type_classes
-            self._type_names = names
-        else:
-            self._data_type_classes = None
-            self._type_names = None
+    def _initialize_data_types(self, classes_or_strings):
+        self._type_names = None
+        self._data_type_classes = None
+        if classes_or_strings:
+            try:
+                self._type_names = [cls._type_string() for cls in classes_or_strings]
+                self._data_type_classes = classes_or_strings
+            except AttributeError:
+                self._type_names = [type_string for type_string in classes_or_strings]
+                self._data_type_classes = data_types._VertaDataType._from_type_strings(
+                    classes_or_strings
+                )
 
     @classmethod
     def _from_proto_request(cls, msg):
@@ -148,7 +134,8 @@ class SummaryQuery(object):
         )
 
     def __add__(self, other):
-        assert isinstance(other, self.__class__)
+        if not isinstance(other, type(self)):
+            return NotImplemented
         ids = self._ids or other._ids
         names = self._names or other._names
         data_type_classes = self._type_names or other._type_names

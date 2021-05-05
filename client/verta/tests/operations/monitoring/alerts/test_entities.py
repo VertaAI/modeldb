@@ -17,7 +17,10 @@ from verta.operations.monitoring.alert.status import (
 )
 from verta.operations.monitoring.alert import _entities
 from verta.operations.monitoring.alert._entities import Alert, Alerts
-from verta.operations.monitoring.summaries import SummaryQuery, SummarySampleQuery
+from verta.operations.monitoring.summaries.queries import (
+    SummaryQuery,
+    SummarySampleQuery,
+)
 from verta.operations.monitoring.notification_channel import (
     SlackNotificationChannel,
 )
@@ -90,7 +93,7 @@ class TestIntegration:
         sample_query = SummarySampleQuery()
 
         alert = alerts.create(name, alerter, sample_query)
-        created_query_proto = alerts._add_query_to_default_query(
+        created_query_proto = alerts._combine_query_with_default_summary(
             sample_query
         )._to_proto_request()
         retrieved_query_proto = alert.summary_sample_query._to_proto_request()
@@ -187,10 +190,10 @@ class TestAlert:
         empty_sample_query = SummarySampleQuery()
         has_other_summary_query = SummarySampleQuery(summary_query=SummaryQuery())
 
-        combined_empty_query = offline_alerts._add_query_to_default_query(
+        combined_empty_query = offline_alerts._combine_query_with_default_summary(
             empty_sample_query
         )
-        combined_simple_query = offline_alerts._add_query_to_default_query(
+        combined_simple_query = offline_alerts._combine_query_with_default_summary(
             has_other_summary_query
         )
 
