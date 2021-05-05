@@ -12,6 +12,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -135,7 +136,13 @@ public class KeyValueHandler {
                 // Check for conflicts
                 jdbi.useHandle(
                     handle -> {
+                      Set<String> keySet = new HashSet<>();
                       for (final var kv : kvs) {
+                        if (keySet.contains(kv.getKey())) {
+                          throw new InvalidArgumentException(
+                              "Multiple Key " + kv.getKey() + " found in " + getTableName());
+                        }
+                        keySet.add(kv.getKey());
                         handle
                             .createQuery(
                                 "select id from "

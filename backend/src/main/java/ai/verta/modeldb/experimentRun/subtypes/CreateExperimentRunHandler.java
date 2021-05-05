@@ -171,9 +171,7 @@ public class CreateExperimentRunHandler {
       experimentRunBuilder.setDateUpdated(now);
     }
 
-    if (request.getCodeVersionSnapshot() != null) {
-      experimentRunBuilder.setCodeVersionSnapshot(request.getCodeVersionSnapshot());
-    }
+    experimentRunBuilder.setCodeVersionSnapshot(request.getCodeVersionSnapshot());
     if (request.getVersionedInputs() != null && request.hasVersionedInputs()) {
       experimentRunBuilder.setVersionedInputs(request.getVersionedInputs());
     }
@@ -291,7 +289,8 @@ public class CreateExperimentRunHandler {
                     featureHandler.logFeatures(
                         newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
               }
-              if (newExperimentRun.hasCodeVersionSnapshot()) {
+              if (newExperimentRun.getCodeVersionSnapshot().hasCodeArchive()
+                  || newExperimentRun.getCodeVersionSnapshot().hasGitSnapshot()) {
                 futureLogs.add(
                     codeVersionHandler.logCodeVersion(
                         LogExperimentRunCodeVersion.newBuilder()
