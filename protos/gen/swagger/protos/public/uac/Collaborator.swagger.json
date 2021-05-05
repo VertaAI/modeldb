@@ -1291,6 +1291,9 @@
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
         },
@@ -1330,6 +1333,9 @@
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
         "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
@@ -1373,6 +1379,9 @@
           "type": "string"
         },
         "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "authz_entity_type": {
@@ -1465,6 +1474,9 @@
         },
         "default_endpoint_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "global_can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
@@ -1591,6 +1603,9 @@
           "title": "The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC. We should error\notherwise"
         },
         "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
