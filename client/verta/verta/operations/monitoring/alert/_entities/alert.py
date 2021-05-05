@@ -373,18 +373,14 @@ class Alerts(object):
 
     """
 
-    def __init__(self, conn, conf, monitored_entity_id=None, base_summary_query=None):
+    def __init__(self, conn, conf, monitored_entity_id=None, summary=None):
         self._conn = conn
         self._conf = conf
+        self._validate_summary_and_monitor(monitored_entity_id, summary)
         self._monitored_entity_id = (
             int(monitored_entity_id) if monitored_entity_id else None
         )
-        monitored_entities = (
-            [self._monitored_entity_id] if self._monitored_entity_id else []
-        )
-        self._base_summary_query = SummaryQuery(monitored_entities=monitored_entities)
-        if base_summary_query:
-            self._base_summary_query = self._base_summary_query + base_summary_query
+        self._summary = summary
 
     def create(
         self,
@@ -443,9 +439,13 @@ class Alerts(object):
             )
 
         summary_sample_query = (
-            summary_sample_query if summary_sample_query else SummarySampleQuery()
+            copy.copy(summary_sample_query)
+            if summary_sample_query
+            else SummarySampleQuery()
         )
-        combined_query = self._combine_query_with_default_summary(summary_sample_query)
+        summary_query = self._build_summary_query()
+        if summary_query:
+            summary_sample_query.summary_query = summary_query
 
         if notification_channels is None:
             notification_channels = []
@@ -460,22 +460,37 @@ class Alerts(object):
             name=name,
             monitored_entity_id=self._monitored_entity_id,
             alerter=alerter,
-            summary_sample_query=combined_query,
+            summary_sample_query=summary_sample_query,
             notification_channels=notification_channels,
             created_at_millis=time_utils.epoch_millis(created_at),
             updated_at_millis=time_utils.epoch_millis(updated_at),
             last_evaluated_at_millis=time_utils.epoch_millis(last_evaluated_at),
         )
 
-    @property
-    def base_summary_query(self):
-        return self._base_summary_query
+    def _build_summary_query(self):
+        if self._summary:
+            return SummaryQuery(
+                ids=[self._summary.id],
+                names=[self._summary.name],
+                monitored_entities=[self._summary.monitored_entity_id],
+            )
+        else:
+            return None
 
-    def _combine_query_with_default_summary(self, summary_sample_query):
-        summary_query = self._base_summary_query + summary_sample_query.summary_query
-        updated_summary_sample_query = copy.copy(summary_sample_query)
-        updated_summary_sample_query.summary_query = summary_query
-        return updated_summary_sample_query
+    @classmethod
+    def _has_valid_summary_and_monitor(cls, monitored_entity_id, summary):
+        if summary and monitored_entity_id:
+            return summary.monitored_entity_id == monitored_entity_id
+        else:
+            return True
+
+    @classmethod
+    def _validate_summary_and_monitor(cls, monitored_entity_id, summary):
+        if not cls._has_valid_summary_and_monitor(monitored_entity_id, summary):
+            raise RuntimeError(
+                "this Alerts object cannot be used because its summary is"
+                " inconsistent with the provided monitored entity id"
+            )
 
     def get(self, name=None, id=None):
         """

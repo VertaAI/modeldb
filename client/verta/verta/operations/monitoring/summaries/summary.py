@@ -16,7 +16,7 @@ from verta._protos.public.monitoring.Summary_pb2 import (
 from verta._tracking import entity
 from verta import data_types
 from verta.operations.monitoring.alert._entities import Alerts
-from .queries import SummaryQuery, SummarySampleQuery
+from .queries import SummarySampleQuery
 from .summary_sample import SummarySample
 
 
@@ -47,14 +47,11 @@ class Summary(entity._ModelDBEntity):
         super(Summary, self).__init__(conn, conf, SummaryService, "summary", msg)
         self._conn = conn
         self._conf = conf
-        self.monitored_entity_id = msg.monitored_entity_id  # TODO: hide me
+        self._monitored_entity_id = msg.monitored_entity_id  # TODO: hide me
         self.name = msg.name
         self.type = msg.type_name  # TODO: hide me
 
-        alerts_query = SummaryQuery(ids=[self.id])
-        self._alerts = Alerts(
-            conn, conf, self.monitored_entity_id, base_summary_query=alerts_query
-        )
+        self._alerts = Alerts(conn, conf, self.monitored_entity_id, summary=self)
 
     def __repr__(self):
         return "Summary name:{}, type:{}, monitored_entity_id:{}".format(
@@ -64,6 +61,10 @@ class Summary(entity._ModelDBEntity):
     @property
     def alerts(self):
         return self._alerts
+
+    @property
+    def monitored_entity_id(self):
+        return self._monitored_entity_id
 
     def log_sample(
         self, data, labels, time_window_start, time_window_end, created_at=None
