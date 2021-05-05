@@ -2247,6 +2247,9 @@
         },
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
