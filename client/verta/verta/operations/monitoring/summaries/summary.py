@@ -51,8 +51,6 @@ class Summary(entity._ModelDBEntity):
         self.name = msg.name
         self.type = msg.type_name  # TODO: hide me
 
-        self._alerts = Alerts(conn, conf, self.monitored_entity_id, summary=self)
-
     def __repr__(self):
         return "Summary name:{}, type:{}, monitored_entity_id:{}".format(
             self.name, self.type, self.monitored_entity_id
@@ -60,7 +58,7 @@ class Summary(entity._ModelDBEntity):
 
     @property
     def alerts(self):
-        return self._alerts
+        return Alerts(self._conn, self._conf, self.monitored_entity_id, summary=self)
 
     @property
     def monitored_entity_id(self):
