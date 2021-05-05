@@ -133,24 +133,6 @@ class SummaryQuery(object):
             self._ids, self._names, self._type_names, self._monitored_entity_ids
         )
 
-    def __add__(self, other):
-        if not isinstance(other, type(self)):
-            return NotImplemented
-        ids = self._ids or other._ids
-        names = self._names or other._names
-        data_type_classes = self._type_names or other._type_names
-        monitored_entities = self._monitored_entity_ids or other._monitored_entity_ids
-        page_number = self._page_number or other._page_number
-        page_limit = self._page_limit or other._page_limit
-        return SummaryQuery(
-            ids=ids,
-            names=names,
-            data_type_classes=data_type_classes,
-            monitored_entities=monitored_entities,
-            page_number=page_number,
-            page_limit=page_limit,
-        )
-
 
 class SummarySampleQuery(object):
     """

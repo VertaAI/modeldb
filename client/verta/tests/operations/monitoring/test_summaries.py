@@ -6,10 +6,10 @@ from datetime import timedelta
 import pytest
 
 from verta._internal_utils._utils import generate_default_name
-from verta.operations.monitoring.summaries import (
-    Summary,
+from verta.operations.monitoring.summaries.summary import Summary
+from verta.operations.monitoring.summaries.summary_sample import SummarySample
+from verta.operations.monitoring.summaries.queries import (
     SummaryQuery,
-    SummarySample,
     SummarySampleQuery,
 )
 from verta._internal_utils import time_utils
@@ -100,34 +100,6 @@ class TestSummaries(object):
             summary_name, data_types.DiscreteHistogram, monitored_entity
         )
         assert created_summary.id == retrieved_summary.id
-
-
-class TestSummaryQuery:
-    def test_add(self):
-        ids = [1, 2]
-        names = ["example"]
-        monitored_entities = [5]
-        data_type_classes = [data_types.DiscreteHistogram, data_types.FloatHistogram]
-
-        first = SummaryQuery(ids=ids, monitored_entities=monitored_entities)
-        first_proto = first._to_proto_request()
-        second = SummaryQuery(
-            names=names, ids=[10, 12], data_type_classes=data_type_classes
-        )
-        second_proto = second._to_proto_request()
-
-        merged = first + second
-        merged_proto = merged._to_proto_request()
-
-        assert (
-            first._to_proto_request() == first_proto
-        ), "adding should not mutate its arguments"
-        assert (
-            second._to_proto_request() == second_proto
-        ), "adding should not mutate its arguments"
-        assert (
-            merged._ids == first._ids
-        ), "query attributes should not overwrite earlier attributes"
 
 
 class TestSummarySampleQuery:
