@@ -298,6 +298,14 @@ message GetProjectShortName {
     }
 }
 
+message GetProjectDatasetCount {
+    string id = 1;
+
+    message Response {
+        int32 dataset_count = 1;
+    }
+}
+
 message FindProjects {
     repeated string project_ids = 1;
     repeated common.KeyValueQuery predicates = 2;
@@ -509,6 +517,12 @@ service ProjectService {
     rpc getProjectShortName(GetProjectShortName) returns (GetProjectShortName.Response) {
         option (google.api.http) = {
             get: "/v1/project/getProjectShortName"
+        };
+    };
+
+    rpc getProjectDatasetCount(GetProjectDatasetCount) returns (GetProjectDatasetCount.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getProjectDatasetCount"
         };
     };
 
