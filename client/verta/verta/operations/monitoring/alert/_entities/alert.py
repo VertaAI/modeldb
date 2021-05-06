@@ -231,6 +231,7 @@ class Alert(entity._ModelDBEntity):
         return alert_msg
 
     def _update(self, alert_msg):
+        alert_msg.id = self.id
         msg = _AlertService.UpdateAlertRequest(alert=alert_msg)
         endpoint = "/api/v1/alerts/updateAlert"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
@@ -242,10 +243,10 @@ class Alert(entity._ModelDBEntity):
         if last_evaluated_at is None:
             last_evaluated_at = time_utils.now()
 
-        alert_msg = _AlertService.Alert()
-        self._fetch_with_no_cache()
-        alert_msg.CopyFrom(self._msg)
-        alert_msg.last_evaluated_at_millis = time_utils.epoch_millis(last_evaluated_at)
+        millis = time_utils.epoch_millis(last_evaluated_at)
+        alert_msg = _AlertService.Alert(
+            last_evaluated_at_millis=millis,
+        )
 
         self._update(alert_msg)
 
