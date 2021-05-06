@@ -15,6 +15,7 @@ import "common/CommonService.proto";
 message CollaboratorPermissions {
     common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 1;
     common.TernaryEnum.Ternary can_deploy = 2;
+    common.TernaryEnum.Ternary can_predict = 3;
 }
 
 message AddCollaboratorRequest {
@@ -26,6 +27,7 @@ message AddCollaboratorRequest {
     uint64 date_updated = 6; // CollaboratorType updated on
 
     common.TernaryEnum.Ternary can_deploy = 7;
+    common.TernaryEnum.Ternary can_predict = 10;
     common.EntitiesEnum.EntitiesTypes authz_entity_type = 8; //user, team, org
 
     CollaboratorPermissions permission = 9;
@@ -65,6 +67,7 @@ message GetCollaboratorResponseItem {
     ShareViaEnum share_via_type = 3;
     string verta_id = 4; //user_verta_id, team_id, org_id
     common.TernaryEnum.Ternary can_deploy = 5;
+    common.TernaryEnum.Ternary can_predict = 8;
     common.EntitiesEnum.EntitiesTypes authz_entity_type = 6;
     CollaboratorPermissions permission = 7;
 }
@@ -142,6 +145,7 @@ message SetResource {
     // otherwise
     common.CollaboratorTypeEnum.CollaboratorType collaborator_type = 6;
     common.TernaryEnum.Ternary can_deploy = 7;
+    common.TernaryEnum.Ternary can_predict = 11;
 
     message Response{}
 }
