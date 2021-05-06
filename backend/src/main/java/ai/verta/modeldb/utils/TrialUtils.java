@@ -8,6 +8,7 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3SignatureUtil;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -76,6 +78,12 @@ public class TrialUtils {
         }
       }
     }
+  }
+
+  public static InternalFuture<Void> futureValidateExperimentRunPerWorkspaceForTrial(
+      TrialConfig config, Executor executor) {
+    // TODO: Implement trial support using InternalFuture
+    return InternalFuture.runAsync(() -> {}, executor);
   }
 
   public static void validateArtifactSizeForTrial(

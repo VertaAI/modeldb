@@ -8,6 +8,7 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
+import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.WorkspaceServiceGrpc;
 import io.grpc.*;
@@ -28,6 +29,7 @@ public class UAC extends Connection {
   private final UACServiceGrpc.UACServiceFutureStub uacServiceFutureStub;
   private final WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspaceServiceFutureStub;
   private final AuthzServiceGrpc.AuthzServiceFutureStub authzServiceFutureStub;
+  private final RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub;
 
   public static UAC FromConfig(Config config) {
     if (!config.hasAuth()) return null;
@@ -59,6 +61,7 @@ public class UAC extends Connection {
     uacServiceFutureStub = UACServiceGrpc.newFutureStub(authServiceChannel);
     workspaceServiceFutureStub = WorkspaceServiceGrpc.newFutureStub(authServiceChannel);
     authzServiceFutureStub = AuthzServiceGrpc.newFutureStub(authServiceChannel);
+    roleServiceFutureStub = RoleServiceGrpc.newFutureStub(authServiceChannel);
   }
 
   public CollaboratorServiceGrpc.CollaboratorServiceFutureStub getCollaboratorService() {
@@ -75,5 +78,9 @@ public class UAC extends Connection {
 
   public AuthzServiceGrpc.AuthzServiceFutureStub getAuthzService() {
     return attachInterceptors(authzServiceFutureStub);
+  }
+
+  public RoleServiceGrpc.RoleServiceFutureStub getRoleService() {
+    return attachInterceptors(roleServiceFutureStub);
   }
 }

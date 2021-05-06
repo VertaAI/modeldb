@@ -3,10 +3,12 @@ package ai.verta.modeldb.experimentRun;
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
 import ai.verta.modeldb.CommitMultipartArtifact;
+import ai.verta.modeldb.CreateExperimentRun;
 import ai.verta.modeldb.DeleteArtifact;
 import ai.verta.modeldb.DeleteExperimentRunAttributes;
 import ai.verta.modeldb.DeleteExperimentRunTags;
@@ -29,6 +31,7 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogArtifacts;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogDatasets;
+import ai.verta.modeldb.LogEnvironment;
 import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.LogHyperparameters;
 import ai.verta.modeldb.LogMetrics;
@@ -50,7 +53,10 @@ import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
+import ai.verta.modeldb.experimentRun.subtypes.CreateExperimentRunHandler;
 import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
+import ai.verta.modeldb.experimentRun.subtypes.EnvironmentHandler;
+import ai.verta.modeldb.experimentRun.subtypes.FeatureHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
@@ -97,6 +103,9 @@ public class FutureExperimentRunDAO {
   private final DatasetHandler datasetHandler;
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
+  private final FeatureHandler featureHandler;
+  private final EnvironmentHandler environmentHandler;
+  private final CreateExperimentRunHandler createExperimentRunHandler;
 
   public FutureExperimentRunDAO(
       Executor executor,
@@ -127,6 +136,20 @@ public class FutureExperimentRunDAO {
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
+    featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
+    environmentHandler = new EnvironmentHandler(executor, jdbi, "ExperimentRunEntity");
+    createExperimentRunHandler =
+        new CreateExperimentRunHandler(
+            executor,
+            jdbi,
+            uac,
+            attributeHandler,
+            hyperparametersHandler,
+            metricsHandler,
+            observationHandler,
+            tagsHandler,
+            artifactHandler,
+            featureHandler);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -327,8 +350,7 @@ public class FutureExperimentRunDAO {
                                 .setResourceType(
                                     ResourceType.newBuilder()
                                         .setModeldbServiceResourceType(
-                                            ModelDBResourceEnum.ModelDBServiceResourceTypes
-                                                .PROJECT))
+                                            ModelDBServiceResourceTypes.PROJECT))
                                 .addAllResourceIds(projId))
                         .build()),
             executor)
@@ -875,6 +897,35 @@ public class FutureExperimentRunDAO {
                                                             observations.get(builder.getId()))),
                                             executor);
 
+                                    // Get features
+                                    final var futureFeatures = featureHandler.getFeaturesMap(ids);
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            futureFeatures,
+                                            (stream, features) ->
+                                                stream.map(
+                                                    builder ->
+                                                        builder.addAllFeatures(
+                                                            features.get(builder.getId()))),
+                                            executor);
+
+                                    // Get code version snapshot
+                                    final var futureCodeVersionSnapshots =
+                                        codeVersionHandler.getCodeVersionMap(new ArrayList<>(ids));
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            futureCodeVersionSnapshots,
+                                            (stream, codeVersionsMap) ->
+                                                stream.peek(
+                                                    builder -> {
+                                                      if (codeVersionsMap.containsKey(
+                                                          builder.getId())) {
+                                                        builder.setCodeVersionSnapshot(
+                                                            codeVersionsMap.get(builder.getId()));
+                                                      }
+                                                    }),
+                                            executor);
+
                                     return futureBuildersStream.thenApply(
                                         experimentRunBuilders ->
                                             experimentRunBuilders
@@ -967,5 +1018,27 @@ public class FutureExperimentRunDAO {
                           executor),
               executor);
     }
+  }
+
+  public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
+    return checkProjectPermission(
+            Collections.singletonList(request.getProjectId()),
+            ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
+  }
+
+  public InternalFuture<Void> logEnvironment(LogEnvironment request) {
+    final var runId = request.getId();
+
+    if (!request.hasEnvironment()) {
+      return InternalFuture.failedStage(
+          new InvalidArgumentException("Environment should not be empty"));
+    }
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(
+            unused -> environmentHandler.logEnvironment(request.getId(), request.getEnvironment()),
+            executor);
   }
 }

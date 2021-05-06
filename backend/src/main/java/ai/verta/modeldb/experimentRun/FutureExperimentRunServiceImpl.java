@@ -26,7 +26,20 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void createExperimentRun(
       CreateExperimentRun request, StreamObserver<CreateExperimentRun.Response> responseObserver) {
-    super.createExperimentRun(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .createExperimentRun(request)
+              .thenApply(
+                  experimentRun ->
+                      CreateExperimentRun.Response.newBuilder()
+                          .setExperimentRun(experimentRun)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -552,7 +565,15 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void logEnvironment(
       LogEnvironment request, StreamObserver<LogEnvironment.Response> responseObserver) {
-    super.logEnvironment(request, responseObserver);
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .logEnvironment(request)
+              .thenApply(unused -> LogEnvironment.Response.newBuilder().build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
