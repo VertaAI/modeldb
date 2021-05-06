@@ -299,7 +299,7 @@ message GetProjectShortName {
 }
 
 message GetProjectDatasetCount {
-    string id = 1;
+    string project_id = 1;
 
     message Response {
         int64 dataset_count = 1;
