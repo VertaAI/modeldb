@@ -389,7 +389,7 @@ public class FutureExperimentRunDAO {
     return futureMaybeProjectIds.thenCompose(
         maybeProjectIds -> {
           if (maybeProjectIds.isEmpty()) {
-            throw new InvalidArgumentException("Project ids not found for given experiment runs");
+            throw new NotFoundException("Project ids not found for given experiment runs");
           }
 
           switch (action) {

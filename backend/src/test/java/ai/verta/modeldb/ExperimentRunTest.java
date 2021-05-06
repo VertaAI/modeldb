@@ -2138,7 +2138,7 @@ public class ExperimentRunTest extends TestsInit {
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
     KeyValue keyValue1 =
         KeyValue.newBuilder()
-            .setKey("New Added Metric " + Calendar.getInstance().getTimeInMillis())
+            .setKey("New Added Metric 1 " + Calendar.getInstance().getTimeInMillis())
             .setValue(intValue)
             .setValueType(ValueType.NUMBER)
             .build();
@@ -2149,7 +2149,7 @@ public class ExperimentRunTest extends TestsInit {
             .build();
     KeyValue keyValue2 =
         KeyValue.newBuilder()
-            .setKey("New Added Metric " + Calendar.getInstance().getTimeInMillis())
+            .setKey("New Added Metric 2 " + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build();
@@ -3206,7 +3206,7 @@ public class ExperimentRunTest extends TestsInit {
     Value blobValue = Value.newBuilder().setStringValue("this is a blob data example").build();
     KeyValue hyperparameter1 =
         KeyValue.newBuilder()
-            .setKey("Log new hyperparameter " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new hyperparameter 1 " + Calendar.getInstance().getTimeInMillis())
             .setValue(blobValue)
             .setValueType(ValueType.BLOB)
             .build();
@@ -3215,7 +3215,7 @@ public class ExperimentRunTest extends TestsInit {
     Value numValue = Value.newBuilder().setNumberValue(12.02125212).build();
     KeyValue hyperparameter2 =
         KeyValue.newBuilder()
-            .setKey("Log new hyperparameter " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new hyperparameter 2 " + Calendar.getInstance().getTimeInMillis())
             .setValue(numValue)
             .setValueType(ValueType.NUMBER)
             .build();
@@ -3440,7 +3440,7 @@ public class ExperimentRunTest extends TestsInit {
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.INVALID_ARGUMENT.getCode().equals(status.getCode()));
+      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
     }
 
     logAttributeRequest =
@@ -3471,7 +3471,7 @@ public class ExperimentRunTest extends TestsInit {
         Value.newBuilder().setStringValue("this is a blob data example of attribute").build();
     KeyValue attribute1 =
         KeyValue.newBuilder()
-            .setKey("Log new attribute " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new attribute 1 " + Calendar.getInstance().getTimeInMillis())
             .setValue(blobValue)
             .setValueType(ValueType.BLOB)
             .build();
@@ -3480,7 +3480,7 @@ public class ExperimentRunTest extends TestsInit {
         Value.newBuilder().setStringValue("this is a blob data example of attribute").build();
     KeyValue attribute2 =
         KeyValue.newBuilder()
-            .setKey("Log new attribute " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new attribute 2 " + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build();
@@ -3560,7 +3560,7 @@ public class ExperimentRunTest extends TestsInit {
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     logAttributeRequest =
@@ -4657,7 +4657,7 @@ public class ExperimentRunTest extends TestsInit {
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.PERMISSION_DENIED.getCode().equals(status.getCode()));
+      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
     }
 
     LOGGER.info("Delete ExperimentRun Negative test stop................................");
@@ -7322,7 +7322,7 @@ public class ExperimentRunTest extends TestsInit {
       CreateExperimentRun createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
               project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
-      KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+      KeyValue hyperparameter1 = generateNumericKeyValue("C1", 0.0001);
       KeyValue hyperparameter2 =
           KeyValue.newBuilder()
               .setKey("C")
