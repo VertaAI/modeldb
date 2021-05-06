@@ -594,7 +594,7 @@
         },
         "parameters": [
           {
-            "name": "id",
+            "name": "project_id",
             "in": "query",
             "required": false,
             "type": "string"

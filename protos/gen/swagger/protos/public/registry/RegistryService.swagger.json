@@ -1936,8 +1936,8 @@
       "type": "object",
       "properties": {
         "registered_model_count": {
-          "type": "integer",
-          "format": "int32"
+          "type": "string",
+          "format": "int64"
         }
       }
     },
