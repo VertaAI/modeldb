@@ -362,8 +362,8 @@ class Alerts(object):
         A configuration object used by conn methods.
     monitored_entity_id : int
         A monitored entity id to use for all alerts in this collection
-    base_summary_query : :class:`~verta.operations.monitoring.summaries.SummaryQuery`
-        A base query to use for creating and finding alerts in this collection.
+    summary : :class:`~verta.operations.monitoring.summaries.summary.Summary`
+        A summary for creating and finding alerts in this collection, and finding samples to alert on.
 
     Examples
     --------
