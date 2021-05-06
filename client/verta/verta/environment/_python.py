@@ -46,10 +46,12 @@ class Python(_environment._Environment):
 
     """
 
-    def __init__(self, requirements, constraints=None, env_vars=None, _autocapture=True):
+    def __init__(self, requirements, constraints=None, env_vars=None, _autocapture=True, version=None):
         super(Python, self).__init__(env_vars, _autocapture)
 
-        if _autocapture:
+        if version is not None:
+            self._set_python_version(version)
+        elif _autocapture:
             self._capture_python_version()
         if requirements or _autocapture:
             self._capture_requirements(requirements)
@@ -171,6 +173,13 @@ class Python(_environment._Environment):
                 msg.version.suffix,
             )
         )
+
+    def _set_python_version(self, version):
+        if len(version) != 3:
+            raise TypeError("python version must be provided as tuple of ints: (3, 8, 9)'")
+        self._msg.python.version.major = version[0]
+        self._msg.python.version.minor = version[1]
+        self._msg.python.version.patch = version[2]
 
     def _capture_python_version(self):
         self._msg.python.version.major = sys.version_info.major
