@@ -302,7 +302,7 @@ message GetProjectDatasetCount {
     string id = 1;
 
     message Response {
-        int32 dataset_count = 1;
+        int64 dataset_count = 1;
     }
 }
 

@@ -466,14 +466,6 @@ message FindExperimentRuns {
     }
 }
 
-message CountExperimentRuns {
-    // TODO: parameters?
-
-    message response {
-        int32 experiment_run_count = 1;
-    }
-}
-
 message SortExperimentRuns {
     repeated string experiment_run_ids = 1;
     string sort_key = 2; // metrics.accuracy
@@ -896,13 +888,6 @@ service ExperimentRunService {
     rpc findExperimentRuns(FindExperimentRuns) returns (FindExperimentRuns.Response){
         option (google.api.http) = {
             post: "/v1/experiment-run/findExperimentRuns"
-            body: "*"
-        };
-    };
-
-    rpc countExperimentRuns(CountExperimentRuns) returns (CountExperimentRuns.Response){
-        option (google.api.http) = {
-            post: "/v1/experiment-run/countExperimentRuns"
             body: "*"
         };
     };

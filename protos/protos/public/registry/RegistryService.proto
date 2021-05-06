@@ -83,7 +83,7 @@ message GetRegisteredModelRequest {
 }
 
 message GetRegisteredModelCountRequest {
-    uint64 project_id = 1;
+    string project_id = 1;
 
     message Response {
         int32 registered_model_count = 1;
