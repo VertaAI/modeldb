@@ -63,6 +63,10 @@ class _VertaDataType(object):
                 return subcls  # NOTE: intentionally returns the type rather than an instance
         return None
 
+    @classmethod
+    def _from_type_strings(cls, type_strings):
+        return map(cls._from_type_string, type_strings)
+
     @abc.abstractmethod
     def dist(self, other):
         raise NotImplementedError

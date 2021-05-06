@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from collections import namedtuple
 import time
 
 from verta._tracking import entity, _Context
@@ -17,13 +16,13 @@ from verta._protos.public.monitoring.DataMonitoringService_pb2 import (
     GetProfilerStatusRequest,
     DisableProfilerRequest,
     KeyValue,
-    ValueTypeEnum,
     DeployStatusEnum as DeployStatus,
     BuildStatusEnum as BuildStatus,
 )
 from verta._internal_utils import _utils
 from verta.environment import Python
 from .utils import extract_id
+
 
 class ProfilerReference(entity._ModelDBEntity):
     """Represents an uploaded data profiler.
@@ -58,7 +57,7 @@ class ProfilerReference(entity._ModelDBEntity):
         )
         self.id = msg.id
         self.name = msg.name
-        self.reference = msg.profiler_reference # TODO: hide this implementation detail
+        self.reference = msg.profiler_reference  # TODO: hide this implementation detail
         self._conn = conn
 
     def __repr__(self):
@@ -102,50 +101,69 @@ class ProfilerReference(entity._ModelDBEntity):
         monitored_entity_id = extract_id(monitored_entity)
         environment = environment.copy() if environment else dict()
         environment["PROFILER_ID"] = profiler_id
-        key_values = [KeyValue(key=k, value=_utils.python_to_val_proto(v, allow_collection=True)) for k, v in environment.items()]
+        key_values = [
+            KeyValue(key=k, value=_utils.python_to_val_proto(v, allow_collection=True))
+            for k, v in environment.items()
+        ]
 
         msg = EnableProfilerRequest(
-            profiler_id=profiler_id, monitored_entity_id=monitored_entity_id, environment=key_values
+            profiler_id=profiler_id,
+            monitored_entity_id=monitored_entity_id,
+            environment=key_values,
         )
         endpoint = "/api/v1/monitored_entity/enableProfiler"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         status = self._conn.must_proto_response(
-                response, EnableProfilerRequest.Response
-            ).status
-        return status # TODO: wrap this in a nicer type
-
+            response, EnableProfilerRequest.Response
+        ).status
+        return status  # TODO: wrap this in a nicer type
 
     def _blocking_enable(self, monitored_entity, environment, duration_seconds=0.5):
-        status = self._blocking_build(monitored_entity, environment, duration_seconds=duration_seconds)
-        status = self._blocking_deploy(monitored_entity, environment, duration_seconds=duration_seconds)
+        status = self._blocking_build(
+            monitored_entity, environment, duration_seconds=duration_seconds
+        )
+        status = self._blocking_deploy(
+            monitored_entity, environment, duration_seconds=duration_seconds
+        )
         return status
 
-
     def _blocking_build(self, monitored_entity, environment, duration_seconds=0.5):
-        status = self.enable(monitored_entity=monitored_entity, environment=environment, wait=False)
+        status = self.enable(
+            monitored_entity=monitored_entity, environment=environment, wait=False
+        )
         print("Status: {}".format(status))
         print("Waiting for build...")
         while True:
             time.sleep(duration_seconds)
             if status.build_status in (BuildStatus.UNDEFINED, BuildStatus.BUILDING):
                 status = self.get_status(monitored_entity)
-            elif status.build_status in (BuildStatus.DELETING, BuildStatus.ERROR, BuildStatus.FINISHED):
+            elif status.build_status in (
+                BuildStatus.DELETING,
+                BuildStatus.ERROR,
+                BuildStatus.FINISHED,
+            ):
                 print("Status: {}".format(status))
                 return status
             else:
                 print("Deploy status is not recognized")
                 return status
 
-
     def _blocking_deploy(self, monitored_entity, environment, duration_seconds=0.5):
         status = self.get_status(monitored_entity)
         if status.build_status != BuildStatus.FINISHED:
             print("Build not complete. Deploy not possible.")
             return status
-        status = self.enable(monitored_entity=monitored_entity, environment=environment, wait=False)
+        status = self.enable(
+            monitored_entity=monitored_entity, environment=environment, wait=False
+        )
         while True:
             time.sleep(duration_seconds)
-            if status.deploy_status in (DeployStatus.UNDEFINED, DeployStatus.INACTIVE, DeployStatus.UPDATING, DeployStatus.CREATING):
+            if status.deploy_status in (
+                DeployStatus.UNDEFINED,
+                DeployStatus.INACTIVE,
+                DeployStatus.UPDATING,
+                DeployStatus.CREATING,
+            ):
                 status = self.get_status(monitored_entity)
             elif status.deploy_status in (DeployStatus.ACTIVE, DeployStatus.ERROR):
                 print("Status: {}".format(status))
@@ -153,7 +171,6 @@ class ProfilerReference(entity._ModelDBEntity):
             else:
                 print("Deploy status is not recognized")
                 return status
-
 
     def disable(self, monitored_entity):
         """Disable this profiler for the monitored entity if it's enabled.
@@ -241,7 +258,6 @@ class ProfilerReference(entity._ModelDBEntity):
         self.name = updated_profiler.name
         return self
 
-
     @classmethod
     def _generate_default_name(cls):
         return "Profiler {}".format(_utils.generate_default_name())
@@ -262,9 +278,7 @@ class ProfilerReference(entity._ModelDBEntity):
         msg = CreateProfilerRequest(name=name, profiler_reference=reference)
         endpoint = "/api/v1/monitored_entity/createProfiler"
         response = conn.make_proto_request("POST", endpoint, body=msg)
-        profiler = conn.must_proto_response(
-            response, msg.Response
-        ).profiler
+        profiler = conn.must_proto_response(response, msg.Response).profiler
         return profiler
 
 
