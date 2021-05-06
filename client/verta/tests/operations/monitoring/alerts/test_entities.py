@@ -97,7 +97,7 @@ class TestIntegration:
         retrieved_query_proto = alert.summary_sample_query._to_proto_request()
         assert created_query_proto == retrieved_query_proto
 
-    def test_alert_from_monitored_summary(self, client, monitored_entity):
+    def test_alert_from_summary(self, client, monitored_entity):
         ops = client.operations
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
         test_summary = ops.summaries.get_or_create(
