@@ -42,7 +42,7 @@ public class TagsHandler {
                     "select tags from tag_mapping "
                         + "where entity_name=:entity_name and "
                         + entityIdReferenceColumn
-                        + "=:entity_id")
+                        + "=:entity_id ORDER BY tags ASC")
                 .bind("entity_id", entityId)
                 .bind("entity_name", entityName)
                 .mapTo(String.class)
@@ -59,7 +59,7 @@ public class TagsHandler {
                             + " as entity_id from tag_mapping "
                             + "where entity_name=:entity_name and "
                             + entityIdReferenceColumn
-                            + " in (<entity_ids>)")
+                            + " in (<entity_ids>) ORDER BY tags ASC")
                     .bindList("entity_ids", entityIds)
                     .bind("entity_name", entityName)
                     .map(
@@ -75,10 +75,8 @@ public class TagsHandler {
     var currentFuture =
         InternalFuture.runAsync(
             () -> {
-              for (final var tag : tags) {
-                if (tag.isEmpty()) {
-                  throw new InvalidArgumentException("Empty tag");
-                }
+              if (tags.isEmpty()) {
+                throw new InvalidArgumentException("Tags not found");
               }
             },
             executor);

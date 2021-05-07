@@ -65,6 +65,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import java.sql.SQLException;
+import java.util.List;
 import liquibase.exception.DatabaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -233,13 +234,12 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
    * If you want to define new migration then add new if check for your migration in `if (migration)
    * {` condition.
    */
-  public void runMigration(Config config)
+  public void runMigration(DatabaseConfig databaseConfig, List<MigrationConfig> migrations)
       throws ClassNotFoundException, ModelDBException, DatabaseException, SQLException {
-    DatabaseConfig databaseConfig = config.database;
     RdbConfig rdb = databaseConfig.RdbConfiguration;
 
-    if (config.migrations != null) {
-      for (MigrationConfig migrationConfig : config.migrations) {
+    if (migrations != null) {
+      for (MigrationConfig migrationConfig : migrations) {
         if (!migrationConfig.enabled) {
           continue;
         }

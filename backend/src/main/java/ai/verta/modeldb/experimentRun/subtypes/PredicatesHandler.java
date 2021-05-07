@@ -176,7 +176,7 @@ public class PredicatesHandler {
 
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
-        sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+        sql += applyOperator(operator, colValue, ":" + valueBindingName);
         queryContext = queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
         break;
       case STRING_VALUE:
@@ -207,7 +207,12 @@ public class PredicatesHandler {
             new UnimplementedException("Unknown 'Value' type recognized"));
     }
 
-    queryContext = queryContext.addCondition(String.format("experiment_run.id in (%s)", sql));
+    if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)
+        || operator.equals(OperatorEnum.Operator.NE)) {
+      queryContext = queryContext.addCondition(String.format("experiment_run.id NOT IN (%s)", sql));
+    } else {
+      queryContext = queryContext.addCondition(String.format("experiment_run.id IN (%s)", sql));
+    }
 
     return InternalFuture.completedInternalFuture(queryContext);
   }

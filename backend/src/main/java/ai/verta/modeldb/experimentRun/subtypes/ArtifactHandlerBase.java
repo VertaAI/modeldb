@@ -92,7 +92,7 @@ public class ArtifactHandlerBase {
                           + entityIdReferenceColumn
                           + "=:entity_id";
 
-                  if (!maybeKey.isPresent()) {
+                  if (maybeKey.isPresent()) {
                     queryStr = queryStr + " AND ar_key=:ar_key ";
                   }
 
@@ -102,23 +102,19 @@ public class ArtifactHandlerBase {
                           .bind("entity_id", entityId)
                           .bind("field_type", fieldType)
                           .bind("entity_name", entityName);
-                  if (!maybeKey.isPresent()) {
-                    query.bind("ar_key", maybeKey.get());
-                  }
-                  List<Artifact> artifacts =
-                      query
-                          .map(
-                              (rs, ctx) ->
-                                  Artifact.newBuilder()
-                                      .setKey(rs.getString("k"))
-                                      .setPath(rs.getString("p"))
-                                      .setArtifactTypeValue(rs.getInt("at"))
-                                      .setPathOnly(rs.getBoolean("po"))
-                                      .setLinkedArtifactId(rs.getString("lai"))
-                                      .setFilenameExtension(rs.getString("fe"))
-                                      .build())
-                          .list();
-                  return artifacts;
+                  maybeKey.ifPresent(s -> query.bind("ar_key", s));
+                  return query
+                      .map(
+                          (rs, ctx) ->
+                              Artifact.newBuilder()
+                                  .setKey(rs.getString("k"))
+                                  .setPath(rs.getString("p"))
+                                  .setArtifactTypeValue(rs.getInt("at"))
+                                  .setPathOnly(rs.getBoolean("po"))
+                                  .setLinkedArtifactId(rs.getString("lai"))
+                                  .setFilenameExtension(rs.getString("fe"))
+                                  .build())
+                      .list();
                 }),
         executor);
   }
