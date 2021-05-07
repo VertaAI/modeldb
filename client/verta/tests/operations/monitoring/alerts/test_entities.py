@@ -91,9 +91,7 @@ class TestIntegration:
         sample_query = SummarySampleQuery()
 
         alert = alerts.create(name, alerter, sample_query)
-        created_query_proto = alerts._combine_query_with_default_summary(
-            sample_query
-        )._to_proto_request()
+        created_query_proto = sample_query._to_proto_request()
         retrieved_query_proto = alert.summary_sample_query._to_proto_request()
         assert created_query_proto == retrieved_query_proto
 
