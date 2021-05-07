@@ -10,7 +10,7 @@ from .. import utils
 
 import verta.dataset
 from verta.dataset import _dataset
-from verta._internal_utils import _file_utils
+from verta._internal_utils import _file_utils, _utils
 
 
 def assert_dirs_match(dirpath1, dirpath2):
@@ -911,3 +911,45 @@ class TestPathManagedVersioning:
 
         with pytest.raises(ValueError):
             dataset1 + dataset2  # pylint: disable=pointless-statement
+
+
+class TestQueryDataset:
+    def test_create(self):
+        query = "select * from my-table"
+        data_source_uri = "localhost:6543"
+        num_records = 100
+        execution_timestamp = _utils.now()
+
+        dataset = verta.dataset.QueryDataset(query, data_source_uri, execution_timestamp, num_records)
+
+        assert dataset.query == query
+        assert dataset.data_source_uri == data_source_uri
+        assert dataset.num_records == num_records
+        assert dataset.execution_timestamp == execution_timestamp
+
+        dataset_from_proto = verta.dataset.QueryDataset._from_proto(dataset._as_proto())
+        assert dataset_from_proto.query == query
+        assert dataset_from_proto.data_source_uri == data_source_uri
+        assert dataset_from_proto.num_records == num_records
+        assert dataset_from_proto.execution_timestamp == execution_timestamp
+
+
+@pytest.mark.skip("atlas is not available")
+class TestAtlasDataset:
+    def test_create(self):
+        guid = os.environ["GUID"]
+        atlas_user_name = os.environ["ATLAS_USERNAME"]
+        atlas_password = os.environ["ATLAS_PASSWORD"]
+        atlas_url = os.environ["ATLAS_URL"]
+
+        # TODO: update these
+        database_name = "default"
+        table_name = "trip_details_by_zone"
+        num_records = 8279779
+
+        dataset = verta.dataset.AtlasDataset(guid, atlas_url, atlas_user_name, atlas_password)
+
+        assert dataset.query == "select * from {}.{}".format(database_name, table_name)
+        assert dataset.num_records == num_records
+        assert dataset.execution_timestamp # check that this is set
+
