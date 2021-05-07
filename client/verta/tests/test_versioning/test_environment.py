@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+
+# TODO: property-based testing with a Hypothesis strategy for version numbers
+
 import pytest
 
 import os
@@ -151,6 +155,20 @@ class TestPython:
             env_ver._msg,
             including_default_value_fields=False,
         )
+
+    def test_torch_no_suffix(self):
+        torch = pytest.importorskip("torch")
+
+        requirement = "torch==1.8.1+cu102"
+        env_ver = Python([requirement])
+        assert requirement not in env_ver.requirements
+        assert requirement.split("+")[0] in env_ver.requirements
+
+        # autocapture
+        version = torch.__version__.split("+")[0]
+        env_ver = Python(["torch"])
+        assert "torch=={}".format(version) in env_ver.requirements
+        assert not any("+" in req for req in env_ver.requirements)
 
     def test_repr(self):
         """Tests that __repr__() executes without error"""
