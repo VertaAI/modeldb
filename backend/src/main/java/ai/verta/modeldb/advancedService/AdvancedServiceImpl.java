@@ -417,11 +417,10 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       FindExperimentRuns findExperimentRuns =
           FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build();
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
+          experimentRunDAO.findExperimentRuns(projectDAO, findExperimentRuns);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
@@ -475,9 +474,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         LOGGER.trace("Validated experiment accessibility");
       }
 
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo, request);
+          experimentRunDAO.findExperimentRuns(projectDAO, request);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 

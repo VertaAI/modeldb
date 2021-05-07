@@ -859,7 +859,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         FindExperimentRuns findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         ExperimentRunPaginationDTO experimentRunPaginationDTO =
-            experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
+            experimentRunDAO.findExperimentRuns(projectDAO, findExperimentRuns);
         if (experimentRunPaginationDTO != null
             && experimentRunPaginationDTO.getExperimentRuns() != null
             && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
@@ -969,7 +969,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         FindExperimentRuns findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         ExperimentRunPaginationDTO experimentRunPaginationDTO =
-            experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
+            experimentRunDAO.findExperimentRuns(projectDAO, findExperimentRuns);
         if (experimentRunPaginationDTO != null
             && experimentRunPaginationDTO.getExperimentRuns() != null
             && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {

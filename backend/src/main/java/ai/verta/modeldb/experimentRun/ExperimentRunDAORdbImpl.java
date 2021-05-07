@@ -321,7 +321,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       TrialUtils.validateExperimentRunPerWorkspaceForTrial(
-          config.trial, projectDAO, roleService, this, experimentRun.getProjectId(), userInfo);
+          config.trial, projectDAO, roleService, this, experimentRun.getProjectId());
       TrialUtils.validateMaxArtifactsForTrial(config.trial, experimentRun.getArtifactsCount(), 0);
 
       if (experimentRun.getDatasetsCount() > 0 && config.populateConnectionsBasedOnPrivileges) {
@@ -461,8 +461,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             .setSortKey(sortKey)
             .addPredicates(entityKeyValuePredicate)
             .build();
-    UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-    return findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
+    return findExperimentRuns(projectDAO, findExperimentRuns);
   }
 
   @Override
@@ -1309,7 +1308,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRunPaginationDTO findExperimentRuns(
-      ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
+      ProjectDAO projectDAO, FindExperimentRuns queryParameters)
       throws InvalidProtocolBufferException, PermissionDeniedException {
 
     LOGGER.trace("trying to open session");
@@ -1319,8 +1318,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Workspace workspace = null;
       if (!queryParameters.getWorkspaceName().isEmpty()) {
         workspace =
-            roleService.getWorkspaceByWorkspaceName(
-                currentLoginUserInfo, queryParameters.getWorkspaceName());
+            roleService.getWorkspaceByWorkspaceName(null, queryParameters.getWorkspaceName());
       }
       List<GetResourcesResponseItem> accessibleProjectResourceByWorkspace =
           roleService.getResourceItems(
@@ -1574,7 +1572,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       return experimentRunPaginationDTO;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return findExperimentRuns(projectDAO, currentLoginUserInfo, queryParameters);
+        return findExperimentRuns(projectDAO, queryParameters);
       } else {
         throw ex;
       }
@@ -1792,8 +1790,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             .setAscending(queryParameters.getAscending())
             .setIdsOnly(queryParameters.getIdsOnly())
             .build();
-    UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-    return findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
+    return findExperimentRuns(projectDAO, findExperimentRuns);
   }
 
   @Override
@@ -1811,9 +1808,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             .setPageNumber(1)
             .setPageLimit(queryParameters.getTopK())
             .build();
-    UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-    return findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns)
-        .getExperimentRuns();
+    return findExperimentRuns(projectDAO, findExperimentRuns).getExperimentRuns();
   }
 
   @Override
@@ -2347,7 +2342,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
+          findExperimentRuns(projectDAO, findExperimentRuns.build());
       return ListCommitExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
@@ -2409,7 +2404,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .addPredicates(repositoryIdPredicate)
               .addPredicates(commitHashPredicate)
               .addPredicates(locationPredicate);
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       if (request.getRepositoryId().hasNamedId()) {
         findExperimentRuns.setWorkspaceName(
             request.getRepositoryId().getNamedId().getWorkspaceName());
@@ -2429,7 +2423,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
+          findExperimentRuns(projectDAO, findExperimentRuns.build());
 
       return ListBlobExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
@@ -2791,9 +2785,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setSortKey(request.getSortKey())
               .addPredicates(entityKeyValuePredicate)
               .build();
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
+          findExperimentRuns(projectDAO, findExperimentRuns);
       LOGGER.debug(
           "Final return ExperimentRun count : {}",
           experimentRunPaginationDTO.getExperimentRuns().size());

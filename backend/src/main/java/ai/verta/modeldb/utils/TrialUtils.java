@@ -12,7 +12,6 @@ import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.project.ProjectDAO;
-import ai.verta.uac.UserInfo;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSSessionCredentials;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -52,8 +51,7 @@ public class TrialUtils {
       ProjectDAO projectDAO,
       RoleService roleService,
       ExperimentRunDAO experimentRunDAO,
-      String projectId,
-      UserInfo userInfo)
+      String projectId)
       throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
           InterruptedException {
     if (config != null) {
@@ -63,7 +61,7 @@ public class TrialUtils {
         FindExperimentRuns findExperimentRuns =
             FindExperimentRuns.newBuilder().setIdsOnly(true).setProjectId(projectId).build();
         ExperimentRunPaginationDTO paginationDTO =
-            experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
+            experimentRunDAO.findExperimentRuns(projectDAO, findExperimentRuns);
         if (config.restrictions.max_experiment_run_per_workspace != null
             && paginationDTO.getTotalRecords()
                 >= config.restrictions.max_experiment_run_per_workspace) {

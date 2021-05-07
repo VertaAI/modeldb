@@ -385,8 +385,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       FindExperimentRuns findExperimentRuns =
           FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build();
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(
-              projectDAO, authService.getCurrentLoginUserInfo(), findExperimentRuns);
+          experimentRunDAO.findExperimentRuns(projectDAO, findExperimentRuns);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
       GetExperimentRunById.Response.Builder response = GetExperimentRunById.Response.newBuilder();
@@ -1816,7 +1815,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo, request);
+          experimentRunDAO.findExperimentRuns(projectDAO, request);
       List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRuns();
       FindExperimentRuns.Response response =
           FindExperimentRuns.Response.newBuilder()
