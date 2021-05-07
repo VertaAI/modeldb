@@ -9,6 +9,7 @@ and access the API reference.
     :titlesonly:
 
     Verta <verta>
+    Scala Client <scala_client>
     Quickstart <quickstart>
     Tutorials <tutorials/tutorials>
     Examples <examples>
