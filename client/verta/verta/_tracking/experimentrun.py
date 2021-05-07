@@ -1807,6 +1807,10 @@ class ExperimentRun(_DeployableEntity):
         """
         Logs a pip requirements file for Verta model deployment.
 
+        .. deprecated:: 0.17.7
+            This method is deprecated and will be removed in an upcoming
+            version; consider using :meth:`log_environment` instead.
+
         .. versionadded:: 0.13.13
 
         Parameters
@@ -1852,6 +1856,12 @@ class ExperimentRun(_DeployableEntity):
             # scikit-learn==0.21.3
 
         """
+        warnings.warn(
+            "this method is deprecated and will be removed in an upcoming"
+            " version; consider using `log_environment()` instead",
+            category=FutureWarning,
+        )
+
         if isinstance(requirements, six.string_types):
             with open(requirements, 'r') as f:
                 requirements = _pip_requirements_utils.clean_reqs_file_lines(
@@ -1885,6 +1895,8 @@ class ExperimentRun(_DeployableEntity):
     def log_environment(self, env, overwrite=False):
         """
         Logs a Python environment to this Experiment Run.
+
+        .. versionadded:: 0.17.1
 
         Parameters
         ----------
