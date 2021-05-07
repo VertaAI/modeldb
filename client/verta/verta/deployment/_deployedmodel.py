@@ -3,6 +3,7 @@
 import json
 import gzip
 import os
+import tempfile
 import time
 import warnings
 
@@ -161,16 +162,16 @@ class DeployedModel:
 
         if compress:
             # create gzip
-            gzstream = six.BytesIO()
-            with gzip.GzipFile(fileobj=gzstream, mode='wb') as gzf:
-                gzf.write(six.ensure_binary(json.dumps(x)))
-            gzstream.seek(0)
+            with tempfile.NamedTemporaryFile(suffix='.gz') as tempf:
+                with gzip.GzipFile(filename=tempf.name, mode='wb') as gzf:
+                    binary = six.ensure_binary(json.dumps(x))
+                    gzf.write(binary)
 
-            return self._session.post(
-                self._prediction_url,
-                headers={'Content-Encoding': 'gzip'},
-                data=gzstream.read(),
-            )
+                    return self._session.post(
+                        self._prediction_url,
+                        headers={'Content-Encoding': 'gzip'},
+                        data=binary,
+                    )
         else:
             return self._session.post(self._prediction_url, json=x)
 

@@ -1261,11 +1261,10 @@ class ExperimentRun(_DeployableEntity):
 
         # prehandle train_features and train_targets
         if train_features is not None and train_targets is not None:
-            stringstream = six.StringIO()
+            tempf = tempfile.NamedTemporaryFile(suffix='.csv')
+            train_data = tempf.name
             train_df = train_features.join(train_targets)
-            train_df.to_csv(stringstream, index=False)  # write as CSV
-            stringstream.seek(0)
-            train_data = stringstream
+            train_df.to_csv(train_data, index=False)  # write as CSV
         else:
             train_data = None
 
