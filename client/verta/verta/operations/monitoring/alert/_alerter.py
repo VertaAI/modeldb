@@ -40,17 +40,16 @@ class _Alerter(object):
 
     @staticmethod
     def _from_proto(msg):
-        comparison = comparison_module._VertaComparison._from_proto(
-            msg.operator,
-            msg.threshold,
-        )
+        _protos_to_classes = {
+            _AlertService.AlertFixed: FixedAlerter,
+            _AlertService.AlertReference: ReferenceAlerter,
+            _AlertService.AlertRange: RangeAlerter,
+        }
+        if type(msg) in _protos_to_classes:
+            return _protos_to_classes[type(msg)]._from_proto(msg)
+        else:
+            raise ValueError("unrecognized alerter type {}".format(type(msg)))
 
-        if isinstance(msg, _AlertService.AlertFixed):
-            return FixedAlerter(comparison)
-        elif isinstance(msg, _AlertService.AlertReference):
-            return ReferenceAlerter(comparison, msg.reference_sample_id)
-
-        raise ValueError("unrecognized alerter type {}".format(type(msg)))
 
 class FixedAlerter(_Alerter):
     """
@@ -95,6 +94,14 @@ class FixedAlerter(_Alerter):
             threshold=self._comparison.value,
             operator=self._comparison._operator_as_proto(),
         )
+
+    @staticmethod
+    def _from_proto(msg):
+        comparison = comparison_module._VertaComparison._from_proto(
+            msg.operator,
+            msg.threshold,
+        )
+        return FixedAlerter(comparison)
 
 
 class ReferenceAlerter(_Alerter):
@@ -144,3 +151,75 @@ class ReferenceAlerter(_Alerter):
             reference_sample_id=self._reference_sample_id,
             operator=self._comparison._operator_as_proto(),
         )
+
+    @classmethod
+    def _from_proto(cls, msg):
+        comparison = comparison_module._VertaComparison._from_proto(
+            msg.operator,
+            msg.threshold,
+        )
+        return ReferenceAlerter(comparison, msg.reference_sample_id)
+
+
+class RangeAlerter(_Alerter):
+    """
+    Compare summary samples with a fixed numerical range.
+
+    .. note::
+
+        This alerter is only intended to work with summary samples of the
+        :class:`~verta.data_types.NumericValue` type.
+
+    Parameters
+    ----------
+    comparison : :class:`~verta.common.comparison._VertaComparison`
+        Alert condition. An alert is active if a queried sample meets this
+        condition.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta.operations.monitoring.alert import RangeAlerter
+
+        alert = monitored_entity.alerts.create(
+            name="positive_coin_flips",
+            alerter=RangeAlerter(0.45, 0.55),
+            summary_sample_query=sample_query,
+            notification_channels=[channel],
+        )
+
+    """
+
+    _TYPE = _AlertService.AlerterTypeEnum.RANGE
+
+    def __init__(self, lower_bound, upper_bound, alert_if_outside_range=True):
+        self._lower_bound = lower_bound
+        self._upper_bound = upper_bound
+        self._alert_if_outside_range = alert_if_outside_range
+
+    @property
+    def lower_bound(self):
+        return self._lower_bound
+
+    @property
+    def upper_bound(self):
+        return self._upper_bound
+
+    @property
+    def alert_if_outside_range(self):
+        return self._alert_if_outside_range
+
+    def __repr__(self):
+        return "<range alerter ({}, {})>".format(self.lower_bound, self.upper_bound)
+
+    def _as_proto(self):
+        return _AlertService.AlertRange(
+            lower_bound=self.lower_bound,
+            upper_bound=self.upper_bound,
+            alert_if_outside_range=self.alert_if_outside_range,
+        )
+
+    @classmethod
+    def _from_proto(cls, msg):
+        return cls(msg.lower_bound, msg.upper_bound, msg.alert_if_outside_range)
