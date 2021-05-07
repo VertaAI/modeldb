@@ -206,8 +206,6 @@ class Python(_environment._Environment):
             ),
         )
 
-        self._remove_torch_metadata(self._msg.python.requirements)
-
     def _capture_constraints(self, constraints):
         if constraints is None:
             return
@@ -224,23 +222,6 @@ class Python(_environment._Environment):
                 req_specs,
             ),
         )
-
-    @staticmethod
-    def _remove_torch_metadata(req_specs):
-        """Removes metadata from torch's version specifier if present.
-
-        PyTorch adds metadata to its pip environment version number during
-        installation that results in a non-pip-installable specifier. This
-        suffix needs to be removed for model deployment.
-
-        Parameters
-        ----------
-        env_blobs : list of PythonRequirementEnvironmentBlob
-
-        """
-        for req in req_specs:
-            if req.library == "torch" and req.version.suffix.startswith("+"):
-                req.version.suffix = ""
 
     @staticmethod
     def read_pip_file(filepath):
