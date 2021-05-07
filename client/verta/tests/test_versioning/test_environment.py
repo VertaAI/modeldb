@@ -157,18 +157,22 @@ class TestPython:
         )
 
     def test_torch_no_suffix(self):
-        torch = pytest.importorskip("torch")
-
         requirement = "torch==1.8.1+cu102"
         env_ver = Python([requirement])
         assert requirement not in env_ver.requirements
         assert requirement.split("+")[0] in env_ver.requirements
 
-        # autocapture
-        version = torch.__version__.split("+")[0]
+    def test_torch_no_suffix_autocapture(self):
+        torch = pytest.importorskip("torch")
+        version = torch.__version__
+
+        if "+" not in version:
+            pytest.skip("no metadata on version number")
+
+        requirement = "torch=={}".format(version)
         env_ver = Python(["torch"])
-        assert "torch=={}".format(version) in env_ver.requirements
-        assert not any("+" in req for req in env_ver.requirements)
+        assert requirement not in env_ver.requirements
+        assert requirement.split("+")[0] in env_ver.requirements
 
     def test_repr(self):
         """Tests that __repr__() executes without error"""
