@@ -152,7 +152,7 @@ class ExperimentRuns(_utils.LazyList):
 
         """
         if ret_all_info:
-            warnings.warn("`ret_all_info` is deprecated and will removed in a later version",
+            warnings.warn("`ret_all_info` is deprecated and will be removed in a later version",
                           category=FutureWarning)
 
         if key.split('.')[0] not in self._VALID_QUERY_KEYS:
@@ -212,7 +212,7 @@ class ExperimentRuns(_utils.LazyList):
 
         """
         if ret_all_info:
-            warnings.warn("`ret_all_info` is deprecated and will removed in a later version",
+            warnings.warn("`ret_all_info` is deprecated and will be removed in a later version",
                           category=FutureWarning)
 
         if key.split('.')[0] not in self._VALID_QUERY_KEYS:

@@ -78,10 +78,10 @@ class Client(object):
     Object for interfacing with the ModelDB backend.
 
     .. deprecated:: 0.12.0
-       The `port` parameter will removed in v0.17.0; please combine `port` with the first parameter,
+       The `port` parameter will be removed in v0.17.0; please combine `port` with the first parameter,
        e.g. `Client("localhost:8080")`.
     .. deprecated:: 0.13.3
-       The `expt_runs` attribute will removed in v0.17.0; consider using `proj.expt_runs` and
+       The `expt_runs` attribute will be removed in v0.17.0; consider using `proj.expt_runs` and
        `expt.expt_runs` instead.
 
     This class provides functionality for starting/resuming Projects, Experiments, and Experiment Runs.
@@ -170,7 +170,7 @@ class Client(object):
         back_end_url = urlparse(host)
         socket = back_end_url.netloc + back_end_url.path.rstrip('/')
         if port is not None:
-            warnings.warn("`port` (the second parameter) will removed in a later version;"
+            warnings.warn("`port` (the second parameter) will be removed in a later version;"
                           " please combine it with the first parameter, e.g. \"localhost:8080\"",
                           category=FutureWarning)
             socket = "{}:{}".format(socket, port)
@@ -1490,7 +1490,7 @@ class Client(object):
                       sort_key=None, ascending=False,
                       workspace=None):
         warnings.warn(
-            "this method is deprecated and will removed in an upcoming version;"
+            "this method is deprecated and will be removed in an upcoming version;"
             " consider using `client.datasets.find()` instead",
             category=FutureWarning,
         )
