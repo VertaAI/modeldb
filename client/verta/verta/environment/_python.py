@@ -32,6 +32,11 @@ class Python(_environment._Environment):
     _autocapture : bool, default True
         Whether to enable the automatic capturing behavior of parameters above.
 
+    Attributes
+    ----------
+    requirements : list of str
+        pip requirements.
+
     Examples
     --------
     .. code-block:: python
