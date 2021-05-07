@@ -46,6 +46,7 @@ import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CreateExperimentRunHandler;
 import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
 import ai.verta.modeldb.experimentRun.subtypes.FeatureHandler;
+import ai.verta.modeldb.experimentRun.subtypes.FilterPrivilegedDatasetsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
@@ -63,6 +64,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -88,6 +90,7 @@ public class FutureExperimentRunDAO {
   private final PredicatesHandler predicatesHandler;
   private final SortingHandler sortingHandler;
   private final FeatureHandler featureHandler;
+  private final FilterPrivilegedDatasetsHandler privilegedDatasetsHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
 
   public FutureExperimentRunDAO(
@@ -120,6 +123,7 @@ public class FutureExperimentRunDAO {
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
     featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
+    privilegedDatasetsHandler = new FilterPrivilegedDatasetsHandler(executor, jdbi);
     createExperimentRunHandler =
         new CreateExperimentRunHandler(
             executor,
@@ -317,8 +321,10 @@ public class FutureExperimentRunDAO {
                 .execute());
   }
 
-  private InternalFuture<Void> checkProjectPermission(
-      List<String> projId, ModelDBActionEnum.ModelDBServiceActions action) {
+  private InternalFuture<Void> checkEntityPermissionBasedOnResourceTypes(
+      List<String> entityIds,
+      ModelDBActionEnum.ModelDBServiceActions action,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(
@@ -332,9 +338,8 @@ public class FutureExperimentRunDAO {
                                 .setService(ServiceEnum.Service.MODELDB_SERVICE)
                                 .setResourceType(
                                     ResourceType.newBuilder()
-                                        .setModeldbServiceResourceType(
-                                            ModelDBServiceResourceTypes.PROJECT))
-                                .addAllResourceIds(projId))
+                                        .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+                                .addAllResourceIds(entityIds))
                         .build()),
             executor)
         .thenAccept(
@@ -372,10 +377,13 @@ public class FutureExperimentRunDAO {
           switch (action) {
             case DELETE:
               // TODO: check if we should using DELETE for the ER itself
-              return checkProjectPermission(
-                  maybeProjectIds, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+              return checkEntityPermissionBasedOnResourceTypes(
+                  maybeProjectIds,
+                  ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                  ModelDBServiceResourceTypes.PROJECT);
             default:
-              return checkProjectPermission(maybeProjectIds, action);
+              return checkEntityPermissionBasedOnResourceTypes(
+                  maybeProjectIds, action, ModelDBServiceResourceTypes.PROJECT);
           }
         },
         executor);
@@ -413,7 +421,7 @@ public class FutureExperimentRunDAO {
     var futureDeleteTask =
         InternalFuture.runAsync(
             () -> {
-              if (request.getIdsList().isEmpty()) {
+              if (runIds.isEmpty()) {
                 throw new InvalidArgumentException("ExperimentRun IDs not found in request");
               }
             },
@@ -790,10 +798,41 @@ public class FutureExperimentRunDAO {
                                     executor);
 
                             // Get datasets
-                            final var futureDatasets = datasetHandler.getArtifactsMap(ids);
+                            final var futureDatasetsMap = datasetHandler.getArtifactsMap(ids);
+                            final var filterDatasetsMap =
+                                futureDatasetsMap.thenCompose(
+                                    artifactMapSubtypes -> {
+                                      List<InternalFuture<Map<String, List<Artifact>>>>
+                                          internalFutureList = new ArrayList<>();
+                                      for (ExperimentRun.Builder builder : builders) {
+                                        internalFutureList.add(
+                                            privilegedDatasetsHandler
+                                                .filterAndGetPrivilegedDatasetsOnly(
+                                                    artifactMapSubtypes.get(builder.getId()),
+                                                    true,
+                                                    this::checkEntityPermissionBasedOnResourceTypes)
+                                                .thenCompose(
+                                                    artifacts ->
+                                                        InternalFuture.completedInternalFuture(
+                                                            Collections.singletonMap(
+                                                                builder.getId(), artifacts)),
+                                                    executor));
+                                      }
+                                      return InternalFuture.sequence(internalFutureList, executor)
+                                          .thenCompose(
+                                              maps -> {
+                                                Map<String, List<Artifact>> finalDatasetMap =
+                                                    new HashMap<>();
+                                                maps.forEach(finalDatasetMap::putAll);
+                                                return InternalFuture.completedInternalFuture(
+                                                    finalDatasetMap);
+                                              },
+                                              executor);
+                                    },
+                                    executor);
                             futureBuildersStream =
                                 futureBuildersStream.thenCombine(
-                                    futureDatasets,
+                                    filterDatasetsMap,
                                     (stream, datasets) ->
                                         stream.map(
                                             builder ->
@@ -886,9 +925,26 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
-    return checkProjectPermission(
+    return checkEntityPermissionBasedOnResourceTypes(
             Collections.singletonList(request.getProjectId()),
-            ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
+            ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+            ModelDBServiceResourceTypes.PROJECT)
+        .thenCompose(
+            unused ->
+                privilegedDatasetsHandler
+                    .filterAndGetPrivilegedDatasetsOnly(
+                        request.getDatasetsList(),
+                        true,
+                        this::checkEntityPermissionBasedOnResourceTypes)
+                    .thenApply(
+                        privilegedDatasets ->
+                            request
+                                .toBuilder()
+                                .clearDatasets()
+                                .addAllDatasets(privilegedDatasets)
+                                .build(),
+                        executor),
+            executor)
+        .thenCompose(createExperimentRunHandler::createExperimentRun, executor);
   }
 }
