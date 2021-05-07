@@ -3,21 +3,82 @@ package ai.verta.modeldb.experimentRun;
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.modeldb.*;
+import ai.verta.modeldb.AddExperimentRunTags;
+import ai.verta.modeldb.CodeVersion;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitMultipartArtifact;
+import ai.verta.modeldb.DeleteArtifact;
+import ai.verta.modeldb.DeleteExperimentRunAttributes;
+import ai.verta.modeldb.DeleteExperimentRunTags;
+import ai.verta.modeldb.DeleteExperimentRuns;
+import ai.verta.modeldb.DeleteHyperparameters;
+import ai.verta.modeldb.DeleteMetrics;
+import ai.verta.modeldb.DeleteObservations;
+import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.FindExperimentRuns;
+import ai.verta.modeldb.GetArtifacts;
+import ai.verta.modeldb.GetAttributes;
+import ai.verta.modeldb.GetCommittedArtifactParts;
+import ai.verta.modeldb.GetDatasets;
+import ai.verta.modeldb.GetExperimentRunCodeVersion;
+import ai.verta.modeldb.GetHyperparameters;
+import ai.verta.modeldb.GetMetrics;
+import ai.verta.modeldb.GetObservations;
+import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.LogArtifacts;
+import ai.verta.modeldb.LogAttributes;
+import ai.verta.modeldb.LogDatasets;
+import ai.verta.modeldb.LogExperimentRunCodeVersion;
+import ai.verta.modeldb.LogHyperparameters;
+import ai.verta.modeldb.LogMetrics;
+import ai.verta.modeldb.LogObservations;
+import ai.verta.modeldb.Observation;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.query.QueryFilterContext;
+import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.experimentRun.subtypes.*;
-import ai.verta.uac.*;
+import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
+import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
+import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
+import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
+import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
+import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
+import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
+import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
+import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.versioning.EnvironmentBlob;
+import ai.verta.uac.Action;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedResources;
+import ai.verta.uac.GetWorkspaceByName;
+import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ResourceType;
+import ai.verta.uac.Resources;
+import ai.verta.uac.ServiceEnum;
+import com.google.protobuf.InvalidProtocolBufferException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.*;
-import java.util.concurrent.Executor;
 
 public class FutureExperimentRunDAO {
   private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
@@ -32,8 +93,17 @@ public class FutureExperimentRunDAO {
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
+  private final CodeVersionHandler codeVersionHandler;
+  private final DatasetHandler datasetHandler;
+  private final PredicatesHandler predicatesHandler;
+  private final SortingHandler sortingHandler;
 
-  public FutureExperimentRunDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
+  public FutureExperimentRunDAO(
+      Executor executor,
+      FutureJdbi jdbi,
+      UAC uac,
+      ArtifactStoreDAO artifactStoreDAO,
+      DatasetVersionDAO datasetVersionDAO) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -44,7 +114,19 @@ public class FutureExperimentRunDAO {
     metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", "ExperimentRunEntity");
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
-    artifactHandler = new ArtifactHandler(executor, jdbi, "artifacts", "ExperimentRunEntity");
+    codeVersionHandler = new CodeVersionHandler(executor, jdbi);
+    datasetHandler = new DatasetHandler(executor, jdbi, "ExperimentRunEntity");
+    artifactHandler =
+        new ArtifactHandler(
+            executor,
+            jdbi,
+            "ExperimentRunEntity",
+            codeVersionHandler,
+            datasetHandler,
+            artifactStoreDAO,
+            datasetVersionDAO);
+    predicatesHandler = new PredicatesHandler();
+    sortingHandler = new SortingHandler();
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -294,6 +376,59 @@ public class FutureExperimentRunDAO {
         executor);
   }
 
+  private InternalFuture<List<String>> getAllowedProjects(
+      ModelDBActionEnum.ModelDBServiceActions action) {
+    return FutureGrpc.ClientRequest(
+            uac.getAuthzService()
+                .getSelfAllowedResources(
+                    GetSelfAllowedResources.newBuilder()
+                        .addActions(
+                            Action.newBuilder()
+                                .setModeldbServiceAction(action)
+                                .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                        .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                        .setResourceType(
+                            ResourceType.newBuilder()
+                                .setModeldbServiceResourceType(
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .build()),
+            executor)
+        .thenApply(
+            response ->
+                response.getResourcesList().stream()
+                    .flatMap(x -> x.getResourceIdsList().stream())
+                    .collect(Collectors.toList()),
+            executor);
+  }
+
+  private InternalFuture<List<GetResourcesResponseItem>> getAllowedResourceItems(
+      Optional<List<String>> resourceIds,
+      Long workspaceId,
+      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    ResourceType resourceType =
+        ResourceType.newBuilder()
+            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
+            .build();
+    Resources.Builder resources =
+        Resources.newBuilder()
+            .setResourceType(resourceType)
+            .setService(ServiceEnum.Service.MODELDB_SERVICE);
+
+    if (resourceIds.isPresent() && !resourceIds.get().isEmpty()) {
+      resources.addAllResourceIds(resourceIds.get());
+    }
+
+    return FutureGrpc.ClientRequest(
+            uac.getCollaboratorService()
+                .getResources(
+                    GetResources.newBuilder()
+                        .setResources(resources.build())
+                        .setWorkspaceId(workspaceId)
+                        .build()),
+            executor)
+        .thenApply(GetResources.Response::getItemList, executor);
+  }
+
   public InternalFuture<Void> deleteExperimentRuns(DeleteExperimentRuns request) {
     final var runIds = request.getIdsList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -337,7 +472,7 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.logArtifacts(runId, artifacts), executor)
+        .thenCompose(unused -> artifactHandler.logArtifacts(runId, artifacts, false), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
@@ -364,5 +499,473 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> artifactHandler.deleteArtifacts(runId, optionalKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<Void> logDatasets(LogDatasets request) {
+    final var runId = request.getId();
+    final var artifacts = request.getDatasetsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(
+            unused -> datasetHandler.logArtifacts(runId, artifacts, request.getOverwrite()),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<List<Artifact>> getDatasets(GetDatasets request) {
+    final var runId = request.getId();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()), executor);
+  }
+
+  public InternalFuture<Void> logCodeVersion(LogExperimentRunCodeVersion request) {
+    final var runId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> codeVersionHandler.logCodeVersion(request), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<Optional<CodeVersion>> getCodeVersion(GetExperimentRunCodeVersion request) {
+    final var runId = request.getId();
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> codeVersionHandler.getCodeVersion(request.getId()), executor);
+  }
+
+  public InternalFuture<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
+    final var runId = request.getId();
+
+    InternalFuture<Void> permissionCheck;
+    if (request.getMethod().toUpperCase().equals("GET")) {
+      permissionCheck =
+          checkPermission(
+              Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ);
+    } else {
+      permissionCheck =
+          checkPermission(
+              Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+    }
+
+    return permissionCheck.thenCompose(
+        unused -> artifactHandler.getUrlForArtifact(request), executor);
+  }
+
+  public InternalFuture<GetCommittedArtifactParts.Response> getCommittedArtifactParts(
+      GetCommittedArtifactParts request) {
+    final var runId = request.getId();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(unused -> artifactHandler.getCommittedArtifactParts(request), executor);
+  }
+
+  public InternalFuture<Void> commitArtifactPart(CommitArtifactPart request) {
+    final var runId = request.getId();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> artifactHandler.commitArtifactPart(request), executor);
+  }
+
+  public InternalFuture<Void> commitMultipartArtifact(CommitMultipartArtifact request) {
+    final var runId = request.getId();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> artifactHandler.commitMultipartArtifact(request), executor);
+  }
+
+  public InternalFuture<FindExperimentRuns.Response> findExperimentRuns(
+      FindExperimentRuns request) {
+    // TODO: handle ids only?
+    // TODO: filter by permission
+
+    final var futureLocalContext =
+        InternalFuture.supplyAsync(
+            () -> {
+              final var localQueryContext = new QueryFilterContext();
+
+              if (!request.getProjectId().isEmpty()) {
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.project_id=:request_project_id");
+                localQueryContext
+                    .getBinds()
+                    .add(q -> q.bind("request_project_id", request.getProjectId()));
+              }
+
+              if (!request.getExperimentId().isEmpty()) {
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.experiment_id=:request_experiment_id");
+                localQueryContext
+                    .getBinds()
+                    .add(q -> q.bind("request_experiment_id", request.getExperimentId()));
+              }
+
+              if (!request.getExperimentRunIdsList().isEmpty()) {
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.id in (<request_experiment_run_ids>)");
+                localQueryContext
+                    .getBinds()
+                    .add(
+                        q ->
+                            q.bindList(
+                                "request_experiment_run_ids", request.getExperimentRunIdsList()));
+              }
+
+              return localQueryContext;
+            },
+            executor);
+
+    // futurePredicatesContext
+    final var futurePredicatesContext =
+        predicatesHandler.processPredicates(request.getPredicatesList(), executor);
+
+    // futureSortingContext
+    final var futureSortingContext =
+        sortingHandler.processSort(request.getSortKey(), request.getAscending());
+
+    // futureProjectIds based on workspace
+    final InternalFuture<List<String>> futureProjectIds =
+        getAccessibleProjectIdsBasedOnWorkspace(
+            request.getWorkspaceName(), Optional.of(request.getProjectId()));
+
+    final var futureExperimentRuns =
+        futureProjectIds.thenCompose(
+            accessibleProjectIds -> {
+              if (accessibleProjectIds.isEmpty()) {
+                return InternalFuture.completedInternalFuture(new ArrayList<ExperimentRun>());
+              } else {
+                final var futureProjectIdsContext =
+                    InternalFuture.completedInternalFuture(
+                        new QueryFilterContext()
+                            .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                            .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds)));
+                return InternalFuture.sequence(
+                        Arrays.asList(
+                            futureLocalContext,
+                            futurePredicatesContext,
+                            futureSortingContext,
+                            futureProjectIdsContext),
+                        executor)
+                    .thenApply(QueryFilterContext::combine, executor)
+                    .thenCompose(
+                        queryContext -> {
+                          // TODO: get environment
+                          // TODO: get features?
+                          // TODO: get versioned inputs
+                          // TODO: get code version from blob
+                          return jdbi.withHandle(
+                                  handle -> {
+                                    var sql =
+                                        "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id from experiment_run";
+
+                                    // Add the sorting tables
+                                    for (final var item :
+                                        new EnumerateList<>(queryContext.getOrderItems())
+                                            .getList()) {
+                                      if (item.getValue().getTable() != null) {
+                                        sql +=
+                                            String.format(
+                                                " left join (%s) as join_table_%d on experiment_run.id=join_table_%d.id ",
+                                                item.getValue().getTable(),
+                                                item.getIndex(),
+                                                item.getIndex());
+                                      }
+                                    }
+
+                                    if (!queryContext.getConditions().isEmpty()) {
+                                      sql +=
+                                          " WHERE "
+                                              + String.join(" AND ", queryContext.getConditions());
+                                    }
+
+                                    if (!queryContext.getOrderItems().isEmpty()) {
+                                      sql += " ORDER BY ";
+                                      for (final var item :
+                                          new EnumerateList<>(queryContext.getOrderItems())
+                                              .getList()) {
+                                        if (item.getValue().getTable() != null) {
+                                          sql +=
+                                              String.format(
+                                                  " join_table_%d.value ", item.getIndex());
+                                        } else if (item.getValue().getColumn() != null) {
+                                          sql += String.format(" %s ", item.getValue().getColumn());
+                                        }
+                                        sql +=
+                                            String.format(
+                                                " %s ",
+                                                item.getValue().getAscending() ? "ASC" : "DESC");
+                                      }
+                                    }
+
+                                    // Backwards compatibility: fetch everything
+                                    if (request.getPageNumber() != 0
+                                        && request.getPageLimit() != 0) {
+                                      final var offset =
+                                          (request.getPageNumber() - 1) * request.getPageLimit();
+                                      final var limit = request.getPageLimit();
+                                      sql += " LIMIT :limit OFFSET :offset";
+                                      queryContext.addBind(q -> q.bind("limit", limit));
+                                      queryContext.addBind(q -> q.bind("offset", offset));
+                                    }
+
+                                    var query = handle.createQuery(sql);
+                                    queryContext.getBinds().forEach(b -> b.accept(query));
+
+                                    return query
+                                        .map(
+                                            (rs, ctx) -> {
+                                              ExperimentRun.Builder runBuilder =
+                                                  ExperimentRun.newBuilder()
+                                                      .setId(rs.getString("experiment_run.id"))
+                                                      .setProjectId(
+                                                          rs.getString("experiment_run.project_id"))
+                                                      .setExperimentId(
+                                                          rs.getString(
+                                                              "experiment_run.experiment_id"))
+                                                      .setName(rs.getString("experiment_run.name"))
+                                                      .setDescription(
+                                                          rs.getString(
+                                                              "experiment_run.description"))
+                                                      .setDateUpdated(
+                                                          rs.getLong("experiment_run.date_updated"))
+                                                      .setDateCreated(
+                                                          rs.getLong("experiment_run.date_created"))
+                                                      .setStartTime(
+                                                          rs.getLong("experiment_run.start_time"))
+                                                      .setEndTime(
+                                                          rs.getLong("experiment_run.end_time"))
+                                                      .setOwner(
+                                                          rs.getString("experiment_run.owner"))
+                                                      .setCodeVersion(
+                                                          rs.getString(
+                                                              "experiment_run.code_version"))
+                                                      .setJobId(
+                                                          rs.getString("experiment_run.job_id"));
+
+                                              var environment =
+                                                  rs.getString("experiment_run.environment");
+                                              if (environment != null && !environment.isEmpty()) {
+                                                EnvironmentBlob.Builder environmentBlobBuilder =
+                                                    EnvironmentBlob.newBuilder();
+                                                try {
+                                                  CommonUtils.getProtoObjectFromString(
+                                                      environment, environmentBlobBuilder);
+                                                } catch (InvalidProtocolBufferException e) {
+                                                  LOGGER.error(
+                                                      "Error generating builder for environment");
+                                                  throw new ModelDBException(e);
+                                                }
+                                                runBuilder.setEnvironment(
+                                                    environmentBlobBuilder.build());
+                                              }
+
+                                              return runBuilder;
+                                            })
+                                        .list();
+                                  })
+                              .thenCompose(
+                                  builders -> {
+                                    if (builders == null || builders.isEmpty()) {
+                                      return InternalFuture.completedInternalFuture(
+                                          new LinkedList<ExperimentRun>());
+                                    }
+
+                                    var futureBuildersStream =
+                                        InternalFuture.completedInternalFuture(builders.stream());
+                                    final var ids =
+                                        builders.stream()
+                                            .map(x -> x.getId())
+                                            .collect(Collectors.toSet());
+
+                                    // Get tags
+                                    final var futureTags = tagsHandler.getTagsMap(ids);
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            futureTags,
+                                            (stream, tags) ->
+                                                stream.map(
+                                                    builder ->
+                                                        builder.addAllTags(
+                                                            tags.get(builder.getId()))),
+                                            executor);
+
+                                    // Get hyperparams
+                                    final var futureHyperparams =
+                                        hyperparametersHandler.getKeyValuesMap(ids);
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            futureHyperparams,
+                                            (stream, hyperparams) ->
+                                                stream.map(
+                                                    builder ->
+                                                        builder.addAllHyperparameters(
+                                                            hyperparams.get(builder.getId()))),
+                                            executor);
+
+                                    // Get metrics
+                                    final var futureMetrics = metricsHandler.getKeyValuesMap(ids);
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            futureMetrics,
+                                            (stream, metrics) ->
+                                                stream.map(
+                                                    builder ->
+                                                        builder.addAllMetrics(
+                                                            metrics.get(builder.getId()))),
+                                            executor);
+
+                                    // Get attributes
+                                    final var futureAttributes =
+                                        attributeHandler.getKeyValuesMap(ids);
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            futureAttributes,
+                                            (stream, attributes) ->
+                                                stream.map(
+                                                    builder ->
+                                                        builder.addAllAttributes(
+                                                            attributes.get(builder.getId()))),
+                                            executor);
+
+                                    // Get artifacts
+                                    final var futureArtifacts =
+                                        artifactHandler.getArtifactsMap(ids);
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            futureArtifacts,
+                                            (stream, artifacts) ->
+                                                stream.map(
+                                                    builder ->
+                                                        builder.addAllArtifacts(
+                                                            artifacts.get(builder.getId()))),
+                                            executor);
+
+                                    // Get datasets
+                                    final var futureDatasets = datasetHandler.getArtifactsMap(ids);
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            futureDatasets,
+                                            (stream, datasets) ->
+                                                stream.map(
+                                                    builder ->
+                                                        builder.addAllDatasets(
+                                                            datasets.get(builder.getId()))),
+                                            executor);
+
+                                    // Get observations
+                                    final var futureObservations =
+                                        observationHandler.getObservationsMap(ids);
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            futureObservations,
+                                            (stream, observations) ->
+                                                stream.map(
+                                                    builder ->
+                                                        builder.addAllObservations(
+                                                            observations.get(builder.getId()))),
+                                            executor);
+
+                                    return futureBuildersStream.thenApply(
+                                        experimentRunBuilders ->
+                                            experimentRunBuilders
+                                                .map(ExperimentRun.Builder::build)
+                                                .collect(Collectors.toList()),
+                                        executor);
+                                  },
+                                  executor);
+                        },
+                        executor);
+              }
+            },
+            executor);
+
+    final var futureCount =
+        futureProjectIds.thenCompose(
+            accessibleProjectIds -> {
+              if (accessibleProjectIds.isEmpty()) {
+                return InternalFuture.completedInternalFuture(0L);
+              } else {
+                final var futureProjectIdsContext =
+                    InternalFuture.completedInternalFuture(
+                        new QueryFilterContext()
+                            .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                            .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds)));
+                return InternalFuture.sequence(
+                        Arrays.asList(
+                            futureLocalContext, futurePredicatesContext, futureProjectIdsContext),
+                        executor)
+                    .thenApply(QueryFilterContext::combine, executor)
+                    .thenCompose(
+                        queryContext ->
+                            jdbi.withHandle(
+                                handle -> {
+                                  var sql = "select count(experiment_run.id) from experiment_run";
+
+                                  if (!queryContext.getConditions().isEmpty()) {
+                                    sql +=
+                                        " WHERE "
+                                            + String.join(" AND ", queryContext.getConditions());
+                                  }
+
+                                  var query = handle.createQuery(sql);
+                                  queryContext.getBinds().forEach(b -> b.accept(query));
+
+                                  return query.mapTo(Long.class).one();
+                                }),
+                        executor);
+              }
+            },
+            executor);
+
+    return futureExperimentRuns.thenCombine(
+        futureCount,
+        (runs, count) ->
+            FindExperimentRuns.Response.newBuilder()
+                .addAllExperimentRuns(runs)
+                .setTotalRecords(count)
+                .build(),
+        executor);
+  }
+
+  private InternalFuture<List<String>> getAccessibleProjectIdsBasedOnWorkspace(
+      String workspaceName, Optional<String> projectId) {
+    if (workspaceName.isEmpty()) {
+      return getAllowedProjects(ModelDBActionEnum.ModelDBServiceActions.READ);
+    } else {
+      var requestProjectIds = new ArrayList<String>();
+      if (projectId.isPresent()) {
+        requestProjectIds.add(projectId.get());
+      }
+
+      return FutureGrpc.ClientRequest(
+              uac.getWorkspaceService()
+                  .getWorkspaceByName(
+                      GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
+              executor)
+          .thenCompose(
+              workspace ->
+                  getAllowedResourceItems(
+                          Optional.of(requestProjectIds),
+                          workspace.getId(),
+                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                      .thenCompose(
+                          getResourcesItems ->
+                              InternalFuture.completedInternalFuture(
+                                  getResourcesItems.stream()
+                                      .map(GetResourcesResponseItem::getResourceId)
+                                      .collect(Collectors.toList())),
+                          executor),
+              executor);
+    }
   }
 }
