@@ -3,7 +3,7 @@ package ai.verta.dataset_versioning
 import scala.util.{Try, Success, Failure}
 import scala.concurrent.ExecutionContext
 
-import ai.verta.client.entities.Taggable
+import ai.verta.client.entities.{Taggable, CachedEntity}
 import ai.verta.client.entities.utils._
 import ai.verta.client.entities.utils._
 import net.liftweb.json._
@@ -14,12 +14,18 @@ import ai.verta.swagger.client.ClientSet
 
 /** Represents a ModelDB dataset.
  */
-class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbDataset) extends Taggable {
+class Dataset(
+  private val clientSet: ClientSet,
+  private val dataset: ModeldbDataset
+) extends Taggable with CachedEntity[ModeldbDataset] {
   /** ID of the dataset. */
   def id: String = dataset.id.get
 
   /** Name of the dataset. */
   def name: String = dataset.name.get
+
+  // initialize cached message
+  updateCache(Success(dataset), Success(System.currentTimeMillis()))
 
   /** Sets the description of this dataset.
    *  @param description Description to set.
@@ -29,7 +35,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
       description = Some(description),
       id = Some(id)
     ))
-      .map(_ => ())
+      .map(_ => clearCache())
 
   /** Gets the description of this dataset.
    *  @return Description of this dataset.
@@ -42,7 +48,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
    */
   def addTags(tags: List[String])(implicit ec: ExecutionContext): Try[Unit] =
     clientSet.datasetService.DatasetService_addDatasetTags(ModeldbAddDatasetTags(id = Some(id), tags = Some(tags)))
-      .map(_ => ())
+      .map(_ => clearCache())
 
   /** Delete multiple tags from this dataset.
    *  @param tags tags to delete.
@@ -52,7 +58,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
       id = Some(id),
       tags = Some(tags)
     ))
-      .map(_ => ())
+      .map(_ => clearCache())
 
   /** Gets all the tags of this dataset.
    *  @return tags of this dataset.
@@ -60,7 +66,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
   def getTags()(implicit ec: ExecutionContext): Try[List[String]] =
     getMessage().map(dataset => dataset.tags.getOrElse(Nil))
 
-  private def getMessage()(implicit ec: ExecutionContext): Try[ModeldbDataset] =
+  override protected def fetchMessage()(implicit ec: ExecutionContext): Try[ModeldbDataset] =
     clientSet.datasetService.DatasetService_getDatasetById(Some(id))
       .map(r => r.dataset.get)
 
@@ -74,7 +80,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
       clientSet.datasetService.DatasetService_addDatasetAttributes(ModeldbAddDatasetAttributes(
         id = Some(id),
         attributes = valsList.toOption
-      )).map(_ => {})
+      )).map(_ => clearCache())
   }
 
   /** Adds an attribute to this Dataset.
@@ -88,8 +94,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
    *  @return All the attributes (String, Int, or Double)
    */
   def getAttributes()(implicit ec: ExecutionContext): Try[Map[String, ValueType]] = {
-    clientSet.datasetService.DatasetService_getDatasetById(Some(id))
-      .map(r => r.dataset.get)
+    getMessage()
       .flatMap(dataset => {
         if (dataset.attributes.isEmpty)
           Success(Map[String, ValueType]())
@@ -117,7 +122,7 @@ class Dataset(private val clientSet: ClientSet, private val dataset: ModeldbData
     clientSet.datasetService.DatasetService_deleteDatasetAttributes(ModeldbDeleteDatasetAttributes(
       id = Some(id),
       attribute_keys = Some(keys)
-    )).map(_ => {})
+    )).map(_ => clearCache())
 
   private def convertModel(
     datasetMessage: ai.verta.swagger._public.modeldb.versioning.model.VersioningDatasetBlob
