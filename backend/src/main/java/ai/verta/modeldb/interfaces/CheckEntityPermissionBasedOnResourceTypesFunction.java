@@ -6,7 +6,7 @@ import ai.verta.uac.ModelDBActionEnum;
 import java.util.List;
 
 public interface CheckEntityPermissionBasedOnResourceTypesFunction {
-  InternalFuture<Void> checkPermission(
+  InternalFuture<Void> checkEntityPermissionBasedOnResourceTypes(
       List<String> ids,
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes);

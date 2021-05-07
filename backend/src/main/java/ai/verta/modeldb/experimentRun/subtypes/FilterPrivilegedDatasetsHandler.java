@@ -106,7 +106,7 @@ public class FilterPrivilegedDatasetsHandler {
                           .thenCompose(
                               id ->
                                   permissionCheck
-                                      .checkPermission(
+                                      .checkEntityPermissionBasedOnResourceTypes(
                                           Collections.singletonList(datasetId),
                                           ModelDBActionEnum.ModelDBServiceActions.READ,
                                           ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET)
