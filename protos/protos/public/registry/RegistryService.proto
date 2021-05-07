@@ -82,6 +82,14 @@ message GetRegisteredModelRequest {
     }
 }
 
+message GetRegisteredModelCountRequest {
+    string project_id = 1;
+
+    message Response {
+        int64 registered_model_count = 1;
+    }
+}
+
 message RegisteredModelNamedIdentification {
     //Model Name
     string name = 1;
@@ -319,6 +327,12 @@ service RegistryService {
             additional_bindings {
                 get: "/v1/registry/registered_models/{id.registered_model_id}"
             }
+        };
+    };
+
+    rpc GetRegisteredModelCount(GetRegisteredModelCountRequest) returns (GetRegisteredModelCountRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/registry/registered_models/count"
         };
     };
 

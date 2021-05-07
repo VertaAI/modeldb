@@ -74,6 +74,7 @@ message DeploymentActionEnum {
         UPDATE = 4;
         DELETE = 5;
         UPDATE_PERMISSIONS = 8;
+        PREDICT = 9;
     }
 };
 
