@@ -498,4 +498,7 @@ public interface ExperimentRunDAO {
 
   void logEnvironment(String experimentRunId, EnvironmentBlob environmentBlob)
       throws InvalidProtocolBufferException;
+
+  FindExperimentRunsFields.Response findExperimentRunsFields(
+      ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters);
 }

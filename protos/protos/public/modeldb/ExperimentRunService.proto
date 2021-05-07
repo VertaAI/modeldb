@@ -466,6 +466,54 @@ message FindExperimentRuns {
     }
 }
 
+// Lists all hyperparameters and metrics found for the given find request
+message FindExperimentRunsFields {
+    FindExperimentRuns find_request = 1;
+
+    message Response {
+        repeated string hyperparameters = 1;
+        repeated string metrics = 2;
+        repeated string attributes = 3;
+    }
+}
+
+// List all the values for hyperparameters and metrics as per the find request, and the names provided
+message FindExperimentRunsFieldValues {
+    FindExperimentRuns find_request = 1;
+
+    // Hyperparameters and metrics must be explicitly specified here to be loaded from the backend
+    repeated string hyperparameters = 2;
+    repeated string metrics = 3;
+    repeated string attributes = 4;
+
+    message Response {
+        // List of all the experiment run ids in this page
+        repeated string experiment_run_ids = 1;
+        repeated string owner_id = 2;
+        repeated string experiment_id = 3;
+
+        // Map from the hyperparameter name and its values
+        map<string, FindExperimentRunsFieldValuesItem> hyperparameters = 4;
+        // Map from the metric name and its values
+        map<string, FindExperimentRunsFieldValuesItem> metrics = 5;
+        // Map from the attribute name and its values
+        map<string, FindExperimentRunsFieldValuesItem> attributes = 6;
+
+        int64 total_records = 7;
+    }
+}
+
+// Sparse list representing all the values for the given hyperparameter or metric
+message FindExperimentRunsFieldValuesItem {
+    // The index is a list as long as the other lists. Its values correspond to the index of the matching item for experiment_run_ids
+    // For example, if index = [0, 2, 3], it means that the runs whose indices are 0, 2 and 3 have their values specified
+    // So the experiment run with index 1 doesn't have this metric or hyperparameter
+    // The lists values and value_types also have length 3 to match the length of the index
+    repeated uint64 index = 1;
+    repeated google.protobuf.Value values = 2;
+    repeated common.ValueTypeEnum.ValueType value_types = 3;
+}
+
 message SortExperimentRuns {
     repeated string experiment_run_ids = 1;
     string sort_key = 2; // metrics.accuracy
@@ -891,6 +939,9 @@ service ExperimentRunService {
             body: "*"
         };
     };
+
+    rpc findExperimentRunsFields(FindExperimentRunsFields) returns (FindExperimentRunsFields.Response) {};
+    rpc findExperimentRunsFieldValues(FindExperimentRunsFieldValues) returns (FindExperimentRunsFieldValues.Response) {};
 
     rpc sortExperimentRuns (SortExperimentRuns) returns (SortExperimentRuns.Response){
         option (google.api.http) = {
