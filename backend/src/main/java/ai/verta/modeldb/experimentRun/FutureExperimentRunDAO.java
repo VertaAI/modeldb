@@ -552,11 +552,8 @@ public class FutureExperimentRunDAO {
                 ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
             .thenApply(
                 resources -> {
-                  List<Resources> accessAllResources =
-                      resources.stream()
-                          .filter(Resources::getAllResourceIds)
-                          .collect(Collectors.toList());
-                  if (!accessAllResources.isEmpty()) {
+                  boolean allowedAllResources = checkAllResourceAllowed(resources);
+                  if (allowedAllResources) {
                     return new QueryFilterContext();
                   } else {
                     List<String> accessibleProjectIds =
@@ -838,6 +835,16 @@ public class FutureExperimentRunDAO {
         executor);
   }
 
+  private boolean checkAllResourceAllowed(List<Resources> resources) {
+    boolean allowedAllResources = false;
+    for (Resources resources1 : resources) {
+      if (resources1.getService().equals(ServiceEnum.Service.MODELDB_SERVICE)) {
+        allowedAllResources = resources1.getAllResourceIds();
+      }
+    }
+    return allowedAllResources;
+  }
+
   private InternalFuture<MapSubtypes<KeyValue>> getFutureHyperparamsFromConfigBlobs(
       Set<String> ids) {
     return InternalFuture.completedInternalFuture(config.populateConnectionsBasedOnPrivileges)
@@ -857,12 +864,9 @@ public class FutureExperimentRunDAO {
             executor)
         .thenCompose(
             resources -> {
-              List<Resources> accessibleAllRepositoryResources =
-                  resources.stream()
-                      .filter(Resources::getAllResourceIds)
-                      .collect(Collectors.toList());
+              boolean allowedAllResources = checkAllResourceAllowed(resources);
               // For all repositories are accessible
-              if (!accessibleAllRepositoryResources.isEmpty()) {
+              if (allowedAllResources) {
                 return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
                     new ArrayList<>(ids), Collections.emptyList(), true);
               } else {
