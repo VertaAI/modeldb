@@ -37,6 +37,7 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -92,6 +93,7 @@ public class FutureExperimentRunDAO {
   private final FeatureHandler featureHandler;
   private final FilterPrivilegedDatasetsHandler privilegedDatasetsHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
+  private final Config config = Config.getInstance();
 
   public FutureExperimentRunDAO(
       Executor executor,
@@ -835,9 +837,16 @@ public class FutureExperimentRunDAO {
                                     filterDatasetsMap,
                                     (stream, datasets) ->
                                         stream.map(
-                                            builder ->
-                                                builder.addAllDatasets(
-                                                    datasets.get(builder.getId()))),
+                                            builder -> {
+                                              List<Artifact> datasetList =
+                                                  datasets.get(builder.getId());
+                                              if (datasetList != null && !datasetList.isEmpty()) {
+                                                return builder
+                                                    .clearDatasets()
+                                                    .addAllDatasets(datasetList);
+                                              }
+                                              return builder;
+                                            }),
                                     executor);
 
                             // Get observations
