@@ -411,7 +411,7 @@ class Dataset(entity._ModelDBEntity):
     @property
     def desc(self):
         warnings.warn(
-            "this attribute is deprecated and will removed in an upcoming version;"
+            "this attribute is deprecated and will be removed in an upcoming version;"
             " consider using `get_description()` instead",
             category=FutureWarning,
         )
@@ -420,7 +420,7 @@ class Dataset(entity._ModelDBEntity):
     @property
     def attrs(self):
         warnings.warn(
-            "this attribute is deprecated and will removed in an upcoming version;"
+            "this attribute is deprecated and will be removed in an upcoming version;"
             " consider using `get_attributes()` instead",
             category=FutureWarning,
         )
@@ -429,7 +429,7 @@ class Dataset(entity._ModelDBEntity):
     @property
     def tags(self):
         warnings.warn(
-            "this attribute is deprecated and will removed in an upcoming version;"
+            "this attribute is deprecated and will be removed in an upcoming version;"
             " consider using `get_tags()` instead",
             category=FutureWarning,
         )

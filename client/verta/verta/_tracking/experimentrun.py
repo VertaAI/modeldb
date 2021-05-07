@@ -1807,6 +1807,10 @@ class ExperimentRun(_DeployableEntity):
         """
         Logs a pip requirements file for Verta model deployment.
 
+        .. deprecated:: 0.17.7
+            This method is deprecated and will be removed in an upcoming
+            version; consider using :meth:`log_environment` instead.
+
         .. versionadded:: 0.13.13
 
         Parameters
@@ -1852,6 +1856,12 @@ class ExperimentRun(_DeployableEntity):
             # scikit-learn==0.21.3
 
         """
+        warnings.warn(
+            "this method is deprecated and will be removed in an upcoming"
+            " version; consider using `log_environment()` instead",
+            category=FutureWarning,
+        )
+
         if isinstance(requirements, six.string_types):
             with open(requirements, 'r') as f:
                 requirements = _pip_requirements_utils.clean_reqs_file_lines(
@@ -1885,6 +1895,8 @@ class ExperimentRun(_DeployableEntity):
     def log_environment(self, env, overwrite=False):
         """
         Logs a Python environment to this Experiment Run.
+
+        .. versionadded:: 0.17.1
 
         Parameters
         ----------
@@ -1939,7 +1951,7 @@ class ExperimentRun(_DeployableEntity):
            The behavior of this function has been merged into :meth:`log_model` as its
            ``custom_modules`` parameter; consider using that instead.
         .. deprecated:: 0.12.4
-           The `search_path` parameter is no longer necessary and will removed in v0.17.0; consider
+           The `search_path` parameter is no longer necessary and will be removed in an upcoming version; consider
            removing it from the function call.
 
         Parameters
@@ -1953,7 +1965,7 @@ class ExperimentRun(_DeployableEntity):
                       " `custom_modules` parameter; consider using that instead",
                       category=FutureWarning)
         if search_path is not None:
-            warnings.warn("`search_path` is no longer used and will removed in a later version;"
+            warnings.warn("`search_path` is no longer used and will be removed in a later version;"
                           " consider removing it from the function call",
                           category=FutureWarning)
 
