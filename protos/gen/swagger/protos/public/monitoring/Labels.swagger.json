@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/labels/findLabelValues": {
+    "/api/v1/monitoring/labels/findLabelValues": {
       "post": {
         "operationId": "LabelService_findLabelValues",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/labels/findLabels": {
+    "/api/v1/monitoring/labels/findLabels": {
       "post": {
         "operationId": "LabelService_findLabels",
         "responses": {

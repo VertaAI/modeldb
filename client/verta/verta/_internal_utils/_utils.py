@@ -162,6 +162,10 @@ class Connection:
     def is_html_response(response):
         return response.text.strip().endswith("</html>")
 
+    @property
+    def email(self):
+        return self.auth.get(_GRPC_PREFIX+"email")
+
     def _get_visible_orgs(self):
         response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces")
         response = self.must_proto_response(response, Workspace_pb2.Workspaces)
