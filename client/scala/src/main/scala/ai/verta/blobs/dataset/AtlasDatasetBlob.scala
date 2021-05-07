@@ -69,7 +69,7 @@ object AtlasDatasetBlob {
           parametersMap <- getSubMap(attributesMap, "parameters")
         ) yield {
           val tags = getTags(entityMap)
-          val attributes = getAttributes(entityMap, attributesMap, dbRelationshipAttributesMap)
+          val attributes = getAttributes(entityMap, attributesMap, relationshipAttributesMap, dbRelationshipAttributesMap)
 
           val tableName: String = attributes.get("table_name").get.asString.get
           val databaseName: String = attributes.get("database_name").get.asString.get
@@ -119,23 +119,42 @@ object AtlasDatasetBlob {
     private def getAttributes(
       entityMap: Map[String, JValue],
       attributesMap: Map[String, JValue],
+      relationshipAttributesMap: Map[String, JValue],
       dbRelationshipAttributesMap: Map[String, JValue]
     ): Map[String, ValueType] = {
-      /** TODO: Support more attributes, namely the one in list forms: load_queries, col_names */
-
       val tableName: String = attributesMap.get("name").map(JsonConverter.fromJsonString).get
       val databaseName: String = dbRelationshipAttributesMap.get("displayText").map(JsonConverter.fromJsonString).get
       val createdTime: BigInt = entityMap.get("createTime").map(JsonConverter.fromJsonInteger).get
       val updatedTime: BigInt = entityMap.get("updateTime").map(JsonConverter.fromJsonInteger).get
+      val columnNames: List[ValueType] = getListFieldDisplayText(relationshipAttributesMap, "columns")
+      val loadQueries: List[ValueType] = getListFieldDisplayText(relationshipAttributesMap, "outputFromProcesses")
 
       Map[String, ValueType](
         "type" -> "hive_table", // only supports hive table.
         "table_name" -> tableName,
         "database_name" -> databaseName,
         "created_time" -> createdTime,
-        "updated_time" -> updatedTime
+        "updated_time" -> updatedTime,
+        "col_names" -> columnNames,
+        "load_queries" -> loadQueries
       )
     }
+
+    // get display test of each object in a list field
+    private def getListFieldDisplayText(jsonMap: Map[String, JValue], fieldName: String): List[ValueType] =
+      (jsonMap.get(fieldName) match {
+        case Some(JArray(objs)) => objs
+        case _ => List()
+      })
+        .flatMap(obj => obj match {
+          case JObject(fields) =>
+            fields
+              .filter(field => field.name == "displayText")
+              .map(_.value)
+              .map(JsonConverter.fromJsonString)
+          case _ => List()
+        })
+        .map(colName => ValueType.fromString(colName))
 
     private def getTags(entityMap: Map[String, JValue]): List[String] = {
       entityMap.get("classifications") match {
