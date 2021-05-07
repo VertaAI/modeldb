@@ -269,6 +269,7 @@ public interface ModelDBConstants {
   String UPDATE_RUN_ENVIRONMENTS = "update_run_environments";
   String DELETE_AUDIT_LOGS = "delete_audit_logs";
   String CLEAN_UP_ENTITIES = "clean_up_entities";
+  String SET_MAX_PACKET_SIZE = "set_max_packet_size";
 
   // Audit log constants
   String CREATE = "CREATE";
