@@ -36,6 +36,12 @@ assemblyMergeStrategy in assembly := {
  case x => MergeStrategy.first
 }
 
+enablePlugins(SiteScaladocPlugin)
+enablePlugins(GhpagesPlugin)
+
+// For hosting the documentation to https://nhatsmrt.github.io/modeldb/latest/api/
+git.remoteRepo := "git@github.com:nhatsmrt/modeldb.git"
+
 // Uncomment the following for publishing to Sonatype.
 // See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for more detail.
 

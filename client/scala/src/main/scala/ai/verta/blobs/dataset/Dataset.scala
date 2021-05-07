@@ -25,11 +25,10 @@ trait Dataset extends Blob {
   private[verta] var blobPath: Option[String] = None // path to the blob in the commit
 
   /** Downloads componentPath from this dataset if ModelDB-managed versioning was enabled.
-   *  @param componentPath Original path of the file or directory in this dataset to download.
-   *  If not provided, all files will be downloaded
-   *  @param downloadToPath Path to download to. If not provided, the file(s) will be downloaded into a new path in
-   *  the current directory. If provided and the path already exists, it will be overwritten
-   *  @return If succeeds, absolute path where file(s) were downloaded to. Matches downloadToPath if provided.
+   *  Currently, only support downloading to a specific path
+   *  @param componentPath Original path of the file or directory in this dataset to download
+   *  @param downloadToPath Path to download to
+   *  @return Whether the download attempts succeed.
    */
   def download(
     componentPath: Option[String] = None,
