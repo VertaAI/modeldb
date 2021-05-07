@@ -139,3 +139,29 @@ class TestLogRequirements:
         assert not experiment_run.has_environment
         experiment_run.log_requirements(self.VALID_REQS)
         assert experiment_run.has_environment
+
+    def test_torch_no_suffix(self, experiment_run):
+        requirement = "torch==1.8.1+cu102"
+        experiment_run.log_requirements([requirement])
+
+        reqs_txt = experiment_run.get_artifact(
+            "requirements.txt").read().decode()
+        reqs = set(req.strip() for req in reqs_txt.splitlines())
+        assert requirement not in reqs
+        assert requirement.split("+")[0] in reqs
+
+    def test_torch_no_suffix_autocapture(self, experiment_run):
+        torch = pytest.importorskip("torch")
+        version = torch.__version__
+
+        if "+" not in version:
+            pytest.skip("no metadata on version number")
+
+        requirement = "torch=={}".format(version)
+        experiment_run.log_requirements([requirement])
+
+        reqs_txt = experiment_run.get_artifact(
+            "requirements.txt").read().decode()
+        reqs = set(req.strip() for req in reqs_txt.splitlines())
+        assert requirement not in reqs
+        assert requirement.split("+")[0] in reqs

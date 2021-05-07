@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
 
-# TODO: property-based testing with a Hypothesis strategy for version numbers
-
-import pytest
+# for composite strategy
+# pylint: disable=no-value-for-parameter
 
 import os
+import string
 import subprocess
 import sys
 import tempfile
 
+import hypothesis
+import hypothesis.strategies as st
+import pytest
 import six
 
 from google.protobuf import json_format
@@ -18,6 +21,24 @@ from verta.environment import (
 )
 from verta._internal_utils import _pip_requirements_utils
 
+
+@st.composite
+def versions(draw):
+    numbers = st.integers(min_value=0, max_value=(2**31)-1)
+
+    major = draw(numbers)
+    minor = draw(numbers)
+    patch = draw(numbers)
+
+    return ".".join(map(str, [major, minor, patch]))
+
+
+@st.composite
+def metadata(draw):
+    """The "cu102" in "torch==1.8.1+cu102"."""
+    # https://www.python.org/dev/peps/pep-0440/#local-version-identifiers
+    alphabet = string.ascii_letters + string.digits + ".-_"
+    return draw(st.text(alphabet=alphabet, min_size=1))
 
 
 @pytest.fixture
@@ -84,6 +105,19 @@ class TestUtils:
             assert parsed_version[1] >= 0  # minor
             assert parsed_version[2] >= 0  # patch
             assert isinstance(parsed_version[3], six.string_types)  # suffix
+
+    @hypothesis.given(
+        version=versions(),
+        metadata=metadata(),
+    )
+    def test_remove_torch_metadata(self, version, metadata):
+        clean_requirement = "torch=={}".format(version)
+        requirement = "+".join([clean_requirement, metadata])
+
+        requirements = [requirement]
+        _pip_requirements_utils.remove_public_version_identifier(requirements)
+        assert requirements != [requirement]
+        assert requirements == [clean_requirement]
 
 
 class TestPython:
@@ -157,6 +191,7 @@ class TestPython:
         )
 
     def test_torch_no_suffix(self):
+        # NOTE: this test takes too long for Hypothesis
         requirement = "torch==1.8.1+cu102"
         env_ver = Python([requirement])
         assert requirement not in env_ver.requirements
