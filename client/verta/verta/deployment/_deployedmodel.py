@@ -19,9 +19,9 @@ class DeployedModel:
     Object for interacting with deployed models.
 
     .. deprecated:: 0.13.7
-        The `socket` parameter will be renamed to `host` in v0.17.0
+        The `socket` parameter will be renamed to `host` in an upcoming version
     .. deprecated:: 0.13.7
-        The `model_id` parameter will be renamed to `run_id` in v0.17.0
+        The `model_id` parameter will be renamed to `run_id` in an upcoming version
 
     This class provides functionality for sending predictions to a deployed model on the Verta
     backend.
@@ -51,9 +51,9 @@ class DeployedModel:
     """
     def __init__(self, _host=None, _run_id=None, _from_url=False, **kwargs):
         # this is to temporarily maintain compatibility with anyone passing in `socket` and `model_id` as kwargs
-        # TODO v0.17.0: instate `host` and `run_id` params
-        # TODO v0.17.0: remove the following block of param checks
-        # TODO v0.17.0: put automodule verta.deployment back on ReadTheDocs
+        # TODO: instate `host` and `run_id` params
+        # TODO: remove the following block of param checks
+        # TODO: put automodule verta.deployment back on ReadTheDocs
         if 'socket' in kwargs:
             warnings.warn("`socket` will be renamed to `host` in an upcoming version",
                           category=FutureWarning)
