@@ -1,7 +1,7 @@
 package ai.verta.modeldb;
 
+import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.config.TestConfig;
-import ai.verta.modeldb.common.config.TestUser;
 import io.grpc.*;
 
 @SuppressWarnings("unchecked")
@@ -39,7 +39,7 @@ public class AuthClientInterceptor {
 
   private class Client1AuthInterceptor implements ClientInterceptor {
 
-    public Client1AuthInterceptor(TestUser user) {
+    public Client1AuthInterceptor(ServiceUserConfig user) {
       client1Email = user.email;
       client1DevKey = user.devKey;
     }
@@ -70,7 +70,7 @@ public class AuthClientInterceptor {
 
   private class Client2AuthInterceptor implements ClientInterceptor {
 
-    Client2AuthInterceptor(TestUser user) {
+    Client2AuthInterceptor(ServiceUserConfig user) {
       client2Email = user.email;
       client2DevKey = user.devKey;
     }
