@@ -4,9 +4,9 @@ import time
 from ...external.six import PY2, PY3
 
 if PY3:
-    from ._time_utils_py3 import utc
+    from ._utc_py3 import utc
 if PY2:
-    from ._time_utils_py2 import utc
+    from ._utc_py2 import utc
 
 
 UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=utc)
