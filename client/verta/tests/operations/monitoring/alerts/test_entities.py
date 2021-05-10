@@ -36,7 +36,6 @@ class TestIntegration:
     ):
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
-        sample_query = SummarySampleQuery()
 
         channel1 = client.operations.notification_channels.create(
             _utils.generate_default_name(),
@@ -52,7 +51,6 @@ class TestIntegration:
         alert = summary.alerts.create(
             name,
             alerter,
-            sample_query,
             notification_channels=[channel1],
         )
         retrieved_channel_ids = alert._msg.notification_channels.keys()
@@ -66,9 +64,8 @@ class TestIntegration:
     def test_set_status(self, summary, summary_sample):
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
-        sample_query = SummarySampleQuery()
 
-        alert = summary.alerts.create(name, alerter, sample_query)
+        alert = summary.alerts.create(name, alerter)
         assert alert.status == Ok()
         assert alert._last_evaluated_or_created_millis == alert._msg.created_at_millis
 
@@ -82,16 +79,6 @@ class TestIntegration:
         alert.set_status(Ok())
         assert alert.status == Ok()
 
-    def test_summary_sample_query(self, summary):
-        name = _utils.generate_default_name()
-        alerter = FixedAlerter(comparison.GreaterThan(0.7))
-        sample_query = SummarySampleQuery()
-
-        alert = summary.alerts.create(name, alerter, sample_query)
-        created_query_proto = sample_query._to_proto_request()
-        retrieved_query_proto = alert.summary_sample_query._to_proto_request()
-        assert created_query_proto == retrieved_query_proto
-
 
 class TestAlert:
     """Tests that aren't specific to an alerter type."""
@@ -99,9 +86,8 @@ class TestAlert:
     def test_update_last_evaluated_at(self, summary):
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
-        sample_query = SummarySampleQuery()
 
-        alert = summary.alerts.create(name, alerter, sample_query)
+        alert = summary.alerts.create(name, alerter)
         alert._fetch_with_no_cache()
         initial = alert._msg.last_evaluated_at_millis
 
@@ -117,10 +103,13 @@ class TestAlert:
         alert._fetch_with_no_cache()
         assert alert._msg.last_evaluated_at_millis == yesterday_millis
 
-    def test_creation_datetime(self, summary, strs):
+    def test_creation_query_params(self, summary):
+        """`labels` and `starting_from`"""
+        raise NotImplementedError
+
+    def test_creation_override_datetimes(self, summary, strs):
         strs = iter(strs)
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
-        sample_query = SummarySampleQuery()
 
         created_at = time_utils.now() - datetime.timedelta(weeks=1)
         updated_at = time_utils.now() - datetime.timedelta(days=1)
@@ -133,10 +122,9 @@ class TestAlert:
         alert = summary.alerts.create(
             next(strs),
             alerter,
-            sample_query,
-            created_at=created_at,
-            updated_at=updated_at,
-            last_evaluated_at=last_evaluated_at,
+            _created_at=created_at,
+            _updated_at=updated_at,
+            _last_evaluated_at=last_evaluated_at,
         )
         assert alert._msg.created_at_millis == created_at_millis
         assert alert._msg.updated_at_millis == updated_at_millis
@@ -146,10 +134,9 @@ class TestAlert:
         alert = summary.alerts.create(
             next(strs),
             alerter,
-            sample_query,
-            created_at=created_at_millis,
-            updated_at=updated_at_millis,
-            last_evaluated_at=last_evaluated_at_millis,
+            _created_at=created_at_millis,
+            _updated_at=updated_at_millis,
+            _last_evaluated_at=last_evaluated_at_millis,
         )
         assert alert._msg.created_at_millis == created_at_millis
         assert alert._msg.updated_at_millis == updated_at_millis
@@ -177,9 +164,8 @@ class TestFixed:
     def test_crud(self, client, summary):
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
-        sample_query = SummarySampleQuery()
 
-        created_alert = summary.alerts.create(name, alerter, sample_query)
+        created_alert = summary.alerts.create(name, alerter)
         assert isinstance(created_alert, _entities.Alert)
         assert created_alert._msg.alerter_type == alerter._TYPE
         assert created_alert.monitored_entity_id == summary.monitored_entity_id
@@ -203,9 +189,8 @@ class TestFixed:
         """__repr__() does not raise exceptions"""
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
-        sample_query = SummarySampleQuery()
 
-        created_alert = summary.alerts.create(name, alerter, sample_query)
+        created_alert = summary.alerts.create(name, alerter)
         assert repr(created_alert)
 
         retrieved_alert = summary.alerts.get(id=created_alert.id)
@@ -216,9 +201,8 @@ class TestReference:
     def test_crud(self, client, summary, summary_sample):
         name = _utils.generate_default_name()
         alerter = ReferenceAlerter(comparison.GreaterThan(0.7), summary_sample)
-        sample_query = SummarySampleQuery()
 
-        created_alert = summary.alerts.create(name, alerter, sample_query)
+        created_alert = summary.alerts.create(name, alerter)
         assert isinstance(created_alert, _entities.Alert)
         assert created_alert._msg.alerter_type == alerter._TYPE
         assert created_alert.monitored_entity_id == summary.monitored_entity_id
@@ -243,9 +227,8 @@ class TestReference:
         """__repr__() does not raise exceptions"""
         name = _utils.generate_default_name()
         alerter = ReferenceAlerter(comparison.GreaterThan(0.7), summary_sample)
-        sample_query = SummarySampleQuery()
 
-        created_alert = summary.alerts.create(name, alerter, sample_query)
+        created_alert = summary.alerts.create(name, alerter)
         assert repr(created_alert)
 
         retrieved_alert = summary.alerts.get(id=created_alert.id)
