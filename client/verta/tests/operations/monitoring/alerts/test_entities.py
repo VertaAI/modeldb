@@ -105,7 +105,24 @@ class TestAlert:
 
     def test_creation_query_params(self, summary):
         """`labels` and `starting_from`"""
-        raise NotImplementedError
+        name = _utils.generate_default_name()
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
+        labels = {"datasource": ["census2010", "census2020"]}
+        starting_from = datetime.datetime(year=2021, month=5, day=10, tzinfo=time_utils.utc)
+
+        alert = summary.alerts.create(
+            name,
+            alerter,
+            labels=labels,
+            starting_from=starting_from,
+        )
+        expected_sample_query = SummarySampleQuery(
+            summary_query=summary.alerts._build_summary_query(),
+            labels=labels,
+            time_window_end=starting_from,
+        )
+
+        assert alert.summary_sample_query == expected_sample_query
 
     def test_creation_override_datetimes(self, summary, strs):
         strs = iter(strs)
