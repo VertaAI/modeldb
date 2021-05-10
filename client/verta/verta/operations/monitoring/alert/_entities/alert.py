@@ -386,11 +386,12 @@ class Alerts(object):
         self,
         name,
         alerter,
-        summary_sample_query=None,
         notification_channels=None,
-        created_at=None,
-        updated_at=None,
-        last_evaluated_at=None,
+        labels=None,
+        starting_from=None,
+        _created_at=None,
+        _updated_at=None,
+        _last_evaluated_at=None,
     ):
         """
         Create a new alert.
@@ -401,19 +402,15 @@ class Alerts(object):
             A unique name for this alert.
         alerter : :class:`~verta.operations.monitoring.alert._Alerter`
             The configuration for this alert.
-        summary_sample_query : :class:`~verta.operations.monitoring.summaries.SummarySampleQuery`, optional
-            Summary samples for this alert to monitor for threshold violations.
         notification_channels : list of :class:`~verta.operations.monitoring.notification_channel._entities.NotificationChannel`, optional
             Channels for this alert to propagate notifications to.
-        created_at : datetime.datetime or int, optional
-            An override creation time to assign to this alert. Either a
-            timezone aware datetime object or unix epoch milliseconds.
-        updated_at : datetime.datetime or int, optional
-            An override update time to assign to this alert. Either a
-            timezone aware datetime object or unix epoch milliseconds.
-        last_evaluated_at : datetime.datetime or int, optional
-            An override evaluation time to assign to this alert. Either a
-            timezone aware datetime object or unix epoch milliseconds.
+        labels : dict of str to list of str, optional
+            Alert on samples that have at least one of these labels. A mapping
+            between label keys and lists of corresponding label values.
+        starting_from : datetime.datetime or int, optional
+            Alert on samples associated with periods after this time; useful
+            for monitoring samples representing past data. Either a timezone
+            aware datetime object or unix epoch milliseconds.
 
         Returns
         -------
@@ -438,14 +435,11 @@ class Alerts(object):
                 " obtained via monitored_entity.alerts"
             )
 
-        summary_sample_query = (
-            copy.copy(summary_sample_query)
-            if summary_sample_query
-            else SummarySampleQuery()
+        summary_sample_query = SummarySampleQuery(
+            summary_query=self._build_summary_query(),
+            labels=labels,
+            time_window_end=time_utils.epoch_millis(starting_from),
         )
-        summary_query = self._build_summary_query()
-        if summary_query:
-            summary_sample_query.summary_query = summary_query
 
         if notification_channels is None:
             notification_channels = []
@@ -462,9 +456,9 @@ class Alerts(object):
             alerter=alerter,
             summary_sample_query=summary_sample_query,
             notification_channels=notification_channels,
-            created_at_millis=time_utils.epoch_millis(created_at),
-            updated_at_millis=time_utils.epoch_millis(updated_at),
-            last_evaluated_at_millis=time_utils.epoch_millis(last_evaluated_at),
+            created_at_millis=time_utils.epoch_millis(_created_at),
+            updated_at_millis=time_utils.epoch_millis(_updated_at),
+            last_evaluated_at_millis=time_utils.epoch_millis(_last_evaluated_at),
         )
 
     def _build_summary_query(self):
@@ -473,6 +467,10 @@ class Alerts(object):
                 ids=[self._summary.id],
                 names=[self._summary.name],
                 monitored_entities=[self._summary.monitored_entity_id],
+            )
+        elif self._monitored_entity_id:
+            return SummaryQuery(
+                monitored_entities=[self._monitored_entity_id],
             )
         else:
             return None
