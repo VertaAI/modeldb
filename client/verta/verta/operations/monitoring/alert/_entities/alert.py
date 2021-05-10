@@ -452,7 +452,9 @@ class Alerts(object):
             self._conf,
             ctx,
             name=name,
-            monitored_entity_id=self._monitored_entity_id,
+            monitored_entity_id=(
+                self._monitored_entity_id or self._summary.monitored_entity_id
+            ),
             alerter=alerter,
             summary_sample_query=summary_sample_query,
             notification_channels=notification_channels,
