@@ -43,10 +43,9 @@ class Alert(entity._ModelDBEntity):
     --------
     .. code-block:: python
 
-        alert = monitored_entity.alerts.create(
+        alert = summary.alerts.create(
             name="MSE",
             alerter=alerter,
-            summary_sample_query=sample_query,
             notification_channels=[channel],
         )
 
@@ -360,16 +359,16 @@ class Alerts(object):
         A connection object to the backend service.
     conf
         A configuration object used by conn methods.
-    monitored_entity_id : int
+    monitored_entity_id : int, optional
         A monitored entity id to use for all alerts in this collection
-    summary : :class:`~verta.operations.monitoring.summaries.summary.Summary`
+    summary : :class:`~verta.operations.monitoring.summaries.summary.Summary`, optional
         A summary for creating and finding alerts in this collection, and finding samples to alert on.
 
     Examples
     --------
     .. code-block:: python
 
-        alerts = monitored_entity.alerts
+        alerts = summary.alerts
 
     """
 
@@ -421,18 +420,17 @@ class Alerts(object):
         --------
         .. code-block:: python
 
-            alert = monitored_entity.alerts.create(
+            alert = summary.alerts.create(
                 name="MSE",
                 alerter=alerter,
-                summary_sample_query=sample_query,
                 notification_channels=[channel],
             )
 
         """
-        if self._monitored_entity_id is None:
+        if self._summary is None:
             raise RuntimeError(
                 "this Alert cannot be used to create because it was not"
-                " obtained via monitored_entity.alerts"
+                " obtained via summary.alerts"
             )
 
         summary_sample_query = SummarySampleQuery(
