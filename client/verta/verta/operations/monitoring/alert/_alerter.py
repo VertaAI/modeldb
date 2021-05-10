@@ -16,23 +16,10 @@ class _Alerter(object):
 
     _TYPE = _AlertService.AlerterTypeEnum.UNKNOWN
 
-    def __init__(self, comparison):
-        if not isinstance(comparison, comparison_module._VertaComparison):
-            raise TypeError(
-                "`comparison` must be an object from verta.common.comparison,"
-                " not {}".format(type(comparison))
-            )
-
-        self._comparison = comparison
-
     def __repr__(self):
         return "<{} alert>".format(
             _AlertService.AlerterTypeEnum.AlerterType.Name(self._TYPE).lower()
         )
-
-    @property
-    def comparison(self):
-        return self._comparison
 
     @abc.abstractmethod
     def _as_proto(self):
@@ -49,6 +36,15 @@ class _Alerter(object):
             return _protos_to_classes[type(msg)]._from_proto(msg)
         else:
             raise ValueError("unrecognized alerter type {}".format(type(msg)))
+
+    @staticmethod
+    def _validate_comparison(comparison):
+        if not isinstance(comparison, comparison_module._VertaComparison):
+            raise TypeError(
+                "`comparison` must be an object from verta.common.comparison,"
+                " not {}".format(type(comparison))
+            )
+        return comparison
 
 
 class FixedAlerter(_Alerter):
@@ -86,8 +82,15 @@ class FixedAlerter(_Alerter):
 
     _TYPE = _AlertService.AlerterTypeEnum.FIXED
 
+    def __init__(self, comparison):
+        self._comparison = _Alerter._validate_comparison(comparison)
+
     def __repr__(self):
         return "<fixed alerter ({})>".format(self._comparison)
+
+    @property
+    def comparison(self):
+        return self._comparison
 
     def _as_proto(self):
         return _AlertService.AlertFixed(
@@ -142,7 +145,7 @@ class ReferenceAlerter(_Alerter):
     _TYPE = _AlertService.AlerterTypeEnum.REFERENCE
 
     def __init__(self, comparison, reference_sample):
-        super(ReferenceAlerter, self).__init__(comparison)
+        self._comparison = _Alerter._validate_comparison(comparison)
         self._reference_sample_id = utils.extract_id(reference_sample)
 
     def _as_proto(self):

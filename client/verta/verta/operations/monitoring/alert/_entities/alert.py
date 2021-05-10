@@ -222,6 +222,7 @@ class Alert(entity._ModelDBEntity):
                 alerter_type=alerter._TYPE,
             ),
         )
+        # TODO: Return here to populate Alerter correctly
         if msg.alert.alerter_type == _AlertService.AlerterTypeEnum.FIXED:
             msg.alert.alerter_fixed.CopyFrom(alerter._as_proto())
         elif msg.alert.alerter_type == _AlertService.AlerterTypeEnum.REFERENCE:
