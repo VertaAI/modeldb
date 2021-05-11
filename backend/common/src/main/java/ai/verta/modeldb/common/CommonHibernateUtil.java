@@ -5,6 +5,7 @@ import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 import io.grpc.health.v1.HealthCheckResponse;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -71,13 +72,7 @@ public abstract class CommonHibernateUtil {
         Properties settings = new Properties();
         RdbConfig rdb = config.RdbConfiguration;
 
-        String connectionString =
-            rdb.RdbUrl
-                + "/"
-                + rdb.RdbDatabaseName
-                + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
-                + "&sslMode="
-                + rdb.sslMode;
+        String connectionString = buildConnectionString(rdb);
         settings.put(Environment.DRIVER, rdb.RdbDriver);
         settings.put(Environment.URL, connectionString);
         settings.put(Environment.USER, rdb.RdbUsername);
@@ -132,6 +127,20 @@ public abstract class CommonHibernateUtil {
     } else {
       return loopBack(sessionFactory);
     }
+  }
+
+  private String buildConnectionString(RdbConfig rdb) {
+    if (rdb.isMssql()) {
+      return rdb.RdbUrl
+          + ";databaseName="
+          + rdb.RdbDatabaseName;
+    }
+    return rdb.RdbUrl
+        + "/"
+        + rdb.RdbDatabaseName
+        + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+        + "&sslMode="
+        + rdb.sslMode;
   }
 
   public static void changeCharsetToUtf(JdbcConnection jdbcCon) throws DatabaseException, SQLException {
@@ -287,7 +296,9 @@ public abstract class CommonHibernateUtil {
     // Get database connection
     try (Connection con = getDBConnection(rdb)) {
       JdbcConnection jdbcCon = new JdbcConnection(con);
-      changeCharsetToUtf(jdbcCon);
+      if (config.RdbConfiguration.isMysql()) {
+        changeCharsetToUtf(jdbcCon);
+      }
 
       // Overwrite default liquibase table names by custom
       GlobalConfiguration liquibaseConfiguration =
@@ -322,20 +333,8 @@ public abstract class CommonHibernateUtil {
     return checkDBConnection(databaseConfig.RdbConfiguration, databaseConfig.timeout);
   }
 
-  public Connection getDBConnection(RdbConfig rdb) throws SQLException, ClassNotFoundException {
-    String connectionString =
-        rdb.RdbUrl
-            + "/"
-            + rdb.RdbDatabaseName
-            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
-            + "&sslMode="
-            + rdb.sslMode;
-    try {
-      Class.forName(rdb.RdbDriver);
-    } catch (ClassNotFoundException e) {
-      LOGGER.warn("CommonHibernateUtil getDBConnection() got error ", e);
-      throw e;
-    }
+  public Connection getDBConnection(RdbConfig rdb) throws SQLException {
+    final var connectionString = buildConnectionString(rdb);
     return DriverManager.getConnection(connectionString, rdb.RdbUsername, rdb.RdbPassword);
   }
 
@@ -482,13 +481,7 @@ public abstract class CommonHibernateUtil {
     // Lock to RDB for now
     RdbConfig rdb = config.RdbConfiguration;
 
-    if (rdb.RdbDatabaseName.contains("-")) {
-      if (rdb.isPostgres()) {
-        throw new InterruptedException("Postgres doesn't allow '-' in the database name");
-      } else {
-        createDBIfNotExists(rdb);
-      }
-    }
+    createDBIfNotExists(rdb);
 
     // Check DB is up or not
     boolean dbConnectionStatus = checkDBConnection(rdb, config.timeout);
@@ -520,11 +513,17 @@ public abstract class CommonHibernateUtil {
       }
     }
 
-    String quotedDBName = String.format("`%s`", rdb.RdbDatabaseName);
+    var dbName = rdb.RdbDatabaseName;
+    if (dbName.contains("-")) {
+      if (rdb.isPostgres()) {
+        throw new ModelDBException("Postgres does not support database names containing -");
+      }
+      dbName = String.format("`%s`", rdb.RdbDatabaseName);
+    }
 
     System.out.println("the database " + rdb.RdbDatabaseName + " does not exists");
     Statement statement = connection.createStatement();
-    statement.executeUpdate("CREATE DATABASE " + quotedDBName);
+    statement.executeUpdate("CREATE DATABASE " + dbName);
     System.out.println("the database " + rdb.RdbDatabaseName + " created successfully");
   }
 }

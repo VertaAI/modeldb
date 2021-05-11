@@ -28,4 +28,12 @@ public class RdbConfig {
   public boolean isPostgres() {
     return RdbDialect.equals("org.hibernate.dialect.PostgreSQLDialect");
   }
+
+  public boolean isMysql() {
+    return RdbDialect.equals("org.hibernate.dialect.MySQL5Dialect");
+  }
+
+  public boolean isMssql() {
+    return RdbDialect.equals("org.hibernate.dialect.SQLServerDialect");
+  }
 }
