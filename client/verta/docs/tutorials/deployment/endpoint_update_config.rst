@@ -34,7 +34,7 @@ For example:
             "resources": {"cpu": 0.25, "memory": "100M"}
         }
 
-.. TODO: Link to configuration file fields.
+The JSON representations for endpoint configuration values can be found in their respective :ref:`Python API documentation <deployment-api>` entries.
 
 This allows for easier inspection and modification later on. Users can find out more about the fields of the configuration file here.
 

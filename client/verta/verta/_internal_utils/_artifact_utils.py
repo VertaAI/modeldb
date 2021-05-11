@@ -30,7 +30,8 @@ ZIP_EXTENSION = "dir.zip"
 
 # NOTE: keep up-to-date with Deployment API
 CUSTOM_MODULES_KEY = "custom_modules"
-MODEL_KEY = "model.pkl"
+REGISTRY_MODEL_KEY = "model"
+MODEL_KEY = "model.pkl"  # currently used by experiment run
 MODEL_API_KEY = "model_api.json"
 # TODO: maybe bind constants for other keys used throughout client
 BLOCKLISTED_KEYS = {

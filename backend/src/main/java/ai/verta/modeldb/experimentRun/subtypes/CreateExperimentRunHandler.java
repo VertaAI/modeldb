@@ -8,7 +8,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -17,15 +16,12 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
-import ai.verta.modeldb.versioning.EnvironmentBlob;
-import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
-import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.uac.*;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class CreateExperimentRunHandler {
@@ -217,85 +213,68 @@ public class CreateExperimentRunHandler {
             handle ->
                 handle.useTransaction(
                     TransactionIsolationLevel.SERIALIZABLE,
-                    handle1 ->
-                        checkInsertedEntityAlreadyExists(newExperimentRun)
-                            .thenAccept(
-                                exists -> {
-                                  if (exists) {
-                                    throw new AlreadyExistsException(
-                                        "ExperimentRun '"
-                                            + newExperimentRun.getName()
-                                            + "' already exists in database");
-                                  }
+                    handleForTransaction -> {
+                      Boolean exists =
+                          checkInsertedEntityAlreadyExists(handleForTransaction, newExperimentRun);
+                      if (exists) {
+                        throw new AlreadyExistsException(
+                            "ExperimentRun '"
+                                + newExperimentRun.getName()
+                                + "' already exists in database");
+                      }
 
-                                  Map<String, Object> runValueMap = new LinkedHashMap<>();
-                                  runValueMap.put("id", newExperimentRun.getId());
-                                  runValueMap.put("project_id", newExperimentRun.getProjectId());
-                                  runValueMap.put(
-                                      "experiment_id", newExperimentRun.getExperimentId());
-                                  runValueMap.put("name", newExperimentRun.getName());
-                                  runValueMap.put("description", newExperimentRun.getDescription());
-                                  runValueMap.put(
-                                      "date_created", newExperimentRun.getDateCreated());
-                                  runValueMap.put(
-                                      "date_updated", newExperimentRun.getDateUpdated());
-                                  runValueMap.put("start_time", newExperimentRun.getStartTime());
-                                  runValueMap.put("end_time", newExperimentRun.getEndTime());
-                                  runValueMap.put(
-                                      "code_version", newExperimentRun.getCodeVersion());
-                                  runValueMap.put("job_id", newExperimentRun.getJobId());
-                                  runValueMap.put("parent_id", newExperimentRun.getParentId());
-                                  runValueMap.put("owner", newExperimentRun.getOwner());
+                      Map<String, Object> runValueMap = new LinkedHashMap<>();
+                      runValueMap.put("id", newExperimentRun.getId());
+                      runValueMap.put("project_id", newExperimentRun.getProjectId());
+                      runValueMap.put("experiment_id", newExperimentRun.getExperimentId());
+                      runValueMap.put("name", newExperimentRun.getName());
+                      runValueMap.put("description", newExperimentRun.getDescription());
+                      runValueMap.put("date_created", newExperimentRun.getDateCreated());
+                      runValueMap.put("date_updated", newExperimentRun.getDateUpdated());
+                      runValueMap.put("start_time", newExperimentRun.getStartTime());
+                      runValueMap.put("end_time", newExperimentRun.getEndTime());
+                      runValueMap.put("code_version", newExperimentRun.getCodeVersion());
+                      runValueMap.put("job_id", newExperimentRun.getJobId());
+                      runValueMap.put("parent_id", newExperimentRun.getParentId());
+                      runValueMap.put("owner", newExperimentRun.getOwner());
 
-                                  EnvironmentBlob environmentBlob =
-                                      sortPythonEnvironmentBlob(newExperimentRun.getEnvironment());
-                                  try {
-                                    runValueMap.put(
-                                        "environment",
-                                        ModelDBUtils.getStringFromProtoObject(environmentBlob));
-                                  } catch (InvalidProtocolBufferException e) {
-                                    throw new ModelDBException(e);
-                                  }
-                                  runValueMap.put("deleted", false);
-                                  runValueMap.put("created", false);
+                      runValueMap.put("environment", null);
+                      runValueMap.put("deleted", false);
+                      runValueMap.put("created", false);
 
-                                  // Created comma separated field names from keys of above map
-                                  String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
-                                  String commaFields = String.join(",", fieldsArr);
+                      // Created comma separated field names from keys of above map
+                      String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
+                      String commaFields = String.join(",", fieldsArr);
 
-                                  StringBuilder queryStrBuilder =
-                                      new StringBuilder("insert into experiment_run ( ")
-                                          .append(commaFields)
-                                          .append(") values (");
+                      StringBuilder queryStrBuilder =
+                          new StringBuilder("insert into experiment_run ( ")
+                              .append(commaFields)
+                              .append(") values (");
 
-                                  // Created comma separated query bind arguments for the values
-                                  // based on the
-                                  // keys of
-                                  // above the map
-                                  // Ex: VALUES (:project_id, :experiment_id, :name) etc.
-                                  String bindArguments =
-                                      String.join(
-                                          ",",
-                                          Arrays.stream(fieldsArr)
-                                              .map(s -> ":" + s)
-                                              .toArray(String[]::new));
+                      // Created comma separated query bind arguments for the values
+                      // based on the
+                      // keys of
+                      // above the map
+                      // Ex: VALUES (:project_id, :experiment_id, :name) etc.
+                      String bindArguments =
+                          String.join(
+                              ",",
+                              Arrays.stream(fieldsArr).map(s -> ":" + s).toArray(String[]::new));
 
-                                  queryStrBuilder.append(bindArguments);
-                                  queryStrBuilder.append(" ) ");
+                      queryStrBuilder.append(bindArguments);
+                      queryStrBuilder.append(" ) ");
 
-                                  LOGGER.trace(
-                                      "insert experiment run query string: "
-                                          + queryStrBuilder.toString());
-                                  var query = handle1.createUpdate(queryStrBuilder.toString());
+                      LOGGER.trace(
+                          "insert experiment run query string: " + queryStrBuilder.toString());
+                      var query = handleForTransaction.createUpdate(queryStrBuilder.toString());
 
-                                  // Inserting fields arguments based on the keys and value of map
-                                  for (Map.Entry<String, Object> objectEntry :
-                                      runValueMap.entrySet()) {
-                                    query.bind(objectEntry.getKey(), objectEntry.getValue());
-                                  }
-                                  query.execute();
-                                },
-                                executor)))
+                      // Inserting fields arguments based on the keys and value of map
+                      for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {
+                        query.bind(objectEntry.getKey(), objectEntry.getValue());
+                      }
+                      int count = query.execute();
+                      LOGGER.trace("ExperimentRun Inserted : " + (count > 0));
+                    }))
         .thenCompose(
             unused -> {
               final var futureLogs = new LinkedList<InternalFuture<Void>>();
@@ -338,49 +317,20 @@ public class CreateExperimentRunHandler {
     // TODO .thenCompose(handle -> versioned_inputs, executor)
   }
 
-  private EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {
-    EnvironmentBlob.Builder builder = environmentBlob.toBuilder();
-    if (builder.hasPython()) {
-      PythonEnvironmentBlob.Builder pythonEnvironmentBlobBuilder = builder.getPython().toBuilder();
+  private Boolean checkInsertedEntityAlreadyExists(Handle handle, ExperimentRun experimentRun) {
+    String queryStr =
+        "SELECT count(id) FROM experiment_run WHERE "
+            + " name = :experimentRunName "
+            + " AND project_id = :projectId "
+            + " AND experiment_id = :experimentId "
+            + " AND deleted = false ";
 
-      // Compare requirementEnvironmentBlobs
-      List<PythonRequirementEnvironmentBlob> requirementEnvironmentBlobs =
-          new ArrayList<>(pythonEnvironmentBlobBuilder.getRequirementsList());
-      requirementEnvironmentBlobs.sort(
-          Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
-      pythonEnvironmentBlobBuilder
-          .clearRequirements()
-          .addAllRequirements(requirementEnvironmentBlobs);
+    var query = handle.createQuery(queryStr).bind("experimentRunName", experimentRun.getName());
+    query.bind("projectId", experimentRun.getProjectId());
+    query.bind("experimentId", experimentRun.getExperimentId());
 
-      // Compare
-      List<PythonRequirementEnvironmentBlob> constraintsBlobs =
-          new ArrayList<>(pythonEnvironmentBlobBuilder.getConstraintsList());
-      constraintsBlobs.sort(Comparator.comparing(PythonRequirementEnvironmentBlob::getLibrary));
-      pythonEnvironmentBlobBuilder.clearConstraints().addAllConstraints(constraintsBlobs);
-
-      builder.setPython(pythonEnvironmentBlobBuilder.build());
-    }
-    return builder.build();
-  }
-
-  private InternalFuture<Boolean> checkInsertedEntityAlreadyExists(ExperimentRun experimentRun) {
-    return jdbi.withHandle(
-        handle -> {
-          String queryStr =
-              "SELECT count(id) FROM experiment_run WHERE "
-                  + " name = :experimentRunName "
-                  + " AND project_id = :projectId "
-                  + " AND experiment_id = :experimentId "
-                  + " AND deleted = false ";
-
-          var query =
-              handle.createQuery(queryStr).bind("experimentRunName", experimentRun.getName());
-          query.bind("projectId", experimentRun.getProjectId());
-          query.bind("experimentId", experimentRun.getExperimentId());
-
-          long count = query.mapTo(Long.class).one();
-          return count > 0;
-        });
+    long count = query.mapTo(Long.class).one();
+    return count > 0;
   }
 
   private String buildRoleBindingName(

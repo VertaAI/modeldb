@@ -26,6 +26,7 @@ Deployment and release
 * `Configuring endpoint autoscaling <deployment/endpoint_autoscaling.html>`__
 * `Configuring endpoint compute resources <deployment/endpoint_resources.html>`__
 * `Configuring endpoint environment variables <deployment/endpoint_env_vars.html>`__
+* `Configuring endpoint using config file <deployment/endpoint_update_config.html>`__
 * `Querying an endpoint <deployment/endpoint_query.html>`__
 
 Real-time model monitoring

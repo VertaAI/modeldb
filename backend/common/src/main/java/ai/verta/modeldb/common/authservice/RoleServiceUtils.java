@@ -7,14 +7,12 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
 import ai.verta.uac.*;
 import ai.verta.uac.ServiceEnum.Service;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Context;
 import io.grpc.Metadata;
@@ -35,8 +33,10 @@ public class RoleServiceUtils implements RoleService {
   private final String serviceUserDevKey;
   private final Context.Key<Metadata> metadataInfo;
   private Integer timeout;
+  private final Config config;
 
   public RoleServiceUtils(
+      Config config,
       AuthService authService,
       String host,
       Integer port,
@@ -45,6 +45,7 @@ public class RoleServiceUtils implements RoleService {
       Integer timeout,
       Context.Key<Metadata> metadataInfo,
       UAC uac) {
+    this.config = config;
     this.authService = authService;
     this.host = host;
     this.port = port;
@@ -120,11 +121,12 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private AuthServiceChannel getAuthServiceChannel() {
-    return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey, metadataInfo);
+    return new AuthServiceChannel(
+        config, host, port, serviceUserEmail, serviceUserDevKey, metadataInfo);
   }
 
   private AuthServiceChannel getAuthServiceChannelWithServiceUser() {
-    return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey, null);
+    return new AuthServiceChannel(config, host, port, serviceUserEmail, serviceUserDevKey, null);
   }
 
   public boolean deleteResourcesWithServiceUser(Resources resources) {
@@ -174,23 +176,23 @@ public class RoleServiceUtils implements RoleService {
               authServiceChannel);
       if (responseItems.size() > 1) {
         LOGGER.warn(
-                "Role service returned {}"
-                        + " resource response items fetching {} resource, but only expected 1. ID: {}",
-                responseItems.size(),
-                modelDBServiceResourceTypes.name(),
-                entityId);
+            "Role service returned {}"
+                + " resource response items fetching {} resource, but only expected 1. ID: {}",
+            responseItems.size(),
+            modelDBServiceResourceTypes.name(),
+            entityId);
       }
       Optional<GetResourcesResponseItem> responseItem = responseItems.stream().findFirst();
       if (responseItem.isPresent()) {
         return responseItem.get();
       } else {
         StringBuilder errorMessage =
-                new StringBuilder("Failed to locate ")
-                        .append(modelDBServiceResourceTypes.name())
-                        .append(" resources in UAC for ")
-                        .append(modelDBServiceResourceTypes.name())
-                        .append(" ID ")
-                        .append(entityId);
+            new StringBuilder("Failed to locate ")
+                .append(modelDBServiceResourceTypes.name())
+                .append(" resources in UAC for ")
+                .append(modelDBServiceResourceTypes.name())
+                .append(" ID ")
+                .append(entityId);
         throw new NotFoundException(errorMessage.toString());
       }
     } catch (StatusRuntimeException ex) {
@@ -211,11 +213,11 @@ public class RoleServiceUtils implements RoleService {
       }
       List<GetResourcesResponseItem> responseItems =
           getGetResourcesResponseItems(
-                  Optional.empty(),
-                  entityName,
-                  workspaceName,
-                  modelDBServiceResourceTypes,
-                  authServiceChannel);
+              Optional.empty(),
+              entityName,
+              workspaceName,
+              modelDBServiceResourceTypes,
+              authServiceChannel);
       if (!responseItems.isEmpty()) {
         return responseItems;
       } else {
@@ -254,7 +256,9 @@ public class RoleServiceUtils implements RoleService {
     workspaceName.ifPresent(getResourcesBuilder::setWorkspaceName);
 
     final GetResources.Response response =
-        authServiceChannel.getCollaboratorServiceBlockingStub().getResources(getResourcesBuilder.build());
+        authServiceChannel
+            .getCollaboratorServiceBlockingStub()
+            .getResources(getResourcesBuilder.build());
     return response.getItemList();
   }
 

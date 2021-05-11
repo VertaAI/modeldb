@@ -53,7 +53,6 @@ class TestIntegration:
             sample_query,
             notification_channels=[channel1],
         )
-        created_entities.append(alert)
         retrieved_channel_ids = alert._msg.notification_channels.keys()
         assert set(retrieved_channel_ids) == {channel1.id}
 
@@ -69,7 +68,6 @@ class TestIntegration:
         sample_query = SummarySampleQuery()
 
         alert = alerts.create(name, alerter, sample_query)
-        created_entities.append(alert)
         assert alert.status == Ok()
         assert alert._last_evaluated_or_created_millis == alert._msg.created_at_millis
 
@@ -87,7 +85,6 @@ class TestIntegration:
         sample_query = SummarySampleQuery()
 
         alert = alerts.create(name, alerter, sample_query)
-        created_entities.append(alert)
         created_query_proto = sample_query._to_proto_request()
         retrieved_query_proto = alert.summary_sample_query._to_proto_request()
         assert created_query_proto == retrieved_query_proto
@@ -103,7 +100,6 @@ class TestAlert:
         sample_query = SummarySampleQuery()
 
         alert = alerts.create(name, alerter, sample_query)
-        created_entities.append(alert)
         alert._fetch_with_no_cache()
         initial = alert._msg.last_evaluated_at_millis
 
@@ -141,7 +137,6 @@ class TestAlert:
             updated_at=updated_at,
             last_evaluated_at=last_evaluated_at,
         )
-        created_entities.append(alert)
         assert alert._msg.created_at_millis == created_at_millis
         assert alert._msg.updated_at_millis == updated_at_millis
         assert alert._msg.last_evaluated_at_millis == last_evaluated_at_millis
@@ -155,7 +150,6 @@ class TestAlert:
             updated_at=updated_at_millis,
             last_evaluated_at=last_evaluated_at_millis,
         )
-        created_entities.append(alert)
         assert alert._msg.created_at_millis == created_at_millis
         assert alert._msg.updated_at_millis == updated_at_millis
         assert alert._msg.last_evaluated_at_millis == last_evaluated_at_millis
@@ -195,7 +189,6 @@ class TestFixed:
         sample_query = SummarySampleQuery()
 
         created_alert = alerts.create(name, alerter, sample_query)
-        created_entities.append(created_alert)
         assert repr(created_alert)
 
         retrieved_alert = alerts.get(id=created_alert.id)
@@ -237,7 +230,6 @@ class TestReference:
         sample_query = SummarySampleQuery()
 
         created_alert = alerts.create(name, alerter, sample_query)
-        created_entities.append(created_alert)
         assert repr(created_alert)
 
         retrieved_alert = alerts.get(id=created_alert.id)
