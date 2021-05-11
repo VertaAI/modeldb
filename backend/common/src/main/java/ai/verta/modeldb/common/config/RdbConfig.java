@@ -1,5 +1,9 @@
 package ai.verta.modeldb.common.config;
 
+import org.hibernate.dialect.MySQL5Dialect;
+import org.hibernate.dialect.PostgreSQLDialect;
+import org.hibernate.dialect.SQLServerDialect;
+
 public class RdbConfig {
   public String RdbDatabaseName;
   // TODO: replace driver with "io.opentracing.contrib.jdbc.TracingDriver" if tracing is enabled
@@ -26,14 +30,14 @@ public class RdbConfig {
   }
 
   public boolean isPostgres() {
-    return RdbDialect.equals("org.hibernate.dialect.PostgreSQLDialect");
+    return RdbDialect.equals(PostgreSQLDialect.class.getName());
   }
 
   public boolean isMysql() {
-    return RdbDialect.equals("org.hibernate.dialect.MySQL5Dialect");
+    return RdbDialect.equals(MySQL5Dialect.class.getName());
   }
 
   public boolean isMssql() {
-    return RdbDialect.equals("org.hibernate.dialect.SQLServerDialect");
+    return RdbDialect.equals(SQLServerDialect.class.getName());
   }
 }
