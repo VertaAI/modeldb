@@ -129,7 +129,7 @@ public abstract class CommonHibernateUtil {
     }
   }
 
-  private String buildConnectionString(RdbConfig rdb) {
+  public static String buildConnectionString(RdbConfig rdb) {
     if (rdb.isMssql()) {
       return rdb.RdbUrl
           + ";databaseName="
