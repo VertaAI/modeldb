@@ -46,6 +46,7 @@ public class DAOSet {
   public MetadataDAO metadataDAO;
   public ProjectDAO projectDAO;
   public RepositoryDAO repositoryDAO;
+  private static Config config = Config.getInstance();
 
   public static DAOSet fromServices(
       ServiceSet services, FutureJdbi jdbi, Executor executor, Config config) {
@@ -82,7 +83,7 @@ public class DAOSet {
     set.lineageDAO = new LineageDAORdbImpl();
     set.datasetVersionDAO =
         new DatasetVersionDAORdbImpl(services.authService, services.roleService);
-    if (services.authService instanceof PublicAuthServiceUtils) {
+    if ((services.authService instanceof PublicAuthServiceUtils) || config.disabled_audits) {
       set.auditLogLocalDAO = new AuditLogLocalDAODisabled();
     } else {
       set.auditLogLocalDAO = new AuditLogLocalDAORdbImpl();

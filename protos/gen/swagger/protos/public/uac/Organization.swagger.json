@@ -331,6 +331,15 @@
       ],
       "default": "READ_ONLY"
     },
+    "CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "READ_WRITE",
+        "READ_ONLY"
+      ],
+      "default": "UNKNOWN"
+    },
     "TernaryEnumTernary": {
       "type": "string",
       "enum": [
@@ -518,10 +527,10 @@
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_monitored_entity_collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
         },
         "default_notification_channel_collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
         }
       }
     },

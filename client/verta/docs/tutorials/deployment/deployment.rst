@@ -24,6 +24,7 @@ Endpoint configuration
 * `Configuring endpoint autoscaling <endpoint_autoscaling.html>`__
 * `Configuring endpoint compute resources <endpoint_resources.html>`__
 * `Configuring endpoint environment variables <endpoint_env_vars.html>`__
+* `Configuring endpoint using config file <endpoint_update_config.html>`__
 
 Endpoint querying
 -----------------
@@ -34,10 +35,11 @@ Endpoint querying
     :hidden:
     :titlesonly:
 
-    Creating and retrieving an endpoint <endpoint_creation>
-    Model deployment <endpoint_update>
-    Updating endpoints with canary <endpoint_canary_update>
-    Endpoint autoscaling <endpoint_autoscaling>
-    Endpoint resources <endpoint_resources>
-    Endpoint environment variables <endpoint_env_vars>
-    Querying an endpoint <endpoint_query>
+    endpoint_creation
+    endpoint_update
+    endpoint_canary_update
+    endpoint_autoscaling
+    endpoint_resources
+    endpoint_env_vars
+    endpoint_update_config
+    endpoint_query
