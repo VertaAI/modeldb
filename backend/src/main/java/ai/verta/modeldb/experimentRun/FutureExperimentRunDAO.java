@@ -837,10 +837,9 @@ public class FutureExperimentRunDAO {
 
   private boolean checkAllResourceAllowed(List<Resources> resources) {
     boolean allowedAllResources = false;
-    for (Resources resources1 : resources) {
-      if (resources1.getService().equals(ServiceEnum.Service.MODELDB_SERVICE)) {
-        allowedAllResources = resources1.getAllResourceIds();
-      }
+    if (!resources.isEmpty()) {
+      // This should always MODEL_DB_SERVICE be the case unless we have a bug.
+      allowedAllResources = resources.get(0).getAllResourceIds();
     }
     return allowedAllResources;
   }
