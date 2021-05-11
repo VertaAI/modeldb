@@ -223,15 +223,15 @@ public class FutureExperimentRunDAO {
     return jdbi.useHandle(
         handle -> {
           final var currentDateUpdated =
-              handle.createQuery("SELECT date_updated FROM experiment_run WHERE id=:run_id")
+              handle
+                  .createQuery("SELECT date_updated FROM experiment_run WHERE id=:run_id")
                   .bind("run_id", runId)
                   .mapTo(Timestamp.class)
                   .one()
                   .getTime();
           final var dateUpdated = Math.max(currentDateUpdated, now);
           handle
-              .createUpdate(
-                  "update experiment_run set date_updated=:date_updated where id=:run_id")
+              .createUpdate("update experiment_run set date_updated=:date_updated where id=:run_id")
               .bind("run_id", runId)
               .bind("date_updated", dateUpdated)
               .execute();
