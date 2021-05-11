@@ -52,6 +52,12 @@ class Alert(entity._ModelDBEntity):
 
     """
 
+    _ONEOF_ALERTER_ATTR = {
+        _AlertService.AlerterTypeEnum.FIXED: "alerter_fixed",
+        _AlertService.AlerterTypeEnum.REFERENCE: "alerter_reference",
+        _AlertService.AlerterTypeEnum.RANGE: "alerter_range",
+    }
+
     def __init__(self, conn, conf, msg):
         super(Alert, self).__init__(
             conn,
@@ -222,14 +228,13 @@ class Alert(entity._ModelDBEntity):
                 alerter_type=alerter._TYPE,
             ),
         )
-        # TODO: Return here to populate Alerter correctly
-        if msg.alert.alerter_type == _AlertService.AlerterTypeEnum.FIXED:
-            msg.alert.alerter_fixed.CopyFrom(alerter._as_proto())
-        elif msg.alert.alerter_type == _AlertService.AlerterTypeEnum.REFERENCE:
-            msg.alert.alerter_reference.CopyFrom(alerter._as_proto())
+
+        if alerter._TYPE in Alert._ONEOF_ALERTER_ATTR:
+            field = getattr(msg.alert, Alert._ONEOF_ALERTER_ATTR[alerter._TYPE])
+            field.CopyFrom(alerter._as_proto())
         else:
             raise ValueError(
-                "unrecognized alert type enum value {}".format(msg.alert.alerter_type)
+                "unrecognized alert type enum value {}".format(alerter._TYPE)
             )
 
         endpoint = "/api/v1/alerts/createAlert"
