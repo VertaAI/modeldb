@@ -85,7 +85,9 @@ public class Config extends ai.verta.modeldb.common.config.Config {
           databaseConfig.RdbConfiguration.RdbUrl
               + "/"
               + databaseConfig.RdbConfiguration.RdbDatabaseName
-              + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8";
+              + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+              + "&sslMode="
+              + databaseConfig.RdbConfiguration.sslMode;
       hikariDataSource.setJdbcUrl(dbUrl);
       hikariDataSource.setUsername(databaseConfig.RdbConfiguration.RdbUsername);
       hikariDataSource.setPassword(databaseConfig.RdbConfiguration.RdbPassword);
