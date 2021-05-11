@@ -91,7 +91,15 @@ public class DAOSet {
 
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(
-            executor, jdbi, services.uac, set.artifactStoreDAO, set.datasetVersionDAO, config);
+            executor,
+            jdbi,
+            config,
+            services.uac,
+            set.artifactStoreDAO,
+            set.datasetVersionDAO,
+            set.repositoryDAO,
+            set.commitDAO,
+            set.blobDAO);
 
     return set;
   }
