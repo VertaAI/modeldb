@@ -42,6 +42,7 @@ public class CreateExperimentRunHandler {
   private final FeatureHandler featureHandler;
   private final CodeVersionHandler codeVersionHandler;
   private final DatasetHandler datasetHandler;
+  private final VersionInputHandler versionInputHandler;
 
   public CreateExperimentRunHandler(
       Executor executor,
@@ -54,7 +55,8 @@ public class CreateExperimentRunHandler {
       TagsHandler tagsHandler,
       ArtifactHandler artifactHandler,
       FeatureHandler featureHandler,
-      DatasetHandler datasetHandler) {
+      DatasetHandler datasetHandler,
+      VersionInputHandler versionInputHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -68,6 +70,7 @@ public class CreateExperimentRunHandler {
     this.featureHandler = featureHandler;
     this.codeVersionHandler = new CodeVersionHandler(executor, jdbi);
     this.datasetHandler = datasetHandler;
+    this.versionInputHandler = versionInputHandler;
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
@@ -309,12 +312,14 @@ public class CreateExperimentRunHandler {
               futureLogs.add(
                   datasetHandler.logArtifacts(
                       newExperimentRun.getId(), newExperimentRun.getDatasetsList(), false));
+              futureLogs.add(
+                  versionInputHandler.validateAndInsertVersionedInputs(
+                      newExperimentRun.getId(), newExperimentRun.getVersionedInputs()));
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);
             },
             executor);
-    // TODO .thenCompose(handle -> versioned_inputs, executor)
   }
 
   private Boolean checkInsertedEntityAlreadyExists(Handle handle, ExperimentRun experimentRun) {
