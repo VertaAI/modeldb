@@ -48,7 +48,8 @@ public class DAOSet {
   public RepositoryDAO repositoryDAO;
   private static Config config = Config.getInstance();
 
-  public static DAOSet fromServices(ServiceSet services, FutureJdbi jdbi, Executor executor) {
+  public static DAOSet fromServices(
+      ServiceSet services, FutureJdbi jdbi, Executor executor, Config config) {
     DAOSet set = new DAOSet();
 
     set.metadataDAO = new MetadataDAORdbImpl();
@@ -92,6 +93,7 @@ public class DAOSet {
         new FutureExperimentRunDAO(
             executor,
             jdbi,
+            config,
             services.uac,
             set.artifactStoreDAO,
             set.datasetVersionDAO,

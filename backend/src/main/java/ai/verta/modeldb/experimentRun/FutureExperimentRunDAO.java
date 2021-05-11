@@ -2,7 +2,6 @@ package ai.verta.modeldb.experimentRun;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
-import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.CodeVersion;
@@ -56,6 +55,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
+import ai.verta.modeldb.experimentRun.subtypes.CodeVersionFromBlobHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CreateExperimentRunHandler;
 import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
@@ -63,7 +63,9 @@ import ai.verta.modeldb.experimentRun.subtypes.EnvironmentHandler;
 import ai.verta.modeldb.experimentRun.subtypes.FeatureHandler;
 import ai.verta.modeldb.experimentRun.subtypes.FilterPrivilegedDatasetsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.FilterPrivilegedVersionedInputsHandler;
+import ai.verta.modeldb.experimentRun.subtypes.HyperparametersFromConfigHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
+import ai.verta.modeldb.experimentRun.subtypes.MapSubtypes;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
@@ -123,10 +125,14 @@ public class FutureExperimentRunDAO {
   private final VersionInputHandler versionInputHandler;
   private final FilterPrivilegedVersionedInputsHandler privilegedVersionedInputsHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
+  private final HyperparametersFromConfigHandler hyperparametersFromConfigHandler;
+  private final Config config;
+  private final CodeVersionFromBlobHandler codeVersionFromBlobHandler;
 
   public FutureExperimentRunDAO(
       Executor executor,
       FutureJdbi jdbi,
+      Config config,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
       DatasetVersionDAO datasetVersionDAO,
@@ -136,6 +142,7 @@ public class FutureExperimentRunDAO {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
+    this.config = config;
 
     attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
     hyperparametersHandler =
@@ -167,6 +174,7 @@ public class FutureExperimentRunDAO {
         new CreateExperimentRunHandler(
             executor,
             jdbi,
+            config,
             uac,
             attributeHandler,
             hyperparametersHandler,
@@ -177,6 +185,11 @@ public class FutureExperimentRunDAO {
             featureHandler,
             datasetHandler,
             versionInputHandler);
+    hyperparametersFromConfigHandler =
+        new HyperparametersFromConfigHandler(
+            executor, jdbi, "hyperparameters", "ExperimentRunEntity");
+    codeVersionFromBlobHandler =
+        new CodeVersionFromBlobHandler(executor, jdbi, config.populateConnectionsBasedOnPrivileges);
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -438,8 +451,9 @@ public class FutureExperimentRunDAO {
         executor);
   }
 
-  private InternalFuture<List<String>> getAllowedProjects(
-      ModelDBActionEnum.ModelDBServiceActions action) {
+  private InternalFuture<List<Resources>> getAllowedEntitiesByResourceType(
+      ModelDBActionEnum.ModelDBServiceActions action,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()
                 .getSelfAllowedResources(
@@ -451,22 +465,16 @@ public class FutureExperimentRunDAO {
                         .setService(ServiceEnum.Service.MODELDB_SERVICE)
                         .setResourceType(
                             ResourceType.newBuilder()
-                                .setModeldbServiceResourceType(
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                                .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                         .build()),
             executor)
-        .thenApply(
-            response ->
-                response.getResourcesList().stream()
-                    .flatMap(x -> x.getResourceIdsList().stream())
-                    .collect(Collectors.toList()),
-            executor);
+        .thenApply(GetSelfAllowedResources.Response::getResourcesList, executor);
   }
 
   private InternalFuture<List<GetResourcesResponseItem>> getAllowedResourceItems(
       Optional<List<String>> resourceIds,
       Long workspaceId,
-      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     ResourceType resourceType =
         ResourceType.newBuilder()
             .setModeldbServiceResourceType(modelDBServiceResourceTypes)
@@ -695,22 +703,18 @@ public class FutureExperimentRunDAO {
     final var futureSortingContext =
         sortingHandler.processSort(request.getSortKey(), request.getAscending());
 
-    // futureProjectIds based on workspace
-    final InternalFuture<List<String>> futureProjectIds =
-        getAccessibleProjectIdsBasedOnWorkspace(
-            request.getWorkspaceName(), Optional.of(request.getProjectId()));
+    final InternalFuture<QueryFilterContext> futureProjectIds =
+        getAccessibleProjectIdsQueryFilterContext(
+            request.getWorkspaceName(), request.getProjectId());
 
     final var futureExperimentRuns =
         futureProjectIds.thenCompose(
-            accessibleProjectIds -> {
-              if (accessibleProjectIds.isEmpty()) {
+            accessibleProjectIdsQueryContext -> {
+              if (accessibleProjectIdsQueryContext.getConditions().isEmpty()) {
                 return InternalFuture.completedInternalFuture(new ArrayList<ExperimentRun>());
               } else {
                 final var futureProjectIdsContext =
-                    InternalFuture.completedInternalFuture(
-                        new QueryFilterContext()
-                            .addCondition("experiment_run.project_id in (<authz_project_ids>)")
-                            .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds)));
+                    InternalFuture.completedInternalFuture(accessibleProjectIdsQueryContext);
                 return InternalFuture.sequence(
                         Arrays.asList(
                             futureLocalContext,
@@ -872,6 +876,44 @@ public class FutureExperimentRunDAO {
                                                     builder ->
                                                         builder.addAllHyperparameters(
                                                             hyperparams.get(builder.getId()))),
+                                            executor);
+
+                                    final var futureHyperparamsFromConfigBlobs =
+                                        getFutureHyperparamsFromConfigBlobs(ids);
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            futureHyperparamsFromConfigBlobs,
+                                            (stream, hyperparamsFromConfigBlob) ->
+                                                stream.map(
+                                                    builder -> {
+                                                      List<KeyValue> hypFromConfigs =
+                                                          hyperparamsFromConfigBlob.get(
+                                                              builder.getId());
+                                                      if (hypFromConfigs != null) {
+                                                        builder.addAllHyperparameters(
+                                                            hypFromConfigs);
+                                                      }
+                                                      return builder;
+                                                    }),
+                                            executor);
+
+                                    final var futureCodeVersionFromBlob =
+                                        getFutureCodeVersionFromBlob(ids);
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            futureCodeVersionFromBlob,
+                                            (stream, runCodeVersionConfigBlob) ->
+                                                stream.map(
+                                                    builder -> {
+                                                      if (!runCodeVersionConfigBlob.isEmpty()
+                                                          && runCodeVersionConfigBlob.containsKey(
+                                                              builder.getId())) {
+                                                        builder.putAllCodeVersionFromBlob(
+                                                            runCodeVersionConfigBlob.get(
+                                                                builder.getId()));
+                                                      }
+                                                      return builder;
+                                                    }),
                                             executor);
 
                                     // Get metrics
@@ -1056,15 +1098,12 @@ public class FutureExperimentRunDAO {
 
     final var futureCount =
         futureProjectIds.thenCompose(
-            accessibleProjectIds -> {
-              if (accessibleProjectIds.isEmpty()) {
+            accessibleProjectIdsQueryContext -> {
+              if (accessibleProjectIdsQueryContext.getConditions().isEmpty()) {
                 return InternalFuture.completedInternalFuture(0L);
               } else {
                 final var futureProjectIdsContext =
-                    InternalFuture.completedInternalFuture(
-                        new QueryFilterContext()
-                            .addCondition("experiment_run.project_id in (<authz_project_ids>)")
-                            .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds)));
+                    InternalFuture.completedInternalFuture(accessibleProjectIdsQueryContext);
                 return InternalFuture.sequence(
                         Arrays.asList(
                             futureLocalContext, futurePredicatesContext, futureProjectIdsContext),
@@ -1102,36 +1141,150 @@ public class FutureExperimentRunDAO {
         executor);
   }
 
-  private InternalFuture<List<String>> getAccessibleProjectIdsBasedOnWorkspace(
-      String workspaceName, Optional<String> projectId) {
+  private InternalFuture<QueryFilterContext> getAccessibleProjectIdsQueryFilterContext(
+      String workspaceName, String requestedProjectId) {
     if (workspaceName.isEmpty()) {
-      return getAllowedProjects(ModelDBActionEnum.ModelDBServiceActions.READ);
+      return getAllowedEntitiesByResourceType(
+              ModelDBActionEnum.ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT)
+          .thenApply(
+              resources -> {
+                boolean allowedAllResources = checkAllResourceAllowed(resources);
+                if (allowedAllResources) {
+                  return new QueryFilterContext();
+                } else {
+                  List<String> accessibleProjectIds =
+                      resources.stream()
+                          .flatMap(x -> x.getResourceIdsList().stream())
+                          .collect(Collectors.toList());
+                  if (accessibleProjectIds.isEmpty()) {
+                    return new QueryFilterContext();
+                  } else {
+                    return new QueryFilterContext()
+                        .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                        .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
+                  }
+                }
+              },
+              executor);
     } else {
-      var requestProjectIds = new ArrayList<String>();
-      if (projectId.isPresent()) {
-        requestProjectIds.add(projectId.get());
-      }
-
-      return FutureGrpc.ClientRequest(
-              uac.getWorkspaceService()
-                  .getWorkspaceByName(
-                      GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
-              executor)
-          .thenCompose(
-              workspace ->
-                  getAllowedResourceItems(
-                          Optional.of(requestProjectIds),
-                          workspace.getId(),
-                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
-                      .thenCompose(
-                          getResourcesItems ->
-                              InternalFuture.completedInternalFuture(
-                                  getResourcesItems.stream()
-                                      .map(GetResourcesResponseItem::getResourceId)
-                                      .collect(Collectors.toList())),
-                          executor),
+      // futureProjectIds based on workspace
+      return getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.of(requestedProjectId))
+          .thenApply(
+              accessibleProjectIds -> {
+                if (accessibleProjectIds.isEmpty()) {
+                  return new QueryFilterContext();
+                } else {
+                  return new QueryFilterContext()
+                      .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                      .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
+                }
+              },
               executor);
     }
+  }
+
+  private InternalFuture<List<String>> getAccessibleProjectIdsBasedOnWorkspace(
+      String workspaceName, Optional<String> projectId) {
+    var requestProjectIds = new ArrayList<String>();
+    projectId.ifPresent(requestProjectIds::add);
+    return FutureGrpc.ClientRequest(
+            uac.getWorkspaceService()
+                .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
+            executor)
+        .thenCompose(
+            workspace ->
+                getAllowedResourceItems(
+                        Optional.of(requestProjectIds),
+                        workspace.getId(),
+                        ModelDBServiceResourceTypes.PROJECT)
+                    .thenCompose(
+                        getResourcesItems ->
+                            InternalFuture.completedInternalFuture(
+                                getResourcesItems.stream()
+                                    .map(GetResourcesResponseItem::getResourceId)
+                                    .collect(Collectors.toList())),
+                        executor),
+            executor);
+  }
+
+  private boolean checkAllResourceAllowed(List<Resources> resources) {
+    boolean allowedAllResources = false;
+    if (!resources.isEmpty()) {
+      // This should always MODEL_DB_SERVICE be the case unless we have a bug.
+      allowedAllResources = resources.get(0).getAllResourceIds();
+    }
+    return allowedAllResources;
+  }
+
+  private InternalFuture<MapSubtypes<KeyValue>> getFutureHyperparamsFromConfigBlobs(
+      Set<String> ids) {
+    return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
+        .thenCompose(
+            resources -> {
+              boolean allowedAllResources = checkAllResourceAllowed(resources);
+              // For all repositories are accessible
+              if (allowedAllResources) {
+                return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
+                    new ArrayList<>(ids), Collections.emptyList(), true);
+              } else {
+                // If all repositories are not accessible then need to extract accessible from list
+                // of resources
+                List<String> selfAllowedRepositoryIds =
+                    resources.stream()
+                        .flatMap(x -> x.getResourceIdsList().stream())
+                        .collect(Collectors.toList());
+                // If self allowed repositories list is empty then return response by this method
+                // will return empty list otherwise return as per selfAllowedRepositoryIds
+                return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
+                    new ArrayList<>(ids), selfAllowedRepositoryIds, false);
+              }
+            },
+            executor);
+  }
+
+  private InternalFuture<Map<String, Map<String, CodeVersion>>> getFutureCodeVersionFromBlob(
+      Set<String> ids) {
+    return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
+        .thenCompose(
+            resources -> {
+              boolean allowedAllResources = checkAllResourceAllowed(resources);
+              // For all repositories are accessible
+              if (allowedAllResources) {
+                return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
+                    ids, Collections.emptyList(), true);
+              } else {
+                // If all repositories are not accessible then need to extract accessible from list
+                // of resources
+                List<String> selfAllowedRepositoryIds =
+                    resources.stream()
+                        .flatMap(x -> x.getResourceIdsList().stream())
+                        .collect(Collectors.toList());
+                // If self allowed repositories list is empty then return response by this method
+                // will return empty list otherwise return as per selfAllowedRepositoryIds
+                return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
+                    ids, Collections.emptyList(), false);
+              }
+            },
+            executor);
+  }
+
+  private InternalFuture<List<Resources>>
+      getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges() {
+    return InternalFuture.completedInternalFuture(config.populateConnectionsBasedOnPrivileges)
+        .thenCompose(
+            populateConnectionsBasedOnPrivileges -> {
+              // If populateConnectionsBasedOnPrivileges = true then fetch all accessible
+              // repositories from UAC
+              if (populateConnectionsBasedOnPrivileges) {
+                return getAllowedEntitiesByResourceType(
+                    ModelDBActionEnum.ModelDBServiceActions.READ,
+                    ModelDBServiceResourceTypes.REPOSITORY);
+              } else {
+                // return empty list if populateConnectionsBasedOnPrivileges = false
+                return InternalFuture.completedInternalFuture(new ArrayList<>());
+              }
+            },
+            executor);
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {

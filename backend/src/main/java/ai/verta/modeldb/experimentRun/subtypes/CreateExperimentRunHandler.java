@@ -31,7 +31,7 @@ public class CreateExperimentRunHandler {
   private final Executor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
-  private final Config config = Config.getInstance();
+  private final Config config;
 
   private final AttributeHandler attributeHandler;
   private final KeyValueHandler hyperparametersHandler;
@@ -47,6 +47,7 @@ public class CreateExperimentRunHandler {
   public CreateExperimentRunHandler(
       Executor executor,
       FutureJdbi jdbi,
+      Config config,
       UAC uac,
       AttributeHandler attributeHandler,
       KeyValueHandler hyperparametersHandler,
@@ -59,6 +60,7 @@ public class CreateExperimentRunHandler {
       VersionInputHandler versionInputHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
+    this.config = config;
     this.uac = uac;
 
     this.attributeHandler = attributeHandler;
