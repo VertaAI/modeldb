@@ -106,10 +106,18 @@ public class FilterPrivilegedDatasetsHandler {
                           .thenCompose(
                               id ->
                                   permissionCheck
-                                      .checkEntityPermissionBasedOnResourceTypes(
+                                      .getEntityPermissionBasedOnResourceTypes(
                                           Collections.singletonList(datasetId),
                                           ModelDBActionEnum.ModelDBServiceActions.READ,
                                           ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET)
+                                      .thenAccept(
+                                          allowed -> {
+                                            if (!allowed) {
+                                              throw new PermissionDeniedException(
+                                                  "Permission denied");
+                                            }
+                                          },
+                                          executor)
                                       .thenCompose(
                                           unused -> InternalFuture.completedInternalFuture(id),
                                           executor),
