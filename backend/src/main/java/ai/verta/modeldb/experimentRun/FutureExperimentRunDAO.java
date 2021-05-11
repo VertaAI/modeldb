@@ -878,33 +878,6 @@ public class FutureExperimentRunDAO {
                                                             hyperparams.get(builder.getId()))),
                                             executor);
 
-                                    final var repoIdsFutureTasks =
-                                        InternalFuture.completedInternalFuture(
-                                                config.populateConnectionsBasedOnPrivileges)
-                                            .thenCompose(
-                                                populateConnectionsBasedOnPrivileges -> {
-                                                  if (populateConnectionsBasedOnPrivileges) {
-                                                    return getAllowedEntitiesByResourceType(
-                                                        ModelDBActionEnum.ModelDBServiceActions
-                                                            .READ,
-                                                        ModelDBServiceResourceTypes.REPOSITORY);
-                                                  } else {
-                                                    return InternalFuture.completedInternalFuture(
-                                                        new ArrayList<>());
-                                                  }
-                                                },
-                                                executor)
-                                            .thenApply(
-                                                resources -> {
-                                                  List<String> accessibleRepos = new ArrayList<>();
-                                                  for (Resources resource : resources) {
-                                                    accessibleRepos.addAll(
-                                                        resource.getResourceIdsList());
-                                                  }
-                                                  return accessibleRepos;
-                                                },
-                                                executor);
-
                                     final var futureHyperparamsFromConfigBlobs =
                                         getFutureHyperparamsFromConfigBlobs(ids);
                                     futureBuildersStream =
@@ -925,12 +898,7 @@ public class FutureExperimentRunDAO {
                                             executor);
 
                                     final var futureCodeVersionFromBlob =
-                                        repoIdsFutureTasks.thenCompose(
-                                            selfAllowedRepositoryIds ->
-                                                codeVersionFromBlobHandler
-                                                    .getExperimentRunCodeVersionMap(
-                                                        ids, selfAllowedRepositoryIds),
-                                            executor);
+                                        getFutureCodeVersionFromBlob(ids);
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureCodeVersionFromBlob,
@@ -1250,21 +1218,7 @@ public class FutureExperimentRunDAO {
 
   private InternalFuture<MapSubtypes<KeyValue>> getFutureHyperparamsFromConfigBlobs(
       Set<String> ids) {
-    return InternalFuture.completedInternalFuture(config.populateConnectionsBasedOnPrivileges)
-        .thenCompose(
-            populateConnectionsBasedOnPrivileges -> {
-              // If populateConnectionsBasedOnPrivileges = true then fetch all accessible
-              // repositories from UAC
-              if (populateConnectionsBasedOnPrivileges) {
-                return getAllowedEntitiesByResourceType(
-                    ModelDBActionEnum.ModelDBServiceActions.READ,
-                    ModelDBServiceResourceTypes.REPOSITORY);
-              } else {
-                // return empty list if populateConnectionsBasedOnPrivileges = false
-                return InternalFuture.completedInternalFuture(new ArrayList<>());
-              }
-            },
-            executor)
+    return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
             resources -> {
               boolean allowedAllResources = checkAllResourceAllowed(resources);
@@ -1283,6 +1237,51 @@ public class FutureExperimentRunDAO {
                 // will return empty list otherwise return as per selfAllowedRepositoryIds
                 return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
                     new ArrayList<>(ids), selfAllowedRepositoryIds, false);
+              }
+            },
+            executor);
+  }
+
+  private InternalFuture<Map<String, Map<String, CodeVersion>>> getFutureCodeVersionFromBlob(
+      Set<String> ids) {
+    return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
+        .thenCompose(
+            resources -> {
+              boolean allowedAllResources = checkAllResourceAllowed(resources);
+              // For all repositories are accessible
+              if (allowedAllResources) {
+                return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
+                    ids, Collections.emptyList(), true);
+              } else {
+                // If all repositories are not accessible then need to extract accessible from list
+                // of resources
+                List<String> selfAllowedRepositoryIds =
+                    resources.stream()
+                        .flatMap(x -> x.getResourceIdsList().stream())
+                        .collect(Collectors.toList());
+                // If self allowed repositories list is empty then return response by this method
+                // will return empty list otherwise return as per selfAllowedRepositoryIds
+                return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
+                    ids, Collections.emptyList(), false);
+              }
+            },
+            executor);
+  }
+
+  private InternalFuture<List<Resources>>
+      getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges() {
+    return InternalFuture.completedInternalFuture(config.populateConnectionsBasedOnPrivileges)
+        .thenCompose(
+            populateConnectionsBasedOnPrivileges -> {
+              // If populateConnectionsBasedOnPrivileges = true then fetch all accessible
+              // repositories from UAC
+              if (populateConnectionsBasedOnPrivileges) {
+                return getAllowedEntitiesByResourceType(
+                    ModelDBActionEnum.ModelDBServiceActions.READ,
+                    ModelDBServiceResourceTypes.REPOSITORY);
+              } else {
+                // return empty list if populateConnectionsBasedOnPrivileges = false
+                return InternalFuture.completedInternalFuture(new ArrayList<>());
               }
             },
             executor);

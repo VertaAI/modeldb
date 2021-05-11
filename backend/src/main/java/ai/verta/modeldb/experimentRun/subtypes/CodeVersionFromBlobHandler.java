@@ -48,7 +48,16 @@ public class CodeVersionFromBlobHandler {
    *     LocationString to CodeVersion
    */
   public InternalFuture<Map<String, Map<String, CodeVersion>>> getExperimentRunCodeVersionMap(
-      Set<String> expRunIds, List<String> selfAllowedRepositoryIds) {
+      Set<String> expRunIds,
+      List<String> selfAllowedRepositoryIds,
+      boolean allowedAllRepositories) {
+    if (!allowedAllRepositories) {
+      // If all repositories are not allowed and some one send empty selfAllowedRepositoryIds list
+      // then this will return empty list from here for security
+      if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
+        return InternalFuture.completedInternalFuture(new HashMap<>());
+      }
+    }
 
     List<Object[]> codeBlobEntities;
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -59,18 +68,14 @@ public class CodeVersionFromBlobHandler {
               + " LEFT JOIN PathDatasetComponentBlobEntity pdcb ON ncb.path_dataset_blob_hash = pdcb.id.path_dataset_blob_id "
               + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
-      if (populateConnectionsBasedOnPrivileges) {
-        if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
-          return InternalFuture.completedInternalFuture(new HashMap<>());
-        } else {
-          queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
-        }
+      if (!allowedAllRepositories) {
+        queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
       }
 
       Query query = session.createQuery(queryBuilder);
       query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
       query.setParameterList("expRunIds", expRunIds);
-      if (populateConnectionsBasedOnPrivileges) {
+      if (!allowedAllRepositories) {
         query.setParameterList(
             "repoIds",
             selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
