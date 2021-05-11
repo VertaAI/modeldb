@@ -12,6 +12,7 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
@@ -30,7 +31,7 @@ public class CreateExperimentRunHandler {
   private final Executor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
-  private final Config config = Config.getInstance();
+  private final Config config;
 
   private final AttributeHandler attributeHandler;
   private final KeyValueHandler hyperparametersHandler;
@@ -40,10 +41,13 @@ public class CreateExperimentRunHandler {
   private final ArtifactHandler artifactHandler;
   private final FeatureHandler featureHandler;
   private final CodeVersionHandler codeVersionHandler;
+  private final DatasetHandler datasetHandler;
+  private final VersionInputHandler versionInputHandler;
 
   public CreateExperimentRunHandler(
       Executor executor,
       FutureJdbi jdbi,
+      Config config,
       UAC uac,
       AttributeHandler attributeHandler,
       KeyValueHandler hyperparametersHandler,
@@ -51,9 +55,12 @@ public class CreateExperimentRunHandler {
       ObservationHandler observationHandler,
       TagsHandler tagsHandler,
       ArtifactHandler artifactHandler,
-      FeatureHandler featureHandler) {
+      FeatureHandler featureHandler,
+      DatasetHandler datasetHandler,
+      VersionInputHandler versionInputHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
+    this.config = config;
     this.uac = uac;
 
     this.attributeHandler = attributeHandler;
@@ -64,11 +71,31 @@ public class CreateExperimentRunHandler {
     this.artifactHandler = artifactHandler;
     this.featureHandler = featureHandler;
     this.codeVersionHandler = new CodeVersionHandler(executor, jdbi);
+    this.datasetHandler = datasetHandler;
+    this.versionInputHandler = versionInputHandler;
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
-    return FutureGrpc.ClientRequest(
-            uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
+    // Validate arguments
+    var futureTask =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getProjectId().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project ID not found in CreateExperimentRun request");
+              } else if (request.getExperimentId().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Experiment ID not found in CreateExperimentRun request");
+              }
+            },
+            executor);
+
+    return futureTask
+        .thenCompose(
+            unused ->
+                FutureGrpc.ClientRequest(
+                    uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
+            executor)
         .thenCompose(
             currentLoginUserInfo ->
                 TrialUtils.futureValidateExperimentRunPerWorkspaceForTrial(config.trial, executor)
@@ -299,14 +326,17 @@ public class CreateExperimentRunHandler {
                             .setOverwrite(false)
                             .build()));
               }
+              futureLogs.add(
+                  datasetHandler.logArtifacts(
+                      newExperimentRun.getId(), newExperimentRun.getDatasetsList(), false));
+              futureLogs.add(
+                  versionInputHandler.validateAndInsertVersionedInputs(
+                      newExperimentRun.getId(), newExperimentRun.getVersionedInputs()));
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);
             },
             executor);
-    // TODO .thenCompose(handle -> datasetHandler.logDatasets(newExperimentRun.getId(),
-    // newExperimentRun.getDatasetsList()), executor)
-    // TODO .thenCompose(handle -> versioned_inputs, executor)
   }
 
   private Boolean checkInsertedEntityAlreadyExists(Handle handle, ExperimentRun experimentRun) {
