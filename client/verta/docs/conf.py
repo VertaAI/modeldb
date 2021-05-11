@@ -64,6 +64,8 @@ autodoc_mock_imports = [
     'yaml',
 ]
 
+autosummary_generate = True
+
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 napoleon_use_rtype = False

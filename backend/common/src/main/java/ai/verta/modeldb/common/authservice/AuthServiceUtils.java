@@ -4,6 +4,7 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.uac.*;
@@ -22,14 +23,17 @@ public class AuthServiceUtils implements AuthService {
   private final String serviceUserDevKey;
   private final Context.Key<Metadata> metadataInfo;
   private Integer timeout;
+  private final Config config;
 
   public AuthServiceUtils(
+      Config config,
       String host,
       Integer port,
       String serviceUserEmail,
       String serviceUserDevKey,
       Integer timeout,
       Context.Key<Metadata> metadataInfo) {
+    this.config = config;
     this.host = host;
     this.port = port;
     this.serviceUserEmail = serviceUserEmail;
@@ -302,6 +306,7 @@ public class AuthServiceUtils implements AuthService {
   }
 
   private AuthServiceChannel getAuthServiceChannel() {
-    return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey, metadataInfo);
+    return new AuthServiceChannel(
+        config, host, port, serviceUserEmail, serviceUserDevKey, metadataInfo);
   }
 }

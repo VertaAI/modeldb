@@ -37,6 +37,15 @@ Release Notes
      <>`__
 
 
+v0.17.6 (2021-04-23)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add download_artifact() and download_model() to RegisteredModelVersion
+  <https://github.com/VertaAI/modeldb/pull/2222>`__
+
+
 v0.17.5 (2021-04-14)
 --------------------
 
