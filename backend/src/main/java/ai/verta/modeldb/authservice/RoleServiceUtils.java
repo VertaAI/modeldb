@@ -47,6 +47,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
 
   private RoleServiceUtils(Config config, AuthService authService, UAC uac) {
     super(
+        config,
         authService,
         config.authService.host,
         config.authService.port,

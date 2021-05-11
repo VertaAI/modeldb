@@ -21,6 +21,8 @@ class NotificationChannel(entity._ModelDBEntity):
         ID of this notification channel.
     name : str
         Name of this notification channel.
+    workspace : str
+        Name of the workspace which this notification channel belongs to.
 
     Examples
     --------
@@ -77,36 +79,56 @@ class NotificationChannel(entity._ModelDBEntity):
 
         return self._msg.name
 
+    @property
+    def workspace(self):
+        # TODO: replace with _refresh_cache() when backend returns ID on /create
+        self._fetch_with_no_cache()
+
+        if self._msg.workspace_id:
+            return self._conn.get_workspace_name_from_id(self._msg.workspace_id)
+        else:
+            return self._conn._OSS_DEFAULT_WORKSPACE
+
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         msg = _AlertService.FindNotificationChannelRequest(
-            ids=[int(id)], page_number=1, page_limit=-1,
+            ids=[int(id)],
+            page_number=1,
+            page_limit=-1,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = conn.make_proto_request("POST", endpoint, body=msg)
         channels = conn.must_proto_response(response, msg.Response).channels
         if len(channels) > 1:
             warnings.warn(
-                "unexpectedly found multiple alerts with the same name and"
-                " monitored entity ID"
+                "unexpectedly found multiple notification channels with ID"
+                " {}".format(id)
             )
-        return channels[0]
+        if channels:
+            return channels[0]
+        else:
+            return None
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
-        # NOTE: workspace is currently unsupported until https://vertaai.atlassian.net/browse/VR-9792
         msg = _AlertService.FindNotificationChannelRequest(
-            names=[name], page_number=1, page_limit=-1,
+            names=[name],
+            page_number=1,
+            page_limit=-1,
+            workspace_name=workspace,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = conn.make_proto_request("POST", endpoint, body=msg)
         channels = conn.must_proto_response(response, msg.Response).channels
         if len(channels) > 1:
             warnings.warn(
-                "unexpectedly found multiple alerts with the same name and"
-                " monitored entity ID"
+                "unexpectedly found multiple notification channels with name"
+                " {} in workspace {}".format(name, workspace)
             )
-        return channels[0]
+        if channels:
+            return channels[0]
+        else:
+            return None
 
     @classmethod
     def _create_proto_internal(
@@ -115,19 +137,19 @@ class NotificationChannel(entity._ModelDBEntity):
         ctx,
         name,
         channel,
+        workspace,
         created_at_millis,
         updated_at_millis,
     ):
         msg = _AlertService.CreateNotificationChannelRequest(
-            channel=_AlertService.NotificationChannel(
-                name=name,
-                created_at_millis=created_at_millis,
-                updated_at_millis=updated_at_millis,
-                type=channel._TYPE,
-            )
+            name=name,
+            created_at_millis=created_at_millis,
+            updated_at_millis=updated_at_millis,
+            workspace_name=workspace,
+            type=channel._TYPE,
         )
-        if msg.channel.type == _AlertService.NotificationChannelTypeEnum.SLACK:
-            msg.channel.slack_webhook.CopyFrom(channel._as_proto())
+        if msg.type == _AlertService.NotificationChannelTypeEnum.SLACK:
+            msg.slack_webhook.CopyFrom(channel._as_proto())
         else:
             raise ValueError(
                 "unrecognized notification channel type enum value {}".format(
@@ -180,14 +202,22 @@ class NotificationChannels(object):
 
     """
 
-    def __init__(self, conn, conf):
-        self._conn = conn
-        self._conf = conf
+    def __init__(self, client):
+        self._client = client
+
+    @property
+    def _conn(self):
+        return self._client._conn
+
+    @property
+    def _conf(self):
+        return self._client._conf
 
     def create(
         self,
         name,
         channel,
+        workspace=None,
         created_at=None,
         updated_at=None,
     ):
@@ -198,8 +228,11 @@ class NotificationChannels(object):
         ----------
         name : str
             A unique name for this notification channel.
-        channel : :class:`verta.operations.monitoring.notification_channel._NotificationChannel`
+        channel : :class:`~verta.operations.monitoring.notification_channel._NotificationChannel`
             The configuration for this notification channel.
+        workspace : str, optional
+            Workspace in which to create this notification channel. Defaults to
+            the client's default workspace.
         created_at : datetime.datetime or int, optional
             An override creation time to assign to this channel. Either a
             timezone aware datetime object or unix epoch milliseconds.
@@ -226,6 +259,9 @@ class NotificationChannels(object):
             )
 
         """
+        if workspace is None:
+            workspace = self._client.get_workspace()
+
         ctx = _Context(self._conn, self._conf)
         return NotificationChannel._create(
             self._conn,
@@ -233,11 +269,12 @@ class NotificationChannels(object):
             ctx,
             name=name,
             channel=channel,
+            workspace=workspace,
             created_at_millis=time_utils.epoch_millis(created_at),
             updated_at_millis=time_utils.epoch_millis(updated_at),
         )
 
-    def get(self, name=None, id=None):
+    def get(self, name=None, workspace=None, id=None):
         """
         Get an existing notification channel.
 
@@ -247,6 +284,9 @@ class NotificationChannels(object):
         ----------
         name : str, optional
             Notification channel name.
+        workspace : str, optional
+            Workspace in which the notification channel exists. Defaults to the
+            client's default workspace.
         id : int, optional
             Notification channel ID.
 
@@ -258,23 +298,148 @@ class NotificationChannels(object):
         """
         if name and id:
             raise ValueError("cannot specify both `name` and `id`")
+        if workspace and id:
+            raise ValueError(
+                "cannot specify both `workspace` and `id`;"
+                " getting by ID does not require a workspace name"
+            )
         elif name:
+            if workspace is None:
+                workspace = self._client.get_workspace()
+
             return NotificationChannel._get_by_name(
                 self._conn,
                 self._conf,
                 name,
-                None,  # TODO: pass workspace instead of None
+                workspace,
             )
         elif id:
             return NotificationChannel._get_by_id(self._conn, self._conf, id)
         else:
             raise ValueError("must specify either `name` or `id`")
 
+    def get_or_create(
+        self,
+        name=None,
+        channel=None,
+        workspace=None,
+        created_at=None,
+        updated_at=None,
+        id=None,
+    ):
+        """Get or create a notification channel by name.
+
+        Either `name` or `id` can be provided but not both. If `id` is
+        provided, this will act only as a get method and no object will be
+        created.
+
+        Parameters
+        ----------
+        name : str, optional
+            A unique name for this notification channel.
+        channel : :class:`~verta.operations.monitoring.notification_channel._NotificationChannel`, optional
+            The configuration for this notification channel.
+        workspace : str, optional
+            Workspace in which to create this notification channel. Defaults to
+            the client's default workspace.
+        created_at : datetime.datetime or int, optional
+            An override creation time to assign to this channel. Either a
+            timezone aware datetime object or unix epoch milliseconds.
+        updated_at : datetime.datetime or int, optional
+            An override update time to assign to this channel. Either a
+            timezone aware datetime object or unix epoch milliseconds.
+        id : int, optional
+            Notification channel ID. This should not be provided if `name`
+            is provided.
+
+        Returns
+        -------
+        :class:`NotificationChannel`
+            Notification channel.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.operations.monitoring.notification_channel import SlackNotificationChannel
+
+            channels = Client().operations.notification_channels
+
+            channel = notification_channels.get_or_create(
+                "Slack alerts",
+                SlackNotificationChannel("https://hooks.slack.com/services/.../.../......"),
+            )
+
+            # get it back later with the same method
+            channel = notification_channels.get_or_create(
+                "Slack alerts",
+            )
+
+        """
+        if name and id:
+            raise ValueError("cannot specify both `name` and `id`")
+        if workspace and id:
+            raise ValueError(
+                "cannot specify both `workspace` and `id`;"
+                " getting by ID does not require a workspace name"
+            )
+
+        name = self._client._set_from_config_if_none(name, "notification_channel")
+        if workspace is None:
+            workspace = self._client.get_workspace()
+
+        resource_name = "Notification Channel"
+        param_names = "`channel`, `created_at`, or `updated_at`"
+        params = (channel, created_at, updated_at)
+        if id is not None:
+            channel = NotificationChannel._get_by_id(self._conn, self._conf, id)
+            _utils.check_unnecessary_params_warning(
+                resource_name,
+                "id {}".format(id),
+                param_names,
+                params,
+            )
+        else:
+            channel = NotificationChannel._get_or_create_by_name(
+                self._conn,
+                name,
+                lambda name: NotificationChannel._get_by_name(
+                    self._conn,
+                    self._conf,
+                    name,
+                    workspace,
+                ),
+                lambda name: NotificationChannel._create(
+                    self._conn,
+                    self._conf,
+                    _Context(self._conn, self._conf),
+                    name=name,
+                    channel=channel,
+                    workspace=workspace,
+                    created_at_millis=time_utils.epoch_millis(created_at),
+                    updated_at_millis=time_utils.epoch_millis(updated_at),
+                ),
+                lambda: _utils.check_unnecessary_params_warning(
+                    resource_name,
+                    "name {}".format(name),
+                    param_names,
+                    params,
+                ),
+            )
+
+        return channel
+
     # TODO: use lazy list and pagination
     # TODO: a proper find
-    def list(self):
+    def list(self, workspace=None):
         """
-        Return all accesible notification channels.
+        Return accesible notification channels.
+
+        Parameters
+        ----------
+        workspace : str, optional
+            Workspace from which to list notification channels. Defaults to the
+            client's default workspace.
 
         Returns
         -------
@@ -283,7 +448,9 @@ class NotificationChannels(object):
 
         """
         msg = _AlertService.FindNotificationChannelRequest(
-            page_number=1, page_limit=-1,
+            page_number=1,
+            page_limit=-1,
+            workspace_name=workspace,
         )
         endpoint = "/api/v1/alerts/findNotificationChannel"
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
@@ -298,7 +465,7 @@ class NotificationChannels(object):
 
         Parameters
         ----------
-        list of :class:`NotificationChannel`
+        channels : list of :class:`NotificationChannel`
             Notification channels.
 
         Returns

@@ -1,3 +1,5 @@
+.. _deployment-api:
+
 Deployment
 ==========
 
