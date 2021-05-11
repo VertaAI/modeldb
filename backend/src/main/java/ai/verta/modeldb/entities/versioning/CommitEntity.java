@@ -19,7 +19,7 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "commit")
+@Table(name = "\"commit\"")
 public class CommitEntity {
   public CommitEntity() {}
 
