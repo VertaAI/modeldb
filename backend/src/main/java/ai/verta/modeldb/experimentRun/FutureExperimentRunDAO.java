@@ -28,6 +28,7 @@ import ai.verta.modeldb.GetMetrics;
 import ai.verta.modeldb.GetObservations;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.LogArtifacts;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogDatasets;
@@ -38,6 +39,7 @@ import ai.verta.modeldb.LogMetrics;
 import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.Observation;
+import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
@@ -60,6 +62,7 @@ import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
 import ai.verta.modeldb.experimentRun.subtypes.EnvironmentHandler;
 import ai.verta.modeldb.experimentRun.subtypes.FeatureHandler;
 import ai.verta.modeldb.experimentRun.subtypes.FilterPrivilegedDatasetsHandler;
+import ai.verta.modeldb.experimentRun.subtypes.FilterPrivilegedVersionedInputsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
@@ -86,10 +89,12 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -116,8 +121,8 @@ public class FutureExperimentRunDAO {
   private final EnvironmentHandler environmentHandler;
   private final FilterPrivilegedDatasetsHandler privilegedDatasetsHandler;
   private final VersionInputHandler versionInputHandler;
+  private final FilterPrivilegedVersionedInputsHandler privilegedVersionedInputsHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
-  private final Config config = Config.getInstance();
 
   public FutureExperimentRunDAO(
       Executor executor,
@@ -157,6 +162,7 @@ public class FutureExperimentRunDAO {
     versionInputHandler =
         new VersionInputHandler(
             executor, jdbi, "ExperimentRunEntity", repositoryDAO, commitDAO, blobDAO);
+    privilegedVersionedInputsHandler = new FilterPrivilegedVersionedInputsHandler(executor, jdbi);
     createExperimentRunHandler =
         new CreateExperimentRunHandler(
             executor,
@@ -355,7 +361,7 @@ public class FutureExperimentRunDAO {
                 .execute());
   }
 
-  private InternalFuture<Void> checkEntityPermissionBasedOnResourceTypes(
+  private InternalFuture<Boolean> getEntityPermissionBasedOnResourceTypes(
       List<String> entityIds,
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
@@ -376,13 +382,8 @@ public class FutureExperimentRunDAO {
                                 .addAllResourceIds(entityIds))
                         .build()),
             executor)
-        .thenAccept(
-            response -> {
-              if (!response.getAllowed()) {
-                throw new PermissionDeniedException("Permission denied");
-              }
-            },
-            executor);
+        .thenCompose(
+            response -> InternalFuture.completedInternalFuture(response.getAllowed()), executor);
   }
 
   private InternalFuture<Void> checkPermission(
@@ -411,13 +412,27 @@ public class FutureExperimentRunDAO {
           switch (action) {
             case DELETE:
               // TODO: check if we should using DELETE for the ER itself
-              return checkEntityPermissionBasedOnResourceTypes(
-                  maybeProjectIds,
-                  ModelDBActionEnum.ModelDBServiceActions.UPDATE,
-                  ModelDBServiceResourceTypes.PROJECT);
+              return getEntityPermissionBasedOnResourceTypes(
+                      maybeProjectIds,
+                      ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                      ModelDBServiceResourceTypes.PROJECT)
+                  .thenAccept(
+                      allowed -> {
+                        if (!allowed) {
+                          throw new PermissionDeniedException("Permission denied");
+                        }
+                      },
+                      executor);
             default:
-              return checkEntityPermissionBasedOnResourceTypes(
-                  maybeProjectIds, action, ModelDBServiceResourceTypes.PROJECT);
+              return getEntityPermissionBasedOnResourceTypes(
+                      maybeProjectIds, action, ModelDBServiceResourceTypes.PROJECT)
+                  .thenAccept(
+                      allowed -> {
+                        if (!allowed) {
+                          throw new PermissionDeniedException("Permission denied");
+                        }
+                      },
+                      executor);
           }
         },
         executor);
@@ -913,7 +928,7 @@ public class FutureExperimentRunDAO {
                                                                 builder.getId()),
                                                             true,
                                                             this
-                                                                ::checkEntityPermissionBasedOnResourceTypes)
+                                                                ::getEntityPermissionBasedOnResourceTypes)
                                                         .thenCompose(
                                                             artifacts ->
                                                                 InternalFuture
@@ -994,6 +1009,34 @@ public class FutureExperimentRunDAO {
                                                         builder.setCodeVersionSnapshot(
                                                             codeVersionsMap.get(builder.getId()));
                                                       }
+                                                    }),
+                                            executor);
+
+                                    // Get VersionedInputs
+                                    final var futureVersionedInputs =
+                                        versionInputHandler.getVersionedInputs(ids);
+                                    final InternalFuture<Map<String, VersioningEntry>>
+                                        filterPrivilegeVersionedInputMap =
+                                            privilegedVersionedInputsHandler
+                                                .filterVersionedInputsBasedOnPrivileges(
+                                                    ids,
+                                                    futureVersionedInputs,
+                                                    this::getEntityPermissionBasedOnResourceTypes);
+                                    futureBuildersStream =
+                                        futureBuildersStream.thenCombine(
+                                            filterPrivilegeVersionedInputMap,
+                                            (stream, versionInputsMap) ->
+                                                stream.map(
+                                                    builder -> {
+                                                      VersioningEntry finalVersionedInputs =
+                                                          versionInputsMap.get(builder.getId());
+                                                      if (finalVersionedInputs != null) {
+                                                        builder.setVersionedInputs(
+                                                            finalVersionedInputs);
+                                                      } else {
+                                                        builder.clearVersionedInputs();
+                                                      }
+                                                      return builder;
                                                     }),
                                             executor);
 
@@ -1092,7 +1135,7 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
-    return checkEntityPermissionBasedOnResourceTypes(
+    return getEntityPermissionBasedOnResourceTypes(
             Collections.singletonList(request.getProjectId()),
             ModelDBActionEnum.ModelDBServiceActions.UPDATE,
             ModelDBServiceResourceTypes.PROJECT)
@@ -1102,7 +1145,7 @@ public class FutureExperimentRunDAO {
                     .filterAndGetPrivilegedDatasetsOnly(
                         request.getDatasetsList(),
                         true,
-                        this::checkEntityPermissionBasedOnResourceTypes)
+                        this::getEntityPermissionBasedOnResourceTypes)
                     .thenApply(
                         privilegedDatasets ->
                             request
@@ -1141,5 +1184,14 @@ public class FutureExperimentRunDAO {
                     request.getId(), request.getVersionedInputs()),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<VersioningEntry> getVersionedInputs(GetVersionedInput request) {
+    Set<String> versionIds = new HashSet<>();
+    versionIds.add(request.getId());
+    return versionInputHandler
+        .getVersionedInputs(versionIds)
+        .thenApply(
+            stringVersioningEntryMap -> stringVersioningEntryMap.get(request.getId()), executor);
   }
 }
