@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-
 from verta import data_types
 from verta._internal_utils import importer
 
@@ -70,6 +69,19 @@ class TestDiscreteHistogram:
                 "data": [10, 20],
             },
         }
+
+    def test_missing_buckets(self):
+        np = pytest.importorskip("numpy")
+        one = data_types.DiscreteHistogram(
+            buckets=["a", "b"],
+            data=[0, 1],
+        )
+        two = data_types.DiscreteHistogram(
+            buckets=["c", "a"],
+            data=[1, 0],
+        )
+        d = one.dist(two)
+        np.isclose(d, 0)
 
 
 class TestFloatHistogram:

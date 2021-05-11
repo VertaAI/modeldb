@@ -2,7 +2,6 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
-import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
@@ -12,6 +11,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
@@ -82,38 +82,33 @@ public class VersionInputHandler {
    * then again we are keep hyperparameter element blob mapping for those run in separate mapping
    * table called `hyperparameter_element_mapping`
    */
-  public InternalFuture<Void> validateAndInsertVersionedInputs(ExperimentRun experimentRun) {
-    if (experimentRun.hasVersionedInputs()) {
+  public InternalFuture<Void> validateAndInsertVersionedInputs(
+      String runId, VersioningEntry versioningEntry) {
+    if (versioningEntry == null) {
+      return InternalFuture.failedStage(
+          new InvalidArgumentException("VersionedInput not found in request"));
+    } else {
       InternalFuture<Map<String, Map.Entry<BlobExpanded, String>>> versionedInputFutureTask =
-          validateVersioningEntity(experimentRun.getVersionedInputs());
+          validateVersioningEntity(versioningEntry);
       return versionedInputFutureTask.thenCompose(
           locationBlobWithHashMap ->
               // Insert version input for run in versioning_modeldb_entity_mapping mapping table
-              insertVersioningInput(
-                      experimentRun.getVersionedInputs(),
-                      locationBlobWithHashMap,
-                      experimentRun.getId())
+              insertVersioningInput(versioningEntry, locationBlobWithHashMap, runId)
                   .thenCompose(
                       unused ->
                           // Insert config blob and version input mapping in
                           // versioning_modeldb_entity_mapping_config_blob mapping table
                           insertVersioningInputMappingConfigBlob(
-                              experimentRun.getVersionedInputs(),
-                              locationBlobWithHashMap,
-                              experimentRun.getId()),
+                              versioningEntry, locationBlobWithHashMap, runId),
                       executor)
                   .thenCompose(
                       unused ->
                           // Insert hyperparameter element and run mapping in
                           // hyperparameter_element_mapping table
                           insertHyperparameterElementMapping(
-                              experimentRun.getVersionedInputs(),
-                              locationBlobWithHashMap,
-                              experimentRun.getId()),
+                              versioningEntry, locationBlobWithHashMap, runId),
                       executor),
           executor);
-    } else {
-      return InternalFuture.runAsync(() -> {}, executor);
     }
   }
 
