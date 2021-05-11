@@ -62,6 +62,7 @@ import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
 import ai.verta.modeldb.experimentRun.subtypes.EnvironmentHandler;
 import ai.verta.modeldb.experimentRun.subtypes.FeatureHandler;
 import ai.verta.modeldb.experimentRun.subtypes.FilterPrivilegedDatasetsHandler;
+import ai.verta.modeldb.experimentRun.subtypes.FilterPrivilegedVersionedInputsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
@@ -120,8 +121,8 @@ public class FutureExperimentRunDAO {
   private final EnvironmentHandler environmentHandler;
   private final FilterPrivilegedDatasetsHandler privilegedDatasetsHandler;
   private final VersionInputHandler versionInputHandler;
+  private final FilterPrivilegedVersionedInputsHandler privilegedVersionedInputsHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
-  private final Config config = Config.getInstance();
 
   public FutureExperimentRunDAO(
       Executor executor,
@@ -161,6 +162,7 @@ public class FutureExperimentRunDAO {
     versionInputHandler =
         new VersionInputHandler(
             executor, jdbi, "ExperimentRunEntity", repositoryDAO, commitDAO, blobDAO);
+    privilegedVersionedInputsHandler = new FilterPrivilegedVersionedInputsHandler(executor, jdbi);
     createExperimentRunHandler =
         new CreateExperimentRunHandler(
             executor,
@@ -1015,8 +1017,11 @@ public class FutureExperimentRunDAO {
                                         versionInputHandler.getVersionedInputs(ids);
                                     final InternalFuture<Map<String, VersioningEntry>>
                                         filterPrivilegeVersionedInputMap =
-                                            filterVersionedInputsBasedOnPrivileges(
-                                                ids, futureVersionedInputs);
+                                            privilegedVersionedInputsHandler
+                                                .filterVersionedInputsBasedOnPrivileges(
+                                                    ids,
+                                                    futureVersionedInputs,
+                                                    this::getEntityPermissionBasedOnResourceTypes);
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             filterPrivilegeVersionedInputMap,
@@ -1094,55 +1099,6 @@ public class FutureExperimentRunDAO {
                 .addAllExperimentRuns(runs)
                 .setTotalRecords(count)
                 .build(),
-        executor);
-  }
-
-  private InternalFuture<Map<String, VersioningEntry>> filterVersionedInputsBasedOnPrivileges(
-      Set<String> runIds, InternalFuture<Map<String, VersioningEntry>> futureVersionedInputs) {
-    return futureVersionedInputs.thenCompose(
-        versionedInputsMap -> {
-          List<InternalFuture<Map<String, VersioningEntry>>> internalFutureList = new ArrayList<>();
-          for (String runId : runIds) {
-            // Get VersionEntry from fetched map
-            VersioningEntry versioningEntry = versionedInputsMap.get(runId);
-            if (versioningEntry == null) {
-              continue;
-            }
-            String repoId = String.valueOf(versioningEntry.getRepositoryId());
-            // Check repository is accessible or not from versionedInputs If not then we will remove
-            // it from fetched map
-            internalFutureList.add(
-                InternalFuture.completedInternalFuture(versioningEntry)
-                    .thenCompose(
-                        versioningEntry1 ->
-                            getEntityPermissionBasedOnResourceTypes(
-                                    Collections.singletonList(repoId),
-                                    ModelDBActionEnum.ModelDBServiceActions.READ,
-                                    ModelDBServiceResourceTypes.REPOSITORY)
-                                .thenCompose(
-                                    isSelfAllowed -> {
-                                      // Set null into map if repository is not accessible to the
-                                      // current user
-                                      if (isSelfAllowed) {
-                                        return InternalFuture.completedInternalFuture(
-                                            Collections.singletonMap(runId, versioningEntry1));
-                                      } else {
-                                        return InternalFuture.completedInternalFuture(
-                                            Collections.emptyMap());
-                                      }
-                                    },
-                                    executor),
-                        executor));
-          }
-          return InternalFuture.sequence(internalFutureList, executor)
-              .thenCompose(
-                  maps -> {
-                    Map<String, VersioningEntry> finalVersionedInputsMap = new HashMap<>();
-                    maps.forEach(finalVersionedInputsMap::putAll);
-                    return InternalFuture.completedInternalFuture(finalVersionedInputsMap);
-                  },
-                  executor);
-        },
         executor);
   }
 
