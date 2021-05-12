@@ -326,12 +326,16 @@ public class CreateExperimentRunHandler {
                             .setOverwrite(false)
                             .build()));
               }
-              futureLogs.add(
-                  datasetHandler.logArtifacts(
-                      newExperimentRun.getId(), newExperimentRun.getDatasetsList(), false));
-              futureLogs.add(
-                  versionInputHandler.validateAndInsertVersionedInputs(
-                      newExperimentRun.getId(), newExperimentRun.getVersionedInputs()));
+              if (!newExperimentRun.getDatasetsList().isEmpty()) {
+                futureLogs.add(
+                    datasetHandler.logArtifacts(
+                        newExperimentRun.getId(), newExperimentRun.getDatasetsList(), false));
+              }
+              if (newExperimentRun.getVersionedInputs().getRepositoryId() != 0) {
+                futureLogs.add(
+                    versionInputHandler.validateAndInsertVersionedInputs(
+                        newExperimentRun.getId(), newExperimentRun.getVersionedInputs()));
+              }
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);

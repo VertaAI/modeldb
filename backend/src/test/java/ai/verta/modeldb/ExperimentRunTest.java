@@ -3646,7 +3646,7 @@ public class ExperimentRunTest extends TestsInit {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     AddExperimentRunAttributes addAttributesRequest =

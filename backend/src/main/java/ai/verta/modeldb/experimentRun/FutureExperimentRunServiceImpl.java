@@ -864,10 +864,14 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
           futureExperimentRunDAO
               .getVersionedInputs(request)
               .thenApply(
-                  versionedInputs ->
-                      GetVersionedInput.Response.newBuilder()
-                          .setVersionedInputs(versionedInputs)
-                          .build(),
+                  versionedInputs -> {
+                    GetVersionedInput.Response.Builder builder =
+                        GetVersionedInput.Response.newBuilder();
+                    if (versionedInputs != null) {
+                      builder.setVersionedInputs(versionedInputs);
+                    }
+                    return builder.build();
+                  },
                   executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
