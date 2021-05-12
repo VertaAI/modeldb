@@ -1073,6 +1073,15 @@
       ],
       "default": "READ_ONLY"
     },
+    "CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "READ_WRITE",
+        "READ_ONLY"
+      ],
+      "default": "UNKNOWN"
+    },
     "DeploymentActionEnumDeploymentServiceActions": {
       "type": "string",
       "enum": [
@@ -1082,7 +1091,8 @@
         "READ",
         "UPDATE",
         "DELETE",
-        "UPDATE_PERMISSIONS"
+        "UPDATE_PERMISSIONS",
+        "PREDICT"
       ],
       "default": "UNKNOWN"
     },
@@ -1283,6 +1293,9 @@
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
         "authz_entity_type": {
           "$ref": "#/definitions/EntitiesEnumEntitiesTypes"
         },
@@ -1322,6 +1335,9 @@
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
         "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
@@ -1365,6 +1381,9 @@
           "type": "string"
         },
         "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "authz_entity_type": {
@@ -1458,6 +1477,9 @@
         "default_endpoint_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
+        "endpoint_can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
         "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
@@ -1471,10 +1493,10 @@
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_monitored_entity_collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
         },
         "default_notification_channel_collaborator_type": {
-          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
         }
       }
     },
@@ -1583,6 +1605,9 @@
           "title": "The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC. We should error\notherwise"
         },
         "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }

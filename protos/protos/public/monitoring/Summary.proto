@@ -18,6 +18,7 @@ message Summary {
     uint64 monitored_entity_id = 2;
     string name = 3;
     string type_name = 4;
+    map<string, string> attributes = 5;
 }
 
 // Request to create a summary sample
@@ -25,6 +26,7 @@ message CreateSummaryRequest {
     uint64 monitored_entity_id = 1;
     string name = 2;
     string type_name = 3;
+    map<string, string> attributes = 4;
 }
 
 // Request to fetch multiple summaries
@@ -118,42 +120,42 @@ message DeleteSummarySampleRequest {
 service SummaryService {
     rpc createSummary(CreateSummaryRequest) returns (Summary) {
         option (google.api.http) = {
-            post: "/v1/summaries/createSummary"
+            post: "/api/v1/monitoring/summaries/createSummary"
             body: "*"
         };
     };
 
     rpc findSummary(FindSummaryRequest) returns (FindSummaryRequest.Response) {
         option (google.api.http) = {
-            post: "/v1/summaries/findSummary"
+            post: "/api/v1/monitoring/summaries/findSummary"
             body: "*"
         };
     };
 
     rpc deleteSummary(DeleteSummaryRequest) returns (Empty) {
         option (google.api.http) = {
-            delete: "/v1/summaries/deleteSummary"
+            delete: "/api/v1/monitoring/summaries/deleteSummary"
             body: "*"
         };
     };
 
     rpc createSample(CreateSummarySample) returns (SummarySample) {
         option (google.api.http) = {
-            post: "/v1/summaries/createSample"
+            post: "/api/v1/monitoring/summaries/createSample"
             body: "*"
         };
     };
 
     rpc findSample(FindSummarySampleRequest) returns (FindSummarySampleRequest.Response) {
         option (google.api.http) = {
-            post: "/v1/summaries/findSample"
+            post: "/api/v1/monitoring/summaries/findSample"
             body: "*"
         };
     };
 
     rpc deleteSample(DeleteSummarySampleRequest) returns (Empty) {
         option (google.api.http) = {
-            delete: "/v1/summaries/deleteSample"
+            delete: "/api/v1/monitoring/summaries/deleteSample"
             body: "*"
         };
     };

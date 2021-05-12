@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/alerts/createAlert": {
+    "/api/v1/monitoring/alerts/createAlert": {
       "post": {
         "operationId": "AlertService_createAlert",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/alerts/createNotificationChannel": {
+    "/api/v1/monitoring/alerts/createNotificationChannel": {
       "post": {
         "operationId": "AlertService_createNotificationChannel",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/alerts/deleteAlert": {
+    "/api/v1/monitoring/alerts/deleteAlert": {
       "delete": {
         "operationId": "AlertService_deleteAlert",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/alerts/deleteNotificationChannel": {
+    "/api/v1/monitoring/alerts/deleteNotificationChannel": {
       "delete": {
         "operationId": "AlertService_deleteNotificationChannel",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/alerts/findAlert": {
+    "/api/v1/monitoring/alerts/findAlert": {
       "post": {
         "operationId": "AlertService_findAlert",
         "responses": {
@@ -171,7 +171,7 @@
         ]
       }
     },
-    "/alerts/findNotificationChannel": {
+    "/api/v1/monitoring/alerts/findNotificationChannel": {
       "post": {
         "operationId": "AlertService_findNotificationChannel",
         "responses": {
@@ -203,7 +203,7 @@
         ]
       }
     },
-    "/alerts/listAlertHistory": {
+    "/api/v1/monitoring/alerts/listAlertHistory": {
       "post": {
         "operationId": "AlertService_listAlertHistory",
         "responses": {
@@ -235,7 +235,7 @@
         ]
       }
     },
-    "/alerts/updateAlert": {
+    "/api/v1/monitoring/alerts/updateAlert": {
       "post": {
         "operationId": "AlertService_updateAlert",
         "responses": {
@@ -267,7 +267,7 @@
         ]
       }
     },
-    "/alerts/updateAlertStatus": {
+    "/api/v1/monitoring/alerts/updateAlertStatus": {
       "post": {
         "operationId": "AlertService_updateAlertStatus",
         "responses": {
@@ -299,7 +299,7 @@
         ]
       }
     },
-    "/alerts/updateNotificationChannel": {
+    "/api/v1/monitoring/alerts/updateNotificationChannel": {
       "post": {
         "operationId": "AlertService_updateNotificationChannel",
         "responses": {
@@ -347,7 +347,8 @@
       "enum": [
         "UNKNOWN",
         "FIXED",
-        "REFERENCE"
+        "REFERENCE",
+        "RANGE"
       ],
       "default": "UNKNOWN"
     },
@@ -434,6 +435,9 @@
         },
         "alerter_reference": {
           "$ref": "#/definitions/monitoringAlertReference"
+        },
+        "alerter_range": {
+          "$ref": "#/definitions/monitoringAlertRange"
         }
       }
     },
@@ -447,6 +451,23 @@
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
+        }
+      }
+    },
+    "monitoringAlertRange": {
+      "type": "object",
+      "properties": {
+        "lower_bound": {
+          "type": "number",
+          "format": "float"
+        },
+        "upper_bound": {
+          "type": "number",
+          "format": "float"
+        },
+        "alert_if_outside_range": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },

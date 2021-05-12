@@ -46,14 +46,14 @@ message FindSampleLabelValuesItem {
 service LabelService {
     rpc findLabels(FindSampleLabelsRequest) returns (FindSampleLabelsRequest.Response) {
         option (google.api.http) = {
-            post: "/v1/labels/findLabels"
+            post: "/api/v1/monitoring/labels/findLabels"
             body: "*"
         };
     };
 
     rpc findLabelValues(FindSampleLabelValuesRequest) returns (FindSampleLabelValuesRequest.Response) {
         option (google.api.http) = {
-            post: "/v1/labels/findLabelValues"
+            post: "/api/v1/monitoring/labels/findLabelValues"
             body: "*"
         };
     };
