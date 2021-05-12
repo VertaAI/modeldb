@@ -331,7 +331,7 @@ public class FutureExperimentRunDAO {
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
-  public InternalFuture<Void> addTags(AddExperimentRunTags request) {
+  public InternalFuture<ExperimentRun> addTags(AddExperimentRunTags request) {
     final var runId = request.getId();
     final var tags = request.getTagsList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -339,10 +339,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> tagsHandler.addTags(runId, tags), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
-  public InternalFuture<Void> deleteTags(DeleteExperimentRunTags request) {
+  public InternalFuture<ExperimentRun> deleteTags(DeleteExperimentRunTags request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -352,7 +353,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> tagsHandler.deleteTags(runId, maybeTags), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
   public InternalFuture<List<String>> getTags(GetTags request) {
@@ -729,367 +731,8 @@ public class FutureExperimentRunDAO {
                           // TODO: get features?
                           // TODO: get versioned inputs
                           // TODO: get code version from blob
-                          return jdbi.withHandle(
-                                  handle -> {
-                                    var sql =
-                                        "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id from experiment_run";
-
-                                    // Add the sorting tables
-                                    for (final var item :
-                                        new EnumerateList<>(queryContext.getOrderItems())
-                                            .getList()) {
-                                      if (item.getValue().getTable() != null) {
-                                        sql +=
-                                            String.format(
-                                                " left join (%s) as join_table_%d on experiment_run.id=join_table_%d.id ",
-                                                item.getValue().getTable(),
-                                                item.getIndex(),
-                                                item.getIndex());
-                                      }
-                                    }
-
-                                    if (!queryContext.getConditions().isEmpty()) {
-                                      sql +=
-                                          " WHERE "
-                                              + String.join(" AND ", queryContext.getConditions());
-                                    }
-
-                                    if (!queryContext.getOrderItems().isEmpty()) {
-                                      sql += " ORDER BY ";
-                                      for (final var item :
-                                          new EnumerateList<>(queryContext.getOrderItems())
-                                              .getList()) {
-                                        if (item.getValue().getTable() != null) {
-                                          sql +=
-                                              String.format(
-                                                  " join_table_%d.value ", item.getIndex());
-                                        } else if (item.getValue().getColumn() != null) {
-                                          sql += String.format(" %s ", item.getValue().getColumn());
-                                        }
-                                        sql +=
-                                            String.format(
-                                                " %s ",
-                                                item.getValue().getAscending() ? "ASC" : "DESC");
-                                      }
-                                    }
-
-                                    // Backwards compatibility: fetch everything
-                                    if (request.getPageNumber() != 0
-                                        && request.getPageLimit() != 0) {
-                                      final var offset =
-                                          (request.getPageNumber() - 1) * request.getPageLimit();
-                                      final var limit = request.getPageLimit();
-                                      sql += " LIMIT :limit OFFSET :offset";
-                                      queryContext.addBind(q -> q.bind("limit", limit));
-                                      queryContext.addBind(q -> q.bind("offset", offset));
-                                    }
-
-                                    var query = handle.createQuery(sql);
-                                    queryContext.getBinds().forEach(b -> b.accept(query));
-
-                                    return query
-                                        .map(
-                                            (rs, ctx) -> {
-                                              ExperimentRun.Builder runBuilder =
-                                                  ExperimentRun.newBuilder()
-                                                      .setId(rs.getString("experiment_run.id"))
-                                                      .setProjectId(
-                                                          rs.getString("experiment_run.project_id"))
-                                                      .setExperimentId(
-                                                          rs.getString(
-                                                              "experiment_run.experiment_id"))
-                                                      .setName(rs.getString("experiment_run.name"))
-                                                      .setDescription(
-                                                          rs.getString(
-                                                              "experiment_run.description"))
-                                                      .setDateUpdated(
-                                                          rs.getLong("experiment_run.date_updated"))
-                                                      .setDateCreated(
-                                                          rs.getLong("experiment_run.date_created"))
-                                                      .setStartTime(
-                                                          rs.getLong("experiment_run.start_time"))
-                                                      .setEndTime(
-                                                          rs.getLong("experiment_run.end_time"))
-                                                      .setOwner(
-                                                          rs.getString("experiment_run.owner"))
-                                                      .setCodeVersion(
-                                                          rs.getString(
-                                                              "experiment_run.code_version"))
-                                                      .setJobId(
-                                                          rs.getString("experiment_run.job_id"));
-
-                                              var environment =
-                                                  rs.getString("experiment_run.environment");
-                                              if (environment != null && !environment.isEmpty()) {
-                                                EnvironmentBlob.Builder environmentBlobBuilder =
-                                                    EnvironmentBlob.newBuilder();
-                                                try {
-                                                  CommonUtils.getProtoObjectFromString(
-                                                      environment, environmentBlobBuilder);
-                                                } catch (InvalidProtocolBufferException e) {
-                                                  LOGGER.error(
-                                                      "Error generating builder for environment");
-                                                  throw new ModelDBException(e);
-                                                }
-                                                runBuilder.setEnvironment(
-                                                    environmentBlobBuilder.build());
-                                              }
-
-                                              return runBuilder;
-                                            })
-                                        .list();
-                                  })
-                              .thenCompose(
-                                  builders -> {
-                                    if (builders == null || builders.isEmpty()) {
-                                      return InternalFuture.completedInternalFuture(
-                                          new LinkedList<ExperimentRun>());
-                                    }
-
-                                    var futureBuildersStream =
-                                        InternalFuture.completedInternalFuture(builders.stream());
-                                    final var ids =
-                                        builders.stream()
-                                            .map(x -> x.getId())
-                                            .collect(Collectors.toSet());
-
-                                    // Get tags
-                                    final var futureTags = tagsHandler.getTagsMap(ids);
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            futureTags,
-                                            (stream, tags) ->
-                                                stream.map(
-                                                    builder ->
-                                                        builder.addAllTags(
-                                                            tags.get(builder.getId()))),
-                                            executor);
-
-                                    // Get hyperparams
-                                    final var futureHyperparams =
-                                        hyperparametersHandler.getKeyValuesMap(ids);
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            futureHyperparams,
-                                            (stream, hyperparams) ->
-                                                stream.map(
-                                                    builder ->
-                                                        builder.addAllHyperparameters(
-                                                            hyperparams.get(builder.getId()))),
-                                            executor);
-
-                                    final var futureHyperparamsFromConfigBlobs =
-                                        getFutureHyperparamsFromConfigBlobs(ids);
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            futureHyperparamsFromConfigBlobs,
-                                            (stream, hyperparamsFromConfigBlob) ->
-                                                stream.map(
-                                                    builder -> {
-                                                      List<KeyValue> hypFromConfigs =
-                                                          hyperparamsFromConfigBlob.get(
-                                                              builder.getId());
-                                                      if (hypFromConfigs != null) {
-                                                        builder.addAllHyperparameters(
-                                                            hypFromConfigs);
-                                                      }
-                                                      return builder;
-                                                    }),
-                                            executor);
-
-                                    final var futureCodeVersionFromBlob =
-                                        getFutureCodeVersionFromBlob(ids);
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            futureCodeVersionFromBlob,
-                                            (stream, runCodeVersionConfigBlob) ->
-                                                stream.map(
-                                                    builder -> {
-                                                      if (!runCodeVersionConfigBlob.isEmpty()
-                                                          && runCodeVersionConfigBlob.containsKey(
-                                                              builder.getId())) {
-                                                        builder.putAllCodeVersionFromBlob(
-                                                            runCodeVersionConfigBlob.get(
-                                                                builder.getId()));
-                                                      }
-                                                      return builder;
-                                                    }),
-                                            executor);
-
-                                    // Get metrics
-                                    final var futureMetrics = metricsHandler.getKeyValuesMap(ids);
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            futureMetrics,
-                                            (stream, metrics) ->
-                                                stream.map(
-                                                    builder ->
-                                                        builder.addAllMetrics(
-                                                            metrics.get(builder.getId()))),
-                                            executor);
-
-                                    // Get attributes
-                                    final var futureAttributes =
-                                        attributeHandler.getKeyValuesMap(ids);
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            futureAttributes,
-                                            (stream, attributes) ->
-                                                stream.map(
-                                                    builder ->
-                                                        builder.addAllAttributes(
-                                                            attributes.get(builder.getId()))),
-                                            executor);
-
-                                    // Get artifacts
-                                    final var futureArtifacts =
-                                        artifactHandler.getArtifactsMap(ids);
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            futureArtifacts,
-                                            (stream, artifacts) ->
-                                                stream.map(
-                                                    builder ->
-                                                        builder.addAllArtifacts(
-                                                            artifacts.get(builder.getId()))),
-                                            executor);
-
-                                    // Get datasets
-                                    final var futureDatasetsMap =
-                                        datasetHandler.getArtifactsMap(ids);
-                                    final var filterDatasetsMap =
-                                        futureDatasetsMap.thenCompose(
-                                            artifactMapSubtypes -> {
-                                              List<InternalFuture<Map<String, List<Artifact>>>>
-                                                  internalFutureList = new ArrayList<>();
-                                              for (ExperimentRun.Builder builder : builders) {
-                                                internalFutureList.add(
-                                                    privilegedDatasetsHandler
-                                                        .filterAndGetPrivilegedDatasetsOnly(
-                                                            artifactMapSubtypes.get(
-                                                                builder.getId()),
-                                                            true,
-                                                            this
-                                                                ::getEntityPermissionBasedOnResourceTypes)
-                                                        .thenCompose(
-                                                            artifacts ->
-                                                                InternalFuture
-                                                                    .completedInternalFuture(
-                                                                        Collections.singletonMap(
-                                                                            builder.getId(),
-                                                                            artifacts)),
-                                                            executor));
-                                              }
-                                              return InternalFuture.sequence(
-                                                      internalFutureList, executor)
-                                                  .thenCompose(
-                                                      maps -> {
-                                                        Map<String, List<Artifact>>
-                                                            finalDatasetMap = new HashMap<>();
-                                                        maps.forEach(finalDatasetMap::putAll);
-                                                        return InternalFuture
-                                                            .completedInternalFuture(
-                                                                finalDatasetMap);
-                                                      },
-                                                      executor);
-                                            },
-                                            executor);
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            filterDatasetsMap,
-                                            (stream, datasets) ->
-                                                stream.map(
-                                                    builder -> {
-                                                      List<Artifact> datasetList =
-                                                          datasets.get(builder.getId());
-                                                      if (datasetList != null
-                                                          && !datasetList.isEmpty()) {
-                                                        return builder
-                                                            .clearDatasets()
-                                                            .addAllDatasets(datasetList);
-                                                      }
-                                                      return builder;
-                                                    }),
-                                            executor);
-
-                                    // Get observations
-                                    final var futureObservations =
-                                        observationHandler.getObservationsMap(ids);
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            futureObservations,
-                                            (stream, observations) ->
-                                                stream.map(
-                                                    builder ->
-                                                        builder.addAllObservations(
-                                                            observations.get(builder.getId()))),
-                                            executor);
-
-                                    // Get features
-                                    final var futureFeatures = featureHandler.getFeaturesMap(ids);
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            futureFeatures,
-                                            (stream, features) ->
-                                                stream.map(
-                                                    builder ->
-                                                        builder.addAllFeatures(
-                                                            features.get(builder.getId()))),
-                                            executor);
-
-                                    // Get code version snapshot
-                                    final var futureCodeVersionSnapshots =
-                                        codeVersionHandler.getCodeVersionMap(new ArrayList<>(ids));
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            futureCodeVersionSnapshots,
-                                            (stream, codeVersionsMap) ->
-                                                stream.peek(
-                                                    builder -> {
-                                                      if (codeVersionsMap.containsKey(
-                                                          builder.getId())) {
-                                                        builder.setCodeVersionSnapshot(
-                                                            codeVersionsMap.get(builder.getId()));
-                                                      }
-                                                    }),
-                                            executor);
-
-                                    // Get VersionedInputs
-                                    final var futureVersionedInputs =
-                                        versionInputHandler.getVersionedInputs(ids);
-                                    final InternalFuture<Map<String, VersioningEntry>>
-                                        filterPrivilegeVersionedInputMap =
-                                            privilegedVersionedInputsHandler
-                                                .filterVersionedInputsBasedOnPrivileges(
-                                                    ids,
-                                                    futureVersionedInputs,
-                                                    this::getEntityPermissionBasedOnResourceTypes);
-                                    futureBuildersStream =
-                                        futureBuildersStream.thenCombine(
-                                            filterPrivilegeVersionedInputMap,
-                                            (stream, versionInputsMap) ->
-                                                stream.map(
-                                                    builder -> {
-                                                      VersioningEntry finalVersionedInputs =
-                                                          versionInputsMap.get(builder.getId());
-                                                      if (finalVersionedInputs != null) {
-                                                        builder.setVersionedInputs(
-                                                            finalVersionedInputs);
-                                                      } else {
-                                                        builder.clearVersionedInputs();
-                                                      }
-                                                      return builder;
-                                                    }),
-                                            executor);
-
-                                    return futureBuildersStream.thenApply(
-                                        experimentRunBuilders ->
-                                            experimentRunBuilders
-                                                .map(ExperimentRun.Builder::build)
-                                                .collect(Collectors.toList()),
-                                        executor);
-                                  },
-                                  executor);
+                          return getExperimentRunByQueryContext(
+                              queryContext, request.getPageNumber(), request.getPageLimit());
                         },
                         executor);
               }
@@ -1139,6 +782,291 @@ public class FutureExperimentRunDAO {
                 .setTotalRecords(count)
                 .build(),
         executor);
+  }
+
+  private InternalFuture<List<ExperimentRun>> getExperimentRunByQueryContext(
+      QueryFilterContext queryContext, int pageNumber, int pageLimit) {
+    return jdbi.withHandle(
+            handle -> {
+              var sql =
+                  "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id from experiment_run";
+
+              // Add the sorting tables
+              for (final var item : new EnumerateList<>(queryContext.getOrderItems()).getList()) {
+                if (item.getValue().getTable() != null) {
+                  sql +=
+                      String.format(
+                          " left join (%s) as join_table_%d on experiment_run.id=join_table_%d.id ",
+                          item.getValue().getTable(), item.getIndex(), item.getIndex());
+                }
+              }
+
+              if (!queryContext.getConditions().isEmpty()) {
+                sql += " WHERE " + String.join(" AND ", queryContext.getConditions());
+              }
+
+              if (!queryContext.getOrderItems().isEmpty()) {
+                sql += " ORDER BY ";
+                for (final var item : new EnumerateList<>(queryContext.getOrderItems()).getList()) {
+                  if (item.getValue().getTable() != null) {
+                    sql += String.format(" join_table_%d.value ", item.getIndex());
+                  } else if (item.getValue().getColumn() != null) {
+                    sql += String.format(" %s ", item.getValue().getColumn());
+                  }
+                  sql += String.format(" %s ", item.getValue().getAscending() ? "ASC" : "DESC");
+                }
+              }
+
+              // Backwards compatibility: fetch everything
+              if (pageNumber != 0 && pageLimit != 0) {
+                final var offset = (pageNumber - 1) * pageLimit;
+                final var limit = pageLimit;
+                sql += " LIMIT :limit OFFSET :offset";
+                queryContext.addBind(q -> q.bind("limit", limit));
+                queryContext.addBind(q -> q.bind("offset", offset));
+              }
+
+              var query = handle.createQuery(sql);
+              queryContext.getBinds().forEach(b -> b.accept(query));
+
+              return query
+                  .map(
+                      (rs, ctx) -> {
+                        ExperimentRun.Builder runBuilder =
+                            ExperimentRun.newBuilder()
+                                .setId(rs.getString("experiment_run.id"))
+                                .setProjectId(rs.getString("experiment_run.project_id"))
+                                .setExperimentId(rs.getString("experiment_run.experiment_id"))
+                                .setName(rs.getString("experiment_run.name"))
+                                .setDescription(rs.getString("experiment_run.description"))
+                                .setDateUpdated(rs.getLong("experiment_run.date_updated"))
+                                .setDateCreated(rs.getLong("experiment_run.date_created"))
+                                .setStartTime(rs.getLong("experiment_run.start_time"))
+                                .setEndTime(rs.getLong("experiment_run.end_time"))
+                                .setOwner(rs.getString("experiment_run.owner"))
+                                .setCodeVersion(rs.getString("experiment_run.code_version"))
+                                .setJobId(rs.getString("experiment_run.job_id"));
+
+                        var environment = rs.getString("experiment_run.environment");
+                        if (environment != null && !environment.isEmpty()) {
+                          EnvironmentBlob.Builder environmentBlobBuilder =
+                              EnvironmentBlob.newBuilder();
+                          try {
+                            CommonUtils.getProtoObjectFromString(
+                                environment, environmentBlobBuilder);
+                          } catch (InvalidProtocolBufferException e) {
+                            LOGGER.error("Error generating builder for environment");
+                            throw new ModelDBException(e);
+                          }
+                          runBuilder.setEnvironment(environmentBlobBuilder.build());
+                        }
+
+                        return runBuilder;
+                      })
+                  .list();
+            })
+        .thenCompose(
+            builders -> {
+              if (builders == null || builders.isEmpty()) {
+                return InternalFuture.completedInternalFuture(new LinkedList<ExperimentRun>());
+              }
+
+              var futureBuildersStream = InternalFuture.completedInternalFuture(builders.stream());
+              final var ids = builders.stream().map(x -> x.getId()).collect(Collectors.toSet());
+
+              // Get tags
+              final var futureTags = tagsHandler.getTagsMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      futureTags,
+                      (stream, tags) ->
+                          stream.map(builder -> builder.addAllTags(tags.get(builder.getId()))),
+                      executor);
+
+              // Get hyperparams
+              final var futureHyperparams = hyperparametersHandler.getKeyValuesMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      futureHyperparams,
+                      (stream, hyperparams) ->
+                          stream.map(
+                              builder ->
+                                  builder.addAllHyperparameters(hyperparams.get(builder.getId()))),
+                      executor);
+
+              final var futureHyperparamsFromConfigBlobs = getFutureHyperparamsFromConfigBlobs(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      futureHyperparamsFromConfigBlobs,
+                      (stream, hyperparamsFromConfigBlob) ->
+                          stream.map(
+                              builder -> {
+                                List<KeyValue> hypFromConfigs =
+                                    hyperparamsFromConfigBlob.get(builder.getId());
+                                if (hypFromConfigs != null) {
+                                  builder.addAllHyperparameters(hypFromConfigs);
+                                }
+                                return builder;
+                              }),
+                      executor);
+
+              final var futureCodeVersionFromBlob = getFutureCodeVersionFromBlob(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      futureCodeVersionFromBlob,
+                      (stream, runCodeVersionConfigBlob) ->
+                          stream.map(
+                              builder -> {
+                                if (!runCodeVersionConfigBlob.isEmpty()
+                                    && runCodeVersionConfigBlob.containsKey(builder.getId())) {
+                                  builder.putAllCodeVersionFromBlob(
+                                      runCodeVersionConfigBlob.get(builder.getId()));
+                                }
+                                return builder;
+                              }),
+                      executor);
+
+              // Get metrics
+              final var futureMetrics = metricsHandler.getKeyValuesMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      futureMetrics,
+                      (stream, metrics) ->
+                          stream.map(
+                              builder -> builder.addAllMetrics(metrics.get(builder.getId()))),
+                      executor);
+
+              // Get attributes
+              final var futureAttributes = attributeHandler.getKeyValuesMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      futureAttributes,
+                      (stream, attributes) ->
+                          stream.map(
+                              builder -> builder.addAllAttributes(attributes.get(builder.getId()))),
+                      executor);
+
+              // Get artifacts
+              final var futureArtifacts = artifactHandler.getArtifactsMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      futureArtifacts,
+                      (stream, artifacts) ->
+                          stream.map(
+                              builder -> builder.addAllArtifacts(artifacts.get(builder.getId()))),
+                      executor);
+
+              // Get datasets
+              final var futureDatasetsMap = datasetHandler.getArtifactsMap(ids);
+              final var filterDatasetsMap =
+                  futureDatasetsMap.thenCompose(
+                      artifactMapSubtypes -> {
+                        List<InternalFuture<Map<String, List<Artifact>>>> internalFutureList =
+                            new ArrayList<>();
+                        for (ExperimentRun.Builder builder : builders) {
+                          internalFutureList.add(
+                              privilegedDatasetsHandler
+                                  .filterAndGetPrivilegedDatasetsOnly(
+                                      artifactMapSubtypes.get(builder.getId()),
+                                      true,
+                                      this::getEntityPermissionBasedOnResourceTypes)
+                                  .thenCompose(
+                                      artifacts ->
+                                          InternalFuture.completedInternalFuture(
+                                              Collections.singletonMap(builder.getId(), artifacts)),
+                                      executor));
+                        }
+                        return InternalFuture.sequence(internalFutureList, executor)
+                            .thenCompose(
+                                maps -> {
+                                  Map<String, List<Artifact>> finalDatasetMap = new HashMap<>();
+                                  maps.forEach(finalDatasetMap::putAll);
+                                  return InternalFuture.completedInternalFuture(finalDatasetMap);
+                                },
+                                executor);
+                      },
+                      executor);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      filterDatasetsMap,
+                      (stream, datasets) ->
+                          stream.map(
+                              builder -> {
+                                List<Artifact> datasetList = datasets.get(builder.getId());
+                                if (datasetList != null && !datasetList.isEmpty()) {
+                                  return builder.clearDatasets().addAllDatasets(datasetList);
+                                }
+                                return builder;
+                              }),
+                      executor);
+
+              // Get observations
+              final var futureObservations = observationHandler.getObservationsMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      futureObservations,
+                      (stream, observations) ->
+                          stream.map(
+                              builder ->
+                                  builder.addAllObservations(observations.get(builder.getId()))),
+                      executor);
+
+              // Get features
+              final var futureFeatures = featureHandler.getFeaturesMap(ids);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      futureFeatures,
+                      (stream, features) ->
+                          stream.map(
+                              builder -> builder.addAllFeatures(features.get(builder.getId()))),
+                      executor);
+
+              // Get code version snapshot
+              final var futureCodeVersionSnapshots =
+                  codeVersionHandler.getCodeVersionMap(new ArrayList<>(ids));
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      futureCodeVersionSnapshots,
+                      (stream, codeVersionsMap) ->
+                          stream.peek(
+                              builder -> {
+                                if (codeVersionsMap.containsKey(builder.getId())) {
+                                  builder.setCodeVersionSnapshot(
+                                      codeVersionsMap.get(builder.getId()));
+                                }
+                              }),
+                      executor);
+
+              // Get VersionedInputs
+              final var futureVersionedInputs = versionInputHandler.getVersionedInputs(ids);
+              final InternalFuture<Map<String, VersioningEntry>> filterPrivilegeVersionedInputMap =
+                  privilegedVersionedInputsHandler.filterVersionedInputsBasedOnPrivileges(
+                      ids, futureVersionedInputs, this::getEntityPermissionBasedOnResourceTypes);
+              futureBuildersStream =
+                  futureBuildersStream.thenCombine(
+                      filterPrivilegeVersionedInputMap,
+                      (stream, versionInputsMap) ->
+                          stream.map(
+                              builder -> {
+                                VersioningEntry finalVersionedInputs =
+                                    versionInputsMap.get(builder.getId());
+                                if (finalVersionedInputs != null) {
+                                  builder.setVersionedInputs(finalVersionedInputs);
+                                } else {
+                                  builder.clearVersionedInputs();
+                                }
+                                return builder;
+                              }),
+                      executor);
+
+              return futureBuildersStream.thenApply(
+                  experimentRunBuilders ->
+                      experimentRunBuilders
+                          .map(ExperimentRun.Builder::build)
+                          .collect(Collectors.toList()),
+                  executor);
+            },
+            executor);
   }
 
   private InternalFuture<QueryFilterContext> getAccessibleProjectIdsQueryFilterContext(
@@ -1346,5 +1274,13 @@ public class FutureExperimentRunDAO {
         .getVersionedInputs(versionIds)
         .thenApply(
             stringVersioningEntryMap -> stringVersioningEntryMap.get(request.getId()), executor);
+  }
+
+  private InternalFuture<ExperimentRun> getExperimentRunById(String runId) {
+    final var filterContext = new QueryFilterContext();
+    filterContext.getConditions().add("experiment_run.id = :runId");
+    filterContext.getBinds().add(q -> q.bind("runId", runId));
+    return getExperimentRunByQueryContext(filterContext, 0, 0)
+        .thenApply(experimentRuns -> experimentRuns.get(0), executor);
   }
 }
