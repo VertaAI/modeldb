@@ -1113,7 +1113,8 @@
         "BITBUCKET",
         "GOOGLE",
         "VERTA",
-        "SAML"
+        "SAML",
+        "LDAP"
       ],
       "default": "UNKNOWN"
     },
