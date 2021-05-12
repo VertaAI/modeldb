@@ -2,6 +2,7 @@ package ai.verta.modeldb.telemetry;
 
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -41,9 +42,10 @@ public class TelemetryUtils {
       LOGGER.info("Found value for telemetryInitialized : {}", telemetryInitialized);
 
       try (Connection connection = modelDBHibernateUtil.getConnection()) {
+        final var database = Config.getInstance().database;
         boolean existStatus =
             modelDBHibernateUtil.tableExists(
-                connection, Config.getInstance().database, "modeldb_deployment_info");
+                connection, database, "modeldb_deployment_info");
         if (!existStatus) {
           LOGGER.warn("modeldb_deployment_info table not found");
           LOGGER.info("Table modeldb_deployment_info creating");
@@ -65,25 +67,29 @@ public class TelemetryUtils {
           }
           LOGGER.info("Table modeldb_deployment_info created successfully");
         } else {
-          try (Statement stmt = connection.createStatement()) {
-            String[] updateStatements = {
-              "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-              "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-              "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-              "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-              "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
-            };
-            for (String updateStatement : updateStatements) {
-              stmt.executeUpdate(updateStatement);
+          if (database.RdbConfiguration.isMysql()) {
+            // UTF migration is only applied to mysql due to db-specific syntax
+            try (Statement stmt = connection.createStatement()) {
+              String[] updateStatements = {
+                  "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                  "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                  "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                  "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                  "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
+              };
+              for (String updateStatement : updateStatements) {
+                stmt.executeUpdate(updateStatement);
+              }
+              String selectQuery = "Select * from modeldb_deployment_info where md_key = 'id'";
+              ResultSet rs = stmt.executeQuery(selectQuery);
+              if (rs.next()) {
+                telemetryUniqueIdentifier = rs.getString(2);
+              }
+            } catch (Exception e) {
+              LOGGER
+                  .error("Error while getting telemetry unique identifier : {}", e.getMessage(), e);
+              throw e;
             }
-            String selectQuery = "Select * from modeldb_deployment_info where md_key = 'id'";
-            ResultSet rs = stmt.executeQuery(selectQuery);
-            if (rs.next()) {
-              telemetryUniqueIdentifier = rs.getString(2);
-            }
-          } catch (Exception e) {
-            LOGGER.error("Error while getting telemetry unique identifier : {}", e.getMessage(), e);
-            throw e;
           }
         }
         connection.commit();
