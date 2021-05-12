@@ -44,8 +44,7 @@ public class TelemetryUtils {
       try (Connection connection = modelDBHibernateUtil.getConnection()) {
         final var database = Config.getInstance().database;
         final var existStatus =
-            modelDBHibernateUtil.tableExists(
-                connection, database, "modeldb_deployment_info");
+            modelDBHibernateUtil.tableExists(connection, database, "modeldb_deployment_info");
         if (!existStatus) {
           LOGGER.warn("modeldb_deployment_info table not found");
           LOGGER.info("Table modeldb_deployment_info creating");
@@ -71,11 +70,11 @@ public class TelemetryUtils {
             // UTF migration is only applied to mysql due to db-specific syntax
             try (Statement stmt = connection.createStatement()) {
               String[] updateStatements = {
-                  "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                  "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                  "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                  "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                  "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
+                "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
               };
               for (String updateStatement : updateStatements) {
                 stmt.executeUpdate(updateStatement);
@@ -86,8 +85,8 @@ public class TelemetryUtils {
                 telemetryUniqueIdentifier = rs.getString(2);
               }
             } catch (Exception e) {
-              LOGGER
-                  .error("Error while getting telemetry unique identifier : {}", e.getMessage(), e);
+              LOGGER.error(
+                  "Error while getting telemetry unique identifier : {}", e.getMessage(), e);
               throw e;
             }
           }
