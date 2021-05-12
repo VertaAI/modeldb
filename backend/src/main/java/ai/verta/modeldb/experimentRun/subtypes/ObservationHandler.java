@@ -49,10 +49,11 @@ public class ObservationHandler {
                         .createQuery(
                             "select k.kv_value value, k.value_type type, o.epoch_number epoch from "
                                 + "(select keyvaluemapping_id, epoch_number from observation "
-                                + "where experiment_run_id =:run_id and entity_name = \"ExperimentRunEntity\") o, "
+                                + "where experiment_run_id =:run_id and entity_name = :entity_name:) o, "
                                 + "(select id, kv_value, value_type from keyvalue where kv_key =:name and entity_name IS NULL) k "
                                 + "where o.keyvaluemapping_id = k.id")
                         .bind("run_id", runId)
+                        .bind("entity_name", "\"ExperimentRunEntity\"")
                         .bind("name", key)
                         .map(
                             (rs, ctx) -> {
@@ -190,13 +191,18 @@ public class ObservationHandler {
           // Delete from keyvalue
           var sql =
               "delete from keyvalue where id in "
-                  + "(select keyvaluemapping_id from observation where entity_name=\"ExperimentRunEntity\" and field_type=\"observations\" and experiment_run_id=:run_id)";
+                  + "(select keyvaluemapping_id from observation where entity_name=:entity_name and field_type=:field_type and experiment_run_id=:run_id)";
 
           if (maybeKeys.isPresent()) {
             sql += " and kv_key in (<keys>)";
           }
 
-          var query = handle.createUpdate(sql).bind("run_id", runId);
+          var query =
+              handle
+                  .createUpdate(sql)
+                  .bind("entity_name", "\"ExperimentRunEntity\"")
+                  .bind("field_type", "\"observations\"")
+                  .bind("run_id", runId);
 
           if (maybeKeys.isPresent()) {
             query = query.bindList("keys", maybeKeys.get());
