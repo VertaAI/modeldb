@@ -30,14 +30,24 @@ class Alert(_entity._ModelDBEntity):
         ID of this alert.
     name : str
         Name of this alert.
+    created_at : datetime.datetime
+        When this alert was created.
     history : list of :class:`AlertHistoryItem`
         History of this alert's status changes.
+    labels : dict of str to list of str
+        Same as parameter from :meth:`Alerts.create`
+    last_evaluated_at : datetime.datetime or None
+        When this alert was last evaluated.
     monitored_entity_id : int
         ID of the monitored entity this alert is associated with.
+    starting_from : datetime.datetime or None
+        Same as parameter from :meth:`Alerts.create`
     status : :class:`~verta.monitoring.alert.status._AlertStatus`
         Current status of this alert.
-    summary_sample_query : :class:`~verta.monitoring.summaries.SummarySampleQuery`
-        The summary samples this alert monitors.
+    summary_sample_query : :class:`~verta.monitoring.summaries.queries.SummarySampleQuery`
+        Query for the summary samples this alert monitors.
+    updated_at : datetime.datetime
+        When this alert's configuration was last updated.
 
     Examples
     --------
@@ -63,7 +73,6 @@ class Alert(_entity._ModelDBEntity):
     def __repr__(self):
         self._refresh_cache()
         msg = self._msg
-        sample_filter = msg.sample_find_base.filter
 
         return "\n\t".join(
             (
@@ -72,28 +81,15 @@ class Alert(_entity._ModelDBEntity):
                 "id: {}".format(msg.id),
                 "monitored entity id: {}".format(msg.monitored_entity_id),
                 "status: {}".format(self.status),
-                "created: {}".format(_utils.timestamp_to_str(msg.created_at_millis)),
-                "updated: {}".format(_utils.timestamp_to_str(msg.updated_at_millis)),
-                "last evaluated: {}".format(
-                    _utils.timestamp_to_str(msg.last_evaluated_at_millis)
-                ),
+                "created: {}".format(self.created_at),
+                "updated: {}".format(self.updated_at),
+                "last evaluated: {}".format(self.last_evaluated_at),
                 "alerter: {}".format(self.alerter),
                 "notification channel ids: {}".format(
                     list(msg.notification_channels.keys())
                 ),
-                "labels: {}".format(
-                    {
-                        key: values.label_value
-                        for key, values in sample_filter.labels.items()
-                    }
-                ),
-                "starting from: {}".format(
-                    None
-                    if not sample_filter.time_window_end_at_millis
-                    else _utils.timestamp_to_str(
-                        sample_filter.time_window_end_at_millis
-                    )
-                ),
+                "labels: {}".format(self.labels),
+                "starting from: {}".format(self.starting_from),
                 "violating summary sample ids: {}".format(
                     msg.violating_summary_sample_ids
                 ),
@@ -109,6 +105,12 @@ class Alert(_entity._ModelDBEntity):
         return _alerter._Alerter._from_proto(alerter_msg)
 
     @property
+    def created_at(self):
+        self._refresh_cache()
+
+        return time_utils.datetime_from_millis(self._msg.created_at_millis)
+
+    @property
     def history(self):
         # TODO: implement lazy list and pagination
         msg = _AlertService.ListAlertHistoryRequest(id=self.id)
@@ -118,11 +120,23 @@ class Alert(_entity._ModelDBEntity):
         return list(map(AlertHistoryItem, history))
 
     @property
-    def _last_evaluated_or_created_millis(self):
-        """For the alerter to filter for new summary samples."""
+    def labels(self):
         self._refresh_cache()
 
-        return self._msg.last_evaluated_at_millis or self._msg.created_at_millis
+        return {
+            key: values.label_value
+            for key, values
+            in self._msg.sample_find_base.filter.labels.items()
+        }
+
+    @property
+    def last_evaluated_at(self):
+        self._refresh_cache()
+
+        millis = self._msg.last_evaluated_at_millis
+        if not millis:
+            return None
+        return time_utils.datetime_from_millis(millis)
 
     @property
     def monitored_entity_id(self):
@@ -135,6 +149,15 @@ class Alert(_entity._ModelDBEntity):
         self._refresh_cache()
 
         return self._msg.name
+
+    @property
+    def starting_from(self):
+        self._refresh_cache()
+
+        millis = self._msg.sample_find_base.filter.time_window_end_at_millis
+        if not millis:
+            return None
+        return time_utils.datetime_from_millis(millis)
 
     @property
     def status(self):
@@ -154,10 +177,31 @@ class Alert(_entity._ModelDBEntity):
     @property
     def summary_sample_query(self):
         self._refresh_cache()
+        sample_query_msg = type(self._msg.sample_find_base)()
+        sample_query_msg.CopyFrom(self._msg.sample_find_base)
 
-        return SummarySampleQuery._from_proto_request(
-            self._msg.sample_find_base,
+        # if this alert hasn't been evaluated yet, refer to creation time
+        last_evaluated_at = (
+            self._msg.last_evaluated_at_millis
+            or self._msg.created_at_millis
         )
+
+        # only fetch samples logged after this alert was last evaluated
+        # so as to not re-alert on previously-seen samples
+        sample_query_msg.filter.created_at_after_millis = last_evaluated_at
+
+        # if user did not set `starting_from` during alert creation,
+        # only fetch samples pertaining to present, not backfilled samples
+        if not sample_query_msg.filter.time_window_end_at_millis:
+            sample_query_msg.filter.time_window_end_at_millis = last_evaluated_at
+
+        return SummarySampleQuery._from_proto_request(sample_query_msg)
+
+    @property
+    def updated_at(self):
+        self._refresh_cache()
+
+        return time_utils.datetime_from_millis(self._msg.updated_at_millis)
 
     @staticmethod
     def _validate_notification_channel(channel):
