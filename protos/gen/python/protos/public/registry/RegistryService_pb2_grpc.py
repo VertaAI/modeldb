@@ -24,11 +24,6 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.Response.FromString,
         )
-    self.GetRegisteredModelCount = channel.unary_unary(
-        '/ai.verta.registry.RegistryService/GetRegisteredModelCount',
-        request_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.SerializeToString,
-        response_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.Response.FromString,
-        )
     self.CreateRegisteredModel = channel.unary_unary(
         '/ai.verta.registry.RegistryService/CreateRegisteredModel',
         request_serializer=registry_dot_RegistryService__pb2.SetRegisteredModel.SerializeToString,
@@ -108,13 +103,6 @@ class RegistryServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def GetRegisteredModel(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def GetRegisteredModelCount(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -224,11 +212,6 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           servicer.GetRegisteredModel,
           request_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.FromString,
           response_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.Response.SerializeToString,
-      ),
-      'GetRegisteredModelCount': grpc.unary_unary_rpc_method_handler(
-          servicer.GetRegisteredModelCount,
-          request_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.FromString,
-          response_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.Response.SerializeToString,
       ),
       'CreateRegisteredModel': grpc.unary_unary_rpc_method_handler(
           servicer.CreateRegisteredModel,

@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/monitoring/monitored_entity/createMonitoredEntity": {
+    "/monitored_entity/createMonitoredEntity": {
       "post": {
         "operationId": "DataMonitoringService_createMonitoredEntity",
         "responses": {
@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/createProfiler": {
+    "/monitored_entity/createProfiler": {
       "post": {
         "operationId": "DataMonitoringService_createProfiler",
         "responses": {
@@ -75,7 +75,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/deleteMonitoredEntity": {
+    "/monitored_entity/deleteMonitoredEntity": {
       "delete": {
         "operationId": "DataMonitoringService_deleteMonitoredEntity",
         "responses": {
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/deleteProfile": {
+    "/monitored_entity/deleteProfile": {
       "delete": {
         "operationId": "DataMonitoringService_deleteProfiler",
         "responses": {
@@ -139,7 +139,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/disableProfiler": {
+    "/monitored_entity/disableProfiler": {
       "post": {
         "operationId": "DataMonitoringService_disableProfiler",
         "responses": {
@@ -171,7 +171,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/enableProfiler": {
+    "/monitored_entity/enableProfiler": {
       "post": {
         "operationId": "DataMonitoringService_enableProfiler",
         "responses": {
@@ -203,7 +203,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/findMonitoredEntity": {
+    "/monitored_entity/findMonitoredEntity": {
       "post": {
         "operationId": "DataMonitoringService_findMonitoredEntity",
         "responses": {
@@ -235,7 +235,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/findProfilersForMonitoredEntity": {
+    "/monitored_entity/findProfilersForMonitoredEntity": {
       "post": {
         "operationId": "DataMonitoringService_findProfilersForMonitoredEntity",
         "responses": {
@@ -267,7 +267,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/getProfiler": {
+    "/monitored_entity/getProfiler": {
       "get": {
         "operationId": "DataMonitoringService_getProfiler",
         "responses": {
@@ -298,7 +298,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/getProfilerStatus": {
+    "/monitored_entity/getProfilerStatus": {
       "get": {
         "operationId": "DataMonitoringService_getProfilerStatus",
         "responses": {
@@ -336,7 +336,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/listProfilers": {
+    "/monitored_entity/listProfilers": {
       "get": {
         "operationId": "DataMonitoringService_listProfilers",
         "responses": {
@@ -358,7 +358,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/updateMonitoredEntity": {
+    "/monitored_entity/updateMonitoredEntity": {
       "patch": {
         "operationId": "DataMonitoringService_updateMonitoredEntity",
         "responses": {
@@ -390,7 +390,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/monitored_entity/updateProfiler": {
+    "/monitored_entity/updateProfiler": {
       "patch": {
         "operationId": "DataMonitoringService_updateProfiler",
         "responses": {
@@ -459,12 +459,6 @@
         },
         "workspace_name": {
           "type": "string"
-        },
-        "attributes": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
         }
       }
     },
@@ -684,12 +678,6 @@
         "updated_at_timestamp_millis": {
           "type": "string",
           "format": "uint64"
-        },
-        "attributes": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
         }
       }
     },
@@ -736,12 +724,6 @@
         },
         "name": {
           "type": "string"
-        },
-        "attributes": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
         }
       }
     },

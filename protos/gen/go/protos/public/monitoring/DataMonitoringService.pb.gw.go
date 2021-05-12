@@ -1031,31 +1031,31 @@ func RegisterDataMonitoringServiceHandlerClient(ctx context.Context, mux *runtim
 }
 
 var (
-	pattern_DataMonitoringService_CreateMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "createMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_CreateMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "createMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_UpdateMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "updateMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_UpdateMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "updateMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_FindMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "findMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_FindMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "findMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_DeleteMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "deleteMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_DeleteMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "deleteMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_GetProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "getProfiler"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_GetProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "getProfiler"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_CreateProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "createProfiler"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_CreateProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "createProfiler"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_UpdateProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "updateProfiler"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_UpdateProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "updateProfiler"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_ListProfilers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "listProfilers"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_ListProfilers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "listProfilers"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_DeleteProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "deleteProfile"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_DeleteProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "deleteProfile"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_GetProfilerStatus_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "getProfilerStatus"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_GetProfilerStatus_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "getProfilerStatus"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_FindProfilersForMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "findProfilersForMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_FindProfilersForMonitoredEntity_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "findProfilersForMonitoredEntity"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_EnableProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "enableProfiler"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_EnableProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "enableProfiler"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_DataMonitoringService_DisableProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "monitored_entity", "disableProfiler"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_DataMonitoringService_DisableProfiler_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "monitored_entity", "disableProfiler"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

@@ -529,8 +529,7 @@
         "READ",
         "UPDATE",
         "DELETE",
-        "UPDATE_PERMISSIONS",
-        "PREDICT"
+        "UPDATE_PERMISSIONS"
       ],
       "default": "UNKNOWN"
     },

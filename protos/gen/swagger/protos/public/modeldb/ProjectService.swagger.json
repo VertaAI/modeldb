@@ -575,36 +575,6 @@
         ]
       }
     },
-    "/project/getProjectDatasetCount": {
-      "get": {
-        "operationId": "ProjectService_getProjectDatasetCount",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/modeldbGetProjectDatasetCountResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "project_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "ProjectService"
-        ]
-      }
-    },
     "/project/getProjectReadme": {
       "get": {
         "operationId": "ProjectService_getProjectReadme",
@@ -1572,15 +1542,6 @@
         }
       }
     },
-    "modeldbGetProjectDatasetCountResponse": {
-      "type": "object",
-      "properties": {
-        "dataset_count": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "modeldbGetProjectReadmeResponse": {
       "type": "object",
       "properties": {
@@ -2015,9 +1976,6 @@
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
         "can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        },
-        "can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }

@@ -229,9 +229,9 @@ func RegisterLabelServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_LabelService_FindLabels_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "labels", "findLabels"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_LabelService_FindLabels_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "labels", "findLabels"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_LabelService_FindLabelValues_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "labels", "findLabelValues"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_LabelService_FindLabelValues_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "labels", "findLabelValues"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (

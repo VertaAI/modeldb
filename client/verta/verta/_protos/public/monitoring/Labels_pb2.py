@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.monitoring',
   syntax='proto3',
   serialized_options=b'P\001ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring',
-  serialized_pb=b'\n\x17monitoring/Labels.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x18monitoring/Summary.proto\"\xb4\x01\n\x17\x46indSampleLabelsRequest\x12=\n\x06\x66ilter\x18\x01 \x01(\x0b\x32-.ai.verta.monitoring.FilterQuerySummarySample\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x1a\x31\n\x08Response\x12\x0e\n\x06labels\x18\x01 \x03(\t\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\"\xf1\x02\n\x1c\x46indSampleLabelValuesRequest\x12=\n\x06\x66ilter\x18\x01 \x01(\x0b\x32-.ai.verta.monitoring.FilterQuerySummarySample\x12\x0e\n\x06labels\x18\x02 \x03(\t\x12\x13\n\x0bpage_number\x18\x03 \x01(\x05\x12\x12\n\npage_limit\x18\x04 \x01(\x05\x1a\xd8\x01\n\x08Response\x12V\n\x06labels\x18\x01 \x03(\x0b\x32\x46.ai.verta.monitoring.FindSampleLabelValuesRequest.Response.LabelsEntry\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\x1a]\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12=\n\x05value\x18\x02 \x01(\x0b\x32..ai.verta.monitoring.FindSampleLabelValuesItem:\x02\x38\x01\"+\n\x19\x46indSampleLabelValuesItem\x12\x0e\n\x06values\x18\x01 \x03(\t2\xec\x02\n\x0cLabelService\x12\xa2\x01\n\nfindLabels\x12,.ai.verta.monitoring.FindSampleLabelsRequest\x1a\x35.ai.verta.monitoring.FindSampleLabelsRequest.Response\"/\x82\xd3\xe4\x93\x02)\"$/api/v1/monitoring/labels/findLabels:\x01*\x12\xb6\x01\n\x0f\x66indLabelValues\x12\x31.ai.verta.monitoring.FindSampleLabelValuesRequest\x1a:.ai.verta.monitoring.FindSampleLabelValuesRequest.Response\"4\x82\xd3\xe4\x93\x02.\")/api/v1/monitoring/labels/findLabelValues:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
+  serialized_pb=b'\n\x17monitoring/Labels.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x18monitoring/Summary.proto\"\xb4\x01\n\x17\x46indSampleLabelsRequest\x12=\n\x06\x66ilter\x18\x01 \x01(\x0b\x32-.ai.verta.monitoring.FilterQuerySummarySample\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\x1a\x31\n\x08Response\x12\x0e\n\x06labels\x18\x01 \x03(\t\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\"\xf1\x02\n\x1c\x46indSampleLabelValuesRequest\x12=\n\x06\x66ilter\x18\x01 \x01(\x0b\x32-.ai.verta.monitoring.FilterQuerySummarySample\x12\x0e\n\x06labels\x18\x02 \x03(\t\x12\x13\n\x0bpage_number\x18\x03 \x01(\x05\x12\x12\n\npage_limit\x18\x04 \x01(\x05\x1a\xd8\x01\n\x08Response\x12V\n\x06labels\x18\x01 \x03(\x0b\x32\x46.ai.verta.monitoring.FindSampleLabelValuesRequest.Response.LabelsEntry\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\x1a]\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12=\n\x05value\x18\x02 \x01(\x0b\x32..ai.verta.monitoring.FindSampleLabelValuesItem:\x02\x38\x01\"+\n\x19\x46indSampleLabelValuesItem\x12\x0e\n\x06values\x18\x01 \x03(\t2\xce\x02\n\x0cLabelService\x12\x93\x01\n\nfindLabels\x12,.ai.verta.monitoring.FindSampleLabelsRequest\x1a\x35.ai.verta.monitoring.FindSampleLabelsRequest.Response\" \x82\xd3\xe4\x93\x02\x1a\"\x15/v1/labels/findLabels:\x01*\x12\xa7\x01\n\x0f\x66indLabelValues\x12\x31.ai.verta.monitoring.FindSampleLabelValuesRequest\x1a:.ai.verta.monitoring.FindSampleLabelValuesRequest.Response\"%\x82\xd3\xe4\x93\x02\x1f\"\x1a/v1/labels/findLabelValues:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,monitoring_dot_Summary__pb2.DESCRIPTOR,])
 
@@ -334,7 +334,7 @@ _LABELSERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=735,
-  serialized_end=1099,
+  serialized_end=1069,
   methods=[
   _descriptor.MethodDescriptor(
     name='findLabels',
@@ -343,7 +343,7 @@ _LABELSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_FINDSAMPLELABELSREQUEST,
     output_type=_FINDSAMPLELABELSREQUEST_RESPONSE,
-    serialized_options=b'\202\323\344\223\002)\"$/api/v1/monitoring/labels/findLabels:\001*',
+    serialized_options=b'\202\323\344\223\002\032\"\025/v1/labels/findLabels:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='findLabelValues',
@@ -352,7 +352,7 @@ _LABELSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_FINDSAMPLELABELVALUESREQUEST,
     output_type=_FINDSAMPLELABELVALUESREQUEST_RESPONSE,
-    serialized_options=b'\202\323\344\223\002.\")/api/v1/monitoring/labels/findLabelValues:\001*',
+    serialized_options=b'\202\323\344\223\002\037\"\032/v1/labels/findLabelValues:\001*',
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_LABELSERVICE)

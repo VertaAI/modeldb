@@ -349,36 +349,6 @@
         ]
       }
     },
-    "/registry/registered_models/count": {
-      "get": {
-        "operationId": "RegistryService_GetRegisteredModelCount",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryGetRegisteredModelCountRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "project_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
     "/registry/registered_models/find": {
       "post": {
         "summary": "CRUD for RegisteredModel",
@@ -1932,15 +1902,6 @@
         }
       }
     },
-    "registryGetRegisteredModelCountRequestResponse": {
-      "type": "object",
-      "properties": {
-        "registered_model_count": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "registryGetRegisteredModelRequestResponse": {
       "type": "object",
       "properties": {
@@ -2285,9 +2246,6 @@
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
         "can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        },
-        "can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }

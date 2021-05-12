@@ -51,6 +51,7 @@ message IdServiceProviderEnum {
         GOOGLE = 3;
         VERTA = 4;
         SAML = 5;
+        LDAP = 6;
     }
 }
 
