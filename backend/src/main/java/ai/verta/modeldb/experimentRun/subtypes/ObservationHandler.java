@@ -121,7 +121,7 @@ public class ObservationHandler {
                       final var sql =
                           "select max(o.epoch_number) from "
                               + "(select keyvaluemapping_id, epoch_number from observation "
-                              + "where experiment_run_id =:run_id and entity_name = \"ExperimentRunEntity\") o, "
+                              + "where experiment_run_id =:run_id and entity_name = :entity_name) o, "
                               + "(select id from keyvalue where kv_key =:name and entity_name IS NULL) k "
                               + "where o.keyvaluemapping_id = k.id";
                       return jdbi.withHandle(
@@ -129,6 +129,7 @@ public class ObservationHandler {
                               handle
                                   .createQuery(sql)
                                   .bind("run_id", runId)
+                                  .bind("entity_name", "\"ExperimentRunEntity\"")
                                   .bind("name", attribute.getKey())
                                   .mapTo(Long.class)
                                   .findOne()
