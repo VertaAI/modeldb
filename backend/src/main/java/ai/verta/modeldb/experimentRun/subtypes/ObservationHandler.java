@@ -145,7 +145,8 @@ public class ObservationHandler {
                                 handle
                                     .createUpdate(
                                         "insert into keyvalue (field_type, kv_key, kv_value, value_type) "
-                                            + "values (\"attributes\", :key, :value, :type)")
+                                            + "values (:field_type, :key, :value, :type)")
+                                    .bind("field_type", "\"attributes\"")
                                     .bind("key", attribute.getKey())
                                     .bind(
                                         "value",
@@ -162,12 +163,14 @@ public class ObservationHandler {
                             handle
                                 .createUpdate(
                                     "insert into observation (entity_name, field_type, timestamp, experiment_run_id, keyvaluemapping_id, epoch_number) "
-                                        + "values (\"ExperimentRunEntity\", \"observations\", :timestamp, :run_id, :kvid, :epoch)")
+                                        + "values (:entity_name, :field_type, :timestamp, :run_id, :kvid, :epoch)")
                                 .bind(
                                     "timestamp",
                                     observation.getTimestamp() == 0
                                         ? now
                                         : observation.getTimestamp())
+                                .bind("entity_name", "\"ExperimentRunEntity\"")
+                                .bind("field_type", "\"observations\"")
                                 .bind("run_id", runId)
                                 .bind("kvid", kvId)
                                 .bind("epoch", epoch)
