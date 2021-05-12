@@ -197,10 +197,12 @@ public class ObservationHandler {
             sql += " and kv_key in (<keys>)";
           }
 
-          var query = handle.createUpdate(sql)
-              .bind("entity_name", "\"ExperimentRunEntity\"")
-              .bind("field_type", "\"observations\"")
-              .bind("run_id", runId);
+          var query =
+              handle
+                  .createUpdate(sql)
+                  .bind("entity_name", "\"ExperimentRunEntity\"")
+                  .bind("field_type", "\"observations\"")
+                  .bind("run_id", runId);
 
           if (maybeKeys.isPresent()) {
             query = query.bindList("keys", maybeKeys.get());
