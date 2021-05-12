@@ -63,6 +63,8 @@ class Alert(entity._ModelDBEntity):
     def __repr__(self):
         self._refresh_cache()
         msg = self._msg
+        sample_filter = msg.sample_find_base.filter
+
         return "\n\t".join(
             (
                 "Alert",
@@ -75,16 +77,26 @@ class Alert(entity._ModelDBEntity):
                 "last evaluated: {}".format(
                     _utils.timestamp_to_str(msg.last_evaluated_at_millis)
                 ),
-                "alerter: {}".format(
-                    # TODO: use an `alerter` property that returns the actual class
-                    _AlertService.AlerterTypeEnum.AlerterType.Name(msg.alerter_type)
+                "alerter: {}".format(self.alerter),
+                "notification channel ids: {}".format(
+                    list(msg.notification_channels.keys())
+                ),
+                "labels: {}".format(
+                    {
+                        key: values.label_value
+                        for key, values
+                        in sample_filter.labels.items()
+                    }
+                ),
+                "starting from: {}".format(
+                    None
+                    if not sample_filter.time_window_end_at_millis
+                    else _utils.timestamp_to_str(
+                        sample_filter.time_window_end_at_millis
+                    )
                 ),
                 "violating summary sample ids: {}".format(
                     msg.violating_summary_sample_ids
-                ),
-                "summary sample query: {}".format(self.summary_sample_query),
-                "notification channel ids: {}".format(
-                    list(msg.notification_channels.keys())
                 ),
             )
         )
