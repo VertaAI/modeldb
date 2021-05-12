@@ -50,9 +50,9 @@ public class TelemetryUtils {
           LOGGER.warn("modeldb_deployment_info table not found");
           LOGGER.info("Table modeldb_deployment_info creating");
 
-          String createModelDBDeploymentInfoQuery =
+          final var createModelDBDeploymentInfoQuery =
               "create table modeldb_deployment_info (md_key varchar(50),md_value varchar(255), creation_timestamp BIGINT) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
-          String createTelemetryInformationQuery =
+          final var createTelemetryInformationQuery =
               "Create table telemetry_information (tel_key varchar(50),tel_value varchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer varchar(256)) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
 
           try (Statement statement = connection.createStatement()) {
