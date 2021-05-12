@@ -13,6 +13,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.*;
 import ai.verta.uac.*;
+import java.sql.Timestamp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -220,13 +221,20 @@ public class FutureExperimentRunDAO {
 
   private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
     return jdbi.useHandle(
-        handle ->
-            handle
-                .createUpdate(
-                    "update experiment_run set date_updated=greatest(date_updated, :now) where id=:run_id")
-                .bind("run_id", runId)
-                .bind("now", now)
-                .execute());
+        handle -> {
+          final var currentDateUpdated =
+              handle
+                  .createQuery("SELECT date_updated FROM experiment_run WHERE id=:run_id")
+                  .bind("run_id", runId)
+                  .mapTo(Long.class)
+                  .one();
+          final var dateUpdated = Math.max(currentDateUpdated, now);
+          handle
+              .createUpdate("update experiment_run set date_updated=:date_updated where id=:run_id")
+              .bind("run_id", runId)
+              .bind("date_updated", dateUpdated)
+              .execute();
+        });
   }
 
   private InternalFuture<Void> checkProjectPermission(
