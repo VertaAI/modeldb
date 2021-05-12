@@ -5478,6 +5478,7 @@ public class ExperimentRunTest extends TestsInit {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setName("test-" + Calendar.getInstance().getTimeInMillis())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -5486,6 +5487,7 @@ public class ExperimentRunTest extends TestsInit {
                       .build())
               .build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      fail();
     } catch (StatusRuntimeException e) {
       Assert.assertEquals(Status.Code.NOT_FOUND, e.getStatus().getCode());
     }
@@ -5494,6 +5496,7 @@ public class ExperimentRunTest extends TestsInit {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setName("test-" + Calendar.getInstance().getTimeInMillis())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -5502,6 +5505,7 @@ public class ExperimentRunTest extends TestsInit {
                       .build())
               .build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      fail();
     } catch (StatusRuntimeException e) {
       Assert.assertEquals(Status.Code.INVALID_ARGUMENT, e.getStatus().getCode());
     }
