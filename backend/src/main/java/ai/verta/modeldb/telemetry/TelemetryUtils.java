@@ -43,7 +43,7 @@ public class TelemetryUtils {
 
       try (Connection connection = modelDBHibernateUtil.getConnection()) {
         final var database = Config.getInstance().database;
-        boolean existStatus =
+        final var existStatus =
             modelDBHibernateUtil.tableExists(
                 connection, database, "modeldb_deployment_info");
         if (!existStatus) {
