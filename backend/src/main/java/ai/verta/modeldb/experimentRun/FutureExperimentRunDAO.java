@@ -225,9 +225,8 @@ public class FutureExperimentRunDAO {
           final var currentDateUpdated =
               handle.createQuery("SELECT date_updated FROM experiment_run WHERE id=:run_id")
                   .bind("run_id", runId)
-                  .mapTo(Timestamp.class)
-                  .one()
-                  .getTime();
+                  .mapTo(Long.class)
+                  .one();
           final var dateUpdated = Math.max(currentDateUpdated, now);
           handle
               .createUpdate(
