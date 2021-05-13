@@ -198,9 +198,7 @@ public class CreateExperimentRunHandler {
       experimentRunBuilder.setDateUpdated(now);
     }
 
-    if (request.getCodeVersionSnapshot() != null) {
-      experimentRunBuilder.setCodeVersionSnapshot(request.getCodeVersionSnapshot());
-    }
+    experimentRunBuilder.setCodeVersionSnapshot(request.getCodeVersionSnapshot());
     if (request.getVersionedInputs() != null && request.hasVersionedInputs()) {
       experimentRunBuilder.setVersionedInputs(request.getVersionedInputs());
     }
@@ -284,39 +282,60 @@ public class CreateExperimentRunHandler {
             unused -> {
               final var futureLogs = new LinkedList<InternalFuture<Void>>();
 
-              futureLogs.add(
-                  tagsHandler.addTags(newExperimentRun.getId(), newExperimentRun.getTagsList()));
-              futureLogs.add(
-                  attributeHandler.logKeyValues(
-                      newExperimentRun.getId(), newExperimentRun.getAttributesList()));
-              futureLogs.add(
-                  hyperparametersHandler.logKeyValues(
-                      newExperimentRun.getId(), newExperimentRun.getHyperparametersList()));
-              futureLogs.add(
-                  metricsHandler.logKeyValues(
-                      newExperimentRun.getId(), newExperimentRun.getMetricsList()));
-              futureLogs.add(
-                  observationHandler.logObservations(
-                      newExperimentRun.getId(), newExperimentRun.getObservationsList(), now));
-              futureLogs.add(
-                  artifactHandler.logArtifacts(
-                      newExperimentRun.getId(), newExperimentRun.getArtifactsList(), false));
-              futureLogs.add(
-                  featureHandler.logFeatures(
-                      newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
-              futureLogs.add(
-                  codeVersionHandler.logCodeVersion(
-                      LogExperimentRunCodeVersion.newBuilder()
-                          .setId(newExperimentRun.getId())
-                          .setCodeVersion(newExperimentRun.getCodeVersionSnapshot())
-                          .setOverwrite(false)
-                          .build()));
-              futureLogs.add(
-                  datasetHandler.logArtifacts(
-                      newExperimentRun.getId(), newExperimentRun.getDatasetsList(), false));
-              futureLogs.add(
-                  versionInputHandler.validateAndInsertVersionedInputs(
-                      newExperimentRun.getId(), newExperimentRun.getVersionedInputs()));
+              if (!newExperimentRun.getTagsList().isEmpty()) {
+                futureLogs.add(
+                    tagsHandler.addTags(newExperimentRun.getId(), newExperimentRun.getTagsList()));
+              }
+              if (!newExperimentRun.getAttributesList().isEmpty()) {
+                futureLogs.add(
+                    attributeHandler.logKeyValues(
+                        newExperimentRun.getId(), newExperimentRun.getAttributesList()));
+              }
+              if (!newExperimentRun.getHyperparametersList().isEmpty()) {
+                futureLogs.add(
+                    hyperparametersHandler.logKeyValues(
+                        newExperimentRun.getId(), newExperimentRun.getHyperparametersList()));
+              }
+              if (!newExperimentRun.getMetricsList().isEmpty()) {
+                futureLogs.add(
+                    metricsHandler.logKeyValues(
+                        newExperimentRun.getId(), newExperimentRun.getMetricsList()));
+              }
+              if (!newExperimentRun.getObservationsList().isEmpty()) {
+                futureLogs.add(
+                    observationHandler.logObservations(
+                        newExperimentRun.getId(), newExperimentRun.getObservationsList(), now));
+              }
+              if (!newExperimentRun.getArtifactsList().isEmpty()) {
+                futureLogs.add(
+                    artifactHandler.logArtifacts(
+                        newExperimentRun.getId(), newExperimentRun.getArtifactsList(), false));
+              }
+              if (!newExperimentRun.getFeaturesList().isEmpty()) {
+                futureLogs.add(
+                    featureHandler.logFeatures(
+                        newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
+              }
+              if (newExperimentRun.getCodeVersionSnapshot().hasCodeArchive()
+                  || newExperimentRun.getCodeVersionSnapshot().hasGitSnapshot()) {
+                futureLogs.add(
+                    codeVersionHandler.logCodeVersion(
+                        LogExperimentRunCodeVersion.newBuilder()
+                            .setId(newExperimentRun.getId())
+                            .setCodeVersion(newExperimentRun.getCodeVersionSnapshot())
+                            .setOverwrite(false)
+                            .build()));
+              }
+              if (!newExperimentRun.getDatasetsList().isEmpty()) {
+                futureLogs.add(
+                    datasetHandler.logArtifacts(
+                        newExperimentRun.getId(), newExperimentRun.getDatasetsList(), false));
+              }
+              if (newExperimentRun.getVersionedInputs().getRepositoryId() != 0) {
+                futureLogs.add(
+                    versionInputHandler.validateAndInsertVersionedInputs(
+                        newExperimentRun.getId(), newExperimentRun.getVersionedInputs()));
+              }
 
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);
