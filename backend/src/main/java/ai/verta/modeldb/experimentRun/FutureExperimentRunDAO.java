@@ -1057,6 +1057,9 @@ public class FutureExperimentRunDAO {
                                                           builder.getId())) {
                                                         builder.setCodeVersionSnapshot(
                                                             codeVersionsMap.get(builder.getId()));
+                                                      } else {
+                                                        builder.setCodeVersionSnapshot(
+                                                            CodeVersion.getDefaultInstance());
                                                       }
                                                     }),
                                             executor);

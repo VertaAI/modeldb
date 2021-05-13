@@ -76,6 +76,13 @@ public class CodeVersionHandler {
             maybeSnapshotId -> {
               if (maybeSnapshotId.isPresent()) {
                 if (request.getOverwrite()) {
+                  jdbi.useHandle(
+                      handle ->
+                          handle
+                              .createUpdate(
+                                  "UPDATE experiment_run SET code_version_snapshot_id = null WHERE id=:run_id")
+                              .bind("run_id", request.getId())
+                              .execute());
                   try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
                     final CodeVersionEntity entity =
                         session.get(
