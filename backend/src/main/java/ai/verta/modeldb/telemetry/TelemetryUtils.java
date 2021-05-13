@@ -2,7 +2,6 @@ package ai.verta.modeldb.telemetry;
 
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
