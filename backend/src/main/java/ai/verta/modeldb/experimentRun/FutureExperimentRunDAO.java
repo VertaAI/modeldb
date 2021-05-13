@@ -408,7 +408,10 @@ public class FutureExperimentRunDAO {
 
   private InternalFuture<Void> checkPermission(
       List<String> runIds, ModelDBActionEnum.ModelDBServiceActions action) {
-    if (runIds.isEmpty()) {
+    // If request do not have ids and we are passing request.getId() then it will create list record
+    // with `""` string
+    final var finalRunIds = runIds.stream().filter(s -> !s.isEmpty()).collect(Collectors.toList());
+    if (finalRunIds.isEmpty()) {
       return InternalFuture.failedStage(
           new InvalidArgumentException("Experiment run IDs is missing"));
     }
@@ -419,7 +422,7 @@ public class FutureExperimentRunDAO {
                 handle
                     .createQuery(
                         "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=0")
-                    .bindList("ids", runIds)
+                    .bindList("ids", finalRunIds)
                     .mapTo(String.class)
                     .list());
 
