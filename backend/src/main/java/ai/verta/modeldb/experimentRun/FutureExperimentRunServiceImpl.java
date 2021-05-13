@@ -8,6 +8,8 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import com.google.protobuf.Value;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
@@ -80,10 +82,25 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       GetExperimentRunById request,
       StreamObserver<GetExperimentRunById.Response> responseObserver) {
     try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  String errorMessage =
+                      "ExperimentRun ID not found in GetExperimentRunById request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
       final var response =
-          futureExperimentRunDAO
-              .findExperimentRuns(
-                  FindExperimentRuns.newBuilder().addExperimentRunIds(request.getId()).build())
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentRunDAO.findExperimentRuns(
+                          FindExperimentRuns.newBuilder()
+                              .addExperimentRunIds(request.getId())
+                              .build()),
+                  executor)
               .thenApply(
                   findResponse -> {
                     if (findResponse.getExperimentRunsCount() > 1) {
