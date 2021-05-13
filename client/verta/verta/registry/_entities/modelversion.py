@@ -507,10 +507,10 @@ class RegisteredModelVersion(_DeployableEntity):
 
         if overwrite:
             self._fetch_with_no_cache()
-            self._msg.environment.CopyFrom(env._msg)
+            self._msg.environment.CopyFrom(env._as_env_proto())
             self._update(self._msg, method="PUT")
         else:
-            self._update(self.ModelVersionMessage(environment=env._msg), method="PATCH",
+            self._update(self.ModelVersionMessage(environment=env._as_env_proto()), method="PATCH",
                          update_mask={"paths": ["environment.python.version.major",
                                                 "environment.python.version.minor",
                                                 "environment.python.version.patch",

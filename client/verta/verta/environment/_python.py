@@ -32,6 +32,11 @@ class Python(_environment._Environment):
     _autocapture : bool, default True
         Whether to enable the automatic capturing behavior of parameters above.
 
+    Attributes
+    ----------
+    requirements : list of str
+        pip requirements.
+
     Examples
     --------
     .. code-block:: python
@@ -103,6 +108,14 @@ class Python(_environment._Environment):
             )
 
         return "\n    ".join(lines)
+
+    @property
+    def requirements(self):
+        sorted_req_specs = sorted(
+            self._msg.python.requirements,
+            key=lambda req_spec_msg: req_spec_msg.library,
+        )
+        return list(map(self._req_spec_msg_to_str, sorted_req_specs))
 
     @classmethod
     def _from_proto(cls, blob_msg):
@@ -187,9 +200,10 @@ class Python(_environment._Environment):
                             " not {}".format(type(requirements)))
 
         self._msg.python.requirements.extend(
-            self._req_spec_to_msg(req_spec)
-            for req_spec
-            in req_specs
+            map(
+                self._req_spec_to_msg,
+                req_specs,
+            ),
         )
 
     def _capture_constraints(self, constraints):
@@ -203,9 +217,10 @@ class Python(_environment._Environment):
                             " not {}".format(type(constraints)))
 
         self._msg.python.constraints.extend(
-            self._req_spec_to_msg(req_spec)
-            for req_spec
-            in req_specs
+            map(
+                self._req_spec_to_msg,
+                req_specs,
+            ),
         )
 
     @staticmethod

@@ -1,17 +1,44 @@
-import pytest
+# -*- coding: utf-8 -*-
+
+# for composite strategy
+# pylint: disable=no-value-for-parameter
 
 import os
+import string
 import subprocess
 import sys
 import tempfile
 
+import hypothesis
+import hypothesis.strategies as st
+import pytest
 import six
 
 from google.protobuf import json_format
 
-import verta.environment
+from verta.environment import (
+    Python,
+)
 from verta._internal_utils import _pip_requirements_utils
 
+
+@st.composite
+def versions(draw):
+    numbers = st.integers(min_value=0, max_value=(2**31)-1)
+
+    major = draw(numbers)
+    minor = draw(numbers)
+    patch = draw(numbers)
+
+    return ".".join(map(str, [major, minor, patch]))
+
+
+@st.composite
+def metadata(draw):
+    """The "cu102" in "torch==1.8.1+cu102"."""
+    # https://www.python.org/dev/peps/pep-0440/#local-version-identifiers
+    alphabet = string.ascii_letters + string.digits + ".-_"
+    return draw(st.text(alphabet=alphabet, min_size=1))
 
 
 @pytest.fixture
@@ -79,10 +106,23 @@ class TestUtils:
             assert parsed_version[2] >= 0  # patch
             assert isinstance(parsed_version[3], six.string_types)  # suffix
 
+    @hypothesis.given(
+        version=versions(),
+        metadata=metadata(),
+    )
+    def test_remove_torch_metadata(self, version, metadata):
+        clean_requirement = "torch=={}".format(version)
+        requirement = "+".join([clean_requirement, metadata])
+
+        requirements = [requirement]
+        _pip_requirements_utils.remove_public_version_identifier(requirements)
+        assert requirements != [requirement]
+        assert requirements == [clean_requirement]
+
 
 class TestPython:
     def test_py_ver(self):
-        env = verta.environment.Python(requirements=[])
+        env = Python(requirements=[])
 
         assert env._msg.python.version.major == sys.version_info.major
         assert env._msg.python.version.minor == sys.version_info.minor
@@ -90,59 +130,59 @@ class TestPython:
 
     def test_env_vars(self):
         env_vars = os.environ.keys()
-        env = verta.environment.Python(requirements=[], env_vars=env_vars)
+        env = Python(requirements=[], env_vars=env_vars)
 
         assert env._msg.environment_variables
 
     def test_commit(self, commit):
-        env = verta.environment.Python(requirements=[])
+        env = Python(requirements=[])
 
         commit.update('env', env)
         commit.save(message="banana")
         assert commit.get('env')
 
     def test_reqs_from_env(self):
-        reqs = verta.environment.Python.read_pip_environment()
-        env = verta.environment.Python(requirements=reqs)
+        reqs = Python.read_pip_environment()
+        env = Python(requirements=reqs)
         assert env._msg.python.requirements
 
     def test_reqs(self, requirements_file):
-        reqs = verta.environment.Python.read_pip_file(requirements_file.name)
-        env = verta.environment.Python(requirements=reqs)
+        reqs = Python.read_pip_file(requirements_file.name)
+        env = Python(requirements=reqs)
         assert env._msg.python.requirements
 
     def test_reqs_without_versions(self, requirements_file_without_versions):
-        reqs = verta.environment.Python.read_pip_file(requirements_file_without_versions.name)
-        env = verta.environment.Python(requirements=reqs)
+        reqs = Python.read_pip_file(requirements_file_without_versions.name)
+        env = Python(requirements=reqs)
         assert env._msg.python.requirements
 
     def test_constraints_from_file(self, requirements_file):
-        reqs = verta.environment.Python.read_pip_file(requirements_file.name)
-        env = verta.environment.Python(requirements=[], constraints=reqs)
+        reqs = Python.read_pip_file(requirements_file.name)
+        env = Python(requirements=[], constraints=reqs)
         assert env._msg.python.constraints
 
     def test_constraints_from_file_no_versions_error(self, requirements_file_without_versions):
-        reqs = verta.environment.Python.read_pip_file(requirements_file_without_versions.name)
+        reqs = Python.read_pip_file(requirements_file_without_versions.name)
         with pytest.raises(ValueError):
-            verta.environment.Python(requirements=[], constraints=reqs)
+            Python(requirements=[], constraints=reqs)
 
     def test_inject_verta_cloudpickle(self):
-        env = verta.environment.Python(requirements=[])
+        env = Python(requirements=[])
         requirements = {req.library for req in env._msg.python.requirements}
 
         assert 'verta' in requirements
         assert 'cloudpickle' in requirements
 
     def test_reqs_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
-        reqs = verta.environment.Python.read_pip_file(requirements_file_with_unsupported_lines.name)
-        env = verta.environment.Python(requirements=reqs)
+        reqs = Python.read_pip_file(requirements_file_with_unsupported_lines.name)
+        env = Python(requirements=reqs)
         requirements = {req.library for req in env._msg.python.requirements}
 
         # only has injected requirements
         assert requirements == {"verta", "cloudpickle"}
 
     def test_no_autocapture(self):
-        env_ver = verta.environment.Python(requirements=[], _autocapture=False)
+        env_ver = Python(requirements=[], _autocapture=False)
 
         # protobuf message is empty
         assert not json_format.MessageToDict(
@@ -150,9 +190,28 @@ class TestPython:
             including_default_value_fields=False,
         )
 
+    def test_torch_no_suffix(self):
+        # NOTE: this test takes too long for Hypothesis
+        requirement = "torch==1.8.1+cu102"
+        env_ver = Python([requirement])
+        assert requirement not in env_ver.requirements
+        assert requirement.split("+")[0] in env_ver.requirements
+
+    def test_torch_no_suffix_autocapture(self):
+        torch = pytest.importorskip("torch")
+        version = torch.__version__
+
+        if "+" not in version:
+            pytest.skip("no metadata on version number")
+
+        requirement = "torch=={}".format(version)
+        env_ver = Python(["torch"])
+        assert requirement not in env_ver.requirements
+        assert requirement.split("+")[0] in env_ver.requirements
+
     def test_repr(self):
         """Tests that __repr__() executes without error"""
-        env_ver = verta.environment.Python(
+        env_ver = Python(
             requirements=['pytest=={}'.format(pytest.__version__)],
             constraints=['six=={}'.format(six.__version__)],
             env_vars=['HOME'],

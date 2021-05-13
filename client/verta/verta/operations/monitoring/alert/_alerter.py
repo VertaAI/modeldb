@@ -71,10 +71,9 @@ class FixedAlerter(_Alerter):
 
         alerter = FixedAlerter(GreaterThan(.7))
 
-        alert = monitored_entity.alerts.create(
+        alert = summary.alerts.create(
             name="MSE",
             alerter=alerter,
-            summary_sample_query=sample_query,
             notification_channels=[channel],
         )
 
@@ -133,10 +132,9 @@ class ReferenceAlerter(_Alerter):
             ref_sample,
         )
 
-        alert = monitored_entity.alerts.create(
+        alert = summary.alerts.create(
             name="MSE",
             alerter=alerter,
-            summary_sample_query=sample_query,
             notification_channels=[channel],
         )
 

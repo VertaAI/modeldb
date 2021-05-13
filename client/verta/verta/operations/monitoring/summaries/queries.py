@@ -80,6 +80,12 @@ class SummaryQuery(object):
         self._page_number = page_number
         self._page_limit = page_limit
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self._to_proto_request() == other._to_proto_request()
+
     @property
     def monitored_entity_ids(self):
         return self._monitored_entity_ids
@@ -204,6 +210,12 @@ class SummarySampleQuery(object):
         self._created_after = created_after
         self._page_number = page_number
         self._page_limit = page_limit
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self._to_proto_request() == other._to_proto_request()
 
     @property
     def summary_query(self):

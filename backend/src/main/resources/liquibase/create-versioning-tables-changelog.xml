@@ -139,13 +139,14 @@
                                  referencedTableName="repository"/>
     </changeSet>
     <changeSet author="anand" id="create-labels_mapping">
+        <validCheckSum>8:66fe23a8031ef5979538e4bf252ba4f2</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="labels_mapping"/>
             </not>
         </preConditions>
         <createTable tableName="labels_mapping">
-            <column name="entity_hash" type="varchar(64)">
+            <column name="entity_hash" type="varchar(255)">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_label_mapping"/>
             </column>
             <column name="entity_type" type="int4">
@@ -209,13 +210,6 @@
         <addColumn tableName="commit_parent">
             <column name="parent_order" type="int4"/>
         </addColumn>
-    </changeSet>
-
-    <changeSet id="modify-entity-hash-length-label-mapping" author="anandJ">
-        <modifyDataType
-                columnName="entity_hash"
-                newDataType="varchar(255)"
-                tableName="labels_mapping"/>
     </changeSet>
 
     <changeSet id="add-date-updated-in-commit" author="anandJ">
