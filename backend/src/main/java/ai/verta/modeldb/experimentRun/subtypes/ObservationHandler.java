@@ -87,7 +87,7 @@ public class ObservationHandler {
             handle ->
                 handle
                     .createQuery(
-                        "select k.kv_key _key, k.kv_value _value, k.value_type _type, o.epoch_number epoch, o.experiment_run_id run_id "
+                        "select k.kv_key _key, k.kv_value _value, k.value_type _type, o.epoch_number epoch, o.experiment_run_id run_id, o.timestamp "
                             + " from observation as o"
                             + " join keyvalue as k"
                             + " on o.keyvaluemapping_id = k.id"
@@ -99,6 +99,7 @@ public class ObservationHandler {
                             return new AbstractMap.SimpleEntry<>(
                                 rs.getString("run_id"),
                                 Observation.newBuilder()
+                                    .setTimestamp(rs.getLong("timestamp"))
                                     .setEpochNumber(
                                         Value.newBuilder().setNumberValue(rs.getLong("epoch")))
                                     .setAttribute(
@@ -230,11 +231,11 @@ public class ObservationHandler {
         handle -> {
           // Delete from keyvalue
           var sql =
-              "delete from keyvalue where id in "
-                  + "(select keyvaluemapping_id from observation where entity_name=:entity_name and field_type=:field_type and experiment_run_id=:run_id)";
+              "delete o, k from keyvalue AS k inner join observation AS o ON o.keyvaluemapping_id=k.id "
+                  + "where o.entity_name=:entity_name and o.field_type=:field_type and o.experiment_run_id=:run_id ";
 
           if (maybeKeys.isPresent()) {
-            sql += " and kv_key in (<keys>)";
+            sql += " and k.kv_key in (<keys>)";
           }
 
           var query =
@@ -248,13 +249,6 @@ public class ObservationHandler {
             query = query.bindList("keys", maybeKeys.get());
           }
 
-          query.execute();
-
-          // Delete from observations by finding missing keyvalue matches
-          sql =
-              "delete from observation where id in "
-                  + "(select o.id from observation o left join keyvalue k on o.keyvaluemapping_id=k.id where o.experiment_run_id=:run_id and o.keyvaluemapping_id is null)";
-          query = handle.createUpdate(sql).bind("run_id", runId);
           query.execute();
         });
   }
