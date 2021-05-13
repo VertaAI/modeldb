@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+from collections import namedtuple
 
 from verta._internal_utils import (
     _utils,
@@ -16,10 +17,12 @@ from verta.operations.monitoring.alert.status import (
     Ok,
 )
 from verta.operations.monitoring.alert import _entities
-from verta.operations.monitoring.summaries import SummarySampleQuery
+from verta.operations.monitoring.alert._entities import Alert, Alerts
+from verta.operations.monitoring.summaries.queries import SummarySampleQuery
 from verta.operations.monitoring.notification_channel import (
     SlackNotificationChannel,
 )
+from verta import data_types
 
 
 class TestIntegration:
@@ -61,7 +64,7 @@ class TestIntegration:
         retrieved_channel_ids = alert._msg.notification_channels.keys()
         assert set(retrieved_channel_ids) == {channel1.id, channel2.id}
 
-    def test_set_status(self, monitored_entity, summary_sample, created_entities):
+    def test_set_status(self, monitored_entity, summary_sample):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
@@ -73,12 +76,15 @@ class TestIntegration:
 
         alert.set_status(Alerting([summary_sample]))
         assert alert.status == Alerting([summary_sample])
-        assert alert._last_evaluated_or_created_millis == alert._msg.last_evaluated_at_millis
+        assert (
+            alert._last_evaluated_or_created_millis
+            == alert._msg.last_evaluated_at_millis
+        )
 
         alert.set_status(Ok())
         assert alert.status == Ok()
 
-    def test_summary_sample_query(self, monitored_entity, created_entities):
+    def test_summary_sample_query(self, monitored_entity):
         alerts = monitored_entity.alerts
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
@@ -88,6 +94,15 @@ class TestIntegration:
         created_query_proto = sample_query._to_proto_request()
         retrieved_query_proto = alert.summary_sample_query._to_proto_request()
         assert created_query_proto == retrieved_query_proto
+
+    def test_alert_from_summary(self, client, monitored_entity):
+        ops = client.operations
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
+        test_summary = ops.summaries.get_or_create(
+            "test_summary", data_types.FloatHistogram, monitored_entity
+        )
+        alert = test_summary.alerts.create("test_alert", alerter)
+        assert isinstance(alert, Alert)
 
 
 class TestAlert:
@@ -153,6 +168,23 @@ class TestAlert:
         assert alert._msg.created_at_millis == created_at_millis
         assert alert._msg.updated_at_millis == updated_at_millis
         assert alert._msg.last_evaluated_at_millis == last_evaluated_at_millis
+
+    def test_alerts_summary(self):
+        MockSummary = namedtuple("Summary", ["id", "name", "monitored_entity_id"])
+
+        monitored_entity_id = 5
+        summary = MockSummary(123, "my_test_summary", monitored_entity_id)
+        offline_alerts = Alerts(
+            None,
+            None,
+            monitored_entity_id=monitored_entity_id,
+            summary=summary,
+        )
+        query = offline_alerts._build_summary_query()
+        assert query
+        assert summary.id in query._ids
+        assert summary.name in query._names
+        assert summary.monitored_entity_id in query._monitored_entity_ids
 
 
 class TestFixed:

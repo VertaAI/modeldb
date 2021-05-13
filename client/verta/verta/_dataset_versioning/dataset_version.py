@@ -380,7 +380,7 @@ class DatasetVersion(entity._ModelDBEntity):
     @property
     def desc(self):
         warnings.warn(
-            "this attribute is deprecated and will removed in an upcoming version;"
+            "this attribute is deprecated and will be removed in an upcoming version;"
             " consider using `get_description()` instead",
             category=FutureWarning,
         )
@@ -389,7 +389,7 @@ class DatasetVersion(entity._ModelDBEntity):
     @property
     def attrs(self):
         warnings.warn(
-            "this attribute is deprecated and will removed in an upcoming version;"
+            "this attribute is deprecated and will be removed in an upcoming version;"
             " consider using `get_attributes()` instead",
             category=FutureWarning,
         )
@@ -398,7 +398,7 @@ class DatasetVersion(entity._ModelDBEntity):
     @property
     def tags(self):
         warnings.warn(
-            "this attribute is deprecated and will removed in an upcoming version;"
+            "this attribute is deprecated and will be removed in an upcoming version;"
             " consider using `get_tags()` instead",
             category=FutureWarning,
         )
@@ -407,7 +407,7 @@ class DatasetVersion(entity._ModelDBEntity):
     @property
     def _dataset_type(self):
         warnings.warn(
-            "this attribute is deprecated and will removed in an upcoming version;"
+            "this attribute is deprecated and will be removed in an upcoming version;"
             " consider checking `get_content()` instead",
             category=FutureWarning,
         )
@@ -418,7 +418,7 @@ class DatasetVersion(entity._ModelDBEntity):
     @property
     def dataset_version(self):
         warnings.warn(
-            "this attribute is deprecated and will removed in an upcoming version;"
+            "this attribute is deprecated and will be removed in an upcoming version;"
             " interfacing directly with the internal protobuf structure is not supported",
             category=FutureWarning,
         )
@@ -428,7 +428,7 @@ class DatasetVersion(entity._ModelDBEntity):
     @property
     def dataset_version_info(self):
         warnings.warn(
-            "this attribute is deprecated and will removed in an upcoming version;"
+            "this attribute is deprecated and will be removed in an upcoming version;"
             " consider using `get_content()` instead",
             category=FutureWarning,
         )

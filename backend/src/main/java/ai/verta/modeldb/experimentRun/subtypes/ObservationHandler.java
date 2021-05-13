@@ -51,10 +51,11 @@ public class ObservationHandler {
                         .createQuery(
                             "select k.kv_value _value, k.value_type _type, o.epoch_number epoch from "
                                 + "(select keyvaluemapping_id, epoch_number from observation "
-                                + "where experiment_run_id =:run_id and entity_name = \"ExperimentRunEntity\") o, "
+                                + "where experiment_run_id =:run_id and entity_name = :entity_name:) o, "
                                 + "(select id, kv_value, value_type from keyvalue where kv_key =:name and entity_name IS NULL) k "
                                 + "where o.keyvaluemapping_id = k.id")
                         .bind("run_id", runId)
+                        .bind("entity_name", "\"ExperimentRunEntity\"")
                         .bind("name", key)
                         .map(
                             (rs, ctx) -> {
@@ -159,7 +160,7 @@ public class ObservationHandler {
                       final var sql =
                           "select max(o.epoch_number) from "
                               + "(select keyvaluemapping_id, epoch_number from observation "
-                              + "where experiment_run_id =:run_id and entity_name = \"ExperimentRunEntity\") o, "
+                              + "where experiment_run_id =:run_id and entity_name = :entity_name) o, "
                               + "(select id from keyvalue where kv_key =:name and entity_name IS NULL) k "
                               + "where o.keyvaluemapping_id = k.id";
                       return jdbi.withHandle(
@@ -167,6 +168,7 @@ public class ObservationHandler {
                               handle
                                   .createQuery(sql)
                                   .bind("run_id", runId)
+                                  .bind("entity_name", "\"ExperimentRunEntity\"")
                                   .bind("name", attribute.getKey())
                                   .mapTo(Long.class)
                                   .findOne()
@@ -184,7 +186,8 @@ public class ObservationHandler {
                                 handle
                                     .createUpdate(
                                         "insert into keyvalue (field_type, kv_key, kv_value, value_type) "
-                                            + "values (\"attributes\", :key, :value, :type)")
+                                            + "values (:field_type, :key, :value, :type)")
+                                    .bind("field_type", "\"attributes\"")
                                     .bind("key", attribute.getKey())
                                     .bind(
                                         "value",
@@ -201,12 +204,14 @@ public class ObservationHandler {
                             handle
                                 .createUpdate(
                                     "insert into observation (entity_name, field_type, timestamp, experiment_run_id, keyvaluemapping_id, epoch_number) "
-                                        + "values (\"ExperimentRunEntity\", \"observations\", :timestamp, :run_id, :kvid, :epoch)")
+                                        + "values (:entity_name, :field_type, :timestamp, :run_id, :kvid, :epoch)")
                                 .bind(
                                     "timestamp",
                                     observation.getTimestamp() == 0
                                         ? now
                                         : observation.getTimestamp())
+                                .bind("entity_name", "\"ExperimentRunEntity\"")
+                                .bind("field_type", "\"observations\"")
                                 .bind("run_id", runId)
                                 .bind("kvid", kvId)
                                 .bind("epoch", epoch)
@@ -226,13 +231,18 @@ public class ObservationHandler {
           // Delete from keyvalue
           var sql =
               "delete from keyvalue where id in "
-                  + "(select keyvaluemapping_id from observation where entity_name=\"ExperimentRunEntity\" and field_type=\"observations\" and experiment_run_id=:run_id)";
+                  + "(select keyvaluemapping_id from observation where entity_name=:entity_name and field_type=:field_type and experiment_run_id=:run_id)";
 
           if (maybeKeys.isPresent()) {
             sql += " and kv_key in (<keys>)";
           }
 
-          var query = handle.createUpdate(sql).bind("run_id", runId);
+          var query =
+              handle
+                  .createUpdate(sql)
+                  .bind("entity_name", "\"ExperimentRunEntity\"")
+                  .bind("field_type", "\"observations\"")
+                  .bind("run_id", runId);
 
           if (maybeKeys.isPresent()) {
             query = query.bindList("keys", maybeKeys.get());

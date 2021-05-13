@@ -4,14 +4,13 @@ from __future__ import print_function
 
 import abc
 import copy
-import glob
 import importlib
 import os
-import re
 import shutil
 import sys
 import tarfile
 import tempfile
+import warnings
 import zipfile
 
 import requests
@@ -372,6 +371,10 @@ class _DeployableEntity(_ModelDBEntity):
            Instead of uploading the data itself as a CSV artifact ``'train_data'``, this method now
            generates a histogram for internal use by our deployment data monitoring system.
 
+        .. deprecated:: 0.17.7
+            This method is no longer supported. Please see our documentation
+            for information about our platform's data monitoring features.
+
         Parameters
         ----------
         train_features : pd.DataFrame
@@ -382,6 +385,12 @@ class _DeployableEntity(_ModelDBEntity):
             Whether to allow overwriting existing training data.
 
         """
+        warnings.warn(
+            "This method is no longer supported. Please see our documentation"
+            " for information about our platform's data monitoring features",
+            category=FutureWarning,
+        )
+
         if train_features.__class__.__name__ != "DataFrame":
             raise TypeError("`train_features` must be a pandas DataFrame, not {}".format(type(train_features)))
         if train_targets.__class__.__name__ == "Series":

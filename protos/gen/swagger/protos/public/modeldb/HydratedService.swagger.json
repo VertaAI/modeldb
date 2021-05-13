@@ -866,7 +866,8 @@
         "READ",
         "UPDATE",
         "DELETE",
-        "UPDATE_PERMISSIONS"
+        "UPDATE_PERMISSIONS",
+        "PREDICT"
       ],
       "default": "UNKNOWN"
     },
@@ -2274,6 +2275,9 @@
         },
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -2323,6 +2327,9 @@
         },
         "default_endpoint_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "endpoint_can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
