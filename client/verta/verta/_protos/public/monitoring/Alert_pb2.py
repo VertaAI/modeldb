@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.monitoring',
   syntax='proto3',
   serialized_options=b'P\001ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring',
-  serialized_pb=b'\n\x16monitoring/Alert.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x18monitoring/Summary.proto\"P\n\x1bNotificationChannelTypeEnum\"1\n\x17NotificationChannelType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05SLACK\x10\x01\"\xad\x02\n\x13NotificationChannel\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x03 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x04 \x01(\x04\x12V\n\x04type\x18\x05 \x01(\x0e\x32H.ai.verta.monitoring.NotificationChannelTypeEnum.NotificationChannelType\x12M\n\rslack_webhook\x18\x06 \x01(\x0b\x32\x34.ai.verta.monitoring.NotificationChannelSlackWebhookH\x00\x12\x14\n\x0cworkspace_id\x18\x07 \x01(\x04\x42\t\n\x07\x63hannel\".\n\x1fNotificationChannelSlackWebhook\x12\x0b\n\x03url\x18\x01 \x01(\t\"\xaa\x03\n CreateNotificationChannelRequest\x12\x39\n\x07\x63hannel\x18\x01 \x01(\x0b\x32(.ai.verta.monitoring.NotificationChannel\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x03 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x04 \x01(\x04\x12\x16\n\x0cworkspace_id\x18\x07 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x08 \x01(\tH\x00\x12V\n\x04type\x18\x05 \x01(\x0e\x32H.ai.verta.monitoring.NotificationChannelTypeEnum.NotificationChannelType\x12M\n\rslack_webhook\x18\x06 \x01(\x0b\x32\x34.ai.verta.monitoring.NotificationChannelSlackWebhookH\x01\x42\x16\n\x14workspace_identifierB\x16\n\x14notification_channel\"]\n UpdateNotificationChannelRequest\x12\x39\n\x07\x63hannel\x18\x01 \x01(\x0b\x32(.ai.verta.monitoring.NotificationChannel\"\xcf\x02\n\x1e\x46indNotificationChannelRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12?\n\x05types\x18\x03 \x03(\x0b\x32\x30.ai.verta.monitoring.NotificationChannelTypeEnum\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x12\x16\n\x0cworkspace_id\x18\x06 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x07 \x01(\tH\x00\x1a]\n\x08Response\x12:\n\x08\x63hannels\x18\x01 \x03(\x0b\x32(.ai.verta.monitoring.NotificationChannel\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\x42\x16\n\x14workspace_identifier\"/\n DeleteNotificationChannelRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\"R\n\x0f\x41lerterTypeEnum\"?\n\x0b\x41lerterType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05\x46IXED\x10\x01\x12\r\n\tREFERENCE\x10\x02\x12\t\n\x05RANGE\x10\x03\"C\n\x0f\x41lertStatusEnum\"0\n\x0b\x41lertStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x06\n\x02OK\x10\x01\x12\x0c\n\x08\x41LERTING\x10\x02\"\xe2\x05\n\x05\x41lert\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x1b\n\x13monitored_entity_id\x18\x03 \x01(\x04\x12\x19\n\x11\x63reated_at_millis\x18\x04 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x05 \x01(\x04\x12 \n\x18last_evaluated_at_millis\x18\x06 \x01(\x04\x12S\n\x15notification_channels\x18\x07 \x03(\x0b\x32\x34.ai.verta.monitoring.Alert.NotificationChannelsEntry\x12G\n\x10sample_find_base\x18\x08 \x01(\x0b\x32-.ai.verta.monitoring.FindSummarySampleRequest\x12@\n\x06status\x18\t \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12$\n\x1cviolating_summary_sample_ids\x18\n \x03(\x04\x12\x46\n\x0c\x61lerter_type\x18\x0b \x01(\x0e\x32\x30.ai.verta.monitoring.AlerterTypeEnum.AlerterType\x12\x38\n\ralerter_fixed\x18\x0c \x01(\x0b\x32\x1f.ai.verta.monitoring.AlertFixedH\x00\x12@\n\x11\x61lerter_reference\x18\r \x01(\x0b\x32#.ai.verta.monitoring.AlertReferenceH\x00\x12\x38\n\ralerter_range\x18\x0e \x01(\x0b\x32\x1f.ai.verta.monitoring.AlertRangeH\x00\x1a;\n\x19NotificationChannelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\r\n\x05value\x18\x02 \x01(\x08:\x02\x38\x01\x42\t\n\x07\x61lerter\"Y\n\nAlertFixed\x12\x11\n\tthreshold\x18\x01 \x01(\x02\x12\x38\n\x08operator\x18\x02 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"V\n\nAlertRange\x12\x13\n\x0blower_bound\x18\x01 \x01(\x02\x12\x13\n\x0bupper_bound\x18\x02 \x01(\x02\x12\x1e\n\x16\x61lert_if_outside_range\x18\x03 \x01(\x08\"z\n\x0e\x41lertReference\x12\x11\n\tthreshold\x18\x01 \x01(\x02\x12\x1b\n\x13reference_sample_id\x18\x02 \x01(\x04\x12\x38\n\x08operator\x18\x03 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"?\n\x12\x43reateAlertRequest\x12)\n\x05\x61lert\x18\x01 \x01(\x0b\x32\x1a.ai.verta.monitoring.Alert\"?\n\x12UpdateAlertRequest\x12)\n\x05\x61lert\x18\x02 \x01(\x0b\x32\x1a.ai.verta.monitoring.Alert\"\xf7\x02\n\x10\x46indAlertRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12\x1c\n\x14monitored_entity_ids\x18\x03 \x03(\x04\x12&\n\x1elast_evaluated_at_millis_after\x18\x04 \x01(\x04\x12G\n\ralerter_types\x18\x05 \x03(\x0e\x32\x30.ai.verta.monitoring.AlerterTypeEnum.AlerterType\x12@\n\x06status\x18\x06 \x03(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12\x13\n\x0bpage_number\x18\x07 \x01(\x05\x12\x12\n\npage_limit\x18\x08 \x01(\x05\x1aM\n\x08Response\x12*\n\x06\x61lerts\x18\x01 \x03(\x0b\x32\x1a.ai.verta.monitoring.Alert\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\"!\n\x12\x44\x65leteAlertRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\"\xe6\x01\n\x18UpdateAlertStatusRequest\x12\x10\n\x08\x61lert_id\x18\x01 \x01(\x04\x12\x19\n\x11\x65vent_time_millis\x18\x02 \x01(\x04\x12@\n\x06status\x18\x03 \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12\x1b\n\x13\x61lerting_sample_ids\x18\x05 \x03(\x04\x12\x15\n\rok_sample_ids\x18\x06 \x03(\x04\x12!\n\x19\x63lear_alerting_sample_ids\x18\x07 \x01(\x08J\x04\x08\x04\x10\x05\"m\n\x17ListAlertHistoryRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a\x46\n\x08Response\x12:\n\x07history\x18\x01 \x03(\x0b\x32).ai.verta.monitoring.ListAlertHistoryItem\"\x99\x01\n\x14ListAlertHistoryItem\x12\x19\n\x11\x65vent_time_millis\x18\x01 \x01(\x04\x12@\n\x06status\x18\x02 \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12$\n\x1cviolating_summary_sample_ids\x18\x03 \x03(\x04\x32\xe5\x0b\n\x0c\x41lertService\x12\xad\x01\n\x19\x63reateNotificationChannel\x12\x35.ai.verta.monitoring.CreateNotificationChannelRequest\x1a(.ai.verta.monitoring.NotificationChannel\"/\x82\xd3\xe4\x93\x02)\"$/v1/alerts/createNotificationChannel:\x01*\x12\xad\x01\n\x19updateNotificationChannel\x12\x35.ai.verta.monitoring.UpdateNotificationChannelRequest\x1a(.ai.verta.monitoring.NotificationChannel\"/\x82\xd3\xe4\x93\x02)\"$/v1/alerts/updateNotificationChannel:\x01*\x12\xbb\x01\n\x17\x66indNotificationChannel\x12\x33.ai.verta.monitoring.FindNotificationChannelRequest\x1a<.ai.verta.monitoring.FindNotificationChannelRequest.Response\"-\x82\xd3\xe4\x93\x02\'\"\"/v1/alerts/findNotificationChannel:\x01*\x12\x9f\x01\n\x19\x64\x65leteNotificationChannel\x12\x35.ai.verta.monitoring.DeleteNotificationChannelRequest\x1a\x1a.ai.verta.monitoring.Empty\"/\x82\xd3\xe4\x93\x02)*$/v1/alerts/deleteNotificationChannel:\x01*\x12u\n\x0b\x63reateAlert\x12\'.ai.verta.monitoring.CreateAlertRequest\x1a\x1a.ai.verta.monitoring.Alert\"!\x82\xd3\xe4\x93\x02\x1b\"\x16/v1/alerts/createAlert:\x01*\x12u\n\x0bupdateAlert\x12\'.ai.verta.monitoring.UpdateAlertRequest\x1a\x1a.ai.verta.monitoring.Alert\"!\x82\xd3\xe4\x93\x02\x1b\"\x16/v1/alerts/updateAlert:\x01*\x12\x87\x01\n\x11updateAlertStatus\x12-.ai.verta.monitoring.UpdateAlertStatusRequest\x1a\x1a.ai.verta.monitoring.Empty\"\'\x82\xd3\xe4\x93\x02!\"\x1c/v1/alerts/updateAlertStatus:\x01*\x12\x83\x01\n\tfindAlert\x12%.ai.verta.monitoring.FindAlertRequest\x1a..ai.verta.monitoring.FindAlertRequest.Response\"\x1f\x82\xd3\xe4\x93\x02\x19\"\x14/v1/alerts/findAlert:\x01*\x12\x9f\x01\n\x10listAlertHistory\x12,.ai.verta.monitoring.ListAlertHistoryRequest\x1a\x35.ai.verta.monitoring.ListAlertHistoryRequest.Response\"&\x82\xd3\xe4\x93\x02 \"\x1b/v1/alerts/listAlertHistory:\x01*\x12u\n\x0b\x64\x65leteAlert\x12\'.ai.verta.monitoring.DeleteAlertRequest\x1a\x1a.ai.verta.monitoring.Empty\"!\x82\xd3\xe4\x93\x02\x1b*\x16/v1/alerts/deleteAlert:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
+  serialized_pb=b'\n\x16monitoring/Alert.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x18monitoring/Summary.proto\"P\n\x1bNotificationChannelTypeEnum\"1\n\x17NotificationChannelType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05SLACK\x10\x01\"\xad\x02\n\x13NotificationChannel\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x03 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x04 \x01(\x04\x12V\n\x04type\x18\x05 \x01(\x0e\x32H.ai.verta.monitoring.NotificationChannelTypeEnum.NotificationChannelType\x12M\n\rslack_webhook\x18\x06 \x01(\x0b\x32\x34.ai.verta.monitoring.NotificationChannelSlackWebhookH\x00\x12\x14\n\x0cworkspace_id\x18\x07 \x01(\x04\x42\t\n\x07\x63hannel\".\n\x1fNotificationChannelSlackWebhook\x12\x0b\n\x03url\x18\x01 \x01(\t\"\xaa\x03\n CreateNotificationChannelRequest\x12\x39\n\x07\x63hannel\x18\x01 \x01(\x0b\x32(.ai.verta.monitoring.NotificationChannel\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x03 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x04 \x01(\x04\x12\x16\n\x0cworkspace_id\x18\x07 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x08 \x01(\tH\x00\x12V\n\x04type\x18\x05 \x01(\x0e\x32H.ai.verta.monitoring.NotificationChannelTypeEnum.NotificationChannelType\x12M\n\rslack_webhook\x18\x06 \x01(\x0b\x32\x34.ai.verta.monitoring.NotificationChannelSlackWebhookH\x01\x42\x16\n\x14workspace_identifierB\x16\n\x14notification_channel\"]\n UpdateNotificationChannelRequest\x12\x39\n\x07\x63hannel\x18\x01 \x01(\x0b\x32(.ai.verta.monitoring.NotificationChannel\"\xcf\x02\n\x1e\x46indNotificationChannelRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12?\n\x05types\x18\x03 \x03(\x0b\x32\x30.ai.verta.monitoring.NotificationChannelTypeEnum\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x12\x16\n\x0cworkspace_id\x18\x06 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x07 \x01(\tH\x00\x1a]\n\x08Response\x12:\n\x08\x63hannels\x18\x01 \x03(\x0b\x32(.ai.verta.monitoring.NotificationChannel\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\x42\x16\n\x14workspace_identifier\"/\n DeleteNotificationChannelRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\"R\n\x0f\x41lerterTypeEnum\"?\n\x0b\x41lerterType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05\x46IXED\x10\x01\x12\r\n\tREFERENCE\x10\x02\x12\t\n\x05RANGE\x10\x03\"C\n\x0f\x41lertStatusEnum\"0\n\x0b\x41lertStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x06\n\x02OK\x10\x01\x12\x0c\n\x08\x41LERTING\x10\x02\"\xe2\x05\n\x05\x41lert\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x1b\n\x13monitored_entity_id\x18\x03 \x01(\x04\x12\x19\n\x11\x63reated_at_millis\x18\x04 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x05 \x01(\x04\x12 \n\x18last_evaluated_at_millis\x18\x06 \x01(\x04\x12S\n\x15notification_channels\x18\x07 \x03(\x0b\x32\x34.ai.verta.monitoring.Alert.NotificationChannelsEntry\x12G\n\x10sample_find_base\x18\x08 \x01(\x0b\x32-.ai.verta.monitoring.FindSummarySampleRequest\x12@\n\x06status\x18\t \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12$\n\x1cviolating_summary_sample_ids\x18\n \x03(\x04\x12\x46\n\x0c\x61lerter_type\x18\x0b \x01(\x0e\x32\x30.ai.verta.monitoring.AlerterTypeEnum.AlerterType\x12\x38\n\ralerter_fixed\x18\x0c \x01(\x0b\x32\x1f.ai.verta.monitoring.AlertFixedH\x00\x12@\n\x11\x61lerter_reference\x18\r \x01(\x0b\x32#.ai.verta.monitoring.AlertReferenceH\x00\x12\x38\n\ralerter_range\x18\x0e \x01(\x0b\x32\x1f.ai.verta.monitoring.AlertRangeH\x00\x1a;\n\x19NotificationChannelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\r\n\x05value\x18\x02 \x01(\x08:\x02\x38\x01\x42\t\n\x07\x61lerter\"Y\n\nAlertFixed\x12\x11\n\tthreshold\x18\x01 \x01(\x02\x12\x38\n\x08operator\x18\x02 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"V\n\nAlertRange\x12\x13\n\x0blower_bound\x18\x01 \x01(\x02\x12\x13\n\x0bupper_bound\x18\x02 \x01(\x02\x12\x1e\n\x16\x61lert_if_outside_range\x18\x03 \x01(\x08\"z\n\x0e\x41lertReference\x12\x11\n\tthreshold\x18\x01 \x01(\x02\x12\x1b\n\x13reference_sample_id\x18\x02 \x01(\x04\x12\x38\n\x08operator\x18\x03 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"?\n\x12\x43reateAlertRequest\x12)\n\x05\x61lert\x18\x01 \x01(\x0b\x32\x1a.ai.verta.monitoring.Alert\"?\n\x12UpdateAlertRequest\x12)\n\x05\x61lert\x18\x02 \x01(\x0b\x32\x1a.ai.verta.monitoring.Alert\"\xf7\x02\n\x10\x46indAlertRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12\x1c\n\x14monitored_entity_ids\x18\x03 \x03(\x04\x12&\n\x1elast_evaluated_at_millis_after\x18\x04 \x01(\x04\x12G\n\ralerter_types\x18\x05 \x03(\x0e\x32\x30.ai.verta.monitoring.AlerterTypeEnum.AlerterType\x12@\n\x06status\x18\x06 \x03(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12\x13\n\x0bpage_number\x18\x07 \x01(\x05\x12\x12\n\npage_limit\x18\x08 \x01(\x05\x1aM\n\x08Response\x12*\n\x06\x61lerts\x18\x01 \x03(\x0b\x32\x1a.ai.verta.monitoring.Alert\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\"!\n\x12\x44\x65leteAlertRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\"\xe6\x01\n\x18UpdateAlertStatusRequest\x12\x10\n\x08\x61lert_id\x18\x01 \x01(\x04\x12\x19\n\x11\x65vent_time_millis\x18\x02 \x01(\x04\x12@\n\x06status\x18\x03 \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12\x1b\n\x13\x61lerting_sample_ids\x18\x05 \x03(\x04\x12\x15\n\rok_sample_ids\x18\x06 \x03(\x04\x12!\n\x19\x63lear_alerting_sample_ids\x18\x07 \x01(\x08J\x04\x08\x04\x10\x05\"m\n\x17ListAlertHistoryRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a\x46\n\x08Response\x12:\n\x07history\x18\x01 \x03(\x0b\x32).ai.verta.monitoring.ListAlertHistoryItem\"\x99\x01\n\x14ListAlertHistoryItem\x12\x19\n\x11\x65vent_time_millis\x18\x01 \x01(\x04\x12@\n\x06status\x18\x02 \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12$\n\x1cviolating_summary_sample_ids\x18\x03 \x03(\x04\x32\xfe\x0c\n\x0c\x41lertService\x12\xbc\x01\n\x19\x63reateNotificationChannel\x12\x35.ai.verta.monitoring.CreateNotificationChannelRequest\x1a(.ai.verta.monitoring.NotificationChannel\">\x82\xd3\xe4\x93\x02\x38\"3/api/v1/monitoring/alerts/createNotificationChannel:\x01*\x12\xbc\x01\n\x19updateNotificationChannel\x12\x35.ai.verta.monitoring.UpdateNotificationChannelRequest\x1a(.ai.verta.monitoring.NotificationChannel\">\x82\xd3\xe4\x93\x02\x38\"3/api/v1/monitoring/alerts/updateNotificationChannel:\x01*\x12\xca\x01\n\x17\x66indNotificationChannel\x12\x33.ai.verta.monitoring.FindNotificationChannelRequest\x1a<.ai.verta.monitoring.FindNotificationChannelRequest.Response\"<\x82\xd3\xe4\x93\x02\x36\"1/api/v1/monitoring/alerts/findNotificationChannel:\x01*\x12\xae\x01\n\x19\x64\x65leteNotificationChannel\x12\x35.ai.verta.monitoring.DeleteNotificationChannelRequest\x1a\x1a.ai.verta.monitoring.Empty\">\x82\xd3\xe4\x93\x02\x38*3/api/v1/monitoring/alerts/deleteNotificationChannel:\x01*\x12\x84\x01\n\x0b\x63reateAlert\x12\'.ai.verta.monitoring.CreateAlertRequest\x1a\x1a.ai.verta.monitoring.Alert\"0\x82\xd3\xe4\x93\x02*\"%/api/v1/monitoring/alerts/createAlert:\x01*\x12\x84\x01\n\x0bupdateAlert\x12\'.ai.verta.monitoring.UpdateAlertRequest\x1a\x1a.ai.verta.monitoring.Alert\"0\x82\xd3\xe4\x93\x02*\"%/api/v1/monitoring/alerts/updateAlert:\x01*\x12\x96\x01\n\x11updateAlertStatus\x12-.ai.verta.monitoring.UpdateAlertStatusRequest\x1a\x1a.ai.verta.monitoring.Empty\"6\x82\xd3\xe4\x93\x02\x30\"+/api/v1/monitoring/alerts/updateAlertStatus:\x01*\x12\x92\x01\n\tfindAlert\x12%.ai.verta.monitoring.FindAlertRequest\x1a..ai.verta.monitoring.FindAlertRequest.Response\".\x82\xd3\xe4\x93\x02(\"#/api/v1/monitoring/alerts/findAlert:\x01*\x12\xae\x01\n\x10listAlertHistory\x12,.ai.verta.monitoring.ListAlertHistoryRequest\x1a\x35.ai.verta.monitoring.ListAlertHistoryRequest.Response\"5\x82\xd3\xe4\x93\x02/\"*/api/v1/monitoring/alerts/listAlertHistory:\x01*\x12\x84\x01\n\x0b\x64\x65leteAlert\x12\'.ai.verta.monitoring.DeleteAlertRequest\x1a\x1a.ai.verta.monitoring.Empty\"0\x82\xd3\xe4\x93\x02**%/api/v1/monitoring/alerts/deleteAlert:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,monitoring_dot_Summary__pb2.DESCRIPTOR,])
 
@@ -1485,7 +1485,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=3747,
-  serialized_end=5256,
+  serialized_end=5409,
   methods=[
   _descriptor.MethodDescriptor(
     name='createNotificationChannel',
@@ -1494,7 +1494,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_CREATENOTIFICATIONCHANNELREQUEST,
     output_type=_NOTIFICATIONCHANNEL,
-    serialized_options=b'\202\323\344\223\002)\"$/v1/alerts/createNotificationChannel:\001*',
+    serialized_options=b'\202\323\344\223\0028\"3/api/v1/monitoring/alerts/createNotificationChannel:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='updateNotificationChannel',
@@ -1503,7 +1503,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_UPDATENOTIFICATIONCHANNELREQUEST,
     output_type=_NOTIFICATIONCHANNEL,
-    serialized_options=b'\202\323\344\223\002)\"$/v1/alerts/updateNotificationChannel:\001*',
+    serialized_options=b'\202\323\344\223\0028\"3/api/v1/monitoring/alerts/updateNotificationChannel:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='findNotificationChannel',
@@ -1512,7 +1512,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_FINDNOTIFICATIONCHANNELREQUEST,
     output_type=_FINDNOTIFICATIONCHANNELREQUEST_RESPONSE,
-    serialized_options=b'\202\323\344\223\002\'\"\"/v1/alerts/findNotificationChannel:\001*',
+    serialized_options=b'\202\323\344\223\0026\"1/api/v1/monitoring/alerts/findNotificationChannel:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='deleteNotificationChannel',
@@ -1521,7 +1521,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_DELETENOTIFICATIONCHANNELREQUEST,
     output_type=monitoring_dot_Summary__pb2._EMPTY,
-    serialized_options=b'\202\323\344\223\002)*$/v1/alerts/deleteNotificationChannel:\001*',
+    serialized_options=b'\202\323\344\223\0028*3/api/v1/monitoring/alerts/deleteNotificationChannel:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='createAlert',
@@ -1530,7 +1530,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_CREATEALERTREQUEST,
     output_type=_ALERT,
-    serialized_options=b'\202\323\344\223\002\033\"\026/v1/alerts/createAlert:\001*',
+    serialized_options=b'\202\323\344\223\002*\"%/api/v1/monitoring/alerts/createAlert:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='updateAlert',
@@ -1539,7 +1539,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_UPDATEALERTREQUEST,
     output_type=_ALERT,
-    serialized_options=b'\202\323\344\223\002\033\"\026/v1/alerts/updateAlert:\001*',
+    serialized_options=b'\202\323\344\223\002*\"%/api/v1/monitoring/alerts/updateAlert:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='updateAlertStatus',
@@ -1548,7 +1548,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_UPDATEALERTSTATUSREQUEST,
     output_type=monitoring_dot_Summary__pb2._EMPTY,
-    serialized_options=b'\202\323\344\223\002!\"\034/v1/alerts/updateAlertStatus:\001*',
+    serialized_options=b'\202\323\344\223\0020\"+/api/v1/monitoring/alerts/updateAlertStatus:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='findAlert',
@@ -1557,7 +1557,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_FINDALERTREQUEST,
     output_type=_FINDALERTREQUEST_RESPONSE,
-    serialized_options=b'\202\323\344\223\002\031\"\024/v1/alerts/findAlert:\001*',
+    serialized_options=b'\202\323\344\223\002(\"#/api/v1/monitoring/alerts/findAlert:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='listAlertHistory',
@@ -1566,7 +1566,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_LISTALERTHISTORYREQUEST,
     output_type=_LISTALERTHISTORYREQUEST_RESPONSE,
-    serialized_options=b'\202\323\344\223\002 \"\033/v1/alerts/listAlertHistory:\001*',
+    serialized_options=b'\202\323\344\223\002/\"*/api/v1/monitoring/alerts/listAlertHistory:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='deleteAlert',
@@ -1575,7 +1575,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_DELETEALERTREQUEST,
     output_type=monitoring_dot_Summary__pb2._EMPTY,
-    serialized_options=b'\202\323\344\223\002\033*\026/v1/alerts/deleteAlert:\001*',
+    serialized_options=b'\202\323\344\223\002**%/api/v1/monitoring/alerts/deleteAlert:\001*',
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_ALERTSERVICE)

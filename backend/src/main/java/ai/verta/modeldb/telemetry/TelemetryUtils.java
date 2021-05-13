@@ -41,16 +41,16 @@ public class TelemetryUtils {
       LOGGER.info("Found value for telemetryInitialized : {}", telemetryInitialized);
 
       try (Connection connection = modelDBHibernateUtil.getConnection()) {
-        boolean existStatus =
-            modelDBHibernateUtil.tableExists(
-                connection, Config.getInstance().database, "modeldb_deployment_info");
+        final var database = Config.getInstance().database;
+        final var existStatus =
+            modelDBHibernateUtil.tableExists(connection, database, "modeldb_deployment_info");
         if (!existStatus) {
           LOGGER.warn("modeldb_deployment_info table not found");
           LOGGER.info("Table modeldb_deployment_info creating");
 
-          String createModelDBDeploymentInfoQuery =
+          final var createModelDBDeploymentInfoQuery =
               "create table modeldb_deployment_info (md_key varchar(50),md_value varchar(255), creation_timestamp BIGINT) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
-          String createTelemetryInformationQuery =
+          final var createTelemetryInformationQuery =
               "Create table telemetry_information (tel_key varchar(50),tel_value varchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer varchar(256)) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
 
           try (Statement statement = connection.createStatement()) {
@@ -65,25 +65,29 @@ public class TelemetryUtils {
           }
           LOGGER.info("Table modeldb_deployment_info created successfully");
         } else {
-          try (Statement stmt = connection.createStatement()) {
-            String[] updateStatements = {
-              "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-              "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-              "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-              "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-              "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
-            };
-            for (String updateStatement : updateStatements) {
-              stmt.executeUpdate(updateStatement);
+          if (database.RdbConfiguration.isMysql()) {
+            // UTF migration is only applied to mysql due to db-specific syntax
+            try (Statement stmt = connection.createStatement()) {
+              String[] updateStatements = {
+                "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
+              };
+              for (String updateStatement : updateStatements) {
+                stmt.executeUpdate(updateStatement);
+              }
+              String selectQuery = "Select * from modeldb_deployment_info where md_key = 'id'";
+              ResultSet rs = stmt.executeQuery(selectQuery);
+              if (rs.next()) {
+                telemetryUniqueIdentifier = rs.getString(2);
+              }
+            } catch (Exception e) {
+              LOGGER.error(
+                  "Error while getting telemetry unique identifier : {}", e.getMessage(), e);
+              throw e;
             }
-            String selectQuery = "Select * from modeldb_deployment_info where md_key = 'id'";
-            ResultSet rs = stmt.executeQuery(selectQuery);
-            if (rs.next()) {
-              telemetryUniqueIdentifier = rs.getString(2);
-            }
-          } catch (Exception e) {
-            LOGGER.error("Error while getting telemetry unique identifier : {}", e.getMessage(), e);
-            throw e;
           }
         }
         connection.commit();

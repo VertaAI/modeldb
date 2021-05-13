@@ -8,11 +8,12 @@ from verta._protos.public.monitoring import (
     DataMonitoringService_pb2 as _DataMonitoringService,
 )
 
-from verta._tracking import entity, _Context
+from verta._tracking import entity
 from verta._internal_utils import (
     _utils,
 )
 from .alert._entities import Alerts
+from .summaries.summaries import Summaries
 
 
 class MonitoredEntity(entity._ModelDBEntity):
@@ -86,6 +87,10 @@ class MonitoredEntity(entity._ModelDBEntity):
     def alerts(self):
         return Alerts(self._conn, self._conf, self.id)
 
+    @property
+    def summaries(self):
+        return Summaries(self._conn, self._conf)
+
     @classmethod
     def _generate_default_name(cls):
         return "MonitoredEntity {}".format(_utils.generate_default_name())
@@ -93,17 +98,13 @@ class MonitoredEntity(entity._ModelDBEntity):
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         Message = _DataMonitoringService.FindMonitoredEntityRequest
-        msg = Message(
-            ids=[id], page_number=1, page_limit=-1
-        )
+        msg = Message(ids=[id], page_number=1, page_limit=-1)
         endpoint = "/api/v1/monitored_entity/findMonitoredEntity"
         response = conn.make_proto_request("POST", endpoint, body=msg)
         results = conn.maybe_proto_response(response, Message.Response)
         count = results.total_records if results else 0
         if count > 1:
-            warnings.warn(
-                "found more than one monitored entity with id {}".format(id)
-            )
+            warnings.warn("found more than one monitored entity with id {}".format(id))
         if results.monitored_entities:
             return results.monitored_entities[0]
         else:

@@ -1,6 +1,7 @@
 package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.CommonHibernateUtil;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
@@ -97,13 +98,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
 
   private FutureJdbi initializeJdbi(DatabaseConfig databaseConfig) {
     final var hikariDataSource = new HikariDataSource();
-    final var dbUrl =
-        databaseConfig.RdbConfiguration.RdbUrl
-            + "/"
-            + databaseConfig.RdbConfiguration.RdbDatabaseName
-            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
-            + "&sslMode="
-            + databaseConfig.RdbConfiguration.sslMode;
+    final var dbUrl = CommonHibernateUtil.buildConnectionString(databaseConfig.RdbConfiguration);
     hikariDataSource.setJdbcUrl(dbUrl);
     hikariDataSource.setUsername(databaseConfig.RdbConfiguration.RdbUsername);
     hikariDataSource.setPassword(databaseConfig.RdbConfiguration.RdbPassword);
