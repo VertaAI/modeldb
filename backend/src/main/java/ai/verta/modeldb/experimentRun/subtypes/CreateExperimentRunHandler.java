@@ -12,7 +12,6 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
@@ -76,26 +75,8 @@ public class CreateExperimentRunHandler {
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
-    // Validate arguments
-    var futureTask =
-        InternalFuture.runAsync(
-            () -> {
-              if (request.getProjectId().isEmpty()) {
-                throw new InvalidArgumentException(
-                    "Project ID not found in CreateExperimentRun request");
-              } else if (request.getExperimentId().isEmpty()) {
-                throw new InvalidArgumentException(
-                    "Experiment ID not found in CreateExperimentRun request");
-              }
-            },
-            executor);
-
-    return futureTask
-        .thenCompose(
-            unused ->
-                FutureGrpc.ClientRequest(
-                    uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
-            executor)
+    return FutureGrpc.ClientRequest(
+            uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
         .thenCompose(
             currentLoginUserInfo ->
                 TrialUtils.futureValidateExperimentRunPerWorkspaceForTrial(config.trial, executor)
