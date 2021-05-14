@@ -77,6 +77,12 @@ public class TagsHandler {
             () -> {
               if (tags.isEmpty()) {
                 throw new InvalidArgumentException("Tags not found");
+              } else {
+                for (String tag : tags) {
+                  if (tag.isEmpty()) {
+                    throw new InvalidArgumentException("Tag should not be empty");
+                  }
+                }
               }
             },
             executor);
