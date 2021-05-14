@@ -420,16 +420,17 @@ public class ExperimentRunTest extends TestsInit {
             .build());
 
     List<Observation> observations = new ArrayList<>();
-    observations.add(
-        Observation.newBuilder()
-            .setArtifact(
-                Artifact.newBuilder()
-                    .setKey("Google developer Observation artifact")
-                    .setPath("This is data artifact type in Google developer Observation artifact")
-                    .setArtifactType(ArtifactType.DATA))
-            .setTimestamp(Calendar.getInstance().getTimeInMillis() + 1)
-            .setEpochNumber(Value.newBuilder().setNumberValue(1))
-            .build());
+    // TODO: uncomment after supporting artifact on observation
+    /*observations.add(
+    Observation.newBuilder()
+        .setArtifact(
+            Artifact.newBuilder()
+                .setKey("Google developer Observation artifact")
+                .setPath("This is data artifact type in Google developer Observation artifact")
+                .setArtifactType(ArtifactType.DATA))
+        .setTimestamp(Calendar.getInstance().getTimeInMillis() + 1)
+        .setEpochNumber(Value.newBuilder().setNumberValue(1))
+        .build());*/
     stringValue =
         Value.newBuilder()
             .setStringValue("Observation_value_" + Calendar.getInstance().getTimeInMillis())
@@ -3594,7 +3595,7 @@ public class ExperimentRunTest extends TestsInit {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     AddExperimentRunAttributes addAttributesRequest =
@@ -4597,7 +4598,7 @@ public class ExperimentRunTest extends TestsInit {
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.PERMISSION_DENIED.getCode().equals(status.getCode()));
+      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
     }
 
     LOGGER.info("Delete ExperimentRun Negative test stop................................");
@@ -5416,6 +5417,7 @@ public class ExperimentRunTest extends TestsInit {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setName("test-" + Calendar.getInstance().getTimeInMillis())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -5424,6 +5426,7 @@ public class ExperimentRunTest extends TestsInit {
                       .build())
               .build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      fail();
     } catch (StatusRuntimeException e) {
       Assert.assertEquals(Status.Code.NOT_FOUND, e.getStatus().getCode());
     }
@@ -5432,6 +5435,7 @@ public class ExperimentRunTest extends TestsInit {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
+              .setName("test-" + Calendar.getInstance().getTimeInMillis())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -5440,6 +5444,7 @@ public class ExperimentRunTest extends TestsInit {
                       .build())
               .build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      fail();
     } catch (StatusRuntimeException e) {
       Assert.assertEquals(Status.Code.INVALID_ARGUMENT, e.getStatus().getCode());
     }
@@ -7252,7 +7257,7 @@ public class ExperimentRunTest extends TestsInit {
       CreateExperimentRun createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
               project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
-      KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
+      KeyValue hyperparameter1 = generateNumericKeyValue("C1", 0.0001);
       KeyValue hyperparameter2 =
           KeyValue.newBuilder()
               .setKey("C")
