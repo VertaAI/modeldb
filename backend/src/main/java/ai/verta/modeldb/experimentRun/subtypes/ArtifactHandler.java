@@ -7,12 +7,11 @@ import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class ArtifactHandler {
   private static Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
