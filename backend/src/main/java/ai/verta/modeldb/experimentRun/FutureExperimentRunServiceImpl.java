@@ -86,8 +86,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
           InternalFuture.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
-                  String errorMessage =
-                      "ExperimentRun ID not found in GetExperimentRunById request";
+                  String errorMessage = "ExperimentRun ID not present";
                   throw new InvalidArgumentException(errorMessage);
                 }
               },
