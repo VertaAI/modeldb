@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.config;
 
 import org.hibernate.dialect.MySQL5Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
+import org.hibernate.dialect.SQLServer2008Dialect;
 import org.hibernate.dialect.SQLServerDialect;
 
 public class RdbConfig {
@@ -27,6 +28,9 @@ public class RdbConfig {
       throw new InvalidConfigException(base + ".RdbUsername", Config.MISSING_REQUIRED);
     if (sslMode == null || sslMode.isEmpty())
       throw new InvalidConfigException(base + ".sslMode", Config.MISSING_REQUIRED);
+    if (!isPostgres() && !isMysql() && !isMssql()) {
+      throw new InvalidConfigException(base + ".RdbDialect", "Unknown or unsupported dialect.");
+    }
   }
 
   public boolean isPostgres() {
@@ -38,6 +42,6 @@ public class RdbConfig {
   }
 
   public boolean isMssql() {
-    return RdbDialect.equals(SQLServerDialect.class.getName());
+    return RdbDialect.equals(SQLServer2008Dialect.class.getName());
   }
 }

@@ -19,13 +19,23 @@ def monitored_entity(client, created_entities):
 
     return monitored_entity
 
+
 @pytest.fixture
-def summary_sample(client, monitored_entity, created_entities):
+def summary(client, monitored_entity, created_entities):
     summary = client.operations.summaries.create(
         _utils.generate_default_name(),
         data_types.NumericValue,
         monitored_entity,
     )
+
+    yield summary
+
+    # TODO: use `created_entities` if/when Summary reimplements delete()
+    client.operations.summaries.delete([summary])
+
+
+@pytest.fixture
+def summary_sample(client, summary):
     end_time = time_utils.now()
     start_time = end_time - datetime.timedelta(hours=1)
     sample = summary.log_sample(
@@ -33,7 +43,4 @@ def summary_sample(client, monitored_entity, created_entities):
         start_time, end_time,
     )
 
-    yield sample
-
-    # TODO: use `created_entities` if/when Summary reimplements delete()
-    client.operations.summaries.delete([summary])
+    return sample

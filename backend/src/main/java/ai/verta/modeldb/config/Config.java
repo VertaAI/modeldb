@@ -82,7 +82,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
     if (this.jdbi == null) {
       // Initialize HikariCP and jdbi
       final var databaseConfig = config.database;
-      return initializeJdbi(databaseConfig);
+      this.jdbi = initializeJdbi(databaseConfig);
     }
     return this.jdbi;
   }
@@ -91,7 +91,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
     if (this.jdbi == null) {
       // Initialize HikariCP and jdbi
       final var databaseConfig = config.test.database;
-      return initializeJdbi(databaseConfig);
+      this.jdbi = initializeJdbi(databaseConfig);
     }
     return this.jdbi;
   }

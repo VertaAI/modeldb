@@ -84,10 +84,6 @@ class MonitoredEntity(entity._ModelDBEntity):
             return self._conn._OSS_DEFAULT_WORKSPACE
 
     @property
-    def alerts(self):
-        return Alerts(self._conn, self._conf, self.id)
-
-    @property
     def summaries(self):
         return Summaries(self._conn, self._conf)
 

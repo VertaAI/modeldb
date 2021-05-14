@@ -47,10 +47,9 @@ class SlackNotificationChannel(_NotificationChannel):
             SlackNotificationChannel("https://hooks.slack.com/services/.../.../......"),
         )
 
-        alert = monitored_entity.alerts.create(
+        alert = summary.alerts.create(
             name="MSE",
             alerter=alerter,
-            summary_sample_query=sample_query,
             notification_channels=[channel],
         )
 
