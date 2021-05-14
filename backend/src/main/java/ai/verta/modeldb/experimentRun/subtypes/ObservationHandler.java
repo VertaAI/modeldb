@@ -53,7 +53,7 @@ public class ObservationHandler {
                                 + "(select id, kv_value, value_type from keyvalue where kv_key =:name and entity_name IS NULL) k "
                                 + "where o.keyvaluemapping_id = k.id")
                         .bind("run_id", runId)
-                        .bind("entity_name", "\"ExperimentRunEntity\"")
+                        .bind("entity_name", "ExperimentRunEntity")
                         .bind("name", key)
                         .map(
                             (rs, ctx) -> {
@@ -129,7 +129,7 @@ public class ObservationHandler {
                               handle
                                   .createQuery(sql)
                                   .bind("run_id", runId)
-                                  .bind("entity_name", "\"ExperimentRunEntity\"")
+                                  .bind("entity_name", "ExperimentRunEntity")
                                   .bind("name", attribute.getKey())
                                   .mapTo(Long.class)
                                   .findOne()
@@ -148,7 +148,7 @@ public class ObservationHandler {
                                     .createUpdate(
                                         "insert into keyvalue (field_type, kv_key, kv_value, value_type) "
                                             + "values (:field_type, :key, :value, :type)")
-                                    .bind("field_type", "\"attributes\"")
+                                    .bind("field_type", "attributes")
                                     .bind("key", attribute.getKey())
                                     .bind(
                                         "value",
@@ -171,8 +171,8 @@ public class ObservationHandler {
                                     observation.getTimestamp() == 0
                                         ? now
                                         : observation.getTimestamp())
-                                .bind("entity_name", "\"ExperimentRunEntity\"")
-                                .bind("field_type", "\"observations\"")
+                                .bind("entity_name", "ExperimentRunEntity")
+                                .bind("field_type", "observations")
                                 .bind("run_id", runId)
                                 .bind("kvid", kvId)
                                 .bind("epoch", epoch)
@@ -201,8 +201,8 @@ public class ObservationHandler {
           var query =
               handle
                   .createUpdate(sql)
-                  .bind("entity_name", "\"ExperimentRunEntity\"")
-                  .bind("field_type", "\"observations\"")
+                  .bind("entity_name", "ExperimentRunEntity")
+                  .bind("field_type", "observations")
                   .bind("run_id", runId);
 
           if (maybeKeys.isPresent()) {
