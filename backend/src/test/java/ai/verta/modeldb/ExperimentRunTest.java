@@ -58,6 +58,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -572,6 +573,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentRunFromProjectRunTest() {
     LOGGER.info("Get ExperimentRun from Project test start................................");
 
@@ -601,6 +603,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentRunWithPaginationFromProjectRunTest() {
     LOGGER.info(
         "Get ExperimentRun using pagination from Project test start................................");
@@ -711,6 +714,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentFromProjectRunNegativeTest() {
     LOGGER.info(
         "Get ExperimentRun from Project Negative test start................................");
@@ -738,6 +742,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: getExperimentRunsInExperiment endpoint")
   public void bb_getExperimentRunFromExperimentTest() {
     LOGGER.info("Get ExperimentRun from Experiment test start................................");
 
@@ -767,6 +772,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: getExperimentRunsInExperiment endpoint")
   public void bb_getExperimentRunWithPaginationFromExperimentTest() {
     LOGGER.info(
         "Get ExperimentRun using pagination from Experiment test start................................");
@@ -880,6 +886,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: getExperimentRunsInExperiment endpoint")
   public void bb_getExperimentFromExperimentNegativeTest() {
     LOGGER.info(
         "Get ExperimentRun from Experiment Negative test start................................");
@@ -997,6 +1004,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: updateExperimentRunName endpoint")
   public void d_updateExperimentRunNameOrDescription() {
     LOGGER.info(
         "Update ExperimentRun Name & Description test start................................");
@@ -1048,6 +1056,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: updateExperimentRunName endpoint")
   public void d_updateExperimentRunNameOrDescriptionNegativeTest() {
     LOGGER.info("Update ExperimentRun Name & Description Negative test start.......");
 
@@ -3793,6 +3802,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: sortExperimentRuns endpoint")
   public void t_sortExperimentRunsTest() {
     LOGGER.info("SortExperimentRuns test start................................");
 
@@ -4047,6 +4057,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: sortExperimentRuns endpoint")
   public void t_sortExperimentRunsNegativeTest() {
     LOGGER.info("SortExperimentRuns Negative test start................................");
 
@@ -4084,6 +4095,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: getTopExperimentRuns endpoint")
   public void u_getTopExperimentRunsTest() {
     LOGGER.info("TopExperimentRuns test start................................");
 
@@ -4339,6 +4351,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: getTopExperimentRuns endpoint")
   public void u_getTopExperimentRunsNegativeTest() {
     LOGGER.info("TopExperimentRuns Negative test start................................");
 
@@ -4380,6 +4393,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: logJobId endpoint")
   public void v_logJobIdTest() {
     LOGGER.info(" Log Job Id in ExperimentRun test start................................");
 
@@ -4406,6 +4420,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: logJobId endpoint")
   public void v_logJobIdNegativeTest() {
     LOGGER.info(" Log Job Id in ExperimentRun Negative test start................................");
 
@@ -4436,6 +4451,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: logJobId endpoint")
   public void w_getJobIdTest() {
     LOGGER.info(" Get Job Id in ExperimentRun test start................................");
 
@@ -4466,6 +4482,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: logJobId endpoint")
   public void w_getJobIdNegativeTest() {
     LOGGER.info(" Get Job Id in ExperimentRun Negative test start................................");
 
@@ -4676,6 +4693,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: getChildrenExperimentRuns endpoint")
   public void getChildExperimentRunWithPaginationTest() {
     LOGGER.info(
         "Get Children ExperimentRun using pagination test start................................");
@@ -4901,6 +4919,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: setParentExperimentRunId endpoint")
   public void setParentIdOnChildExperimentRunTest() {
     LOGGER.info(
         "Set Parent ID on Children ExperimentRun test start................................");
@@ -5596,6 +5615,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: listCommitExperimentRuns endpoint")
   public void listCommitExperimentRunsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Fetch ExperimentRun for commit test start................................");
 
@@ -5841,6 +5861,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: listBlobExperimentRuns endpoint")
   public void ListBlobExperimentRunsRequestTest()
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Fetch ExperimentRun blobs for commit test start................................");
@@ -7475,6 +7496,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: getExperimentRunsByDatasetVersionId endpoint")
   public void findExperimentRunsByDatasetVersionId() {
     LOGGER.info("FindExperimentRuns test start................................");
 
@@ -7935,6 +7957,7 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
+  @Ignore("UNIMPLEMENTED: cloneExperimentRun endpoint")
   public void cloneExperimentRun() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Clone experimentRun test start................................");
 
