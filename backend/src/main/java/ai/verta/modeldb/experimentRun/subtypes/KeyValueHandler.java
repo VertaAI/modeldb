@@ -134,10 +134,16 @@ public class KeyValueHandler {
     // Validate input
     return InternalFuture.runAsync(
             () -> {
+              Set<String> keySet = new HashSet<>();
               for (final var kv : kvs) {
                 if (kv.getKey().isEmpty()) {
                   throw new InvalidArgumentException("Empty key");
                 }
+                if (keySet.contains(kv.getKey())) {
+                  throw new InvalidArgumentException(
+                      "Multiple Key " + kv.getKey() + " found in " + getTableName());
+                }
+                keySet.add(kv.getKey());
               }
             },
             executor)
@@ -146,13 +152,7 @@ public class KeyValueHandler {
                 // Check for conflicts
                 jdbi.useHandle(
                     handle -> {
-                      Set<String> keySet = new HashSet<>();
                       for (final var kv : kvs) {
-                        if (keySet.contains(kv.getKey())) {
-                          throw new InvalidArgumentException(
-                              "Multiple Key " + kv.getKey() + " found in " + getTableName());
-                        }
-                        keySet.add(kv.getKey());
                         handle
                             .createQuery(
                                 "select id from "
