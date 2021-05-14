@@ -3,11 +3,15 @@ package ai.verta.modeldb;
 import ai.verta.artifactstore.ArtifactStoreGrpc;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
+import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
@@ -79,12 +83,17 @@ public class TestsInit {
     ServiceSet services = ServiceSet.fromConfig(config);
     authService = services.authService;
     // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config);
-    App.migrate(config);
+    DAOSet daos = DAOSet.fromServices(services, config.getTestJdbi(), handleExecutor, config);
+    App.migrate(config.test.database, config.migrations);
 
     App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
+    serverBuilder.intercept(new MetadataForwarder());
+    serverBuilder.intercept(new ExceptionInterceptor());
+    serverBuilder.intercept(new MonitoringInterceptor());
     serverBuilder.intercept(new AuthInterceptor());
-    serverBuilder.intercept(new AuditLogInterceptor(true));
+    serverBuilder.intercept(new AuditLogInterceptor(false));
+    // Initialize cron jobs
+    CronJobUtils.initializeCronJobs(config, services);
     ReconcilerInitializer.initialize(config, services);
 
     if (config.test != null) {

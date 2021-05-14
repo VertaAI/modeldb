@@ -37,12 +37,14 @@ import ai.verta.modeldb.LogHyperparameters;
 import ai.verta.modeldb.LogMetrics;
 import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.LogVersionedInput;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -71,6 +73,7 @@ import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
@@ -91,7 +94,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -338,7 +340,9 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> tagsHandler.addTags(runId, tags), executor)
+        .thenCompose(
+            unused -> tagsHandler.addTags(runId, ModelDBUtils.checkEntityTagsLength(tags)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 
@@ -408,7 +412,10 @@ public class FutureExperimentRunDAO {
 
   private InternalFuture<Void> checkPermission(
       List<String> runIds, ModelDBActionEnum.ModelDBServiceActions action) {
-    if (runIds.isEmpty()) {
+    // If request do not have ids and we are passing request.getId() then it will create list record
+    // with `""` string
+    final var finalRunIds = runIds.stream().filter(s -> !s.isEmpty()).collect(Collectors.toList());
+    if (finalRunIds.isEmpty()) {
       return InternalFuture.failedStage(
           new InvalidArgumentException("Experiment run IDs is missing"));
     }
@@ -419,7 +426,7 @@ public class FutureExperimentRunDAO {
                 handle
                     .createQuery(
                         "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=0")
-                    .bindList("ids", runIds)
+                    .bindList("ids", finalRunIds)
                     .mapTo(String.class)
                     .list());
 
@@ -1342,6 +1349,25 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
+            unused -> versionInputHandler.getVersionedInputs(Collections.singleton(runId)),
+            executor)
+        .thenAccept(
+            existingVersioningEntryMap -> {
+              VersioningEntry existingVersioningEntry =
+                  existingVersioningEntryMap.get(request.getId());
+              if (existingVersioningEntry != null) {
+                if (existingVersioningEntry.getRepositoryId()
+                        != request.getVersionedInputs().getRepositoryId()
+                    || !existingVersioningEntry
+                        .getCommit()
+                        .equals(request.getVersionedInputs().getCommit())) {
+                  throw new AlreadyExistsException(
+                      ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE);
+                }
+              }
+            },
+            executor)
+        .thenCompose(
             unused ->
                 versionInputHandler.validateAndInsertVersionedInputs(
                     request.getId(), request.getVersionedInputs()),
@@ -1350,11 +1376,13 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<VersioningEntry> getVersionedInputs(GetVersionedInput request) {
-    Set<String> versionIds = new HashSet<>();
-    versionIds.add(request.getId());
-    return versionInputHandler
-        .getVersionedInputs(versionIds)
-        .thenApply(
-            stringVersioningEntryMap -> stringVersioningEntryMap.get(request.getId()), executor);
+    final var futureVersionedInputs =
+        versionInputHandler.getVersionedInputs(Collections.singleton(request.getId()));
+    return privilegedVersionedInputsHandler
+        .filterVersionedInputsBasedOnPrivileges(
+            Collections.singleton(request.getId()),
+            futureVersionedInputs,
+            this::getEntityPermissionBasedOnResourceTypes)
+        .thenApply(versioningEntryMap -> versioningEntryMap.get(request.getId()), executor);
   }
 }
