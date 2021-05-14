@@ -1300,11 +1300,9 @@ public class FutureExperimentRunDAO {
         InternalFuture.runAsync(
             () -> {
               if (request.getProjectId().isEmpty()) {
-                throw new InvalidArgumentException(
-                    "Project ID not found in CreateExperimentRun request");
+                throw new InvalidArgumentException("Project ID not present");
               } else if (request.getExperimentId().isEmpty()) {
-                throw new InvalidArgumentException(
-                    "Experiment ID not found in CreateExperimentRun request");
+                throw new InvalidArgumentException("Experiment ID not present");
               }
             },
             executor);
@@ -1329,7 +1327,7 @@ public class FutureExperimentRunDAO {
                     handle -> {
                       Long count =
                           handle
-                              .createQuery("SELECT COUNT(*) FROM experiment where id = :id")
+                              .createQuery("SELECT COUNT(id) FROM experiment where id = :id")
                               .bind("id", request.getExperimentId())
                               .mapTo(Long.class)
                               .one();
