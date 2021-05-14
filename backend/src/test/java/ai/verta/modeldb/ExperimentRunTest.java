@@ -58,7 +58,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -95,14 +94,6 @@ public class ExperimentRunTest extends TestsInit {
 
   @After
   public void removeEntities() {
-    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
-      DeleteExperimentRun deleteExperimentRun =
-          DeleteExperimentRun.newBuilder().setId(run.getId()).build();
-      DeleteExperimentRun.Response deleteExperimentRunResponse =
-          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-      assertTrue(deleteExperimentRunResponse.getStatus());
-    }
-
     for (String projectId : projectMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
       DeleteProject.Response deleteProjectResponse =
@@ -110,6 +101,14 @@ public class ExperimentRunTest extends TestsInit {
       LOGGER.info("Project deleted successfully");
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
+    }
+
+    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
+      DeleteExperimentRun deleteExperimentRun =
+          DeleteExperimentRun.newBuilder().setId(run.getId()).build();
+      DeleteExperimentRun.Response deleteExperimentRunResponse =
+          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
+      assertTrue(deleteExperimentRunResponse.getStatus());
     }
 
     project = null;
@@ -323,7 +322,7 @@ public class ExperimentRunTest extends TestsInit {
     Value intValue = Value.newBuilder().setNumberValue(1.1).build();
     attributeList.add(
         KeyValue.newBuilder()
-            .setKey("attribute_1_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("attribute_" + Calendar.getInstance().getTimeInMillis())
             .setValue(intValue)
             .setValueType(ValueType.NUMBER)
             .build());
@@ -333,7 +332,7 @@ public class ExperimentRunTest extends TestsInit {
             .build();
     attributeList.add(
         KeyValue.newBuilder()
-            .setKey("attribute_2_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("attribute_" + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build());
@@ -421,17 +420,16 @@ public class ExperimentRunTest extends TestsInit {
             .build());
 
     List<Observation> observations = new ArrayList<>();
-    // TODO: uncomment after supporting artifact on observation
-    /*observations.add(
-    Observation.newBuilder()
-        .setArtifact(
-            Artifact.newBuilder()
-                .setKey("Google developer Observation artifact")
-                .setPath("This is data artifact type in Google developer Observation artifact")
-                .setArtifactType(ArtifactType.DATA))
-        .setTimestamp(Calendar.getInstance().getTimeInMillis() + 1)
-        .setEpochNumber(Value.newBuilder().setNumberValue(1))
-        .build());*/
+    observations.add(
+        Observation.newBuilder()
+            .setArtifact(
+                Artifact.newBuilder()
+                    .setKey("Google developer Observation artifact")
+                    .setPath("This is data artifact type in Google developer Observation artifact")
+                    .setArtifactType(ArtifactType.DATA))
+            .setTimestamp(Calendar.getInstance().getTimeInMillis() + 1)
+            .setEpochNumber(Value.newBuilder().setNumberValue(1))
+            .build());
     stringValue =
         Value.newBuilder()
             .setStringValue("Observation_value_" + Calendar.getInstance().getTimeInMillis())
@@ -574,7 +572,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentRunFromProjectRunTest() {
     LOGGER.info("Get ExperimentRun from Project test start................................");
 
@@ -604,7 +601,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentRunWithPaginationFromProjectRunTest() {
     LOGGER.info(
         "Get ExperimentRun using pagination from Project test start................................");
@@ -715,7 +711,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentFromProjectRunNegativeTest() {
     LOGGER.info(
         "Get ExperimentRun from Project Negative test start................................");
@@ -743,7 +738,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInExperiment endpoint")
   public void bb_getExperimentRunFromExperimentTest() {
     LOGGER.info("Get ExperimentRun from Experiment test start................................");
 
@@ -773,7 +767,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInExperiment endpoint")
   public void bb_getExperimentRunWithPaginationFromExperimentTest() {
     LOGGER.info(
         "Get ExperimentRun using pagination from Experiment test start................................");
@@ -887,7 +880,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInExperiment endpoint")
   public void bb_getExperimentFromExperimentNegativeTest() {
     LOGGER.info(
         "Get ExperimentRun from Experiment Negative test start................................");
@@ -1005,7 +997,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: updateExperimentRunName endpoint")
   public void d_updateExperimentRunNameOrDescription() {
     LOGGER.info(
         "Update ExperimentRun Name & Description test start................................");
@@ -1057,7 +1048,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: updateExperimentRunName endpoint")
   public void d_updateExperimentRunNameOrDescriptionNegativeTest() {
     LOGGER.info("Update ExperimentRun Name & Description Negative test start.......");
 
@@ -1094,21 +1084,14 @@ public class ExperimentRunTest extends TestsInit {
     AddExperimentRunTags.Response aertResponse =
         experimentRunServiceStub.addExperimentRunTags(request);
     LOGGER.info("AddExperimentRunTags Response : \n" + aertResponse.getExperimentRun());
-
-    FindExperimentRuns getExperimentRunsInExperiment =
-        FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
-
-    FindExperimentRuns.Response experimentRunResponse =
-        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
     assertEquals(
-        experimentRun.getTagsCount() + tags.size(),
-        experimentRunResponse.getExperimentRuns(0).getTagsCount());
+        experimentRun.getTagsCount() + tags.size(), aertResponse.getExperimentRun().getTagsCount());
 
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        experimentRunResponse.getExperimentRuns(0).getDateUpdated());
-    experimentRun = experimentRunResponse.getExperimentRuns(0);
+        aertResponse.getExperimentRun().getDateUpdated());
+    experimentRun = aertResponse.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     tags = new ArrayList<>();
@@ -1120,15 +1103,8 @@ public class ExperimentRunTest extends TestsInit {
 
     aertResponse = experimentRunServiceStub.addExperimentRunTags(request);
     LOGGER.info("AddExperimentRunTags Response : \n" + aertResponse.getExperimentRun());
-
-    getExperimentRunsInExperiment =
-        FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
-    experimentRunResponse =
-        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
-    assertEquals(
-        experimentRun.getTagsCount() + 1,
-        experimentRunResponse.getExperimentRuns(0).getTagsCount());
-    experimentRun = experimentRunResponse.getExperimentRuns(0);
+    assertEquals(experimentRun.getTagsCount() + 1, aertResponse.getExperimentRun().getTagsCount());
+    experimentRun = aertResponse.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     try {
@@ -1177,25 +1153,19 @@ public class ExperimentRunTest extends TestsInit {
             .setTag("Added new tag 1")
             .build();
 
-    experimentRunServiceStub.addExperimentRunTag(request);
-
-    FindExperimentRuns getExperimentRunsInExperiment =
-        FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
-    FindExperimentRuns.Response experimentRunResponse =
-        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
-    LOGGER.info(
-        "Tag count after AddExperimentRunTag Response : \n"
-            + experimentRunResponse.getExperimentRuns(0));
+    AddExperimentRunTag.Response aertResponse =
+        experimentRunServiceStub.addExperimentRunTag(request);
+    LOGGER.info("AddExperimentRunTag Response : \n" + aertResponse.getExperimentRun());
     assertEquals(
         "ExperimentRun tags not match with expected experimentRun tags",
         experimentRun.getTagsCount() + 1,
-        experimentRunResponse.getExperimentRuns(0).getTagsCount());
+        aertResponse.getExperimentRun().getTagsCount());
 
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        experimentRunResponse.getExperimentRuns(0).getDateUpdated());
-    experimentRun = experimentRunResponse.getExperimentRuns(0);
+        aertResponse.getExperimentRun().getDateUpdated());
+    experimentRun = aertResponse.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     try {
@@ -1281,21 +1251,15 @@ public class ExperimentRunTest extends TestsInit {
 
     DeleteExperimentRunTags.Response response =
         experimentRunServiceStub.deleteExperimentRunTags(request);
-
-    FindExperimentRuns getExperimentRunsInExperiment =
-        FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
-    FindExperimentRuns.Response experimentRunResponse =
-        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
     LOGGER.info(
-        "Tag count after DeleteExperimentRunTags Response : \n"
-            + experimentRunResponse.getExperimentRuns(0).getTagsList());
-    assertTrue(experimentRunResponse.getExperimentRuns(0).getTagsList().size() <= 1);
+        "DeleteExperimentRunTags Response : \n" + response.getExperimentRun().getTagsList());
+    assertTrue(response.getExperimentRun().getTagsList().size() <= 1);
 
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        experimentRunResponse.getExperimentRuns(0).getDateUpdated());
-    experimentRun = experimentRunResponse.getExperimentRuns(0);
+        response.getExperimentRun().getDateUpdated());
+    experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     if (response.getExperimentRun().getTagsList().size() > 0) {
@@ -1305,17 +1269,11 @@ public class ExperimentRunTest extends TestsInit {
               .setDeleteAll(true)
               .build();
 
-      experimentRunServiceStub.deleteExperimentRunTags(request);
-
-      getExperimentRunsInExperiment =
-          FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
-      experimentRunResponse =
-          experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
+      response = experimentRunServiceStub.deleteExperimentRunTags(request);
       LOGGER.info(
-          "DeleteExperimentRunTags Response : \n"
-              + experimentRunResponse.getExperimentRuns(0).getTagsList());
-      assertEquals(0, experimentRunResponse.getExperimentRuns(0).getTagsList().size());
-      experimentRun = experimentRunResponse.getExperimentRuns(0);
+          "DeleteExperimentRunTags Response : \n" + response.getExperimentRun().getTagsList());
+      assertEquals(0, response.getExperimentRun().getTagsList().size());
+      experimentRun = response.getExperimentRun();
       experimentRunMap.put(experimentRun.getId(), experimentRun);
     }
 
@@ -1351,27 +1309,17 @@ public class ExperimentRunTest extends TestsInit {
             .setTag(experimentRun.getTags(0))
             .build();
 
-    experimentRunServiceStub.deleteExperimentRunTag(request);
-
-    FindExperimentRuns getExperimentRunsInExperiment =
-        FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
-    FindExperimentRuns.Response experimentRunResponse =
-        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
-    LOGGER.info(
-        "After DeleteExperimentRunTag Response : \n"
-            + experimentRunResponse.getExperimentRuns(0).getTagsList());
-    assertFalse(
-        experimentRunResponse
-            .getExperimentRuns(0)
-            .getTagsList()
-            .contains(experimentRun.getTags(0)));
+    DeleteExperimentRunTag.Response response =
+        experimentRunServiceStub.deleteExperimentRunTag(request);
+    LOGGER.info("DeleteExperimentRunTag Response : \n" + response.getExperimentRun().getTagsList());
+    assertFalse(response.getExperimentRun().getTagsList().contains(experimentRun.getTags(0)));
 
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        experimentRunResponse.getExperimentRuns(0).getDateUpdated());
+        response.getExperimentRun().getDateUpdated());
 
-    experimentRun = experimentRunResponse.getExperimentRuns(0);
+    experimentRun = response.getExperimentRun();
     experimentRunMap.put(experimentRun.getId(), experimentRun);
     LOGGER.info("Delete ExperimentRun tags test stop................................");
   }
@@ -2138,7 +2086,7 @@ public class ExperimentRunTest extends TestsInit {
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
     KeyValue keyValue1 =
         KeyValue.newBuilder()
-            .setKey("New Added Metric 1 " + Calendar.getInstance().getTimeInMillis())
+            .setKey("New Added Metric " + Calendar.getInstance().getTimeInMillis())
             .setValue(intValue)
             .setValueType(ValueType.NUMBER)
             .build();
@@ -2149,7 +2097,7 @@ public class ExperimentRunTest extends TestsInit {
             .build();
     KeyValue keyValue2 =
         KeyValue.newBuilder()
-            .setKey("New Added Metric 2 " + Calendar.getInstance().getTimeInMillis())
+            .setKey("New Added Metric " + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build();
@@ -3206,7 +3154,7 @@ public class ExperimentRunTest extends TestsInit {
     Value blobValue = Value.newBuilder().setStringValue("this is a blob data example").build();
     KeyValue hyperparameter1 =
         KeyValue.newBuilder()
-            .setKey("Log new hyperparameter 1 " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new hyperparameter " + Calendar.getInstance().getTimeInMillis())
             .setValue(blobValue)
             .setValueType(ValueType.BLOB)
             .build();
@@ -3215,7 +3163,7 @@ public class ExperimentRunTest extends TestsInit {
     Value numValue = Value.newBuilder().setNumberValue(12.02125212).build();
     KeyValue hyperparameter2 =
         KeyValue.newBuilder()
-            .setKey("Log new hyperparameter 2 " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new hyperparameter " + Calendar.getInstance().getTimeInMillis())
             .setValue(numValue)
             .setValueType(ValueType.NUMBER)
             .build();
@@ -3471,7 +3419,7 @@ public class ExperimentRunTest extends TestsInit {
         Value.newBuilder().setStringValue("this is a blob data example of attribute").build();
     KeyValue attribute1 =
         KeyValue.newBuilder()
-            .setKey("Log new attribute 1 " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new attribute " + Calendar.getInstance().getTimeInMillis())
             .setValue(blobValue)
             .setValueType(ValueType.BLOB)
             .build();
@@ -3480,7 +3428,7 @@ public class ExperimentRunTest extends TestsInit {
         Value.newBuilder().setStringValue("this is a blob data example of attribute").build();
     KeyValue attribute2 =
         KeyValue.newBuilder()
-            .setKey("Log new attribute 2 " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new attribute " + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build();
@@ -3646,7 +3594,7 @@ public class ExperimentRunTest extends TestsInit {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     AddExperimentRunAttributes addAttributesRequest =
@@ -3845,7 +3793,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: sortExperimentRuns endpoint")
   public void t_sortExperimentRunsTest() {
     LOGGER.info("SortExperimentRuns test start................................");
 
@@ -4100,7 +4047,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: sortExperimentRuns endpoint")
   public void t_sortExperimentRunsNegativeTest() {
     LOGGER.info("SortExperimentRuns Negative test start................................");
 
@@ -4138,7 +4084,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getTopExperimentRuns endpoint")
   public void u_getTopExperimentRunsTest() {
     LOGGER.info("TopExperimentRuns test start................................");
 
@@ -4394,7 +4339,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getTopExperimentRuns endpoint")
   public void u_getTopExperimentRunsNegativeTest() {
     LOGGER.info("TopExperimentRuns Negative test start................................");
 
@@ -4436,7 +4380,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: logJobId endpoint")
   public void v_logJobIdTest() {
     LOGGER.info(" Log Job Id in ExperimentRun test start................................");
 
@@ -4463,7 +4406,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: logJobId endpoint")
   public void v_logJobIdNegativeTest() {
     LOGGER.info(" Log Job Id in ExperimentRun Negative test start................................");
 
@@ -4494,7 +4436,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: logJobId endpoint")
   public void w_getJobIdTest() {
     LOGGER.info(" Get Job Id in ExperimentRun test start................................");
 
@@ -4525,7 +4466,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: logJobId endpoint")
   public void w_getJobIdNegativeTest() {
     LOGGER.info(" Get Job Id in ExperimentRun Negative test start................................");
 
@@ -4657,7 +4597,7 @@ public class ExperimentRunTest extends TestsInit {
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertTrue(Status.NOT_FOUND.getCode().equals(status.getCode()));
+      assertTrue(Status.PERMISSION_DENIED.getCode().equals(status.getCode()));
     }
 
     LOGGER.info("Delete ExperimentRun Negative test stop................................");
@@ -4736,7 +4676,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getChildrenExperimentRuns endpoint")
   public void getChildExperimentRunWithPaginationTest() {
     LOGGER.info(
         "Get Children ExperimentRun using pagination test start................................");
@@ -4962,7 +4901,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: setParentExperimentRunId endpoint")
   public void setParentIdOnChildExperimentRunTest() {
     LOGGER.info(
         "Set Parent ID on Children ExperimentRun test start................................");
@@ -5244,11 +5182,11 @@ public class ExperimentRunTest extends TestsInit {
         experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
     assertTrue(deleteExperimentRunsResponse.getStatus());
 
-    FindExperimentRuns getExperimentRunsInExperiment =
-        FindExperimentRuns.newBuilder().setExperimentId(experiment.getId()).build();
+    GetExperimentRunsInExperiment getExperimentRunsInExperiment =
+        GetExperimentRunsInExperiment.newBuilder().setExperimentId(experiment.getId()).build();
 
-    FindExperimentRuns.Response experimentRunResponse =
-        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
+    GetExperimentRunsInExperiment.Response experimentRunResponse =
+        experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
     assertEquals(
         "ExperimentRuns count not match with expected experimentRun count",
         0,
@@ -5336,11 +5274,11 @@ public class ExperimentRunTest extends TestsInit {
       assertTrue(deleteExperimentRunResponse.getStatus());
     }
 
-    FindExperimentRuns getExperimentRunsInExperiment =
-        FindExperimentRuns.newBuilder().setExperimentId(experiment.getId()).build();
+    GetExperimentRunsInExperiment getExperimentRunsInExperiment =
+        GetExperimentRunsInExperiment.newBuilder().setExperimentId(experiment.getId()).build();
 
-    FindExperimentRuns.Response experimentRunResponse =
-        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
+    GetExperimentRunsInExperiment.Response experimentRunResponse =
+        experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
     assertEquals(
         "ExperimentRuns count not match with expected experimentRun count",
         0,
@@ -5375,7 +5313,7 @@ public class ExperimentRunTest extends TestsInit {
             .setCommit(commit)
             .addBlobs(
                 BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.CONFIG))
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
                     .addLocation("dataset")
                     .addLocation("train")
                     .build())
@@ -5478,7 +5416,6 @@ public class ExperimentRunTest extends TestsInit {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
-              .setName("test-" + Calendar.getInstance().getTimeInMillis())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -5487,7 +5424,6 @@ public class ExperimentRunTest extends TestsInit {
                       .build())
               .build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      fail();
     } catch (StatusRuntimeException e) {
       Assert.assertEquals(Status.Code.NOT_FOUND, e.getStatus().getCode());
     }
@@ -5496,7 +5432,6 @@ public class ExperimentRunTest extends TestsInit {
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
-              .setName("test-" + Calendar.getInstance().getTimeInMillis())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -5505,7 +5440,6 @@ public class ExperimentRunTest extends TestsInit {
                       .build())
               .build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      fail();
     } catch (StatusRuntimeException e) {
       Assert.assertEquals(Status.Code.INVALID_ARGUMENT, e.getStatus().getCode());
     }
@@ -5635,12 +5569,6 @@ public class ExperimentRunTest extends TestsInit {
           getVersionedInputResponse.getVersionedInputs());
 
       if (config.hasAuth()) {
-        AddCollaboratorRequest addCollaboratorRequest =
-            CollaboratorTest.addCollaboratorRequestProject(
-                project, authClientInterceptor.getClient2Email(), CollaboratorType.READ_WRITE);
-        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-        LOGGER.info("\n Collaborator1 added in project successfully \n");
-
         getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
         getVersionedInputResponse =
             experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
@@ -5668,7 +5596,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: listCommitExperimentRuns endpoint")
   public void listCommitExperimentRunsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Fetch ExperimentRun for commit test start................................");
 
@@ -5914,7 +5841,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: listBlobExperimentRuns endpoint")
   public void ListBlobExperimentRunsRequestTest()
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Fetch ExperimentRun blobs for commit test start................................");
@@ -6140,7 +6066,7 @@ public class ExperimentRunTest extends TestsInit {
             .setCommit(commit)
             .addBlobs(
                 BlobExpanded.newBuilder()
-                    .setBlob(CommitTest.getBlob(Blob.ContentCase.CONFIG))
+                    .setBlob(CommitTest.getBlob(Blob.ContentCase.DATASET))
                     .addLocation("dataset")
                     .addLocation("train")
                     .build())
@@ -7326,7 +7252,7 @@ public class ExperimentRunTest extends TestsInit {
       CreateExperimentRun createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
               project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
-      KeyValue hyperparameter1 = generateNumericKeyValue("C1", 0.0001);
+      KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       KeyValue hyperparameter2 =
           KeyValue.newBuilder()
               .setKey("C")
@@ -7549,7 +7475,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsByDatasetVersionId endpoint")
   public void findExperimentRunsByDatasetVersionId() {
     LOGGER.info("FindExperimentRuns test start................................");
 
@@ -7717,15 +7642,6 @@ public class ExperimentRunTest extends TestsInit {
               .build();
       artifacts.add(artifact2);
       artifactMap.put(artifact2.getKey(), artifact2);
-
-      createExperimentRunRequest =
-          getCreateExperimentRunRequestSimple(
-              project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
-      createExperimentRunRequest =
-          createExperimentRunRequest.toBuilder().addAllDatasets(artifacts).build();
-      createExperimentRunResponse =
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-      ExperimentRun test = createExperimentRunResponse.getExperimentRun();
 
       LogDatasets logDatasetRequest =
           LogDatasets.newBuilder().setId(experimentRun11.getId()).addAllDatasets(artifacts).build();
@@ -8019,7 +7935,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: cloneExperimentRun endpoint")
   public void cloneExperimentRun() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Clone experimentRun test start................................");
 
