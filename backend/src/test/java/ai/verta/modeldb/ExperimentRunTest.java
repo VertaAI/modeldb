@@ -1084,14 +1084,21 @@ public class ExperimentRunTest extends TestsInit {
     AddExperimentRunTags.Response aertResponse =
         experimentRunServiceStub.addExperimentRunTags(request);
     LOGGER.info("AddExperimentRunTags Response : \n" + aertResponse.getExperimentRun());
+
+    FindExperimentRuns getExperimentRunsInExperiment =
+        FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
+
+    FindExperimentRuns.Response experimentRunResponse =
+        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
     assertEquals(
-        experimentRun.getTagsCount() + tags.size(), aertResponse.getExperimentRun().getTagsCount());
+        experimentRun.getTagsCount() + tags.size(),
+        experimentRunResponse.getExperimentRuns(0).getTagsCount());
 
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        aertResponse.getExperimentRun().getDateUpdated());
-    experimentRun = aertResponse.getExperimentRun();
+        experimentRunResponse.getExperimentRuns(0).getDateUpdated());
+    experimentRun = experimentRunResponse.getExperimentRuns(0);
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     tags = new ArrayList<>();
@@ -1103,8 +1110,15 @@ public class ExperimentRunTest extends TestsInit {
 
     aertResponse = experimentRunServiceStub.addExperimentRunTags(request);
     LOGGER.info("AddExperimentRunTags Response : \n" + aertResponse.getExperimentRun());
-    assertEquals(experimentRun.getTagsCount() + 1, aertResponse.getExperimentRun().getTagsCount());
-    experimentRun = aertResponse.getExperimentRun();
+
+    getExperimentRunsInExperiment =
+        FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
+    experimentRunResponse =
+        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
+    assertEquals(
+        experimentRun.getTagsCount() + 1,
+        experimentRunResponse.getExperimentRuns(0).getTagsCount());
+    experimentRun = experimentRunResponse.getExperimentRuns(0);
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     try {
@@ -1153,19 +1167,25 @@ public class ExperimentRunTest extends TestsInit {
             .setTag("Added new tag 1")
             .build();
 
-    AddExperimentRunTag.Response aertResponse =
-        experimentRunServiceStub.addExperimentRunTag(request);
-    LOGGER.info("AddExperimentRunTag Response : \n" + aertResponse.getExperimentRun());
+    experimentRunServiceStub.addExperimentRunTag(request);
+
+    FindExperimentRuns getExperimentRunsInExperiment =
+        FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
+    FindExperimentRuns.Response experimentRunResponse =
+        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
+    LOGGER.info(
+        "Tag count after AddExperimentRunTag Response : \n"
+            + experimentRunResponse.getExperimentRuns(0));
     assertEquals(
         "ExperimentRun tags not match with expected experimentRun tags",
         experimentRun.getTagsCount() + 1,
-        aertResponse.getExperimentRun().getTagsCount());
+        experimentRunResponse.getExperimentRuns(0).getTagsCount());
 
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        aertResponse.getExperimentRun().getDateUpdated());
-    experimentRun = aertResponse.getExperimentRun();
+        experimentRunResponse.getExperimentRuns(0).getDateUpdated());
+    experimentRun = experimentRunResponse.getExperimentRuns(0);
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     try {
@@ -1251,15 +1271,21 @@ public class ExperimentRunTest extends TestsInit {
 
     DeleteExperimentRunTags.Response response =
         experimentRunServiceStub.deleteExperimentRunTags(request);
+
+    FindExperimentRuns getExperimentRunsInExperiment =
+        FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
+    FindExperimentRuns.Response experimentRunResponse =
+        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
     LOGGER.info(
-        "DeleteExperimentRunTags Response : \n" + response.getExperimentRun().getTagsList());
-    assertTrue(response.getExperimentRun().getTagsList().size() <= 1);
+        "Tag count after DeleteExperimentRunTags Response : \n"
+            + experimentRunResponse.getExperimentRuns(0).getTagsList());
+    assertTrue(experimentRunResponse.getExperimentRuns(0).getTagsList().size() <= 1);
 
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
-    experimentRun = response.getExperimentRun();
+        experimentRunResponse.getExperimentRuns(0).getDateUpdated());
+    experimentRun = experimentRunResponse.getExperimentRuns(0);
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     if (response.getExperimentRun().getTagsList().size() > 0) {
@@ -1269,11 +1295,17 @@ public class ExperimentRunTest extends TestsInit {
               .setDeleteAll(true)
               .build();
 
-      response = experimentRunServiceStub.deleteExperimentRunTags(request);
+      experimentRunServiceStub.deleteExperimentRunTags(request);
+
+      getExperimentRunsInExperiment =
+          FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
+      experimentRunResponse =
+          experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
       LOGGER.info(
-          "DeleteExperimentRunTags Response : \n" + response.getExperimentRun().getTagsList());
-      assertEquals(0, response.getExperimentRun().getTagsList().size());
-      experimentRun = response.getExperimentRun();
+          "DeleteExperimentRunTags Response : \n"
+              + experimentRunResponse.getExperimentRuns(0).getTagsList());
+      assertEquals(0, experimentRunResponse.getExperimentRuns(0).getTagsList().size());
+      experimentRun = experimentRunResponse.getExperimentRuns(0);
       experimentRunMap.put(experimentRun.getId(), experimentRun);
     }
 
@@ -1309,17 +1341,27 @@ public class ExperimentRunTest extends TestsInit {
             .setTag(experimentRun.getTags(0))
             .build();
 
-    DeleteExperimentRunTag.Response response =
-        experimentRunServiceStub.deleteExperimentRunTag(request);
-    LOGGER.info("DeleteExperimentRunTag Response : \n" + response.getExperimentRun().getTagsList());
-    assertFalse(response.getExperimentRun().getTagsList().contains(experimentRun.getTags(0)));
+    experimentRunServiceStub.deleteExperimentRunTag(request);
+
+    FindExperimentRuns getExperimentRunsInExperiment =
+        FindExperimentRuns.newBuilder().addExperimentRunIds(experimentRun.getId()).build();
+    FindExperimentRuns.Response experimentRunResponse =
+        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
+    LOGGER.info(
+        "After DeleteExperimentRunTag Response : \n"
+            + experimentRunResponse.getExperimentRuns(0).getTagsList());
+    assertFalse(
+        experimentRunResponse
+            .getExperimentRuns(0)
+            .getTagsList()
+            .contains(experimentRun.getTags(0)));
 
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
-        response.getExperimentRun().getDateUpdated());
+        experimentRunResponse.getExperimentRuns(0).getDateUpdated());
 
-    experimentRun = response.getExperimentRun();
+    experimentRun = experimentRunResponse.getExperimentRuns(0);
     experimentRunMap.put(experimentRun.getId(), experimentRun);
     LOGGER.info("Delete ExperimentRun tags test stop................................");
   }
@@ -5182,11 +5224,11 @@ public class ExperimentRunTest extends TestsInit {
         experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
     assertTrue(deleteExperimentRunsResponse.getStatus());
 
-    GetExperimentRunsInExperiment getExperimentRunsInExperiment =
-        GetExperimentRunsInExperiment.newBuilder().setExperimentId(experiment.getId()).build();
+    FindExperimentRuns getExperimentRunsInExperiment =
+        FindExperimentRuns.newBuilder().setExperimentId(experiment.getId()).build();
 
-    GetExperimentRunsInExperiment.Response experimentRunResponse =
-        experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
+    FindExperimentRuns.Response experimentRunResponse =
+        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
     assertEquals(
         "ExperimentRuns count not match with expected experimentRun count",
         0,
@@ -5274,11 +5316,11 @@ public class ExperimentRunTest extends TestsInit {
       assertTrue(deleteExperimentRunResponse.getStatus());
     }
 
-    GetExperimentRunsInExperiment getExperimentRunsInExperiment =
-        GetExperimentRunsInExperiment.newBuilder().setExperimentId(experiment.getId()).build();
+    FindExperimentRuns getExperimentRunsInExperiment =
+        FindExperimentRuns.newBuilder().setExperimentId(experiment.getId()).build();
 
-    GetExperimentRunsInExperiment.Response experimentRunResponse =
-        experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
+    FindExperimentRuns.Response experimentRunResponse =
+        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
     assertEquals(
         "ExperimentRuns count not match with expected experimentRun count",
         0,
