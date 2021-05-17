@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Handle;
 
 public class KeyValueHandler {
   private static Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
@@ -124,24 +125,29 @@ public class KeyValueHandler {
                 jdbi.useHandle(
                     handle -> {
                       for (final var kv : kvs) {
-                        handle
-                            .createUpdate(
-                                "insert into "
-                                    + getTableName()
-                                    + " (entity_name, field_type, kv_key, kv_value, value_type, "
-                                    + entityIdReferenceColumn
-                                    + ") "
-                                    + "values (:entity_name, :field_type, :key, :value, :type, :entity_id)")
-                            .bind("key", kv.getKey())
-                            .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
-                            .bind("type", kv.getValueTypeValue())
-                            .bind("entity_id", entityId)
-                            .bind("field_type", fieldType)
-                            .bind("entity_name", entityName)
-                            .execute();
+                        insertKeyValue(entityId, handle, kv);
                       }
                     }),
             executor);
+  }
+
+  private void insertKeyValue(String entityId, Handle handle, KeyValue kv)
+      throws InvalidProtocolBufferException {
+    handle
+        .createUpdate(
+            "insert into "
+                + getTableName()
+                + " (entity_name, field_type, kv_key, kv_value, value_type, "
+                + entityIdReferenceColumn
+                + ") "
+                + "values (:entity_name, :field_type, :key, :value, :type, :entity_id)")
+        .bind("key", kv.getKey())
+        .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
+        .bind("type", kv.getValueTypeValue())
+        .bind("entity_id", entityId)
+        .bind("field_type", fieldType)
+        .bind("entity_name", entityName)
+        .execute();
   }
 
   public InternalFuture<Void> deleteKeyValues(String entityId, Optional<List<String>> maybeKeys) {
@@ -186,28 +192,58 @@ public class KeyValueHandler {
             executor);
 
     currentFuture =
-        currentFuture.thenCompose(
-            unused ->
-                // Update into KV table
-                jdbi.useHandle(
-                    handle -> {
-                      handle
-                          .createUpdate(
-                              "Update "
-                                  + getTableName()
-                                  + " SET kv_key=:key, kv_value=:value, value_type=:type "
-                                  + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and "
-                                  + entityIdReferenceColumn
-                                  + "=:entity_id")
-                          .bind("key", kv.getKey())
-                          .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
-                          .bind("type", kv.getValueTypeValue())
-                          .bind("entity_id", entityId)
-                          .bind("field_type", fieldType)
-                          .bind("entity_name", entityName)
-                          .execute();
-                    }),
-            executor);
+        currentFuture
+            .thenCompose(
+                unused ->
+                    // Check for conflicts
+                    keyValueExists(entityId, kv),
+                executor)
+            .thenCompose(
+                exists ->
+                    // Update into KV table
+                    jdbi.useHandle(
+                        handle -> {
+                          if (exists) {
+                            handle
+                                .createUpdate(
+                                    "Update "
+                                        + getTableName()
+                                        + " SET kv_key=:key, kv_value=:value, value_type=:type "
+                                        + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and "
+                                        + entityIdReferenceColumn
+                                        + "=:entity_id")
+                                .bind("key", kv.getKey())
+                                .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
+                                .bind("type", kv.getValueTypeValue())
+                                .bind("entity_id", entityId)
+                                .bind("field_type", fieldType)
+                                .bind("entity_name", entityName)
+                                .execute();
+                          } else {
+                            insertKeyValue(entityId, handle, kv);
+                          }
+                        }),
+                executor);
     return currentFuture;
+  }
+
+  private InternalFuture<Boolean> keyValueExists(String entityId, KeyValue kv) {
+    // Check for conflicts
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "select id from "
+                            + getTableName()
+                            + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and "
+                            + entityIdReferenceColumn
+                            + "=:entity_id")
+                    .bind("key", kv.getKey())
+                    .bind("field_type", fieldType)
+                    .bind("entity_name", entityName)
+                    .bind("entity_id", entityId)
+                    .mapTo(Long.class)
+                    .findOne())
+        .thenApply(count -> (count.isPresent() && count.get() > 0), executor);
   }
 }
