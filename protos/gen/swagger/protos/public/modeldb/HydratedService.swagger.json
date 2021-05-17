@@ -889,7 +889,8 @@
         "BITBUCKET",
         "GOOGLE",
         "VERTA",
-        "SAML"
+        "SAML",
+        "AD"
       ],
       "default": "UNKNOWN"
     },
