@@ -280,7 +280,8 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> metricsHandler.getKeyValues(runId), executor);
+        .thenCompose(
+            unused -> metricsHandler.getKeyValues(runId, Collections.emptyList(), true), executor);
   }
 
   public InternalFuture<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
@@ -288,15 +289,19 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> hyperparametersHandler.getKeyValues(runId), executor);
+        .thenCompose(
+            unused -> hyperparametersHandler.getKeyValues(runId, Collections.emptyList(), true),
+            executor);
   }
 
   public InternalFuture<List<KeyValue>> getAttributes(GetAttributes request) {
     final var runId = request.getId();
+    final var keys = request.getAttributeKeysList();
+    final var getAll = request.getGetAll();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> attributeHandler.getKeyValues(runId), executor);
+        .thenCompose(unused -> attributeHandler.getKeyValues(runId, keys, getAll), executor);
   }
 
   public InternalFuture<Void> logMetrics(LogMetrics request) {
