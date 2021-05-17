@@ -133,7 +133,7 @@ public abstract class CommonHibernateUtil {
     Statement stmt = jdbcCon.createStatement();
     String dbName = jdbcCon.getCatalog();
     String sql = String
-        .format("ALTER DATABASE %s CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
+        .format("ALTER DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
     int result = stmt.executeUpdate(sql);
     LOGGER.info("ALTER charset execute result: {}", result);
   }
