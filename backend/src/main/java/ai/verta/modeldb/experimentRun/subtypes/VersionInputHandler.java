@@ -6,6 +6,7 @@ import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -260,63 +261,92 @@ public class VersionInputHandler {
       VersioningEntry versioningEntry,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
       String entityId) {
-    return jdbi.useHandle(
-        handle -> {
-          var queryStr =
-              "INSERT INTO versioning_modeldb_entity_mapping "
-                  + " (repository_id, commit, versioning_key, versioning_location, entity_type, versioning_blob_type, blob_hash, "
-                  + entityIdReferenceColumn
-                  + ") "
-                  + " VALUES (:repository_id, :commit, :versioning_key, :versioning_location, :entity_type, :versioning_blob_type, :blob_hash, :entityId)";
-
-          if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
-            Map<String, Object> keysAndParameterMap = new HashMap<>();
-            keysAndParameterMap.put("repository_id", versioningEntry.getRepositoryId());
-            keysAndParameterMap.put("commit", versioningEntry.getCommit());
-            keysAndParameterMap.put("entityId", entityId);
-            keysAndParameterMap.put("entity_type", entity_type);
-            keysAndParameterMap.put("versioning_key", ModelDBConstants.EMPTY_STRING);
-            keysAndParameterMap.put("versioning_location", null);
-            keysAndParameterMap.put("versioning_blob_type", null);
-            keysAndParameterMap.put("blob_hash", null);
-
-            LOGGER.trace("insert experiment run query string: " + queryStr);
-            var query = handle.createUpdate(queryStr);
-
-            // Inserting fields arguments based on the keys and value of map
-            for (Map.Entry<String, Object> objectEntry : keysAndParameterMap.entrySet()) {
-              query.bind(objectEntry.getKey(), objectEntry.getValue());
+    var existingEntityFuture =
+        getVersionedInputs(Collections.singleton(entityId))
+            .thenApply(
+                existingVersioningEntryMap -> existingVersioningEntryMap.get(entityId), executor);
+    return existingEntityFuture.thenCompose(
+        existingVersioningEntry -> {
+          if (existingVersioningEntry != null) {
+            if (existingVersioningEntry.getRepositoryId() != versioningEntry.getRepositoryId()
+                || !existingVersioningEntry.getCommit().equals(versioningEntry.getCommit())) {
+              return InternalFuture.failedStage(
+                  new AlreadyExistsException(
+                      ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE));
             }
-            query.execute();
-          } else {
-            PreparedBatch insertBatch = handle.prepareBatch(queryStr);
-            for (Map.Entry<String, Location> locationEntry :
-                versioningEntry.getKeyLocationMapMap().entrySet()) {
-              String locationKey = String.join("#", locationEntry.getValue().getLocationList());
-              Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
-                  locationBlobWithHashMap.get(locationKey);
-
-              Blob blob = blobExpandedWithHashMap.getKey().getBlob();
-
-              Map<String, Object> keysAndParameterMap = new HashMap<>();
-              keysAndParameterMap.put("repository_id", versioningEntry.getRepositoryId());
-              keysAndParameterMap.put("commit", versioningEntry.getCommit());
-              keysAndParameterMap.put("entityId", entityId);
-              keysAndParameterMap.put("entity_type", entity_type);
-              keysAndParameterMap.put("versioning_key", locationEntry.getKey());
-              keysAndParameterMap.put(
-                  "versioning_location",
-                  ModelDBUtils.getStringFromProtoObject(locationEntry.getValue()));
-              keysAndParameterMap.put("versioning_blob_type", blob.getContentCase().getNumber());
-              keysAndParameterMap.put("blob_hash", blobExpandedWithHashMap.getValue());
-
-              insertBatch.add(keysAndParameterMap);
-            }
-            int[] insertedCount = insertBatch.execute();
-            LOGGER.trace(
-                "Inserted versioning_modeldb_entity_mapping count: " + insertedCount.length);
           }
-        });
+
+          return jdbi.useHandle(
+              handle -> {
+                var queryStr =
+                    "INSERT INTO versioning_modeldb_entity_mapping "
+                        + " (repository_id, commit, versioning_key, versioning_location, entity_type, versioning_blob_type, blob_hash, "
+                        + entityIdReferenceColumn
+                        + ") "
+                        + " VALUES (:repository_id, :commit, :versioning_key, :versioning_location, :entity_type, :versioning_blob_type, :blob_hash, :entityId)";
+
+                if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
+                  Map<String, Object> keysAndParameterMap = new HashMap<>();
+                  keysAndParameterMap.put("repository_id", versioningEntry.getRepositoryId());
+                  keysAndParameterMap.put("commit", versioningEntry.getCommit());
+                  keysAndParameterMap.put("entityId", entityId);
+                  keysAndParameterMap.put("entity_type", entity_type);
+                  keysAndParameterMap.put("versioning_key", ModelDBConstants.EMPTY_STRING);
+                  keysAndParameterMap.put("versioning_location", null);
+                  keysAndParameterMap.put("versioning_blob_type", null);
+                  keysAndParameterMap.put("blob_hash", null);
+
+                  LOGGER.trace("insert experiment run query string: " + queryStr);
+                  var query = handle.createUpdate(queryStr);
+
+                  // Inserting fields arguments based on the keys and value of map
+                  for (Map.Entry<String, Object> objectEntry : keysAndParameterMap.entrySet()) {
+                    query.bind(objectEntry.getKey(), objectEntry.getValue());
+                  }
+                  query.execute();
+                } else {
+                  List<Map<String, Object>> argsMaps = new ArrayList<>();
+                  for (Map.Entry<String, Location> locationEntry :
+                      versioningEntry.getKeyLocationMapMap().entrySet()) {
+                    if (existingVersioningEntry == null
+                        || !existingVersioningEntry.containsKeyLocationMap(
+                            locationEntry.getKey())) {
+                      String locationKey =
+                          String.join("#", locationEntry.getValue().getLocationList());
+                      Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
+                          locationBlobWithHashMap.get(locationKey);
+
+                      Blob blob = blobExpandedWithHashMap.getKey().getBlob();
+
+                      Map<String, Object> keysAndParameterMap = new HashMap<>();
+                      keysAndParameterMap.put("repository_id", versioningEntry.getRepositoryId());
+                      keysAndParameterMap.put("commit", versioningEntry.getCommit());
+                      keysAndParameterMap.put("entityId", entityId);
+                      keysAndParameterMap.put("entity_type", entity_type);
+                      keysAndParameterMap.put("versioning_key", locationEntry.getKey());
+                      keysAndParameterMap.put(
+                          "versioning_location",
+                          ModelDBUtils.getStringFromProtoObject(locationEntry.getValue()));
+                      keysAndParameterMap.put(
+                          "versioning_blob_type", blob.getContentCase().getNumber());
+                      keysAndParameterMap.put("blob_hash", blobExpandedWithHashMap.getValue());
+
+                      argsMaps.add(keysAndParameterMap);
+                    }
+                  }
+
+                  if (!argsMaps.isEmpty()) {
+                    PreparedBatch preparedBatch = handle.prepareBatch(queryStr);
+                    argsMaps.forEach(preparedBatch::add);
+                    int[] insertedCount = preparedBatch.execute();
+                    LOGGER.trace(
+                        "Inserted versioning_modeldb_entity_mapping count: "
+                            + insertedCount.length);
+                  }
+                }
+              });
+        },
+        executor);
   }
 
   /**

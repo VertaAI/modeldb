@@ -6,6 +6,7 @@ import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.GracefulShutdown;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
+import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -13,6 +14,7 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
@@ -40,6 +42,7 @@ import io.prometheus.client.hotspot.DefaultExports;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
@@ -134,7 +137,7 @@ public class App implements ApplicationContextAware {
     return app;
   }
 
-  public static boolean migrate(Config config)
+  public static boolean migrate(DatabaseConfig databaseConfig, List<MigrationConfig> migrations)
       throws SQLException, LiquibaseException, ClassNotFoundException, InterruptedException {
     boolean liquibaseMigration =
         Boolean.parseBoolean(
@@ -143,13 +146,13 @@ public class App implements ApplicationContextAware {
     ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
-      modelDBHibernateUtil.runLiquibaseMigration(config.database);
+      modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
       LOGGER.info("Liquibase migration done");
 
-      modelDBHibernateUtil.createOrGetSessionFactory(config.database);
+      modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
 
       LOGGER.info("Code migration starting");
-      modelDBHibernateUtil.runMigration(config);
+      modelDBHibernateUtil.runMigration(databaseConfig, migrations);
       LOGGER.info("Code migration done");
 
       boolean runLiquibaseSeparate =
@@ -161,7 +164,7 @@ public class App implements ApplicationContextAware {
       }
     }
 
-    modelDBHibernateUtil.createOrGetSessionFactory(config.database);
+    modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
 
     return false;
   }
@@ -176,7 +179,7 @@ public class App implements ApplicationContextAware {
       Config config = Config.getInstance();
 
       // Initialize database configuration and maybe run migration
-      if (migrate(config)) return;
+      if (migrate(config.database, config.migrations)) return;
 
       // Configure server
       System.getProperties().put("server.port", config.springServer.port);
