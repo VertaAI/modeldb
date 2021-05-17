@@ -719,15 +719,6 @@ class TestOverwrite:
 
         assert experiment_run.get_artifact(_artifact_utils.MODEL_KEY) == new_model
 
-    def test_requirements(self, experiment_run):
-        requirements = ["banana==1"]
-        new_requirements = ["coconut==1"]
-
-        experiment_run.log_requirements(requirements)
-        experiment_run.log_requirements(new_requirements, overwrite=True)
-
-        assert six.ensure_binary('\n'.join(new_requirements)) in experiment_run.get_artifact("requirements.txt").read()
-
     def test_setup_script(self, experiment_run):
         setup_script = "import verta"
         new_setup_script = "import cloudpickle"
