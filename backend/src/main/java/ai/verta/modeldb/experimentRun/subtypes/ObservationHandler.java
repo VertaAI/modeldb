@@ -53,7 +53,7 @@ public class ObservationHandler {
                         .createQuery(
                             "select k.kv_value _value, k.value_type _type, o.epoch_number epoch from "
                                 + "(select keyvaluemapping_id, epoch_number from observation "
-                                + "where experiment_run_id =:run_id and entity_name = :entity_name:) o, "
+                                + "where experiment_run_id =:run_id and entity_name = :entity_name) o, "
                                 + "(select id, kv_value, value_type from keyvalue where kv_key =:name and entity_name IS NULL) k "
                                 + "where o.keyvaluemapping_id = k.id")
                         .bind("run_id", runId)
