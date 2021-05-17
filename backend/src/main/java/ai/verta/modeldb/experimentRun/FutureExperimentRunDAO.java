@@ -1302,10 +1302,48 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
-    return getEntityPermissionBasedOnResourceTypes(
-            Collections.singletonList(request.getProjectId()),
-            ModelDBActionEnum.ModelDBServiceActions.UPDATE,
-            ModelDBServiceResourceTypes.PROJECT)
+    // Validate arguments
+    var futureTask =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getProjectId().isEmpty()) {
+                throw new InvalidArgumentException("Project ID not present");
+              } else if (request.getExperimentId().isEmpty()) {
+                throw new InvalidArgumentException("Experiment ID not present");
+              }
+            },
+            executor);
+    return futureTask
+        .thenCompose(
+            unused ->
+                getEntityPermissionBasedOnResourceTypes(
+                    Collections.singletonList(request.getProjectId()),
+                    ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                    ModelDBServiceResourceTypes.PROJECT),
+            executor)
+        .thenAccept(
+            allowed -> {
+              if (!allowed) {
+                throw new PermissionDeniedException("Permission denied");
+              }
+            },
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      Long count =
+                          handle
+                              .createQuery("SELECT COUNT(id) FROM experiment where id = :id")
+                              .bind("id", request.getExperimentId())
+                              .mapTo(Long.class)
+                              .one();
+                      if (count == 0) {
+                        throw new NotFoundException(
+                            "Experiment not found for given ID: " + request.getExperimentId());
+                      }
+                    }),
+            executor)
         .thenCompose(
             unused ->
                 privilegedDatasetsHandler
@@ -1322,7 +1360,7 @@ public class FutureExperimentRunDAO {
                                 .build(),
                         executor),
             executor)
-        .thenCompose(createExperimentRunHandler::createExperimentRun, executor);
+        .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
   }
 
   public InternalFuture<Void> logEnvironment(LogEnvironment request) {
