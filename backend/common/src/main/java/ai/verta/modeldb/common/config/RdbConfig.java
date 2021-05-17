@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.config;
 
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import org.hibernate.dialect.MySQL5Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
 import org.hibernate.dialect.SQLServer2008Dialect;
@@ -56,5 +57,21 @@ public class RdbConfig {
         + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
         + "&sslMode="
         + rdb.sslMode;
+  }
+
+  public static String buildDatabaseName(RdbConfig rdb) {
+    final var dbName = rdb.RdbDatabaseName;
+    if (dbName.contains("-")) {
+      if (rdb.isPostgres()) {
+        throw new ModelDBException("Postgres does not support database names containing -");
+      }
+      if (rdb.isMysql()) {
+        return String.format("`%s`", dbName);
+      }
+      if (rdb.isMssql()) {
+        return String.format("\"%s\"", dbName);
+      }
+    }
+    return dbName;
   }
 }

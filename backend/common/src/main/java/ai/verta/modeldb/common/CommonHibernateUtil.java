@@ -499,18 +499,7 @@ public abstract class CommonHibernateUtil {
       }
     }
 
-    var dbName = rdb.RdbDatabaseName;
-    if (dbName.contains("-")) {
-      if (rdb.isPostgres()) {
-        throw new ModelDBException("Postgres does not support database names containing -");
-      }
-      if (rdb.isMysql()) {
-        dbName = String.format("`%s`", dbName);
-      }
-      if (rdb.isMssql()) {
-        dbName = String.format("\"%s\"", dbName);
-      }
-    }
+    var dbName = RdbConfig.buildDatabaseName(rdb);
 
     System.out.println("the database " + rdb.RdbDatabaseName + " does not exists");
     Statement statement = connection.createStatement();
