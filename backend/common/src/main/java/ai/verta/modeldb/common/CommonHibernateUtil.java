@@ -370,7 +370,7 @@ public abstract class CommonHibernateUtil {
     return HealthCheckResponse.ServingStatus.SERVING;
   }
 
-  public boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
+  public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
       throws SQLException {
     boolean tExists = false;
     try (ResultSet rs = getTableBasedOnDialect(conn, tableName, config.RdbConfiguration)) {
@@ -385,7 +385,7 @@ public abstract class CommonHibernateUtil {
     return tExists;
   }
 
-  private ResultSet getTableBasedOnDialect(Connection conn, String tableName, RdbConfig rdb)
+  private static ResultSet getTableBasedOnDialect(Connection conn, String tableName, RdbConfig rdb)
       throws SQLException {
     if (rdb.isPostgres()) {
       // TODO: make postgres implementation multitenant as well.
