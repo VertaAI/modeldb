@@ -94,6 +94,14 @@ public class ExperimentRunTest extends TestsInit {
 
   @After
   public void removeEntities() {
+    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
+      DeleteExperimentRun deleteExperimentRun =
+          DeleteExperimentRun.newBuilder().setId(run.getId()).build();
+      DeleteExperimentRun.Response deleteExperimentRunResponse =
+          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
+      assertTrue(deleteExperimentRunResponse.getStatus());
+    }
+
     for (String projectId : projectMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
       DeleteProject.Response deleteProjectResponse =
@@ -101,14 +109,6 @@ public class ExperimentRunTest extends TestsInit {
       LOGGER.info("Project deleted successfully");
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
-    }
-
-    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
-      DeleteExperimentRun deleteExperimentRun =
-          DeleteExperimentRun.newBuilder().setId(run.getId()).build();
-      DeleteExperimentRun.Response deleteExperimentRunResponse =
-          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-      assertTrue(deleteExperimentRunResponse.getStatus());
     }
 
     project = null;
@@ -322,7 +322,7 @@ public class ExperimentRunTest extends TestsInit {
     Value intValue = Value.newBuilder().setNumberValue(1.1).build();
     attributeList.add(
         KeyValue.newBuilder()
-            .setKey("attribute_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("attribute_1_" + Calendar.getInstance().getTimeInMillis())
             .setValue(intValue)
             .setValueType(ValueType.NUMBER)
             .build());
@@ -332,7 +332,7 @@ public class ExperimentRunTest extends TestsInit {
             .build();
     attributeList.add(
         KeyValue.newBuilder()
-            .setKey("attribute_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("attribute_2_" + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build());
@@ -2086,7 +2086,7 @@ public class ExperimentRunTest extends TestsInit {
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
     KeyValue keyValue1 =
         KeyValue.newBuilder()
-            .setKey("New Added Metric " + Calendar.getInstance().getTimeInMillis())
+            .setKey("New Added Metric 1 " + Calendar.getInstance().getTimeInMillis())
             .setValue(intValue)
             .setValueType(ValueType.NUMBER)
             .build();
@@ -2097,7 +2097,7 @@ public class ExperimentRunTest extends TestsInit {
             .build();
     KeyValue keyValue2 =
         KeyValue.newBuilder()
-            .setKey("New Added Metric " + Calendar.getInstance().getTimeInMillis())
+            .setKey("New Added Metric 2 " + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build();
@@ -3154,7 +3154,7 @@ public class ExperimentRunTest extends TestsInit {
     Value blobValue = Value.newBuilder().setStringValue("this is a blob data example").build();
     KeyValue hyperparameter1 =
         KeyValue.newBuilder()
-            .setKey("Log new hyperparameter " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new hyperparameter 1 " + Calendar.getInstance().getTimeInMillis())
             .setValue(blobValue)
             .setValueType(ValueType.BLOB)
             .build();
@@ -3163,7 +3163,7 @@ public class ExperimentRunTest extends TestsInit {
     Value numValue = Value.newBuilder().setNumberValue(12.02125212).build();
     KeyValue hyperparameter2 =
         KeyValue.newBuilder()
-            .setKey("Log new hyperparameter " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new hyperparameter 2 " + Calendar.getInstance().getTimeInMillis())
             .setValue(numValue)
             .setValueType(ValueType.NUMBER)
             .build();
@@ -3419,7 +3419,7 @@ public class ExperimentRunTest extends TestsInit {
         Value.newBuilder().setStringValue("this is a blob data example of attribute").build();
     KeyValue attribute1 =
         KeyValue.newBuilder()
-            .setKey("Log new attribute " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new attribute 1 " + Calendar.getInstance().getTimeInMillis())
             .setValue(blobValue)
             .setValueType(ValueType.BLOB)
             .build();
@@ -3428,7 +3428,7 @@ public class ExperimentRunTest extends TestsInit {
         Value.newBuilder().setStringValue("this is a blob data example of attribute").build();
     KeyValue attribute2 =
         KeyValue.newBuilder()
-            .setKey("Log new attribute " + Calendar.getInstance().getTimeInMillis())
+            .setKey("Log new attribute 2 " + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build();
