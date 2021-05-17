@@ -2,6 +2,7 @@ package ai.verta.modeldb.experimentRun;
 
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.stub.StreamObserver;
 import java.util.concurrent.Executor;
@@ -9,11 +10,13 @@ import java.util.concurrent.Executor;
 public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   private final Executor executor;
   private final FutureExperimentRunDAO futureExperimentRunDAO;
+  private final ExperimentRunDAO experimentRunDAO;
 
   public FutureExperimentRunServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
     super(serviceSet, daoSet);
     this.executor = executor;
     this.futureExperimentRunDAO = daoSet.futureExperimentRunDAO;
+    this.experimentRunDAO = daoSet.experimentRunDAO;
   }
 
   @Override
@@ -89,7 +92,21 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .addTags(request)
-              .thenApply(unused -> AddExperimentRunTags.Response.newBuilder().build(), executor);
+              .thenApply(
+                  unused -> {
+                    try {
+                      return experimentRunDAO.getExperimentRun(request.getId());
+                    } catch (Exception e) {
+                      throw new ModelDBException(e);
+                    }
+                  },
+                  executor)
+              .thenApply(
+                  experimentRun ->
+                      AddExperimentRunTags.Response.newBuilder()
+                          .setExperimentRun(experimentRun)
+                          .build(),
+                  executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
@@ -118,7 +135,21 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .deleteTags(request)
-              .thenApply(unused -> DeleteExperimentRunTags.Response.newBuilder().build(), executor);
+              .thenApply(
+                  unused -> {
+                    try {
+                      return experimentRunDAO.getExperimentRun(request.getId());
+                    } catch (Exception e) {
+                      throw new ModelDBException(e);
+                    }
+                  },
+                  executor)
+              .thenApply(
+                  experimentRun ->
+                      DeleteExperimentRunTags.Response.newBuilder()
+                          .setExperimentRun(experimentRun)
+                          .build(),
+                  executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
@@ -136,7 +167,21 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       .setId(request.getId())
                       .addTags(request.getTag())
                       .build())
-              .thenApply(unused -> AddExperimentRunTag.Response.newBuilder().build(), executor);
+              .thenApply(
+                  unused -> {
+                    try {
+                      return experimentRunDAO.getExperimentRun(request.getId());
+                    } catch (Exception e) {
+                      throw new ModelDBException(e);
+                    }
+                  },
+                  executor)
+              .thenApply(
+                  experimentRun ->
+                      AddExperimentRunTag.Response.newBuilder()
+                          .setExperimentRun(experimentRun)
+                          .build(),
+                  executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
@@ -155,7 +200,21 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       .setId(request.getId())
                       .addTags(request.getTag())
                       .build())
-              .thenApply(unused -> DeleteExperimentRunTag.Response.newBuilder().build(), executor);
+              .thenApply(
+                  unused -> {
+                    try {
+                      return experimentRunDAO.getExperimentRun(request.getId());
+                    } catch (Exception e) {
+                      throw new ModelDBException(e);
+                    }
+                  },
+                  executor)
+              .thenApply(
+                  experimentRun ->
+                      DeleteExperimentRunTag.Response.newBuilder()
+                          .setExperimentRun(experimentRun)
+                          .build(),
+                  executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
