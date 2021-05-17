@@ -72,7 +72,7 @@ public abstract class CommonHibernateUtil {
         Properties settings = new Properties();
         RdbConfig rdb = config.RdbConfiguration;
 
-        String connectionString = buildConnectionString(rdb);
+        String connectionString = RdbConfig.buildConnectionString(rdb);
         settings.put(Environment.DRIVER, rdb.RdbDriver);
         settings.put(Environment.URL, connectionString);
         settings.put(Environment.USER, rdb.RdbUsername);
@@ -127,20 +127,6 @@ public abstract class CommonHibernateUtil {
     } else {
       return loopBack(sessionFactory);
     }
-  }
-
-  public static String buildConnectionString(RdbConfig rdb) {
-    if (rdb.isMssql()) {
-      return rdb.RdbUrl
-          + ";databaseName="
-          + rdb.RdbDatabaseName;
-    }
-    return rdb.RdbUrl
-        + "/"
-        + rdb.RdbDatabaseName
-        + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
-        + "&sslMode="
-        + rdb.sslMode;
   }
 
   public static void changeCharsetToUtf(JdbcConnection jdbcCon) throws DatabaseException, SQLException {
@@ -334,7 +320,7 @@ public abstract class CommonHibernateUtil {
   }
 
   public Connection getDBConnection(RdbConfig rdb) throws SQLException {
-    final var connectionString = buildConnectionString(rdb);
+    final var connectionString = RdbConfig.buildConnectionString(rdb);
     return DriverManager.getConnection(connectionString, rdb.RdbUsername, rdb.RdbPassword);
   }
 
@@ -384,7 +370,7 @@ public abstract class CommonHibernateUtil {
     return HealthCheckResponse.ServingStatus.SERVING;
   }
 
-  public boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
+  public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
       throws SQLException {
     boolean tExists = false;
     try (ResultSet rs = getTableBasedOnDialect(conn, tableName, config.RdbConfiguration)) {
@@ -399,7 +385,7 @@ public abstract class CommonHibernateUtil {
     return tExists;
   }
 
-  private ResultSet getTableBasedOnDialect(Connection conn, String tableName, RdbConfig rdb)
+  private static ResultSet getTableBasedOnDialect(Connection conn, String tableName, RdbConfig rdb)
       throws SQLException {
     if (rdb.isPostgres()) {
       // TODO: make postgres implementation multitenant as well.
@@ -513,18 +499,7 @@ public abstract class CommonHibernateUtil {
       }
     }
 
-    var dbName = rdb.RdbDatabaseName;
-    if (dbName.contains("-")) {
-      if (rdb.isPostgres()) {
-        throw new ModelDBException("Postgres does not support database names containing -");
-      }
-      if (rdb.isMysql()) {
-        dbName = String.format("`%s`", dbName);
-      }
-      if (rdb.isMssql()) {
-        dbName = String.format("\"%s\"", dbName);
-      }
-    }
+    var dbName = RdbConfig.buildDatabaseName(rdb);
 
     System.out.println("the database " + rdb.RdbDatabaseName + " does not exists");
     Statement statement = connection.createStatement();
