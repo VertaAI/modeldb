@@ -3,7 +3,6 @@ package ai.verta.modeldb.common.config;
 import org.hibernate.dialect.MySQL5Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
 import org.hibernate.dialect.SQLServer2008Dialect;
-import org.hibernate.dialect.SQLServerDialect;
 
 public class RdbConfig {
   public String RdbDatabaseName;
@@ -43,5 +42,19 @@ public class RdbConfig {
 
   public boolean isMssql() {
     return RdbDialect.equals(SQLServer2008Dialect.class.getName());
+  }
+
+  public static String buildConnectionString(RdbConfig rdb) {
+    if (rdb.isMssql()) {
+      return rdb.RdbUrl
+          + ";databaseName="
+          + rdb.RdbDatabaseName;
+    }
+    return rdb.RdbUrl
+        + "/"
+        + rdb.RdbDatabaseName
+        + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+        + "&sslMode="
+        + rdb.sslMode;
   }
 }

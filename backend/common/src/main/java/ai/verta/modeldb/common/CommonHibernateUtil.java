@@ -72,7 +72,7 @@ public abstract class CommonHibernateUtil {
         Properties settings = new Properties();
         RdbConfig rdb = config.RdbConfiguration;
 
-        String connectionString = buildConnectionString(rdb);
+        String connectionString = RdbConfig.buildConnectionString(rdb);
         settings.put(Environment.DRIVER, rdb.RdbDriver);
         settings.put(Environment.URL, connectionString);
         settings.put(Environment.USER, rdb.RdbUsername);
@@ -127,20 +127,6 @@ public abstract class CommonHibernateUtil {
     } else {
       return loopBack(sessionFactory);
     }
-  }
-
-  public static String buildConnectionString(RdbConfig rdb) {
-    if (rdb.isMssql()) {
-      return rdb.RdbUrl
-          + ";databaseName="
-          + rdb.RdbDatabaseName;
-    }
-    return rdb.RdbUrl
-        + "/"
-        + rdb.RdbDatabaseName
-        + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
-        + "&sslMode="
-        + rdb.sslMode;
   }
 
   public static void changeCharsetToUtf(JdbcConnection jdbcCon) throws DatabaseException, SQLException {
@@ -334,7 +320,7 @@ public abstract class CommonHibernateUtil {
   }
 
   public Connection getDBConnection(RdbConfig rdb) throws SQLException {
-    final var connectionString = buildConnectionString(rdb);
+    final var connectionString = RdbConfig.buildConnectionString(rdb);
     return DriverManager.getConnection(connectionString, rdb.RdbUsername, rdb.RdbPassword);
   }
 
