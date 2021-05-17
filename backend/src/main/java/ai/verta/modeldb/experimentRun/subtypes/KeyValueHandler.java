@@ -141,7 +141,7 @@ public class KeyValueHandler {
                 }
                 if (keySet.contains(kv.getKey())) {
                   throw new InvalidArgumentException(
-                      "Multiple Key " + kv.getKey() + " found in " + getTableName());
+                      "Multiple key " + kv.getKey() + " found in request");
                 }
                 keySet.add(kv.getKey());
               }
