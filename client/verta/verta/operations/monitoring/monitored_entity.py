@@ -12,7 +12,7 @@ from verta._tracking import entity
 from verta._internal_utils import (
     _utils,
 )
-from .alert._entities import Alerts
+from .alert.entities import Alerts
 from .summaries.summaries import Summaries
 
 
@@ -39,7 +39,7 @@ class MonitoredEntity(entity._ModelDBEntity):
         The name of this monitored entity.
     workspace : str
         The name of the workspace which this monitored entity belongs to.
-    alerts : :class:`~verta.operations.monitoring.alert._entities.Alerts`
+    alerts : :class:`~verta.operations.monitoring.alert.entities.Alerts`
         The sub-client for managing alerts defined for this monitored entity.
 
     Examples

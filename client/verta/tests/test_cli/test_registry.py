@@ -9,7 +9,7 @@ from click.testing import CliRunner
 from verta import Client
 from verta._cli import cli
 from verta._cli.registry.update import add_attributes
-from verta.registry import RegisteredModel
+from verta.registry.entities import RegisteredModel
 from verta._internal_utils import (
     _artifact_utils,
     _utils,

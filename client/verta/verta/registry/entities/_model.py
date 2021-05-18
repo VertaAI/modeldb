@@ -3,7 +3,7 @@
 from __future__ import print_function
 import requests
 
-from ..._internal_utils._utils import NoneProtoResponse, check_unnecessary_params_warning
+from ..._internal_utils._utils import check_unnecessary_params_warning
 from ..._tracking.context import _Context
 from ..._tracking.entity import _ModelDBEntity
 from ..._internal_utils import _utils
@@ -11,8 +11,8 @@ from ..._internal_utils import _utils
 from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
 
-from .modelversion import RegisteredModelVersion
-from .modelversions import RegisteredModelVersions
+from ._modelversion import RegisteredModelVersion
+from ._modelversions import RegisteredModelVersions
 
 
 class RegisteredModel(_ModelDBEntity):
@@ -29,7 +29,7 @@ class RegisteredModel(_ModelDBEntity):
         ID of this Registered Model.
     name : str
         Name of this Registered Model.
-    versions : iterable of :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
+    versions : iterable of :class:`~verta.registry.entities.RegisteredModelVersion`
         Versions of this RegisteredModel.
 
     """
@@ -91,7 +91,7 @@ class RegisteredModel(_ModelDBEntity):
 
         Returns
         -------
-        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry.entities.RegisteredModelVersion`
 
         Raises
         ------
@@ -153,7 +153,7 @@ class RegisteredModel(_ModelDBEntity):
 
         Returns
         -------
-        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry.entities.RegisteredModelVersion`
 
         """
         ctx = _Context(self._conn, self._conf)
@@ -180,7 +180,7 @@ class RegisteredModel(_ModelDBEntity):
 
         Returns
         -------
-        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry.entities.RegisteredModelVersion`
 
         """
         ctx = _Context(self._conn, self._conf)
@@ -204,7 +204,7 @@ class RegisteredModel(_ModelDBEntity):
 
         Returns
         -------
-        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry.entities.RegisteredModelVersion`
 
         """
         if name is not None and id is not None:

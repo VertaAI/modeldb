@@ -23,7 +23,6 @@ from ..._internal_utils import (
     _artifact_utils,
     importer, _request_utils
 )
-from ..._internal_utils._utils import NoneProtoResponse
 from ... import utils
 
 from ..._tracking.entity import _MODEL_ARTIFACTS_ATTR_KEY
@@ -41,7 +40,7 @@ class RegisteredModelVersion(_DeployableEntity):
 
     There should not be a need to instantiate this class directly; please use
     :meth:`RegisteredModel.get_or_create_version()
-    <verta.registry._entities.model.RegisteredModel.get_or_create_version>`.
+    <verta.registry.entities.RegisteredModel.get_or_create_version>`.
 
     Attributes
     ----------
