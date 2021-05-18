@@ -15,7 +15,7 @@ public class PredicateHandlerUtils {
         return String.format("cast(%s as double precision)", colName);
       }
     } else {
-      return String.format("cast(%s as decimal)", colName);
+      return String.format("cast(%s as decimal(16, 8))", colName);
     }
   }
 

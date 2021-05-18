@@ -18,7 +18,7 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
     final var fieldTypeName = String.format("field_type_%d", index);
 
     var sql =
-        "select distinct experiment_run_id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=:"
+        "select distinct experiment_run_id from keyvalue where entity_name=:entityName and field_type=:"
             + fieldTypeName;
     sql += String.format(" and kv_key=:%s ", valueBindingKey);
     sql += " and ";
@@ -27,6 +27,7 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
     var queryContext =
         new QueryFilterContext()
             .addBind(q -> q.bind(valueBindingKey, name))
+            .addBind(q -> q.bind("entityName", "ExperimentRunEntity"))
             .addBind(q -> q.bind(fieldTypeName, fieldType));
 
     switch (value.getKindCase()) {
