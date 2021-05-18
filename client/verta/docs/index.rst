@@ -32,6 +32,7 @@ Verta: The Complete MLOps Platform
         endpoint
         environment
         integrations
+        operations
         registry
         utils
         visibility
@@ -40,5 +41,4 @@ Verta: The Complete MLOps Platform
     :hidden:
     :titlesonly:
 
-    api/operations
     changelog
