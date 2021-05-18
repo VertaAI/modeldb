@@ -25,15 +25,23 @@ class _Alerter(object):
     def _as_proto(self):
         raise NotImplementedError
 
-    @staticmethod
-    def _from_proto(msg):
+    @classmethod
+    @abc.abstractmethod
+    def _get_proto_class(cls):
+        raise NotImplementedError
+
+    @classmethod
+    @abc.abstractmethod
+    def _from_proto_msg(cls):
+        raise NotImplementedError
+
+    @classmethod
+    def _from_proto(cls, msg):
         _protos_to_classes = {
-            _AlertService.AlertFixed: FixedAlerter,
-            _AlertService.AlertReference: ReferenceAlerter,
-            _AlertService.AlertRange: RangeAlerter,
+            subcls._get_proto_class(): subcls for subcls in cls.__subclasses__()
         }
         if type(msg) in _protos_to_classes:
-            return _protos_to_classes[type(msg)]._from_proto(msg)
+            return _protos_to_classes[type(msg)]._from_proto_msg(msg)
         else:
             raise ValueError("unrecognized alerter type {}".format(type(msg)))
 
@@ -87,6 +95,10 @@ class FixedAlerter(_Alerter):
     def __repr__(self):
         return "<fixed alerter ({})>".format(self._comparison)
 
+    @classmethod
+    def _get_proto_class(self):
+        return _AlertService.AlertFixed
+
     @property
     def comparison(self):
         return self._comparison
@@ -98,7 +110,7 @@ class FixedAlerter(_Alerter):
         )
 
     @staticmethod
-    def _from_proto(msg):
+    def _from_proto_msg(msg):
         comparison = comparison_module._VertaComparison._from_proto(
             msg.operator,
             msg.threshold,
@@ -146,6 +158,10 @@ class ReferenceAlerter(_Alerter):
         self._comparison = _Alerter._validate_comparison(comparison)
         self._reference_sample_id = utils.extract_id(reference_sample)
 
+    @classmethod
+    def _get_proto_class(self):
+        return _AlertService.AlertReference
+
     def _as_proto(self):
         return _AlertService.AlertReference(
             threshold=self._comparison.value,
@@ -154,7 +170,7 @@ class ReferenceAlerter(_Alerter):
         )
 
     @classmethod
-    def _from_proto(cls, msg):
+    def _from_proto_msg(cls, msg):
         comparison = comparison_module._VertaComparison._from_proto(
             msg.operator,
             msg.threshold,
@@ -214,6 +230,10 @@ class RangeAlerter(_Alerter):
     def __repr__(self):
         return "<range alerter ({}, {})>".format(self.lower_bound, self.upper_bound)
 
+    @classmethod
+    def _get_proto_class(self):
+        return _AlertService.AlertRange
+
     def _as_proto(self):
         return _AlertService.AlertRange(
             lower_bound=self.lower_bound,
@@ -222,5 +242,5 @@ class RangeAlerter(_Alerter):
         )
 
     @classmethod
-    def _from_proto(cls, msg):
+    def _from_proto_msg(cls, msg):
         return cls(msg.lower_bound, msg.upper_bound, msg.alert_if_outside_range)
