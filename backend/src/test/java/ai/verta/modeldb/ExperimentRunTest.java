@@ -5202,11 +5202,11 @@ public class ExperimentRunTest extends TestsInit {
         experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
     assertTrue(deleteExperimentRunsResponse.getStatus());
 
-    GetExperimentRunsInExperiment getExperimentRunsInExperiment =
-        GetExperimentRunsInExperiment.newBuilder().setExperimentId(experiment.getId()).build();
+    FindExperimentRuns getExperimentRunsInExperiment =
+        FindExperimentRuns.newBuilder().setExperimentId(experiment.getId()).build();
 
-    GetExperimentRunsInExperiment.Response experimentRunResponse =
-        experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
+    FindExperimentRuns.Response experimentRunResponse =
+        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
     assertEquals(
         "ExperimentRuns count not match with expected experimentRun count",
         0,
@@ -5294,11 +5294,11 @@ public class ExperimentRunTest extends TestsInit {
       assertTrue(deleteExperimentRunResponse.getStatus());
     }
 
-    GetExperimentRunsInExperiment getExperimentRunsInExperiment =
-        GetExperimentRunsInExperiment.newBuilder().setExperimentId(experiment.getId()).build();
+    FindExperimentRuns getExperimentRunsInExperiment =
+        FindExperimentRuns.newBuilder().setExperimentId(experiment.getId()).build();
 
-    GetExperimentRunsInExperiment.Response experimentRunResponse =
-        experimentRunServiceStub.getExperimentRunsInExperiment(getExperimentRunsInExperiment);
+    FindExperimentRuns.Response experimentRunResponse =
+        experimentRunServiceStub.findExperimentRuns(getExperimentRunsInExperiment);
     assertEquals(
         "ExperimentRuns count not match with expected experimentRun count",
         0,
