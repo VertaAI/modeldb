@@ -49,7 +49,7 @@ public class RdbConfig {
     return RdbDialect.equals(SQLServer2008Dialect.class.getName());
   }
 
-  public static String buildConnectionString(RdbConfig rdb) {
+  public static String buildDatabaseConnectionString(RdbConfig rdb) {
     if (rdb.isMssql()) {
       return rdb.RdbUrl
           + ";databaseName="
@@ -58,6 +58,19 @@ public class RdbConfig {
     final var url = rdb.RdbUrl
         + "/"
         + rdb.RdbDatabaseName
+        + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+        + "&sslEnabled=false"
+        + "&sslMode="
+        + rdb.sslMode;
+    LOGGER.info("Using db URL " + url);
+    return url;
+  }
+
+  public static String buildDatabaseServerConnectionString(RdbConfig rdb) {
+    if (rdb.isMssql()) {
+      return rdb.RdbUrl;
+    }
+    final var url = rdb.RdbUrl
         + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
         + "&sslEnabled=false"
         + "&sslMode="
