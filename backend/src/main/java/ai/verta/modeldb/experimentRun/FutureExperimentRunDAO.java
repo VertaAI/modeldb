@@ -679,6 +679,8 @@ public class FutureExperimentRunDAO {
         InternalFuture.supplyAsync(
             () -> {
               final var localQueryContext = new QueryFilterContext();
+              localQueryContext.getConditions().add("experiment_run.deleted = :deleted");
+              localQueryContext.getBinds().add(q -> q.bind("deleted", false));
 
               if (!request.getProjectId().isEmpty()) {
                 localQueryContext
