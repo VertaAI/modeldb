@@ -13,4 +13,4 @@ python:
 sphinx:
   builder: html
   configuration: client/verta/docs/conf.py
-  # fail_on_warning: true
+  fail_on_warning: true
