@@ -908,7 +908,7 @@ class RegisteredModelVersion(_DeployableEntity):
 
         Parameters
         ----------
-        lock_level : :ref:`lock level <lock-api>`
+        lock_level : :mod:`~verta.registry.lock`
             Lock level to set.
 
         """
@@ -931,7 +931,7 @@ class RegisteredModelVersion(_DeployableEntity):
 
         Returns
         -------
-        lock_level : :ref:`lock level <lock-api>`
+        lock_level : :mod:`~verta.registry.lock`
             This model version's lock level.
 
         """

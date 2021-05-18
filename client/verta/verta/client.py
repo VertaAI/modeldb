@@ -284,7 +284,7 @@ class Client(object):
 
         Parameters
         ----------
-        visibility : :ref:`visibility <visibility-api>` or None
+        visibility : :mod:`~verta.visibility` or None
 
         """
         # TODO: consider a decorator for create_*()s that validates common params
@@ -306,8 +306,8 @@ class Client(object):
         The active workspace is determined by this order of precedence:
 
         1) value set in :meth:`~Client.set_workspace`
-        2) value set in :ref:`client config file <client-config-file>`
-        3) default workspace set in web app.
+        2) value set in client config file
+        3) default workspace set in web app
 
         Returns
         -------
@@ -412,7 +412,7 @@ class Client(object):
             If creating a Project in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this project. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
@@ -669,7 +669,7 @@ class Client(object):
             If creating a Repository in an organization's workspace: ``True``
             for public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this repository. If not provided,
             an appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
@@ -769,7 +769,7 @@ class Client(object):
             ``True`` for public, ``False`` for private. In older backends,
             default is private; in newer backends, uses the org's settings by
             default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this registered model. If not
             provided, an appropriate default will be used. This parameter
             should be preferred over `public_within_org`.
@@ -901,7 +901,7 @@ class Client(object):
             If creating an endpoint in an organization's workspace: ``True``
             for public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this endpoint. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
@@ -1012,7 +1012,7 @@ class Client(object):
             If creating a Project in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this project. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
@@ -1141,7 +1141,7 @@ class Client(object):
             ``True`` for public, ``False`` for private. In older backends,
             default is private; in newer backends, uses the org's settings by
             default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this registered model. If not
             provided, an appropriate default will be used. This parameter
             should be preferred over `public_within_org`.
@@ -1192,7 +1192,7 @@ class Client(object):
             If creating an endpoint in an organization's workspace: ``True``
             for public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this endpoint. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
@@ -1234,7 +1234,7 @@ class Client(object):
             Path of the endpoint.
         name : str
             Name of the endpoint.
-        strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
+        strategy : :mod:`~verta.endpoint.update`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the endpoint.
         resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated endpoint.
@@ -1306,7 +1306,7 @@ class Client(object):
             If creating a dataset in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this dataset. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
@@ -1387,7 +1387,7 @@ class Client(object):
             If creating a dataset in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this dataset. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.

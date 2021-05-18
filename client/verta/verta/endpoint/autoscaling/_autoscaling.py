@@ -70,7 +70,7 @@ class Autoscaling(object):
 
         Parameters
         ----------
-        metric : :ref:`autoscaling metric <autoscaling-metrics>`
+        metric : :mod:`~verta.endpoint.autoscaling.metrics`
             Metric to add.
 
         """
