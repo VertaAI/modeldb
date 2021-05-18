@@ -176,7 +176,7 @@ public class PredicatesHandler {
 
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
-        sql += applyOperator(operator, colValue, ":" + valueBindingName);
+        sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
         queryContext = queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
         break;
       case STRING_VALUE:
@@ -295,7 +295,7 @@ public class PredicatesHandler {
         return String.format("cast(%s as double precision)", colName);
       }
     } else {
-      return String.format("cast(%s as decimal)", colName);
+      return String.format("cast(%s as decimal(16, 8))", colName);
     }
   }
 
