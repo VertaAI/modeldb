@@ -25,6 +25,7 @@ from verta._internal_utils import (
     _utils,
 )
 from verta.endpoint.update import DirectUpdateStrategy
+from verta.environment import Python
 
 pytestmark = pytest.mark.not_oss
 
@@ -235,7 +236,7 @@ class TestLogModel:
         # log real artifact using `overwrite`
         experiment_run.log_artifact(key, val)
         experiment_run.log_model(ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True)
-        experiment_run.log_requirements(requirements=[])
+        experiment_run.log_environment(Python([]))
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
         assert val == endpoint.get_deployed_model().predict(val)
@@ -573,7 +574,7 @@ class TestHistogram:
 class TestDeploy:
     def test_auto_path_auto_token_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy()
 
@@ -590,7 +591,7 @@ class TestDeploy:
         token = "coconut"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(token=token)
 
@@ -605,7 +606,7 @@ class TestDeploy:
 
     def test_auto_path_no_token_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(no_token=True)
 
@@ -622,7 +623,7 @@ class TestDeploy:
         path = "banana"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(path=path)
 
@@ -639,7 +640,7 @@ class TestDeploy:
         path, token = "banana", "coconut"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(path=path, token=token)
 
@@ -656,7 +657,7 @@ class TestDeploy:
         path = "banana"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(path=path, no_token=True)
 
@@ -671,7 +672,7 @@ class TestDeploy:
 
     def test_wait_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(wait=True)
 
@@ -687,7 +688,7 @@ class TestDeploy:
 
     def test_already_deployed_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         experiment_run.deploy()
 
@@ -702,7 +703,7 @@ class TestDeploy:
 
     def test_no_model_deploy_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         # delete model
         response = _utils.make_request(
@@ -725,7 +726,7 @@ class TestDeploy:
 
     def test_no_api_deploy_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         # delete model API
         response = _utils.make_request(
@@ -761,7 +762,7 @@ class TestDeploy:
 
     def test_deployment_failure_deploy_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements([])
+        experiment_run.log_environment(Python([]))
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy(wait=True)
@@ -780,7 +781,7 @@ class TestDeploy:
 class TestUndeploy:
     def test_undeploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         experiment_run.deploy(wait=True)
 
@@ -808,7 +809,7 @@ class TestGetDeployedModel:
         )
 
         experiment_run.log_model(model, custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         experiment_run.deploy(wait=True)
 
@@ -833,7 +834,7 @@ class TestGetDeployedModel:
 
     def test_undeployed_get_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         experiment_run.deploy(wait=True)
         experiment_run.undeploy(wait=True)
@@ -857,7 +858,7 @@ class TestGitOps:
             custom_modules=[],
             model_api=model_for_deployment['model_api'],
         )
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         filepath = experiment_run.download_deployment_yaml(download_to_path)
         assert filepath == os.path.abspath(download_to_path)
@@ -873,7 +874,7 @@ class TestGitOps:
         download_to_path = "context.tgz"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         filepath = experiment_run.download_docker_context(download_to_path)
         assert filepath == os.path.abspath(download_to_path)

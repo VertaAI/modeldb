@@ -38,7 +38,7 @@ class TestMDBIntegration:
         np = pytest.importorskip("numpy")
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         artifact = np.random.random((36, 12))
         experiment_run.log_artifact("some-artifact", artifact)
@@ -568,7 +568,7 @@ class TestDeployability:
         download_to_path = "context.tgz"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
         model_version = registered_model.create_version_from_run(
             run_id=experiment_run.id,
             name="From Run {}".format(experiment_run.id),
