@@ -1,11 +1,15 @@
 package ai.verta.modeldb.common.config;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.dialect.MySQL5Dialect;
 import org.hibernate.dialect.PostgreSQLDialect;
 import org.hibernate.dialect.SQLServer2008Dialect;
 
 public class RdbConfig {
+  private static final Logger LOGGER = LogManager.getLogger(RdbConfig.class);
+
   public String RdbDatabaseName;
   // TODO: replace driver with "io.opentracing.contrib.jdbc.TracingDriver" if tracing is enabled
   public String RdbDriver;
@@ -51,13 +55,15 @@ public class RdbConfig {
           + ";databaseName="
           + rdb.RdbDatabaseName;
     }
-    return rdb.RdbUrl
+    final var url = rdb.RdbUrl
         + "/"
         + rdb.RdbDatabaseName
         + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
         + "&sslEnabled=false"
         + "&sslMode="
         + rdb.sslMode;
+    LOGGER.info("Using db URL " + url);
+    return url;
   }
 
   public static String buildDatabaseName(RdbConfig rdb) {
