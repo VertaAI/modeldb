@@ -10,7 +10,7 @@ from ...endpoint.update.rules import _UpdateRule
 from ...endpoint.resources import Resources
 from ...endpoint.autoscaling import Autoscaling
 from ...endpoint.autoscaling.metrics import _AutoscalingMetric
-from ...registry._entities import RegisteredModelVersion
+from ...registry import RegisteredModelVersion
 
 
 @deployment.group()

@@ -23,7 +23,7 @@ from .._internal_utils import (
     _utils,
 )
 from .._tracking import experimentrun
-from ..registry._entities import RegisteredModelVersion
+from ..registry import RegisteredModelVersion
 from ..visibility import _visibility
 
 

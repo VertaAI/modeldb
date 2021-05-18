@@ -58,7 +58,7 @@ from ._tracking import (
     ExperimentRuns,
 )
 
-from .registry._entities import (
+from .registry import (
     RegisteredModel,
     RegisteredModels,
     RegisteredModelVersion,
