@@ -21,13 +21,18 @@ class _Alerter(object):
             _AlertService.AlerterTypeEnum.AlerterType.Name(self._TYPE).lower()
         )
 
+    @classmethod
     @abc.abstractmethod
-    def _as_proto(self):
+    def _get_proto_class(cls):
         raise NotImplementedError
 
     @classmethod
     @abc.abstractmethod
-    def _get_proto_class(cls):
+    def _get_alert_field(cls):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _as_proto(self):
         raise NotImplementedError
 
     @classmethod
@@ -99,6 +104,10 @@ class FixedAlerter(_Alerter):
     def _get_proto_class(self):
         return _AlertService.AlertFixed
 
+    @classmethod
+    def _get_alert_field(cls):
+        return "alerter_fixed"
+
     @property
     def comparison(self):
         return self._comparison
@@ -161,6 +170,10 @@ class ReferenceAlerter(_Alerter):
     @classmethod
     def _get_proto_class(self):
         return _AlertService.AlertReference
+
+    @classmethod
+    def _get_alert_field(cls):
+        return "alerter_reference"
 
     def _as_proto(self):
         return _AlertService.AlertReference(
@@ -233,6 +246,10 @@ class RangeAlerter(_Alerter):
     @classmethod
     def _get_proto_class(self):
         return _AlertService.AlertRange
+
+    @classmethod
+    def _get_alert_field(cls):
+        return "alerter_range"
 
     def _as_proto(self):
         return _AlertService.AlertRange(
