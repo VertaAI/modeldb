@@ -202,10 +202,12 @@ class RangeAlerter(_Alerter):
 
     Parameters
     ----------
-    comparison : :class:`~verta.common.comparison._VertaComparison`
-        Alert condition. An alert is active if a queried sample meets this
-        condition.
-
+    lower_bound : float
+        The lower bound of this numeric range
+    upper_bound : float
+        The upper bound of this numeric range
+    alert_if_outside_range : bool
+        Whether to alert on values falling outside of or inside of this range
     Examples
     --------
     .. code-block:: python
