@@ -20,10 +20,15 @@ Verta: The Complete MLOps Platform
         :recursive:
         :nosignatures:
 
+        _dataset_versioning
+        _repository
+        _tracking
         code
+        common
         configuration
         data_types
         dataset
+        deployment
         endpoint
         environment
         integrations
@@ -35,10 +40,5 @@ Verta: The Complete MLOps Platform
     :hidden:
     :titlesonly:
 
-    api/_dataset_versioning
-    api/_repository
-    api/_tracking
-    api/common
-    api/deployment
     api/operations
     changelog
