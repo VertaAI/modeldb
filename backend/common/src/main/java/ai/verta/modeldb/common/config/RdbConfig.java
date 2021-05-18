@@ -55,6 +55,7 @@ public class RdbConfig {
         + "/"
         + rdb.RdbDatabaseName
         + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+        + "&sslEnabled=false"
         + "&sslMode="
         + rdb.sslMode;
   }
