@@ -212,7 +212,12 @@ public class PredicatesHandler extends PredicateHandlerUtils {
             new UnimplementedException("Unknown 'Value' type recognized"));
     }
 
-    queryContext = queryContext.addCondition(String.format("experiment_run.id in (%s)", sql));
+    if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)
+        || operator.equals(OperatorEnum.Operator.NE)) {
+      queryContext = queryContext.addCondition(String.format("experiment_run.id NOT IN (%s)", sql));
+    } else {
+      queryContext = queryContext.addCondition(String.format("experiment_run.id IN (%s)", sql));
+    }
 
     return InternalFuture.completedInternalFuture(queryContext);
   }

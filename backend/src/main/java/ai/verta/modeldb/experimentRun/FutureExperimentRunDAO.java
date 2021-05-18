@@ -280,7 +280,8 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> metricsHandler.getKeyValues(runId), executor);
+        .thenCompose(
+            unused -> metricsHandler.getKeyValues(runId, Collections.emptyList(), true), executor);
   }
 
   public InternalFuture<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
@@ -288,15 +289,19 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> hyperparametersHandler.getKeyValues(runId), executor);
+        .thenCompose(
+            unused -> hyperparametersHandler.getKeyValues(runId, Collections.emptyList(), true),
+            executor);
   }
 
   public InternalFuture<List<KeyValue>> getAttributes(GetAttributes request) {
     final var runId = request.getId();
+    final var keys = request.getAttributeKeysList();
+    final var getAll = request.getGetAll();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> attributeHandler.getKeyValues(runId), executor);
+        .thenCompose(unused -> attributeHandler.getKeyValues(runId, keys, getAll), executor);
   }
 
   public InternalFuture<Void> logMetrics(LogMetrics request) {
@@ -674,6 +679,8 @@ public class FutureExperimentRunDAO {
         InternalFuture.supplyAsync(
             () -> {
               final var localQueryContext = new QueryFilterContext();
+              localQueryContext.getConditions().add("experiment_run.deleted = :deleted");
+              localQueryContext.getBinds().add(q -> q.bind("deleted", false));
 
               if (!request.getProjectId().isEmpty()) {
                 localQueryContext
@@ -1064,6 +1071,9 @@ public class FutureExperimentRunDAO {
                                                           builder.getId())) {
                                                         builder.setCodeVersionSnapshot(
                                                             codeVersionsMap.get(builder.getId()));
+                                                      } else {
+                                                        builder.setCodeVersionSnapshot(
+                                                            CodeVersion.getDefaultInstance());
                                                       }
                                                     }),
                                             executor);
@@ -1302,10 +1312,48 @@ public class FutureExperimentRunDAO {
   }
 
   public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
-    return getEntityPermissionBasedOnResourceTypes(
-            Collections.singletonList(request.getProjectId()),
-            ModelDBActionEnum.ModelDBServiceActions.UPDATE,
-            ModelDBServiceResourceTypes.PROJECT)
+    // Validate arguments
+    var futureTask =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getProjectId().isEmpty()) {
+                throw new InvalidArgumentException("Project ID not present");
+              } else if (request.getExperimentId().isEmpty()) {
+                throw new InvalidArgumentException("Experiment ID not present");
+              }
+            },
+            executor);
+    return futureTask
+        .thenCompose(
+            unused ->
+                getEntityPermissionBasedOnResourceTypes(
+                    Collections.singletonList(request.getProjectId()),
+                    ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                    ModelDBServiceResourceTypes.PROJECT),
+            executor)
+        .thenAccept(
+            allowed -> {
+              if (!allowed) {
+                throw new PermissionDeniedException("Permission denied");
+              }
+            },
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      Long count =
+                          handle
+                              .createQuery("SELECT COUNT(id) FROM experiment where id = :id")
+                              .bind("id", request.getExperimentId())
+                              .mapTo(Long.class)
+                              .one();
+                      if (count == 0) {
+                        throw new NotFoundException(
+                            "Experiment not found for given ID: " + request.getExperimentId());
+                      }
+                    }),
+            executor)
         .thenCompose(
             unused ->
                 privilegedDatasetsHandler
@@ -1322,7 +1370,7 @@ public class FutureExperimentRunDAO {
                                 .build(),
                         executor),
             executor)
-        .thenCompose(createExperimentRunHandler::createExperimentRun, executor);
+        .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
   }
 
   public InternalFuture<Void> logEnvironment(LogEnvironment request) {

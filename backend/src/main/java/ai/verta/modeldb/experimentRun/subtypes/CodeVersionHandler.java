@@ -77,12 +77,17 @@ public class CodeVersionHandler {
               if (maybeSnapshotId.isPresent()) {
                 if (request.getOverwrite()) {
                   try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                    Transaction transaction = session.beginTransaction();
+                    session
+                        .createSQLQuery(
+                            "UPDATE experiment_run SET code_version_snapshot_id = null WHERE id=:run_id")
+                        .setParameter("run_id", request.getId())
+                        .executeUpdate();
                     final CodeVersionEntity entity =
                         session.get(
                             CodeVersionEntity.class,
                             maybeSnapshotId.get(),
                             LockMode.PESSIMISTIC_WRITE);
-                    Transaction transaction = session.beginTransaction();
                     session.delete(entity);
                     transaction.commit();
                   }
