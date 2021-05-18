@@ -1,8 +1,5 @@
-Data Types
-==========
-
-.. note::
-    .. versionadded:: 0.17.4
+verta.data_types
+================
 
 .. currentmodule:: verta.data_types
 
@@ -11,7 +8,6 @@ Data Types
     :template: class.rst
     :nosignatures:
 
-    _VertaDataType
     ConfusionMatrix
     DiscreteHistogram
     FloatHistogram

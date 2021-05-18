@@ -1,11 +1,11 @@
-Sub-client
-==========
+verta
+============
 
-.. currentmodule:: verta.operations.monitoring.client
+.. currentmodule:: verta
 
 .. autosummary::
     :toctree: _autogen
     :template: class.rst
     :nosignatures:
 
-    Client
+    verta.Client

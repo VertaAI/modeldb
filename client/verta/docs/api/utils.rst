@@ -1,11 +1,11 @@
-Label
-=====
+verta.utils
+===========
 
-.. currentmodule:: verta.operations.monitoring.labels
+.. currentmodule:: verta.utils
 
 .. autosummary::
     :toctree: _autogen
     :template: class.rst
     :nosignatures:
 
-    Labels
+    ModelAPI
