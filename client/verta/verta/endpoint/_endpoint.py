@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-import os
 import sys
 import time
 import json
 import yaml
-from functools import reduce
 
 import requests
 
@@ -18,12 +16,9 @@ from ..endpoint.resources import Resources
 from ..endpoint.update.rules import _UpdateRule
 from ..deployment import DeployedModel
 from ..endpoint.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
-from .._internal_utils import (
-    _request_utils,
-    _utils,
-)
+from .._internal_utils import _utils
 from .._tracking import experimentrun
-from ..registry._entities import RegisteredModelVersion
+from ..registry.entities import RegisteredModelVersion
 from ..visibility import _visibility
 
 
@@ -179,7 +174,7 @@ class Endpoint(object):
 
         Parameters
         ----------
-        model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
+        model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta.registry.entities.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
         strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the Endpoint.

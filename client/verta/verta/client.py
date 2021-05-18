@@ -2,52 +2,27 @@
 
 from __future__ import print_function
 
-import ast
-import copy
-import glob
-import importlib
 import os
-import pathlib2
-import pprint
 import re
-import shutil
-import sys
-import tarfile
-import tempfile
-import time
 import warnings
-import zipfile
 
 import requests
 from verta._tracking.organization import Organization
 from ._internal_utils._utils import check_unnecessary_params_warning
 
-from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
-from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService
-from ._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
-from ._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
 
 from .external import six
-from .external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
 from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from ._internal_utils import (
-    _artifact_utils,
     _config_utils,
-    _git_utils,
-    _histogram_utils,
-    _pip_requirements_utils,
     _request_utils,
     _utils,
 )
 
 from . import _repository
-from ._repository import commit as commit_module
-from . import deployment
-from . import utils
 
-from ._tracking import entity
 from ._tracking import (
     _Context,
     Project,
@@ -58,7 +33,7 @@ from ._tracking import (
     ExperimentRuns,
 )
 
-from .registry._entities import (
+from .registry.entities import (
     RegisteredModel,
     RegisteredModels,
     RegisteredModelVersion,
@@ -67,8 +42,8 @@ from .registry._entities import (
 from ._dataset_versioning.dataset import Dataset
 from ._dataset_versioning.datasets import Datasets
 from ._dataset_versioning.dataset_version import DatasetVersion
-from .endpoint._endpoint import Endpoint
-from .endpoint._endpoints import Endpoints
+from .endpoint import Endpoint
+from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
 from .operations.monitoring.client import Client as MonitoringClient
@@ -779,7 +754,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.registry._entities.model.RegisteredModel`
+        :class:`~verta.registry.entities.RegisteredModel`
 
         Raises
         ------
@@ -829,7 +804,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.registry._entities.model.RegisteredModel`
+        :class:`~verta.registry.entities.RegisteredModel`
         """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
@@ -868,7 +843,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry.entities.RegisteredModelVersion`
         """
         return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
 
@@ -1148,7 +1123,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.registry._entities.model.RegisteredModel`
+        :class:`~verta.registry.entities.RegisteredModel`
 
         Raises
         ------
@@ -1199,7 +1174,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.registry._entities.model.RegisteredModel`
+        :class:`~verta.registry.entities.RegisteredModel`
 
         Raises
         ------
