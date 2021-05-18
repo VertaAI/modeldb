@@ -215,7 +215,7 @@ class TestLink:
         created_entities.append(client_3.create_project(visibility=Private()))
         run = client_3.create_experiment_run()
         run.log_model(LogisticRegression(), custom_modules=[])
-        run.log_requirements(["scikit-learn"])
+        run.log_environment(Python(["scikit-learn"]))
         with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
             endpoint.update(run)
 
@@ -223,7 +223,7 @@ class TestLink:
         created_entities.append(client_3.create_project(visibility=OrgCustom(deploy=False)))
         run = client_3.create_experiment_run()
         run.log_model(LogisticRegression(), custom_modules=[])
-        run.log_requirements(["scikit-learn"])
+        run.log_environment(Python(["scikit-learn"]))
         with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
             endpoint.update(run)
 
@@ -231,7 +231,7 @@ class TestLink:
         created_entities.append(client_3.create_project(visibility=OrgCustom(deploy=True)))
         run = client_3.create_experiment_run()
         run.log_model(LogisticRegression(), custom_modules=[])
-        run.log_requirements(["scikit-learn"])
+        run.log_environment(Python(["scikit-learn"]))
         assert endpoint.update(run)
 
     def test_endpoint_update_model_version(self, client_2, client_3, organization, created_entities):

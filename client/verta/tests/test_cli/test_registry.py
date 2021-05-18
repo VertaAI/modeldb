@@ -119,7 +119,7 @@ class TestCreate:
         version_name = "from_run"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         artifact = np.random.random((36, 12))
         experiment_run.log_artifact("some-artifact", artifact)
