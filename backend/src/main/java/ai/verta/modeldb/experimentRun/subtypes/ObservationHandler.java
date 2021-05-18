@@ -15,8 +15,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class ObservationHandler {
   private static Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
@@ -55,7 +57,7 @@ public class ObservationHandler {
                                 + "(select id, kv_value, value_type from keyvalue where kv_key =:name and entity_name IS NULL) k "
                                 + "where o.keyvaluemapping_id = k.id")
                         .bind("run_id", runId)
-                        .bind("entity_name", "\"ExperimentRunEntity\"")
+                        .bind("entity_name", "ExperimentRunEntity")
                         .bind("name", key)
                         .map(
                             (rs, ctx) -> {
@@ -87,18 +89,20 @@ public class ObservationHandler {
             handle ->
                 handle
                     .createQuery(
-                        "select k.kv_key _key, k.kv_value _value, k.value_type _type, o.epoch_number epoch, o.experiment_run_id run_id "
+                        "select k.kv_key _key, k.kv_value _value, k.value_type _type, o.epoch_number epoch, o.experiment_run_id run_id, o.timestamp "
                             + " from observation as o"
                             + " join keyvalue as k"
                             + " on o.keyvaluemapping_id = k.id"
-                            + " where o.experiment_run_id in (<run_ids>) and o.entity_name = \"ExperimentRunEntity\" and k.entity_name IS NULL")
+                            + " where o.experiment_run_id in (<run_ids>) and o.entity_name = :entityName and k.entity_name IS NULL")
                     .bindList("run_ids", runIds)
+                    .bind("entityName", "ExperimentRunEntity")
                     .map(
                         (rs, ctx) -> {
                           try {
                             return new AbstractMap.SimpleEntry<>(
                                 rs.getString("run_id"),
                                 Observation.newBuilder()
+                                    .setTimestamp(rs.getLong("timestamp"))
                                     .setEpochNumber(
                                         Value.newBuilder().setNumberValue(rs.getLong("epoch")))
                                     .setAttribute(
@@ -168,7 +172,7 @@ public class ObservationHandler {
                               handle
                                   .createQuery(sql)
                                   .bind("run_id", runId)
-                                  .bind("entity_name", "\"ExperimentRunEntity\"")
+                                  .bind("entity_name", "ExperimentRunEntity")
                                   .bind("name", attribute.getKey())
                                   .mapTo(Long.class)
                                   .findOne()
@@ -187,7 +191,7 @@ public class ObservationHandler {
                                     .createUpdate(
                                         "insert into keyvalue (field_type, kv_key, kv_value, value_type) "
                                             + "values (:field_type, :key, :value, :type)")
-                                    .bind("field_type", "\"attributes\"")
+                                    .bind("field_type", "attributes")
                                     .bind("key", attribute.getKey())
                                     .bind(
                                         "value",
@@ -210,8 +214,8 @@ public class ObservationHandler {
                                     observation.getTimestamp() == 0
                                         ? now
                                         : observation.getTimestamp())
-                                .bind("entity_name", "\"ExperimentRunEntity\"")
-                                .bind("field_type", "\"observations\"")
+                                .bind("entity_name", "ExperimentRunEntity")
+                                .bind("field_type", "observations")
                                 .bind("run_id", runId)
                                 .bind("kvid", kvId)
                                 .bind("epoch", epoch)
@@ -228,34 +232,70 @@ public class ObservationHandler {
   public InternalFuture<Void> deleteObservations(String runId, Optional<List<String>> maybeKeys) {
     return jdbi.useHandle(
         handle -> {
-          // Delete from keyvalue
-          var sql =
-              "delete from keyvalue where id in "
-                  + "(select keyvaluemapping_id from observation where entity_name=:entity_name and field_type=:field_type and experiment_run_id=:run_id)";
+          handle.useTransaction(
+              TransactionIsolationLevel.SERIALIZABLE,
+              handle1 -> {
+                // Delete from keyvalue
+                var fetchQueryString = "select o.id, o.keyvaluemapping_id from observation as o ";
+                if (maybeKeys.isPresent()) {
+                  fetchQueryString += " INNER JOIN keyvalue as kv ON o.keyvaluemapping_id = kv.id ";
+                }
+                fetchQueryString +=
+                    " WHERE o.experiment_run_id = :run_id " + " AND o.entity_name = :entityName";
 
-          if (maybeKeys.isPresent()) {
-            sql += " and kv_key in (<keys>)";
-          }
+                if (maybeKeys.isPresent()) {
+                  fetchQueryString += " AND kv.kv_key IN (<keys>)";
+                }
+                var query =
+                    handle
+                        .createQuery(fetchQueryString)
+                        .bind("run_id", runId)
+                        .bind("entityName", "ExperimentRunEntity");
 
-          var query =
-              handle
-                  .createUpdate(sql)
-                  .bind("entity_name", "\"ExperimentRunEntity\"")
-                  .bind("field_type", "\"observations\"")
-                  .bind("run_id", runId);
+                if (maybeKeys.isPresent()) {
+                  query = query.bindList("keys", maybeKeys.get());
+                }
+                var observationKVMappingList =
+                    query
+                        .map(
+                            (rs, ctx) ->
+                                new AbstractMap.SimpleEntry<>(
+                                    rs.getLong("id"), rs.getLong("keyvaluemapping_id")))
+                        .list();
 
-          if (maybeKeys.isPresent()) {
-            query = query.bindList("keys", maybeKeys.get());
-          }
+                // Remove foreignKey constraint first
+                handle
+                    .createUpdate(
+                        "update observation set keyvaluemapping_id = null where id in (<ob_ids>)")
+                    .bindList(
+                        "ob_ids",
+                        observationKVMappingList.stream()
+                            .map(AbstractMap.SimpleEntry::getKey)
+                            .collect(Collectors.toList()))
+                    .execute();
 
-          query.execute();
+                // Delete KeyValue mapped with Observation by Ids
+                handle
+                    .createUpdate("delete from keyvalue where id in (<kv_ids>)")
+                    .bind("entity_name", "ExperimentRunEntity")
+                    .bind("field_type", "observations")
+                    .bindList(
+                        "kv_ids",
+                        observationKVMappingList.stream()
+                            .map(AbstractMap.SimpleEntry::getValue)
+                            .collect(Collectors.toList()))
+                    .execute();
 
-          // Delete from observations by finding missing keyvalue matches
-          sql =
-              "delete from observation where id in "
-                  + "(select o.id from observation o left join keyvalue k on o.keyvaluemapping_id=k.id where o.experiment_run_id=:run_id and o.keyvaluemapping_id is null)";
-          query = handle.createUpdate(sql).bind("run_id", runId);
-          query.execute();
+                // Delete from observations by Ids
+                handle
+                    .createUpdate("delete from observation where id in (<ob_ids>)")
+                    .bindList(
+                        "ob_ids",
+                        observationKVMappingList.stream()
+                            .map(AbstractMap.SimpleEntry::getKey)
+                            .collect(Collectors.toList()))
+                    .execute();
+              });
         });
   }
 }
