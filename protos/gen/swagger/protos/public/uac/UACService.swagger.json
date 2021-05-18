@@ -350,7 +350,7 @@
         "GOOGLE",
         "VERTA",
         "SAML",
-        "AD"
+        "AD_OAUTH2"
       ],
       "default": "UNKNOWN"
     },
