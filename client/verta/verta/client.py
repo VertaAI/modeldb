@@ -94,7 +94,7 @@ class Client(object):
     debug : bool
         Whether to print extra verbose information to aid in debugging. Changes to this value propagate
         to any objects that are/were created from this Client.
-    operations : :class:`verta.monitoring.client.Client`
+    monitoring : :class:`verta.monitoring.client.Client`
         Monitoring sub-client
     proj : :class:`~verta._tracking.project.Project` or None
         Currently active Project.

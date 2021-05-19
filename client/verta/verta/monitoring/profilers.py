@@ -32,7 +32,7 @@ class ProfilerReference(entity._ModelDBEntity):
 
     Users should obtain ``ProfilerReference`` objects through the get and
     create methods available from :class:`Profilers`, accessible as the
-    ``profilers`` attribute on the operations sub-:class:`~verta.opertaions.monitoring.client.Client`.
+    ``profilers`` attribute on the monitoring sub-:class:`~verta.opertaions.monitoring.client.Client`.
 
     Parameters
     ----------

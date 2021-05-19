@@ -24,7 +24,7 @@ class Summary(entity._ModelDBEntity):
     """A summary object to validate and aggregate summary samples.
 
     Users should obtain summaries through one of the query or create methods of
-    the ``summaries`` attribute on the operations
+    the ``summaries`` attribute on the monitoring
     sub-:class:`~verta.opertaions.monitoring.client.Client` instead of
     initializing Summary objects.
 

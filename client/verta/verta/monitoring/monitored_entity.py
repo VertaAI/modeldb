@@ -22,7 +22,7 @@ class MonitoredEntity(entity._ModelDBEntity):
     A monitored entity provides a named context to gather together data
     summaries and alert configurations. Users should obtain a monitored entity
     through the :meth:`~verta.opertaions.monitoring.client.Client.get_or_create_monitored_entity`
-    method of the operations sub-client.
+    method of the monitoring sub-client.
 
     Parameters
     ----------

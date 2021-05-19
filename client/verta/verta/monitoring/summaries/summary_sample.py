@@ -15,7 +15,7 @@ class SummarySample(entity._ModelDBEntity):
 
     Users should obtain summary samples through one of the query or create
     methods on a :class:`Summary` or the ``summary_samples`` attribute on the
-    operations sub-:class:`~verta.opertaions.monitoring.client.Client` instead
+    monitoring sub-:class:`~verta.opertaions.monitoring.client.Client` instead
     of initializing SummarySample objects directly.
 
     Parameters
