@@ -83,7 +83,7 @@ public class TestsInit {
     ServiceSet services = ServiceSet.fromConfig(config);
     authService = services.authService;
     // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services, config.getTestJdbi(), handleExecutor);
+    DAOSet daos = DAOSet.fromServices(services, config.getTestJdbi(), handleExecutor, config);
     App.migrate(config.test.database, config.migrations);
 
     App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
