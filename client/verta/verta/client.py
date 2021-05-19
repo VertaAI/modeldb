@@ -39,9 +39,11 @@ from .registry.entities import (
     RegisteredModelVersion,
     RegisteredModelVersions,
 )
-from ._dataset_versioning.dataset import Dataset
-from ._dataset_versioning.datasets import Datasets
-from ._dataset_versioning.dataset_version import DatasetVersion
+from .dataset.entities import (
+    Dataset,
+    Datasets,
+    DatasetVersion,
+)
 from .endpoint import Endpoint
 from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
@@ -1291,7 +1293,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset.Dataset`
+        :class:`~verta.dataset.entities.Dataset`
 
         Raises
         ------
@@ -1369,7 +1371,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset.Dataset`
+        :class:`~verta.dataset.entities.Dataset`
 
         Raises
         ------
@@ -1410,7 +1412,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset.Dataset`
+        :class:`~verta.dataset.entities.Dataset`
 
         """
         if name is not None and id is not None:
@@ -1449,7 +1451,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+        :class:`~verta.dataset.entities.DatasetVersion`
 
         """
         dataset_version = DatasetVersion._get_by_id(self._conn, self._conf, id)

@@ -125,7 +125,7 @@ class _Dataset(blob.Blob):
 
         Parameters
         ----------
-        dataset_version : :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+        dataset_version : :class:`~verta.dataset.entities.DatasetVersion`
             Dataset version this blob was gotten from.
 
         """
