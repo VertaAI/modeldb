@@ -21,7 +21,7 @@ from ._internal_utils import (
     _utils,
 )
 
-from . import _repository
+from . import repository
 
 from ._tracking import (
     _Context,
@@ -651,7 +651,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._repository.Repository`
+        :class:`~verta.repository.Repository`
             Specified Repository.
 
         """
@@ -660,7 +660,7 @@ class Client(object):
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
-            repo = _repository.Repository._get(self._conn, id_=id)
+            repo = repository.Repository._get(self._conn, id_=id)
             if repo is None:
                 raise ValueError("no Repository found with ID {}".format(id))
             print("set existing Repository: {}".format(repo.name))
@@ -670,11 +670,11 @@ class Client(object):
                 workspace = self.get_workspace()
             workspace_str = "workspace {}".format(workspace)
 
-            repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
+            repo = repository.Repository._get(self._conn, name=name, workspace=workspace)
 
             if not repo:  # not found
                 try:
-                    repo = _repository.Repository._create(self._conn, name=name, workspace=workspace,
+                    repo = repository.Repository._create(self._conn, name=name, workspace=workspace,
                                                           public_within_org=public_within_org, visibility=visibility)
                 except requests.HTTPError as e:
                     if e.response.status_code == 409:  # already exists

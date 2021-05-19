@@ -6,7 +6,7 @@ from .._protos.public.modeldb.versioning import VersioningService_pb2 as _Versio
 
 from .._internal_utils import _utils
 from ..visibility import _visibility
-from . import commit
+from . import _commit
 
 import requests
 
@@ -170,7 +170,7 @@ class Repository(object):
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
-        return commit.Commit._from_id(self._conn, self, response_msg.commit.commit_sha, branch_name=branch)
+        return _commit.Commit._from_id(self._conn, self, response_msg.commit.commit_sha, branch_name=branch)
 
     def delete(self):
         """

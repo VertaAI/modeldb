@@ -21,8 +21,8 @@ from .. import code
 from .. import configuration
 from .. import dataset
 from .. import environment
-from . import blob as blob_module
-from . import diff as diff_module
+from . import _blob
+from . import _diff
 
 
 class Commit(object):
@@ -30,7 +30,7 @@ class Commit(object):
     Commit within a ModelDB Repository.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Repository.get_commit() <verta._repository.Repository.get_commit>`.
+    :meth:`Repository.get_commit() <verta.repository.Repository.get_commit>`.
 
     Attributes
     ----------
@@ -409,7 +409,7 @@ class Commit(object):
             ModelDB versioning blob.
 
         """
-        if not isinstance(blob, blob_module.Blob):
+        if not isinstance(blob, _blob.Blob):
             raise TypeError("unsupported type {}".format(type(blob)))
 
         self._lazy_load_blobs()
@@ -634,7 +634,7 @@ class Commit(object):
 
         Returns
         -------
-        :class:`~verta._repository.diff.Diff`
+        :class:`~verta.repository.Diff`
             Commit diff.
 
         Raises
@@ -668,7 +668,7 @@ class Commit(object):
 
         response_msg = _utils.json_to_proto(_utils.body_to_json(response),
                                             _VersioningService.ComputeRepositoryDiffRequest.Response)
-        return diff_module.Diff(response_msg.diffs)
+        return _diff.Diff(response_msg.diffs)
 
     def apply_diff(self, diff, message, other_parents=[]):
         """
