@@ -161,7 +161,7 @@ class Alert(entity._ModelDBEntity):
 
     @staticmethod
     def _validate_notification_channel(channel):
-        if not isinstance(channel, notification_channel._entities.NotificationChannel):
+        if not isinstance(channel, notification_channel.entities.NotificationChannel):
             raise TypeError(
                 "notification channel must be an entity object returned"
                 " from client.notification_channels.create(),"
@@ -267,7 +267,7 @@ class Alert(entity._ModelDBEntity):
 
         Parameters
         ----------
-        notification_channels : list of :class:`~verta.operations.monitoring.notification_channel._entities.NotificationChannel`
+        notification_channels : list of :class:`~verta.operations.monitoring.notification_channel.entities.NotificationChannel`
             Notification channels.
 
         Examples
@@ -408,7 +408,7 @@ class Alerts(object):
             A unique name for this alert.
         alerter : :class:`~verta.operations.monitoring.alert._Alerter`
             The configuration for this alert.
-        notification_channels : list of :class:`~verta.operations.monitoring.notification_channel._entities.NotificationChannel`, optional
+        notification_channels : list of :class:`~verta.operations.monitoring.notification_channel.entities.NotificationChannel`, optional
             Channels for this alert to propagate notifications to.
         labels : dict of str to list of str, optional
             Alert on samples that have at least one of these labels. A mapping

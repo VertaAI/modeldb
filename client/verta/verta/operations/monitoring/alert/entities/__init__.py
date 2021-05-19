@@ -1,4 +1,4 @@
-from .alert import (
+from ._alert import (
     Alert,
     Alerts,
     AlertHistoryItem,

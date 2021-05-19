@@ -4,12 +4,12 @@ from __future__ import print_function
 
 
 from .monitored_entity import MonitoredEntity
-from .notification_channel._entities import NotificationChannels
+from .notification_channel.entities import NotificationChannels
 from .profilers import Profilers
 from .summaries.summaries import Summaries
 from .summaries.summary_samples import SummarySamples
 from .labels import Labels
-from .alert._entities import Alerts
+from .alert.entities import Alerts
 
 
 class Client(object):
@@ -34,9 +34,9 @@ class Client(object):
         Summary samples collection.
     labels : :class:`~verta.operations.monitoring.labels.Labels`
         Labels collection for finding label keys and values.
-    alerts : :class:`~verta.operations.monitoring.alert._entities.Alerts`
+    alerts : :class:`~verta.operations.monitoring.alert.entities.Alerts`
         Alerts collection for configuring and managing alert objects.
-    notification_channels : :class:`~verta.operations.monitoring.notification_channel._entities.NotificationChannels`
+    notification_channels : :class:`~verta.operations.monitoring.notification_channel.entities.NotificationChannels`
         Notification channel collection.
 
     Examples

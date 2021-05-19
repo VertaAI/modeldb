@@ -8,7 +8,7 @@ from verta._internal_utils import _utils, time_utils
 from verta.operations.monitoring.notification_channel import (
     SlackNotificationChannel,
 )
-from verta.operations.monitoring.notification_channel import _entities
+from verta.operations.monitoring.notification_channel import entities
 
 
 class TestNotificationChannel:
@@ -131,11 +131,11 @@ class TestSlack:
         slack_channel = SlackNotificationChannel(webhook_url)
 
         created_channel = notification_channels.create(name, slack_channel)
-        assert isinstance(created_channel, _entities.NotificationChannel)
+        assert isinstance(created_channel, entities.NotificationChannel)
         assert created_channel._msg.type == slack_channel._TYPE
 
         retrieved_channel = notification_channels.get(id=created_channel.id)
-        assert isinstance(retrieved_channel, _entities.NotificationChannel)
+        assert isinstance(retrieved_channel, entities.NotificationChannel)
         assert retrieved_channel._msg.type == slack_channel._TYPE
 
         listed_channels = notification_channels.list()

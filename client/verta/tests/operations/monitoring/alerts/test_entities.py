@@ -18,8 +18,7 @@ from verta.operations.monitoring.alert.status import (
     Alerting,
     Ok,
 )
-from verta.operations.monitoring.alert import _entities
-from verta.operations.monitoring.alert._entities import Alert, Alerts
+from verta.operations.monitoring.alert.entities import Alert, Alerts
 from verta.operations.monitoring.summaries.queries import SummarySampleQuery
 from verta.operations.monitoring.notification_channel import (
     SlackNotificationChannel,
@@ -187,7 +186,7 @@ class TestNonReferenceAlerters:
         name = _utils.generate_default_name()
 
         created_alert = summary.alerts.create(name, alerter)
-        assert isinstance(created_alert, _entities.Alert)
+        assert isinstance(created_alert, Alert)
         assert created_alert._msg.alerter_type == alerter._TYPE
         assert created_alert.monitored_entity_id == summary.monitored_entity_id
         assert summary.id in created_alert.summary_sample_query.summary_query._ids
@@ -195,7 +194,7 @@ class TestNonReferenceAlerters:
         retrieved_alert = summary.alerts.get(id=created_alert.id)
         client_retrieved_alert = client.operations.alerts.get(id=created_alert.id)
         assert retrieved_alert.id == client_retrieved_alert.id
-        assert isinstance(retrieved_alert, _entities.Alert)
+        assert isinstance(retrieved_alert, Alert)
         assert retrieved_alert._msg.alerter_type == alerter._TYPE
         assert retrieved_alert.alerter._as_proto() == alerter._as_proto()
 
@@ -225,7 +224,7 @@ class TestReference:
         alerter = ReferenceAlerter(comparison.GreaterThan(0.7), summary_sample)
 
         created_alert = summary.alerts.create(name, alerter)
-        assert isinstance(created_alert, _entities.Alert)
+        assert isinstance(created_alert, Alert)
         assert created_alert._msg.alerter_type == alerter._TYPE
         assert created_alert.monitored_entity_id == summary.monitored_entity_id
         assert summary.id in created_alert.summary_sample_query.summary_query._ids
@@ -233,7 +232,7 @@ class TestReference:
         retrieved_alert = summary.alerts.get(id=created_alert.id)
         client_retrieved_alert = client.operations.alerts.get(id=created_alert.id)
         assert retrieved_alert.id == client_retrieved_alert.id
-        assert isinstance(retrieved_alert, _entities.Alert)
+        assert isinstance(retrieved_alert, Alert)
         assert retrieved_alert._msg.alerter_type == alerter._TYPE
         assert retrieved_alert.alerter._as_proto() == alerter._as_proto()
         assert retrieved_alert.alerter._reference_sample_id == summary_sample.id

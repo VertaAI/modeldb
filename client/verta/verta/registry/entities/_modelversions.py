@@ -7,7 +7,7 @@ import copy
 from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
 from ..._internal_utils import _utils
 
-from .modelversion import RegisteredModelVersion
+from ._modelversion import RegisteredModelVersion
 
 
 class RegisteredModelVersions(_utils.LazyList):
