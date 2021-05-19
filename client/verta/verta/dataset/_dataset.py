@@ -9,23 +9,23 @@ import hashlib
 import os
 import pathlib2
 
-from verta._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
+from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
-from verta.external import six
+from ..external import six
 
-from verta._internal_utils import (
+from .._internal_utils import (
     _file_utils,
     _request_utils,
     _utils,
 )
 
-from verta import _blob
+from .._repository import blob
 
 
 DEFAULT_DOWNLOAD_DIR = "mdb-data-download"  # to be in cwd
 
 
-class _Dataset(_blob.Blob):
+class _Dataset(blob.Blob):
     """
     Base class for dataset versioning. Not for human consumption.
 

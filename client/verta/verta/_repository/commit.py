@@ -5,20 +5,23 @@ from __future__ import print_function
 import collections
 from datetime import datetime
 import heapq
+import time
 
-from verta._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+import requests
 
-from verta.external import six
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
-from verta._internal_utils import (
+from ..external import six
+
+from .._internal_utils import (
     _artifact_utils,
     _utils,
 )
-from verta import code
-from verta import configuration
-from verta import dataset
-from verta import environment
-from verta import _blob
+from .. import code
+from .. import configuration
+from .. import dataset
+from .. import environment
+from . import blob as blob_module
 from . import diff as diff_module
 
 
@@ -406,7 +409,7 @@ class Commit(object):
             ModelDB versioning blob.
 
         """
-        if not isinstance(blob, _blob.Blob):
+        if not isinstance(blob, blob_module.Blob):
             raise TypeError("unsupported type {}".format(type(blob)))
 
         self._lazy_load_blobs()

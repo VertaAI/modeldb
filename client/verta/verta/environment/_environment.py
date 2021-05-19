@@ -5,14 +5,14 @@ from __future__ import print_function
 import os
 import sys
 
-from verta.external import six
+from ..external import six
 
-from verta._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
+from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
 
-from verta import _blob
+from .._repository import blob
 
 
-class _Environment(_blob.Blob):
+class _Environment(blob.Blob):
     """
     Base class for environment versioning. Not for human consumption.
 

@@ -2,12 +2,12 @@
 
 from __future__ import print_function
 
-from verta._protos.public.modeldb.versioning import Code_pb2 as _CodeService
+from .._protos.public.modeldb.versioning import Code_pb2 as _CodeService
 
-from verta import _blob
+from .._repository import blob
 
 
-class _Code(_blob.Blob):
+class _Code(blob.Blob):
     def __init__(self):
         """
         Base class for code versioning. Not for human consumption.
