@@ -35,12 +35,14 @@ from .._internal_utils import (
     importer,
 )
 
+from .. import _repository
+from .._repository import commit as commit_module
+# unless _repository.blob is disentangled out of _repository, importing from
+# dataset must occur after importing from _repository
 from ..dataset.entities import (
     dataset as _dataset,
     dataset_version as _dataset_version,
 )
-from .. import _repository
-from .._repository import commit as commit_module
 from .. import data_types
 from .. import deployment
 from .. import utils
