@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from ._context import _Context
 from ._project import Project
 from ._projects import Projects
 from ._experiment import Experiment

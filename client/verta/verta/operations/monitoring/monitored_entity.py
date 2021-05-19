@@ -8,15 +8,12 @@ from verta._protos.public.monitoring import (
     DataMonitoringService_pb2 as _DataMonitoringService,
 )
 
-from verta._tracking import entity
-from verta._internal_utils import (
-    _utils,
-)
-from .alert.entities import Alerts
+from verta.tracking.entities import _entity
+from verta._internal_utils import _utils
 from .summaries.summaries import Summaries
 
 
-class MonitoredEntity(entity._ModelDBEntity):
+class MonitoredEntity(_entity._ModelDBEntity):
     """A monitored entity persisted to Verta.
 
     A monitored entity provides a named context to gather together data

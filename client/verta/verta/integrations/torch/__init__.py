@@ -21,7 +21,7 @@ def verta_hook(run):
 
     Parameters
     ----------
-    run : :class:`~verta._tracking.experimentrun.ExperimentRun`
+    run : :class:`~verta.tracking.entities.ExperimentRun`
         Experiment Run tracking this model.
 
     Examples

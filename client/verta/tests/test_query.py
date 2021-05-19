@@ -6,7 +6,7 @@ import verta
 from verta._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
 
 
-OPERATORS = six.viewkeys(verta._tracking.ExperimentRuns._OP_MAP)
+OPERATORS = six.viewkeys(verta.tracking.entities.ExperimentRuns._OP_MAP)
 
 
 class TestFind:
@@ -19,7 +19,7 @@ class TestFind:
             if not attr[0].isupper()
             and not attr.startswith('_')
         }
-        unsupported_keys = all_keys - verta._tracking.ExperimentRuns._VALID_QUERY_KEYS
+        unsupported_keys = all_keys - verta.tracking.entities.ExperimentRuns._VALID_QUERY_KEYS
         proj = client.set_project()
         expt = client.set_experiment()
 

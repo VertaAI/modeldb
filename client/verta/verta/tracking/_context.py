@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from .experiment import Experiment
-from .project import Project
+from .entities import Experiment
+from .entities import Project
 
 
 class _Context(object):

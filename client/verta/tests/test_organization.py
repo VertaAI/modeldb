@@ -7,7 +7,7 @@ from verta import Client
 from verta._internal_utils import _utils
 from verta._protos.public.uac import Organization_pb2 as _Organization
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
-from verta._tracking.organization import Organization, CollaboratorType
+from verta.tracking._organization import Organization, CollaboratorType
 
 pytestmark = pytest.mark.not_oss
 

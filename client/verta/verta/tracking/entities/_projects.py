@@ -4,13 +4,11 @@ from __future__ import print_function
 
 import copy
 
-from .project import Project
+from verta._protos.public.modeldb import ProjectService_pb2 as _ProjectService
 
-from .._protos.public.modeldb import ProjectService_pb2 as _ProjectService
+from verta._internal_utils import _utils
 
-from .._internal_utils import (
-    _utils,
-)
+from ._project import Project
 
 
 class Projects(_utils.LazyList):

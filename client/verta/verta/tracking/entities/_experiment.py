@@ -3,19 +3,13 @@
 from __future__ import print_function
 
 import requests
-import warnings
 
-from .entity import _ModelDBEntity
-from .experimentruns import ExperimentRuns
+from verta._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
 
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
+from verta._internal_utils import _utils
 
-from ..external import six
-
-from .._internal_utils import (
-    _utils,
-)
+from ._entity import _ModelDBEntity
+from ._experimentruns import ExperimentRuns
 
 
 class Experiment(_ModelDBEntity):
@@ -34,7 +28,7 @@ class Experiment(_ModelDBEntity):
         ID of this Experiment.
     name : str
         Name of this Experiment.
-    expt_runs : :class:`~verta._tracking.ExperimentRuns`
+    expt_runs : :class:`~verta.tracking.entities.ExperimentRuns`
         Experiment Runs under this Experiment.
 
     """

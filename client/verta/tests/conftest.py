@@ -411,7 +411,7 @@ def created_entities():
     yield to_delete
 
     # move orgs to the end
-    from verta._tracking.organization import Organization
+    from verta.tracking._organization import Organization
     is_org = lambda entity: entity.__class__ is Organization
     to_delete = itertools.chain(
         filterfalse(is_org, to_delete),

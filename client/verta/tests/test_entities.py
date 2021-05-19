@@ -9,7 +9,7 @@ import requests
 import pytest
 
 from verta.registry.entities import RegisteredModels
-from verta._tracking.deployable_entity import _CACHE_DIR
+from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from . import utils
 
 import verta

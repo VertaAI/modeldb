@@ -13,14 +13,14 @@ from verta._protos.public.monitoring.Summary_pb2 import (
     FindSummarySampleRequest,
     SummarySample as SummarySampleProto,
 )
-from verta._tracking import entity
+from verta.tracking.entities import _entity
 from verta import data_types
 from verta.operations.monitoring.alert.entities import Alerts
 from .queries import SummarySampleQuery
 from .summary_sample import SummarySample
 
 
-class Summary(entity._ModelDBEntity):
+class Summary(_entity._ModelDBEntity):
     """A summary object to validate and aggregate summary samples.
 
     Users should obtain summaries through one of the query or create methods of

@@ -5,16 +5,16 @@ from __future__ import print_function
 import copy
 import warnings
 
-from .experimentrun import ExperimentRun
+from verta._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
 
-from .._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
+from verta.external import six
 
-from ..external import six
-
-from .._internal_utils import (
+from verta._internal_utils import (
     _utils,
     importer,
 )
+
+from ._experimentrun import ExperimentRun
 
 
 class ExperimentRuns(_utils.LazyList):

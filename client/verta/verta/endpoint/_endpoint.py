@@ -17,7 +17,7 @@ from ..endpoint.update.rules import _UpdateRule
 from ..deployment import DeployedModel
 from ..endpoint.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
 from .._internal_utils import _utils
-from .._tracking import experimentrun
+from verta.tracking.entities import ExperimentRun
 from ..registry.entities import RegisteredModelVersion
 from ..visibility import _visibility
 
@@ -174,7 +174,7 @@ class Endpoint(object):
 
         Parameters
         ----------
-        model_reference : :class:`~verta._tracking.experimentrun.ExperimentRun` or :class:`~verta.registry.entities.RegisteredModelVersion`
+        model_reference : :class:`~verta.tracking.entities.ExperimentRun` or :class:`~verta.registry.entities.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
         strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the Endpoint.
@@ -192,7 +192,7 @@ class Endpoint(object):
         status : dict of str to {None, bool, float, int, str, list, dict}
 
         """
-        if not isinstance(model_reference, (RegisteredModelVersion, experimentrun.ExperimentRun)):
+        if not isinstance(model_reference, (RegisteredModelVersion, ExperimentRun)):
             raise TypeError("`model_reference` must be an ExperimentRun or RegisteredModelVersion")
 
         if not strategy:
@@ -259,7 +259,7 @@ class Endpoint(object):
 
         if isinstance(model_reference, RegisteredModelVersion):
             response = _utils.make_request("POST", url, self._conn, json={"model_version_id": model_reference.id})
-        elif isinstance(model_reference, experimentrun.ExperimentRun):
+        elif isinstance(model_reference, ExperimentRun):
             response = _utils.make_request("POST", url, self._conn, json={"run_id": model_reference.id})
         else:
             raise TypeError("`model_reference` must be an ExperimentRun or RegisteredModelVersion")
@@ -372,7 +372,7 @@ class Endpoint(object):
         if "run_id" in update_dict and "model_version_id" in update_dict:
             raise ValueError("cannot provide both run_id and model_version_id")
         elif "run_id" in update_dict:
-            model_reference = experimentrun.ExperimentRun._get_by_id(self._conn, self._conf, id=update_dict["run_id"])
+            model_reference = ExperimentRun._get_by_id(self._conn, self._conf, id=update_dict["run_id"])
         elif "model_version_id" in update_dict:
             model_reference = RegisteredModelVersion._get_by_id(self._conn, self._conf, id=update_dict["model_version_id"])
         else:

@@ -7,7 +7,7 @@ import re
 import warnings
 
 import requests
-from verta._tracking.organization import Organization
+from verta.tracking._organization import Organization
 from ._internal_utils._utils import check_unnecessary_params_warning
 
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -23,8 +23,8 @@ from ._internal_utils import (
 
 from . import _repository
 
-from ._tracking import (
-    _Context,
+from .tracking import _Context
+from .tracking.entities import (
     Project,
     Projects,
     Experiment,
@@ -96,9 +96,9 @@ class Client(object):
         to any objects that are/were created from this Client.
     operations : :class:`verta.operations.monitoring.client.Client`
         Monitoring sub-client
-    proj : :class:`~verta._tracking.project.Project` or None
+    proj : :class:`~verta.tracking.entities.Project` or None
         Currently active Project.
-    expt : :class:`~verta._tracking.experiment.Experiment` or None
+    expt : :class:`~verta.tracking.entities.Experiment` or None
         Currently active Experiment.
 
     """
@@ -335,7 +335,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.project.Project`
+        :class:`~verta.tracking.entities.Project`
 
         """
         if name is not None and id is not None:
@@ -397,7 +397,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.project.Project`
+        :class:`~verta.tracking.entities.Project`
 
         Raises
         ------
@@ -447,7 +447,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experiment.Experiment`
+        :class:`~verta.tracking.entities.Experiment`
 
         """
         if name is not None and id is not None:
@@ -495,7 +495,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experiment.Experiment`
+        :class:`~verta.tracking.entities.Experiment`
 
         Raises
         ------
@@ -545,7 +545,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experimentrun.ExperimentRun`
+        :class:`~verta.tracking.entities.ExperimentRun`
 
         """
         if name is not None and id is not None:
@@ -592,7 +592,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experimentrun.ExperimentRun`
+        :class:`~verta.tracking.entities.ExperimentRun`
 
         Raises
         ------
@@ -994,7 +994,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.project.Project`
+        :class:`~verta.tracking.entities.Project`
 
         Raises
         ------
@@ -1036,7 +1036,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experiment.Experiment`
+        :class:`~verta.tracking.entities.Experiment`
 
         Raises
         ------
@@ -1076,7 +1076,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experimentrun.ExperimentRun`
+        :class:`~verta.tracking.entities.ExperimentRun`
 
         Raises
         ------

@@ -10,7 +10,7 @@ from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
-from .._tracking import entity
+from verta.tracking.entities import _entity
 from .._repository import commit
 from .._internal_utils import (
     _artifact_utils,
@@ -18,7 +18,7 @@ from .._internal_utils import (
 )
 
 
-class DatasetVersion(entity._ModelDBEntity):
+class DatasetVersion(_entity._ModelDBEntity):
     """
     Object representing a ModelDB dataset version.
 

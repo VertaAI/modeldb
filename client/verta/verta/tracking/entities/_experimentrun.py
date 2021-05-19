@@ -4,30 +4,24 @@ from __future__ import print_function
 
 import ast
 import copy
-import glob
 import os
 import pathlib2
 import pprint
 import shutil
 import sys
-import tempfile
 import time
 import warnings
-import zipfile
 
 import requests
 
-from .entity import _ModelDBEntity, _MODEL_ARTIFACTS_ATTR_KEY
-from .deployable_entity import _DeployableEntity
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.modeldb import CommonService_pb2 as _CommonService
+from verta._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
 
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.modeldb import CommonService_pb2 as _CommonService
-from .._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
+from verta.external import six
+from verta.external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
 
-from ..external import six
-from ..external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
-
-from .._internal_utils import (
+from verta._internal_utils import (
     _artifact_utils,
     _pip_requirements_utils,
     _request_utils,
@@ -35,16 +29,19 @@ from .._internal_utils import (
     importer,
 )
 
-from .._dataset_versioning import (
+from verta._dataset_versioning import (
     dataset as _dataset,
     dataset_version as _dataset_version,
 )
-from .. import _repository
-from .._repository import commit as commit_module
-from .. import data_types
-from .. import deployment
-from .. import utils
-from ..environment import _Environment, Python
+from verta import _repository
+from verta._repository import commit as commit_module
+from verta import data_types
+from verta import deployment
+from verta import utils
+from verta.environment import Python
+
+from ._entity import _MODEL_ARTIFACTS_ATTR_KEY
+from ._deployable_entity import _DeployableEntity
 
 
 class ExperimentRun(_DeployableEntity):
@@ -517,7 +514,7 @@ class ExperimentRun(_DeployableEntity):
 
         Returns
         -------
-        :class:`~verta._tracking.experimentrun.ExperimentRun`
+        :class:`~verta.tracking.entities.ExperimentRun`
 
         """
         # get info for the current run
