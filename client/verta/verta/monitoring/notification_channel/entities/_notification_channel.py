@@ -2,10 +2,10 @@
 
 import warnings
 
-from ....._protos.public.monitoring import Alert_pb2 as _AlertService
-from ....._internal_utils import _utils, time_utils
-from ....._tracking import entity, _Context
-from ... import utils
+from verta._protos.public.monitoring import Alert_pb2 as _AlertService
+from verta._internal_utils import _utils, time_utils
+from verta._tracking import entity, _Context
+from verta.monitoring import utils
 
 
 class NotificationChannel(entity._ModelDBEntity):

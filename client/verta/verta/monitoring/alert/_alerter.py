@@ -6,7 +6,7 @@ from verta.external import six
 
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
 from verta.common import comparison as comparison_module
-from .. import utils
+from verta.monitoring import utils
 
 
 # TODO: move into separate files

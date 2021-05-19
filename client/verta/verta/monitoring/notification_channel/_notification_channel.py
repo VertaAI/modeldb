@@ -2,9 +2,9 @@
 
 import abc
 
-from ....external import six
+from verta.external import six
 
-from ...._protos.public.monitoring import Alert_pb2 as _AlertService
+from verta._protos.public.monitoring import Alert_pb2 as _AlertService
 
 
 # TODO: move into separate files
