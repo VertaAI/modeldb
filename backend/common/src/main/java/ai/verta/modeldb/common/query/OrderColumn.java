@@ -1,5 +1,7 @@
 package ai.verta.modeldb.common.query;
 
+import java.util.List;
+
 public class OrderColumn implements OrderItem {
   public final String column;
   public final boolean ascending;
@@ -22,5 +24,10 @@ public class OrderColumn implements OrderItem {
   @Override
   public String getColumn() {
     return column;
+  }
+
+  @Override
+  public List<OrderColumn> getColumns() {
+    return null;
   }
 }
