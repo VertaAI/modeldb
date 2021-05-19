@@ -19,13 +19,13 @@ from .._internal_utils import (
     _utils,
 )
 
-from .._repository import blob
+from ..repository import _blob
 
 
 DEFAULT_DOWNLOAD_DIR = "mdb-data-download"  # to be in cwd
 
 
-class _Dataset(blob.Blob):
+class _Dataset(_blob.Blob):
     """
     Base class for dataset versioning. Not for human consumption.
 
@@ -109,7 +109,7 @@ class _Dataset(blob.Blob):
 
         Parameters
         ----------
-        commit : :class:`verta._repository.commit.Commit`
+        commit : :class:`verta.repository.Commit`
             Commit this blob was gotten from.
         blob_path : str
             Location of this blob within its Repository.
