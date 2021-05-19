@@ -4,11 +4,12 @@ import warnings
 
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
 from verta._internal_utils import _utils, time_utils
-from verta._tracking import entity, _Context
-from verta.monitoring import utils
+from verta.tracking import _Context
+from verta.tracking.entities import _entity
+from ... import utils
 
 
-class NotificationChannel(entity._ModelDBEntity):
+class NotificationChannel(_entity._ModelDBEntity):
     """
     A notification channel persisted to Verta.
 

@@ -19,7 +19,7 @@ import verta
 import verta.dataset
 from verta import visibility
 from verta.environment import Python
-from verta._tracking.deployable_entity import _CACHE_DIR
+from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
 from verta.registry import lock
 from verta._internal_utils import (

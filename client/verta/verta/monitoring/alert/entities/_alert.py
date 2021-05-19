@@ -4,7 +4,8 @@ import warnings
 
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
 from verta._internal_utils import _utils, time_utils
-from verta._tracking import entity, _Context
+from verta.tracking import _Context
+from verta.tracking.entities import _entity
 from verta.monitoring import notification_channel
 from verta.monitoring import utils
 from verta.monitoring.summaries.queries import (
@@ -15,7 +16,7 @@ from .. import _alerter
 from .. import status as status_module
 
 
-class Alert(entity._ModelDBEntity):
+class Alert(_entity._ModelDBEntity):
     """
     An alert persisted to Verta.
 

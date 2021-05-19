@@ -4,24 +4,18 @@ from __future__ import print_function
 
 import re
 
-import requests
-import warnings
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.modeldb import ProjectService_pb2 as _ProjectService
+from verta._protos.public.uac import Collaborator_pb2 as _Collaborator
 
-from .entity import _ModelDBEntity
-from .experimentruns import ExperimentRuns
-from .experiments import Experiments
+from verta.external import six
 
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.modeldb import ProjectService_pb2 as _ProjectService
+from verta._internal_utils import _utils
 
-from ..external import six
+from ._entity import _ModelDBEntity
+from ._experimentruns import ExperimentRuns
+from ._experiments import Experiments
 
-from .._internal_utils import (
-    _utils,
-)
-
-from .._protos.public.uac import Collaborator_pb2 as _Collaborator
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 class Project(_ModelDBEntity):
     """
@@ -39,7 +33,7 @@ class Project(_ModelDBEntity):
         ID of this Project.
     name : str
         Name of this Project.
-    expt_runs : :class:`~verta._tracking.ExperimentRuns`
+    expt_runs : :class:`~verta.tracking.entities.ExperimentRuns`
         Experiment Runs under this Project.
 
     """

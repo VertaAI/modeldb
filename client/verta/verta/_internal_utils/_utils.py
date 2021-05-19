@@ -467,7 +467,7 @@ class LazyList(object):
 
     def set_page_limit(self, limit):
         """
-        Sets the number of entites to fetch per backend call during iteration.
+        Sets the number of entities to fetch per backend call during iteration.
 
         By default, each call fetches a batch of 100 entities, but lowering
         this value may be useful for substantially larger responses.

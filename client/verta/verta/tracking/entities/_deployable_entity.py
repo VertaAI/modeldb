@@ -15,17 +15,17 @@ import zipfile
 
 import requests
 
-from .entity import _ModelDBEntity
-from .._internal_utils import (
+from verta._internal_utils import (
     _artifact_utils,
     _histogram_utils,
     _utils,
 )
 
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 
+from verta.external import six
 
-from ..external import six
+from ._entity import _ModelDBEntity
 
 
 # location in DeploymentService model container

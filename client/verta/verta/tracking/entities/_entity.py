@@ -6,19 +6,17 @@ import importlib
 import os
 import time
 import zipfile
-import requests
 
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.modeldb import CommonService_pb2 as _CommonService
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 
-from ..external import six
+from verta.external import six
 
-from .. import data_types
-from ..visibility import (
+from verta import data_types
+from verta.visibility import (
     _visibility,
     _workspace_default,
 )
-from .._internal_utils import (
+from verta._internal_utils import (
     _artifact_utils,
     _git_utils,
     _utils,
@@ -302,9 +300,9 @@ class _ModelDBEntity(object):
                     raise ValueError("`exec_path` \"{}\" must be a valid filepath".format(exec_path))
 
         # TODO: remove this circular dependency
-        from .project import Project
-        from .experiment import Experiment
-        from .experimentrun import ExperimentRun
+        from ._project import Project
+        from ._experiment import Experiment
+        from ._experimentrun import ExperimentRun
         if isinstance(self, Project):  # TODO: not this
             Message = self._service.LogProjectCodeVersion
             endpoint = "logProjectCodeVersion"
@@ -333,7 +331,7 @@ class _ModelDBEntity(object):
             if exec_path:
                 msg.code_version.git_snapshot.filepaths.append(exec_path)
 
-            from ..code import _git  # avoid Python 2 top-level circular import
+            from verta.code import _git  # avoid Python 2 top-level circular import
             code_ver = _git.Git(
                 repo_url=repo_url, commit_hash=commit_hash, is_dirty=is_dirty,
                 autocapture=autocapture,
@@ -425,9 +423,9 @@ class _ModelDBEntity(object):
 
         """
         # TODO: remove this circular dependency
-        from .project import Project
-        from .experiment import Experiment
-        from .experimentrun import ExperimentRun
+        from ._project import Project
+        from ._experiment import Experiment
+        from ._experimentrun import ExperimentRun
         if isinstance(self, Project):  # TODO: not this
             Message = self._service.GetProjectCodeVersion
             endpoint = "getProjectCodeVersion"

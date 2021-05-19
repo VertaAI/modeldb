@@ -2,7 +2,8 @@
 
 import time
 
-from verta._tracking import entity, _Context
+from verta.tracking import _Context
+from verta.tracking.entities import _entity
 from verta._protos.public.monitoring import (
     DataMonitoringService_pb2 as _DataMonitoringService,
 )
@@ -24,7 +25,7 @@ from verta.environment import Python
 from .utils import extract_id
 
 
-class ProfilerReference(entity._ModelDBEntity):
+class ProfilerReference(_entity._ModelDBEntity):
     """Represents an uploaded data profiler.
 
     A ProfilerReference represents an uploaded data profiler and provides

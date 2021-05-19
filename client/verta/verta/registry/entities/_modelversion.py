@@ -25,8 +25,8 @@ from ..._internal_utils import (
 )
 from ... import utils
 
-from ..._tracking.entity import _MODEL_ARTIFACTS_ATTR_KEY
-from ..._tracking.deployable_entity import _DeployableEntity
+from ...tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
+from ...tracking.entities._deployable_entity import _DeployableEntity
 from ...environment import _Environment, Python
 from .. import lock
 

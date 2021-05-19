@@ -9,7 +9,7 @@ from verta.external import six
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 
-from verta._tracking import entity
+from verta.tracking.entities import _entity
 from verta._internal_utils import (
     _utils,
 )
@@ -18,7 +18,7 @@ from .dataset_version import DatasetVersion
 from .dataset_versions import DatasetVersions
 
 
-class Dataset(entity._ModelDBEntity):
+class Dataset(_entity._ModelDBEntity):
     """
     Object representing a ModelDB dataset.
 

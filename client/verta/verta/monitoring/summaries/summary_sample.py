@@ -6,11 +6,11 @@ import json
 
 from verta._internal_utils import time_utils
 from verta._protos.public.monitoring import Summary_pb2 as SummaryService
-from verta._tracking import entity
+from verta.tracking.entities import _entity
 from verta import data_types
 
 
-class SummarySample(entity._ModelDBEntity):
+class SummarySample(_entity._ModelDBEntity):
     """A summary sample object capturing data for later comparison.
 
     Users should obtain summary samples through one of the query or create
