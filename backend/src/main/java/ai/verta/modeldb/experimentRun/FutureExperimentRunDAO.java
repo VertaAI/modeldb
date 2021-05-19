@@ -732,7 +732,8 @@ public class FutureExperimentRunDAO {
     final var futureExperimentRuns =
         futureProjectIds.thenCompose(
             accessibleProjectIdsQueryContext -> {
-              if (accessibleProjectIdsQueryContext.getConditions().isEmpty()) {
+              if (!accessibleProjectIdsQueryContext.isAllowedAllResources()
+                  && accessibleProjectIdsQueryContext.getConditions().isEmpty()) {
                 return InternalFuture.completedInternalFuture(new ArrayList<ExperimentRun>());
               } else {
                 final var futureProjectIdsContext =
@@ -1188,7 +1189,7 @@ public class FutureExperimentRunDAO {
               resources -> {
                 boolean allowedAllResources = checkAllResourceAllowed(resources);
                 if (allowedAllResources) {
-                  return new QueryFilterContext();
+                  return new QueryFilterContext().setAllowedAllResources(allowedAllResources);
                 } else {
                   List<String> accessibleProjectIds =
                       resources.stream()

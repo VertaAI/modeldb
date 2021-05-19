@@ -13,6 +13,7 @@ public class QueryFilterContext {
   private final List<OrderItem> orderItems;
   private Optional<Integer> pageNumber;
   private Optional<Integer> pageSize;
+  private boolean allowedAllResources = false;
 
   public QueryFilterContext() {
     conditions = new LinkedList<>();
@@ -67,12 +68,22 @@ public class QueryFilterContext {
     return this;
   }
 
+  public QueryFilterContext setAllowedAllResources(boolean allowedAllResources) {
+    this.allowedAllResources = allowedAllResources;
+    return this;
+  }
+
+  public boolean isAllowedAllResources() {
+    return allowedAllResources;
+  }
+
   public QueryFilterContext combine(QueryFilterContext other) {
     this.conditions.addAll(other.conditions);
     this.binds.addAll(other.binds);
     this.orderItems.addAll(other.orderItems);
     this.pageNumber = this.pageNumber.or(() -> other.pageNumber);
     this.pageSize = this.pageSize.or(() -> other.pageSize);
+    this.allowedAllResources = other.allowedAllResources;
     return this;
   }
 
