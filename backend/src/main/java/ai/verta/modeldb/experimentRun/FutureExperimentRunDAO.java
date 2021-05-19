@@ -50,6 +50,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
@@ -777,21 +778,34 @@ public class FutureExperimentRunDAO {
 
                                     if (!queryContext.getOrderItems().isEmpty()) {
                                       sql += " ORDER BY ";
+                                      List<String> orderColumnQueryString = new ArrayList<>();
                                       for (final var item :
                                           new EnumerateList<>(queryContext.getOrderItems())
                                               .getList()) {
                                         if (item.getValue().getTable() != null) {
-                                          sql +=
-                                              String.format(
-                                                  " join_table_%d.value ", item.getIndex());
+                                          for (OrderColumn orderColumn :
+                                              item.getValue().getColumns()) {
+                                            var orderColumnStr =
+                                                String.format(
+                                                    " join_table_%d.%s ",
+                                                    item.getIndex(), orderColumn.getColumn());
+                                            orderColumnStr +=
+                                                String.format(
+                                                    " %s ",
+                                                    orderColumn.getAscending() ? "ASC" : "DESC");
+                                            orderColumnQueryString.add(orderColumnStr);
+                                          }
                                         } else if (item.getValue().getColumn() != null) {
-                                          sql += String.format(" %s ", item.getValue().getColumn());
+                                          var orderColumnStr =
+                                              String.format(" %s ", item.getValue().getColumn());
+                                          orderColumnStr +=
+                                              String.format(
+                                                  " %s ",
+                                                  item.getValue().getAscending() ? "ASC" : "DESC");
+                                          orderColumnQueryString.add(orderColumnStr);
                                         }
-                                        sql +=
-                                            String.format(
-                                                " %s ",
-                                                item.getValue().getAscending() ? "ASC" : "DESC");
                                       }
+                                      sql += String.join(",", orderColumnQueryString);
                                     }
 
                                     // Backwards compatibility: fetch everything
