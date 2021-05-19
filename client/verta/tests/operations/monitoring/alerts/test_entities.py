@@ -9,18 +9,18 @@ from verta._internal_utils import (
     time_utils,
 )
 from verta.common import comparison
-from verta.operations.monitoring.alert import (
+from verta.monitoring.alert import (
     FixedAlerter,
     RangeAlerter,
     ReferenceAlerter,
 )
-from verta.operations.monitoring.alert.status import (
+from verta.monitoring.alert.status import (
     Alerting,
     Ok,
 )
-from verta.operations.monitoring.alert.entities import Alert, Alerts
-from verta.operations.monitoring.summaries.queries import SummarySampleQuery
-from verta.operations.monitoring.notification_channel import (
+from verta.monitoring.alert.entities import Alert, Alerts
+from verta.monitoring.summaries.queries import SummarySampleQuery
+from verta.monitoring.notification_channel import (
     SlackNotificationChannel,
 )
 from verta import data_types

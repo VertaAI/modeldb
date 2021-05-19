@@ -10,7 +10,7 @@ from ... import notification_channel
 from ... import utils
 from .. import _alerter
 from .. import status as status_module
-from verta.operations.monitoring.summaries.queries import (
+from verta.monitoring.summaries.queries import (
     SummaryQuery,
     SummarySampleQuery,
 )
@@ -34,9 +34,9 @@ class Alert(entity._ModelDBEntity):
         History of this alert's status changes.
     monitored_entity_id : int
         ID of the monitored entity this alert is associated with.
-    status : :class:`~verta.operations.monitoring.alert.status._AlertStatus`
+    status : :class:`~verta.monitoring.alert.status._AlertStatus`
         Current status of this alert.
-    summary_sample_query : :class:`~verta.operations.monitoring.summaries.SummarySampleQuery`
+    summary_sample_query : :class:`~verta.monitoring.summaries.SummarySampleQuery`
         The summary samples this alert monitors.
 
     Examples
@@ -267,14 +267,14 @@ class Alert(entity._ModelDBEntity):
 
         Parameters
         ----------
-        notification_channels : list of :class:`~verta.operations.monitoring.notification_channel.entities.NotificationChannel`
+        notification_channels : list of :class:`~verta.monitoring.notification_channel.entities.NotificationChannel`
             Notification channels.
 
         Examples
         --------
         .. code-block:: python
 
-            from verta.operations.monitoring.notification_channel import SlackNotificationChannel
+            from verta.monitoring.notification_channel import SlackNotificationChannel
 
             channels = Client().operations.notification_channels
             channel = notification_channels.create(
@@ -309,7 +309,7 @@ class Alert(entity._ModelDBEntity):
 
         Parameters
         ----------
-        status : :class:`~verta.operations.monitoring.alert.status._AlertStatus`
+        status : :class:`~verta.monitoring.alert.status._AlertStatus`
             Alert status.
         event_time : datetime.datetime or int, optional
             An override event time to assign to this alert status update.
@@ -319,7 +319,7 @@ class Alert(entity._ModelDBEntity):
         --------
         .. code-block:: python
 
-            from verta.operations.monitoring.alert.status import Ok
+            from verta.monitoring.alert.status import Ok
             alert.set_status(Ok())
 
         """
@@ -368,7 +368,7 @@ class Alerts(object):
         A configuration object used by conn methods.
     monitored_entity_id : int, optional
         A monitored entity id to use for all alerts in this collection
-    summary : :class:`~verta.operations.monitoring.summaries.summary.Summary`, optional
+    summary : :class:`~verta.monitoring.summaries.summary.Summary`, optional
         A summary for creating and finding alerts in this collection, and finding samples to alert on.
 
     Examples
@@ -406,9 +406,9 @@ class Alerts(object):
         ----------
         name : str
             A unique name for this alert.
-        alerter : :class:`~verta.operations.monitoring.alert._Alerter`
+        alerter : :class:`~verta.monitoring.alert._Alerter`
             The configuration for this alert.
-        notification_channels : list of :class:`~verta.operations.monitoring.notification_channel.entities.NotificationChannel`, optional
+        notification_channels : list of :class:`~verta.monitoring.notification_channel.entities.NotificationChannel`, optional
             Channels for this alert to propagate notifications to.
         labels : dict of str to list of str, optional
             Alert on samples that have at least one of these labels. A mapping

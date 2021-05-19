@@ -39,7 +39,7 @@ class MonitoredEntity(entity._ModelDBEntity):
         The name of this monitored entity.
     workspace : str
         The name of the workspace which this monitored entity belongs to.
-    alerts : :class:`~verta.operations.monitoring.alert.entities.Alerts`
+    alerts : :class:`~verta.monitoring.alert.entities.Alerts`
         The sub-client for managing alerts defined for this monitored entity.
 
     Examples

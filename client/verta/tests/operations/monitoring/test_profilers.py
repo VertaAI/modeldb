@@ -4,8 +4,8 @@ import pytest
 
 from verta.environment import Python
 from verta._internal_utils._utils import generate_default_name
-from verta.operations.monitoring.profiler import ContinuousHistogramProfiler
-from verta.operations.monitoring.profilers import ProfilerReference
+from verta.monitoring.profiler import ContinuousHistogramProfiler
+from verta.monitoring.profilers import ProfilerReference
 import pytest
 
 

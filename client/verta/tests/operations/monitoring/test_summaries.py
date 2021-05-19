@@ -6,9 +6,9 @@ from datetime import timedelta
 import pytest
 
 from verta._internal_utils._utils import generate_default_name
-from verta.operations.monitoring.summaries.summary import Summary
-from verta.operations.monitoring.summaries.summary_sample import SummarySample
-from verta.operations.monitoring.summaries.queries import (
+from verta.monitoring.summaries.summary import Summary
+from verta.monitoring.summaries.summary_sample import SummarySample
+from verta.monitoring.summaries.queries import (
     SummaryQuery,
     SummarySampleQuery,
 )

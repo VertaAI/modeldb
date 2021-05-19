@@ -26,17 +26,17 @@ class Client(object):
 
     Attributes
     ----------
-    profilers : :class:`~verta.operations.monitoring.profilers.Profilers`
+    profilers : :class:`~verta.monitoring.profilers.Profilers`
         Profilers collection.
-    summaries : :class:`~verta.operations.monitoring.summaries.Summaries`
+    summaries : :class:`~verta.monitoring.summaries.Summaries`
         Summaries collection.
-    summary_samples : :class:`~verta.operations.monitoring.summaries.SummarySamples`
+    summary_samples : :class:`~verta.monitoring.summaries.SummarySamples`
         Summary samples collection.
-    labels : :class:`~verta.operations.monitoring.labels.Labels`
+    labels : :class:`~verta.monitoring.labels.Labels`
         Labels collection for finding label keys and values.
-    alerts : :class:`~verta.operations.monitoring.alert.entities.Alerts`
+    alerts : :class:`~verta.monitoring.alert.entities.Alerts`
         Alerts collection for configuring and managing alert objects.
-    notification_channels : :class:`~verta.operations.monitoring.notification_channel.entities.NotificationChannels`
+    notification_channels : :class:`~verta.monitoring.notification_channel.entities.NotificationChannels`
         Notification channel collection.
 
     Examples
@@ -111,7 +111,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
+        :class:`~verta.monitoring.monitored_entity.MonitoredEntity`
             A monitored entity object.
         """
         if name and id:

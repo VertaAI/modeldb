@@ -46,7 +46,7 @@ from .endpoint import Endpoint
 from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
-from .operations.monitoring.client import Client as MonitoringClient
+from .monitoring.client import Client as MonitoringClient
 
 class Client(object):
     """
@@ -94,7 +94,7 @@ class Client(object):
     debug : bool
         Whether to print extra verbose information to aid in debugging. Changes to this value propagate
         to any objects that are/were created from this Client.
-    operations : :class:`verta.operations.monitoring.client.Client`
+    operations : :class:`verta.monitoring.client.Client`
         Monitoring sub-client
     proj : :class:`~verta._tracking.project.Project` or None
         Currently active Project.

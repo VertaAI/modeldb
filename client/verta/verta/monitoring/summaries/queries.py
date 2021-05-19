@@ -34,7 +34,7 @@ class SummaryQuery(object):
         Only fetch these summaries with one of these names.
     data_type_classes : list of :class:`~verta.data_types._VertaDataType`, optional
         Only fetch summaries with one of these data types.
-    monitored_entities : list of :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`, optional
+    monitored_entities : list of :class:`~verta.monitoring.monitored_entity.MonitoredEntity`, optional
         Only fetch summaries belonging to one of these monitored entities.
     page_number : int, default 1
         Pagination page number for the backend query request. Used in
@@ -48,7 +48,7 @@ class SummaryQuery(object):
     .. code-block:: python
 
         from datetime import datetime, timezone
-        from verta.operations.monitoring.summary import SummaryQuery, SummarySampleQuery
+        from verta.monitoring.summary import SummaryQuery, SummarySampleQuery
         from verta.data_types import FloatHistogram, DiscreteHistogram
 
         summary_query = SummaryQuery(
@@ -174,7 +174,7 @@ class SummarySampleQuery(object):
     .. code-block:: python
 
         from datetime import datetime, timezone
-        from verta.operations.monitoring.summary import SummaryQuery, SummarySampleQuery
+        from verta.monitoring.summary import SummaryQuery, SummarySampleQuery
 
         samples = Client().operations.summary_samples
         sample_query = SummarySampleQuery(

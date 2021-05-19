@@ -28,7 +28,7 @@ class NotificationChannel(entity._ModelDBEntity):
     --------
     .. code-block:: python
 
-        from verta.operations.monitoring.notification_channel import SlackNotificationChannel
+        from verta.monitoring.notification_channel import SlackNotificationChannel
 
         channels = Client().operations.notification_channels
         channel = notification_channels.create(
@@ -227,7 +227,7 @@ class NotificationChannels(object):
         ----------
         name : str
             A unique name for this notification channel.
-        channel : :class:`~verta.operations.monitoring.notification_channel._NotificationChannel`
+        channel : :class:`~verta.monitoring.notification_channel._NotificationChannel`
             The configuration for this notification channel.
         workspace : str, optional
             Workspace in which to create this notification channel. Defaults to
@@ -248,7 +248,7 @@ class NotificationChannels(object):
         --------
         .. code-block:: python
 
-            from verta.operations.monitoring.notification_channel import SlackNotificationChannel
+            from verta.monitoring.notification_channel import SlackNotificationChannel
 
             channels = Client().operations.notification_channels
 
@@ -336,7 +336,7 @@ class NotificationChannels(object):
         ----------
         name : str, optional
             A unique name for this notification channel.
-        channel : :class:`~verta.operations.monitoring.notification_channel._NotificationChannel`, optional
+        channel : :class:`~verta.monitoring.notification_channel._NotificationChannel`, optional
             The configuration for this notification channel.
         workspace : str, optional
             Workspace in which to create this notification channel. Defaults to
@@ -360,7 +360,7 @@ class NotificationChannels(object):
         --------
         .. code-block:: python
 
-            from verta.operations.monitoring.notification_channel import SlackNotificationChannel
+            from verta.monitoring.notification_channel import SlackNotificationChannel
 
             channels = Client().operations.notification_channels
 

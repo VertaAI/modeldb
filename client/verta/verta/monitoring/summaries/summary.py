@@ -15,7 +15,7 @@ from verta._protos.public.monitoring.Summary_pb2 import (
 )
 from verta._tracking import entity
 from verta import data_types
-from verta.operations.monitoring.alert.entities import Alerts
+from verta.monitoring.alert.entities import Alerts
 from .queries import SummarySampleQuery
 from .summary_sample import SummarySample
 

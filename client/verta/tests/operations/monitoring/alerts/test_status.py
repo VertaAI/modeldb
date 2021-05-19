@@ -5,7 +5,7 @@ import hypothesis
 import hypothesis.strategies as st
 
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
-from verta.operations.monitoring.alert.status import (
+from verta.monitoring.alert.status import (
     Alerting,
     Ok,
 )

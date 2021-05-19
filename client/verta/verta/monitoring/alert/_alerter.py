@@ -80,7 +80,7 @@ class FixedAlerter(_Alerter):
     .. code-block:: python
 
         from verta.common.comparison import GreaterThan
-        from verta.operations.monitoring.alert import FixedAlerter
+        from verta.monitoring.alert import FixedAlerter
 
         alerter = FixedAlerter(GreaterThan(.7))
 
@@ -135,7 +135,7 @@ class ReferenceAlerter(_Alerter):
     comparison : :class:`~verta.common.comparison._VertaComparison`
         Alert condition. An alert is active if the distance between a queried
         sample and `reference_sample` meets this condition.
-    reference_sample : :class:`~verta.operations.monitoring.summaries.SummarySample`
+    reference_sample : :class:`~verta.monitoring.summaries.SummarySample`
         An existing summary sample to compare queried samples with.
 
     Examples
@@ -144,8 +144,8 @@ class ReferenceAlerter(_Alerter):
 
         from verta import Client
         from verta.common.comparison import GreaterThan
-        from verta.operations.monitoring.alert import ReferenceAlerter
-        from verta.operations.monitoring.summaries import SummarySampleQuery
+        from verta.monitoring.alert import ReferenceAlerter
+        from verta.monitoring.summaries import SummarySampleQuery
 
         ref_sample = summary.find_samples(SummarySampleQuery(ids=[123]))[0]
         alerter = ReferenceAlerter(
@@ -212,7 +212,7 @@ class RangeAlerter(_Alerter):
     --------
     .. code-block:: python
 
-        from verta.operations.monitoring.alert import RangeAlerter
+        from verta.monitoring.alert import RangeAlerter
 
         alert = monitored_entity.alerts.create(
             name="positive_coin_flips",

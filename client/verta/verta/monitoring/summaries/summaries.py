@@ -35,7 +35,7 @@ class Summaries:
         from datetime import datetime, timedelta, timezone
 
         from verta import Client
-        from verta.operations.monitoring.summaries import SummaryQuery, SummarySampleQuery
+        from verta.monitoring.summaries import SummaryQuery, SummarySampleQuery
         from verta import data_types
 
         client = Client()
@@ -92,7 +92,7 @@ class Summaries:
             The name of this summary.
         data_type_cls: :class:`~verta.data_types._VertaDataType`
             The class of data type which summary samples must conform to.
-        monitored_entity: :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
+        monitored_entity: :class:`~verta.monitoring.monitored_entity.MonitoredEntity`
             A monitored entity object.
 
         Returns

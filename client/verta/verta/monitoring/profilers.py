@@ -81,7 +81,7 @@ class ProfilerReference(entity._ModelDBEntity):
 
         Parameters
         ----------
-        monitored_entity : :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
+        monitored_entity : :class:`~verta.monitoring.monitored_entity.MonitoredEntity`
             The monitored entity for which this profiler should be enabled.
         environment : dict, optional
             Dictionary from strings to strings specifying environment variables.
@@ -177,7 +177,7 @@ class ProfilerReference(entity._ModelDBEntity):
 
         Parameters
         ----------
-        monitored_entity : :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
+        monitored_entity : :class:`~verta.monitoring.monitored_entity.MonitoredEntity`
             The monitored entity for which this profiler should be disabled.
 
         Returns
@@ -206,7 +206,7 @@ class ProfilerReference(entity._ModelDBEntity):
 
         Parameters
         ----------
-        monitored_entity : :class:`~verta.operations.monitoring.monitored_entity.MonitoredEntity`
+        monitored_entity : :class:`~verta.monitoring.monitored_entity.MonitoredEntity`
             The monitored entity for which the status should be returned.
 
         Returns

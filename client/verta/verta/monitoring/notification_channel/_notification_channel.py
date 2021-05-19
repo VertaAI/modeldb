@@ -39,7 +39,7 @@ class SlackNotificationChannel(_NotificationChannel):
     --------
     .. code-block:: python
 
-        from verta.operations.monitoring.notification_channel import SlackNotificationChannel
+        from verta.monitoring.notification_channel import SlackNotificationChannel
 
         channels = Client().operations.notification_channels
         channel = channels.create(

@@ -66,14 +66,14 @@ class Alerting(_AlertStatus):
 
     Parameters
     ----------
-    summary_samples : list of :class:`~verta.operations.monitoring.summaries.SummarySample`
+    summary_samples : list of :class:`~verta.monitoring.summaries.SummarySample`
         Summary samples that triggered the alert.
 
     Examples
     --------
     .. code-block:: python
 
-        from verta.operations.monitoring.alert.status import Alerting
+        from verta.monitoring.alert.status import Alerting
         alert.set_status(Alerting([monitored_entity]))
 
     """
@@ -93,7 +93,7 @@ class Ok(_AlertStatus):
 
     Parameters
     ----------
-    summary_samples : list of :class:`~verta.operations.monitoring.summaries.SummarySample`, optional
+    summary_samples : list of :class:`~verta.monitoring.summaries.SummarySample`, optional
         Summary samples to be removed from the alert's list of violating
         summary samples. If not provided, all summary samples will be cleared
         from the list.
@@ -102,7 +102,7 @@ class Ok(_AlertStatus):
     --------
     .. code-block:: python
 
-        from verta.operations.monitoring.alert.status import Ok
+        from verta.monitoring.alert.status import Ok
         alert.set_status(Ok())
 
     """

@@ -43,7 +43,7 @@ class Labels(object):
 
         Parameters
         ----------
-        summary_query : :class:`~verta.operations.monitoring.summaries.SummaryQuery`, optional
+        summary_query : :class:`~verta.monitoring.summaries.SummaryQuery`, optional
             A query object specifying a set of summaries.
         sample_ids : list, optional
              A list of integer sample ids.
@@ -88,7 +88,7 @@ class Labels(object):
         keys : list
             A list of strings specifying the label keys to retrieve label values
             for.
-        summary_query : :class:`~verta.operations.monitoring.summaries.SummaryQuery`, optional
+        summary_query : :class:`~verta.monitoring.summaries.SummaryQuery`, optional
             A query object specifying a set of summaries.
         sample_ids : list, optional
              A list of integer sample ids.
