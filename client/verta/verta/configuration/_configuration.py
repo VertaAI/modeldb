@@ -2,12 +2,12 @@
 
 from __future__ import print_function
 
-from .._protos.public.modeldb.versioning import Config_pb2 as _ConfigService
+from verta._protos.public.modeldb.versioning import Config_pb2 as _ConfigService
 
-from .._repository import blob
+from verta import _blob
 
 
-class _Configuration(blob.Blob):
+class _Configuration(_blob.Blob):
     """
     Base class for configuration versioning. Not for human consumption.
 
