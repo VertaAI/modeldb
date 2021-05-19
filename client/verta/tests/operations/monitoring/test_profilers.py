@@ -16,7 +16,7 @@ class TestProfilers(object):
         for req in requirements:
             pytest.importorskip(req)
 
-        profilers = client.operations.profilers
+        profilers = client.monitoring.profilers
 
         profiler_name = "age_column_profiler_{}".format(generate_default_name())
         python_env = Python(requirements=requirements)

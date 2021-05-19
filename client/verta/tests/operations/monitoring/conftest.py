@@ -14,7 +14,7 @@ from verta import data_types
 @pytest.fixture
 def monitored_entity(client, created_entities):
     name = _utils.generate_default_name()
-    monitored_entity = client.operations.get_or_create_monitored_entity(name)
+    monitored_entity = client.monitoring.get_or_create_monitored_entity(name)
     created_entities.append(monitored_entity)
 
     return monitored_entity
@@ -22,7 +22,7 @@ def monitored_entity(client, created_entities):
 
 @pytest.fixture
 def summary(client, monitored_entity, created_entities):
-    summary = client.operations.summaries.create(
+    summary = client.monitoring.summaries.create(
         _utils.generate_default_name(),
         data_types.NumericValue,
         monitored_entity,
@@ -31,7 +31,7 @@ def summary(client, monitored_entity, created_entities):
     yield summary
 
     # TODO: use `created_entities` if/when Summary reimplements delete()
-    client.operations.summaries.delete([summary])
+    client.monitoring.summaries.delete([summary])
 
 
 @pytest.fixture

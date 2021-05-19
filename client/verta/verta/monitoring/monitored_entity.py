@@ -49,7 +49,7 @@ class MonitoredEntity(entity._ModelDBEntity):
         from verta import Client
 
         client = Client()
-        monitored_entity = client.operations.get_or_create_monitored_entity()
+        monitored_entity = client.monitoring.get_or_create_monitored_entity()
 
     """
 

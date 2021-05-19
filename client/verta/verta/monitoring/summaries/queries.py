@@ -57,7 +57,7 @@ class SummaryQuery(object):
         )
 
         client = Client()
-        for summary in client.operations.summaries.find(sample_query):
+        for summary in client.monitoring.summaries.find(sample_query):
             print(summary)
     """
 

@@ -25,7 +25,7 @@ class Labels(object):
         from verta import Client
 
         client = Client()
-        labels = client.operations.labels
+        labels = client.monitoring.labels
 
     """
 

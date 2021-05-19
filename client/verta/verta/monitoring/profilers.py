@@ -292,7 +292,7 @@ class Profilers(object):
         from verta import Client
 
         client = Client()
-        profilers = client.operations.profilers
+        profilers = client.monitoring.profilers
 
     """
 

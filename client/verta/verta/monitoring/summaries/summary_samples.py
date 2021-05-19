@@ -26,7 +26,7 @@ class SummarySamples:
         from verta import Client
 
         client = Client()
-        summary_samples = client.operations.summary_samples
+        summary_samples = client.monitoring.summary_samples
 
     """
 

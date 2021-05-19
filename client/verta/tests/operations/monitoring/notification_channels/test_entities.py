@@ -17,7 +17,7 @@ class TestNotificationChannel:
     def test_get_or_create_workspace(self, client, strs, organization, created_entities):
         strs = iter(strs)
         workspace = organization.name
-        notification_channels = client.operations.notification_channels
+        notification_channels = client.monitoring.notification_channels
 
         created_channel = notification_channels.get_or_create(
             name=next(strs),
@@ -63,7 +63,7 @@ class TestNotificationChannel:
 
     def test_creation_datetime(self, client, strs, created_entities):
         strs = iter(strs)
-        notification_channels = client.operations.notification_channels
+        notification_channels = client.monitoring.notification_channels
 
         created_at = time_utils.now() - datetime.timedelta(weeks=1)
         updated_at = time_utils.now() - datetime.timedelta(days=1)
@@ -96,7 +96,7 @@ class TestNotificationChannel:
         strs = iter(strs)
         name = _utils.generate_default_name()
         workspace = organization.name
-        notification_channels = client.operations.notification_channels
+        notification_channels = client.monitoring.notification_channels
 
         personal_channel = notification_channels.create(
             name,
@@ -126,7 +126,7 @@ class TestNotificationChannel:
 
 class TestSlack:
     def test_crud(self, client, strs):
-        notification_channels = client.operations.notification_channels
+        notification_channels = client.monitoring.notification_channels
         name, webhook_url = strs[:2]
         slack_channel = SlackNotificationChannel(webhook_url)
 
@@ -145,7 +145,7 @@ class TestSlack:
 
     def test_repr(self, client, strs, created_entities):
         """__repr__() does not raise exceptions"""
-        notification_channels = client.operations.notification_channels
+        notification_channels = client.monitoring.notification_channels
         name, webhook_url = strs[:2]
         slack_channel = SlackNotificationChannel(webhook_url)
 

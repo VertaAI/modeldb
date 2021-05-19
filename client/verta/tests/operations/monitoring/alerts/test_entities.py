@@ -38,12 +38,12 @@ class TestIntegration:
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
 
-        channel1 = client.operations.notification_channels.create(
+        channel1 = client.monitoring.notification_channels.create(
             _utils.generate_default_name(),
             SlackNotificationChannel(_utils.generate_default_name()),
         )
         created_entities.append(channel1)
-        channel2 = client.operations.notification_channels.create(
+        channel2 = client.monitoring.notification_channels.create(
             _utils.generate_default_name(),
             SlackNotificationChannel(_utils.generate_default_name()),
         )
@@ -192,7 +192,7 @@ class TestNonReferenceAlerters:
         assert summary.id in created_alert.summary_sample_query.summary_query._ids
 
         retrieved_alert = summary.alerts.get(id=created_alert.id)
-        client_retrieved_alert = client.operations.alerts.get(id=created_alert.id)
+        client_retrieved_alert = client.monitoring.alerts.get(id=created_alert.id)
         assert retrieved_alert.id == client_retrieved_alert.id
         assert isinstance(retrieved_alert, Alert)
         assert retrieved_alert._msg.alerter_type == alerter._TYPE
@@ -200,7 +200,7 @@ class TestNonReferenceAlerters:
 
         listed_alerts = summary.alerts.list()
         assert created_alert.id in map(lambda a: a.id, listed_alerts)
-        client_listed_alerts = client.operations.alerts.list()
+        client_listed_alerts = client.monitoring.alerts.list()
         assert created_alert.id in map(lambda a: a.id, client_listed_alerts)
 
         assert summary.alerts.delete([created_alert])
@@ -230,7 +230,7 @@ class TestReference:
         assert summary.id in created_alert.summary_sample_query.summary_query._ids
 
         retrieved_alert = summary.alerts.get(id=created_alert.id)
-        client_retrieved_alert = client.operations.alerts.get(id=created_alert.id)
+        client_retrieved_alert = client.monitoring.alerts.get(id=created_alert.id)
         assert retrieved_alert.id == client_retrieved_alert.id
         assert isinstance(retrieved_alert, Alert)
         assert retrieved_alert._msg.alerter_type == alerter._TYPE
@@ -239,7 +239,7 @@ class TestReference:
 
         listed_alerts = summary.alerts.list()
         assert created_alert.id in map(lambda a: a.id, listed_alerts)
-        client_listed_alerts = client.operations.alerts.list()
+        client_listed_alerts = client.monitoring.alerts.list()
         assert created_alert.id in map(lambda a: a.id, client_listed_alerts)
 
         assert summary.alerts.delete([created_alert])

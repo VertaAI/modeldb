@@ -20,9 +20,9 @@ class TestSummaries(object):
     def test_summary_labels(self, client):
         pytest.importorskip("scipy")
 
-        summaries = client.operations.summaries
+        summaries = client.monitoring.summaries
 
-        monitored_entity = client.operations.get_or_create_monitored_entity()
+        monitored_entity = client.monitoring.get_or_create_monitored_entity()
         summary_name = "summary_v2_{}".format(generate_default_name())
         summary = summaries.create(
             summary_name, data_types.DiscreteHistogram, monitored_entity
@@ -66,7 +66,7 @@ class TestSummaries(object):
                 time_window_end=now,
             )
 
-        labels = client.operations.labels
+        labels = client.monitoring.labels
 
         retrieved_label_keys = labels.find_keys(
             summary_query=summaries_for_monitored_entity
@@ -89,9 +89,9 @@ class TestSummaries(object):
         assert len(blue_samples) == 1
 
     def test_summary_get_or_create(self, client):
-        summaries = client.operations.summaries
+        summaries = client.monitoring.summaries
 
-        monitored_entity = client.operations.get_or_create_monitored_entity()
+        monitored_entity = client.monitoring.get_or_create_monitored_entity()
         summary_name = "summary:{}".format(generate_default_name())
         created_summary = summaries.get_or_create(
             summary_name, data_types.DiscreteHistogram, monitored_entity

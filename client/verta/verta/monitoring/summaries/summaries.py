@@ -39,8 +39,8 @@ class Summaries:
         from verta import data_types
 
         client = Client()
-        monitored = client.operations.get_or_create_monitored_entity()
-        summary = client.operations.summaries.create(
+        monitored = client.monitoring.get_or_create_monitored_entity()
+        summary = client.monitoring.summaries.create(
             "predicted class", data_types.DiscreteHistogram, monitored
         )
 
