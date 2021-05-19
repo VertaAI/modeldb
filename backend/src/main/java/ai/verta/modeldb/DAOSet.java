@@ -48,7 +48,8 @@ public class DAOSet {
   public RepositoryDAO repositoryDAO;
   private static Config config = Config.getInstance();
 
-  public static DAOSet fromServices(ServiceSet services, FutureJdbi jdbi, Executor executor) {
+  public static DAOSet fromServices(
+      ServiceSet services, FutureJdbi jdbi, Executor executor, Config config) {
     DAOSet set = new DAOSet();
 
     set.metadataDAO = new MetadataDAORdbImpl();
@@ -67,7 +68,6 @@ public class DAOSet {
             set.commitDAO,
             set.blobDAO,
             set.metadataDAO);
-    set.futureExperimentRunDAO = new FutureExperimentRunDAO(executor, jdbi, services.uac);
     set.projectDAO =
         new ProjectDAORdbImpl(
             services.authService, services.roleService, set.experimentDAO, set.experimentRunDAO);
@@ -88,6 +88,18 @@ public class DAOSet {
     } else {
       set.auditLogLocalDAO = new AuditLogLocalDAORdbImpl();
     }
+
+    set.futureExperimentRunDAO =
+        new FutureExperimentRunDAO(
+            executor,
+            jdbi,
+            config,
+            services.uac,
+            set.artifactStoreDAO,
+            set.datasetVersionDAO,
+            set.repositoryDAO,
+            set.commitDAO,
+            set.blobDAO);
 
     return set;
   }

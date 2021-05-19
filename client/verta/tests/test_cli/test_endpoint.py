@@ -82,7 +82,7 @@ class TestCreate:
 class TestGet:
     def test_get(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = _utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -122,7 +122,7 @@ class TestUpdate:
         original_build_ids = get_build_ids(original_status)
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         runner = CliRunner()
         result = runner.invoke(
@@ -143,7 +143,7 @@ class TestUpdate:
         original_build_ids = get_build_ids(original_status)
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         canary_rule = json.dumps({
             "rule": "latency_avg_max",
@@ -175,7 +175,7 @@ class TestUpdate:
         original_build_ids = get_build_ids(original_status)
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         canary_rule = json.dumps({
             "rule": "latency_avg_max",
@@ -310,7 +310,7 @@ class TestUpdate:
         json = pytest.importorskip("json")
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = _utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -365,7 +365,7 @@ class TestUpdate:
         original_build_ids = get_build_ids(original_status)
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         resources = '{"cpu": 0.25, "memory": "100M"}'
 
@@ -381,7 +381,7 @@ class TestUpdate:
 
     def test_update_autoscaling(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = _utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -421,7 +421,7 @@ class TestDownload:
     def test_download_context(self, experiment_run, model_for_deployment, registered_model, in_tempdir, created_entities, model_version):
         np = pytest.importorskip("numpy")
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         artifact = np.random.random((36, 12))
         experiment_run.log_artifact("some-artifact", artifact)
@@ -475,7 +475,7 @@ class TestPredict:
         test_data_str = json.dumps(test_data.tolist())
 
         experiment_run.log_model(classifier, custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = _utils.generate_default_name()
         endpoint = client.set_endpoint(path)

@@ -333,6 +333,13 @@
     }
   },
   "definitions": {
+    "AggregationQuerySummaryAggregationOperation": {
+      "type": "string",
+      "enum": [
+        "SUM"
+      ],
+      "default": "SUM"
+    },
     "AlertStatusEnumAlertStatus": {
       "type": "string",
       "enum": [
@@ -374,6 +381,20 @@
         "IN"
       ],
       "default": "EQ"
+    },
+    "monitoringAggregationQuerySummary": {
+      "type": "object",
+      "properties": {
+        "time_granularity_millis": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Optional time granularity for aggregation\nThis applies to time_window_start_at_millis and time_window_end_at_millis\nThe time window precision is reduced to this granularity\nFor example, if time_granularity_millis = \"1 day\", we will group samples that fall in the same\nday and aggregate them to create a single \"aggregated sample\""
+        },
+        "operation": {
+          "$ref": "#/definitions/AggregationQuerySummaryAggregationOperation"
+        }
+      },
+      "description": "If any of the fields are not provided, we assume that the original value from the sample is kept.\nFor example, if time_granularity_millis=0, then time for the \"aggregated sample\" must match the\ntime of all the original samples associated with it."
     },
     "monitoringAlert": {
       "type": "object",
@@ -798,6 +819,9 @@
       "properties": {
         "filter": {
           "$ref": "#/definitions/monitoringFilterQuerySummarySample"
+        },
+        "aggregation": {
+          "$ref": "#/definitions/monitoringAggregationQuerySummary"
         },
         "page_number": {
           "type": "integer",

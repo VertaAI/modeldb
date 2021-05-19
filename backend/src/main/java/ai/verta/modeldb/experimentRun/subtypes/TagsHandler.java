@@ -4,9 +4,7 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,11 +42,32 @@ public class TagsHandler {
                     "select tags from tag_mapping "
                         + "where entity_name=:entity_name and "
                         + entityIdReferenceColumn
-                        + "=:entity_id")
+                        + "=:entity_id ORDER BY tags ASC")
                 .bind("entity_id", entityId)
                 .bind("entity_name", entityName)
                 .mapTo(String.class)
                 .list());
+  }
+
+  public InternalFuture<MapSubtypes<String>> getTagsMap(Set<String> entityIds) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "select tags, "
+                            + entityIdReferenceColumn
+                            + " as entity_id from tag_mapping "
+                            + "where entity_name=:entity_name and "
+                            + entityIdReferenceColumn
+                            + " in (<entity_ids>) ORDER BY tags ASC")
+                    .bindList("entity_ids", entityIds)
+                    .bind("entity_name", entityName)
+                    .map(
+                        (rs, ctx) ->
+                            new AbstractMap.SimpleEntry<>(
+                                rs.getString("entity_id"), rs.getString("tags")))
+                    .list())
+        .thenApply(MapSubtypes::from, executor);
   }
 
   public InternalFuture<Void> addTags(String entityId, List<String> tags) {
@@ -56,9 +75,13 @@ public class TagsHandler {
     var currentFuture =
         InternalFuture.runAsync(
             () -> {
-              for (final var tag : tags) {
-                if (tag.isEmpty()) {
-                  throw new InvalidArgumentException("Empty tag");
+              if (tags.isEmpty()) {
+                throw new InvalidArgumentException("Tags not found");
+              } else {
+                for (String tag : tags) {
+                  if (tag.isEmpty()) {
+                    throw new InvalidArgumentException("Tag should not be empty");
+                  }
                 }
               }
             },
