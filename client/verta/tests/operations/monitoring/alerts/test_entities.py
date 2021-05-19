@@ -2,6 +2,7 @@
 
 import datetime
 from collections import namedtuple
+import pytest
 
 from verta._internal_utils import (
     _utils,
@@ -10,6 +11,7 @@ from verta._internal_utils import (
 from verta.common import comparison
 from verta.operations.monitoring.alert import (
     FixedAlerter,
+    RangeAlerter,
     ReferenceAlerter,
 )
 from verta.operations.monitoring.alert.status import (
@@ -176,10 +178,12 @@ class TestAlert:
         assert summary.monitored_entity_id in query._monitored_entity_ids
 
 
-class TestFixed:
-    def test_crud(self, client, summary):
+class TestNonReferenceAlerters:
+    @pytest.mark.parametrize(
+        "alerter", [FixedAlerter(comparison.GreaterThan(0.7)), RangeAlerter(-1.0, 1.0)]
+    )
+    def test_crud(self, client, summary, alerter):
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(comparison.GreaterThan(0.7))
 
         created_alert = summary.alerts.create(name, alerter)
         assert isinstance(created_alert, Alert)
@@ -201,11 +205,12 @@ class TestFixed:
 
         assert summary.alerts.delete([created_alert])
 
-    def test_repr(self, summary):
+    @pytest.mark.parametrize(
+        "alerter", [FixedAlerter(comparison.GreaterThan(0.7)), RangeAlerter(-1.0, 1.0)]
+    )
+    def test_repr(self, summary, alerter):
         """__repr__() does not raise exceptions"""
         name = _utils.generate_default_name()
-        alerter = FixedAlerter(comparison.GreaterThan(0.7))
-
         created_alert = summary.alerts.create(name, alerter)
         assert repr(created_alert)
 

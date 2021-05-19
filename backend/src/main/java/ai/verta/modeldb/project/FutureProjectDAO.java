@@ -63,9 +63,11 @@ public class FutureProjectDAO {
 
   public InternalFuture<List<KeyValue>> getAttributes(GetAttributes request) {
     final var projectId = request.getId();
+    final var keys = request.getAttributeKeysList();
+    final var getAll = request.getGetAll();
 
     return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> attributeHandler.getKeyValues(projectId), executor);
+        .thenCompose(unused -> attributeHandler.getKeyValues(projectId, keys, getAll), executor);
   }
 
   public InternalFuture<Void> logAttributes(LogAttributes request) {

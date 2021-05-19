@@ -101,7 +101,7 @@ class TestEndpoint:
 
     def test_repr(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -164,7 +164,7 @@ class TestEndpoint:
 
     def test_direct_update(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -181,7 +181,7 @@ class TestEndpoint:
     def test_update_wait(self, client, created_entities, experiment_run, model_version, model_for_deployment):
         """This tests endpoint.update(..., wait=True), including the case of build error"""
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -202,7 +202,7 @@ class TestEndpoint:
 
     def test_canary_update(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -228,7 +228,7 @@ class TestEndpoint:
     def test_update_from_json_config(self, client, in_tempdir, created_entities, experiment_run, model_for_deployment):
         json = pytest.importorskip("json")
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -270,7 +270,7 @@ class TestEndpoint:
     def test_update_from_yaml_config(self, client, in_tempdir, created_entities, experiment_run, model_for_deployment):
         yaml = pytest.importorskip("yaml")
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -311,7 +311,7 @@ class TestEndpoint:
 
     def test_update_with_parameters(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -371,7 +371,7 @@ class TestEndpoint:
             model_for_deployment['train_targets'],
         )
         experiment_run.log_model(model, custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -472,7 +472,7 @@ class TestEndpoint:
 
     def test_update_autoscaling(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -529,7 +529,7 @@ class TestEndpoint:
     def test_update_from_json_config_with_params(self, client, in_tempdir, created_entities, experiment_run, model_for_deployment):
         yaml = pytest.importorskip("yaml")
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
 
         path = verta._internal_utils._utils.generate_default_name()
@@ -616,7 +616,7 @@ class TestEndpoint:
 
     def test_update_from_run_diff_workspace(self, client, organization, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.create_endpoint(path, workspace=organization.name)
@@ -646,7 +646,7 @@ class TestEndpoint:
 
     def test_update_from_run_diff_workspace_no_access_error(self, client_2, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client_2.create_endpoint(path)

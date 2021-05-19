@@ -84,8 +84,7 @@ class Alert(entity._ModelDBEntity):
                 "labels: {}".format(
                     {
                         key: values.label_value
-                        for key, values
-                        in sample_filter.labels.items()
+                        for key, values in sample_filter.labels.items()
                     }
                 ),
                 "starting from: {}".format(
@@ -233,14 +232,9 @@ class Alert(entity._ModelDBEntity):
                 alerter_type=alerter._TYPE,
             ),
         )
-        if msg.alert.alerter_type == _AlertService.AlerterTypeEnum.FIXED:
-            msg.alert.alerter_fixed.CopyFrom(alerter._as_proto())
-        elif msg.alert.alerter_type == _AlertService.AlerterTypeEnum.REFERENCE:
-            msg.alert.alerter_reference.CopyFrom(alerter._as_proto())
-        else:
-            raise ValueError(
-                "unrecognized alert type enum value {}".format(msg.alert.alerter_type)
-            )
+
+        field = getattr(msg.alert, alerter._get_alert_field())
+        field.CopyFrom(alerter._as_proto())
 
         endpoint = "/api/v1/alerts/createAlert"
         response = conn.make_proto_request("POST", endpoint, body=msg)

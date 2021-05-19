@@ -84,7 +84,7 @@ message CreateSummarySample {
 // Request to fetch multiple summary samples, potentially with aggregation.
 message FindSummarySampleRequest {
     FilterQuerySummarySample filter = 1; // Optional
-    // AggregationQuerySummary aggregation = 2; // Optional
+    AggregationQuerySummary aggregation = 2; // Optional
 
     // Pagination
     int32 page_number = 3;
@@ -110,6 +110,22 @@ message FilterQuerySummarySample {
 // Filter details for a given label.
 message LabelFilterQuerySummarySample {
     repeated string label_value = 1;
+}
+
+// If any of the fields are not provided, we assume that the original value from the sample is kept.
+// For example, if time_granularity_millis=0, then time for the "aggregated sample" must match the
+// time of all the original samples associated with it.
+message AggregationQuerySummary {
+    // Optional time granularity for aggregation
+    // This applies to time_window_start_at_millis and time_window_end_at_millis
+    // The time window precision is reduced to this granularity
+    // For example, if time_granularity_millis = "1 day", we will group samples that fall in the same
+    // day and aggregate them to create a single "aggregated sample"
+    uint64 time_granularity_millis = 1;
+    enum AggregationOperation {
+      SUM = 0;
+    }
+    AggregationOperation operation = 2;
 }
 
 // Request to delete summary samples

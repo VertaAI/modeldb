@@ -5,7 +5,6 @@ import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
-import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 import io.grpc.health.v1.HealthCheckResponse;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -72,7 +71,7 @@ public abstract class CommonHibernateUtil {
         Properties settings = new Properties();
         RdbConfig rdb = config.RdbConfiguration;
 
-        String connectionString = buildConnectionString(rdb);
+        String connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
         settings.put(Environment.DRIVER, rdb.RdbDriver);
         settings.put(Environment.URL, connectionString);
         settings.put(Environment.USER, rdb.RdbUsername);
@@ -129,25 +128,11 @@ public abstract class CommonHibernateUtil {
     }
   }
 
-  public static String buildConnectionString(RdbConfig rdb) {
-    if (rdb.isMssql()) {
-      return rdb.RdbUrl
-          + ";databaseName="
-          + rdb.RdbDatabaseName;
-    }
-    return rdb.RdbUrl
-        + "/"
-        + rdb.RdbDatabaseName
-        + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
-        + "&sslMode="
-        + rdb.sslMode;
-  }
-
   public static void changeCharsetToUtf(JdbcConnection jdbcCon) throws DatabaseException, SQLException {
     Statement stmt = jdbcCon.createStatement();
     String dbName = jdbcCon.getCatalog();
     String sql = String
-        .format("ALTER DATABASE %s CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
+        .format("ALTER DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
     int result = stmt.executeUpdate(sql);
     LOGGER.info("ALTER charset execute result: {}", result);
   }
@@ -334,7 +319,7 @@ public abstract class CommonHibernateUtil {
   }
 
   public Connection getDBConnection(RdbConfig rdb) throws SQLException {
-    final var connectionString = buildConnectionString(rdb);
+    final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
     return DriverManager.getConnection(connectionString, rdb.RdbUsername, rdb.RdbPassword);
   }
 
@@ -384,7 +369,7 @@ public abstract class CommonHibernateUtil {
     return HealthCheckResponse.ServingStatus.SERVING;
   }
 
-  public boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
+  public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
       throws SQLException {
     boolean tExists = false;
     try (ResultSet rs = getTableBasedOnDialect(conn, tableName, config.RdbConfiguration)) {
@@ -399,7 +384,7 @@ public abstract class CommonHibernateUtil {
     return tExists;
   }
 
-  private ResultSet getTableBasedOnDialect(Connection conn, String tableName, RdbConfig rdb)
+  private static ResultSet getTableBasedOnDialect(Connection conn, String tableName, RdbConfig rdb)
       throws SQLException {
     if (rdb.isPostgres()) {
       // TODO: make postgres implementation multitenant as well.
@@ -501,8 +486,10 @@ public abstract class CommonHibernateUtil {
     properties.put("user", rdb.RdbUsername);
     properties.put("password", rdb.RdbPassword);
     properties.put("sslMode", rdb.sslMode);
+    final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
+    LOGGER.info("Connecting to DB server url " + dbUrl);
     Connection connection =
-        DriverManager.getConnection(rdb.RdbUrl, properties);
+        DriverManager.getConnection(dbUrl, properties);
     ResultSet resultSet = connection.getMetaData().getCatalogs();
 
     while (resultSet.next()) {
@@ -513,18 +500,7 @@ public abstract class CommonHibernateUtil {
       }
     }
 
-    var dbName = rdb.RdbDatabaseName;
-    if (dbName.contains("-")) {
-      if (rdb.isPostgres()) {
-        throw new ModelDBException("Postgres does not support database names containing -");
-      }
-      if (rdb.isMysql()) {
-        dbName = String.format("`%s`", dbName);
-      }
-      if (rdb.isMssql()) {
-        dbName = String.format("\"%s\"", dbName);
-      }
-    }
+    var dbName = RdbConfig.buildDatabaseName(rdb);
 
     System.out.println("the database " + rdb.RdbDatabaseName + " does not exists");
     Statement statement = connection.createStatement();
