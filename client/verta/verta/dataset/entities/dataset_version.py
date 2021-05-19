@@ -4,15 +4,15 @@ from __future__ import print_function
 
 import warnings
 
-from ..external import six
+from verta.external import six
 
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
+from verta._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
-from .._tracking import entity
-from ..repository import _commit
-from .._internal_utils import (
+from verta._tracking import entity
+from verta.repository import _commit
+from verta._internal_utils import (
     _artifact_utils,
     _utils,
 )
@@ -29,7 +29,7 @@ class DatasetVersion(entity._ModelDBEntity):
     This class provides read/write functionality for dataset version metadata and access to its content.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Dataset.create_version() <verta._dataset_versioning.dataset.Dataset.create_version>`.
+    :meth:`Dataset.create_version() <verta.dataset.entities.Dataset.create_version>`.
 
     Attributes
     ----------

@@ -35,12 +35,14 @@ from .._internal_utils import (
     importer,
 )
 
-from .._dataset_versioning import (
+from .. import repository
+from ..repository import _commit
+# unless _repository.blob is disentangled out of _repository, importing from
+# dataset must occur after importing from _repository
+from ..dataset.entities import (
     dataset as _dataset,
     dataset_version as _dataset_version,
 )
-from .. import repository
-from ..repository import _commit
 from .. import data_types
 from .. import deployment
 from .. import utils
@@ -1069,7 +1071,7 @@ class ExperimentRun(_DeployableEntity):
         ----------
         key : str
             Name of the dataset version.
-        dataset_version : :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+        dataset_version : :class:`~verta.dataset.entities.DatasetVersion`
             Dataset version.
         overwrite : bool, default False
             Whether to allow overwriting a dataset version.

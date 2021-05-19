@@ -2,20 +2,20 @@
 
 import copy
 
-from .._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
+from verta._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 
-from .._internal_utils import _utils
+from verta._internal_utils import _utils
 from . import dataset_version
 
 
 class DatasetVersions(_utils.LazyList):
     r"""
-    ``list``-like object containing :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`\ s.
+    ``list``-like object containing :class:`~verta.dataset.entities.DatasetVersion`\ s.
 
     This class provides functionality for filtering and sorting its contents.
 
     There should not be a need to instantiate this class directly; please use
-    :class:`Dataset.versions <verta._dataset_versioning.dataset.Dataset>`.
+    :class:`Dataset.versions <verta.dataset.entities.Dataset>`.
 
     Examples
     --------
@@ -59,7 +59,7 @@ class DatasetVersions(_utils.LazyList):
 
         Parameters
         ----------
-        dataset : :class:`~verta._dataset_versioning.dataset.Dataset` or None
+        dataset : :class:`~verta.dataset.entities.Dataset` or None
             Dataset. If ``None``, returns versions across all datasets.
 
         Returns

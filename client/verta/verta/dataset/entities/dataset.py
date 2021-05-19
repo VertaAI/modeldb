@@ -4,14 +4,13 @@ from __future__ import print_function
 
 import warnings
 
-from ..external import six
+from verta.external import six
 
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.modeldb import CommonService_pb2 as _CommonService
-from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 
-from .._tracking import entity
-from .._internal_utils import (
+from verta._tracking import entity
+from verta._internal_utils import (
     _utils,
 )
 
@@ -40,7 +39,7 @@ class Dataset(entity._ModelDBEntity):
         Name of this dataset.
     workspace : str
         Workspace containing this dataset.
-    versions : :class:`~verta._dataset_versioning.dataset_versions.DatasetVersions`
+    versions : :class:`~verta.dataset.entities.DatasetVersions`
         Versions of this dataset.
 
     """
@@ -333,7 +332,7 @@ class Dataset(entity._ModelDBEntity):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+        :class:`~verta.dataset.entities.DatasetVersion`
 
         Examples
         --------
@@ -361,7 +360,7 @@ class Dataset(entity._ModelDBEntity):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+        :class:`~verta.dataset.entities.DatasetVersion`
 
         """
         return DatasetVersion._get_by_id(self._conn, self._conf, id)
@@ -372,7 +371,7 @@ class Dataset(entity._ModelDBEntity):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+        :class:`~verta.dataset.entities.DatasetVersion`
 
         """
         return DatasetVersion._get_latest_version_by_dataset_id(self._conn, self._conf, self.id)

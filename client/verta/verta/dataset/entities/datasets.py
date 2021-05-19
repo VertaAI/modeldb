@@ -2,15 +2,15 @@
 
 import copy
 
-from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
+from verta._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 
-from .._internal_utils import _utils
+from verta._internal_utils import _utils
 from . import dataset
 
 
 class Datasets(_utils.LazyList):
     r"""
-    ``list``-like object containing :class:`~verta._dataset_versioning.dataset.Dataset`\ s.
+    ``list``-like object containing :class:`~verta.dataset.entities.Dataset`\ s.
 
     This class provides functionality for filtering and sorting its contents.
 
