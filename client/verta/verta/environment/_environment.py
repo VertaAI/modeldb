@@ -9,10 +9,10 @@ from ..external import six
 
 from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
 
-from .._repository import blob
+from ..repository import _blob
 
 
-class _Environment(blob.Blob):
+class _Environment(_blob.Blob):
     """
     Base class for environment versioning. Not for human consumption.
 

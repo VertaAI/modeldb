@@ -35,8 +35,8 @@ from .._internal_utils import (
     importer,
 )
 
-from .. import _repository
-from .._repository import commit as commit_module
+from .. import repository
+from ..repository import _commit
 # unless _repository.blob is disentangled out of _repository, importing from
 # dataset must occur after importing from _repository
 from ..dataset.entities import (
@@ -2312,7 +2312,7 @@ class ExperimentRun(_DeployableEntity):
 
         Parameters
         ----------
-        commit : :class:`verta._repository.commit.Commit`
+        commit : :class:`verta.repository.Commit`
             Verta Commit.
         key_paths : dict of `key` to `path`, optional
             A mapping between descriptive keys and paths of particular interest within `commit`.
@@ -2329,7 +2329,7 @@ class ExperimentRun(_DeployableEntity):
         msg.versioned_inputs.repository_id = commit._repo.id
         msg.versioned_inputs.commit = commit.id
         for key, path in six.viewitems(key_paths or {}):
-            location = commit_module.path_to_location(path)
+            location = _commit.path_to_location(path)
             location_msg = msg.versioned_inputs.key_location_map.get_or_create(
                 key)
             location_msg.location.extend(location)
@@ -2352,7 +2352,7 @@ class ExperimentRun(_DeployableEntity):
 
         Returns
         -------
-        commit : :class:`verta._repository.commit.Commit`
+        commit : :class:`verta.repository.Commit`
             Verta Commit.
         key_paths : dict of `key` to `path`
             A mapping between descriptive keys and paths of particular interest within `commit`.
@@ -2372,10 +2372,10 @@ class ExperimentRun(_DeployableEntity):
 
         response_msg = _utils.json_to_proto(
             _utils.body_to_json(response), msg.Response)
-        repo = _repository.Repository(
+        repo = repository.Repository(
             self._conn, response_msg.versioned_inputs.repository_id)
         commit_id = response_msg.versioned_inputs.commit
-        commit = commit_module.Commit._from_id(self._conn, repo, commit_id)
+        commit = _commit.Commit._from_id(self._conn, repo, commit_id)
 
         key_paths = {
             key: '/'.join(location_msg.location)
