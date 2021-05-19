@@ -18,6 +18,7 @@ public class RdbConfig {
   public String RdbUsername;
   public String RdbPassword;
   public String sslMode = "DISABLED";
+  public Boolean sslEnabled = false;
 
   public void Validate(String base) throws InvalidConfigException {
     if (RdbDatabaseName == null || RdbDatabaseName.isEmpty())
@@ -59,7 +60,8 @@ public class RdbConfig {
         + "/"
         + rdb.RdbDatabaseName
         + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
-        + "&sslEnabled=false"
+        + "&sslEnabled="
+        + rdb.sslEnabled
         + "&sslMode="
         + rdb.sslMode;
     LOGGER.info("Using db URL " + url);
@@ -72,7 +74,8 @@ public class RdbConfig {
     }
     final var url = rdb.RdbUrl
         + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
-        + "&sslEnabled=false"
+        + "&sslEnabled="
+        + rdb.sslEnabled
         + "&sslMode="
         + rdb.sslMode;
     LOGGER.info("Using db URL " + url);
