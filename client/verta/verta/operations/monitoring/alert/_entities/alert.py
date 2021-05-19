@@ -51,12 +51,6 @@ class Alert(entity._ModelDBEntity):
 
     """
 
-    _ONEOF_ALERTER_ATTR = {
-        _AlertService.AlerterTypeEnum.FIXED: "alerter_fixed",
-        _AlertService.AlerterTypeEnum.REFERENCE: "alerter_reference",
-        _AlertService.AlerterTypeEnum.RANGE: "alerter_range",
-    }
-
     def __init__(self, conn, conf, msg):
         super(Alert, self).__init__(
             conn,
