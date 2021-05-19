@@ -8,6 +8,7 @@ from verta._protos.public.monitoring import Alert_pb2 as _AlertService
 from verta.operations.monitoring.alert import (
     _Alerter,
     FixedAlerter,
+    RangeAlerter,
     ReferenceAlerter,
 )
 from verta.common.comparison import _VertaComparison
@@ -94,3 +95,38 @@ class TestReference:
         alerter = ReferenceAlerter(comparison(threshold), reference_sample_id)
 
         assert repr(alerter)
+
+
+class TestRange:
+    @hypothesis.given(
+        lower_bound=st.floats(allow_nan=False),
+        upper_bound=st.floats(allow_nan=False),
+        alert_if_outside_range=st.booleans(),
+    )
+    def test_to_proto(self, lower_bound, upper_bound, alert_if_outside_range):
+        alerter = RangeAlerter(
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            alert_if_outside_range=alert_if_outside_range,
+        )
+        msg = _AlertService.AlertRange(
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            alert_if_outside_range=alert_if_outside_range,
+        )
+        assert alerter._as_proto() == msg
+
+    @hypothesis.given(
+        lower_bound=st.floats(allow_nan=False),
+        upper_bound=st.floats(allow_nan=False),
+        alert_if_outside_range=st.booleans(),
+    )
+    def test_from_proto(self, lower_bound, upper_bound, alert_if_outside_range):
+        msg = _AlertService.AlertRange(
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            alert_if_outside_range=alert_if_outside_range,
+        )
+        alerter = _Alerter._from_proto(msg)
+        assert type(alerter) is RangeAlerter
+        assert alerter._as_proto() == msg
