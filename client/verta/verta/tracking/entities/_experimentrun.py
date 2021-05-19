@@ -29,12 +29,14 @@ from verta._internal_utils import (
     importer,
 )
 
-from verta._dataset_versioning import (
+from verta import repository
+from verta.repository import _commit
+# unless _repository.blob is disentangled out of _repository, importing from
+# dataset must occur after importing from _repository
+from verta.dataset.entities import (
     dataset as _dataset,
     dataset_version as _dataset_version,
 )
-from verta import _repository
-from verta._repository import commit as commit_module
 from verta import data_types
 from verta import deployment
 from verta import utils
@@ -1066,7 +1068,7 @@ class ExperimentRun(_DeployableEntity):
         ----------
         key : str
             Name of the dataset version.
-        dataset_version : :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+        dataset_version : :class:`~verta.dataset.entities.DatasetVersion`
             Dataset version.
         overwrite : bool, default False
             Whether to allow overwriting a dataset version.
@@ -2307,7 +2309,7 @@ class ExperimentRun(_DeployableEntity):
 
         Parameters
         ----------
-        commit : :class:`verta._repository.commit.Commit`
+        commit : :class:`verta.repository.Commit`
             Verta Commit.
         key_paths : dict of `key` to `path`, optional
             A mapping between descriptive keys and paths of particular interest within `commit`.
@@ -2324,7 +2326,7 @@ class ExperimentRun(_DeployableEntity):
         msg.versioned_inputs.repository_id = commit._repo.id
         msg.versioned_inputs.commit = commit.id
         for key, path in six.viewitems(key_paths or {}):
-            location = commit_module.path_to_location(path)
+            location = _commit.path_to_location(path)
             location_msg = msg.versioned_inputs.key_location_map.get_or_create(
                 key)
             location_msg.location.extend(location)
@@ -2347,7 +2349,7 @@ class ExperimentRun(_DeployableEntity):
 
         Returns
         -------
-        commit : :class:`verta._repository.commit.Commit`
+        commit : :class:`verta.repository.Commit`
             Verta Commit.
         key_paths : dict of `key` to `path`
             A mapping between descriptive keys and paths of particular interest within `commit`.
@@ -2367,10 +2369,10 @@ class ExperimentRun(_DeployableEntity):
 
         response_msg = _utils.json_to_proto(
             _utils.body_to_json(response), msg.Response)
-        repo = _repository.Repository(
+        repo = repository.Repository(
             self._conn, response_msg.versioned_inputs.repository_id)
         commit_id = response_msg.versioned_inputs.commit
-        commit = commit_module.Commit._from_id(self._conn, repo, commit_id)
+        commit = _commit.Commit._from_id(self._conn, repo, commit_id)
 
         key_paths = {
             key: '/'.join(location_msg.location)

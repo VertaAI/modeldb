@@ -21,7 +21,7 @@ from ._internal_utils import (
     _utils,
 )
 
-from . import _repository
+from . import repository
 
 from .tracking import _Context
 from .tracking.entities import (
@@ -39,14 +39,16 @@ from .registry.entities import (
     RegisteredModelVersion,
     RegisteredModelVersions,
 )
-from ._dataset_versioning.dataset import Dataset
-from ._dataset_versioning.datasets import Datasets
-from ._dataset_versioning.dataset_version import DatasetVersion
+from .dataset.entities import (
+    Dataset,
+    Datasets,
+    DatasetVersion,
+)
 from .endpoint import Endpoint
 from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
-from .operations.monitoring.client import Client as MonitoringClient
+from .monitoring.client import Client as MonitoringClient
 
 class Client(object):
     """
@@ -94,7 +96,7 @@ class Client(object):
     debug : bool
         Whether to print extra verbose information to aid in debugging. Changes to this value propagate
         to any objects that are/were created from this Client.
-    operations : :class:`verta.operations.monitoring.client.Client`
+    monitoring : :class:`verta.monitoring.client.Client`
         Monitoring sub-client
     proj : :class:`~verta.tracking.entities.Project` or None
         Currently active Project.
@@ -226,7 +228,7 @@ class Client(object):
         self._conf.debug = value
 
     @property
-    def operations(self):
+    def monitoring(self):
         return MonitoringClient(self)
 
     @property
@@ -651,7 +653,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._repository.Repository`
+        :class:`~verta.repository.Repository`
             Specified Repository.
 
         """
@@ -660,7 +662,7 @@ class Client(object):
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
         elif id is not None:
-            repo = _repository.Repository._get(self._conn, id_=id)
+            repo = repository.Repository._get(self._conn, id_=id)
             if repo is None:
                 raise ValueError("no Repository found with ID {}".format(id))
             print("set existing Repository: {}".format(repo.name))
@@ -670,11 +672,11 @@ class Client(object):
                 workspace = self.get_workspace()
             workspace_str = "workspace {}".format(workspace)
 
-            repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
+            repo = repository.Repository._get(self._conn, name=name, workspace=workspace)
 
             if not repo:  # not found
                 try:
-                    repo = _repository.Repository._create(self._conn, name=name, workspace=workspace,
+                    repo = repository.Repository._create(self._conn, name=name, workspace=workspace,
                                                           public_within_org=public_within_org, visibility=visibility)
                 except requests.HTTPError as e:
                     if e.response.status_code == 409:  # already exists
@@ -1291,7 +1293,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset.Dataset`
+        :class:`~verta.dataset.entities.Dataset`
 
         Raises
         ------
@@ -1369,7 +1371,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset.Dataset`
+        :class:`~verta.dataset.entities.Dataset`
 
         Raises
         ------
@@ -1410,7 +1412,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset.Dataset`
+        :class:`~verta.dataset.entities.Dataset`
 
         """
         if name is not None and id is not None:
@@ -1449,7 +1451,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+        :class:`~verta.dataset.entities.DatasetVersion`
 
         """
         dataset_version = DatasetVersion._get_by_id(self._conn, self._conf, id)
