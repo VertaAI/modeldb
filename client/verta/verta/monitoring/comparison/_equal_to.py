@@ -18,7 +18,7 @@ class EqualTo(_VertaComparison):
     --------
     .. code-block:: python
 
-        from verta.common.comparison import EqualTo
+        from verta.monitoring.comparison import EqualTo
         assert EqualTo(.5).compare(.5)
 
     """

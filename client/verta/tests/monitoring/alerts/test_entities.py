@@ -8,7 +8,7 @@ from verta._internal_utils import (
     _utils,
     time_utils,
 )
-from verta.common import comparison
+from verta.monitoring import comparison
 from verta.monitoring.alert import (
     FixedAlerter,
     RangeAlerter,

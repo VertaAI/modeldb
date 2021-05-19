@@ -18,7 +18,7 @@ class LessThan(_VertaComparison):
     --------
     .. code-block:: python
 
-        from verta.common.comparison import LessThan
+        from verta.monitoring.comparison import LessThan
         assert LessThan(.3).compare(.1)
 
     """

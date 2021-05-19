@@ -18,7 +18,7 @@ class NotEqualTo(_VertaComparison):
     --------
     .. code-block:: python
 
-        from verta.common.comparison import NotEqualTo
+        from verta.monitoring.comparison import NotEqualTo
         assert NotEqualTo(.5).compare(.7)
 
     """
