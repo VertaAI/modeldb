@@ -15,16 +15,16 @@ class TestClient(object):
         assert monitored_entity.id == retrieved_entity.id
 
     def test_create_ME_in_workspace(self, client, organization):
-        ops = client.monitoring
+        monitoring = client.monitoring
         team_workspace = organization.name
         default_workspace = client.get_workspace()
         assert team_workspace != default_workspace
 
-        monitored_in_default = ops.get_or_create_monitored_entity()
+        monitored_in_default = monitoring.get_or_create_monitored_entity()
         assert monitored_in_default.id
         assert monitored_in_default.workspace == default_workspace
 
-        monitored_in_team = ops.get_or_create_monitored_entity(workspace=team_workspace)
+        monitored_in_team = monitoring.get_or_create_monitored_entity(workspace=team_workspace)
         assert monitored_in_team.id
         assert monitored_in_team.workspace == team_workspace
 
