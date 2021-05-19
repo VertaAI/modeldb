@@ -54,6 +54,7 @@ database:
     RdbUsername:
     RdbPassword:
     sslMode: DISABLED
+    sslEnabled: false
 
 # Test Database settings (type mongodb, couchbasedb, relational etc..)
 test:

@@ -5,7 +5,6 @@ import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
-import com.microsoft.sqlserver.jdbc.SQLServerDriver;
 import io.grpc.health.v1.HealthCheckResponse;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -72,7 +71,7 @@ public abstract class CommonHibernateUtil {
         Properties settings = new Properties();
         RdbConfig rdb = config.RdbConfiguration;
 
-        String connectionString = RdbConfig.buildConnectionString(rdb);
+        String connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
         settings.put(Environment.DRIVER, rdb.RdbDriver);
         settings.put(Environment.URL, connectionString);
         settings.put(Environment.USER, rdb.RdbUsername);
@@ -320,7 +319,7 @@ public abstract class CommonHibernateUtil {
   }
 
   public Connection getDBConnection(RdbConfig rdb) throws SQLException {
-    final var connectionString = RdbConfig.buildConnectionString(rdb);
+    final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
     return DriverManager.getConnection(connectionString, rdb.RdbUsername, rdb.RdbPassword);
   }
 
@@ -487,8 +486,10 @@ public abstract class CommonHibernateUtil {
     properties.put("user", rdb.RdbUsername);
     properties.put("password", rdb.RdbPassword);
     properties.put("sslMode", rdb.sslMode);
+    final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
+    LOGGER.info("Connecting to DB server url " + dbUrl);
     Connection connection =
-        DriverManager.getConnection(rdb.RdbUrl, properties);
+        DriverManager.getConnection(dbUrl, properties);
     ResultSet resultSet = connection.getMetaData().getCatalogs();
 
     while (resultSet.next()) {
