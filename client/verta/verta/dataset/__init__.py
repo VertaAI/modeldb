@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Utilities for data versioning."""
 
 from verta._internal_utils import documentation
 

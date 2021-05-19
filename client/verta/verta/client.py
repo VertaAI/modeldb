@@ -50,7 +50,7 @@ from .operations.monitoring.client import Client as MonitoringClient
 
 class Client(object):
     """
-    Object for interfacing with the ModelDB backend.
+    Object for interfacing with the Verta backend.
 
     .. deprecated:: 0.12.0
        The `port` parameter will be removed in an upcoming version; please combine `port` with the first parameter,

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Utilities for representing numerical comparisons."""
 
 from verta._internal_utils import documentation
 

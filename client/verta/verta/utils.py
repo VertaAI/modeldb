@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Client utilities."""
 
 import collections
 import json
@@ -201,26 +202,6 @@ class TFSavedModel(object):
     `the Client repository <https://github.com/VertaAI/modeldb/blob/master/client/workflows/demos/Nearest-Neighbors-TF-Glove.ipynb>`__
     for an example.
 
-    Examples
-    --------
-    .. code-block:: python
-
-        class TextVectorizer(object):
-            def __init__(self, saved_model_dir, word_to_index, max_input_length):
-                self.saved_model = TFSavedModel(saved_model_dir)  # text embedding model
-                self.word_to_index = word_to_index
-                self.max_input_length = max_input_length
-
-            def predict(self, input_strs):
-                predictions = []
-                for input_str in input_strs:
-                    words = input_str.split()
-                    batch_indices = list(map(self.word_to_index.get, words))
-                    padding = [self.word_to_index("<UNK>")]*(self.max_input_length - len(batch_indices))
-
-                    predictions.append(self.saved_model.predict(batch_indices=batch_indices+padding))
-                return predictions
-
     """
     def __init__(self, saved_model_dir, session=None):
         tf = importer.maybe_dependency("tensorflow")
@@ -308,5 +289,3 @@ class TFSavedModel(object):
         }
 
         return self.session.run(self.output_tensors, input_dict)
-
-
