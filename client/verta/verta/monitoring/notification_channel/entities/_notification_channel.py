@@ -30,7 +30,7 @@ class NotificationChannel(entity._ModelDBEntity):
 
         from verta.monitoring.notification_channel import SlackNotificationChannel
 
-        channels = Client().operations.notification_channels
+        channels = Client().monitoring.notification_channels
         channel = notification_channels.create(
             "Slack alerts",
             SlackNotificationChannel("https://hooks.slack.com/services/.../.../......"),
@@ -197,7 +197,7 @@ class NotificationChannels(object):
     --------
     .. code-block:: python
 
-        channels = Client().operations.notification_channels
+        channels = Client().monitoring.notification_channels
 
     """
 
@@ -250,7 +250,7 @@ class NotificationChannels(object):
 
             from verta.monitoring.notification_channel import SlackNotificationChannel
 
-            channels = Client().operations.notification_channels
+            channels = Client().monitoring.notification_channels
 
             channel = notification_channels.create(
                 "Slack alerts",
@@ -362,7 +362,7 @@ class NotificationChannels(object):
 
             from verta.monitoring.notification_channel import SlackNotificationChannel
 
-            channels = Client().operations.notification_channels
+            channels = Client().monitoring.notification_channels
 
             channel = notification_channels.get_or_create(
                 "Slack alerts",

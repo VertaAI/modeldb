@@ -176,7 +176,7 @@ class SummarySampleQuery(object):
         from datetime import datetime, timezone
         from verta.monitoring.summary import SummaryQuery, SummarySampleQuery
 
-        samples = Client().operations.summary_samples
+        samples = Client().monitoring.summary_samples
         sample_query = SummarySampleQuery(
             summary_query=SummaryQuery(names=["Income Distributions"]),
             labels={"datasource": ["census2010", "census2020"]},

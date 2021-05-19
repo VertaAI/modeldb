@@ -41,7 +41,7 @@ class SlackNotificationChannel(_NotificationChannel):
 
         from verta.monitoring.notification_channel import SlackNotificationChannel
 
-        channels = Client().operations.notification_channels
+        channels = Client().monitoring.notification_channels
         channel = channels.create(
             "Slack alerts",
             SlackNotificationChannel("https://hooks.slack.com/services/.../.../......"),

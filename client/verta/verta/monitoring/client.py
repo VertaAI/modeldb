@@ -45,7 +45,7 @@ class Client(object):
 
         from verta import Client
 
-        monitoring_client = Client().operations
+        monitoring_client = Client().monitoring
 
         monitored_entity = monitoring_client.get_or_create_monitored_entity(
             "My Data Pipeline",
