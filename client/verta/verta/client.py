@@ -226,7 +226,7 @@ class Client(object):
         self._conf.debug = value
 
     @property
-    def operations(self):
+    def monitoring(self):
         return MonitoringClient(self)
 
     @property
