@@ -8,47 +8,36 @@ import warnings
 
 import requests
 from verta.tracking._organization import Organization
-from ._internal_utils._utils import check_unnecessary_params_warning
-
-from ._protos.public.modeldb import CommonService_pb2 as _CommonService
-
-from .external import six
-from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
-
-from ._internal_utils import (
-    _config_utils,
-    _request_utils,
-    _utils,
-)
 
 from . import repository
-
-from .tracking import _Context
-from .tracking.entities import (
-    Project,
-    Projects,
-    Experiment,
-    Experiments,
-    ExperimentRun,
-    ExperimentRuns,
+from ._internal_utils import _config_utils, _request_utils, _utils
+from ._internal_utils._utils import check_unnecessary_params_warning
+from ._protos.public.modeldb import CommonService_pb2 as _CommonService
+from .dataset.entities import Dataset, Datasets, DatasetVersion
+from .endpoint import Endpoint, Endpoints
+from .endpoint.update import DirectUpdateStrategy
+from .external import six
+from .external.six.moves.urllib.parse import (
+    urlparse,  # pylint: disable=import-error, no-name-in-module
 )
-
+from .monitoring.client import Client as MonitoringClient
 from .registry.entities import (
     RegisteredModel,
     RegisteredModels,
     RegisteredModelVersion,
     RegisteredModelVersions,
 )
-from .dataset.entities import (
-    Dataset,
-    Datasets,
-    DatasetVersion,
+from .tracking import _Context
+from .tracking.entities import (
+    Experiment,
+    ExperimentRun,
+    ExperimentRuns,
+    Experiments,
+    Project,
+    Projects,
 )
-from .endpoint import Endpoint
-from .endpoint import Endpoints
-from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
-from .monitoring.client import Client as MonitoringClient
+
 
 class Client(object):
     """
@@ -104,76 +93,107 @@ class Client(object):
         Currently active Experiment.
 
     """
-    def __init__(self, host=None, port=None, email=None, dev_key=None,
-                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, _connect=True):
+
+    def __init__(
+        self,
+        host=None,
+        port=None,
+        email=None,
+        dev_key=None,
+        max_retries=5,
+        ignore_conn_err=False,
+        use_git=True,
+        debug=False,
+        _connect=True,
+    ):
         self._load_config()
 
-        if host is None and 'VERTA_HOST' in os.environ:
-            host = os.environ['VERTA_HOST']
+        if host is None and "VERTA_HOST" in os.environ:
+            host = os.environ["VERTA_HOST"]
             print("set host from environment")
         host = self._set_from_config_if_none(host, "host")
-        if email is None and 'VERTA_EMAIL' in os.environ:
-            email = os.environ['VERTA_EMAIL']
+        if email is None and "VERTA_EMAIL" in os.environ:
+            email = os.environ["VERTA_EMAIL"]
             print("set email from environment")
         email = self._set_from_config_if_none(email, "email")
-        if dev_key is None and 'VERTA_DEV_KEY' in os.environ:
-            dev_key = os.environ['VERTA_DEV_KEY']
+        if dev_key is None and "VERTA_DEV_KEY" in os.environ:
+            dev_key = os.environ["VERTA_DEV_KEY"]
             print("set developer key from environment")
         dev_key = self._set_from_config_if_none(dev_key, "dev_key")
 
         if host is None:
             raise ValueError("`host` must be provided")
-        auth = {_utils._GRPC_PREFIX+'source': "PythonClient"}
+        auth = {_utils._GRPC_PREFIX + "source": "PythonClient"}
         if email is None and dev_key is None:
             if debug:
                 print("[DEBUG] email and developer key not found; auth disabled")
         elif email is not None and dev_key is not None:
             if debug:
                 print("[DEBUG] using email: {}".format(email))
-                print("[DEBUG] using developer key: {}".format(dev_key[:8] + re.sub(r"[^-]", '*', dev_key[8:])))
-            auth.update({
-                _utils._GRPC_PREFIX+'email': email,
-                _utils._GRPC_PREFIX+'developer_key': dev_key,
-                # without underscore, for NGINX support
-                # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
-                _utils._GRPC_PREFIX+'developer-key': dev_key,
-            })
+                print(
+                    "[DEBUG] using developer key: {}".format(
+                        dev_key[:8] + re.sub(r"[^-]", "*", dev_key[8:])
+                    )
+                )
+            auth.update(
+                {
+                    _utils._GRPC_PREFIX + "email": email,
+                    _utils._GRPC_PREFIX + "developer_key": dev_key,
+                    # without underscore, for NGINX support
+                    # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
+                    _utils._GRPC_PREFIX + "developer-key": dev_key,
+                }
+            )
             # save credentials to env for other Verta Client features
-            os.environ['VERTA_EMAIL'] = email
-            os.environ['VERTA_DEV_KEY'] = dev_key
+            os.environ["VERTA_EMAIL"] = email
+            os.environ["VERTA_DEV_KEY"] = dev_key
         else:
             raise ValueError("`email` and `dev_key` must be provided together")
 
         back_end_url = urlparse(host)
-        socket = back_end_url.netloc + back_end_url.path.rstrip('/')
+        socket = back_end_url.netloc + back_end_url.path.rstrip("/")
         if port is not None:
-            warnings.warn("`port` (the second parameter) will be removed in a later version;"
-                          " please combine it with the first parameter, e.g. \"localhost:8080\"",
-                          category=FutureWarning)
+            warnings.warn(
+                "`port` (the second parameter) will be removed in a later version;"
+                ' please combine it with the first parameter, e.g. "localhost:8080"',
+                category=FutureWarning,
+            )
             socket = "{}:{}".format(socket, port)
         scheme = back_end_url.scheme or ("https" if ".verta.ai" in socket else "http")
-        auth[_utils._GRPC_PREFIX+'scheme'] = scheme
+        auth[_utils._GRPC_PREFIX + "scheme"] = scheme
 
         # verify connection
         conn = _utils.Connection(scheme, socket, auth, max_retries, ignore_conn_err)
         if _connect:
             try:
-                response = _utils.make_request("GET",
-                                               "{}://{}/api/v1/modeldb/project/verifyConnection".format(conn.scheme, conn.socket),
-                                               conn)
+                response = _utils.make_request(
+                    "GET",
+                    "{}://{}/api/v1/modeldb/project/verifyConnection".format(
+                        conn.scheme, conn.socket
+                    ),
+                    conn,
+                )
             except requests.ConnectionError as err:
-                err.args = ("connection failed; please check `host` and `port`; error message: \n\n{}".format(err.args[0]),) + err.args[1:]
+                err.args = (
+                    "connection failed; please check `host` and `port`; error message: \n\n{}".format(
+                        err.args[0]
+                    ),
+                ) + err.args[1:]
                 six.raise_from(err, None)
 
-            def is_unauthorized(response): return response.status_code == 401
+            def is_unauthorized(response):
+                return response.status_code == 401
 
             if is_unauthorized(response):
                 # response.reason was "Unauthorized"
                 try:
                     response.raise_for_status()
                 except requests.HTTPError as e:
-                    e.args = ("authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`\n\n{}".format(
-                        e.args[0]),) + e.args[1:]
+                    e.args = (
+                        "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`\n\n{}".format(
+                            e.args[0]
+                        ),
+                    ) + e.args[1:]
 
                     raise e
 
@@ -241,7 +261,9 @@ class Client(object):
 
     @property
     def expt_runs(self):
-        return ExperimentRuns(self._conn, self._conf).with_workspace(self.get_workspace())
+        return ExperimentRuns(self._conn, self._conf).with_workspace(
+            self.get_workspace()
+        )
 
     def _load_config(self):
         with _config_utils.read_merged_config() as config:
@@ -265,8 +287,9 @@ class Client(object):
 
         """
         # TODO: consider a decorator for create_*()s that validates common params
-        if (visibility is not None
-                and not isinstance(visibility, _visibility._Visibility)):
+        if visibility is not None and not isinstance(
+            visibility, _visibility._Visibility
+        ):
             raise TypeError(
                 "`visibility` must be an object from `verta.visibility`,"
                 " not {}".format(type(visibility))
@@ -317,7 +340,7 @@ class Client(object):
         if not isinstance(workspace, six.string_types):
             raise TypeError("`workspace` must be a string")
         if not self._conn.is_workspace(workspace):
-            raise ValueError("workspace \"{}\" not found".format(workspace))
+            raise ValueError('workspace "{}" not found'.format(workspace))
 
         self._workspace = workspace
 
@@ -356,13 +379,25 @@ class Client(object):
             self._ctx.proj = Project._get_by_id(self._conn, self._conf, id)
             self._ctx.populate()
         else:
-            self._ctx.proj = Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name)
+            self._ctx.proj = Project._get_by_name(
+                self._conn, self._conf, name, self._ctx.workspace_name
+            )
 
         if self._ctx.proj is None:
             raise ValueError("Project not found")
         return self._ctx.proj
 
-    def set_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, visibility=None, id=None):
+    def set_project(
+        self,
+        name=None,
+        desc=None,
+        tags=None,
+        attrs=None,
+        workspace=None,
+        public_within_org=None,
+        visibility=None,
+        id=None,
+    ):
         """
         Attaches a Project to this Client.
 
@@ -423,16 +458,32 @@ class Client(object):
         params = (desc, tags, attrs, public_within_org, visibility)
         if id is not None:
             self._ctx.proj = Project._get_by_id(self._conn, self._conf, id)
-            check_unnecessary_params_warning(resource_name, "id {}".format(id),
-                                                  param_names, params)
+            check_unnecessary_params_warning(
+                resource_name, "id {}".format(id), param_names, params
+            )
             self._ctx.populate()
         else:
-            self._ctx.proj = Project._get_or_create_by_name(self._conn, name,
-                                                        lambda name: Project._get_by_name(self._conn, self._conf, name, self._ctx.workspace_name),
-                                                        lambda name: Project._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, public_within_org=public_within_org, visibility=visibility),
-                                                        lambda: check_unnecessary_params_warning(
-                                                            resource_name, "name {}".format(name),
-                                                            param_names, params))
+            self._ctx.proj = Project._get_or_create_by_name(
+                self._conn,
+                name,
+                lambda name: Project._get_by_name(
+                    self._conn, self._conf, name, self._ctx.workspace_name
+                ),
+                lambda name: Project._create(
+                    self._conn,
+                    self._conf,
+                    self._ctx,
+                    name=name,
+                    desc=desc,
+                    tags=tags,
+                    attrs=attrs,
+                    public_within_org=public_within_org,
+                    visibility=visibility,
+                ),
+                lambda: check_unnecessary_params_warning(
+                    resource_name, "name {}".format(name), param_names, params
+                ),
+            )
 
         return self._ctx.proj
 
@@ -466,7 +517,9 @@ class Client(object):
             if self._ctx.proj is None:
                 self.set_project()
 
-            self._ctx.expt = Experiment._get_by_name(self._conn, self._conf, name, self._ctx.proj.id)
+            self._ctx.expt = Experiment._get_by_name(
+                self._conn, self._conf, name, self._ctx.proj.id
+            )
 
         if self._ctx.expt is None:
             raise ValueError("Experment not found")
@@ -517,20 +570,33 @@ class Client(object):
         params = (desc, tags, attrs)
         if id is not None:
             self._ctx.expt = Experiment._get_by_id(self._conn, self._conf, id)
-            check_unnecessary_params_warning(resource_name, "id {}".format(id),
-                                                  param_names, params)
+            check_unnecessary_params_warning(
+                resource_name, "id {}".format(id), param_names, params
+            )
             self._ctx.populate()
         else:
             if self._ctx.proj is None:
                 self.set_project()
 
-            self._ctx.expt = Experiment._get_or_create_by_name(self._conn, name,
-                                                            lambda name: Experiment._get_by_name(self._conn, self._conf, name, self._ctx.proj.id),
-                                                            lambda name: Experiment._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs),
-                                                            lambda: check_unnecessary_params_warning(
-                                                                   resource_name,
-                                                                   "name {}".format(name),
-                                                                   param_names, params))
+            self._ctx.expt = Experiment._get_or_create_by_name(
+                self._conn,
+                name,
+                lambda name: Experiment._get_by_name(
+                    self._conn, self._conf, name, self._ctx.proj.id
+                ),
+                lambda name: Experiment._create(
+                    self._conn,
+                    self._conf,
+                    self._ctx,
+                    name=name,
+                    desc=desc,
+                    tags=tags,
+                    attrs=attrs,
+                ),
+                lambda: check_unnecessary_params_warning(
+                    resource_name, "name {}".format(name), param_names, params
+                ),
+            )
 
         return self._ctx.expt
 
@@ -563,13 +629,17 @@ class Client(object):
             if self._ctx.expt is None:
                 self.set_experiment()
 
-            self._ctx.expt_run = ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id)
+            self._ctx.expt_run = ExperimentRun._get_by_name(
+                self._conn, self._conf, name, self._ctx.expt.id
+            )
 
         if self._ctx.expt_run is None:
             raise ValueError("ExperimentRun not Found")
         return self._ctx.expt_run
 
-    def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None):
+    def set_experiment_run(
+        self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None
+    ):
         """
         Attaches an Experiment Run under the currently active Experiment to this Client.
 
@@ -612,24 +682,45 @@ class Client(object):
         params = (desc, tags, attrs, date_created)
         if id is not None:
             self._ctx.expt_run = ExperimentRun._get_by_id(self._conn, self._conf, id)
-            check_unnecessary_params_warning(resource_name, "id {}".format(id),
-                                                  param_names, params)
+            check_unnecessary_params_warning(
+                resource_name, "id {}".format(id), param_names, params
+            )
             self._ctx.populate()
         else:
             if self._ctx.expt is None:
                 self.set_experiment()
 
-            self._ctx.expt_run = ExperimentRun._get_or_create_by_name(self._conn, name,
-                                                                    lambda name: ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id),
-                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created),
-                                                                    lambda: check_unnecessary_params_warning(
-                                                                          resource_name,
-                                                                          "name {}".format(name),
-                                                                          param_names, params))
+            self._ctx.expt_run = ExperimentRun._get_or_create_by_name(
+                self._conn,
+                name,
+                lambda name: ExperimentRun._get_by_name(
+                    self._conn, self._conf, name, self._ctx.expt.id
+                ),
+                lambda name: ExperimentRun._create(
+                    self._conn,
+                    self._conf,
+                    self._ctx,
+                    name=name,
+                    desc=desc,
+                    tags=tags,
+                    attrs=attrs,
+                    date_created=date_created,
+                ),
+                lambda: check_unnecessary_params_warning(
+                    resource_name, "name {}".format(name), param_names, params
+                ),
+            )
 
         return self._ctx.expt_run
 
-    def get_or_create_repository(self, name=None, workspace=None, id=None, public_within_org=None, visibility=None):
+    def get_or_create_repository(
+        self,
+        name=None,
+        workspace=None,
+        id=None,
+        public_within_org=None,
+        visibility=None,
+    ):
         """
         Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
 
@@ -672,16 +763,25 @@ class Client(object):
                 workspace = self.get_workspace()
             workspace_str = "workspace {}".format(workspace)
 
-            repo = repository.Repository._get(self._conn, name=name, workspace=workspace)
+            repo = repository.Repository._get(
+                self._conn, name=name, workspace=workspace
+            )
 
             if not repo:  # not found
                 try:
-                    repo = repository.Repository._create(self._conn, name=name, workspace=workspace,
-                                                          public_within_org=public_within_org, visibility=visibility)
+                    repo = repository.Repository._create(
+                        self._conn,
+                        name=name,
+                        workspace=workspace,
+                        public_within_org=public_within_org,
+                        visibility=visibility,
+                    )
                 except requests.HTTPError as e:
                     if e.response.status_code == 409:  # already exists
-                        raise RuntimeError("unable to get Repository from ModelDB;"
-                                           " please notify the Verta development team")
+                        raise RuntimeError(
+                            "unable to get Repository from ModelDB;"
+                            " please notify the Verta development team"
+                        )
                     else:
                         six.raise_from(e, None)
                 print("created new Repository: {} in {}".format(name, workspace_str))
@@ -720,9 +820,19 @@ class Client(object):
 
         """
         return self.get_or_create_repository(*args, **kwargs)
+
     # set aliases for get-or-create functions for API compatibility
 
-    def get_or_create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None, id=None):
+    def get_or_create_registered_model(
+        self,
+        name=None,
+        desc=None,
+        labels=None,
+        workspace=None,
+        public_within_org=None,
+        visibility=None,
+        id=None,
+    ):
         """
         Attaches a registered_model to this Client.
 
@@ -780,16 +890,30 @@ class Client(object):
         params = (desc, labels, public_within_org, visibility)
         if id is not None:
             registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
-            check_unnecessary_params_warning(resource_name, "id {}".format(id),
-                                                  param_names, params)
+            check_unnecessary_params_warning(
+                resource_name, "id {}".format(id), param_names, params
+            )
         else:
-            registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
-                                                                  lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, ctx.workspace_name),
-                                                                  lambda name: RegisteredModel._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org, visibility=visibility),
-                                                                  lambda: check_unnecessary_params_warning(
-                                                                      resource_name,
-                                                                      "name {}".format(name),
-                                                                      param_names, params))
+            registered_model = RegisteredModel._get_or_create_by_name(
+                self._conn,
+                name,
+                lambda name: RegisteredModel._get_by_name(
+                    self._conn, self._conf, name, ctx.workspace_name
+                ),
+                lambda name: RegisteredModel._create(
+                    self._conn,
+                    self._conf,
+                    ctx,
+                    name=name,
+                    desc=desc,
+                    tags=labels,
+                    public_within_org=public_within_org,
+                    visibility=visibility,
+                ),
+                lambda: check_unnecessary_params_warning(
+                    resource_name, "name {}".format(name), param_names, params
+                ),
+            )
 
         return registered_model
 
@@ -820,7 +944,9 @@ class Client(object):
         if id is not None:
             registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
         else:
-            registered_model =  RegisteredModel._get_by_name(self._conn, self._conf, name, workspace)
+            registered_model = RegisteredModel._get_by_name(
+                self._conn, self._conf, name, workspace
+            )
 
         if registered_model is None:
             raise ValueError("Registered model not found")
@@ -851,13 +977,25 @@ class Client(object):
 
     @property
     def registered_models(self):
-        return RegisteredModels(self._conn, self._conf).with_workspace(self.get_workspace())
+        return RegisteredModels(self._conn, self._conf).with_workspace(
+            self.get_workspace()
+        )
 
     @property
     def registered_model_versions(self):
-        return RegisteredModelVersions(self._conn, self._conf).with_workspace(self.get_workspace())
+        return RegisteredModelVersions(self._conn, self._conf).with_workspace(
+            self.get_workspace()
+        )
 
-    def get_or_create_endpoint(self, path=None, description=None, workspace=None, public_within_org=None, visibility=None, id=None):
+    def get_or_create_endpoint(
+        self,
+        path=None,
+        description=None,
+        workspace=None,
+        public_within_org=None,
+        visibility=None,
+        id=None,
+    ):
         """
         Attaches an endpoint to this Client.
 
@@ -908,19 +1046,30 @@ class Client(object):
         param_names = "`description`, `public_within_org`, or `visibility`"
         params = [description, public_within_org, visibility]
         if id is not None:
-            check_unnecessary_params_warning(resource_name, "id {}".format(id),
-                                                  param_names, params)
+            check_unnecessary_params_warning(
+                resource_name, "id {}".format(id), param_names, params
+            )
             return Endpoint._get_by_id(self._conn, self._conf, workspace, id)
         else:
-            return Endpoint._get_or_create_by_name(self._conn, path,
-                                            lambda path: Endpoint._get_by_path(self._conn, self._conf, workspace, path),
-                                            lambda path: Endpoint._create(self._conn, self._conf, workspace, path, description, public_within_org, visibility),
-                                            lambda: check_unnecessary_params_warning(
-                                                 resource_name,
-                                                 "path {}".format(path),
-                                                 param_names, params))
-
-
+            return Endpoint._get_or_create_by_name(
+                self._conn,
+                path,
+                lambda path: Endpoint._get_by_path(
+                    self._conn, self._conf, workspace, path
+                ),
+                lambda path: Endpoint._create(
+                    self._conn,
+                    self._conf,
+                    workspace,
+                    path,
+                    description,
+                    public_within_org,
+                    visibility,
+                ),
+                lambda: check_unnecessary_params_warning(
+                    resource_name, "path {}".format(path), param_names, params
+                ),
+            )
 
     def get_endpoint(self, path=None, workspace=None, id=None):
         """
@@ -964,7 +1113,16 @@ class Client(object):
         """
         return self.get_or_create_endpoint(*args, **kwargs)
 
-    def create_project(self, name=None, desc=None, tags=None, attrs=None, workspace=None, public_within_org=None, visibility=None):
+    def create_project(
+        self,
+        name=None,
+        desc=None,
+        tags=None,
+        attrs=None,
+        workspace=None,
+        public_within_org=None,
+        visibility=None,
+    ):
         """
         Creates a new Project.
 
@@ -1013,9 +1171,15 @@ class Client(object):
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
         self._ctx.proj = Project._create(
-            self._conn, self._conf, self._ctx,
-            name=name, desc=desc, tags=tags, attrs=attrs,
-            public_within_org=public_within_org, visibility=visibility,
+            self._conn,
+            self._conf,
+            self._ctx,
+            name=name,
+            desc=desc,
+            tags=tags,
+            attrs=attrs,
+            public_within_org=public_within_org,
+            visibility=visibility,
         )
         return self._ctx.proj
 
@@ -1053,12 +1217,21 @@ class Client(object):
         if self._ctx.proj is None:
             self.set_project()
 
-        self._ctx.expt = Experiment._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs)
+        self._ctx.expt = Experiment._create(
+            self._conn,
+            self._conf,
+            self._ctx,
+            name=name,
+            desc=desc,
+            tags=tags,
+            attrs=attrs,
+        )
 
         return self._ctx.expt
 
-
-    def create_experiment_run(self, name=None, desc=None, tags=None, attrs=None, date_created=None):
+    def create_experiment_run(
+        self, name=None, desc=None, tags=None, attrs=None, date_created=None
+    ):
         """
         Creates a new Experiment Run under the currently active Experiment.
 
@@ -1091,12 +1264,28 @@ class Client(object):
         if self._ctx.expt is None:
             self.set_experiment()
 
-        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created)
+        self._ctx.expt_run = ExperimentRun._create(
+            self._conn,
+            self._conf,
+            self._ctx,
+            name=name,
+            desc=desc,
+            tags=tags,
+            attrs=attrs,
+            date_created=date_created,
+        )
 
         return self._ctx.expt_run
 
-
-    def create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None):
+    def create_registered_model(
+        self,
+        name=None,
+        desc=None,
+        labels=None,
+        workspace=None,
+        public_within_org=None,
+        visibility=None,
+    ):
         """
         Creates a new Registered Model.
 
@@ -1144,13 +1333,24 @@ class Client(object):
         ctx.workspace_name = workspace
 
         return RegisteredModel._create(
-            self._conn, self._conf, ctx,
-            name=name, desc=desc, tags=labels,
-            public_within_org=public_within_org, visibility=visibility,
+            self._conn,
+            self._conf,
+            ctx,
+            name=name,
+            desc=desc,
+            tags=labels,
+            public_within_org=public_within_org,
+            visibility=visibility,
         )
 
-
-    def create_endpoint(self, path, description=None, workspace=None, public_within_org=None, visibility=None):
+    def create_endpoint(
+        self,
+        path,
+        description=None,
+        workspace=None,
+        public_within_org=None,
+        visibility=None,
+    ):
         """
         Attaches an endpoint to this Client.
 
@@ -1190,16 +1390,31 @@ class Client(object):
 
         if workspace is None:
             workspace = self.get_workspace()
-        return Endpoint._create(self._conn, self._conf, workspace, path, description, public_within_org, visibility)
+        return Endpoint._create(
+            self._conn,
+            self._conf,
+            workspace,
+            path,
+            description,
+            public_within_org,
+            visibility,
+        )
 
     @property
     def endpoints(self):
         return Endpoints(self._conn, self._conf, self.get_workspace())
 
     def download_endpoint_manifest(
-            self, download_to_path, path, name, strategy=None,
-            resources=None, autoscaling=None, env_vars=None,
-            workspace=None):
+        self,
+        download_to_path,
+        path,
+        name,
+        strategy=None,
+        resources=None,
+        autoscaling=None,
+        env_vars=None,
+        workspace=None,
+    ):
         """
         Downloads this endpoint's Kubernetes manifest YAML.
 
@@ -1229,8 +1444,8 @@ class Client(object):
             Absolute path where deployment YAML was downloaded to. Matches `download_to_path`.
 
         """
-        if not path.startswith('/'):
-            path = '/' + path
+        if not path.startswith("/"):
+            path = "/" + path
 
         if not strategy:
             strategy = DirectUpdateStrategy()
@@ -1238,10 +1453,12 @@ class Client(object):
             workspace = self.get_workspace()
 
         data = {
-            'endpoint': {'path': path},
-            'name': name,
-            'update': Endpoint._create_update_body(strategy, resources, autoscaling, env_vars),
-            'workspace_name': workspace,
+            "endpoint": {"path": path},
+            "name": name,
+            "update": Endpoint._create_update_body(
+                strategy, resources, autoscaling, env_vars
+            ),
+            "workspace_name": workspace,
         }
 
         endpoint = "{}://{}/api/v1/deployment/operations/manifest".format(
@@ -1249,13 +1466,28 @@ class Client(object):
             self._conn.socket,
         )
 
-        with _utils.make_request("POST", endpoint, self._conn, json=data, stream=True) as response:
+        with _utils.make_request(
+            "POST", endpoint, self._conn, json=data, stream=True
+        ) as response:
             _utils.raise_for_http_error(response)
 
-            downloaded_to_path = _request_utils.download_file(response, download_to_path, overwrite_ok=True)
+            downloaded_to_path = _request_utils.download_file(
+                response, download_to_path, overwrite_ok=True
+            )
             return os.path.abspath(downloaded_to_path)
 
-    def get_or_create_dataset(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, visibility=None, id=None):
+    def get_or_create_dataset(
+        self,
+        name=None,
+        desc=None,
+        tags=None,
+        attrs=None,
+        workspace=None,
+        time_created=None,
+        public_within_org=None,
+        visibility=None,
+        id=None,
+    ):
         """
         Gets or creates a dataset.
 
@@ -1317,16 +1549,32 @@ class Client(object):
         params = (desc, tags, attrs, time_created, public_within_org, visibility)
         if id is not None:
             dataset = Dataset._get_by_id(self._conn, self._conf, id)
-            check_unnecessary_params_warning(resource_name, "id {}".format(id),
-                                                  param_names, params)
+            check_unnecessary_params_warning(
+                resource_name, "id {}".format(id), param_names, params
+            )
         else:
-            dataset = Dataset._get_or_create_by_name(self._conn, name,
-                                                        lambda name: Dataset._get_by_name(self._conn, self._conf, name, ctx.workspace_name),
-                                                        lambda name: Dataset._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=tags, attrs=attrs, time_created=time_created, public_within_org=public_within_org, visibility=visibility),
-                                                        lambda: check_unnecessary_params_warning(
-                                                         resource_name,
-                                                         "name {}".format(name),
-                                                         param_names, params))
+            dataset = Dataset._get_or_create_by_name(
+                self._conn,
+                name,
+                lambda name: Dataset._get_by_name(
+                    self._conn, self._conf, name, ctx.workspace_name
+                ),
+                lambda name: Dataset._create(
+                    self._conn,
+                    self._conf,
+                    ctx,
+                    name=name,
+                    desc=desc,
+                    tags=tags,
+                    attrs=attrs,
+                    time_created=time_created,
+                    public_within_org=public_within_org,
+                    visibility=visibility,
+                ),
+                lambda: check_unnecessary_params_warning(
+                    resource_name, "name {}".format(name), param_names, params
+                ),
+            )
 
         return dataset
 
@@ -1340,7 +1588,17 @@ class Client(object):
         """
         return self.get_or_create_dataset(*args, **kwargs)
 
-    def create_dataset(self, name=None, desc=None, tags=None, attrs=None, workspace=None, time_created=None, public_within_org=None, visibility=None):
+    def create_dataset(
+        self,
+        name=None,
+        desc=None,
+        tags=None,
+        attrs=None,
+        workspace=None,
+        time_created=None,
+        public_within_org=None,
+        visibility=None,
+    ):
         """
         Creates a dataset, initialized with specified metadata parameters.
 
@@ -1388,9 +1646,16 @@ class Client(object):
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
         return Dataset._create(
-            self._conn, self._conf, ctx,
-            name=name, desc=desc, tags=tags, attrs=attrs, time_created=time_created,
-            public_within_org=public_within_org, visibility=visibility,
+            self._conn,
+            self._conf,
+            ctx,
+            name=name,
+            desc=desc,
+            tags=tags,
+            attrs=attrs,
+            time_created=time_created,
+            public_within_org=public_within_org,
+            visibility=visibility,
         )
 
     def get_dataset(self, name=None, workspace=None, id=None):
@@ -1461,11 +1726,15 @@ class Client(object):
         return dataset_version
 
     # holdover for backwards compatibility
-    def find_datasets(self,
-                      dataset_ids=None, name=None,
-                      tags=None,
-                      sort_key=None, ascending=False,
-                      workspace=None):
+    def find_datasets(
+        self,
+        dataset_ids=None,
+        name=None,
+        tags=None,
+        sort_key=None,
+        ascending=False,
+        workspace=None,
+    ):
         warnings.warn(
             "this method is deprecated and will be removed in an upcoming version;"
             " consider using `client.datasets.find()` instead",
@@ -1482,21 +1751,22 @@ class Client(object):
         predicates = []
         if tags is not None:
             tags = _utils.as_list_of_str(tags)
-            predicates.extend(
-                "tags == \"{}\"".format(tag)
-                for tag in tags
-            )
+            predicates.extend('tags == "{}"'.format(tag) for tag in tags)
         if name is not None:
             if not isinstance(name, six.string_types):
                 raise TypeError("`name` must be str, not {}".format(type(name)))
-            predicates.append("name ~= \"{}\"".format(name))
+            predicates.append('name ~= "{}"'.format(name))
         if predicates:
             datasets = datasets.find(predicates)
 
         return datasets
 
-    def _create_organization(self, name, desc=None, collaborator_type=None, global_can_deploy=None):
-        return Organization._create(self._conn, name, desc, collaborator_type, global_can_deploy)
+    def _create_organization(
+        self, name, desc=None, collaborator_type=None, global_can_deploy=None
+    ):
+        return Organization._create(
+            self._conn, name, desc, collaborator_type, global_can_deploy
+        )
 
     def _get_organization(self, name):
         return Organization._get_by_name(self._conn, name)

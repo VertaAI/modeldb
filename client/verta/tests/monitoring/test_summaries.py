@@ -4,16 +4,12 @@ import datetime
 from datetime import timedelta
 
 import pytest
-
+from verta import data_types
+from verta._internal_utils import time_utils
 from verta._internal_utils._utils import generate_default_name
+from verta.monitoring.summaries.queries import SummaryQuery, SummarySampleQuery
 from verta.monitoring.summaries.summary import Summary
 from verta.monitoring.summaries.summary_sample import SummarySample
-from verta.monitoring.summaries.queries import (
-    SummaryQuery,
-    SummarySampleQuery,
-)
-from verta._internal_utils import time_utils
-from verta import data_types
 
 
 class TestSummaries(object):

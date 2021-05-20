@@ -4,10 +4,10 @@ from __future__ import print_function
 
 import json
 
+from verta import data_types
 from verta._internal_utils import time_utils
 from verta._protos.public.monitoring import Summary_pb2 as SummaryService
 from verta.tracking.entities import _entity
-from verta import data_types
 
 
 class SummarySample(_entity._ModelDBEntity):

@@ -1,6 +1,7 @@
+from string import printable
+
 import hypothesis
 import hypothesis.strategies as st
-from string import printable
 
 # We have 4 base types that can be leaves
 # Assume that the null type doesn't make much sense, since it's a constant

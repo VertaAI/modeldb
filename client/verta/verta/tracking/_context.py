@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .entities import Experiment
-from .entities import Project
+from .entities import Experiment, Project
 
 
 class _Context(object):
@@ -18,6 +17,10 @@ class _Context(object):
     def populate(self):
         # TODO: check if the upper entity is already correct, in which case don't re-populate
         if self.expt_run is not None:
-            self.expt = Experiment._get_by_id(self._conn, self._conf, self.expt_run._msg.experiment_id)
+            self.expt = Experiment._get_by_id(
+                self._conn, self._conf, self.expt_run._msg.experiment_id
+            )
         if self.expt is not None:
-            self.proj = Project._get_by_id(self._conn, self._conf, self.expt._msg.project_id)
+            self.proj = Project._get_by_id(
+                self._conn, self._conf, self.expt._msg.project_id
+            )

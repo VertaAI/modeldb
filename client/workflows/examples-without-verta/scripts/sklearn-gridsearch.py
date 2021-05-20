@@ -1,18 +1,14 @@
 """Logistic Regression with Grid Search (scikit-learn)"""
 
-import os
 import itertools
+import os
+import warnings
 
 import joblib
-
-import pandas as pd
 import numpy as np
+import pandas as pd
+from sklearn import linear_model, metrics, model_selection
 
-from sklearn import model_selection
-from sklearn import linear_model
-from sklearn import metrics
-
-import warnings
 warnings.filterwarnings('ignore')
 
 

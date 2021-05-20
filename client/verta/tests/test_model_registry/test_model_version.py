@@ -14,21 +14,16 @@ import cloudpickle
 import pytest
 import requests
 import six
-
 import verta
 import verta.dataset
 from verta import visibility
-from verta.environment import Python
-from verta.tracking.entities._deployable_entity import _CACHE_DIR
+from verta._internal_utils import _artifact_utils, _utils
 from verta.endpoint.update import DirectUpdateStrategy
+from verta.environment import Python
 from verta.registry import lock
-from verta._internal_utils import (
-    _artifact_utils,
-    _utils,
-)
+from verta.tracking.entities._deployable_entity import _CACHE_DIR
 
 from .. import utils
-
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
@@ -37,8 +32,8 @@ class TestMDBIntegration:
     def test_from_run(self, experiment_run, model_for_deployment, registered_model):
         np = pytest.importorskip("numpy")
 
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
+        experiment_run.log_model(model_for_deployment["model"], custom_modules=[])
+        experiment_run.log_environment(Python(["scikit-learn"]))
 
         artifact = np.random.random((36, 12))
         experiment_run.log_artifact("some-artifact", artifact)
@@ -49,31 +44,36 @@ class TestMDBIntegration:
         )
 
         env_str = str(model_version.get_environment())
-        assert 'scikit-learn' in env_str
-        assert 'Python' in env_str
+        assert "scikit-learn" in env_str
+        assert "Python" in env_str
 
-        assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
+        assert (
+            model_for_deployment["model"].get_params()
+            == model_version.get_model().get_params()
+        )
         assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
 
-    def test_from_run_diff_workspaces(self, client, experiment_run, organization, created_entities):
+    def test_from_run_diff_workspaces(
+        self, client, experiment_run, organization, created_entities
+    ):
         registered_model = client.create_registered_model(workspace=organization.name)
         created_entities.append(registered_model)
 
         model_version = registered_model.create_version_from_run(
-            run_id=experiment_run.id,
-            name="From Run {}".format(experiment_run.id)
+            run_id=experiment_run.id, name="From Run {}".format(experiment_run.id)
         )
 
         assert model_version.workspace != experiment_run.workspace
 
-    def test_from_run_diff_workspaces_no_access_error(self, experiment_run, client_2, created_entities):
+    def test_from_run_diff_workspaces_no_access_error(
+        self, experiment_run, client_2, created_entities
+    ):
         registered_model = client_2.create_registered_model()
         created_entities.append(registered_model)
 
         with pytest.raises(requests.HTTPError) as excinfo:
             model_version = registered_model.create_version_from_run(
-                run_id=experiment_run.id,
-                name="From Run {}".format(experiment_run.id)
+                run_id=experiment_run.id, name="From Run {}".format(experiment_run.id)
             )
 
         excinfo_value = str(excinfo.value).strip()
@@ -106,8 +106,10 @@ class TestModelVersion:
         model_version = registered_model.get_or_create_version()
         retrieved_model_version = registered_model.get_version(id=model_version.id)
         assert model_version.id == retrieved_model_version.id
-        with pytest.warns(UserWarning, match='.*already exists.*'):
-            registered_model.get_or_create_version(id=model_version.id, desc="new description")
+        with pytest.warns(UserWarning, match=".*already exists.*"):
+            registered_model.get_or_create_version(
+                id=model_version.id, desc="new description"
+            )
 
     def test_repr(self, model_version):
         model_version.add_labels(["tag1", "tag2"])
@@ -136,7 +138,9 @@ class TestModelVersion:
         created_entities.append(registered_model)
         model_version = registered_model.get_or_create_version(name="my version")
 
-        retrieved_model_version_by_id = client.get_registered_model_version(model_version.id)
+        retrieved_model_version_by_id = client.get_registered_model_version(
+            model_version.id
+        )
 
         assert retrieved_model_version_by_id.id == model_version.id
 
@@ -200,7 +204,7 @@ class TestModelVersion:
 
     @pytest.mark.skip(reason="functionality postponed in Client")
     def test_archive(self, model_version):
-        assert (not model_version.is_archived)
+        assert not model_version.is_archived
 
         model_version.archive()
         assert model_version.is_archived
@@ -213,7 +217,9 @@ class TestModelVersion:
     def test_clear_cache(self, registered_model):
         # Multiple log_artifacts calls, which would potentially fail without clear_cache
         model_version = registered_model.get_or_create_version(name="my version")
-        model_version_2 = registered_model.get_version(id=model_version.id) # same version object
+        model_version_2 = registered_model.get_version(
+            id=model_version.id
+        )  # same version object
 
         np = pytest.importorskip("numpy")
         artifact = np.random.random((36, 12))
@@ -222,7 +228,9 @@ class TestModelVersion:
             model_version.log_artifact("artifact_{}".format(2 * i), artifact)
             model_version_2.log_artifact("artifact_{}".format(2 * i + 1), artifact)
 
-        model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
+        model_version = registered_model.get_version(
+            id=model_version.id
+        )  # re-retrieve the version
         assert len(model_version._msg.artifacts) == 4
 
     def test_attributes(self, client, registered_model):
@@ -238,12 +246,13 @@ class TestModelVersion:
         model_version.add_attribute("int-attr", 15)
         assert model_version.get_attribute("int-attr") == 15
 
-        model_version.add_attributes({"int-attr": 16, "float-attr": 123.}, overwrite=True)
-        assert model_version.get_attributes() == {"int-attr": 16, "float-attr": 123.}
+        model_version.add_attributes(
+            {"int-attr": 16, "float-attr": 123.0}, overwrite=True
+        )
+        assert model_version.get_attributes() == {"int-attr": 16, "float-attr": 123.0}
         # Test deleting:
-        model_version.del_attribute('int-attr')
-        assert model_version.get_attributes() == {"float-attr": 123.}
-
+        model_version.del_attribute("int-attr")
+        assert model_version.get_attributes() == {"float-attr": 123.0}
 
         # Deleting non-existing key:
         model_version.del_attribute("non-existing")
@@ -251,8 +260,8 @@ class TestModelVersion:
     def test_patch(self, registered_model):
         NAME = "name"
         DESCRIPTION = "description"
-        LABELS = ['label']
-        ATTRIBUTES = {'attribute': 3}
+        LABELS = ["label"]
+        ATTRIBUTES = {"attribute": 3}
 
         version = registered_model.create_version(NAME)
 
@@ -292,8 +301,10 @@ class TestFind:
             assert item._msg == model_version._msg
 
         tag_name = name + "_tag"
-        versions = {name + "1": registered_model.get_or_create_version(name + "1"),
-                    name + "2": registered_model.get_or_create_version(name + "2")}
+        versions = {
+            name + "1": registered_model.get_or_create_version(name + "1"),
+            name + "2": registered_model.get_or_create_version(name + "2"),
+        }
         versions[name + "1"].add_label(tag_name)
         versions[name + "2"].add_label(tag_name)
         versions[name + "2"].add_label("label2")
@@ -301,7 +312,9 @@ class TestFind:
         for version in versions:
             versions[version] = registered_model.get_version(version)
 
-        find_result = registered_model.versions.find(["labels == \"{}\"".format(tag_name)])
+        find_result = registered_model.versions.find(
+            ['labels == "{}"'.format(tag_name)]
+        )
         assert len(find_result) == 2
         for item in find_result:
             assert versions[item._msg.version]
@@ -330,6 +343,7 @@ class TestArtifacts:
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
+
         key = "coef"
 
         classifier = LogisticRegression()
@@ -360,7 +374,7 @@ class TestArtifacts:
     def test_add_artifact_file(self, model_version, in_tempdir, random_data):
         filename = "tiny1.bin"
         FILE_CONTENTS = random_data
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             f.write(FILE_CONTENTS)
         model_version.log_artifact("file", filename)
 
@@ -375,7 +389,7 @@ class TestArtifacts:
         FILE_CONTENTS = random_data
 
         # create file and upload as artifact
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             f.write(FILE_CONTENTS)
         model_version.log_artifact(key, filename)
         os.remove(filename)
@@ -383,14 +397,14 @@ class TestArtifacts:
         # download artifact and verify contents
         new_filepath = model_version.download_artifact(key, new_filename)
         assert new_filepath == os.path.abspath(new_filename)
-        with open(new_filepath, 'rb') as f:
+        with open(new_filepath, "rb") as f:
             assert f.read() == FILE_CONTENTS
 
         # object as well
-        obj = {'some': ["arbitrary", "object"]}
+        obj = {"some": ["arbitrary", "object"]}
         model_version.log_artifact(key, obj, overwrite=True)
         new_filepath = model_version.download_artifact(key, new_filename)
-        with open(new_filepath, 'rb') as f:
+        with open(new_filepath, "rb") as f:
             assert pickle.load(f) == obj
 
     def test_download_directory(self, model_version, strs, dir_and_files, in_tempdir):
@@ -418,12 +432,18 @@ class TestArtifacts:
         with pytest.raises(ValueError) as excinfo:
             model_version.log_artifact("model", np.random.random((36, 12)))
 
-        assert "the key \"model\" is reserved for model; consider using log_model() instead" in str(excinfo.value)
+        assert (
+            'the key "model" is reserved for model; consider using log_model() instead'
+            in str(excinfo.value)
+        )
 
         with pytest.raises(ValueError) as excinfo:
             model_version.del_artifact("model")
 
-        assert "model can't be deleted through del_artifact(); consider using del_model() instead" in str(excinfo.value)
+        assert (
+            "model can't be deleted through del_artifact(); consider using del_model() instead"
+            in str(excinfo.value)
+        )
 
     def test_del_artifact(self, registered_model):
         np = pytest.importorskip("numpy")
@@ -437,7 +457,6 @@ class TestArtifacts:
         model_version.log_artifact("coef", classifier.coef_)
         model_version.log_artifact("coef-2", classifier.coef_)
         model_version.log_artifact("coef-3", classifier.coef_)
-
 
         model_version.del_artifact("coef-2")
         assert len(model_version.get_artifact_keys()) == 2
@@ -461,14 +480,15 @@ class TestArtifacts:
         model_version = registered_model.get_version(id=model_version.id)
         assert model_version.has_model
         model_version.del_model()
-        assert (not model_version.has_model)
+        assert not model_version.has_model
 
         model_version = registered_model.get_version(id=model_version.id)
-        assert (not model_version.has_model)
+        assert not model_version.has_model
 
 
 class TestDeployability:
     """Deployment-related functionality"""
+
     def test_log_model(self, model_version):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
@@ -514,30 +534,38 @@ class TestDeployability:
 
             for parent_dir, dirnames, filenames in os.walk(path):
                 # only Python files
-                filenames[:] = [filename for filename in filenames if filename.endswith(('.py', '.pyc', '.pyo'))]
+                filenames[:] = [
+                    filename
+                    for filename in filenames
+                    if filename.endswith((".py", ".pyc", ".pyo"))
+                ]
 
                 if not _utils.is_in_venv(path) and _utils.is_in_venv(parent_dir):
                     continue
                 custom_module_filenames.update(map(os.path.basename, filenames))
 
         custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
-        with zipfile.ZipFile(custom_modules, 'r') as zipf:
-            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+        with zipfile.ZipFile(custom_modules, "r") as zipf:
+            assert custom_module_filenames == set(
+                map(os.path.basename, zipf.namelist())
+            )
 
     def test_download_sklearn(self, model_version, in_tempdir):
-        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+        LogisticRegression = pytest.importorskip(
+            "sklearn.linear_model"
+        ).LogisticRegression
 
         upload_filepath = "model.pkl"
         download_filepath = "retrieved_model.pkl"
 
         model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
-        with open(upload_filepath, 'wb') as f:
+        with open(upload_filepath, "wb") as f:
             pickle.dump(model, f)
 
         model_version.log_model(model, custom_modules=[])
         model_version.download_model(download_filepath)
 
-        with open(download_filepath, 'rb') as f:
+        with open(download_filepath, "rb") as f:
             downloaded_model = pickle.load(f)
 
         assert downloaded_model.get_params() == model.get_params()
@@ -546,7 +574,7 @@ class TestDeployability:
         custom_modules_dir = "."
 
         model_version.log_model(
-            model_for_deployment['model'],
+            model_for_deployment["model"],
             custom_modules=["."],
         )
 
@@ -555,20 +583,27 @@ class TestDeployability:
             # skip venvs
             #     This logic is from _utils.find_filepaths().
             exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-            dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+            dirnames[:] = [
+                dirname
+                for dirname in dirnames
+                if not glob.glob(exec_path_glob.format(dirname))
+            ]
 
             custom_module_filenames.update(map(os.path.basename, filenames))
 
         custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
-        with zipfile.ZipFile(custom_modules, 'r') as zipf:
-            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+        with zipfile.ZipFile(custom_modules, "r") as zipf:
+            assert custom_module_filenames == set(
+                map(os.path.basename, zipf.namelist())
+            )
 
-    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir,
-                                     registered_model):
+    def test_download_docker_context(
+        self, experiment_run, model_for_deployment, in_tempdir, registered_model
+    ):
         download_to_path = "context.tgz"
 
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
+        experiment_run.log_model(model_for_deployment["model"], custom_modules=[])
+        experiment_run.log_environment(Python(["scikit-learn"]))
         model_version = registered_model.create_version_from_run(
             run_id=experiment_run.id,
             name="From Run {}".format(experiment_run.id),
@@ -578,7 +613,7 @@ class TestDeployability:
         assert filepath == os.path.abspath(download_to_path)
 
         # can be loaded as tgz
-        with tarfile.open(filepath, 'r:gz') as f:
+        with tarfile.open(filepath, "r:gz") as f:
             filepaths = set(f.getnames())
 
         assert "Dockerfile" in filepaths
@@ -592,12 +627,14 @@ class TestDeployability:
             artifacts = model_version.fetch_artifacts(strs)
 
             assert set(six.viewkeys(artifacts)) == set(strs)
-            assert all(filepath.startswith(_CACHE_DIR)
-                       for filepath in six.viewvalues(artifacts))
+            assert all(
+                filepath.startswith(_CACHE_DIR)
+                for filepath in six.viewvalues(artifacts)
+            )
 
             for key, filepath in six.viewitems(artifacts):
                 artifact_contents = model_version._get_artifact(key)
-                with open(filepath, 'rb') as f:
+                with open(filepath, "rb") as f:
                     file_contents = f.read()
 
                 assert file_contents == artifact_contents
@@ -606,11 +643,11 @@ class TestDeployability:
 
     def test_model_artifacts(self, model_version, endpoint, in_tempdir):
         key = "foo"
-        val = {'a': 1}
+        val = {"a": 1}
 
         class ModelWithDependency(object):
             def __init__(self, artifacts):
-                with open(artifacts[key], 'rb') as f:  # should not KeyError
+                with open(artifacts[key], "rb") as f:  # should not KeyError
                     if cloudpickle.load(f) != val:
                         raise ValueError  # should not ValueError
 
@@ -619,13 +656,17 @@ class TestDeployability:
 
         # first log junk artifact, to test `overwrite`
         bad_key = "bar"
-        bad_val = {'b': 2}
+        bad_val = {"b": 2}
         model_version.log_artifact(bad_key, bad_val)
-        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=[bad_key])
+        model_version.log_model(
+            ModelWithDependency, custom_modules=[], artifacts=[bad_key]
+        )
 
         # log real artifact using `overwrite`
         model_version.log_artifact(key, val)
-        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True)
+        model_version.log_model(
+            ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True
+        )
         model_version.log_environment(Python([]))
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
@@ -634,6 +675,7 @@ class TestDeployability:
 
 class TestArbitraryModels:
     """Analogous to test_artifacts.TestArbitraryModels."""
+
     @staticmethod
     def _assert_no_deployment_artifacts(model_version):
         artifact_keys = model_version.get_artifact_keys()
@@ -656,13 +698,13 @@ class TestArbitraryModels:
 
         model_version.log_model(dirpath)
 
-        with zipfile.ZipFile(model_version.get_model(), 'r') as zipf:
+        with zipfile.ZipFile(model_version.get_model(), "r") as zipf:
             assert set(zipf.namelist()) == filepaths
 
         self._assert_no_deployment_artifacts(model_version)
 
     def test_arbitrary_object(self, model_version):
-        model = {'a': 1}
+        model = {"a": 1}
 
         model_version.log_model(model)
 
@@ -670,7 +712,9 @@ class TestArbitraryModels:
 
         self._assert_no_deployment_artifacts(model_version)
 
-    def test_download_arbitrary_directory(self, model_version, dir_and_files, strs, in_tempdir):
+    def test_download_arbitrary_directory(
+        self, model_version, dir_and_files, strs, in_tempdir
+    ):
         """Model that was originally a dir is unpacked on download."""
         dirpath, _ = dir_and_files
         download_path = strs[0]
@@ -702,13 +746,15 @@ class TestArbitraryModels:
 
         utils.assert_dirs_match(dirpath, download_path)
 
-    def test_download_arbitrary_zip(self, model_version, dir_and_files, strs, in_tempdir):
+    def test_download_arbitrary_zip(
+        self, model_version, dir_and_files, strs, in_tempdir
+    ):
         """Model that was originally a ZIP is not unpacked on download."""
         model_dir, _ = dir_and_files
         upload_path, download_path = strs[:2]
 
         # zip `model_dir` into `upload_path`
-        with open(upload_path, 'wb') as f:
+        with open(upload_path, "wb") as f:
             shutil.copyfileobj(
                 _artifact_utils.zip_dir(model_dir),
                 f,
@@ -730,7 +776,9 @@ class TestLockLevels:
 
     @pytest.mark.parametrize("lock_level", (lock.Open(), lock.Redact(), lock.Closed()))
     def test_creation_from_run(self, registered_model, experiment_run, lock_level):
-        model_ver = registered_model.create_version_from_run(experiment_run.id, lock_level=lock_level)
+        model_ver = registered_model.create_version_from_run(
+            experiment_run.id, lock_level=lock_level
+        )
         assert model_ver._msg.lock_level == lock_level._as_proto()
         assert isinstance(model_ver.get_lock_level(), lock_level.__class__)
 

@@ -1,11 +1,10 @@
 import pytest
 import requests
-
-from .. import utils
-
 import verta.dataset
 import verta.environment
 from verta._internal_utils import _utils
+
+from .. import utils
 
 
 class TestRepository:
@@ -58,8 +57,12 @@ class TestCommit:
         pytest.importorskip("boto3")
 
         commit.update("file-1", verta.dataset.S3("s3://verta-starter/census-test.csv"))
-        commit.update("a/file-2", verta.dataset.S3("s3://verta-starter/census-train.csv"))
-        commit.update("a/file-3", verta.dataset.S3("s3://verta-starter/imdb_master.csv"))
+        commit.update(
+            "a/file-2", verta.dataset.S3("s3://verta-starter/census-train.csv")
+        )
+        commit.update(
+            "a/file-3", verta.dataset.S3("s3://verta-starter/imdb_master.csv")
+        )
         commit.update("a/b/file-4", verta.dataset.S3("s3://verta-starter/reviews.ann"))
         commit.update("a/c/file-5", verta.dataset.S3("s3://verta-starter/spam.csv"))
         commit.save(message="banana")
@@ -227,7 +230,7 @@ class TestCommit:
         commit.update(path2, blob2)
         commit.save(message="banana")
 
-        key_paths = {'my machine': path1}
+        key_paths = {"my machine": path1}
         experiment_run.log_commit(commit, key_paths)
 
         retrieved_commit, retrieved_key_paths = experiment_run.get_commit()
@@ -237,7 +240,9 @@ class TestCommit:
     @pytest.mark.not_oss
     def test_log_to_run_diff_workspaces(self, client, experiment_run, organization):
         repository_name = _utils.generate_default_name()
-        repository = client.get_or_create_repository(repository_name, workspace=organization.name)
+        repository = client.get_or_create_repository(
+            repository_name, workspace=organization.name
+        )
 
         # TODO: Uncomment this check when repository.workspace is implemented
         # assert repository.workspace != experiment_run.workspace

@@ -5,22 +5,15 @@ from __future__ import print_function
 import ast
 import copy
 import os
-import pathlib2
 import pprint
 import shutil
 import sys
 import time
 import warnings
 
+import pathlib2
 import requests
-
-from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
-from verta._protos.public.modeldb import CommonService_pb2 as _CommonService
-from verta._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
-
-from verta.external import six
-from verta.external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
-
+from verta import data_types, deployment, repository, utils
 from verta._internal_utils import (
     _artifact_utils,
     _pip_requirements_utils,
@@ -28,22 +21,25 @@ from verta._internal_utils import (
     _utils,
     importer,
 )
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.modeldb import CommonService_pb2 as _CommonService
+from verta._protos.public.modeldb import (
+    ExperimentRunService_pb2 as _ExperimentRunService,
+)
 
-from verta import repository
-from verta.repository import _commit
 # unless _repository.blob is disentangled out of _repository, importing from
 # dataset must occur after importing from _repository
-from verta.dataset.entities import (
-    dataset as _dataset,
-    dataset_version as _dataset_version,
-)
-from verta import data_types
-from verta import deployment
-from verta import utils
+from verta.dataset.entities import dataset as _dataset
+from verta.dataset.entities import dataset_version as _dataset_version
 from verta.environment import Python
+from verta.external import six
+from verta.external.six.moves import (
+    cPickle as pickle,  # pylint: disable=import-error, no-name-in-module
+)
+from verta.repository import _commit
 
-from ._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from ._deployable_entity import _DeployableEntity
+from ._entity import _MODEL_ARTIFACTS_ATTR_KEY
 
 
 class ExperimentRun(_DeployableEntity):

@@ -2,9 +2,11 @@
 
 import copy
 
-from verta._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
-
 from verta._internal_utils import _utils
+from verta._protos.public.modeldb import (
+    DatasetVersionService_pb2 as _DatasetVersionService,
+)
+
 from . import dataset_version
 
 
@@ -27,16 +29,17 @@ class DatasetVersions(_utils.LazyList):
     """
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
-        'id',
-        'dataset_id',
-        'version',
-        'tags',
-        'time_logged',
+        "id",
+        "dataset_id",
+        "version",
+        "tags",
+        "time_logged",
     }
 
     def __init__(self, conn, conf):
         super(DatasetVersions, self).__init__(
-            conn, conf,
+            conn,
+            conf,
             _DatasetVersionService.FindDatasetVersions(),
         )
 
@@ -44,9 +47,9 @@ class DatasetVersions(_utils.LazyList):
         return "<DatasetVersions containing {} dataset versions>".format(self.__len__())
 
     def _call_back_end(self, msg):
-        response = self._conn.make_proto_request("POST",
-                                                 "/api/v1/modeldb/dataset-version/findDatasetVersions",
-                                                 body=msg)
+        response = self._conn.make_proto_request(
+            "POST", "/api/v1/modeldb/dataset-version/findDatasetVersions", body=msg
+        )
         response = self._conn.must_proto_response(response, msg.Response)
         return response.dataset_versions, response.total_records
 
@@ -72,5 +75,5 @@ class DatasetVersions(_utils.LazyList):
         if dataset:
             new_list._msg.dataset_id = dataset.id
         else:
-            new_list._msg.dataset_id = ''
+            new_list._msg.dataset_id = ""
         return new_list

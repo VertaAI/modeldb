@@ -2,13 +2,14 @@
 
 from __future__ import print_function
 
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+import requests
 
 from .._internal_utils import _utils
+from .._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
+)
 from ..visibility import _visibility
 from . import _commit
-
-import requests
 
 
 class Repository(object):
@@ -26,13 +27,14 @@ class Repository(object):
         Name of the Repository.
 
     """
+
     def __init__(self, conn, id_):
         self._conn = conn
 
         self.id = id_
 
     def __repr__(self):
-        return "<Repository \"{}\">".format(self.name)
+        return '<Repository "{}">'.format(self.name)
 
     @property
     def _endpoint_prefix(self):
@@ -47,8 +49,10 @@ class Repository(object):
         response = _utils.make_request("GET", self._endpoint_prefix, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
-                                            _VersioningService.GetRepositoryRequest.Response)
+        response_msg = _utils.json_to_proto(
+            _utils.body_to_json(response),
+            _VersioningService.GetRepositoryRequest.Response,
+        )
         return response_msg.repository.name
 
     @property
@@ -63,42 +67,59 @@ class Repository(object):
 
     @classmethod
     def _create(cls, conn, name, workspace, public_within_org, visibility):
-        visibility, public_within_org = _visibility._Visibility._translate_public_within_org(visibility, public_within_org)
+        (
+            visibility,
+            public_within_org,
+        ) = _visibility._Visibility._translate_public_within_org(
+            visibility, public_within_org
+        )
 
         msg = _VersioningService.Repository()
         msg.name = name
-        if (public_within_org
-                and workspace is not None  # not user's personal workspace
-                and _utils.is_org(workspace, conn)):  # not anyone's personal workspace
-            msg.repository_visibility = _VersioningService.RepositoryVisibilityEnum.ORG_SCOPED_PUBLIC
+        if (
+            public_within_org
+            and workspace is not None  # not user's personal workspace
+            and _utils.is_org(workspace, conn)
+        ):  # not anyone's personal workspace
+            msg.repository_visibility = (
+                _VersioningService.RepositoryVisibilityEnum.ORG_SCOPED_PUBLIC
+            )
         msg.custom_permission.CopyFrom(visibility._custom_permission)
         msg.visibility = visibility._visibility
 
         data = _utils.proto_to_json(msg)
-        endpoint = "{}://{}/api/v1/modeldb/versioning/workspaces/{}/repositories".format(
-            conn.scheme,
-            conn.socket,
-            workspace,
+        endpoint = (
+            "{}://{}/api/v1/modeldb/versioning/workspaces/{}/repositories".format(
+                conn.scheme,
+                conn.socket,
+                workspace,
+            )
         )
         response = _utils.make_request("POST", endpoint, conn, json=data)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
-                                            _VersioningService.SetRepository.Response)
+        response_msg = _utils.json_to_proto(
+            _utils.body_to_json(response), _VersioningService.SetRepository.Response
+        )
         return cls(conn, response_msg.repository.id)
 
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         Message = _VersioningService.GetRepositoryRequest
-        response = conn.make_proto_request("GET",
-                                           "/api/v1/modeldb/versioning/repositories/{}".format(id))
+        response = conn.make_proto_request(
+            "GET", "/api/v1/modeldb/versioning/repositories/{}".format(id)
+        )
         return conn.maybe_proto_response(response, Message.Response).repository
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
         Message = _VersioningService.GetRepositoryRequest
-        response = conn.make_proto_request("GET",
-                                           "/api/v1/modeldb/versioning/workspaces/{}/repositories/{}".format(workspace, name))
+        response = conn.make_proto_request(
+            "GET",
+            "/api/v1/modeldb/versioning/workspaces/{}/repositories/{}".format(
+                workspace, name
+            ),
+        )
         return conn.maybe_proto_response(response, Message.Response).repository
 
     @classmethod
@@ -108,8 +129,10 @@ class Repository(object):
         elif not name and not workspace and id_:
             msg = cls._get_proto_by_id(conn, id_)
         else:
-            raise RuntimeError("the Client has encountered an error;"
-                               " please notify the Verta development team")
+            raise RuntimeError(
+                "the Client has encountered an error;"
+                " please notify the Verta development team"
+            )
 
         if not msg:
             return None
@@ -138,45 +161,57 @@ class Repository(object):
         """
         num_args = sum(map(lambda x: x is not None, [tag, id, branch]))
         if num_args > 1:
-            raise ValueError("cannot specify more than one of `branch`, `tag`, and `id`")
+            raise ValueError(
+                "cannot specify more than one of `branch`, `tag`, and `id`"
+            )
         if num_args == 0:
             branch = "master"
 
         if branch is not None:
             msg = _VersioningService.GetBranchRequest()
-            endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/branches/{}".format(
-                self._conn.scheme,
-                self._conn.socket,
-                self.id,
-                branch,
+            endpoint = (
+                "{}://{}/api/v1/modeldb/versioning/repositories/{}/branches/{}".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                    self.id,
+                    branch,
+                )
             )
         elif tag is not None:
             msg = _VersioningService.GetTagRequest()
-            endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/tags/{}".format(
-                self._conn.scheme,
-                self._conn.socket,
-                self.id,
-                tag,
+            endpoint = (
+                "{}://{}/api/v1/modeldb/versioning/repositories/{}/tags/{}".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                    self.id,
+                    tag,
+                )
             )
         elif id is not None:
             msg = _VersioningService.GetCommitRequest()
-            endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}".format(
-                self._conn.scheme,
-                self._conn.socket,
-                self.id,
-                id,
+            endpoint = (
+                "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                    self.id,
+                    id,
+                )
             )
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
         response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
-        return _commit.Commit._from_id(self._conn, self, response_msg.commit.commit_sha, branch_name=branch)
+        return _commit.Commit._from_id(
+            self._conn, self, response_msg.commit.commit_sha, branch_name=branch
+        )
 
     def delete(self):
         """
         Deletes this repository.
 
         """
-        request_url = "{}://{}/api/v1/modeldb/versioning/repositories/{}".format(self._conn.scheme, self._conn.socket, self.id)
+        request_url = "{}://{}/api/v1/modeldb/versioning/repositories/{}".format(
+            self._conn.scheme, self._conn.socket, self.id
+        )
         response = requests.delete(request_url, headers=self._conn.auth)
         _utils.raise_for_http_error(response)

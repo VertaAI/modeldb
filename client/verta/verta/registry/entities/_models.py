@@ -4,25 +4,25 @@ from __future__ import print_function
 
 import copy
 
-from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
 from ..._internal_utils import _utils
-
+from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
 from ._model import RegisteredModel
 
 
 class RegisteredModels(_utils.LazyList):
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
-        'id',
-        'name',
-        'time_created',
-        'time_updated',
-        'labels',
+        "id",
+        "name",
+        "time_created",
+        "time_updated",
+        "labels",
     }
 
     def __init__(self, conn, conf):
         super(RegisteredModels, self).__init__(
-            conn, conf,
+            conn,
+            conf,
             _RegistryService.FindRegisteredModelRequest(),
         )
 
@@ -31,7 +31,9 @@ class RegisteredModels(_utils.LazyList):
 
     def _call_back_end(self, msg):
         if msg.workspace_name:
-            url = "/api/v1/registry/workspaces/{}/registered_models/find".format(msg.workspace_name)
+            url = "/api/v1/registry/workspaces/{}/registered_models/find".format(
+                msg.workspace_name
+            )
         else:
             url = "/api/v1/registry/registered_models/find"
         response = self._conn.make_proto_request("POST", url, body=msg)
@@ -46,7 +48,7 @@ class RegisteredModels(_utils.LazyList):
         if workspace_name is not None:
             new_list._msg.workspace_name = workspace_name
         else:
-            new_list._msg.workspace_name = ''
+            new_list._msg.workspace_name = ""
         return new_list
 
     def _set_page_limit(self, msg, param):

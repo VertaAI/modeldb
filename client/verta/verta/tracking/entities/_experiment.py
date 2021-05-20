@@ -3,10 +3,8 @@
 from __future__ import print_function
 
 import requests
-
-from verta._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
-
 from verta._internal_utils import _utils
+from verta._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
 
 from ._entity import _ModelDBEntity
 from ._experimentruns import ExperimentRuns

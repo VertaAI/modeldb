@@ -2,23 +2,24 @@ import json
 import time
 
 import pytest
-
 import requests
-
-import yaml
-
 import verta
-from verta.endpoint._endpoint import Endpoint
-from verta.endpoint.resources import Resources
-from verta.endpoint.autoscaling import Autoscaling
-from verta.endpoint.autoscaling.metrics import CpuUtilizationTarget, MemoryUtilizationTarget, RequestsPerWorkerTarget
-from verta.endpoint.update import DirectUpdateStrategy, CanaryUpdateStrategy
-from verta.endpoint.update.rules import MaximumAverageLatencyThresholdRule
+import yaml
 from verta._internal_utils import _utils
+from verta.endpoint._endpoint import Endpoint
+from verta.endpoint.autoscaling import Autoscaling
+from verta.endpoint.autoscaling.metrics import (
+    CpuUtilizationTarget,
+    MemoryUtilizationTarget,
+    RequestsPerWorkerTarget,
+)
+from verta.endpoint.resources import Resources
+from verta.endpoint.update import CanaryUpdateStrategy, DirectUpdateStrategy
+from verta.endpoint.update.rules import MaximumAverageLatencyThresholdRule
 from verta.environment import Python
 from verta.utils import ModelAPI
 
-from ..utils import (get_build_ids, sys_path_manager)
+from ..utils import get_build_ids, sys_path_manager
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 

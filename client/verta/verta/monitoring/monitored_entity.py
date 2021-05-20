@@ -4,12 +4,12 @@ from __future__ import print_function
 
 import warnings
 
+from verta._internal_utils import _utils
 from verta._protos.public.monitoring import (
     DataMonitoringService_pb2 as _DataMonitoringService,
 )
-
 from verta.tracking.entities import _entity
-from verta._internal_utils import _utils
+
 from .summaries.summaries import Summaries
 
 
