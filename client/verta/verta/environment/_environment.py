@@ -5,8 +5,10 @@ from __future__ import print_function
 import os
 import sys
 
-from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
 from ..external import six
+
+from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
+
 from ..repository import _blob
 
 
@@ -17,7 +19,6 @@ class _Environment(_blob.Blob):
     Handles environment variables and command line arguments.
 
     """
-
     def __init__(self, env_vars, autocapture):
         super(_Environment, self).__init__()
 
@@ -44,14 +45,19 @@ class _Environment(_blob.Blob):
             return
 
         try:
-            env_vars_dict = {name: os.environ[name] for name in env_vars}
+            env_vars_dict = {
+                name: os.environ[name]
+                for name
+                in env_vars
+            }
         except KeyError as e:
             new_e = KeyError("'{}' not found in environment".format(e.args[0]))
             six.raise_from(new_e, None)
 
         self._msg.environment_variables.extend(
             _EnvironmentService.EnvironmentVariablesBlob(name=name, value=value)
-            for name, value in six.viewitems(env_vars_dict)
+            for name, value
+            in six.viewitems(env_vars_dict)
         )
 
     def _capture_cmd_line_args(self):

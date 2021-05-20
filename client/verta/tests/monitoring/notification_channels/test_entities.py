@@ -3,8 +3,12 @@
 import datetime
 
 import pytest
+
 from verta._internal_utils import _utils, time_utils
-from verta.monitoring.notification_channel import SlackNotificationChannel, entities
+from verta.monitoring.notification_channel import (
+    SlackNotificationChannel,
+)
+from verta.monitoring.notification_channel import entities
 
 
 class TestNotificationChannel:

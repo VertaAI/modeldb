@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import click
+
 from verta import Client
 from verta._cli.deployment import deployment
 
@@ -22,7 +23,8 @@ def download():
 @click.option("--output", "-o", required=True, help="Filepath to write to")
 @click.option("--run-id", "-r", help="Experiment Run ID")
 def download_docker_context(run_id, model_version_id, output):
-    """Download a registered model version's or experiment run's context entry."""
+    """Download a registered model version's or experiment run's context entry.
+    """
     client = Client()
 
     if run_id:

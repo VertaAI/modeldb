@@ -1,7 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as func
 
-
 class Flatten(nn.Module):
     def forward(self, x):
         """Flatten non-batch dimensions."""

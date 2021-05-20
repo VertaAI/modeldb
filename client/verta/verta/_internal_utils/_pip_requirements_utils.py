@@ -17,13 +17,13 @@ from .. import __about__
 
 # for process_requirements()
 PYPI_TO_IMPORT = {
-    "scikit-learn": "sklearn",
-    "tensorflow-gpu": "tensorflow",
-    "beautifulsoup4": "bs4",
+    'scikit-learn': "sklearn",
+    'tensorflow-gpu': "tensorflow",
+    'beautifulsoup4': "bs4",
 }
 IMPORT_TO_PYPI = {  # separate mapping because PyPI to import is surjective
-    "sklearn": "scikit-learn",
-    "bs4": "beautifulsoup4",
+    'sklearn': "scikit-learn",
+    'bs4': "beautifulsoup4",
 }
 
 
@@ -31,11 +31,11 @@ PKG_NAME_PATTERN = r"([A-Z0-9][A-Z0-9._-]*[A-Z0-9]|[A-Z0-9])"  # https://www.pyt
 VER_SPEC_PATTERN = r"(~=|==|!=|<=|>=|<|>|===)"  # https://www.python.org/dev/peps/pep-0440/#version-specifiers
 VER_NUM_PATTERN = r"([0-9]+(?:\.[0-9]+){0,2}[^\s]*)"  # https://www.python.org/dev/peps/pep-0440/#version-scheme
 REQ_SPEC_PATTERN = (
-    PKG_NAME_PATTERN + r"\s*" + VER_SPEC_PATTERN + r"\s*" + VER_NUM_PATTERN
+    PKG_NAME_PATTERN + r"\s*"
+    + VER_SPEC_PATTERN + r"\s*"
+    + VER_NUM_PATTERN
 )
-SPACY_MODEL_PATTERN = (
-    r"[a-z]{2}(?:[_-][a-z]+){2}[_-](?:sm|md|lg)"  # https://spacy.io/models#conventions
-)
+SPACY_MODEL_PATTERN = r"[a-z]{2}(?:[_-][a-z]+){2}[_-](?:sm|md|lg)"  # https://spacy.io/models#conventions
 PKG_NAME_REGEX = re.compile(PKG_NAME_PATTERN, flags=re.IGNORECASE)
 VER_SPEC_REGEX = re.compile(VER_SPEC_PATTERN)
 VER_NUM_REGEX = re.compile(VER_NUM_PATTERN)
@@ -44,7 +44,7 @@ SPACY_MODEL_REGEX = re.compile(SPACY_MODEL_PATTERN)
 
 
 def get_pip_freeze():
-    pip_freeze = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+    pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
     pip_freeze = six.ensure_str(pip_freeze)
 
     req_specs = pip_freeze.splitlines()
@@ -75,10 +75,8 @@ def parse_req_spec(req_spec):
     """
     match = REQ_SPEC_REGEX.match(req_spec)
     if match is None:
-        raise ValueError(
-            '"{}" does not appear to be a valid pip requirement specifier;'
-            " it may be misspelled or missing its version specifier".format(req_spec)
-        )
+        raise ValueError("\"{}\" does not appear to be a valid pip requirement specifier;"
+                         " it may be misspelled or missing its version specifier".format(req_spec))
 
     return match.groups()
 
@@ -107,9 +105,7 @@ def parse_version(version):
 
     """
     if VER_NUM_REGEX.match(version) is None:
-        raise ValueError(
-            '"{}" does not appear to be a valid version number'.format(version)
-        )
+        raise ValueError("\"{}\" does not appear to be a valid version number".format(version))
 
     MAJOR_REGEX = re.compile(r"^([0-9]+)")
     MINOR_OR_PATCH_REGEX = re.compile(r"^(\.[0-9]+)")
@@ -117,25 +113,21 @@ def parse_version(version):
     # extract major version
     split = MAJOR_REGEX.split(version, maxsplit=1)[1:]  # first element is empty
     major = int(split[0])
-    suffix = "".join(split[1:])
+    suffix = ''.join(split[1:])
 
     # extract minor version
     if MINOR_OR_PATCH_REGEX.match(suffix):
-        split = MINOR_OR_PATCH_REGEX.split(suffix, maxsplit=1)[
-            1:
-        ]  # first element is empty
+        split = MINOR_OR_PATCH_REGEX.split(suffix, maxsplit=1)[1:]  # first element is empty
         minor = int(split[0][1:])  # first character is period
-        suffix = "".join(split[1:])
+        suffix = ''.join(split[1:])
     else:
         minor = 0
 
     # extract patch version
     if MINOR_OR_PATCH_REGEX.match(suffix):
-        split = MINOR_OR_PATCH_REGEX.split(suffix, maxsplit=1)[
-            1:
-        ]  # first element is empty
+        split = MINOR_OR_PATCH_REGEX.split(suffix, maxsplit=1)[1:]  # first element is empty
         patch = int(split[0][1:])  # first character is period
-        suffix = "".join(split[1:])
+        suffix = ''.join(split[1:])
     else:
         patch = 0
 
@@ -160,11 +152,9 @@ def process_requirements(requirements):
     # validate package names
     for req in requirements:
         if not PKG_NAME_REGEX.match(req):
-            raise ValueError(
-                "'{}' does not appear to be a valid PyPI-installable package;"
-                " please check its spelling,"
-                " or file an issue if you believe it is in error".format(req)
-            )
+            raise ValueError("'{}' does not appear to be a valid PyPI-installable package;"
+                             " please check its spelling,"
+                             " or file an issue if you believe it is in error".format(req))
 
     strip_inexact_specifiers(requirements)
 
@@ -194,13 +184,11 @@ def strip_inexact_specifiers(requirements):
         _, pkg, ver_spec = PKG_NAME_REGEX.split(req, maxsplit=1)
         if not ver_spec:
             continue
-        elif "==" in ver_spec:
+        elif '==' in ver_spec:
             continue
         else:
-            msg = (
-                "'{}' does not use '=='; for reproducibility in deployment, it will be replaced"
-                " with an exact pin of the currently-installed version".format(req)
-            )
+            msg = ("'{}' does not use '=='; for reproducibility in deployment, it will be replaced"
+                   " with an exact pin of the currently-installed version".format(req))
             warnings.warn(msg)
             requirements[i] = pkg
 
@@ -227,11 +215,10 @@ def set_version_pins(requirements):
     """
     # map of packages to their versions according to pip
     pip_pkg_vers = dict(
-        req_spec.split("==")
-        for req_spec in six.ensure_str(
-            subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
-        ).splitlines()
-        if "==" in req_spec
+        req_spec.split('==')
+        for req_spec
+        in six.ensure_str(subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])).splitlines()
+        if '==' in req_spec
     )
 
     # replace importable module names with PyPI package names in case of user error
@@ -239,11 +226,9 @@ def set_version_pins(requirements):
         requirements[i] = IMPORT_TO_PYPI.get(req, req)
 
     for i, req in enumerate(requirements):
-        error = ValueError(
-            "unable to determine a version number for requirement '{}';"
-            " it might not be installed;"
-            " please manually specify it as '{}==x.y.z'".format(req, req)
-        )
+        error = ValueError("unable to determine a version number for requirement '{}';"
+                           " it might not be installed;"
+                           " please manually specify it as '{}==x.y.z'".format(req, req))
         if VER_SPEC_REGEX.search(req) is None:
             # obtain package version
             try:
@@ -286,13 +271,11 @@ def add_verta_and_cloudpickle(requirements):
     verta_req = "verta=={}".format(__about__.__version__)
     for req in requirements:
         if req.startswith("verta"):  # if present, check version
-            our_ver = verta_req.split("==")[-1]
-            their_ver = req.split("==")[-1]
+            our_ver = verta_req.split('==')[-1]
+            their_ver = req.split('==')[-1]
             if our_ver != their_ver:  # versions conflict, so raise exception
-                raise ValueError(
-                    "Client is running with verta v{}, but the provided requirements specify v{};"
-                    " these must match".format(our_ver, their_ver)
-                )
+                raise ValueError("Client is running with verta v{}, but the provided requirements specify v{};"
+                                 " these must match".format(our_ver, their_ver))
             else:  # versions match, so proceed
                 break
     else:  # if not present, add
@@ -302,13 +285,11 @@ def add_verta_and_cloudpickle(requirements):
     cloudpickle_req = "cloudpickle=={}".format(cloudpickle.__version__)
     for req in requirements:
         if req.startswith("cloudpickle"):  # if present, check version
-            our_ver = cloudpickle_req.split("==")[-1]
-            their_ver = req.split("==")[-1]
+            our_ver = cloudpickle_req.split('==')[-1]
+            their_ver = req.split('==')[-1]
             if our_ver != their_ver:  # versions conflict, so raise exception
-                raise ValueError(
-                    "Client is running with cloudpickle v{}, but the provided requirements specify v{};"
-                    " these must match".format(our_ver, their_ver)
-                )
+                raise ValueError("Client is running with cloudpickle v{}, but the provided requirements specify v{};"
+                                 " these must match".format(our_ver, their_ver))
             else:  # versions match, so proceed
                 break
     else:  # if not present, add
@@ -345,12 +326,10 @@ def remove_public_version_identifier(requirements):
     """
     for i, req in enumerate(requirements):
         library, version = req.split("==", 1)
-        requirements[i] = "==".join(
-            [
-                library,
-                version.split("+")[0],
-            ]
-        )
+        requirements[i] = "==".join([
+            library,
+            version.split("+")[0],
+        ])
 
 
 def clean_reqs_file_lines(requirements):
@@ -371,29 +350,27 @@ def clean_reqs_file_lines(requirements):
     requirements = [req.strip() for req in requirements]
 
     requirements = [req for req in requirements if req]  # empty line
-    requirements = [
-        req for req in requirements if not req.startswith("#")
-    ]  # comment line
+    requirements = [req for req in requirements if not req.startswith('#')]  # comment line
 
     # remove unsupported options
     supported_requirements = []
     for req in requirements:
         # https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format
-        if req.startswith(("--", "-c ", "-f ", "-i ")):
-            print('skipping unsupported option "{}"'.format(req))
+        if req.startswith(('--', '-c ', '-f ', '-i ')):
+            print("skipping unsupported option \"{}\"".format(req))
             continue
         # https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
         # TODO: upgrade protos and Client to handle VCS-installed packages
-        if req.startswith(("-e ", "git:", "git+", "hg+", "svn+", "bzr+")):
-            print('skipping unsupported VCS-installed package "{}"'.format(req))
+        if req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+')):
+            print("skipping unsupported VCS-installed package \"{}\"".format(req))
             continue
         # TODO: follow references to other requirements files
-        if req.startswith("-r "):
-            print('skipping unsupported file reference "{}"'.format(req))
+        if req.startswith('-r '):
+            print("skipping unsupported file reference \"{}\"".format(req))
             continue
         # non-PyPI-installable spaCy models
         if SPACY_MODEL_REGEX.match(req):
-            print('skipping non-PyPI-installable spaCy model "{}"'.format(req))
+            print("skipping non-PyPI-installable spaCy model \"{}\"".format(req))
             continue
 
         supported_requirements.append(req)

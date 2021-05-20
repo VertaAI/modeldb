@@ -4,11 +4,13 @@ from __future__ import print_function
 
 import re
 
-from verta._internal_utils import _utils
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.modeldb import ProjectService_pb2 as _ProjectService
 from verta._protos.public.uac import Collaborator_pb2 as _Collaborator
+
 from verta.external import six
+
+from verta._internal_utils import _utils
 
 from ._entity import _ModelDBEntity
 from ._experimentruns import ExperimentRuns

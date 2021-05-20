@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from datetime import timedelta, tzinfo  # pylint: disable=undefined-variable
+from datetime import (  # pylint: disable=undefined-variable
+    timedelta,
+    tzinfo,
+)
 
 
 class UTC(tzinfo):
     """UTC"""
-
     ZERO = timedelta(0)
 
     def utcoffset(self, dt):

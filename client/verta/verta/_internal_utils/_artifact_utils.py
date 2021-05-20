@@ -8,18 +8,19 @@ import zipfile
 
 import cloudpickle
 
-from .. import __about__
 from ..external import six
-from ..external.six.moves import (
-    cPickle as pickle,  # pylint: disable=import-error, no-name-in-module
-)
-from .importer import get_tensorflow_major_version, maybe_dependency
+from ..external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
+
+from .. import __about__
+
+from .importer import maybe_dependency, get_tensorflow_major_version
+
 
 # default chunk sizes
 # these values were all chosen arbitrarily at different times
-_64MB = 64 * (10 ** 6)  # used for artifact uploads
-_32MB = 32 * (10 ** 6)  # used in _request_utils
-_5MB = 5 * (10 ** 6)  # used in this module
+_64MB = 64*(10**6)  # used for artifact uploads
+_32MB = 32*(10**6)  # used in _request_utils
+_5MB = 5*(10**6)  # used in this module
 
 
 # for zip_dir()
@@ -37,16 +38,16 @@ BLOCKLISTED_KEYS = {
     CUSTOM_MODULES_KEY,
     MODEL_KEY,
     MODEL_API_KEY,
-    "requirements.txt",
-    "train_data",
-    "tf_saved_model",
-    "setup_script",
+    'requirements.txt',
+    'train_data',
+    'tf_saved_model',
+    'setup_script',
 }
 
 
 KERAS_H5PY_ERROR = RuntimeError(  # https://github.com/h5py/h5py/issues/1732
     "Keras encountered an error saving/loading the model due to a bug in h5py v3.0.0;"
-    ' consider downgrading with `pip install "h5py<3.0.0"`'
+    " consider downgrading with `pip install \"h5py<3.0.0\"`"
 )
 
 
@@ -66,9 +67,7 @@ def validate_key(key):
 
     """
     if key in BLOCKLISTED_KEYS:
-        msg = '"{}" is reserved for internal use; please use a different key'.format(
-            key
-        )
+        msg = "\"{}\" is reserved for internal use; please use a different key".format(key)
         raise ValueError(msg)
 
 
@@ -96,18 +95,17 @@ def get_file_ext(file):
     """
     if isinstance(file, six.string_types):
         filepath = file
-    elif hasattr(file, "read") and hasattr(file, "name"):  # `open()` object
+    elif hasattr(file, 'read') and hasattr(file, 'name'):  # `open()` object
         filepath = file.name
     else:
-        raise TypeError(
-            "unable to obtain filepath from object of type {}".format(type(file))
-        )
+        raise TypeError("unable to obtain filepath from object of type {}".format(type(file)))
 
-    filename = os.path.basename(filepath).lstrip(".")
+    filename = os.path.basename(filepath).lstrip('.')
     try:
         _, extension = filename.split(os.extsep, 1)
     except ValueError:
-        six.raise_from(ValueError('no extension found in "{}"'.format(filepath)), None)
+        six.raise_from(ValueError("no extension found in \"{}\"".format(filepath)),
+                       None)
     else:
         return extension
 
@@ -128,9 +126,9 @@ def ext_from_method(method):
 
     """
     if method == "keras":
-        return "hdf5"
+        return 'hdf5'
     elif method in ("joblib", "cloudpickle", "pickle"):
-        return "pkl"
+        return 'pkl'
     elif method == "zip":
         return "zip"
     elif method == ZIP_EXTENSION:  # zipped by client
@@ -190,7 +188,7 @@ def ensure_bytestream(obj):
         If `obj` contains no data.
 
     """
-    if hasattr(obj, "read"):  # if `obj` is file-like
+    if hasattr(obj, 'read'):  # if `obj` is file-like
         reset_stream(obj)  # reset cursor to beginning in case user forgot
 
         # read first element to check if bytes
@@ -230,10 +228,8 @@ def ensure_bytestream(obj):
         if maybe_dependency("joblib"):
             try:
                 maybe_dependency("joblib").dump(obj, bytestream)
-            except (
-                NameError,  # joblib not installed
-                pickle.PicklingError,
-            ):  # can't be handled by joblib
+            except (NameError,  # joblib not installed
+                    pickle.PicklingError):  # can't be handled by joblib
                 pass
             else:
                 bytestream.seek(0)
@@ -273,10 +269,10 @@ def serialize_model(model):
             return zip_dir(model), ZIP_EXTENSION, None
         else:  # filepath
             # open and continue
-            model = open(model, "rb")
+            model = open(model, 'rb')
 
     # if `model` is file-like
-    if hasattr(model, "read"):
+    if hasattr(model, 'read'):
         try:  # attempt to deserialize
             reset_stream(model)  # reset cursor to beginning in case user forgot
             model = deserialize_model(model.read())
@@ -331,21 +327,14 @@ def serialize_model(model):
             model_type = "tensorflow"
             tempf = tempfile.NamedTemporaryFile()
             try:
-                if (
-                    get_tensorflow_major_version() == 2
-                ):  # save_format param may not exist in TF 1.X
-                    model.save(
-                        tempf.name, save_format="h5"
-                    )  # TF 2.X uses SavedModel by default
+                if get_tensorflow_major_version() == 2:  # save_format param may not exist in TF 1.X
+                    model.save(tempf.name, save_format='h5')  # TF 2.X uses SavedModel by default
                 else:
                     model.save(tempf.name)
             except TypeError as e:
                 h5py = maybe_dependency("h5py")
-                if (
-                    str(e) == "a bytes-like object is required, not 'str'"
-                    and h5py is not None
-                    and h5py.__version__ == "3.0.0"
-                ):
+                if (str(e) == "a bytes-like object is required, not 'str'"
+                        and h5py is not None and h5py.__version__ == "3.0.0"):
                     # h5py v3.0.0 improperly checks if a `bytes` contains a `str`.
                     # Encountering this generic error message here plus the fact
                     # that h5py==3.0.0 suggests that this is the problem.
@@ -357,7 +346,7 @@ def serialize_model(model):
             method = "keras"
             break
     else:
-        if hasattr(model, "predict"):
+        if hasattr(model, 'predict'):
             model_type = "custom"
         elif callable(model):
             model_type = "callable"
@@ -403,22 +392,16 @@ def deserialize_model(bytestring, error_ok=False):
                 return keras.models.load_model(tempf.name)
             except AttributeError as e:
                 h5py = maybe_dependency("h5py")
-                if (
-                    str(e) == "'str' object has no attribute 'decode'"
-                    and h5py is not None
-                    and h5py.__version__ == "3.0.0"
-                ):
+                if (str(e) == "'str' object has no attribute 'decode'"
+                        and h5py is not None and h5py.__version__ == "3.0.0"):
                     # h5py v3.0.0 returns a `str` instead of a `bytes` to Keras.
                     # Encountering this generic error message here plus the fact
                     # that h5py==3.0.0 suggests that this is the problem.
                     six.raise_from(KERAS_H5PY_ERROR, e)
                 else:
                     six.raise_from(e, None)
-            except (
-                NameError,  # Tensorflow not installed
-                IOError,
-                OSError,
-            ):  # not a Keras model
+            except (NameError,  # Tensorflow not installed
+                    IOError, OSError):  # not a Keras model
                 pass
 
     bytestream = six.BytesIO(bytestring)
@@ -459,7 +442,7 @@ def get_stream_length(stream, chunk_size=_5MB):
 
     """
     # if it's file handle, get file size without reading stream
-    filename = getattr(stream, "name", None)
+    filename = getattr(stream, 'name', None)
     if filename is not None:
         try:
             return os.path.getsize(filename)
@@ -470,11 +453,7 @@ def get_stream_length(stream, chunk_size=_5MB):
     length = 0
     try:
         part_lengths = iter(lambda: len(stream.read(chunk_size)), 0)
-        for (
-            part_length
-        ) in (
-            part_lengths
-        ):  # could be sum() but not sure GC runs during builtin one-liner
+        for part_length in part_lengths:  # could be sum() but not sure GC runs during builtin one-liner
             length += part_length
     finally:
         reset_stream(stream)  # reset cursor to beginning as a courtesy
@@ -507,7 +486,7 @@ def calc_sha256(bytestream, chunk_size=_5MB):
     checksum = hashlib.sha256()
 
     try:
-        parts = iter(lambda: bytestream.read(chunk_size), b"")
+        parts = iter(lambda: bytestream.read(chunk_size), b'')
         for part in parts:
             checksum.update(part)
     finally:
@@ -539,8 +518,8 @@ def zip_dir(dirpath, followlinks=True):
 
     os.path.expanduser(dirpath)
 
-    tempf = tempfile.NamedTemporaryFile(suffix="." + ZIP_EXTENSION)
-    with zipfile.ZipFile(tempf, "w") as zipf:
+    tempf = tempfile.NamedTemporaryFile(suffix='.'+ZIP_EXTENSION)
+    with zipfile.ZipFile(tempf, 'w') as zipf:
         for root, _, files in os.walk(dirpath, followlinks=followlinks):
             for filename in files:
                 filepath = os.path.join(root, filename)

@@ -2,13 +2,14 @@
 
 from __future__ import print_function
 
-from .alert.entities import Alerts
-from .labels import Labels
+
 from .monitored_entity import MonitoredEntity
 from .notification_channel.entities import NotificationChannels
 from .profilers import Profilers
 from .summaries.summaries import Summaries
 from .summaries.summary_samples import SummarySamples
+from .labels import Labels
+from .alert.entities import Alerts
 
 
 class Client(object):

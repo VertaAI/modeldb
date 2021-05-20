@@ -2,33 +2,26 @@
 
 import time
 
-from verta._internal_utils import _utils
+from verta.tracking import _Context
+from verta.tracking.entities import _entity
 from verta._protos.public.monitoring import (
     DataMonitoringService_pb2 as _DataMonitoringService,
 )
 from verta._protos.public.monitoring.DataMonitoringService_pb2 import (
-    BuildStatusEnum as BuildStatus,
-)
-from verta._protos.public.monitoring.DataMonitoringService_pb2 import (
-    CreateProfilerRequest,
-    DeleteProfilerRequest,
-)
-from verta._protos.public.monitoring.DataMonitoringService_pb2 import (
-    DeployStatusEnum as DeployStatus,
-)
-from verta._protos.public.monitoring.DataMonitoringService_pb2 import (
-    DisableProfilerRequest,
-    EnableProfilerRequest,
     GetProfilerRequest,
-    GetProfilerStatusRequest,
-    KeyValue,
+    CreateProfilerRequest,
     ListProfilersRequest,
     UpdateProfilerRequest,
+    DeleteProfilerRequest,
+    EnableProfilerRequest,
+    GetProfilerStatusRequest,
+    DisableProfilerRequest,
+    KeyValue,
+    DeployStatusEnum as DeployStatus,
+    BuildStatusEnum as BuildStatus,
 )
+from verta._internal_utils import _utils
 from verta.environment import Python
-from verta.tracking import _Context
-from verta.tracking.entities import _entity
-
 from .utils import extract_id
 
 

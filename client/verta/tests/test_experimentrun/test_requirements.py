@@ -1,3 +1,7 @@
+import pytest
+
+import six
+
 import glob
 import json
 import os
@@ -7,16 +11,17 @@ import tarfile
 import tempfile
 import time
 import zipfile
-
 import cloudpickle
-import pytest
+
 import requests
-import six
-import verta
+
 import yaml
-from verta._internal_utils import _histogram_utils, _utils
-from verta.endpoint.update import DirectUpdateStrategy
+
+import verta
 from verta.tracking.entities._deployable_entity import _CACHE_DIR
+from verta._internal_utils import _histogram_utils
+from verta._internal_utils import _utils
+from verta.endpoint.update import DirectUpdateStrategy
 
 pytestmark = pytest.mark.not_oss
 

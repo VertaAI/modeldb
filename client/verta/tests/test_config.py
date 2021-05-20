@@ -2,8 +2,10 @@ import os
 import shutil
 import tempfile
 
-import pytest
 import yaml
+
+import pytest
+
 from verta._internal_utils import _config_utils
 
 from . import utils

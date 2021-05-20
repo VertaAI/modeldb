@@ -13,14 +13,18 @@ import hypothesis
 import hypothesis.strategies as st
 import pytest
 import six
+
 from google.protobuf import json_format
+
+from verta.environment import (
+    Python,
+)
 from verta._internal_utils import _pip_requirements_utils
-from verta.environment import Python
 
 
 @st.composite
 def versions(draw):
-    numbers = st.integers(min_value=0, max_value=(2 ** 31) - 1)
+    numbers = st.integers(min_value=0, max_value=(2**31)-1)
 
     major = draw(numbers)
     minor = draw(numbers)
@@ -39,12 +43,14 @@ def metadata(draw):
 
 @pytest.fixture
 def requirements_file_without_versions():
-    with tempfile.NamedTemporaryFile("w+") as tempf:
+    with tempfile.NamedTemporaryFile('w+') as tempf:
         # create requirements file from pip freeze
-        pip_freeze = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+        pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
         pip_freeze = six.ensure_str(pip_freeze)
-        stripped_pip_freeze = "\n".join(
-            line.split("==")[0] for line in pip_freeze.splitlines()
+        stripped_pip_freeze = '\n'.join(
+            line.split('==')[0]
+            for line
+            in pip_freeze.splitlines()
         )
         tempf.write(stripped_pip_freeze)
         tempf.flush()  # flush object buffer
@@ -56,7 +62,7 @@ def requirements_file_without_versions():
 
 @pytest.fixture
 def requirements_file_with_unsupported_lines():
-    with tempfile.NamedTemporaryFile("w+") as tempf:
+    with tempfile.NamedTemporaryFile('w+') as tempf:
         requirements = [
             "",
             "# this is a comment",
@@ -72,7 +78,7 @@ def requirements_file_with_unsupported_lines():
             "-r more_requirements.txt",
             "en-core-web-sm==2.2.5",
         ]
-        tempf.write("\n".join(requirements))
+        tempf.write('\n'.join(requirements))
         tempf.flush()  # flush object buffer
         os.fsync(tempf.fileno())  # flush OS buffer
         tempf.seek(0)
@@ -85,18 +91,15 @@ class TestUtils:
         req_specs = _pip_requirements_utils.get_pip_freeze()
         parsed_req_specs = (
             (library, constraint, _pip_requirements_utils.parse_version(version))
-            for library, constraint, version in map(
-                _pip_requirements_utils.parse_req_spec, req_specs
-            )
+            for library, constraint, version
+            in map(_pip_requirements_utils.parse_req_spec, req_specs)
         )
 
         for library, constraint, parsed_version in parsed_req_specs:
             assert library != ""
-            assert " " not in library
+            assert ' ' not in library
 
-            assert constraint in _pip_requirements_utils.VER_SPEC_PATTERN.strip(
-                "()"
-            ).split("|")
+            assert constraint in _pip_requirements_utils.VER_SPEC_PATTERN.strip('()').split('|')
 
             assert parsed_version[0] >= 0  # major
             assert parsed_version[1] >= 0  # minor
@@ -134,9 +137,9 @@ class TestPython:
     def test_commit(self, commit):
         env = Python(requirements=[])
 
-        commit.update("env", env)
+        commit.update('env', env)
         commit.save(message="banana")
-        assert commit.get("env")
+        assert commit.get('env')
 
     def test_reqs_from_env(self):
         reqs = Python.read_pip_environment()
@@ -158,9 +161,7 @@ class TestPython:
         env = Python(requirements=[], constraints=reqs)
         assert env._msg.python.constraints
 
-    def test_constraints_from_file_no_versions_error(
-        self, requirements_file_without_versions
-    ):
+    def test_constraints_from_file_no_versions_error(self, requirements_file_without_versions):
         reqs = Python.read_pip_file(requirements_file_without_versions.name)
         with pytest.raises(ValueError):
             Python(requirements=[], constraints=reqs)
@@ -169,8 +170,8 @@ class TestPython:
         env = Python(requirements=[])
         requirements = {req.library for req in env._msg.python.requirements}
 
-        assert "verta" in requirements
-        assert "cloudpickle" in requirements
+        assert 'verta' in requirements
+        assert 'cloudpickle' in requirements
 
     def test_reqs_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
         reqs = Python.read_pip_file(requirements_file_with_unsupported_lines.name)
@@ -211,9 +212,9 @@ class TestPython:
     def test_repr(self):
         """Tests that __repr__() executes without error"""
         env_ver = Python(
-            requirements=["pytest=={}".format(pytest.__version__)],
-            constraints=["six=={}".format(six.__version__)],
-            env_vars=["HOME"],
+            requirements=['pytest=={}'.format(pytest.__version__)],
+            constraints=['six=={}'.format(six.__version__)],
+            env_vars=['HOME'],
         )
 
         assert env_ver.__repr__()

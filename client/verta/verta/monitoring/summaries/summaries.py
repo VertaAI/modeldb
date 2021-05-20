@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-
 import warnings
 
-from verta import data_types
+
+from ..utils import extract_id
 from verta._protos.public.monitoring.Summary_pb2 import (
     CreateSummaryRequest,
     DeleteSummaryRequest,
+    Empty as EmptyProto,
+    FindSummaryRequest,
+    Summary as SummaryProto,
 )
-from verta._protos.public.monitoring.Summary_pb2 import Empty as EmptyProto
-from verta._protos.public.monitoring.Summary_pb2 import FindSummaryRequest
-from verta._protos.public.monitoring.Summary_pb2 import Summary as SummaryProto
+from verta import data_types
 
-from ..utils import extract_id
-from .queries import SummaryQuery
 from .summary import Summary
+from .queries import SummaryQuery
 
 
 class Summaries:

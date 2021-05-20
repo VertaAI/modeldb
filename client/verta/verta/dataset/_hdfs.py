@@ -4,12 +4,13 @@ from __future__ import print_function
 
 import hashlib
 
-from ..external import six
-from . import _dataset
 from ._path import Path
 
-_HDFS_PREFIX = "hdfs://"
+from ..external import six
 
+from . import _dataset
+
+_HDFS_PREFIX = "hdfs://"
 
 class HDFSPath(Path):
     """
@@ -25,7 +26,6 @@ class HDFSPath(Path):
         Directory path to be removed from the beginning of `paths` before saving to ModelDB.
 
     """
-
     # TODO: support mdb versioning
     def __init__(self, hdfs_client, paths, base_path=None):
         self.client = hdfs_client
@@ -46,16 +46,9 @@ class HDFSPath(Path):
 
         paths = sorted(list(filepaths))
 
-        paths = list(
-            map(
-                lambda path: _HDFS_PREFIX + path
-                if not path.startswith(_HDFS_PREFIX)
-                else path,
-                paths,
-            )
-        )
+        paths = list(map(lambda path: _HDFS_PREFIX+path if not path.startswith(_HDFS_PREFIX) else path, paths))
         if base_path and not base_path.startswith(_HDFS_PREFIX):
-            base_path = _HDFS_PREFIX + base_path
+            base_path = _HDFS_PREFIX+base_path
 
         super(HDFSPath, self).__init__(paths, base_path)
 
@@ -65,12 +58,12 @@ class HDFSPath(Path):
 
     def _file_to_component(self, filepath):
         original_filepath = filepath
-        filepath = filepath[len(_HDFS_PREFIX) :]  # prefix prepended in init
+        filepath = filepath[len(_HDFS_PREFIX):]  # prefix prepended in init
         metadata = self.client.status(filepath)
         return _dataset.Component(
             path=original_filepath,
-            size=metadata["length"],
-            last_modified=metadata["modificationTime"],  # handle timezone?
+            size=metadata['length'],
+            last_modified=metadata['modificationTime'], # handle timezone?
             md5=self._hash_file(filepath),
         )
 
@@ -86,6 +79,6 @@ class HDFSPath(Path):
         """
         file_hash = hashlib.md5()
         with self.client.read(filepath) as f:
-            for chunk in iter(lambda: f.read(2 ** 20), b""):
+            for chunk in iter(lambda: f.read(2**20), b''):
                 file_hash.update(chunk)
         return file_hash.hexdigest()

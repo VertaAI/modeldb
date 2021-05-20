@@ -1,17 +1,14 @@
-import numbers
-
 import pytest
+
 import six
+
+import numbers
 
 pytest.importorskip("numpy")
 pytest.importorskip("pandas")
 
 import hypothesis
-from value_generator import (
-    api_and_values,
-    dataframe_api_and_values,
-    series_api_and_values,
-)
+from value_generator import api_and_values, series_api_and_values, dataframe_api_and_values
 
 
 # Check if the given value fits the defined api

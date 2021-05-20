@@ -1,6 +1,5 @@
-import os
-
 import boto3
+import os
 
 bucket = os.environ['BUCKET']
 model_path = os.environ["MODEL_PATH"]

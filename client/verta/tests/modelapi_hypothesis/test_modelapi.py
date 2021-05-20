@@ -1,18 +1,15 @@
+import pytest
+
 import json
 import sys
-
-import pytest
 
 np = pytest.importorskip("numpy")
 pd = pytest.importorskip("pandas")
 
-import hypothesis
-from value_generator import (
-    api_and_values,
-    dataframe_api_and_values,
-    series_api_and_values,
-)
 from verta.utils import ModelAPI
+
+import hypothesis
+from value_generator import api_and_values, series_api_and_values, dataframe_api_and_values
 
 
 # Verify that, given a sample created from an api, the same api can be inferred
