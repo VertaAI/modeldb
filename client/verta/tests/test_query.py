@@ -1,9 +1,6 @@
-import six
-
 import pytest
-
+import six
 import verta
-
 
 OPERATORS = six.viewkeys(verta._tracking.ExperimentRuns._OP_MAP)
 

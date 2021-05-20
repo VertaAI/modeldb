@@ -1,16 +1,15 @@
 import itertools
 import os
 import shutil
+
 import pathlib2
-
-from six.moves import filterfalse
-
 import pytest
-from .. import utils
-
 import verta.dataset
-from verta.dataset import _dataset
+from six.moves import filterfalse
 from verta._internal_utils import _file_utils
+from verta.dataset import _dataset
+
+from .. import utils
 
 
 def assert_dirs_match(dirpath1, dirpath2):

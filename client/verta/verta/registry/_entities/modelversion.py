@@ -2,35 +2,25 @@
 
 from __future__ import print_function
 
-import os
 import logging
-import pathlib2
+import os
 import pickle
+
+import pathlib2
+import requests
 from google.protobuf.struct_pb2 import Value
 
-import requests
-
-from ..._protos.public.registry import (
-    RegistryService_pb2 as _RegistryService,
-    StageService_pb2 as _StageService,
-)
-from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
-
-from ...external import six
-
-from ..._internal_utils import (
-    _utils,
-    _artifact_utils,
-    importer, _request_utils
-)
-from ..._internal_utils._utils import NoneProtoResponse
 from ... import utils
-
-from ..._tracking.entity import _MODEL_ARTIFACTS_ATTR_KEY
+from ..._internal_utils import _artifact_utils, _request_utils, _utils, importer
+from ..._internal_utils._utils import NoneProtoResponse
+from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
+from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
+from ..._protos.public.registry import StageService_pb2 as _StageService
 from ..._tracking.deployable_entity import _DeployableEntity
-from ...environment import _Environment, Python
+from ..._tracking.entity import _MODEL_ARTIFACTS_ATTR_KEY
+from ...environment import Python, _Environment
+from ...external import six
 from .. import lock
-
 
 logger = logging.getLogger(__name__)
 
@@ -57,10 +47,13 @@ class RegisteredModelVersion(_DeployableEntity):
         ID of this version's Registered Model.
 
     """
+
     ModelVersionMessage = _RegistryService.ModelVersion
 
     def __init__(self, conn, conf, msg):
-        super(RegisteredModelVersion, self).__init__(conn, conf, _RegistryService, "registered_model_version", msg)
+        super(RegisteredModelVersion, self).__init__(
+            conn, conf, _RegistryService, "registered_model_version", msg
+        )
 
     def __repr__(self):
         self._refresh_cache()
@@ -69,22 +62,40 @@ class RegisteredModelVersion(_DeployableEntity):
         if self.has_model:
             artifact_keys.append(_artifact_utils.REGISTRY_MODEL_KEY)
 
-        return '\n'.join((
-            "version: {}".format(msg.version),
-            "stage: {}".format(_StageService.StageEnum.Stage.Name(msg.stage).lower()),
-            "lock level: {}".format(_RegistryService.ModelVersionLockLevelEnum.ModelVersionLockLevel.Name(msg.lock_level).lower()),
-            "url: {}://{}/{}/registry/{}/versions/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.registered_model_id, self.id),
-            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
-            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
-            "description: {}".format(msg.description),
-            "labels: {}".format(msg.labels),
-            "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
-            "id: {}".format(msg.id),
-            "registered model id: {}".format(msg.registered_model_id),
-            "experiment run id: {}".format(msg.experiment_run_id),
-            # "archived status: {}".format(msg.archived == _CommonCommonService.TernaryEnum.TRUE),
-            "artifact keys: {}".format(artifact_keys),
-        ))
+        return "\n".join(
+            (
+                "version: {}".format(msg.version),
+                "stage: {}".format(
+                    _StageService.StageEnum.Stage.Name(msg.stage).lower()
+                ),
+                "lock level: {}".format(
+                    _RegistryService.ModelVersionLockLevelEnum.ModelVersionLockLevel.Name(
+                        msg.lock_level
+                    ).lower()
+                ),
+                "url: {}://{}/{}/registry/{}/versions/{}".format(
+                    self._conn.scheme,
+                    self._conn.socket,
+                    self.workspace,
+                    self.registered_model_id,
+                    self.id,
+                ),
+                "time created: {}".format(
+                    _utils.timestamp_to_str(int(msg.time_created))
+                ),
+                "time updated: {}".format(
+                    _utils.timestamp_to_str(int(msg.time_updated))
+                ),
+                "description: {}".format(msg.description),
+                "labels: {}".format(msg.labels),
+                "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
+                "id: {}".format(msg.id),
+                "registered model id: {}".format(msg.registered_model_id),
+                "experiment run id: {}".format(msg.experiment_run_id),
+                # "archived status: {}".format(msg.archived == _CommonCommonService.TernaryEnum.TRUE),
+                "artifact keys: {}".format(artifact_keys),
+            )
+        )
 
     @property
     def name(self):
@@ -94,7 +105,9 @@ class RegisteredModelVersion(_DeployableEntity):
     @property
     def has_environment(self):
         self._refresh_cache()
-        return self._msg.environment.HasField("python") or self._msg.environment.HasField("docker")
+        return self._msg.environment.HasField(
+            "python"
+        ) or self._msg.environment.HasField("docker")
 
     @property
     def has_model(self):
@@ -116,13 +129,18 @@ class RegisteredModelVersion(_DeployableEntity):
         self._refresh_cache()
         Message = _RegistryService.GetRegisteredModelRequest
         response = self._conn.make_proto_request(
-            "GET", "/api/v1/registry/registered_models/{}".format(self.registered_model_id)
+            "GET",
+            "/api/v1/registry/registered_models/{}".format(self.registered_model_id),
         )
 
-        registered_model_msg = self._conn.maybe_proto_response(response, Message.Response).registered_model
+        registered_model_msg = self._conn.maybe_proto_response(
+            response, Message.Response
+        ).registered_model
 
         if registered_model_msg.workspace_id:
-            return self._conn.get_workspace_name_from_id(registered_model_msg.workspace_id)
+            return self._conn.get_workspace_name_from_id(
+                registered_model_msg.workspace_id
+            )
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
 
@@ -160,11 +178,15 @@ class RegisteredModelVersion(_DeployableEntity):
 
         Message = _RegistryService.FindModelVersionRequest
         predicates = [
-            _CommonCommonService.KeyValueQuery(key="version",
-                                               value=value,
-                                               operator=_CommonCommonService.OperatorEnum.EQ)
+            _CommonCommonService.KeyValueQuery(
+                key="version",
+                value=value,
+                operator=_CommonCommonService.OperatorEnum.EQ,
+            )
         ]
-        endpoint = "/api/v1/registry/registered_models/{}/model_versions/find".format(registered_model_id)
+        endpoint = "/api/v1/registry/registered_models/{}/model_versions/find".format(
+            registered_model_id
+        )
         msg = Message(predicates=predicates)
 
         proto_response = conn.make_proto_request("POST", endpoint, body=msg)
@@ -177,20 +199,40 @@ class RegisteredModelVersion(_DeployableEntity):
         return response.model_versions[0]
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, experiment_run_id=None, lock_level=None):
+    def _create_proto_internal(
+        cls,
+        conn,
+        ctx,
+        name,
+        desc=None,
+        tags=None,
+        attrs=None,
+        date_created=None,
+        experiment_run_id=None,
+        lock_level=None,
+    ):
         if lock_level is None:
             lock_level = lock.Open()
         registered_model_id = ctx.registered_model.id
 
         msg = cls.ModelVersionMessage(
-            registered_model_id=registered_model_id, version=name,
-            description=desc, labels=tags, attributes=attrs,
-            time_created=date_created, time_updated=date_created,
-            experiment_run_id=experiment_run_id, lock_level=lock_level._as_proto(),
+            registered_model_id=registered_model_id,
+            version=name,
+            description=desc,
+            labels=tags,
+            attributes=attrs,
+            time_created=date_created,
+            time_updated=date_created,
+            experiment_run_id=experiment_run_id,
+            lock_level=lock_level._as_proto(),
         )
-        endpoint = "/api/v1/registry/registered_models/{}/model_versions".format(registered_model_id)
+        endpoint = "/api/v1/registry/registered_models/{}/model_versions".format(
+            registered_model_id
+        )
         response = conn.make_proto_request("POST", endpoint, body=msg)
-        model_version = conn.must_proto_response(response, _RegistryService.SetModelVersion.Response).model_version
+        model_version = conn.must_proto_response(
+            response, _RegistryService.SetModelVersion.Response
+        ).model_version
 
         print("created new ModelVersion: {}".format(model_version.version))
         return model_version
@@ -209,7 +251,14 @@ class RegisteredModelVersion(_DeployableEntity):
 
         raise KeyError("no artifact found with key {}".format(key))
 
-    def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
+    def log_model(
+        self,
+        model,
+        custom_modules=None,
+        model_api=None,
+        artifacts=None,
+        overwrite=False,
+    ):
         """
         Logs a model to this Model Version.
 
@@ -240,11 +289,19 @@ class RegisteredModelVersion(_DeployableEntity):
 
         if model_api and not isinstance(model_api, utils.ModelAPI):
             raise ValueError(
-                "`model_api` must be `verta.utils.ModelAPI`, not {}".format(type(model_api)))
-        if (artifacts is not None
-                and not (isinstance(artifacts, list)
-                         and all(isinstance(artifact_key, six.string_types) for artifact_key in artifacts))):
-            raise TypeError("`artifacts` must be list of str, not {}".format(type(artifacts)))
+                "`model_api` must be `verta.utils.ModelAPI`, not {}".format(
+                    type(model_api)
+                )
+            )
+        if artifacts is not None and not (
+            isinstance(artifacts, list)
+            and all(
+                isinstance(artifact_key, six.string_types) for artifact_key in artifacts
+            )
+        ):
+            raise TypeError(
+                "`artifacts` must be list of str, not {}".format(type(artifacts))
+            )
 
         # validate that `artifacts` are actually logged
         if artifacts:
@@ -253,11 +310,17 @@ class RegisteredModelVersion(_DeployableEntity):
             existing_artifact_keys = {artifact.key for artifact in run_msg.artifacts}
             unlogged_artifact_keys = set(artifacts) - existing_artifact_keys
             if unlogged_artifact_keys:
-                raise ValueError("`artifacts` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
+                raise ValueError(
+                    "`artifacts` contains keys that have not been logged: {}".format(
+                        sorted(unlogged_artifact_keys)
+                    )
+                )
 
         # associate artifact dependencies
         if artifacts:
-            self.add_attribute(_MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite=overwrite)
+            self.add_attribute(
+                _MODEL_ARTIFACTS_ATTR_KEY, artifacts, overwrite=overwrite
+            )
 
         serialized_model, method, model_type = _artifact_utils.serialize_model(model)
 
@@ -268,15 +331,18 @@ class RegisteredModelVersion(_DeployableEntity):
 
         # Create artifact message and update ModelVersion's message:
         model_msg = self._create_artifact_msg(
-            _artifact_utils.REGISTRY_MODEL_KEY, serialized_model,
-            artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL, extension=extension,
+            _artifact_utils.REGISTRY_MODEL_KEY,
+            serialized_model,
+            artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL,
+            extension=extension,
         )
         model_version_update = self.ModelVersionMessage(model=model_msg)
         self._update(model_version_update)
 
         # Upload the artifact to ModelDB:
         self._upload_artifact(
-            _artifact_utils.REGISTRY_MODEL_KEY, serialized_model,
+            _artifact_utils.REGISTRY_MODEL_KEY,
+            serialized_model,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
 
@@ -284,21 +350,27 @@ class RegisteredModelVersion(_DeployableEntity):
         if model_type or model_api:  # only if provided or model is deployable
             if model_api is None:
                 model_api = utils.ModelAPI()
-            if 'model_packaging' not in model_api:
+            if "model_packaging" not in model_api:
                 # add model serialization info to model_api
-                model_api['model_packaging'] = {
-                    'python_version': _utils.get_python_version(),
-                    'type': model_type,
-                    'deserialization': method,
+                model_api["model_packaging"] = {
+                    "python_version": _utils.get_python_version(),
+                    "type": model_type,
+                    "deserialization": method,
                 }
-            self.log_artifact(_artifact_utils.MODEL_API_KEY, model_api, overwrite, "json")
+            self.log_artifact(
+                _artifact_utils.MODEL_API_KEY, model_api, overwrite, "json"
+            )
 
         # create and upload custom modules
         if model_type or custom_modules:  # only if provided or model is deployable
             # Log modules:
             custom_modules_artifact = self._custom_modules_as_artifact(custom_modules)
-            self.log_artifact(_artifact_utils.CUSTOM_MODULES_KEY, custom_modules_artifact,
-                              overwrite, 'zip')
+            self.log_artifact(
+                _artifact_utils.CUSTOM_MODULES_KEY,
+                custom_modules_artifact,
+                overwrite,
+                "zip",
+            )
 
     def get_model(self):
         """
@@ -332,7 +404,6 @@ class RegisteredModelVersion(_DeployableEntity):
         self._msg.ClearField("model")
         self._update(self._msg, method="PUT")
 
-
     def log_artifact(self, key, artifact, overwrite=False, _extension=None):
         """
         Logs an artifact to this Model Version.
@@ -353,7 +424,7 @@ class RegisteredModelVersion(_DeployableEntity):
         """
         if key == _artifact_utils.REGISTRY_MODEL_KEY:
             raise ValueError(
-                "the key \"{}\" is reserved for model;"
+                'the key "{}" is reserved for model;'
                 " consider using log_model() instead".format(
                     _artifact_utils.REGISTRY_MODEL_KEY
                 )
@@ -365,7 +436,9 @@ class RegisteredModelVersion(_DeployableEntity):
         for i in range(len(self._msg.artifacts)):
             if self._msg.artifacts[i].key == key:
                 if not overwrite:
-                    raise ValueError("The key has been set; consider setting overwrite=True")
+                    raise ValueError(
+                        "The key has been set; consider setting overwrite=True"
+                    )
                 else:
                     same_key_ind = i
                 break
@@ -376,7 +449,7 @@ class RegisteredModelVersion(_DeployableEntity):
             if os.path.isdir(artifact):  # zip dirpath
                 artifact = _artifact_utils.zip_dir(artifact)
             else:  # open filepath
-                artifact = open(artifact, 'rb')
+                artifact = open(artifact, "rb")
         artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
         if not _extension:
@@ -385,7 +458,9 @@ class RegisteredModelVersion(_DeployableEntity):
             except (TypeError, ValueError):
                 _extension = _artifact_utils.ext_from_method(method)
 
-        artifact_msg = self._create_artifact_msg(key, artifact_stream, artifact_type=artifact_type, extension=_extension)
+        artifact_msg = self._create_artifact_msg(
+            key, artifact_stream, artifact_type=artifact_type, extension=_extension
+        )
         if same_key_ind == -1:
             self._msg.artifacts.append(artifact_msg)
         else:
@@ -441,8 +516,7 @@ class RegisteredModelVersion(_DeployableEntity):
         artifact = self._get_artifact_msg(key)
 
         # create parent dirs
-        pathlib2.Path(download_to_path).parent.mkdir(
-            parents=True, exist_ok=True)
+        pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
         # TODO: clean up empty parent dirs if something later fails
 
         # get a stream of the file bytes, without loading into memory, and write to file
@@ -451,7 +525,9 @@ class RegisteredModelVersion(_DeployableEntity):
         with _utils.make_request("GET", url, self._conn, stream=True) as response:
             _utils.raise_for_http_error(response)
 
-            if artifact.filename_extension == _artifact_utils.ZIP_EXTENSION:  # verta-created ZIP
+            if (
+                artifact.filename_extension == _artifact_utils.ZIP_EXTENSION
+            ):  # verta-created ZIP
                 downloader = _request_utils.download_zipped_dir
             else:
                 downloader = _request_utils.download_file
@@ -470,7 +546,9 @@ class RegisteredModelVersion(_DeployableEntity):
 
         """
         if key == _artifact_utils.REGISTRY_MODEL_KEY:
-            raise ValueError("model can't be deleted through del_artifact(); consider using del_model() instead")
+            raise ValueError(
+                "model can't be deleted through del_artifact(); consider using del_model() instead"
+            )
 
         self._fetch_with_no_cache()
 
@@ -500,23 +578,35 @@ class RegisteredModelVersion(_DeployableEntity):
 
         """
         if not isinstance(env, _Environment):
-            raise TypeError("`env` must be of type Environment, not {}".format(type(env)))
+            raise TypeError(
+                "`env` must be of type Environment, not {}".format(type(env))
+            )
 
         if self.has_environment and not overwrite:
-            raise ValueError("environment already exists; consider setting overwrite=True")
+            raise ValueError(
+                "environment already exists; consider setting overwrite=True"
+            )
 
         if overwrite:
             self._fetch_with_no_cache()
             self._msg.environment.CopyFrom(env._as_env_proto())
             self._update(self._msg, method="PUT")
         else:
-            self._update(self.ModelVersionMessage(environment=env._as_env_proto()), method="PATCH",
-                         update_mask={"paths": ["environment.python.version.major",
-                                                "environment.python.version.minor",
-                                                "environment.python.version.patch",
-                                                "environment.python.requirements",
-                                                "environment.command_line", "environment.docker",
-                                                "environment.environment_variables"]})
+            self._update(
+                self.ModelVersionMessage(environment=env._as_env_proto()),
+                method="PATCH",
+                update_mask={
+                    "paths": [
+                        "environment.python.version.major",
+                        "environment.python.version.minor",
+                        "environment.python.version.patch",
+                        "environment.python.requirements",
+                        "environment.command_line",
+                        "environment.docker",
+                        "environment.environment_variables",
+                    ]
+                },
+            )
 
     def del_environment(self):
         """
@@ -553,33 +643,37 @@ class RegisteredModelVersion(_DeployableEntity):
             key=key,
             method=method,
             artifact_type=artifact_type,
-            part_number=part_num
+            part_number=part_num,
         )
         data = _utils.proto_to_json(msg)
         endpoint = "{}://{}/api/v1/registry/model_versions/{}/getUrlForArtifact".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.id
+            self._conn.scheme, self._conn.socket, self.id
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
         return _utils.json_to_proto(response.json(), Message.Response)
 
-    def _upload_artifact(self, key, file_handle, artifact_type, part_size=_artifact_utils._64MB):
+    def _upload_artifact(
+        self, key, file_handle, artifact_type, part_size=_artifact_utils._64MB
+    ):
         file_handle.seek(0)
 
         # check if multipart upload ok
-        url_for_artifact = self._get_url_for_artifact(key, "PUT", artifact_type, part_num=1)
+        url_for_artifact = self._get_url_for_artifact(
+            key, "PUT", artifact_type, part_num=1
+        )
 
         print("uploading {} to Registry".format(key))
         if url_for_artifact.multipart_upload_ok:
             # TODO: parallelize this
-            file_parts = iter(lambda: file_handle.read(part_size), b'')
+            file_parts = iter(lambda: file_handle.read(part_size), b"")
             for part_num, file_part in enumerate(file_parts, start=1):
-                print("uploading part {}".format(part_num), end='\r')
+                print("uploading part {}".format(part_num), end="\r")
 
                 # get presigned URL
-                url = self._get_url_for_artifact(key, "PUT", artifact_type, part_num=part_num).url
+                url = self._get_url_for_artifact(
+                    key, "PUT", artifact_type, part_num=part_num
+                ).url
 
                 # wrap file part into bytestream to avoid OverflowError
                 #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
@@ -596,16 +690,13 @@ class RegisteredModelVersion(_DeployableEntity):
 
                 # commit part
                 url = "{}://{}/api/v1/registry/model_versions/{}/commitArtifactPart".format(
-                    self._conn.scheme,
-                    self._conn.socket,
-                    self.id
+                    self._conn.scheme, self._conn.socket, self.id
                 )
                 msg = _RegistryService.CommitArtifactPart(
-                    model_version_id=self.id,
-                    key=key
+                    model_version_id=self.id, key=key
                 )
                 msg.artifact_part.part_number = part_num
-                msg.artifact_part.etag = response.headers['ETag']
+                msg.artifact_part.etag = response.headers["ETag"]
                 data = _utils.proto_to_json(msg)
                 response = _utils.make_request("POST", url, self._conn, json=data)
                 _utils.raise_for_http_error(response)
@@ -613,13 +704,10 @@ class RegisteredModelVersion(_DeployableEntity):
 
             # complete upload
             url = "{}://{}/api/v1/registry/model_versions/{}/commitMultipartArtifact".format(
-                self._conn.scheme,
-                self._conn.socket,
-                self.id
+                self._conn.scheme, self._conn.socket, self.id
             )
             msg = _RegistryService.CommitMultipartArtifact(
-                model_version_id=self.id,
-                key=key
+                model_version_id=self.id, key=key
             )
             data = _utils.proto_to_json(msg)
             response = _utils.make_request("POST", url, self._conn, json=data)
@@ -629,15 +717,20 @@ class RegisteredModelVersion(_DeployableEntity):
             if url_for_artifact.fields:
                 # if fields were returned by backend, make a POST request and supply them as form fields
                 response = _utils.make_request(
-                    "POST", url_for_artifact.url, self._conn,
+                    "POST",
+                    url_for_artifact.url,
+                    self._conn,
                     # requests uses the `files` parameter for sending multipart/form-data POSTs.
                     #     https://stackoverflow.com/a/12385661/8651995
                     # the file contents must be the final form field
                     #     https://docs.aws.amazon.com/AmazonS3/latest/dev/HTTPPOSTForms.html#HTTPPOSTFormFields
-                    files=list(url_for_artifact.fields.items()) + [('file', file_handle)],
+                    files=list(url_for_artifact.fields.items())
+                    + [("file", file_handle)],
                 )
             else:
-                response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=file_handle)
+                response = _utils.make_request(
+                    "PUT", url_for_artifact.url, self._conn, data=file_handle
+                )
             _utils.raise_for_http_error(response)
 
         print("upload complete")
@@ -663,11 +756,13 @@ class RegisteredModelVersion(_DeployableEntity):
         # TODO: support VERTA_ARTIFACT_DIR
 
         # log key to ModelDB
-        artifact_msg = _CommonCommonService.Artifact(key=key,
-                                               path=artifact_path,
-                                               path_only=False,
-                                               artifact_type=artifact_type,
-                                               filename_extension=extension)
+        artifact_msg = _CommonCommonService.Artifact(
+            key=key,
+            path=artifact_path,
+            path_only=False,
+            artifact_type=artifact_type,
+            filename_extension=extension,
+        )
         return artifact_msg
 
     def _get_artifact(self, key, artifact_type=0):
@@ -778,19 +873,25 @@ class RegisteredModelVersion(_DeployableEntity):
             "self_contained": self_contained,
         }
 
-        with _utils.make_request("POST", endpoint, self._conn, json=body, stream=True) as response:
+        with _utils.make_request(
+            "POST", endpoint, self._conn, json=body, stream=True
+        ) as response:
             try:
                 _utils.raise_for_http_error(response)
             except requests.HTTPError as e:
                 # propagate error caused by missing artifact
                 error_text = e.response.text.strip()
                 if error_text.startswith("missing artifact"):
-                    new_e = RuntimeError("unable to obtain Docker context due to " + error_text)
+                    new_e = RuntimeError(
+                        "unable to obtain Docker context due to " + error_text
+                    )
                     six.raise_from(new_e, None)
                 else:
                     raise e
 
-            downloaded_to_path = _request_utils.download_file(response, download_to_path, overwrite_ok=True)
+            downloaded_to_path = _request_utils.download_file(
+                response, download_to_path, overwrite_ok=True
+            )
             return os.path.abspath(downloaded_to_path)
 
     # def archive(self):
@@ -840,8 +941,12 @@ class RegisteredModelVersion(_DeployableEntity):
         existing_attrs = self.get_attributes()
         for key, value in six.viewitems(attrs):
             if not key in existing_attrs or overwrite:
-                attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value,
-                                                                                                                 allow_collection=True)))
+                attribute_keyvals.append(
+                    _CommonCommonService.KeyValue(
+                        key=key,
+                        value=_utils.python_to_val_proto(value, allow_collection=True),
+                    )
+                )
 
         self._update(self.ModelVersionMessage(attributes=attribute_keyvals))
 
@@ -897,7 +1002,9 @@ class RegisteredModelVersion(_DeployableEntity):
         _utils.validate_flat_key(key)
 
         self._fetch_with_no_cache()
-        attributes = list(filter(lambda attribute: attribute.key == key, self._msg.attributes))
+        attributes = list(
+            filter(lambda attribute: attribute.key == key, self._msg.attributes)
+        )
         if attributes:
             self._msg.attributes.remove(attributes[0])
             self._update(self._msg, method="PUT")
@@ -943,24 +1050,41 @@ class RegisteredModelVersion(_DeployableEntity):
         if update_mask:
             url = "{}://{}/api/v1/registry/registered_models/{}/model_versions/{}/full_body".format(
                 self._conn.scheme,
-                self._conn.socket, self._msg.registered_model_id, self.id
+                self._conn.socket,
+                self._msg.registered_model_id,
+                self.id,
             )
             # proto converter for update_mask is missing
-            data = {"model_version": _utils.proto_to_json(msg, False), "update_mask": update_mask}
+            data = {
+                "model_version": _utils.proto_to_json(msg, False),
+                "update_mask": update_mask,
+            }
             response = _utils.make_request(method, url, self._conn, json=data)
         else:
-            response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}/model_versions/{}"
-                                                     .format(self._msg.registered_model_id, self.id),
-                                                     body=msg, include_default=False)
-        self._conn.must_proto_response(response, _RegistryService.SetModelVersion.Response)
+            response = self._conn.make_proto_request(
+                method,
+                "/api/v1/registry/registered_models/{}/model_versions/{}".format(
+                    self._msg.registered_model_id, self.id
+                ),
+                body=msg,
+                include_default=False,
+            )
+        self._conn.must_proto_response(
+            response, _RegistryService.SetModelVersion.Response
+        )
         self._clear_cache()
 
     def _get_info_list(self, model_name):
         if model_name is None:
             id_or_name = str(self._msg.registered_model_id)
-        else :
+        else:
             id_or_name = model_name
-        return [self._msg.version, str(self.id), id_or_name, _utils.timestamp_to_str(self._msg.time_updated)]
+        return [
+            self._msg.version,
+            str(self.id),
+            id_or_name,
+            _utils.timestamp_to_str(self._msg.time_updated),
+        ]
 
     def delete(self):
         """

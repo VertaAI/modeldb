@@ -1,25 +1,23 @@
-import six
-
 import itertools
+import json
 import os
 import shutil
 
-import requests
-
 import pytest
-
-from verta.registry._entities import RegisteredModels
-from verta._tracking.deployable_entity import _CACHE_DIR
-from . import utils
-
+import requests
+import six
 import verta
 import verta._internal_utils._utils
-import json
+from verta._protos.public.modeldb import (
+    ExperimentRunService_pb2 as _ExperimentRunService,
+)
+from verta._tracking.deployable_entity import _CACHE_DIR
+from verta.external.six.moves.urllib.parse import (
+    urlparse,  # pylint: disable=import-error, no-name-in-module
+)
+from verta.registry._entities import RegisteredModels
 
-from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
-
-from verta._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
-
+from . import utils
 
 KWARGS = {
     'desc': [None, "A test."],

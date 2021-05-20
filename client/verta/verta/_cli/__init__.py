@@ -4,6 +4,9 @@ import os
 
 import click
 
+from .deployment.deployment import deployment
+from .registry.registry import registry
+
 # from .._internal_utils import _config_utils
 
 # from . import remote
@@ -11,8 +14,6 @@ import click
 # from . import commit
 # from . import blob
 
-from .registry.registry import registry
-from .deployment.deployment import deployment
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 

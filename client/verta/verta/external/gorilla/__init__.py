@@ -7,17 +7,31 @@
 
 """Convenient approach to monkey patching."""
 
-__all__ = ['default_filter', 'DecoratorData', 'Settings', 'Patch', 'apply',
-           'patch', 'patches', 'destination', 'name', 'settings', 'filter',
-           'create_patches', 'find_patches', 'get_attribute',
-           'get_original_attribute', 'get_decorator_data']
+__all__ = [
+    "default_filter",
+    "DecoratorData",
+    "Settings",
+    "Patch",
+    "apply",
+    "patch",
+    "patches",
+    "destination",
+    "name",
+    "settings",
+    "filter",
+    "create_patches",
+    "find_patches",
+    "get_attribute",
+    "get_original_attribute",
+    "get_decorator_data",
+]
 
-__title__ = 'gorilla'
-__version__ = '0.3.0'
+__title__ = "gorilla"
+__version__ = "0.3.0"
 __summary__ = "Convenient approach to monkey patching"
-__url__ = 'https://github.com/christophercrouzet/gorilla'
+__url__ = "https://github.com/christophercrouzet/gorilla"
 __author__ = "Christopher Crouzet"
-__contact__ = 'christopher.crouzet@gmail.com'
+__contact__ = "christopher.crouzet@gmail.com"
 __license__ = "MIT"
 
 import collections
@@ -26,7 +40,6 @@ import inspect
 import pkgutil
 import sys
 import types
-
 
 if sys.version_info[0] == 2:
     _CLASS_TYPES = (type, types.ClassType)
@@ -37,6 +50,8 @@ if sys.version_info[0] == 2:
     def _load_module(finder, name):
         loader = finder.find_module(name)
         return loader.load_module(name)
+
+
 else:
     _CLASS_TYPES = (type,)
 
@@ -49,13 +64,13 @@ else:
 
 
 # Pattern for each internal attribute name.
-_PATTERN = '_gorilla_%s'
+_PATTERN = "_gorilla_%s"
 
 # Pattern for the name of the overidden attributes to be stored.
-_ORIGINAL_NAME = _PATTERN % ('%s_original_%s',)
+_ORIGINAL_NAME = _PATTERN % ("%s_original_%s",)
 
 # Attribute for the decorator data.
-_DECORATOR_DATA = _PATTERN % ('decorator_data',)
+_DECORATOR_DATA = _PATTERN % ("decorator_data",)
 
 
 def default_filter(name, obj):
@@ -79,7 +94,7 @@ def default_filter(name, obj):
     bool
         Whether the attribute should be returned.
     """
-    return not (isinstance(obj, types.ModuleType) or name.startswith('_'))
+    return not (isinstance(obj, types.ModuleType) or name.startswith("_"))
 
 
 class DecoratorData(object):
@@ -133,9 +148,9 @@ class Settings(object):
         self._update(**kwargs)
 
     def __repr__(self):
-        values = ', '.join([
-            '%s=%r' % (key, value)
-            for key, value in sorted(_iteritems(self.__dict__))])
+        values = ", ".join(
+            ["%s=%r" % (key, value) for key, value in sorted(_iteritems(self.__dict__))]
+        )
         return "%s(%s)" % (type(self).__name__, values)
 
     def __eq__(self, other):
@@ -196,8 +211,12 @@ class Patch(object):
 
     def __repr__(self):
         return "%s(destination=%r, name=%r, obj=%r, settings=%r)" % (
-            type(self).__name__, self.destination, self.name, self.obj,
-            self.settings)
+            type(self).__name__,
+            self.destination,
+            self.name,
+            self.obj,
+            self.settings,
+        )
 
     def __eq__(self, other):
         if isinstance(other, type(self)):
@@ -216,7 +235,7 @@ class Patch(object):
         content of the settings, if any, instead of completely overwriting it.
         """
         for key, value in _iteritems(kwargs):
-            if key == 'settings':
+            if key == "settings":
                 if isinstance(value, dict):
                     if self.settings is None:
                         self.settings = Settings(**value)
@@ -273,7 +292,8 @@ def apply(patch):
                 "recommended to also set the 'store_hit' setting to True in "
                 "order to store the original attribute under a different "
                 "name so it can still be accessed."
-                % (patch.name, patch.destination.__name__))
+                % (patch.name, patch.destination.__name__)
+            )
 
         if settings.store_hit:
             original_name = _ORIGINAL_NAME % (patch.destination.__name__, patch.name)
@@ -307,6 +327,7 @@ def patch(destination, name=None, settings=None):
     --------
     :class:`Patch`.
     """
+
     def decorator(wrapped):
         base = _get_base(wrapped)
         name_ = base.__name__ if name is None else name
@@ -319,8 +340,14 @@ def patch(destination, name=None, settings=None):
     return decorator
 
 
-def patches(destination, settings=None, traverse_bases=True,
-            filter=default_filter, recursive=True, use_decorators=True):
+def patches(
+    destination,
+    settings=None,
+    traverse_bases=True,
+    filter=default_filter,
+    recursive=True,
+    use_decorators=True,
+):
     """Decorator to create a patch for each member of a module or a class.
 
     Parameters
@@ -359,12 +386,18 @@ def patches(destination, settings=None, traverse_bases=True,
     --------
     :class:`Patch`, :func:`create_patches`.
     """
+
     def decorator(wrapped):
         settings_ = copy.deepcopy(settings)
         patches = create_patches(
-            destination, wrapped, settings=settings_,
-            traverse_bases=traverse_bases, filter=filter, recursive=recursive,
-            use_decorators=use_decorators)
+            destination,
+            wrapped,
+            settings=settings_,
+            traverse_bases=traverse_bases,
+            filter=filter,
+            recursive=recursive,
+            use_decorators=use_decorators,
+        )
         data = get_decorator_data(_get_base(wrapped), set_default=True)
         data.patches.extend(patches)
         return wrapped
@@ -389,9 +422,10 @@ def destination(value):
     object
         The decorated object.
     """
+
     def decorator(wrapped):
         data = get_decorator_data(_get_base(wrapped), set_default=True)
-        data.override['destination'] = value
+        data.override["destination"] = value
         return wrapped
 
     return decorator
@@ -414,9 +448,10 @@ def name(value):
     object
         The decorated object.
     """
+
     def decorator(wrapped):
         data = get_decorator_data(_get_base(wrapped), set_default=True)
-        data.override['name'] = value
+        data.override["name"] = value
         return wrapped
 
     return decorator
@@ -439,9 +474,10 @@ def settings(**kwargs):
     object
         The decorated object.
     """
+
     def decorator(wrapped):
         data = get_decorator_data(_get_base(wrapped), set_default=True)
-        data.override.setdefault('settings', {}).update(kwargs)
+        data.override.setdefault("settings", {}).update(kwargs)
         return wrapped
 
     return decorator
@@ -466,6 +502,7 @@ def filter(value):
     object
         The decorated object.
     """
+
     def decorator(wrapped):
         data = get_decorator_data(_get_base(wrapped), set_default=True)
         data.filter = value
@@ -474,8 +511,15 @@ def filter(value):
     return decorator
 
 
-def create_patches(destination, root, settings=None, traverse_bases=True,
-                   filter=default_filter, recursive=True, use_decorators=True):
+def create_patches(
+    destination,
+    root,
+    settings=None,
+    traverse_bases=True,
+    filter=default_filter,
+    recursive=True,
+    use_decorators=True,
+):
     """Create a patch for each member of a module or a class.
 
     Parameters
@@ -520,22 +564,32 @@ def create_patches(destination, root, settings=None, traverse_bases=True,
         filter = _true
 
     out = []
-    root_patch = Patch(destination, '', root, settings=settings)
+    root_patch = Patch(destination, "", root, settings=settings)
     stack = collections.deque((root_patch,))
     while stack:
         parent_patch = stack.popleft()
-        members = _get_members(parent_patch.obj, traverse_bases=traverse_bases,
-                               filter=None, recursive=False)
+        members = _get_members(
+            parent_patch.obj,
+            traverse_bases=traverse_bases,
+            filter=None,
+            recursive=False,
+        )
         for name, value in members:
-            patch = Patch(parent_patch.destination, name, value,
-                          settings=copy.deepcopy(parent_patch.settings))
+            patch = Patch(
+                parent_patch.destination,
+                name,
+                value,
+                settings=copy.deepcopy(parent_patch.settings),
+            )
             if use_decorators:
                 base = _get_base(value)
                 decorator_data = get_decorator_data(base)
-                filter_override = (None if decorator_data is None
-                                   else decorator_data.filter)
-                if ((filter_override is None and not filter(name, value))
-                        or filter_override is False):
+                filter_override = (
+                    None if decorator_data is None else decorator_data.filter
+                )
+                if (
+                    filter_override is None and not filter(name, value)
+                ) or filter_override is False:
                     continue
 
                 if decorator_data is not None:
@@ -584,9 +638,11 @@ def find_patches(modules, recursive=True):
     :func:`patch`, :func:`patches`.
     """
     out = []
-    modules = (module
-               for package in modules
-               for module in _module_iterator(package, recursive=recursive))
+    modules = (
+        module
+        for package in modules
+        for module in _module_iterator(package, recursive=recursive)
+    )
     for module in modules:
         members = _get_members(module, filter=None)
         for _, value in members:
@@ -634,8 +690,7 @@ def get_attribute(obj, name):
         except AttributeError:
             pass
 
-    raise AttributeError("'%s' object has no attribute '%s'"
-                         % (type(obj), name))
+    raise AttributeError("'%s' object has no attribute '%s'" % (type(obj), name))
 
 
 def get_original_attribute(obj, name):
@@ -699,7 +754,7 @@ def get_decorator_data(obj, set_default=False):
 
 def _get_base(obj):
     """Unwrap decorators to retrieve the base object."""
-    if hasattr(obj, '__func__'):
+    if hasattr(obj, "__func__"):
         obj = obj.__func__
     elif isinstance(obj, property):
         obj = obj.fget
@@ -713,8 +768,7 @@ def _get_base(obj):
     return _get_base(obj)
 
 
-def _get_members(obj, traverse_bases=True, filter=default_filter,
-                 recursive=True):
+def _get_members(obj, traverse_bases=True, filter=default_filter, recursive=True):
     """Retrieve the member attributes of a module or a class.
 
     The descriptor protocol is bypassed."""
@@ -726,15 +780,14 @@ def _get_members(obj, traverse_bases=True, filter=default_filter,
     while stack:
         obj = stack.popleft()
         if traverse_bases and isinstance(obj, _CLASS_TYPES):
-            roots = [base for base in inspect.getmro(obj)
-                     if base not in (type, object)]
+            roots = [base for base in inspect.getmro(obj) if base not in (type, object)]
         else:
             roots = [obj]
 
         members = []
         seen = set()
         for root in roots:
-            for name, value in _iteritems(getattr(root, '__dict__', {})):
+            for name, value in _iteritems(getattr(root, "__dict__", {})):
                 if name not in seen and filter(name, value):
                     members.append((name, value))
 
@@ -759,11 +812,11 @@ def _module_iterator(root, recursive=True):
         package = stack.popleft()
         # The '__path__' attribute of a package might return a list of paths if
         # the package is referenced as a namespace.
-        paths = getattr(package, '__path__', [])
+        paths = getattr(package, "__path__", [])
         for path in paths:
             modules = pkgutil.iter_modules([path])
             for finder, name, is_package in modules:
-                module_name = '%s.%s' % (package.__name__, name)
+                module_name = "%s.%s" % (package.__name__, name)
                 module = sys.modules.get(module_name, None)
                 if module is None:
                     # Import the module through the finder to support package

@@ -3,21 +3,20 @@
 import os
 
 import joblib
-
-import pandas as pd
 import numpy as np
-
-from sklearn import model_selection
-from sklearn import linear_model
-from sklearn import metrics
-
+import pandas as pd
+from sklearn import linear_model, metrics, model_selection
 
 # load pre-cleaned data from CSV file into pandas DataFrame
-df = pd.read_csv(os.path.join("..", "data", "census", "cleaned-census-data.csv"), delimiter=',')
+df = pd.read_csv(
+    os.path.join("..", "data", "census", "cleaned-census-data.csv"), delimiter=","
+)
 
 # split into features and labels
-features_df = df.drop('>50K', axis='columns')
-labels_df = df['>50K']  # we are predicting whether an individual's income exceeds $50k/yr
+features_df = df.drop(">50K", axis="columns")
+labels_df = df[
+    ">50K"
+]  # we are predicting whether an individual's income exceeds $50k/yr
 
 
 # extract NumPy arrays from DataFrames
@@ -25,7 +24,9 @@ X = features_df.values
 y = labels_df.values
 
 # split data into training and testing sets
-X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.33)
+X_train, X_test, y_train, y_test = model_selection.train_test_split(
+    X, y, test_size=0.33
+)
 
 # instantiate iterator that yields train/val indices for each fold of cross validation
 validation_splitter = model_selection.KFold(n_splits=5, shuffle=True)
@@ -33,11 +34,11 @@ validation_splitter = model_selection.KFold(n_splits=5, shuffle=True)
 
 # define hyperparameter values
 hyperparams = {
-    'C': 1.0,
-    'solver': 'lbfgs',
-    'max_iter': 10000,
+    "C": 1.0,
+    "solver": "lbfgs",
+    "max_iter": 10000,
 }
-print(hyperparams, end=' ')
+print(hyperparams, end=" ")
 
 # cross-validate hyperparameter values
 val_acc = 0  # track average validation accuracy across folds
@@ -51,7 +52,7 @@ for idxs_train, idxs_val in validation_splitter.split(X_train, y_train):
     model.fit(X_val_train, y_val_train)
 
     # accumulate average validation accuracy
-    val_acc += model.score(X_val, y_val)/validation_splitter.get_n_splits()
+    val_acc += model.score(X_val, y_val) / validation_splitter.get_n_splits()
 
 print(f"Validation accuracy: {val_acc}")
 

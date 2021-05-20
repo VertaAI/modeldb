@@ -1,5 +1,4 @@
 import pytest
-
 from verta.endpoint.resources import Resources
 from verta.endpoint.update import DirectUpdateStrategy
 

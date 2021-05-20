@@ -4,17 +4,12 @@ from __future__ import print_function
 
 import warnings
 
-from ..external import six
-
+from .._internal_utils import _utils
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import CommonService_pb2 as _CommonService
 from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
-
 from .._tracking import entity
-from .._internal_utils import (
-    _utils,
-)
-
+from ..external import six
 from .dataset_version import DatasetVersion
 from .dataset_versions import DatasetVersions
 

@@ -1,5 +1,1 @@
-from ._status import (
-    _AlertStatus,
-    Alerting,
-    Ok,
-)
+from ._status import Alerting, Ok, _AlertStatus

@@ -1,14 +1,12 @@
-import six
-
 import os
 import zipfile
 
+import pytest
+import six
 import verta
 from verta._internal_utils import _git_utils
 
-import pytest
 from . import utils
-
 
 # check if in git repo
 try:

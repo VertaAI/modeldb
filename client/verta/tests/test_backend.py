@@ -1,9 +1,7 @@
-import six
-
 import multiprocessing
 
 import pytest
-
+import six
 
 pytest.skip("reduce DB pressure to establish test baseline", allow_module_level=True)
 

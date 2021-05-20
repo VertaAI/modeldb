@@ -1,17 +1,15 @@
 import contextlib
 import copy
 import filecmp
-import random
 import os
+import random
 import sys
 from string import printable
 
 import requests
-
+from hypothesis import strategies as st
 from verta._internal_utils import _utils
 from verta._protos.public.uac import Organization_pb2 as _OrganizationService
-
-from hypothesis import strategies as st
 
 
 def gen_none():

@@ -9,7 +9,10 @@ import warnings
 import requests
 
 from ..external import six
-from ..external.six.moves.urllib.parse import urljoin, urlparse  # pylint: disable=import-error, no-name-in-module
+from ..external.six.moves.urllib.parse import (
+    urljoin,
+    urlparse,
+)  # pylint: disable=import-error, no-name-in-module
 
 from .._internal_utils import _utils
 
@@ -49,19 +52,24 @@ class DeployedModel:
         # <DeployedModel 01234567-0123-0123-0123-012345678901>
 
     """
+
     def __init__(self, _host=None, _run_id=None, _from_url=False, **kwargs):
         # this is to temporarily maintain compatibility with anyone passing in `socket` and `model_id` as kwargs
         # TODO: instate `host` and `run_id` params
         # TODO: remove the following block of param checks
         # TODO: put automodule verta.deployment back on ReadTheDocs
-        if 'socket' in kwargs:
-            warnings.warn("`socket` will be renamed to `host` in an upcoming version",
-                          category=FutureWarning)
-        if 'model_id' in kwargs:
-            warnings.warn("`model_id` will be renamed to `run_id` in an upcoming version",
-                          category=FutureWarning)
-        host = kwargs.get('host', kwargs.get('socket', _host))
-        run_id = kwargs.get('run_id', kwargs.get('model_id', _run_id))
+        if "socket" in kwargs:
+            warnings.warn(
+                "`socket` will be renamed to `host` in an upcoming version",
+                category=FutureWarning,
+            )
+        if "model_id" in kwargs:
+            warnings.warn(
+                "`model_id` will be renamed to `run_id` in an upcoming version",
+                category=FutureWarning,
+            )
+        host = kwargs.get("host", kwargs.get("socket", _host))
+        run_id = kwargs.get("run_id", kwargs.get("model_id", _run_id))
         if host is None:
             raise TypeError("missing required argument: `host`")
         if run_id is None:
@@ -69,25 +77,49 @@ class DeployedModel:
 
         self._session = requests.Session()
         if not _from_url:
-            self._session.headers.update({_utils._GRPC_PREFIX+'source': "PythonClient"})
+            self._session.headers.update(
+                {_utils._GRPC_PREFIX + "source": "PythonClient"}
+            )
             try:
-                self._session.headers.update({_utils._GRPC_PREFIX+'email': os.environ['VERTA_EMAIL']})
+                self._session.headers.update(
+                    {_utils._GRPC_PREFIX + "email": os.environ["VERTA_EMAIL"]}
+                )
             except KeyError:
-                six.raise_from(EnvironmentError("${} not found in environment".format('VERTA_EMAIL')), None)
+                six.raise_from(
+                    EnvironmentError(
+                        "${} not found in environment".format("VERTA_EMAIL")
+                    ),
+                    None,
+                )
             try:
-                self._session.headers.update({
-                    _utils._GRPC_PREFIX+'developer_key': os.environ['VERTA_DEV_KEY'],
-                    _utils._GRPC_PREFIX+'developer-key': os.environ['VERTA_DEV_KEY'],  # see Client.__init__()
-                })
+                self._session.headers.update(
+                    {
+                        _utils._GRPC_PREFIX
+                        + "developer_key": os.environ["VERTA_DEV_KEY"],
+                        _utils._GRPC_PREFIX
+                        + "developer-key": os.environ[
+                            "VERTA_DEV_KEY"
+                        ],  # see Client.__init__()
+                    }
+                )
             except KeyError:
-                six.raise_from(EnvironmentError("${} not found in environment".format('VERTA_DEV_KEY')), None)
+                six.raise_from(
+                    EnvironmentError(
+                        "${} not found in environment".format("VERTA_DEV_KEY")
+                    ),
+                    None,
+                )
 
         back_end_url = urlparse(host)
-        self._socket = back_end_url.netloc + back_end_url.path.rstrip('/')
-        self._scheme = back_end_url.scheme or ("https" if ".verta.ai" in self._socket else "http")
+        self._socket = back_end_url.netloc + back_end_url.path.rstrip("/")
+        self._scheme = back_end_url.scheme or (
+            "https" if ".verta.ai" in self._socket else "http"
+        )
 
         self._id = run_id
-        self._status_url = "{}://{}/api/v1/deployment/status/{}".format(self._scheme, self._socket, self._id)
+        self._status_url = "{}://{}/api/v1/deployment/status/{}".format(
+            self._scheme, self._socket, self._id
+        )
 
         self._prediction_url = None
 
@@ -135,8 +167,10 @@ class DeployedModel:
         deployed_model._id = None
         deployed_model._status_url = None
 
-        deployed_model._prediction_url = urljoin("{}://{}".format(parsed_url.scheme, parsed_url.netloc), parsed_url.path)
-        deployed_model._session.headers['Access-Token'] = token
+        deployed_model._prediction_url = urljoin(
+            "{}://{}".format(parsed_url.scheme, parsed_url.netloc), parsed_url.path
+        )
+        deployed_model._session.headers["Access-Token"] = token
 
         return deployed_model
 
@@ -144,17 +178,19 @@ class DeployedModel:
         response = self._session.get(self._status_url)
         _utils.raise_for_http_error(response)
         status = _utils.body_to_json(response)
-        if status['status'] == 'error':
-            raise RuntimeError(status['message'])
-        elif status['status'] != 'deployed':
+        if status["status"] == "error":
+            raise RuntimeError(status["message"])
+        elif status["status"] != "deployed":
             raise RuntimeError("model is not yet ready, or has not yet been deployed")
         else:
-            self._session.headers['Access-Token'] = status.get('token')
-            self._prediction_url = urljoin("{}://{}".format(self._scheme, self._socket), status['api'])
+            self._session.headers["Access-Token"] = status.get("token")
+            self._prediction_url = urljoin(
+                "{}://{}".format(self._scheme, self._socket), status["api"]
+            )
 
     def _predict(self, x, compress=False):
         """This is like ``DeployedModel.predict()``, but returns the raw ``Response`` for debugging."""
-        if 'Access-token' not in self._session.headers or self._prediction_url is None:
+        if "Access-token" not in self._session.headers or self._prediction_url is None:
             self._set_token_and_url()
 
         x = _utils.to_builtin(x)
@@ -162,13 +198,13 @@ class DeployedModel:
         if compress:
             # create gzip
             gzstream = six.BytesIO()
-            with gzip.GzipFile(fileobj=gzstream, mode='wb') as gzf:
+            with gzip.GzipFile(fileobj=gzstream, mode="wb") as gzf:
                 gzf.write(six.ensure_binary(json.dumps(x)))
             gzstream.seek(0)
 
             return self._session.post(
                 self._prediction_url,
-                headers={'Content-Encoding': 'gzip'},
+                headers={"Content-Encoding": "gzip"},
                 data=gzstream.read(),
             )
         else:
@@ -183,16 +219,27 @@ class DeployedModel:
         str
 
         """
-        if 'Access-token' not in self._session.headers or self._prediction_url is None:
+        if "Access-token" not in self._session.headers or self._prediction_url is None:
             self._set_token_and_url()
 
-        curl = "curl -X POST {} -d \'\' -H \"Content-Type: application/json\"".format(self._prediction_url)
-        if self._session.headers.get('Access-token'):
-            curl += " -H \"Access-token: {}\"".format(self._session.headers['Access-token'])
+        curl = "curl -X POST {} -d '' -H \"Content-Type: application/json\"".format(
+            self._prediction_url
+        )
+        if self._session.headers.get("Access-token"):
+            curl += ' -H "Access-token: {}"'.format(
+                self._session.headers["Access-token"]
+            )
 
         return curl
 
-    def predict(self, x, compress=False, max_retries=5, always_retry_404=True, always_retry_429=True):
+    def predict(
+        self,
+        x,
+        compress=False,
+        max_retries=5,
+        always_retry_404=True,
+        always_retry_429=True,
+    ):
         """
         Makes a prediction using input `x`.
 
@@ -234,23 +281,35 @@ class DeployedModel:
 
             if response.ok:
                 return _utils.body_to_json(response)
-            elif response.status_code in (400, 502):  # possibly error from the model back end
+            elif response.status_code in (
+                400,
+                502,
+            ):  # possibly error from the model back end
                 try:
                     data = _utils.body_to_json(response)
                 except ValueError:  # not JSON response; 502 not from model back end
                     pass
                 else:  # from model back end; contains message (maybe)
                     # try to directly print message, otherwise line breaks appear as '\n'
-                    msg = data.get('message') or json.dumps(data)
-                    raise RuntimeError("deployed model encountered an error: {}".format(msg))
-            elif not (response.status_code >= 500 or response.status_code in (404, 429)):  # clientside error
+                    msg = data.get("message") or json.dumps(data)
+                    raise RuntimeError(
+                        "deployed model encountered an error: {}".format(msg)
+                    )
+            elif not (
+                response.status_code >= 500 or response.status_code in (404, 429)
+            ):  # clientside error
                 break
 
-            sleep = 0.3*(2**(num_retries + 1))
-            print("received status {}; retrying in {:.1f}s".format(response.status_code, sleep))
+            sleep = 0.3 * (2 ** (num_retries + 1))
+            print(
+                "received status {}; retrying in {:.1f}s".format(
+                    response.status_code, sleep
+                )
+            )
             time.sleep(sleep)
-            if ((response.status_code == 404 and always_retry_404)  # model warm-up
-                    or (response.status_code == 429 and always_retry_429)):  # too many requests
+            if (response.status_code == 404 and always_retry_404) or (  # model warm-up
+                response.status_code == 429 and always_retry_429
+            ):  # too many requests
                 num_retries = min(num_retries + 1, max_retries - 1)
             else:
                 num_retries += 1
@@ -294,8 +353,10 @@ def prediction_input_unpack(func):
         # 3
 
     """
+
     def prediction(self, X):
         return func(self, **X)
+
     return prediction
 
 
@@ -344,6 +405,8 @@ def prediction_io_cleanup(func):
         # 1.0
 
     """
+
     def prediction(self, X):
         return _utils.to_builtin(func(self, _utils.to_builtin(X)))
+
     return prediction

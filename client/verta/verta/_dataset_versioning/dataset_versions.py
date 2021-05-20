@@ -2,9 +2,8 @@
 
 import copy
 
-from .._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
-
 from .._internal_utils import _utils
+from .._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 from . import dataset_version
 
 

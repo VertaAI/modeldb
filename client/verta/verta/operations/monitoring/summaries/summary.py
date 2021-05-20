@@ -4,18 +4,21 @@ from __future__ import print_function
 
 import json
 
+from verta import data_types
 from verta._internal_utils import time_utils
 from verta._protos.public.monitoring import Summary_pb2 as SummaryService
 from verta._protos.public.monitoring.Summary_pb2 import (
     CreateSummarySample,
     DeleteSummarySampleRequest,
-    Empty as EmptyProto,
-    FindSummarySampleRequest,
+)
+from verta._protos.public.monitoring.Summary_pb2 import Empty as EmptyProto
+from verta._protos.public.monitoring.Summary_pb2 import FindSummarySampleRequest
+from verta._protos.public.monitoring.Summary_pb2 import (
     SummarySample as SummarySampleProto,
 )
 from verta._tracking import entity
-from verta import data_types
 from verta.operations.monitoring.alert._entities import Alerts
+
 from .queries import SummarySampleQuery
 from .summary_sample import SummarySample
 

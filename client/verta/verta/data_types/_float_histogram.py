@@ -4,11 +4,9 @@ from __future__ import division
 
 import collections
 
-from ..external import six
-
 from .._internal_utils import arg_handler
 from .._internal_utils.importer import maybe_dependency
-
+from ..external import six
 from . import _VertaDataType
 
 
@@ -81,7 +79,8 @@ class FloatHistogram(_VertaDataType):
         if self._bucket_limits != other._bucket_limits:
             raise ValueError(
                 "bucket limits must match (self: {}, other: {})".format(
-                    self._bucket_limits, other._bucket_limits,
+                    self._bucket_limits,
+                    other._bucket_limits,
                 )
             )
 

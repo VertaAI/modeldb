@@ -3,9 +3,7 @@ import os
 import pytest
 from click.testing import CliRunner
 from verta._cli import cli
-
 from verta._internal_utils import _config_utils
-
 
 pytest.skip("repository sub-CLI has been disabled", allow_module_level=True)
 

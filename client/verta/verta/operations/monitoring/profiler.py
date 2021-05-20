@@ -2,12 +2,9 @@
 import abc
 import collections
 
-from verta.data_types import (
-    DiscreteHistogram,
-    FloatHistogram,
-)
-from verta.external import six
 from verta._internal_utils.importer import maybe_dependency
+from verta.data_types import DiscreteHistogram, FloatHistogram
+from verta.external import six
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -28,7 +25,7 @@ class Profiler(object):
         self.columns = columns
 
     def __name__(self):
-        """Returns \"Profiler\""""
+        """Returns \"Profiler\" """
         return "Profiler"
 
     def profile(self, df):
@@ -117,7 +114,10 @@ class MissingValuesProfiler(Profiler):
         except KeyError:  # pandas raises this if the column doesn't exist
             missing = total
 
-        return (column + "_missing", DiscreteHistogram(["present", "missing"], [total - missing, missing]))
+        return (
+            column + "_missing",
+            DiscreteHistogram(["present", "missing"], [total - missing, missing]),
+        )
 
 
 # TODO: Rename to CategoricalHistogramProfiler?

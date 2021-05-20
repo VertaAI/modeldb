@@ -3,24 +3,18 @@
 from __future__ import print_function
 
 import collections
-from datetime import datetime
 import heapq
 import time
+from datetime import datetime
 
 import requests
 
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
-
-from ..external import six
-
-from .._internal_utils import (
-    _artifact_utils,
-    _utils,
+from .. import code, configuration, dataset, environment
+from .._internal_utils import _artifact_utils, _utils
+from .._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
 )
-from .. import code
-from .. import configuration
-from .. import dataset
-from .. import environment
+from ..external import six
 from . import blob as blob_module
 from . import diff as diff_module
 
@@ -38,12 +32,17 @@ class Commit(object):
         ID of the Commit, or ``None`` if the Commit has not yet been saved.
 
     """
+
     def __init__(self, conn, repo, commit_msg, branch_name=None):
         self._conn = conn
-        self._commit_json = _utils.proto_to_json(commit_msg)  # dict representation of Commit protobuf
+        self._commit_json = _utils.proto_to_json(
+            commit_msg
+        )  # dict representation of Commit protobuf
 
         self._repo = repo
-        self._parent_ids = list(collections.OrderedDict.fromkeys(commit_msg.parent_shas or []))  # remove duplicates while maintaining order
+        self._parent_ids = list(
+            collections.OrderedDict.fromkeys(commit_msg.parent_shas or [])
+        )  # remove duplicates while maintaining order
 
         self.branch_name = branch_name  # TODO: find a way to clear if branch is moved
 
@@ -52,11 +51,13 @@ class Commit(object):
 
     @property
     def id(self):
-        return self._commit_json['commit_sha'] or None
+        return self._commit_json["commit_sha"] or None
 
     @property
     def parent(self):
-        return self._repo.get_commit(id=self._parent_ids[0]) if self._parent_ids else None
+        return (
+            self._repo.get_commit(id=self._parent_ids[0]) if self._parent_ids else None
+        )
 
     def _lazy_load_blobs(self):
         if self._loaded_from_remote:
@@ -75,62 +76,82 @@ class Commit(object):
     def describe(self):
         self._lazy_load_blobs()
 
-        contents = '\n'.join((
-            "{} ({}.{})".format(path, blob.__class__.__module__.split('.')[1], blob.__class__.__name__)
-            for path, blob
-            in sorted(six.viewitems(self._blobs))
-        ))
+        contents = "\n".join(
+            (
+                "{} ({}.{})".format(
+                    path,
+                    blob.__class__.__module__.split(".")[1],
+                    blob.__class__.__name__,
+                )
+                for path, blob in sorted(six.viewitems(self._blobs))
+            )
+        )
         if not contents:
             contents = "<no contents>"
 
-        components = [self.__repr__(), 'Contents:', contents]
-        return '\n'.join(components)
+        components = [self.__repr__(), "Contents:", contents]
+        return "\n".join(components)
 
     def __repr__(self):
-        branch_and_tag = ' '.join((
-            "Branch: {}".format(self.branch_name) if self.branch_name is not None else '',
-            # TODO: put tag here
-        ))
+        branch_and_tag = " ".join(
+            (
+                "Branch: {}".format(self.branch_name)
+                if self.branch_name is not None
+                else "",
+                # TODO: put tag here
+            )
+        )
         if self.id is None:
             header = "unsaved Commit"
             if branch_and_tag:
-                header = header +  " (was {})".format(branch_and_tag)
+                header = header + " (was {})".format(branch_and_tag)
         else:
             header = "Commit {}".format(self.id)
             if branch_and_tag:
-                header = header +  " ({})".format(branch_and_tag)
+                header = header + " ({})".format(branch_and_tag)
 
         # TODO: add author
         # TODO: make data more similar to git
-        date_created = int(self._commit_json['date_created'])  # protobuf uint64 is str, so cast to int
-        date = 'Date: ' + datetime.fromtimestamp(date_created/1000.).strftime('%Y-%m-%d %H:%M:%S')
-        message = '\n'.join('    ' + c for c in self._commit_json['message'].split('\n'))
-        components = [header, date, '', message, '']
-        return '\n'.join(components)
+        date_created = int(
+            self._commit_json["date_created"]
+        )  # protobuf uint64 is str, so cast to int
+        date = "Date: " + datetime.fromtimestamp(date_created / 1000.0).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+        message = "\n".join(
+            "    " + c for c in self._commit_json["message"].split("\n")
+        )
+        components = [header, date, "", message, ""]
+        return "\n".join(components)
 
     @classmethod
     def _from_id(cls, conn, repo, id_, **kwargs):
-        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}".format(
-            conn.scheme,
-            conn.socket,
-            repo.id,
-            id_,
+        endpoint = (
+            "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}".format(
+                conn.scheme,
+                conn.socket,
+                repo.id,
+                id_,
+            )
         )
         response = _utils.make_request("GET", endpoint, conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
-                                            _VersioningService.GetCommitRequest.Response)
+        response_msg = _utils.json_to_proto(
+            _utils.body_to_json(response), _VersioningService.GetCommitRequest.Response
+        )
         commit_msg = response_msg.commit
         return cls(conn, repo, commit_msg, **kwargs)
 
     @staticmethod
     def _raise_lookup_error(path):
-        e = LookupError("Commit does not contain path \"{}\"".format(path))
+        e = LookupError('Commit does not contain path "{}"'.format(path))
         six.raise_from(e, None)
 
     # TODO: consolidate this with similar method in `_ModelDBEntity`
-    def _get_url_for_artifact(self, blob_path, dataset_component_path, method, part_num=0):
+    def _get_url_for_artifact(
+        self, blob_path, dataset_component_path, method, part_num=0
+    ):
         """
         Obtains a URL to use for accessing stored artifacts.
 
@@ -175,18 +196,24 @@ class Commit(object):
 
         url = response_msg.url
         # accommodate port-forwarded NFS store
-        if 'https://localhost' in url[:20]:
-            url = 'http' + url[5:]
-        if 'localhost%3a' in url[:20]:
-            url = url.replace('localhost%3a', 'localhost:')
-        if 'localhost%3A' in url[:20]:
-            url = url.replace('localhost%3A', 'localhost:')
+        if "https://localhost" in url[:20]:
+            url = "http" + url[5:]
+        if "localhost%3a" in url[:20]:
+            url = url.replace("localhost%3a", "localhost:")
+        if "localhost%3A" in url[:20]:
+            url = url.replace("localhost%3A", "localhost:")
         response_msg.url = url
 
         return response_msg
 
     # TODO: consolidate this with similar method in `ExperimentRun`
-    def _upload_artifact(self, blob_path, dataset_component_path, file_handle, part_size=_artifact_utils._64MB):
+    def _upload_artifact(
+        self,
+        blob_path,
+        dataset_component_path,
+        file_handle,
+        part_size=_artifact_utils._64MB,
+    ):
         """
         Uploads `file_handle` to ModelDB artifact store.
 
@@ -205,17 +232,21 @@ class Commit(object):
         file_handle.seek(0)
 
         # check if multipart upload ok
-        url_for_artifact = self._get_url_for_artifact(blob_path, dataset_component_path, "PUT", part_num=1)
+        url_for_artifact = self._get_url_for_artifact(
+            blob_path, dataset_component_path, "PUT", part_num=1
+        )
 
         print("uploading {} to ModelDB".format(dataset_component_path))
         if url_for_artifact.multipart_upload_ok:
             # TODO: parallelize this
-            file_parts = iter(lambda: file_handle.read(part_size), b'')
+            file_parts = iter(lambda: file_handle.read(part_size), b"")
             for part_num, file_part in enumerate(file_parts, start=1):
-                print("uploading part {}".format(part_num), end='\r')
+                print("uploading part {}".format(part_num), end="\r")
 
                 # get presigned URL
-                url = self._get_url_for_artifact(blob_path, dataset_component_path, "PUT", part_num=part_num).url
+                url = self._get_url_for_artifact(
+                    blob_path, dataset_component_path, "PUT", part_num=part_num
+                ).url
 
                 # wrap file part into bytestream to avoid OverflowError
                 #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
@@ -242,7 +273,7 @@ class Commit(object):
                 )
                 msg.repository_id.repo_id = self._repo.id
                 msg.artifact_part.part_number = part_num
-                msg.artifact_part.etag = response.headers['ETag']
+                msg.artifact_part.etag = response.headers["ETag"]
                 data = _utils.proto_to_json(msg)
                 response = _utils.make_request("POST", url, self._conn, json=data)
                 _utils.raise_for_http_error(response)
@@ -267,37 +298,47 @@ class Commit(object):
             if url_for_artifact.fields:
                 # if fields were returned by backend, make a POST request and supply them as form fields
                 response = _utils.make_request(
-                    "POST", url_for_artifact.url, self._conn,
+                    "POST",
+                    url_for_artifact.url,
+                    self._conn,
                     # requests uses the `files` parameter for sending multipart/form-data POSTs.
                     #     https://stackoverflow.com/a/12385661/8651995
                     # the file contents must be the final form field
                     #     https://docs.aws.amazon.com/AmazonS3/latest/dev/HTTPPOSTForms.html#HTTPPOSTFormFields
-                    files=list(url_for_artifact.fields.items()) + [('file', file_handle)],
+                    files=list(url_for_artifact.fields.items())
+                    + [("file", file_handle)],
                 )
             else:
-                response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=file_handle)
+                response = _utils.make_request(
+                    "PUT", url_for_artifact.url, self._conn, data=file_handle
+                )
             _utils.raise_for_http_error(response)
 
         print("upload complete")
 
     def _update_blobs_from_commit(self, id_):
         """Fetches commit `id_`'s blobs and stores them as objects in `self._blobs`."""
-        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/blobs".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self._repo.id,
-            id_,
+        endpoint = (
+            "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/blobs".format(
+                self._conn.scheme,
+                self._conn.socket,
+                self._repo.id,
+                id_,
+            )
         )
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
-                                            _VersioningService.ListCommitBlobsRequest.Response)
-        self._blobs.update({
-            '/'.join(blob_msg.location): blob_msg_to_object(blob_msg.blob)
-            for blob_msg
-            in response_msg.blobs
-        })
+        response_msg = _utils.json_to_proto(
+            _utils.body_to_json(response),
+            _VersioningService.ListCommitBlobsRequest.Response,
+        )
+        self._blobs.update(
+            {
+                "/".join(blob_msg.location): blob_msg_to_object(blob_msg.blob)
+                for blob_msg in response_msg.blobs
+            }
+        )
 
     def _become_child(self):
         """
@@ -307,7 +348,7 @@ class Commit(object):
         """
         self._lazy_load_blobs()
         self._parent_ids = [self.id]
-        self._commit_json['commit_sha'] = ""
+        self._commit_json["commit_sha"] = ""
 
     def _become_saved_child(self, child_id):
         """
@@ -334,7 +375,9 @@ class Commit(object):
 
         for path, blob in six.viewitems(self._blobs):
             blob_msg = _VersioningService.BlobExpanded()
-            blob_msg.location.extend(path_to_location(path))  # pylint: disable=no-member
+            blob_msg.location.extend(
+                path_to_location(path)
+            )  # pylint: disable=no-member
             blob_msg.blob.CopyFrom(blob._as_proto())
             msg.blobs.append(blob_msg)  # pylint: disable=no-member
 
@@ -364,11 +407,13 @@ class Commit(object):
         if self.id is None:
             raise RuntimeError("Commit must be saved before it can be walked")
 
-        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/path".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self._repo.id,
-            self.id,
+        endpoint = (
+            "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/path".format(
+                self._conn.scheme,
+                self._conn.socket,
+                self._repo.id,
+                self.id,
+            )
         )
 
         locations = [()]
@@ -381,18 +426,25 @@ class Commit(object):
             response = _utils.make_request("GET", endpoint, self._conn, params=data)
             _utils.raise_for_http_error(response)
 
-            response_msg = _utils.json_to_proto(_utils.body_to_json(response), msg.Response)
+            response_msg = _utils.json_to_proto(
+                _utils.body_to_json(response), msg.Response
+            )
             folder_msg = response_msg.folder
 
-            folder_path = '/'.join(location)
-            folder_names = list(sorted(element.element_name for element in folder_msg.sub_folders))
-            blob_names = list(sorted(element.element_name for element in folder_msg.blobs))
+            folder_path = "/".join(location)
+            folder_names = list(
+                sorted(element.element_name for element in folder_msg.sub_folders)
+            )
+            blob_names = list(
+                sorted(element.element_name for element in folder_msg.blobs)
+            )
             yield (folder_path, folder_names, blob_names)
 
             locations.extend(
                 location + (folder_name,)
-                for folder_name
-                in reversed(folder_names)  # maintains order, because locations are popped from end
+                for folder_name in reversed(
+                    folder_names
+                )  # maintains order, because locations are popped from end
             )
 
     def update(self, path, blob):
@@ -506,7 +558,7 @@ class Commit(object):
         for blob_path, blob in mdb_versioned_blobs.items():
             for component in blob._components_map.values():
                 if component._internal_versioned_path:
-                    with open(component._local_path, 'rb') as f:
+                    with open(component._local_path, "rb") as f:
                         self._upload_artifact(blob_path, component.path, f)
 
             blob._clean_up_uploaded_components()
@@ -520,7 +572,9 @@ class Commit(object):
         )
         response = _utils.make_request("POST", endpoint, self._conn, json=data)
         _utils.raise_for_http_error(response)
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), proto_message.Response)
+        response_msg = _utils.json_to_proto(
+            _utils.body_to_json(response), proto_message.Response
+        )
 
         self._become_saved_child(response_msg.commit.commit_sha)
 
@@ -571,21 +625,30 @@ class Commit(object):
         else:
             commit_id = self.id
 
-        endpoint = "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/log".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self._repo.id,
-            commit_id,
+        endpoint = (
+            "{}://{}/api/v1/modeldb/versioning/repositories/{}/commits/{}/log".format(
+                self._conn.scheme,
+                self._conn.socket,
+                self._repo.id,
+                commit_id,
+            )
         )
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
-                                            _VersioningService.ListCommitsLogRequest.Response)
+        response_msg = _utils.json_to_proto(
+            _utils.body_to_json(response),
+            _VersioningService.ListCommitsLogRequest.Response,
+        )
         commits = response_msg.commits
 
         for c in commits:
-            yield Commit(self._conn, self._repo, c, self.branch_name if c.commit_sha == commit_id else None)
+            yield Commit(
+                self._conn,
+                self._repo,
+                c,
+                self.branch_name if c.commit_sha == commit_id else None,
+            )
 
     def new_branch(self, branch):
         """
@@ -617,7 +680,9 @@ class Commit(object):
 
         """
         if self.id is None:
-            raise RuntimeError("Commit must be saved before it can be attached to a branch")
+            raise RuntimeError(
+                "Commit must be saved before it can be attached to a branch"
+            )
 
         set_branch(self._conn, self._repo.id, self.id, branch)
 
@@ -652,7 +717,9 @@ class Commit(object):
         elif not isinstance(reference, Commit) or reference.id is None:
             raise TypeError("`reference` must be a saved Commit")
         elif self._repo.id != reference._repo.id:
-            raise ValueError("Commit and `reference` must belong to the same Repository")
+            raise ValueError(
+                "Commit and `reference` must belong to the same Repository"
+            )
         else:
             reference_id = reference.id
 
@@ -666,8 +733,10 @@ class Commit(object):
         response = _utils.make_request("GET", endpoint, self._conn)
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response),
-                                            _VersioningService.ComputeRepositoryDiffRequest.Response)
+        response_msg = _utils.json_to_proto(
+            _utils.body_to_json(response),
+            _VersioningService.ComputeRepositoryDiffRequest.Response,
+        )
         return diff_module.Diff(response_msg.diffs)
 
     def apply_diff(self, diff, message, other_parents=[]):
@@ -755,13 +824,17 @@ class Commit(object):
         self._become_saved_child(response_msg.commit.commit_sha)
 
     def _to_heap_element(self):
-        date_created = int(self._commit_json['date_created'])  # protobuf uint64 is str, so cast to int
+        date_created = int(
+            self._commit_json["date_created"]
+        )  # protobuf uint64 is str, so cast to int
         # Most recent has higher priority
         return (-date_created, self.id, self)
 
     def get_common_parent(self, other):
         if self.id is None:
-            raise RuntimeError("Commit must be saved before a common parent can be calculated")
+            raise RuntimeError(
+                "Commit must be saved before a common parent can be calculated"
+            )
 
         if not isinstance(other, Commit) or other.id is None:
             raise TypeError("`other` must be a saved Commit")
@@ -857,64 +930,74 @@ class Commit(object):
 
         # raise for conflict
         if response_msg.conflicts:
-            raise RuntimeError('\n    '.join([
-                "merge conflict",
-                "resolution is not currently supported through the Client",
-                "please create a new Commit with the updated blobs",
-                "see https://docs.verta.ai/en/master/examples/tutorials/merge.html for instructions",
-            ]))
+            raise RuntimeError(
+                "\n    ".join(
+                    [
+                        "merge conflict",
+                        "resolution is not currently supported through the Client",
+                        "please create a new Commit with the updated blobs",
+                        "see https://docs.verta.ai/en/master/examples/tutorials/merge.html for instructions",
+                    ]
+                )
+            )
 
         self._become_saved_child(response_msg.commit.commit_sha)
 
 
 def blob_msg_to_object(blob_msg):
     # TODO: make this more concise
-    content_type = blob_msg.WhichOneof('content')
+    content_type = blob_msg.WhichOneof("content")
     content_subtype = None
     blob_cls = None
-    if content_type == 'code':
-        content_subtype = blob_msg.code.WhichOneof('content')
-        if content_subtype == 'git':
+    if content_type == "code":
+        content_subtype = blob_msg.code.WhichOneof("content")
+        if content_subtype == "git":
             blob_cls = code.Git
-        elif content_subtype == 'notebook':
+        elif content_subtype == "notebook":
             blob_cls = code.Notebook
-    elif content_type == 'config':
+    elif content_type == "config":
         blob_cls = configuration.Hyperparameters
-    elif content_type == 'dataset':
-        content_subtype = blob_msg.dataset.WhichOneof('content')
-        if content_subtype == 's3':
+    elif content_type == "dataset":
+        content_subtype = blob_msg.dataset.WhichOneof("content")
+        if content_subtype == "s3":
             blob_cls = dataset.S3
-        elif content_subtype == 'path':
+        elif content_subtype == "path":
             blob_cls = dataset.Path
-    elif content_type == 'environment':
-        content_subtype = blob_msg.environment.WhichOneof('content')
-        if content_subtype == 'python':
+    elif content_type == "environment":
+        content_subtype = blob_msg.environment.WhichOneof("content")
+        if content_subtype == "python":
             blob_cls = environment.Python
-        elif content_subtype == 'docker':
+        elif content_subtype == "docker":
             raise NotImplementedError
 
     if blob_cls is None:
         if content_subtype is None:
-            raise NotImplementedError("found unexpected content type {};"
-                                      " please notify the Verta development team".format(content_type))
+            raise NotImplementedError(
+                "found unexpected content type {};"
+                " please notify the Verta development team".format(content_type)
+            )
         else:
-            raise NotImplementedError("found unexpected {} type {};"
-                                      " please notify the Verta development team".format(content_type, content_subtype))
+            raise NotImplementedError(
+                "found unexpected {} type {};"
+                " please notify the Verta development team".format(
+                    content_type, content_subtype
+                )
+            )
 
     return blob_cls._from_proto(blob_msg)
 
 
 def path_to_location(path):
     """Messages take a `repeated string` of path components."""
-    if path.startswith('/'):
+    if path.startswith("/"):
         # `path` is already meant to be relative to repo root
         path = path[1:]
 
-    return path.split('/')
+    return path.split("/")
 
 
 def location_to_path(location):
-    return '/'.join(location)
+    return "/".join(location)
 
 
 def set_branch(conn, repo_id, commit_id, branch):

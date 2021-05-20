@@ -2,9 +2,8 @@
 
 import abc
 
-from verta.external import six
-
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
+from verta.external import six
 
 from ... import utils
 
@@ -31,7 +30,7 @@ class _AlertStatus(object):
         return True
 
     def __repr__(self):
-        return "<alert status \"{}\" (sample IDs {})>".format(
+        return '<alert status "{}" (sample IDs {})>'.format(
             _AlertService.AlertStatusEnum.AlertStatus.Name(self._ALERT_STATUS).lower(),
             self._sample_ids,
         )

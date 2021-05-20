@@ -1,5 +1,1 @@
-from .alert import (
-    Alert,
-    Alerts,
-    AlertHistoryItem,
-)
+from .alert import Alert, AlertHistoryItem, Alerts

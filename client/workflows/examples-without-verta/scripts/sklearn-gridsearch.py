@@ -1,27 +1,27 @@
 """Logistic Regression with Grid Search (scikit-learn)"""
 
-import os
 import itertools
+import os
+import warnings
 
 import joblib
-
-import pandas as pd
 import numpy as np
+import pandas as pd
+from sklearn import linear_model, metrics, model_selection
 
-from sklearn import model_selection
-from sklearn import linear_model
-from sklearn import metrics
-
-import warnings
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
 
 # load pre-cleaned data from CSV file into pandas DataFrame
-df = pd.read_csv(os.path.join("..", "data", "census", "cleaned-census-data.csv"), delimiter=',')
+df = pd.read_csv(
+    os.path.join("..", "data", "census", "cleaned-census-data.csv"), delimiter=","
+)
 
 # split into features and labels
-features_df = df.drop('>50K', axis='columns')
-labels_df = df['>50K']  # we are predicting whether an individual's income exceeds $50k/yr
+features_df = df.drop(">50K", axis="columns")
+labels_df = df[
+    ">50K"
+]  # we are predicting whether an individual's income exceeds $50k/yr
 
 
 # extract NumPy arrays from DataFrames
@@ -29,7 +29,9 @@ X = features_df.values
 y = labels_df.values
 
 # split data into training and testing sets
-X_train, X_test, y_train, y_test = model_selection.train_test_split(X, y, test_size=0.33)
+X_train, X_test, y_train, y_test = model_selection.train_test_split(
+    X, y, test_size=0.33
+)
 
 # instantiate iterator that yields train/val indices for each fold of cross validation
 validation_splitter = model_selection.KFold(n_splits=5, shuffle=True)
@@ -37,18 +39,19 @@ validation_splitter = model_selection.KFold(n_splits=5, shuffle=True)
 
 # define sets of hyperparameter values
 hyperparam_candidates = {
-    'C': [1e-1, 1, 1e1],
-    'solver': ['lbfgs'],
-    'max_iter': [1e3, 1e4, 1e5],
+    "C": [1e-1, 1, 1e1],
+    "solver": ["lbfgs"],
+    "max_iter": [1e3, 1e4, 1e5],
 }
-hyperparam_sets = [dict(zip(hyperparam_candidates.keys(), values))
-                   for values
-                   in itertools.product(*hyperparam_candidates.values())]
+hyperparam_sets = [
+    dict(zip(hyperparam_candidates.keys(), values))
+    for values in itertools.product(*hyperparam_candidates.values())
+]
 
 # cross-validate hyperparameter values
 val_accs = []  # track performance of each hyperparam set
 for hyperparams in hyperparam_sets:
-    print(hyperparams, end=' ')
+    print(hyperparams, end=" ")
 
     val_acc = 0  # track average validation accuracy across folds
     for idxs_train, idxs_val in validation_splitter.split(X_train, y_train):
@@ -61,7 +64,7 @@ for hyperparams in hyperparam_sets:
         model.fit(X_val_train, y_val_train)
 
         # accumulate average validation accuracy
-        val_acc += model.score(X_val, y_val)/validation_splitter.get_n_splits()
+        val_acc += model.score(X_val, y_val) / validation_splitter.get_n_splits()
 
     # record performance of current hyperparam set
     val_accs.append(val_acc)

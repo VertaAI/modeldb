@@ -1,5 +1,4 @@
 from ..._protos.public.registry import RegistryService_pb2
-
 from . import _LockLevel
 
 
@@ -19,4 +18,6 @@ class Open(_LockLevel):
 
     """
 
-    _LOCK_LEVEL = RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.OPEN
+    _LOCK_LEVEL = (
+        RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.OPEN
+    )

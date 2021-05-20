@@ -2,9 +2,8 @@ import collections
 import os
 
 import pytest
-
 import verta
-from verta.dataset import Path, S3
+from verta.dataset import S3, Path
 
 
 class TestMetadata:  # essentially copied from test_dataset.py

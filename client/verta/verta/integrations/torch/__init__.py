@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ...external import six
-
 import torch  # pylint: disable=import-error
 
 from ..._internal_utils import _utils
+from ...external import six
 
 
 def verta_hook(run):
@@ -34,21 +33,24 @@ def verta_hook(run):
         output = model(X_train)
 
     """
+
     def hook(module, input, output):
         for i, layer in enumerate(module.children()):
             try:
-                run.log_hyperparameter("layer_{}_name".format(i), layer.__class__.__name__)
+                run.log_hyperparameter(
+                    "layer_{}_name".format(i), layer.__class__.__name__
+                )
             except:
                 pass  # don't halt execution
 
             layer_params = {
                 "layer_{}_{}".format(i, attr): getattr(layer, attr)
                 for attr in layer.__dict__
-                if not attr.startswith('_')
-                and attr != "training"
+                if not attr.startswith("_") and attr != "training"
             }
             try:
                 run.log_hyperparameters(layer_params)
             except:
                 pass  # don't halt execution
+
     return hook

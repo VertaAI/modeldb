@@ -2,9 +2,8 @@
 
 import abc
 
-from ..external import six
-
 from .._internal_utils import _file_utils
+from ..external import six
 
 
 @six.add_metaclass(abc.ABCMeta)

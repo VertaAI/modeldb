@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
-from .._protos.public.uac import Organization_pb2 as _Organization
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
+from .._protos.public.uac import Organization_pb2 as _Organization
 
 
 class CollaboratorType:
-    def __init__(self, global_collaborator_type=None, default_repo_collaborator_type=None,
-                 default_endpoint_collaborator_type=None, default_dataset_collaborator_type=None):
+    def __init__(
+        self,
+        global_collaborator_type=None,
+        default_repo_collaborator_type=None,
+        default_endpoint_collaborator_type=None,
+        default_dataset_collaborator_type=None,
+    ):
         self.global_collaborator_type = global_collaborator_type
         self.default_repo_collaborator_type = default_repo_collaborator_type
         self.default_endpoint_collaborator_type = default_endpoint_collaborator_type
@@ -25,13 +30,17 @@ class Organization:
         self.name = msg.name
 
     @classmethod
-    def _create(cls, conn, name, desc=None, collaborator_type=None, global_can_deploy=False):
+    def _create(
+        cls, conn, name, desc=None, collaborator_type=None, global_can_deploy=False
+    ):
         Message = _Organization.SetOrganization
         msg = cls._create_msg(name, desc, collaborator_type, global_can_deploy)
 
-        response = conn.make_proto_request("POST",
-                                           "/api/v1/uac-proxy/organization/setOrganization",
-                                           body=Message(organization=msg))
+        response = conn.make_proto_request(
+            "POST",
+            "/api/v1/uac-proxy/organization/setOrganization",
+            body=Message(organization=msg),
+        )
         org = conn.must_proto_response(response, Message.Response).organization
 
         print("created new Organization: {}".format(org.name))
@@ -51,9 +60,13 @@ class Organization:
             try:
                 attr = getattr(collaborator_type, key)
                 if not attr:
-                    value = _CommonCommonService.CollaboratorTypeEnum.CollaboratorType.READ_ONLY
+                    value = (
+                        _CommonCommonService.CollaboratorTypeEnum.CollaboratorType.READ_ONLY
+                    )
                 else:
-                    value = _CommonCommonService.CollaboratorTypeEnum.CollaboratorType.Value(attr)
+                    value = _CommonCommonService.CollaboratorTypeEnum.CollaboratorType.Value(
+                        attr
+                    )
                 setattr(msg, key, value)
             except ValueError:
                 unknown_value_error = "Unknown value specified for {}. Possible values are READ_ONLY, READ_WRITE."
@@ -65,9 +78,9 @@ class Organization:
         Message = _Organization.GetOrganizationByName
         msg = Message(org_name=name)
 
-        response = conn.make_proto_request("GET",
-                                           "/api/v1/uac-proxy/organization/getOrganizationByName",
-                                           params=msg)
+        response = conn.make_proto_request(
+            "GET", "/api/v1/uac-proxy/organization/getOrganizationByName", params=msg
+        )
         org = conn.must_proto_response(response, Message.Response).organization
         return cls(conn, org)
 
@@ -84,9 +97,11 @@ class Organization:
     def add_member(self, share_with):
         Message = _Organization.AddUser
 
-        response = self.conn.make_proto_request("POST",
-                                           "/api/v1/uac-proxy/organization/addUser",
-                                           body=Message(org_id=self.id, share_with=share_with))
+        response = self.conn.make_proto_request(
+            "POST",
+            "/api/v1/uac-proxy/organization/addUser",
+            body=Message(org_id=self.id, share_with=share_with),
+        )
         status = self.conn.must_proto_response(response, Message.Response).status
 
     def delete(self):

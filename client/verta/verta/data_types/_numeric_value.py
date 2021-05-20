@@ -4,10 +4,8 @@ from __future__ import division
 
 import numbers
 
-from ..external import six
-
 from .._internal_utils import arg_handler
-
+from ..external import six
 from . import _VertaDataType
 
 

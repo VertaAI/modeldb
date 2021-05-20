@@ -2,9 +2,8 @@
 
 import abc
 
-from ....external import six
-
 from ...._protos.public.monitoring import Alert_pb2 as _AlertService
+from ....external import six
 
 
 # TODO: move into separate files

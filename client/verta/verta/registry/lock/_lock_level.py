@@ -31,16 +31,10 @@ class _LockLevel(object):
 
         """
         # imports here to avoid circular import in Python 2
-        from . import (
-            Closed,
-            Open,
-            Redact,
-        )
+        from . import Closed, Open, Redact
 
         for lock_level_cls in (Closed, Open, Redact):
             if lock_level == lock_level_cls._LOCK_LEVEL:
                 return lock_level_cls()
         else:
-            raise ValueError(
-                "unrecognized lock level {}".format(lock_level)
-            )
+            raise ValueError("unrecognized lock level {}".format(lock_level))

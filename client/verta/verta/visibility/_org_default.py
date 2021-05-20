@@ -1,5 +1,4 @@
 from .._protos.public.uac import Collaborator_pb2
-
 from ._visibility import _Visibility
 
 
@@ -16,6 +15,7 @@ class OrgDefault(_Visibility):
         client.create_project("My Project", workspace="my-org", visibility=visibility)
 
     """
+
     def _to_public_within_org(self):
         return True
 

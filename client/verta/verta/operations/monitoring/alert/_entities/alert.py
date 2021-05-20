@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
-import warnings
 import copy
+import warnings
 
-from ....._protos.public.monitoring import Alert_pb2 as _AlertService
-from ....._internal_utils import _utils, time_utils
-from ....._tracking import entity, _Context
-from ... import notification_channel
-from ... import utils
-from .. import _alerter
-from .. import status as status_module
 from verta.operations.monitoring.summaries.queries import (
     SummaryQuery,
     SummarySampleQuery,
 )
+
+from ....._internal_utils import _utils, time_utils
+from ....._protos.public.monitoring import Alert_pb2 as _AlertService
+from ....._tracking import _Context, entity
+from ... import notification_channel, utils
+from .. import _alerter
+from .. import status as status_module
 
 
 class Alert(entity._ModelDBEntity):

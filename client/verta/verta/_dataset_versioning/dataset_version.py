@@ -4,18 +4,15 @@ from __future__ import print_function
 
 import warnings
 
-from ..external import six
-
+from .._internal_utils import _artifact_utils, _utils
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
-
-from .._tracking import entity
-from .._repository import commit
-from .._internal_utils import (
-    _artifact_utils,
-    _utils,
+from .._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
 )
+from .._repository import commit
+from .._tracking import entity
+from ..external import six
 
 
 class DatasetVersion(entity._ModelDBEntity):

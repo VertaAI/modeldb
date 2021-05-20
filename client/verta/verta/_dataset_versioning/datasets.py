@@ -2,9 +2,8 @@
 
 import copy
 
-from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
-
 from .._internal_utils import _utils
+from .._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from . import dataset
 
 

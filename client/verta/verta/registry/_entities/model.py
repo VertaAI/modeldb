@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+
 import requests
 
-from ..._internal_utils._utils import NoneProtoResponse, check_unnecessary_params_warning
-from ..._tracking.context import _Context
-from ..._tracking.entity import _ModelDBEntity
 from ..._internal_utils import _utils
-
+from ..._internal_utils._utils import (
+    NoneProtoResponse,
+    check_unnecessary_params_warning,
+)
 from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
-
+from ..._tracking.context import _Context
+from ..._tracking.entity import _ModelDBEntity
 from .modelversion import RegisteredModelVersion
 from .modelversions import RegisteredModelVersions
 
@@ -33,22 +35,33 @@ class RegisteredModel(_ModelDBEntity):
         Versions of this RegisteredModel.
 
     """
+
     def __init__(self, conn, conf, msg):
-        super(RegisteredModel, self).__init__(conn, conf, _RegistryService, "registered_model", msg)
+        super(RegisteredModel, self).__init__(
+            conn, conf, _RegistryService, "registered_model", msg
+        )
 
     def __repr__(self):
         self._refresh_cache()
         msg = self._msg
 
-        return '\n'.join((
-            "name: {}".format(msg.name),
-            "url: {}://{}/{}/registry/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
-            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
-            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
-            "description: {}".format(msg.description),
-            "labels: {}".format(msg.labels),
-            "id: {}".format(msg.id),
-        ))
+        return "\n".join(
+            (
+                "name: {}".format(msg.name),
+                "url: {}://{}/{}/registry/{}".format(
+                    self._conn.scheme, self._conn.socket, self.workspace, self.id
+                ),
+                "time created: {}".format(
+                    _utils.timestamp_to_str(int(msg.time_created))
+                ),
+                "time updated: {}".format(
+                    _utils.timestamp_to_str(int(msg.time_updated))
+                ),
+                "description: {}".format(msg.description),
+                "labels: {}".format(msg.labels),
+                "id: {}".format(msg.id),
+            )
+        )
 
     @property
     def name(self):
@@ -64,7 +77,16 @@ class RegisteredModel(_ModelDBEntity):
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
 
-    def get_or_create_version(self, name=None, desc=None, labels=None, attrs=None, time_created=None, lock_level=None, id=None):
+    def get_or_create_version(
+        self,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        time_created=None,
+        lock_level=None,
+        id=None,
+    ):
         """
         Gets or creates a Model Version.
 
@@ -106,25 +128,36 @@ class RegisteredModel(_ModelDBEntity):
         param_names = "`desc`, `labels`, `attrs`, `time_created`, or `lock_level`"
         params = (desc, labels, attrs, time_created, lock_level)
         if id is not None:
-            check_unnecessary_params_warning(resource_name, "id {}".format(id),
-                                             param_names, params)
+            check_unnecessary_params_warning(
+                resource_name, "id {}".format(id), param_names, params
+            )
             return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
         else:
             ctx = _Context(self._conn, self._conf)
             ctx.registered_model = self
             return RegisteredModelVersion._get_or_create_by_name(
-                self._conn, name,
-                lambda name: RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id),
+                self._conn,
+                name,
+                lambda name: RegisteredModelVersion._get_by_name(
+                    self._conn, self._conf, name, self.id
+                ),
                 lambda name: RegisteredModelVersion._create(
-                    self._conn, self._conf, ctx,
-                    name=name, desc=desc, tags=labels, attrs=attrs,
-                    date_created=time_created, lock_level=lock_level,
+                    self._conn,
+                    self._conf,
+                    ctx,
+                    name=name,
+                    desc=desc,
+                    tags=labels,
+                    attrs=attrs,
+                    date_created=time_created,
+                    lock_level=lock_level,
                 ),
                 lambda: check_unnecessary_params_warning(
                     resource_name,
                     "name {}".format(name),
-                    param_names, params,
-                )
+                    param_names,
+                    params,
+                ),
             )
 
     def set_version(self, *args, **kwargs):
@@ -134,7 +167,15 @@ class RegisteredModel(_ModelDBEntity):
         """
         return self.get_or_create_version(*args, **kwargs)
 
-    def create_version(self, name=None, desc=None, labels=None, attrs=None, time_created=None, lock_level=None):
+    def create_version(
+        self,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        time_created=None,
+        lock_level=None,
+    ):
         """
         Creates a model registry entry.
 
@@ -159,11 +200,16 @@ class RegisteredModel(_ModelDBEntity):
         ctx = _Context(self._conn, self._conf)
         ctx.registered_model = self
         return RegisteredModelVersion._create(
-            self._conn, self._conf, ctx,
-            name=name, desc=desc, tags=labels, attrs=attrs,
-            date_created=time_created, lock_level=lock_level,
+            self._conn,
+            self._conf,
+            ctx,
+            name=name,
+            desc=desc,
+            tags=labels,
+            attrs=attrs,
+            date_created=time_created,
+            lock_level=lock_level,
         )
-
 
     def create_version_from_run(self, run_id, name=None, lock_level=None):
         """
@@ -186,8 +232,12 @@ class RegisteredModel(_ModelDBEntity):
         ctx = _Context(self._conn, self._conf)
         ctx.registered_model = self
         return RegisteredModelVersion._create(
-            self._conn, self._conf, ctx,
-            name=name, experiment_run_id=run_id, lock_level=lock_level,
+            self._conn,
+            self._conf,
+            ctx,
+            name=name,
+            experiment_run_id=run_id,
+            lock_level=lock_level,
         )
 
     def get_version(self, name=None, id=None):
@@ -215,7 +265,9 @@ class RegisteredModel(_ModelDBEntity):
         if id is not None:
             version = RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
         else:
-            version = RegisteredModelVersion._get_by_name(self._conn, self._conf, name, self.id)
+            version = RegisteredModelVersion._get_by_name(
+                self._conn, self._conf, name, self.id
+            )
         if version is None:
             raise ValueError("Registered model version not found")
         return version
@@ -231,39 +283,73 @@ class RegisteredModel(_ModelDBEntity):
     @classmethod
     def _get_proto_by_id(cls, conn, id):
         Message = _RegistryService.GetRegisteredModelRequest
-        response = conn.make_proto_request("GET",
-                                           "/api/v1/registry/registered_models/{}".format(id))
+        response = conn.make_proto_request(
+            "GET", "/api/v1/registry/registered_models/{}".format(id)
+        )
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
     def _get_proto_by_name(cls, conn, name, workspace):
         Message = _RegistryService.GetRegisteredModelRequest
-        response = conn.make_proto_request("GET",
-                                           "/api/v1/registry/workspaces/{}/registered_models/{}".format(workspace, name))
+        response = conn.make_proto_request(
+            "GET",
+            "/api/v1/registry/workspaces/{}/registered_models/{}".format(
+                workspace, name
+            ),
+        )
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None, visibility=None):
+    def _create_proto_internal(
+        cls,
+        conn,
+        ctx,
+        name,
+        desc=None,
+        tags=None,
+        attrs=None,
+        date_created=None,
+        public_within_org=None,
+        visibility=None,
+    ):
         Message = _RegistryService.RegisteredModel
-        msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created)
-        if (public_within_org
-                and ctx.workspace_name is not None  # not user's personal workspace
-                and _utils.is_org(ctx.workspace_name, conn)):  # not anyone's personal workspace
+        msg = Message(
+            name=name,
+            description=desc,
+            labels=tags,
+            time_created=date_created,
+            time_updated=date_created,
+        )
+        if (
+            public_within_org
+            and ctx.workspace_name is not None  # not user's personal workspace
+            and _utils.is_org(ctx.workspace_name, conn)
+        ):  # not anyone's personal workspace
             msg.visibility = _CommonCommonService.VisibilityEnum.ORG_SCOPED_PUBLIC
         msg.custom_permission.CopyFrom(visibility._custom_permission)
         msg.resource_visibility = visibility._visibility
 
-        response = conn.make_proto_request("POST",
-                                           "/api/v1/registry/workspaces/{}/registered_models".format(ctx.workspace_name),
-                                           body=msg)
-        registered_model = conn.must_proto_response(response, _RegistryService.SetRegisteredModel.Response).registered_model
+        response = conn.make_proto_request(
+            "POST",
+            "/api/v1/registry/workspaces/{}/registered_models".format(
+                ctx.workspace_name
+            ),
+            body=msg,
+        )
+        registered_model = conn.must_proto_response(
+            response, _RegistryService.SetRegisteredModel.Response
+        ).registered_model
 
         if ctx.workspace_name is not None:
             WORKSPACE_PRINT_MSG = "workspace: {}".format(ctx.workspace_name)
         else:
             WORKSPACE_PRINT_MSG = "personal workspace"
 
-        print("created new RegisteredModel: {} in {}".format(registered_model.name, WORKSPACE_PRINT_MSG))
+        print(
+            "created new RegisteredModel: {} in {}".format(
+                registered_model.name, WORKSPACE_PRINT_MSG
+            )
+        )
         return registered_model
 
     RegisteredModelMessage = _RegistryService.RegisteredModel
@@ -337,19 +423,31 @@ class RegisteredModel(_ModelDBEntity):
         return self._msg.labels
 
     def _update(self, msg, method="PATCH"):
-        response = self._conn.make_proto_request(method, "/api/v1/registry/registered_models/{}".format(self.id),
-                                           body=msg, include_default=False)
-        self._conn.must_proto_response(response, _RegistryService.SetRegisteredModel.Response)
+        response = self._conn.make_proto_request(
+            method,
+            "/api/v1/registry/registered_models/{}".format(self.id),
+            body=msg,
+            include_default=False,
+        )
+        self._conn.must_proto_response(
+            response, _RegistryService.SetRegisteredModel.Response
+        )
         self._clear_cache()
 
     def _get_info_list(self):
-        return [self._msg.name, str(self.id), _utils.timestamp_to_str(self._msg.time_updated)]
+        return [
+            self._msg.name,
+            str(self.id),
+            _utils.timestamp_to_str(self._msg.time_updated),
+        ]
 
     def delete(self):
         """
         Deletes this registered model.
 
         """
-        request_url = "{}://{}/api/v1/registry/registered_models/{}".format(self._conn.scheme, self._conn.socket, self.id)
+        request_url = "{}://{}/api/v1/registry/registered_models/{}".format(
+            self._conn.scheme, self._conn.socket, self.id
+        )
         response = requests.delete(request_url, headers=self._conn.auth)
         _utils.raise_for_http_error(response)
