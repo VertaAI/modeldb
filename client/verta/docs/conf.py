@@ -155,6 +155,12 @@ html_favicon = '_static/images/favicon.ico'
 # html_sidebars = {}
 
 html_style = 'custom.css'
+html_css_files = [
+    "custom.css",
+]
+html_js_files = [
+    "custom.js",
+]
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
