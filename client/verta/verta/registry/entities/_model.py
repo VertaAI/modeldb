@@ -4,8 +4,8 @@ from __future__ import print_function
 import requests
 
 from ..._internal_utils._utils import check_unnecessary_params_warning
-from ..._tracking.context import _Context
-from ..._tracking.entity import _ModelDBEntity
+from ...tracking import _Context
+from ...tracking.entities import _entity
 from ..._internal_utils import _utils
 
 from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
@@ -15,7 +15,7 @@ from ._modelversion import RegisteredModelVersion
 from ._modelversions import RegisteredModelVersions
 
 
-class RegisteredModel(_ModelDBEntity):
+class RegisteredModel(_entity._ModelDBEntity):
     """
     Object representing a registered model.
 

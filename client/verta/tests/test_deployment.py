@@ -18,7 +18,7 @@ import requests
 import yaml
 
 import verta
-from verta._tracking.deployable_entity import _CACHE_DIR
+from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from verta._internal_utils import (
     _artifact_utils,
     _histogram_utils,
