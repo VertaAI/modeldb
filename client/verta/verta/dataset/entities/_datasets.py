@@ -5,7 +5,7 @@ import copy
 from verta._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 
 from verta._internal_utils import _utils
-from . import dataset
+from . import _dataset
 
 
 class Datasets(_utils.LazyList):
@@ -50,7 +50,7 @@ class Datasets(_utils.LazyList):
         return response.datasets, response.total_records
 
     def _create_element(self, msg):
-        return dataset.Dataset(self._conn, self._conf, msg)
+        return _dataset.Dataset(self._conn, self._conf, msg)
 
     def with_workspace(self, workspace_name=None):
         """

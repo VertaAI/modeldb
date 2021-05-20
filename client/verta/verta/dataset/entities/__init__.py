@@ -3,10 +3,10 @@
 
 from verta._internal_utils import documentation
 
-from .dataset import Dataset
-from .datasets import Datasets
-from .dataset_version import DatasetVersion
-from .dataset_versions import DatasetVersions
+from ._dataset import Dataset
+from ._datasets import Datasets
+from ._dataset_version import DatasetVersion
+from ._dataset_versions import DatasetVersions
 
 
 documentation.reassign_module(

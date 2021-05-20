@@ -34,8 +34,8 @@ from verta.repository import _commit
 # unless _repository.blob is disentangled out of _repository, importing from
 # dataset must occur after importing from _repository
 from verta.dataset.entities import (
-    dataset as _dataset,
-    dataset_version as _dataset_version,
+    _dataset,
+    _dataset_version,
 )
 from verta import data_types
 from verta import deployment

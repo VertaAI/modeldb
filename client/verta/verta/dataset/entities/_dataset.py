@@ -14,8 +14,8 @@ from verta._internal_utils import (
     _utils,
 )
 
-from .dataset_version import DatasetVersion
-from .dataset_versions import DatasetVersions
+from ._dataset_version import DatasetVersion
+from ._dataset_versions import DatasetVersions
 
 
 class Dataset(_entity._ModelDBEntity):
