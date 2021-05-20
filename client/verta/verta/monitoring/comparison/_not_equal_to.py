@@ -5,9 +5,9 @@ from verta._protos.public.common import CommonService_pb2 as _CommonService
 from . import _VertaComparison
 
 
-class EqualTo(_VertaComparison):
+class NotEqualTo(_VertaComparison):
     """
-    A comparison: equal to the specified value.
+    A comparison: not equal to the specified value.
 
     Parameters
     ----------
@@ -18,16 +18,16 @@ class EqualTo(_VertaComparison):
     --------
     .. code-block:: python
 
-        from verta.common.comparison import EqualTo
-        assert EqualTo(.5).compare(.5)
+        from verta.monitoring.comparison import NotEqualTo
+        assert NotEqualTo(.5).compare(.7)
 
     """
 
-    _OPERATOR = _CommonService.OperatorEnum.EQ
-    _SYMBOL = "=="
+    _OPERATOR = _CommonService.OperatorEnum.NE
+    _SYMBOL = "!="
 
     def compare(self, other_value):
         if isinstance(self.value, float) or isinstance(other_value, float):
-            return self.isclose(other_value, self.value)
+            return not self.isclose(other_value, self.value)
         else:
-            return other_value == self.value
+            return other_value != self.value

@@ -5,7 +5,7 @@ import abc
 from verta.external import six
 
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
-from verta.common import comparison as comparison_module
+from verta.monitoring import comparison as comparison_module
 from verta.monitoring import utils
 
 
@@ -54,7 +54,7 @@ class _Alerter(object):
     def _validate_comparison(comparison):
         if not isinstance(comparison, comparison_module._VertaComparison):
             raise TypeError(
-                "`comparison` must be an object from verta.common.comparison,"
+                "`comparison` must be an object from verta.monitoring.comparison,"
                 " not {}".format(type(comparison))
             )
         return comparison
@@ -71,7 +71,7 @@ class FixedAlerter(_Alerter):
 
     Parameters
     ----------
-    comparison : :class:`~verta.common.comparison._VertaComparison`
+    comparison : :mod:`~verta.monitoring.comparison`
         Alert condition. An alert is active if a queried sample meets this
         condition.
 
@@ -79,7 +79,7 @@ class FixedAlerter(_Alerter):
     --------
     .. code-block:: python
 
-        from verta.common.comparison import GreaterThan
+        from verta.monitoring.comparison import GreaterThan
         from verta.monitoring.alert import FixedAlerter
 
         alerter = FixedAlerter(GreaterThan(.7))
@@ -132,7 +132,7 @@ class ReferenceAlerter(_Alerter):
 
     Parameters
     ----------
-    comparison : :class:`~verta.common.comparison._VertaComparison`
+    comparison : :mod:`~verta.monitoring.comparison`
         Alert condition. An alert is active if the distance between a queried
         sample and `reference_sample` meets this condition.
     reference_sample : :class:`~verta.monitoring.summaries.SummarySample`
@@ -143,7 +143,7 @@ class ReferenceAlerter(_Alerter):
     .. code-block:: python
 
         from verta import Client
-        from verta.common.comparison import GreaterThan
+        from verta.monitoring.comparison import GreaterThan
         from verta.monitoring.alert import ReferenceAlerter
         from verta.monitoring.summaries import SummarySampleQuery
 

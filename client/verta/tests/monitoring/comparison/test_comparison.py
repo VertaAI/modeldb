@@ -7,7 +7,7 @@ import hypothesis
 import hypothesis.strategies as st
 
 from verta._protos.public.common import CommonService_pb2 as _CommonService
-from verta.common.comparison import (
+from verta.monitoring.comparison import (
     _VertaComparison,
     EqualTo,
     NotEqualTo,

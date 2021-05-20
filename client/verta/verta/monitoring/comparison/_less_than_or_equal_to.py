@@ -5,9 +5,9 @@ from verta._protos.public.common import CommonService_pb2 as _CommonService
 from . import _VertaComparison
 
 
-class LessThan(_VertaComparison):
+class LessThanOrEqualTo(_VertaComparison):
     """
-    A comparison: less than the specified value.
+    A comparison: less than or equal to the specified value.
 
     Parameters
     ----------
@@ -18,13 +18,13 @@ class LessThan(_VertaComparison):
     --------
     .. code-block:: python
 
-        from verta.common.comparison import LessThan
-        assert LessThan(.3).compare(.1)
+        from verta.monitoring.comparison import LessThanOrEqualTo
+        assert LessThanOrEqualTo(.3).compare(.1)
 
     """
 
-    _OPERATOR = _CommonService.OperatorEnum.LT
-    _SYMBOL = "<"
+    _OPERATOR = _CommonService.OperatorEnum.LTE
+    _SYMBOL = "<="
 
     def compare(self, other_value):
-        return other_value < self.value
+        return other_value <= self.value

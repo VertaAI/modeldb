@@ -18,7 +18,7 @@ class GreaterThanOrEqualTo(_VertaComparison):
     --------
     .. code-block:: python
 
-        from verta.common.comparison import GreaterThanOrEqualTo
+        from verta.monitoring.comparison import GreaterThanOrEqualTo
         assert GreaterThanOrEqualTo(.7).compare(.9)
 
     """

@@ -11,7 +11,7 @@ from verta.monitoring.alert import (
     RangeAlerter,
     ReferenceAlerter,
 )
-from verta.common.comparison import _VertaComparison
+from verta.monitoring.comparison import _VertaComparison
 
 
 class TestFixed:
