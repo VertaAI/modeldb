@@ -510,6 +510,11 @@ table.docutils p {
   font-size: 18px;
 }
 
+.toctree-wrapper li {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
 ul.simple ol.simple p {
   padding: 0;
   font-size: 14px;
