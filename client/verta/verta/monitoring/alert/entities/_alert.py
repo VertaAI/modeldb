@@ -35,13 +35,13 @@ class Alert(_entity._ModelDBEntity):
     history : list of :class:`AlertHistoryItem`
         History of this alert's status changes.
     labels : dict of str to list of str
-        Same as parameter from :meth:`Alerts.create`
+        Same as parameter from :meth:`Alerts.create`.
     last_evaluated_at : datetime.datetime or None
         When this alert was last evaluated.
     monitored_entity_id : int
         ID of the monitored entity this alert is associated with.
     starting_from : datetime.datetime or None
-        Same as parameter from :meth:`Alerts.create`
+        Same as parameter from :meth:`Alerts.create`.
     status : :class:`~verta.monitoring.alert.status._AlertStatus`
         Current status of this alert.
     summary_sample_query : :class:`~verta.monitoring.summaries.queries.SummarySampleQuery`
