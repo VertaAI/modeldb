@@ -21,7 +21,6 @@ Python Client
         :nosignatures:
 
         code
-        common
         configuration
         data_types
         dataset
@@ -29,7 +28,7 @@ Python Client
         endpoint
         environment
         integrations
-        operations
+        monitoring
         registry
         repository
         tracking
