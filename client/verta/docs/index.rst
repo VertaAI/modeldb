@@ -5,6 +5,6 @@ Verta: The Complete MLOps Platform
     :maxdepth: 2
     :titlesonly:
 
-    Python client <python>
+    Python API <python>
     cli
     changelog
