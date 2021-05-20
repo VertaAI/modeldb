@@ -519,17 +519,18 @@ class TestModels:
     def test_download_sklearn(self, experiment_run, in_tempdir):
         LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
 
-        upload_filepath = "model.pkl"
-        download_filepath = "retrieved_model.pkl"
+        upload_path = "model.pkl"
+        download_path = "retrieved_model.pkl"
 
         model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
-        with open(upload_filepath, 'wb') as f:
+        with open(upload_path, 'wb') as f:
             pickle.dump(model, f)
 
         experiment_run.log_model(model, custom_modules=[])
-        experiment_run.download_model(download_filepath)
+        returned_path = experiment_run.download_model(download_path)
+        assert returned_path == os.path.abspath(download_path)
 
-        with open(download_filepath, 'rb') as f:
+        with open(download_path, 'rb') as f:
             downloaded_model = pickle.load(f)
 
         assert downloaded_model.get_params() == model.get_params()
@@ -578,7 +579,8 @@ class TestArbitraryModels:
         download_path = strs[0]
 
         experiment_run.log_model(dirpath)
-        experiment_run.download_model(download_path)
+        returned_path = experiment_run.download_model(download_path)
+        assert returned_path == os.path.abspath(download_path)
 
         # contents match
         utils.assert_dirs_match(dirpath, download_path)
@@ -596,7 +598,8 @@ class TestArbitraryModels:
             )
 
         experiment_run.log_model(upload_path)
-        experiment_run.download_model(download_path)
+        returned_path = experiment_run.download_model(download_path)
+        assert returned_path == os.path.abspath(download_path)
 
         assert zipfile.is_zipfile(download_path)
         assert filecmp.cmp(upload_path, download_path)
