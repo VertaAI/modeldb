@@ -1,5 +1,5 @@
-Python Client
-=============
+Verta
+=====
 
 .. automodule:: verta
 

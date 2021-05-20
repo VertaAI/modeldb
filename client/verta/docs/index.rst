@@ -2,9 +2,9 @@ Verta: The Complete MLOps Platform
 ==================================
 
 .. toctree::
-    :hidden:
+    :maxdepth: 2
     :titlesonly:
 
-    python
+    Python client <python>
     cli
     changelog
