@@ -398,10 +398,10 @@ class TestArtifacts:
         dirpath, _ = dir_and_files
 
         model_version.log_artifact(key, dirpath)
-        model_version.download_artifact(key, download_path)
+        retrieved_path = model_version.download_artifact(key, download_path)
 
         # contents match
-        utils.assert_dirs_match(dirpath, download_path)
+        utils.assert_dirs_match(dirpath, retrieved_path)
 
     def test_wrong_key(self, model_version):
         with pytest.raises(KeyError) as excinfo:

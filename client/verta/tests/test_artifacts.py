@@ -282,10 +282,10 @@ class TestArtifacts:
         dirpath, _ = dir_and_files
 
         experiment_run.log_artifact(key, dirpath)
-        experiment_run.download_artifact(key, download_path)
+        retrieved_path = experiment_run.download_artifact(key, download_path)
 
         # contents match
-        utils.assert_dirs_match(dirpath, download_path)
+        utils.assert_dirs_match(dirpath, retrieved_path)
 
     def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
         key = strs[0]
