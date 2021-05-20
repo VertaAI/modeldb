@@ -1,5 +1,5 @@
-from verta import Client
 import cloudpickle
+from verta import Client
 
 client = Client('https://dev.verta.ai')
 proj = client.set_project('Demo - Jenkins+Prometheus')

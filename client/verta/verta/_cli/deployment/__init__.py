@@ -2,8 +2,8 @@
 
 from .create import create
 from .deployment import deployment
+from .download import download
 from .get import get
 from .list import lst
-from .update import update
 from .predict import predict
-from .download import download
+from .update import update

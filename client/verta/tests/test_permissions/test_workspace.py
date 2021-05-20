@@ -1,12 +1,7 @@
 import json
 
 import pytest
-
-from verta._internal_utils import (
-    _config_utils,
-    _utils,
-)
-
+from verta._internal_utils import _config_utils, _utils
 
 pytestmark = pytest.mark.not_oss
 

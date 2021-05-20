@@ -3,10 +3,8 @@
 import os
 
 import numpy as np
-
 import tensorflow as tf
 from tensorflow import keras
-
 
 # load data from CSV file into a NumPy mapping
 data = np.load(os.path.join("..", "data", "mnist", "mnist.npz"))

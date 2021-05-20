@@ -5,11 +5,7 @@ import shutil
 import tempfile
 import zipfile
 
-from . import (
-    _artifact_utils,
-    _file_utils,
-)
-
+from . import _artifact_utils, _file_utils
 
 # TODO: migrate request utils from _utils
 

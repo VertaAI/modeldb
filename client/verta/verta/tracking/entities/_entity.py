@@ -7,21 +7,11 @@ import os
 import time
 import zipfile
 
-from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
-
-from verta.external import six
-
 from verta import data_types
-from verta.visibility import (
-    _visibility,
-    _workspace_default,
-)
-from verta._internal_utils import (
-    _artifact_utils,
-    _git_utils,
-    _utils,
-)
-
+from verta._internal_utils import _artifact_utils, _git_utils, _utils
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta.external import six
+from verta.visibility import _visibility, _workspace_default
 
 _MODEL_ARTIFACTS_ATTR_KEY = "verta_model_artifacts"
 
@@ -300,9 +290,9 @@ class _ModelDBEntity(object):
                     raise ValueError("`exec_path` \"{}\" must be a valid filepath".format(exec_path))
 
         # TODO: remove this circular dependency
-        from ._project import Project
         from ._experiment import Experiment
         from ._experimentrun import ExperimentRun
+        from ._project import Project
         if isinstance(self, Project):  # TODO: not this
             Message = self._service.LogProjectCodeVersion
             endpoint = "logProjectCodeVersion"
@@ -423,9 +413,9 @@ class _ModelDBEntity(object):
 
         """
         # TODO: remove this circular dependency
-        from ._project import Project
         from ._experiment import Experiment
         from ._experimentrun import ExperimentRun
+        from ._project import Project
         if isinstance(self, Project):  # TODO: not this
             Message = self._service.GetProjectCodeVersion
             endpoint = "getProjectCodeVersion"

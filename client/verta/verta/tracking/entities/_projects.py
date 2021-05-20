@@ -4,9 +4,8 @@ from __future__ import print_function
 
 import copy
 
-from verta._protos.public.modeldb import ProjectService_pb2 as _ProjectService
-
 from verta._internal_utils import _utils
+from verta._protos.public.modeldb import ProjectService_pb2 as _ProjectService
 
 from ._project import Project
 

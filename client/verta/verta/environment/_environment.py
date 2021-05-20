@@ -5,10 +5,8 @@ from __future__ import print_function
 import os
 import sys
 
-from ..external import six
-
 from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
-
+from ..external import six
 from ..repository import _blob
 
 

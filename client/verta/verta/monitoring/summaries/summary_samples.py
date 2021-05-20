@@ -2,9 +2,9 @@
 
 from __future__ import print_function
 
+from verta._protos.public.monitoring.Summary_pb2 import DeleteSummarySampleRequest
 
 from ..utils import extract_ids
-from verta._protos.public.monitoring.Summary_pb2 import DeleteSummarySampleRequest
 from .queries import SummarySampleQuery
 from .summary_sample import SummarySample
 

@@ -4,9 +4,8 @@ import json
 
 import click
 
-from ..._internal_utils import _utils
 from ... import Client
-
+from ..._internal_utils import _utils
 from .registry import registry
 
 

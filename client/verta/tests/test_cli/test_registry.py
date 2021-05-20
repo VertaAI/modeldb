@@ -5,19 +5,14 @@ import zipfile
 
 import pytest
 from click.testing import CliRunner
-
 from verta import Client
 from verta._cli import cli
 from verta._cli.registry.update import add_attributes
-from verta.registry.entities import RegisteredModel
-from verta._internal_utils import (
-    _artifact_utils,
-    _utils,
-)
-from verta.environment import Python
-from verta.utils import ModelAPI
+from verta._internal_utils import _artifact_utils, _utils
 from verta.endpoint.update._strategies import DirectUpdateStrategy
-
+from verta.environment import Python
+from verta.registry.entities import RegisteredModel
+from verta.utils import ModelAPI
 
 from ..utils import sys_path_manager
 

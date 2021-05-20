@@ -5,14 +5,11 @@ from __future__ import print_function
 import copy
 import warnings
 
-from verta._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
-
-from verta.external import six
-
-from verta._internal_utils import (
-    _utils,
-    importer,
+from verta._internal_utils import _utils, importer
+from verta._protos.public.modeldb import (
+    ExperimentRunService_pb2 as _ExperimentRunService,
 )
+from verta.external import six
 
 from ._experimentrun import ExperimentRun
 

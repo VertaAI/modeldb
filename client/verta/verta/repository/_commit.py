@@ -3,26 +3,19 @@
 from __future__ import print_function
 
 import collections
-from datetime import datetime
 import heapq
 import time
+from datetime import datetime
 
 import requests
 
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
-
-from ..external import six
-
-from .._internal_utils import (
-    _artifact_utils,
-    _utils,
+from .. import code, configuration, dataset, environment
+from .._internal_utils import _artifact_utils, _utils
+from .._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
 )
-from .. import code
-from .. import configuration
-from .. import dataset
-from .. import environment
-from . import _blob
-from . import _diff
+from ..external import six
+from . import _blob, _diff
 
 
 class Commit(object):

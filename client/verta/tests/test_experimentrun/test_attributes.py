@@ -2,9 +2,8 @@ import string
 
 import pytest
 import six
-
-from verta._internal_utils import _utils, importer
 from verta import data_types
+from verta._internal_utils import _utils, importer
 
 
 class TestSimpleAttributes:

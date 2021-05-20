@@ -10,10 +10,8 @@ import warnings
 
 import cloudpickle
 
-from ..external import six
-
 from .. import __about__
-
+from ..external import six
 
 # for process_requirements()
 PYPI_TO_IMPORT = {

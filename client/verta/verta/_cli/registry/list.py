@@ -4,10 +4,10 @@ from functools import reduce
 
 import click
 
-from .registry import registry
-from ..AsciiTable import AsciiTable
 from ... import Client
 from ..._internal_utils import _utils
+from ..AsciiTable import AsciiTable
+from .registry import registry
 
 
 @registry.group(name="list")

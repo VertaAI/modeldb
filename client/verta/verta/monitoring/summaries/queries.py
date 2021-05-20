@@ -2,17 +2,17 @@
 
 from __future__ import print_function
 
-
-from verta._internal_utils._utils import as_list_of_str
+from verta import data_types
 from verta._internal_utils import pagination_utils, time_utils
-from ..utils import extract_ids, maybe
+from verta._internal_utils._utils import as_list_of_str
 from verta._protos.public.monitoring.Summary_pb2 import (
     FilterQuerySummarySample,
     FindSummaryRequest,
     FindSummarySampleRequest,
     LabelFilterQuerySummarySample,
 )
-from verta import data_types
+
+from ..utils import extract_ids, maybe
 
 
 def _labels_proto(labels):

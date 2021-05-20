@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import click
-
 from verta import Client
 from verta._cli.deployment import deployment
 

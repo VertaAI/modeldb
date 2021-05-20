@@ -23,24 +23,20 @@ Examples
 
 """
 
-from ...external import six
-
 from sklearn import (  # pylint: disable=import-error
-    linear_model,
-    tree,
-    svm,
     ensemble,
-    neural_network,
-    multiclass,
-    multioutput,
     isotonic,
     kernel_ridge,
+    linear_model,
+    multiclass,
+    multioutput,
+    neural_network,
+    svm,
+    tree,
 )
 
-from ...external import gorilla
-
 from ..._internal_utils import _utils
-
+from ...external import gorilla, six
 
 classes = [
     linear_model.ARDRegression,

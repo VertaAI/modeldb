@@ -1,18 +1,13 @@
 """Random Forest (XGBoost)"""
 
-import os
 import itertools
+import os
 
 import joblib
-
-import pandas as pd
 import numpy as np
-
-from sklearn import model_selection
-from sklearn import metrics
-
+import pandas as pd
 import xgboost as xgb
-
+from sklearn import metrics, model_selection
 
 # load pre-cleaned data from CSV file into pandas DataFrame
 df = pd.read_csv(os.path.join("..", "data", "census", "cleaned-census-data.csv"), delimiter=',')

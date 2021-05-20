@@ -3,10 +3,10 @@ import json
 
 import click
 
-from .registry import registry
 from ... import Client
-from ...environment import Python
 from ..._internal_utils._utils import _multiple_arguments_for_each
+from ...environment import Python
+from .registry import registry
 
 
 @registry.group(name="update")

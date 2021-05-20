@@ -1,5 +1,6 @@
 import csv
 import sys
+
 if len(sys.argv) != 3:
     print("Missing argument: $ python utf_migration.py <tables.csv> <database_name>\n"
           "Table row format: database_name	TABLE_NAME	COLUMN_NAME	DATA_TYPE	maximum_length", file=sys.stderr)

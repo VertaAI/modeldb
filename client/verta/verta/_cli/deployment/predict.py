@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import click
 import json
 
-from .deployment import deployment
+import click
+
 from ... import Client
+from .deployment import deployment
 
 
 @deployment.group()

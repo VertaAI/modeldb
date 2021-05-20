@@ -4,11 +4,9 @@ from __future__ import print_function
 
 import hashlib
 
-from ._path import Path
-
 from ..external import six
-
 from . import _dataset
+from ._path import Path
 
 _HDFS_PREFIX = "hdfs://"
 

@@ -3,13 +3,12 @@
 
 import hypothesis
 import hypothesis.strategies as st
-
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
 from verta.monitoring.alert import (
-    _Alerter,
     FixedAlerter,
     RangeAlerter,
     ReferenceAlerter,
+    _Alerter,
 )
 from verta.monitoring.comparison import _VertaComparison
 

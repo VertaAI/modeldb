@@ -4,9 +4,8 @@ from __future__ import print_function
 
 import copy
 
-from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
 from ..._internal_utils import _utils
-
+from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
 from ._modelversion import RegisteredModelVersion
 
 

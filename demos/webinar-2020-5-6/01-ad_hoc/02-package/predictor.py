@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify, Response
 import json
-import prometheus_client
-from prometheus_client import Counter, Histogram
-import spacy
 import sys
+
+import prometheus_client
+import spacy
+from flask import Flask, Response, jsonify, request
+from prometheus_client import Counter, Histogram
 
 REQUEST_COUNT = Counter(
     'request_count', 'App Request Count',

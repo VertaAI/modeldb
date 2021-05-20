@@ -1,10 +1,9 @@
-import six
-
 import pytest
-
+import six
 import verta
-from verta._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
-
+from verta._protos.public.modeldb import (
+    ExperimentRunService_pb2 as _ExperimentRunService,
+)
 
 OPERATORS = six.viewkeys(verta.tracking.entities.ExperimentRuns._OP_MAP)
 

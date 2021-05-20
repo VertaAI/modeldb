@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 
-from verta._protos.public.monitoring.Summary_pb2 import FilterQuerySummarySample
-
+from verta._internal_utils import time_utils
 from verta._protos.public.monitoring.Labels_pb2 import (
     FindSampleLabelsRequest,
     FindSampleLabelValuesRequest,
 )
+from verta._protos.public.monitoring.Summary_pb2 import FilterQuerySummarySample
+
 from .summaries.queries import _labels_proto
-from verta._internal_utils import time_utils
 from .utils import maybe
 
 
