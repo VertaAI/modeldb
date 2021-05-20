@@ -2,9 +2,8 @@
 
 import abc
 
-from verta.external import six
-
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
+from verta.external import six
 from verta.monitoring import comparison as comparison_module
 from verta.monitoring import utils
 

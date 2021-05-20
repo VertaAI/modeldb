@@ -13,13 +13,9 @@ import hypothesis
 import hypothesis.strategies as st
 import pytest
 import six
-
 from google.protobuf import json_format
-
-from verta.environment import (
-    Python,
-)
 from verta._internal_utils import _pip_requirements_utils
+from verta.environment import Python
 
 
 @st.composite

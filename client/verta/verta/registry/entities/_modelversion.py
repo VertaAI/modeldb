@@ -2,34 +2,24 @@
 
 from __future__ import print_function
 
-import os
 import logging
-import pathlib2
+import os
 import pickle
+
+import pathlib2
+import requests
 from google.protobuf.struct_pb2 import Value
 
-import requests
-
-from ..._protos.public.registry import (
-    RegistryService_pb2 as _RegistryService,
-    StageService_pb2 as _StageService,
-)
-from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
-
-from ...external import six
-
-from ..._internal_utils import (
-    _utils,
-    _artifact_utils,
-    importer, _request_utils
-)
 from ... import utils
-
-from ...tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
+from ..._internal_utils import _artifact_utils, _request_utils, _utils, importer
+from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
+from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
+from ..._protos.public.registry import StageService_pb2 as _StageService
+from ...environment import Python, _Environment
+from ...external import six
 from ...tracking.entities._deployable_entity import _DeployableEntity
-from ...environment import _Environment, Python
+from ...tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from .. import lock
-
 
 logger = logging.getLogger(__name__)
 

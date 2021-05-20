@@ -4,18 +4,17 @@ from __future__ import print_function
 
 import warnings
 
-from verta.external import six
-
+from verta._internal_utils import _artifact_utils, _utils
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
-from verta._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
-from verta._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
-
-from verta.tracking.entities import _entity
-from verta.repository import _commit
-from verta._internal_utils import (
-    _artifact_utils,
-    _utils,
+from verta._protos.public.modeldb import (
+    DatasetVersionService_pb2 as _DatasetVersionService,
 )
+from verta._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
+)
+from verta.external import six
+from verta.repository import _commit
+from verta.tracking.entities import _entity
 
 
 class DatasetVersion(_entity._ModelDBEntity):

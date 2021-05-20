@@ -1,8 +1,7 @@
 import random
 
-from spacy.util import minibatch, compounding
-
 import utils
+from spacy.util import compounding, minibatch
 
 
 def evaluate(nlp, texts, cats):

@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import pytest
 import hypothesis
 import hypothesis.strategies as st
-
+import pytest
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
-from verta.monitoring.alert.status import (
-    Alerting,
-    Ok,
-)
+from verta.monitoring.alert.status import Alerting, Ok
 
 
 class TestAlerting:

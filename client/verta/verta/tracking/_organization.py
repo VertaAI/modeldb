@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from .._protos.public.uac import Organization_pb2 as _Organization
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
+from .._protos.public.uac import Organization_pb2 as _Organization
 
 
 class CollaboratorType:

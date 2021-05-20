@@ -2,8 +2,8 @@
 
 import click
 
-from .registry import registry
 from ... import Client
+from .registry import registry
 from .update import update_model_version
 
 

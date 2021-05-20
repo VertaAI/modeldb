@@ -5,12 +5,8 @@ import json
 import numbers
 import os
 
+from ._internal_utils import _utils, importer
 from .external import six
-
-from ._internal_utils import (
-    _utils,
-    importer,
-)
 
 
 class ModelAPI(object):

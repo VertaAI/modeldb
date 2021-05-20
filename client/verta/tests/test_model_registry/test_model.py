@@ -1,6 +1,5 @@
 import pytest
 import requests
-
 import verta
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module

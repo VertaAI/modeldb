@@ -1,23 +1,27 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+
+import json
 import sys
 import time
-import json
-import yaml
 
 import requests
+import yaml
+from verta.tracking.entities import ExperimentRun
 
-from ..external import six
-
+from .._internal_utils import _utils
+from ..deployment import DeployedModel
 from ..endpoint.autoscaling import Autoscaling
 from ..endpoint.autoscaling.metrics import _AutoscalingMetric
 from ..endpoint.resources import Resources
+from ..endpoint.update._strategies import (
+    CanaryUpdateStrategy,
+    DirectUpdateStrategy,
+    _UpdateStrategy,
+)
 from ..endpoint.update.rules import _UpdateRule
-from ..deployment import DeployedModel
-from ..endpoint.update._strategies import _UpdateStrategy, DirectUpdateStrategy, CanaryUpdateStrategy
-from .._internal_utils import _utils
-from verta.tracking.entities import ExperimentRun
+from ..external import six
 from ..registry.entities import RegisteredModelVersion
 from ..visibility import _visibility
 

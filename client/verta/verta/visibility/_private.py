@@ -1,5 +1,4 @@
 from .._protos.public.uac import Collaborator_pb2
-
 from ._visibility import _Visibility
 
 

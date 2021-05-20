@@ -3,7 +3,6 @@
 from __future__ import print_function
 
 from .._protos.public.modeldb.versioning import Config_pb2 as _ConfigService
-
 from ..repository import _blob
 
 

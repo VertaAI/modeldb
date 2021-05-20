@@ -1,5 +1,4 @@
 import pytest
-
 from verta.environment import Python
 
 
