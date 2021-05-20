@@ -102,8 +102,8 @@ public class Config extends ai.verta.modeldb.common.config.Config {
     hikariDataSource.setJdbcUrl(dbUrl);
     hikariDataSource.setUsername(databaseConfig.RdbConfiguration.RdbUsername);
     hikariDataSource.setPassword(databaseConfig.RdbConfiguration.RdbPassword);
-
-    hikariDataSource.setMaximumPoolSize(10); // TODO: configure with a valid pool size
+    hikariDataSource.setMinimumIdle(Integer.parseInt(databaseConfig.minConnectionPoolSize));
+    hikariDataSource.setMaximumPoolSize(Integer.parseInt(databaseConfig.maxConnectionPoolSize));
 
     final Jdbi jdbi = Jdbi.create(hikariDataSource);
     final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);
