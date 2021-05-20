@@ -14,11 +14,19 @@ import warnings
 import zipfile
 
 import requests
-from verta._internal_utils import _artifact_utils, _histogram_utils, _utils
+
+from verta._internal_utils import (
+    _artifact_utils,
+    _histogram_utils,
+    _utils,
+)
+
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+
 from verta.external import six
 
 from ._entity import _ModelDBEntity
+
 
 # location in DeploymentService model container
 _CUSTOM_MODULES_DIR = os.environ.get('VERTA_CUSTOM_MODULES_DIR', "/app/custom_modules/")

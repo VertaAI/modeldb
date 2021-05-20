@@ -1,11 +1,10 @@
-import multiprocessing
-from functools import partial
-from operator import itemgetter
-
-import pytest
 import six
-
+import multiprocessing
+import pytest
 from .run_functions import log_observation, upload_artifact
+
+from operator import itemgetter
+from functools import partial
 
 
 class TestConcurrency:

@@ -8,12 +8,13 @@ import zipfile
 
 import cloudpickle
 
-from .. import __about__
 from ..external import six
-from ..external.six.moves import (
-    cPickle as pickle,  # pylint: disable=import-error, no-name-in-module
-)
-from .importer import get_tensorflow_major_version, maybe_dependency
+from ..external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
+
+from .. import __about__
+
+from .importer import maybe_dependency, get_tensorflow_major_version
+
 
 # default chunk sizes
 # these values were all chosen arbitrarily at different times

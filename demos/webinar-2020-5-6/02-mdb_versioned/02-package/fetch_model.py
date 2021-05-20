@@ -1,7 +1,6 @@
-import os
-
-import cloudpickle
 from verta import Client
+import cloudpickle
+import os
 
 verta_host = os.environ['VERTA_HOST']
 run_id = os.environ['RUN_ID']

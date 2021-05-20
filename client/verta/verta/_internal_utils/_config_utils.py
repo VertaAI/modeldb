@@ -7,7 +7,9 @@ import os
 import yaml
 
 from .._protos.public.client import Config_pb2 as _ConfigProtos
+
 from . import _utils
+
 
 # TODO: make this a named tuple, if it would help readability
 CONFIG_YAML_FILENAME = "verta_config.yaml"

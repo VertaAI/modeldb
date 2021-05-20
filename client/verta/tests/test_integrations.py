@@ -1,10 +1,12 @@
+import pytest
+
+import six
+
 import os
 import shutil
 import tempfile
 import time
 
-import pytest
-import six
 from verta._internal_utils.importer import get_tensorflow_major_version
 
 

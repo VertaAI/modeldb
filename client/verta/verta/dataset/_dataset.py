@@ -7,13 +7,20 @@ import copy
 import functools
 import hashlib
 import os
-
 import pathlib2
 
-from .._internal_utils import _file_utils, _request_utils, _utils
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
+
 from ..external import six
+
+from .._internal_utils import (
+    _file_utils,
+    _request_utils,
+    _utils,
+)
+
 from ..repository import _blob
+
 
 DEFAULT_DOWNLOAD_DIR = "mdb-data-download"  # to be in cwd
 

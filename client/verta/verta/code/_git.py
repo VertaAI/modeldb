@@ -2,10 +2,9 @@
 
 from __future__ import print_function
 
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+
 from .._internal_utils import _git_utils
-from .._protos.public.modeldb.versioning import (
-    VersioningService_pb2 as _VersioningService,
-)
 from . import _code
 
 

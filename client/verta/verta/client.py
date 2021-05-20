@@ -8,36 +8,47 @@ import warnings
 
 import requests
 from verta.tracking._organization import Organization
+from ._internal_utils._utils import check_unnecessary_params_warning
+
+from ._protos.public.modeldb import CommonService_pb2 as _CommonService
+
+from .external import six
+from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
+
+from ._internal_utils import (
+    _config_utils,
+    _request_utils,
+    _utils,
+)
 
 from . import repository
-from ._internal_utils import _config_utils, _request_utils, _utils
-from ._internal_utils._utils import check_unnecessary_params_warning
-from ._protos.public.modeldb import CommonService_pb2 as _CommonService
-from .dataset.entities import Dataset, Datasets, DatasetVersion
-from .endpoint import Endpoint, Endpoints
-from .endpoint.update import DirectUpdateStrategy
-from .external import six
-from .external.six.moves.urllib.parse import (
-    urlparse,  # pylint: disable=import-error, no-name-in-module
+
+from .tracking import _Context
+from .tracking.entities import (
+    Project,
+    Projects,
+    Experiment,
+    Experiments,
+    ExperimentRun,
+    ExperimentRuns,
 )
-from .monitoring.client import Client as MonitoringClient
+
 from .registry.entities import (
     RegisteredModel,
     RegisteredModels,
     RegisteredModelVersion,
     RegisteredModelVersions,
 )
-from .tracking import _Context
-from .tracking.entities import (
-    Experiment,
-    ExperimentRun,
-    ExperimentRuns,
-    Experiments,
-    Project,
-    Projects,
+from .dataset.entities import (
+    Dataset,
+    Datasets,
+    DatasetVersion,
 )
+from .endpoint import Endpoint
+from .endpoint import Endpoints
+from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
-
+from .monitoring.client import Client as MonitoringClient
 
 class Client(object):
     """

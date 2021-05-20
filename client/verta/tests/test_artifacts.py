@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import pytest
+
+import six
+
 import filecmp
 import hashlib
 import os
@@ -8,11 +12,14 @@ import shutil
 import tempfile
 import zipfile
 
-import pytest
 import requests
-import six
-from verta._internal_utils import _artifact_utils, _file_utils, _request_utils, _utils
 
+from verta._internal_utils import (
+    _artifact_utils,
+    _file_utils,
+    _request_utils,
+    _utils,
+)
 from . import utils
 
 

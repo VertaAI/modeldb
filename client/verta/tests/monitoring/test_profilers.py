@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import pytest
-from verta._internal_utils._utils import generate_default_name
+
 from verta.environment import Python
+from verta._internal_utils._utils import generate_default_name
 from verta.monitoring.profiler import ContinuousHistogramProfiler
 from verta.monitoring.profilers import ProfilerReference
+import pytest
 
 
 class TestProfilers(object):

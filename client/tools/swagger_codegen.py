@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-import collections
 import functools
 import json
 import os
 import sys
-
-import click
+import collections
 import pystache
+import click
 
 FieldType = collections.namedtuple('FieldType', ['safe_name', 'name', 'type', 'required'])
 

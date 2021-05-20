@@ -27,6 +27,7 @@ import pkgutil
 import sys
 import types
 
+
 if sys.version_info[0] == 2:
     _CLASS_TYPES = (type, types.ClassType)
 

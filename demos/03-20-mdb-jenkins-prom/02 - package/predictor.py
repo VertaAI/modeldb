@@ -1,6 +1,6 @@
 import cloudpickle
+from flask import Flask, request, jsonify, Response
 import prometheus_client
-from flask import Flask, Response, jsonify, request
 from prometheus_client import Counter, Histogram
 
 REQUEST_COUNT = Counter(

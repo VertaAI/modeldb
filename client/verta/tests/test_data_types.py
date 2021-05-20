@@ -4,6 +4,7 @@ import pytest
 from verta import data_types
 from verta._internal_utils import importer
 
+
 if importer.maybe_dependency("scipy") is None:
     pytest.skip("scipy is not installed", allow_module_level=True)
 

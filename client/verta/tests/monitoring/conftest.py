@@ -3,8 +3,12 @@
 import datetime
 
 import pytest
+
+from verta._internal_utils import (
+    _utils,
+    time_utils,
+)
 from verta import data_types
-from verta._internal_utils import _utils, time_utils
 
 
 @pytest.fixture

@@ -1,11 +1,14 @@
-import itertools
-
+import pytest
 import hypothesis
 import hypothesis.strategies as st
-import pytest
-import verta.code
+
+import itertools
+
 from google.protobuf import json_format
+
+import verta.code
 from verta._internal_utils import _git_utils
+
 
 # check if in git repo
 try:

@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import click
 import json
 
-import click
-
+from .deployment import deployment
 from ... import Client
+from ...endpoint.update._strategies import DirectUpdateStrategy, CanaryUpdateStrategy
+from ...endpoint.update.rules import _UpdateRule
+from ...endpoint.resources import Resources
 from ...endpoint.autoscaling import Autoscaling
 from ...endpoint.autoscaling.metrics import _AutoscalingMetric
-from ...endpoint.resources import Resources
-from ...endpoint.update._strategies import CanaryUpdateStrategy, DirectUpdateStrategy
-from ...endpoint.update.rules import _UpdateRule
 from ...registry.entities import RegisteredModelVersion
-from .deployment import deployment
 
 
 @deployment.group()

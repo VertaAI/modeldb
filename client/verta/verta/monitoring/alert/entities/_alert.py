@@ -2,13 +2,16 @@
 
 import warnings
 
-from verta._internal_utils import _utils, time_utils
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
-from verta.monitoring import notification_channel, utils
-from verta.monitoring.summaries.queries import SummaryQuery, SummarySampleQuery
+from verta._internal_utils import _utils, time_utils
 from verta.tracking import _Context
 from verta.tracking.entities import _entity
-
+from verta.monitoring import notification_channel
+from verta.monitoring import utils
+from verta.monitoring.summaries.queries import (
+    SummaryQuery,
+    SummarySampleQuery,
+)
 from .. import _alerter
 from .. import status as status_module
 

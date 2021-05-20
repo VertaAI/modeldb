@@ -3,11 +3,13 @@
 import os
 
 import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as func
 import torch.optim as optim
 import torch.utils.data as data_utils
+
 
 # load data from CSV file into a NumPy mapping
 data = np.load(os.path.join("..", "data", "mnist", "mnist.npz"))

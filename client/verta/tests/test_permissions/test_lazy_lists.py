@@ -5,8 +5,9 @@ Tests attributes like `proj.experiments` and `dataset.versions` in non-default w
 import os
 
 import pytest
-from verta._internal_utils import _utils
+
 from verta.dataset import Path
+from verta._internal_utils import _utils
 
 
 class TestClient:

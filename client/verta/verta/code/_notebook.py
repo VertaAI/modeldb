@@ -4,12 +4,13 @@ from __future__ import print_function
 
 import os
 
-from .._internal_utils import _git_utils, _utils
-from .._protos.public.modeldb.versioning import (
-    VersioningService_pb2 as _VersioningService,
-)
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+
+from .._internal_utils import _git_utils
+from .._internal_utils import _utils
 from ..dataset import _dataset, _path
-from . import _code, _git
+from . import _code
+from . import _git
 
 
 class Notebook(_code._Code):

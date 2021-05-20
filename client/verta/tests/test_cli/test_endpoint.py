@@ -1,15 +1,16 @@
-import json
-import tarfile
-import time
+from click.testing import CliRunner
 
 import pytest
-from click.testing import CliRunner
+import time
+import tarfile
+import json
+
 from verta import Client
 from verta._cli import cli
 from verta._internal_utils import _utils
-from verta.endpoint.resources import Resources
-from verta.endpoint.update._strategies import DirectUpdateStrategy
 from verta.environment import Python
+from verta.endpoint.update._strategies import DirectUpdateStrategy
+from verta.endpoint.resources import Resources
 
 from ..utils import get_build_ids
 

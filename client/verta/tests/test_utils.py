@@ -1,19 +1,18 @@
 # pylint: disable=unidiomatic-typecheck
 
+import six
+
+import pathlib2
 import subprocess
 import sys
 
-import pathlib2
-import pytest
-import six
 import verta
-from verta._internal_utils import (
-    _file_utils,
-    _pip_requirements_utils,
-    _utils,
-    pagination_utils,
-)
+from verta._internal_utils import _utils
+from verta._internal_utils import _file_utils
+from verta._internal_utils import _pip_requirements_utils
+from verta._internal_utils import pagination_utils
 
+import pytest
 from . import utils
 
 

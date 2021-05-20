@@ -1,5 +1,8 @@
 from __future__ import division
 
+import six
+from six.moves import filterfalse
+
 import datetime
 import itertools
 import os
@@ -7,20 +10,20 @@ import pickle
 import random
 import shutil
 import string
+import tempfile
 import subprocess
 import sys
-import tempfile
 
-import hypothesis
-import pytest
 import requests
-import six
+
 import verta
-from six.moves import filterfalse
 from verta import Client
 from verta._internal_utils import _utils
 
+import hypothesis
+import pytest
 from . import utils
+
 
 RANDOM_SEED = 0
 INPUT_LENGTH = 12  # length of iterable input fixture

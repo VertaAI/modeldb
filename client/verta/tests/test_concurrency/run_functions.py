@@ -1,7 +1,6 @@
-import os
 import random
-
 import pytest
+import os
 
 
 def log_observation(client, i):

@@ -2,16 +2,28 @@
 
 import datetime
 from collections import namedtuple
-
 import pytest
-from verta import data_types
-from verta._internal_utils import _utils, time_utils
+
+from verta._internal_utils import (
+    _utils,
+    time_utils,
+)
 from verta.monitoring import comparison
-from verta.monitoring.alert import FixedAlerter, RangeAlerter, ReferenceAlerter
+from verta.monitoring.alert import (
+    FixedAlerter,
+    RangeAlerter,
+    ReferenceAlerter,
+)
+from verta.monitoring.alert.status import (
+    Alerting,
+    Ok,
+)
 from verta.monitoring.alert.entities import Alert, Alerts
-from verta.monitoring.alert.status import Alerting, Ok
-from verta.monitoring.notification_channel import SlackNotificationChannel
 from verta.monitoring.summaries.queries import SummarySampleQuery
+from verta.monitoring.notification_channel import (
+    SlackNotificationChannel,
+)
+from verta import data_types
 
 
 class TestIntegration:

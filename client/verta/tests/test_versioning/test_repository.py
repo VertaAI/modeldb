@@ -1,10 +1,11 @@
 import pytest
 import requests
+
+from .. import utils
+
 import verta.dataset
 import verta.environment
 from verta._internal_utils import _utils
-
-from .. import utils
 
 
 class TestRepository:

@@ -2,11 +2,11 @@
 
 from __future__ import print_function
 
-from .._protos.public.modeldb.versioning import Config_pb2 as _ConfigService
-from .._protos.public.modeldb.versioning import (
-    VersioningService_pb2 as _VersioningService,
-)
 from ..external import six
+
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import Config_pb2 as _ConfigService
+
 from . import _configuration
 
 

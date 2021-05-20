@@ -2,8 +2,8 @@
 
 import click
 
-from ... import Client
 from .deployment import deployment
+from ... import Client
 
 
 @deployment.group()

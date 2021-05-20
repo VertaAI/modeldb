@@ -3,15 +3,20 @@ Basic tests to make sure the client passes `visibility` without errors.
 
 """
 import pytest
+
 import requests
-from verta._internal_utils import _utils
+
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 from verta._protos.public.modeldb import ProjectService_pb2 as _ProjectService
-from verta._protos.public.modeldb.versioning import (
-    VersioningService_pb2 as _VersioningService,
+from verta._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+
+from verta._internal_utils import _utils
+from verta.visibility import (
+    OrgCustom,
+    Private,
 )
-from verta.visibility import OrgCustom, Private
+
 
 pytestmark = pytest.mark.not_oss
 

@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from datetime import timedelta, tzinfo  # pylint: disable=undefined-variable
+from datetime import (  # pylint: disable=undefined-variable
+    timedelta,
+    tzinfo,
+)
 
 
 class UTC(tzinfo):

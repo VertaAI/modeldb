@@ -1,10 +1,10 @@
 from string import printable
 
-import hypothesis.strategies as st
 import numpy as np
 import pandas as pd
-from api_generator import model_api, model_api_dataframe, model_api_series
 
+import hypothesis.strategies as st
+from api_generator import model_api, model_api_series, model_api_dataframe
 
 # Gets a full api description and returns a generator for that api
 def value_from_api(api):

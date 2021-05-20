@@ -4,9 +4,11 @@ from __future__ import division
 
 import collections
 
+from ..external import six
+
 from .._internal_utils import arg_handler
 from .._internal_utils.importer import maybe_dependency
-from ..external import six
+
 from . import _VertaDataType
 
 

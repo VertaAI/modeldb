@@ -1,1 +1,4 @@
-from ._notification_channel import SlackNotificationChannel, _NotificationChannel
+from ._notification_channel import (
+    _NotificationChannel,
+    SlackNotificationChannel,
+)

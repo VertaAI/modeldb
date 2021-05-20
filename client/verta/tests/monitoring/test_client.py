@@ -2,7 +2,6 @@
 
 from verta._internal_utils._utils import generate_default_name
 
-
 class TestClient(object):
 
     def test_get_or_create_monitored_entity(self, client):

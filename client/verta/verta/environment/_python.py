@@ -6,12 +6,13 @@ import copy
 import os
 import sys
 
-from .._internal_utils import _pip_requirements_utils
-from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
-from .._protos.public.modeldb.versioning import (
-    VersioningService_pb2 as _VersioningService,
-)
 from ..external import six
+
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
+
+from .._internal_utils import _pip_requirements_utils
+
 from . import _environment
 
 

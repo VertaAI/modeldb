@@ -2,9 +2,9 @@
 
 import copy
 
-from verta._internal_utils import _utils
 from verta._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 
+from verta._internal_utils import _utils
 from . import dataset
 
 

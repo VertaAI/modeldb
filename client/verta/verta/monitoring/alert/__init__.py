@@ -1,1 +1,1 @@
-from ._alerter import FixedAlerter, RangeAlerter, ReferenceAlerter, _Alerter
+from ._alerter import _Alerter, FixedAlerter, ReferenceAlerter, RangeAlerter

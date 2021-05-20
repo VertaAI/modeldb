@@ -1,5 +1,5 @@
-import torch
 from sklearn import datasets
+import torch
 
 
 def load_mnist():

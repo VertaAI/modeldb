@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from ...external import six
+
 import torch  # pylint: disable=import-error
 
 from ..._internal_utils import _utils
-from ...external import six
 
 
 def verta_hook(run):

@@ -2,9 +2,9 @@
 
 import click
 
-from ... import Client
-from ..AsciiTable import AsciiTable
 from .deployment import deployment
+from ..AsciiTable import AsciiTable
+from ... import Client
 
 
 @deployment.group(name="list")

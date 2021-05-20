@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from datetime import timezone  # pylint: disable=undefined-variable,no-name-in-module
+from datetime import (  # pylint: disable=undefined-variable,no-name-in-module
+    timezone,
+)
+
 
 utc = timezone.utc

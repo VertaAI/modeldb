@@ -1,5 +1,6 @@
-from .._protos.public.common import CommonService_pb2
 from .._protos.public.uac import Collaborator_pb2
+from .._protos.public.common import CommonService_pb2
+
 from ._visibility import _Visibility
 
 

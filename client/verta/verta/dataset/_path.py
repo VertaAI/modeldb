@@ -5,11 +5,14 @@ from __future__ import print_function
 import hashlib
 import os
 
-from .._internal_utils import _artifact_utils, _file_utils, _utils
-from .._protos.public.modeldb.versioning import (
-    VersioningService_pb2 as _VersioningService,
-)
+from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+
 from ..external import six
+
+from .._internal_utils import _artifact_utils
+from .._internal_utils import _file_utils
+from .._internal_utils import _utils
+
 from . import _dataset
 
 

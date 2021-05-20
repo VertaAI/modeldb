@@ -2,9 +2,12 @@
 import abc
 import collections
 
-from verta._internal_utils.importer import maybe_dependency
-from verta.data_types import DiscreteHistogram, FloatHistogram
+from verta.data_types import (
+    DiscreteHistogram,
+    FloatHistogram,
+)
 from verta.external import six
+from verta._internal_utils.importer import maybe_dependency
 
 
 @six.add_metaclass(abc.ABCMeta)

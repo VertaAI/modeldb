@@ -2,27 +2,24 @@ import pytest
 
 pytest.skip("outdated tests for legacy API", allow_module_level=True)
 
-import os
-import shutil
-import time
-
-import requests
 import six
-import verta
-import verta.dataset
-from verta._dataset import (
-    Dataset,
-    DatasetVersion,
-    FilesystemDatasetVersionInfo,
-    S3DatasetVersionInfo,
-)
-from verta._internal_utils import _utils
-from verta._protos.public.modeldb import DatasetService_pb2 as _DatasetService
-from verta._protos.public.modeldb import (
-    DatasetVersionService_pb2 as _DatasetVersionService,
-)
+
+import os
+import time
+import shutil
+import requests
 
 from . import utils
+
+import verta
+import verta.dataset
+from verta._internal_utils import _utils
+from verta._dataset import Dataset, DatasetVersion, S3DatasetVersionInfo, FilesystemDatasetVersionInfo
+from verta._protos.public.modeldb import DatasetService_pb2 as _DatasetService
+from verta._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
+
+
+
 
 DEFAULT_S3_TEST_BUCKET = "bucket"
 DEFAULT_S3_TEST_OBJECT = "object"

@@ -14,16 +14,21 @@ import cloudpickle
 import pytest
 import requests
 import six
+
 import verta
 import verta.dataset
 from verta import visibility
-from verta._internal_utils import _artifact_utils, _utils
-from verta.endpoint.update import DirectUpdateStrategy
 from verta.environment import Python
-from verta.registry import lock
 from verta.tracking.entities._deployable_entity import _CACHE_DIR
+from verta.endpoint.update import DirectUpdateStrategy
+from verta.registry import lock
+from verta._internal_utils import (
+    _artifact_utils,
+    _utils,
+)
 
 from .. import utils
+
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 

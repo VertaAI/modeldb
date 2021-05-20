@@ -1,10 +1,11 @@
+import six
+
 import string
 
-import pytest
-import six
 import verta
 from verta._internal_utils import _utils
 
+import pytest
 from . import utils
 
 

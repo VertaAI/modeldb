@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import gzip
 import json
+import gzip
 import os
 import time
 import warnings
 
 import requests
 
-from .._internal_utils import _utils
 from ..external import six
-from ..external.six.moves.urllib.parse import (  # pylint: disable=import-error, no-name-in-module
-    urljoin,
-    urlparse,
-)
+from ..external.six.moves.urllib.parse import urljoin, urlparse  # pylint: disable=import-error, no-name-in-module
+
+from .._internal_utils import _utils
 
 
 class DeployedModel:

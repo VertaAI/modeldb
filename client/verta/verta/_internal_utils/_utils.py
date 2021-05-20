@@ -20,18 +20,20 @@ import warnings
 
 import click
 import requests
-from google.protobuf import json_format
-from google.protobuf.struct_pb2 import NULL_VALUE, ListValue, Struct, Value
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from google.protobuf import json_format
+from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
+
+from ..external import six
+from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
+
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.uac import Organization_pb2, UACService_pb2, Workspace_pb2
-from ..external import six
-from ..external.six.moves.urllib.parse import (
-    urljoin,  # pylint: disable=import-error, no-name-in-module
-)
+
 from . import importer
+
 
 logger = logging.getLogger(__name__)
 
