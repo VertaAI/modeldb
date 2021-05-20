@@ -1675,7 +1675,7 @@ class ExperimentRun(_DeployableEntity):
         return download_to_path
 
     def download_model(self, download_to_path):
-        self.download_artifact(_artifact_utils.MODEL_KEY, download_to_path)
+        return self.download_artifact(_artifact_utils.MODEL_KEY, download_to_path)
 
     def get_artifact_parts(self, key):
         endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
