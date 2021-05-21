@@ -5,6 +5,7 @@ import collections
 import json
 import numbers
 import os
+import warnings
 
 from .external import six
 
@@ -198,12 +199,17 @@ class TFSavedModel(object):
 
     Warnings
     --------
-    Use of this utility is discouraged in favor of the simpler and more flexible class-as-model setup. See
+    This utility is deprecated in favor of the simpler and more flexible class-as-model setup. See
     `the Client repository <https://github.com/VertaAI/modeldb/blob/master/client/workflows/demos/Nearest-Neighbors-TF-Glove.ipynb>`__
     for an example.
 
     """
     def __init__(self, saved_model_dir, session=None):
+        warnings.warn(
+            "this utility will be removed in an upcoming version",
+            category=FutureWarning,
+        )
+
         tf = importer.maybe_dependency("tensorflow")
         if tf is None:
             raise ImportError("TensorFlow is not installed; try `pip install tensorflow`")
