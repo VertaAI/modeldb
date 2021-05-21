@@ -748,7 +748,7 @@
     <changeSet id="set-created-true-based-on-column-type-existing-experiment-run" author="anandJ">
         <update tableName="experiment_run">
             <column name="created" valueBoolean="true"/>
-            <where>created=0 AND deleted=1</where>
+            <where>created=0 AND deleted=0</where>
         </update>
     </changeSet>
 
