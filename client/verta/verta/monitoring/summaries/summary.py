@@ -155,7 +155,7 @@ class Summary(_entity._ModelDBEntity):
     def has_type(self, data_type_cls):  # TODO: hideme
         return self.type == data_type_cls._type_string()
 
-    def delete(self, summary_samples):
+    def delete_samples(self, summary_samples):
         """Delete summary samples from this summary.
 
         Parameters
@@ -176,4 +176,25 @@ class Summary(_entity._ModelDBEntity):
         msg = DeleteSummarySampleRequest(ids=ids)
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
         self._conn.must_proto_response(response, EmptyProto)
+        return True
+
+    def delete(self):
+        """
+        Delete this summary.
+
+        Returns
+        -------
+        bool
+            ``True`` if the delete was successful.
+
+        Raises
+        ------
+        :class:`requests.HTTPError`
+            If the delete failed.
+
+        """
+        msg = SummaryService.DeleteSummaryRequest(ids=[self.id])
+        endpoint = "/api/v1/summaries/deleteSummary"
+        response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
+        self._conn.must_response(response)
         return True
