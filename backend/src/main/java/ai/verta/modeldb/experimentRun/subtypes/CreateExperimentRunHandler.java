@@ -90,9 +90,6 @@ public class CreateExperimentRunHandler {
 
                           return insertExperimentRun(experimentRun)
                               .thenCompose(
-                                  unused2 -> createRoleBindingsForExperimentRun(experimentRun),
-                                  executor)
-                              .thenCompose(
                                   unused2 ->
                                       jdbi.useHandle(
                                           handle ->
@@ -321,7 +318,8 @@ public class CreateExperimentRunHandler {
               return InternalFuture.sequence(futureLogs, executor)
                   .thenAccept(unused2 -> {}, executor);
             },
-            executor);
+            executor)
+        .thenCompose(unused2 -> createRoleBindingsForExperimentRun(newExperimentRun), executor);
   }
 
   private Boolean checkInsertedEntityAlreadyExists(Handle handle, ExperimentRun experimentRun) {
@@ -385,5 +383,9 @@ public class CreateExperimentRunHandler {
               LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response);
             },
             executor);
+  }
+
+  public InternalFuture<Void> createClonedExperimentRun(ExperimentRun experimentRun) {
+    return insertExperimentRun(experimentRun);
   }
 }

@@ -1011,7 +1011,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void cloneExperimentRun(
       CloneExperimentRun request, StreamObserver<CloneExperimentRun.Response> responseObserver) {
-    responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+    try {
+      final var response = futureExperimentRunDAO.cloneExperimentRun(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 }
