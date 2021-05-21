@@ -84,7 +84,7 @@ classes = [
 settings = gorilla.Settings(allow_hit=True)
 
 
-def fit_and_log(self, cls, *args, **kwargs):
+def _fit_and_log(self, cls, *args, **kwargs):
     run = kwargs.pop('run', None)
     if run is not None:
         params = self.get_params()
@@ -108,13 +108,13 @@ def fit_and_log(self, cls, *args, **kwargs):
     return original_fit(self, *args, **kwargs)
 
 
-def patch_fit(cls):
+def _patch_fit(cls):
     @gorilla.patch(cls)
     def fit(self, *args, **kwargs):
-        return fit_and_log(self, cls, *args, **kwargs)
+        return _fit_and_log(self, cls, *args, **kwargs)
     patch = gorilla.Patch(cls, 'fit', fit, settings=settings)
     gorilla.apply(patch)
 
 
 for cls in classes:
-    patch_fit(cls)
+    _patch_fit(cls)
