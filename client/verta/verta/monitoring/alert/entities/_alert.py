@@ -36,7 +36,7 @@ class Alert(_entity._ModelDBEntity):
         ID of the monitored entity this alert is associated with.
     status : :class:`~verta.monitoring.alert.status._AlertStatus`
         Current status of this alert.
-    summary_sample_query : :class:`~verta.monitoring.summaries.SummarySampleQuery`
+    summary_sample_query : :class:`~verta.monitoring.summaries.queries.SummarySampleQuery`
         The summary samples this alert monitors.
 
     Examples
