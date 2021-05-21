@@ -286,7 +286,7 @@ class _Dataset(_blob.Blob):
 
         Returns
         -------
-        dataset :mod:`~verta._repository.blob`
+        dataset : :mod:`~verta.dataset`
             Dataset blob capturing the metadata of the binary files.
 
         """
@@ -392,7 +392,7 @@ class _Dataset(_blob.Blob):
 
         Returns
         -------
-        components : list of :class:`~verta.dataset._dataset.Component`
+        components : list of :class:`~verta.dataset.Component`
             Components.
 
         """

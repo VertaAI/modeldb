@@ -226,7 +226,7 @@ class RegisteredModelVersion(_DeployableEntity):
                   be included.
                 - If not provided, all Python files located within `sys.path`—excluding virtual
                   environments—will be included.
-        model_api : :class:`~utils.ModelAPI`, optional
+        model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying details about the model and its deployment.
         artifacts : list of str, optional
             Keys of logged artifacts to be used by a class model.

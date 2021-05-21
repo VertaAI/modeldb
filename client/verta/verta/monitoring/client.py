@@ -21,7 +21,7 @@ class Client(object):
 
     Parameters
     ----------
-    verta_client : :class:`verta.client.Client`
+    verta_client : :class:`verta.Client`
         An instance of the base Verta client.
 
     Attributes

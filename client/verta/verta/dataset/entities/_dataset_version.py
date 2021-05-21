@@ -148,7 +148,7 @@ class DatasetVersion(_entity._ModelDBEntity):
 
         Returns
         -------
-        `dataset blob subclass <versioning.html#dataset>`__
+        dataset : :mod:`~verta.dataset`
             Dataset content.
 
         """

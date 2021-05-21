@@ -32,7 +32,7 @@ class SummaryQuery(object):
         Only fetch these summaries.
     names : list of str, optional
         Only fetch these summaries with one of these names.
-    data_type_classes : list of :class:`~verta.data_types._VertaDataType`, optional
+    data_type_classes : list of :mod:`VertaDataType <verta.data_types>`, optional
         Only fetch summaries with one of these data types.
     monitored_entities : list of :class:`~verta.monitoring.monitored_entity.MonitoredEntity`, optional
         Only fetch summaries belonging to one of these monitored entities.

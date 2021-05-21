@@ -25,7 +25,7 @@ class Summary(_entity._ModelDBEntity):
 
     Users should obtain summaries through one of the query or create methods of
     the ``summaries`` attribute on the monitoring
-    sub-:class:`~verta.opertaions.monitoring.client.Client` instead of
+    sub-:class:`~verta.monitoring.client.Client` instead of
     initializing Summary objects.
 
     Parameters
@@ -72,7 +72,7 @@ class Summary(_entity._ModelDBEntity):
         Parameters
         ----------
         data
-            A :class:`~verta.data_types._VertaDataType` consistent with the type of this summary.
+            A :mod:`VertaDataType <verta.data_types>` consistent with the type of this summary.
         labels : dict of str to str, optional
             A mapping between label keys and values.
         time_window_start : datetime.datetime or int
@@ -86,7 +86,7 @@ class Summary(_entity._ModelDBEntity):
 
         Returns
         -------
-        :class:`SummarySample`
+        :class:`~verta.monitoring.summaries.summary_sample.SummarySample`
             A persisted summary sample.
         """
         if not isinstance(data, data_types._VertaDataType):
@@ -127,12 +127,12 @@ class Summary(_entity._ModelDBEntity):
 
         Parameters
         ----------
-        query : :class:`SummarySampleQuery`, optional
+        query : :class:`~verta.monitoring.summaries.queries.SummarySampleQuery`, optional
             A query object which filters the set of summary samples.
 
         Returns
         -------
-        list of :class:`SummarySample`
+        list of :class:`~verta.monitoring.summaries.summary_sample.SummarySample`
             A list of summary samples belonging to this summary and matching the
             query.
         """
@@ -160,7 +160,7 @@ class Summary(_entity._ModelDBEntity):
 
         Parameters
         ----------
-        summary_samples : list of :class:`SummarySample`
+        summary_samples : list of :class:`~verta.monitoring.summaries.summary_sample.SummarySample`
             The summary samples which should be deleted from this summary.
 
         Returns

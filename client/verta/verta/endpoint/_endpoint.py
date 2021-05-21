@@ -34,7 +34,7 @@ class Endpoint(object):
 
     There should not be a need to instantiate this class directly; please use
     :meth:`Client.get_or_create_endpoint()
-    <verta.client.Client.get_or_create_endpoint>`.
+    <verta.Client.get_or_create_endpoint>`.
 
     Attributes
     ----------

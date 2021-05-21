@@ -33,7 +33,7 @@ class ProfilerReference(_entity._ModelDBEntity):
 
     Users should obtain ``ProfilerReference`` objects through the get and
     create methods available from :class:`Profilers`, accessible as the
-    ``profilers`` attribute on the monitoring sub-:class:`~verta.opertaions.monitoring.client.Client`.
+    ``profilers`` attribute on the monitoring sub-:class:`~verta.monitoring.client.Client`.
 
     Parameters
     ----------
@@ -72,7 +72,7 @@ class ProfilerReference(_entity._ModelDBEntity):
 
         This method instructs Verta Services to build and deploy a docker image
         for the profiler which was uploaded. Environment variables for this
-        deployment can be specified in a the ``environment`` keyword argument as
+        deployment can be specified in the `environment` keyword argument as
         a dictionary from strings to strings.
 
         By default this method will issue a command to Verta Services to build

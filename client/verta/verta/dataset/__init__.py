@@ -3,7 +3,10 @@
 
 from verta._internal_utils import documentation
 
-from ._dataset import _Dataset
+from ._dataset import (
+    _Dataset,
+    Component,
+)
 from ._path import Path
 from ._hdfs import HDFSPath
 from ._s3 import S3
@@ -11,6 +14,7 @@ from ._s3 import S3
 
 documentation.reassign_module(
     [
+        Component,
         Path,
         HDFSPath,
         S3,

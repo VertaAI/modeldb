@@ -16,7 +16,7 @@ class Repository(object):
     ModelDB Repository.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.get_or_create_repository() <verta.client.Client.get_or_create_repository>`.
+    :meth:`Client.get_or_create_repository() <verta.Client.get_or_create_repository>`.
 
     Attributes
     ----------

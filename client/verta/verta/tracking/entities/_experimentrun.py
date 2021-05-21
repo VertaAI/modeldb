@@ -53,7 +53,7 @@ class ExperimentRun(_DeployableEntity):
     This class provides read/write functionality for Experiment Run metadata.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.set_experiment_run() <verta.client.Client.set_experiment_run>`.
+    :meth:`Client.set_experiment_run() <verta.Client.set_experiment_run>`.
 
     Attributes
     ----------

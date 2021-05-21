@@ -888,7 +888,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.endpoint._endpoint.Endpoint`
+        :class:`~verta.endpoint.Endpoint`
 
         Raises
         ------
@@ -937,7 +937,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.endpoint._endpoint.Endpoint`
+        :class:`~verta.endpoint.Endpoint`
 
         """
         if path is not None and id is not None:
@@ -1215,7 +1215,7 @@ class Client(object):
             Strategy (direct or canary) for updating the endpoint.
         resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated endpoint.
-        autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
+        autoscaling : :class:`~verta.endpoint.autoscaling.Autoscaling`, optional
             Autoscaling condition for the updated endpoint.
         env_vars : dict of str to str, optional
             Environment variables.

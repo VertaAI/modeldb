@@ -25,7 +25,7 @@ class Project(_ModelDBEntity):
     Runs.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.set_project() <verta.client.Client.set_project>`.
+    :meth:`Client.set_project() <verta.Client.set_project>`.
 
     Attributes
     ----------

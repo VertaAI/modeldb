@@ -34,7 +34,7 @@ class Alert(_entity._ModelDBEntity):
         History of this alert's status changes.
     monitored_entity_id : int
         ID of the monitored entity this alert is associated with.
-    status : :class:`~verta.monitoring.alert.status._AlertStatus`
+    status : :mod:`~verta.monitoring.alert.status`
         Current status of this alert.
     summary_sample_query : :class:`~verta.monitoring.summaries.queries.SummarySampleQuery`
         The summary samples this alert monitors.
@@ -309,7 +309,7 @@ class Alert(_entity._ModelDBEntity):
 
         Parameters
         ----------
-        status : :class:`~verta.monitoring.alert.status._AlertStatus`
+        status : :mod:`~verta.monitoring.alert.status`
             Alert status.
         event_time : datetime.datetime or int, optional
             An override event time to assign to this alert status update.
@@ -406,7 +406,7 @@ class Alerts(object):
         ----------
         name : str
             A unique name for this alert.
-        alerter : :class:`~verta.monitoring.alert._Alerter`
+        alerter : :mod:`~verta.monitoring.alert`
             The configuration for this alert.
         notification_channels : list of :class:`~verta.monitoring.notification_channel.entities.NotificationChannel`, optional
             Channels for this alert to propagate notifications to.

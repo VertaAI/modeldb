@@ -90,14 +90,14 @@ class Summaries:
         ----------
         name : str
             The name of this summary.
-        data_type_cls: :class:`~verta.data_types._VertaDataType`
+        data_type_cls: :mod:`VertaDataType <verta.data_types>`
             The class of data type which summary samples must conform to.
         monitored_entity: :class:`~verta.monitoring.monitored_entity.MonitoredEntity`
             A monitored entity object.
 
         Returns
         -------
-        :class:`Summary`
+        :class:`~verta.monitoring.summaries.summary.Summary`
             A retrieved or created summary.
         """
         if not issubclass(data_type_cls, data_types._VertaDataType):
@@ -138,12 +138,12 @@ class Summaries:
 
         Parameters
         ----------
-        query : :class:`SummarySampleQuery`, optional
+        query : :class:`~verta.monitoring.summaries.queries.SummarySampleQuery`, optional
             A query object which filters the set of summary samples.
 
         Returns
         -------
-        list of :class:`SummarySample`
+        list of :class:`~verta.monitoring.summaries.summary_sample.SummarySample`
             A list of summary samples matching the query.
         """
         if query is None:
@@ -168,7 +168,7 @@ class Summaries:
 
         Parameters
         ----------
-        summaries : list of :class:`Summary`
+        summaries : list of :class:`~verta.monitoring.summaries.summary.Summary`
             The summaries which should be deleted.
 
         Returns

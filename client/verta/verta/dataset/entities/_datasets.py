@@ -15,7 +15,7 @@ class Datasets(_utils.LazyList):
     This class provides functionality for filtering and sorting its contents.
 
     There should not be a need to instantiate this class directly; please use
-    :class:`Client.datasets <verta.client.Client>`.
+    :class:`Client.datasets <verta.Client>`.
 
     Examples
     --------
