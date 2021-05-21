@@ -734,15 +734,26 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="set-created-true-for-existing-experiment-run" author="anandJ">
+    <changeSet id="set-created-true-for-existing-experiment-run" author="anandJ" failOnError="false">
         <update tableName="experiment_run">
             <column name="created" valueBoolean="true"/>
-            <where>created=0 AND deleted=0</where>
+            <where>created=false AND deleted=false</where>
         </update>
     </changeSet>
 
     <changeSet id="db_version_2.25" author="anandJ">
         <tagDatabase tag="db_version_2.25"/>
+    </changeSet>
+
+    <changeSet id="set-created-true-based-on-column-type-existing-experiment-run" author="anandJ">
+        <update tableName="experiment_run">
+            <column name="created" valueBoolean="true"/>
+            <where>created=0 AND deleted=1</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="db_version_2.26" author="anandJ">
+        <tagDatabase tag="db_version_2.26"/>
     </changeSet>
 
 </databaseChangeLog>
