@@ -2,7 +2,6 @@
 
 from __future__ import print_function
 
-
 from verta._internal_utils._utils import as_list_of_str
 from verta._internal_utils import pagination_utils, time_utils
 from ..utils import extract_ids, maybe
@@ -13,6 +12,7 @@ from verta._protos.public.monitoring.Summary_pb2 import (
     LabelFilterQuerySummarySample,
 )
 from verta import data_types
+from .aggregation import Aggregation
 
 
 def _labels_proto(labels):
@@ -162,6 +162,8 @@ class SummarySampleQuery(object):
     created_after : datetime.datetime or int, optional
         Only fetch samples created at or after this time. Either a timezone
         aware datetime object or unix epoch milliseconds.
+    aggregation : :class:`Aggregation`, optional
+        Parameters for aggregation of summary samples
     page_number : int, default 1
         Pagination page number for the backend query request. Used in
         conjunction with `page_limit`.
