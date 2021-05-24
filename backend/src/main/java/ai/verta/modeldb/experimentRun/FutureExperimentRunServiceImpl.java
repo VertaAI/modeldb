@@ -246,8 +246,29 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void updateExperimentRunDescription(
       UpdateExperimentRunDescription request,
       StreamObserver<UpdateExperimentRunDescription.Response> responseObserver) {
-    responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .updateExperimentRunDescription(request)
+              .thenApply(
+                  unused -> {
+                    try {
+                      return experimentRunDAO.getExperimentRun(request.getId());
+                    } catch (Exception e) {
+                      throw new ModelDBException(e);
+                    }
+                  },
+                  executor)
+              .thenApply(
+                  experimentRun ->
+                      UpdateExperimentRunDescription.Response.newBuilder()
+                          .setExperimentRun(experimentRun)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
