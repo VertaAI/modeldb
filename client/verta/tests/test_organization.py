@@ -70,6 +70,7 @@ class TestOrganization:
         created_entities.append(new_model)
         new_version = new_model.create_version(name=version_name)
         # new_endpoint = client.create_endpoint(path=endpoint_path, workspace=organization.name)  TODO: uncomment after VR-6053
+        # created_entities.append(new_endpoint)  TODO: uncomment after VR-6053
         # TODO: remove followinng three lines after VR-6053; until then, endpoints with same name diff workspace is a 409
         with pytest.raises(requests.HTTPError) as excinfo:
             client.create_endpoint(path=endpoint_path, workspace=organization.name)
@@ -85,7 +86,6 @@ class TestOrganization:
         new_dataset = client.create_dataset(dataset_name, workspace=organization.name)
         created_entities.append(new_dataset)
 
-        # created_entities.append(new_endpoint)  TODO: uncomment after VR-6053
 
         assert model.id != new_model.id
         assert version.id != new_version.id
