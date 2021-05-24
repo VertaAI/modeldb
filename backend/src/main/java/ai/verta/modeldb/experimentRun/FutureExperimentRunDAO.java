@@ -593,13 +593,18 @@ public class FutureExperimentRunDAO {
 
   public InternalFuture<Void> logDatasets(LogDatasets request) {
     final var runId = request.getId();
-    final var artifacts = request.getDatasetsList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> datasetHandler.logArtifacts(runId, artifacts, request.getOverwrite()),
+            unused ->
+                privilegedDatasetsHandler.filterAndGetPrivilegedDatasetsOnly(
+                    request.getDatasetsList(), true, this::getEntityPermissionBasedOnResourceTypes),
+            executor)
+        .thenCompose(
+            privilegedDatasets ->
+                datasetHandler.logArtifacts(runId, privilegedDatasets, request.getOverwrite()),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
