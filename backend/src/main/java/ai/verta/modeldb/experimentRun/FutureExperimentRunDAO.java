@@ -732,7 +732,8 @@ public class FutureExperimentRunDAO {
     final var futureExperimentRuns =
         futureProjectIds.thenCompose(
             accessibleProjectIdsQueryContext -> {
-              if (accessibleProjectIdsQueryContext.getConditions().isEmpty()) {
+              // accessibleProjectIdsQueryContext == null means not allowed anything
+              if (accessibleProjectIdsQueryContext == null) {
                 return InternalFuture.completedInternalFuture(new ArrayList<ExperimentRun>());
               } else {
                 final var futureProjectIdsContext =
@@ -1137,7 +1138,8 @@ public class FutureExperimentRunDAO {
     final var futureCount =
         futureProjectIds.thenCompose(
             accessibleProjectIdsQueryContext -> {
-              if (accessibleProjectIdsQueryContext.getConditions().isEmpty()) {
+              // accessibleProjectIdsQueryContext == null means not allowed anything
+              if (accessibleProjectIdsQueryContext == null) {
                 return InternalFuture.completedInternalFuture(0L);
               } else {
                 final var futureProjectIdsContext =
@@ -1195,7 +1197,7 @@ public class FutureExperimentRunDAO {
                           .flatMap(x -> x.getResourceIdsList().stream())
                           .collect(Collectors.toList());
                   if (accessibleProjectIds.isEmpty()) {
-                    return new QueryFilterContext();
+                    return null;
                   } else {
                     return new QueryFilterContext()
                         .addCondition("experiment_run.project_id in (<authz_project_ids>)")

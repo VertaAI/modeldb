@@ -35,7 +35,7 @@ class Summaries:
         from datetime import datetime, timedelta, timezone
 
         from verta import Client
-        from verta.monitoring.summaries import SummaryQuery, SummarySampleQuery
+        from verta.monitoring.summaries.queries import SummaryQuery, SummarySampleQuery
         from verta import data_types
 
         client = Client()

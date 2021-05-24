@@ -283,7 +283,7 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("Dataset serviceImpl initialized");
     wrapService(serverBuilder, new DatasetVersionServiceImpl(services, daos));
     LOGGER.trace("Dataset Version serviceImpl initialized");
-    wrapService(serverBuilder, new AdvancedServiceImpl(services, daos));
+    wrapService(serverBuilder, new AdvancedServiceImpl(services, daos, executor));
     LOGGER.trace("Hydrated serviceImpl initialized");
     wrapService(serverBuilder, new LineageServiceImpl(daos));
     LOGGER.trace("Lineage serviceImpl initialized");

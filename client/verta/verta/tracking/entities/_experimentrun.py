@@ -34,8 +34,8 @@ from verta.repository import _commit
 # unless _repository.blob is disentangled out of _repository, importing from
 # dataset must occur after importing from _repository
 from verta.dataset.entities import (
-    dataset as _dataset,
-    dataset_version as _dataset_version,
+    _dataset,
+    _dataset_version,
 )
 from verta import data_types
 from verta import deployment
@@ -1675,7 +1675,7 @@ class ExperimentRun(_DeployableEntity):
         return download_to_path
 
     def download_model(self, download_to_path):
-        self.download_artifact(_artifact_utils.MODEL_KEY, download_to_path)
+        return self.download_artifact(_artifact_utils.MODEL_KEY, download_to_path)
 
     def get_artifact_parts(self, key):
         endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
