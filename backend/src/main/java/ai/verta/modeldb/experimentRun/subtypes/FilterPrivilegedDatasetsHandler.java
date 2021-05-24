@@ -16,8 +16,10 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -98,40 +100,34 @@ public class FilterPrivilegedDatasetsHandler {
 
               // If all dataset with linked dataset versions found in database then checking
               // authorization for the current user for those datasets
-              List<InternalFuture<String>> internalFutures = new LinkedList<>();
+              List<InternalFuture<Optional<String>>> internalFutures = new LinkedList<>();
               for (String datasetId : datasetIds) {
-                try {
-                  internalFutures.add(
-                      InternalFuture.completedInternalFuture(datasetId)
-                          .thenCompose(
-                              id ->
-                                  permissionCheck
-                                      .getEntityPermissionBasedOnResourceTypes(
-                                          Collections.singletonList(datasetId),
-                                          ModelDBActionEnum.ModelDBServiceActions.READ,
-                                          ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET)
-                                      .thenAccept(
-                                          allowed -> {
-                                            if (!allowed) {
-                                              throw new PermissionDeniedException(
-                                                  "Permission denied");
-                                            }
-                                          },
-                                          executor)
-                                      .thenCompose(
-                                          unused -> InternalFuture.completedInternalFuture(id),
-                                          executor),
-                              executor));
-
-                } catch (PermissionDeniedException ex) {
-                  LOGGER.trace(ex.getMessage());
-                  // We are throws error while creating entities
-                  // if we are fetching entities then we are just skip those datasets from response
-                  // and skipped PermissionDeniedException on fetch
-                  if (errorOut) {
-                    return InternalFuture.failedStage(ex);
-                  }
-                }
+                internalFutures.add(
+                    InternalFuture.completedInternalFuture(datasetId)
+                        .thenCompose(
+                            id ->
+                                permissionCheck
+                                    .getEntityPermissionBasedOnResourceTypes(
+                                        Collections.singletonList(datasetId),
+                                        ModelDBActionEnum.ModelDBServiceActions.READ,
+                                        ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET)
+                                    .thenApply(
+                                        allowed -> {
+                                          // We are throws error while creating entities
+                                          // if we are fetching entities then we are just skip those
+                                          // datasets from response
+                                          // and skipped PermissionDeniedException on fetch
+                                          if (!allowed && errorOut) {
+                                            throw new PermissionDeniedException(
+                                                "Permission denied");
+                                          } else if (allowed) {
+                                            return Optional.of(id);
+                                          } else {
+                                            return Optional.empty();
+                                          }
+                                        },
+                                        executor),
+                            executor));
               }
 
               // If all mapped datasets are allowed for the user then we will filter datasets based
@@ -139,9 +135,14 @@ public class FilterPrivilegedDatasetsHandler {
               InternalFuture<Set<String>> accessibleDatasetIdsFutures =
                   InternalFuture.sequence(internalFutures, executor)
                       .thenCompose(
-                          accessibleDatasetIds ->
-                              InternalFuture.completedInternalFuture(
-                                  new HashSet<>(accessibleDatasetIds)),
+                          accessibleDatasetIds -> {
+                            Set<String> accessibleDatasetIdsSet =
+                                accessibleDatasetIds.stream()
+                                    .filter(s -> s.isPresent() && !s.get().isEmpty())
+                                    .map(Optional::get)
+                                    .collect(Collectors.toSet());
+                            return InternalFuture.completedInternalFuture(accessibleDatasetIdsSet);
+                          },
                           executor);
               return accessibleDatasetIdsFutures.thenCompose(
                   accessibleDatasetIds -> {
