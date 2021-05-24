@@ -86,7 +86,9 @@ public class PredicatesHandler extends PredicateHandlerUtils {
         return hyperparameterPredicatesHandler.processHyperparametersPredicate(
             index, predicate, names[1], "hyperparameters");
       case ModelDBConstants.ARTIFACTS:
+        return processArtifactPredicate(index, predicate, names[1], "artifacts");
       case ModelDBConstants.DATASETS:
+        return processArtifactPredicate(index, predicate, names[1], "datasets");
       case ModelDBConstants.ATTRIBUTES:
         return processAttributePredicate(index, predicate, names[1], "attributes");
 
@@ -252,6 +254,87 @@ public class PredicatesHandler extends PredicateHandlerUtils {
             valueStr = value.getStringValue();
           }
           final var finalValueStr = valueStr;
+          queryContext =
+              queryContext.addBind(
+                  q -> q.bind(valueBindingName, wrapValue(operator, finalValueStr)));
+          break;
+        case LIST_VALUE:
+          List<Object> valueList = new LinkedList<>();
+          for (final var value1 : value.getListValue().getValuesList()) {
+            if (value1.getKindCase().ordinal() == Value.KindCase.STRING_VALUE.ordinal()) {
+              var valueStr1 = ModelDBUtils.getStringFromProtoObject(value1);
+              if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
+                valueStr1 = value.getStringValue();
+              }
+              valueList.add(valueStr1);
+            }
+          }
+
+          if (!valueList.isEmpty()) {
+            sql += applyOperator(operator, colValue, "<" + valueBindingName + ">");
+            queryContext = queryContext.addBind(q -> q.bindList(valueBindingName, valueList));
+          }
+          break;
+        default:
+          return InternalFuture.failedStage(
+              new UnimplementedException("Unknown 'Value' type recognized"));
+      }
+
+      if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+          || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+        queryContext =
+            queryContext.addCondition(String.format("experiment_run.id NOT IN (%s)", sql));
+      } else {
+        queryContext = queryContext.addCondition(String.format("experiment_run.id IN (%s)", sql));
+      }
+
+      return InternalFuture.completedInternalFuture(queryContext);
+    } catch (Exception ex) {
+      return InternalFuture.failedStage(ex);
+    }
+  }
+
+  private InternalFuture<QueryFilterContext> processArtifactPredicate(
+      long index, KeyValueQuery predicate, String name, String fieldType) {
+    try {
+      final var value = predicate.getValue();
+      var operator = predicate.getOperator();
+
+      final var valueBindingKey = String.format("k_p_%d", index);
+      final var valueBindingName = String.format("v_p_%d", index);
+      final var fieldTypeName = String.format("field_type_%d", index);
+
+      var sql =
+          "select distinct experiment_run_id from artifact where entity_name=:entityName and field_type=:"
+              + fieldTypeName;
+
+      var queryContext =
+          new QueryFilterContext()
+              .addBind(q -> q.bind("entityName", "ExperimentRunEntity"))
+              .addBind(q -> q.bind(fieldTypeName, fieldType));
+
+      String colValue;
+      if (name.equals(ModelDBConstants.LINKED_ARTIFACT_ID)) {
+        colValue = "linked_artifact_id";
+      } else {
+        sql += String.format(" and ar_key=:%s ", valueBindingKey);
+
+        colValue = "ar_value";
+        queryContext.addBind(q -> q.bind(valueBindingKey, name));
+      }
+      sql += " and ";
+
+      switch (value.getKindCase()) {
+        case STRING_VALUE:
+          sql += applyOperator(operator, colValue, ":" + valueBindingName);
+          String valueStr;
+          if (name.equals(ModelDBConstants.LINKED_ARTIFACT_ID)
+              || operator.equals(OperatorEnum.Operator.CONTAIN)) {
+            valueStr = value.getStringValue();
+          } else {
+            valueStr = ModelDBUtils.getStringFromProtoObject(value);
+          }
+          String finalValueStr = valueStr;
           queryContext =
               queryContext.addBind(
                   q -> q.bind(valueBindingName, wrapValue(operator, finalValueStr)));
