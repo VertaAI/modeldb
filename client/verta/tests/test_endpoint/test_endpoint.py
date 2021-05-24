@@ -655,9 +655,9 @@ class TestEndpoint:
         with pytest.raises(requests.HTTPError) as excinfo:
             endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
-        excinfo_value = str(excinfo.value).strip()
-        assert "403" in excinfo_value
-        assert "Access Denied" in excinfo_value
+        exc_msg = str(excinfo.value).strip()
+        assert exc_msg.startswith("404")
+        assert "not found" in exc_msg
 
     def test_update_from_version_diff_workspace_no_access_error(self, client_2, model_version, created_entities):
         np = pytest.importorskip("numpy")

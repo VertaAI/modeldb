@@ -76,9 +76,9 @@ class TestMDBIntegration:
                 name="From Run {}".format(experiment_run.id)
             )
 
-        excinfo_value = str(excinfo.value).strip()
-        assert "403" in excinfo_value
-        assert "Access Denied" in excinfo_value
+        exc_msg = str(excinfo.value).strip()
+        assert exc_msg.startswith("404")
+        assert "not found" in exc_msg
 
 
 class TestModelVersion:
