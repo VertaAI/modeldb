@@ -167,6 +167,10 @@ class ReferenceAlerter(_Alerter):
         self._comparison = _Alerter._validate_comparison(comparison)
         self._reference_sample_id = utils.extract_id(reference_sample)
 
+    @property
+    def comparison(self):
+        return self._comparison
+
     @classmethod
     def _get_proto_class(self):
         return _AlertService.AlertReference
