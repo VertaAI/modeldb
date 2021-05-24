@@ -1484,61 +1484,9 @@ public class FutureExperimentRunDAO {
                         },
                         executor)
                     .thenCompose(
-                        cloneExperimentRunBuilder -> {
-                          if (!request.getDestExperimentId().isEmpty()) {
-                            if (!cloneExperimentRunBuilder
-                                .getExperimentId()
-                                .equals(request.getDestExperimentId())) {
-                              return jdbi.withHandle(
-                                      handle ->
-                                          handle
-                                              .createQuery(
-                                                  "SELECT project_id FROM experiment where id = :id")
-                                              .bind("id", request.getDestExperimentId())
-                                              .mapTo(String.class)
-                                              .findOne())
-                                  .thenApply(
-                                      projectId -> {
-                                        if (projectId.isEmpty()) {
-                                          throw new NotFoundException(
-                                              "Experiment not found for given ID: "
-                                                  + request.getDestExperimentId());
-                                        }
-                                        return projectId.get();
-                                      },
-                                      executor)
-                                  .thenCompose(
-                                      projectId -> {
-                                        if (!projectId.equals(
-                                            cloneExperimentRunBuilder.getProjectId())) {
-                                          return getEntityPermissionBasedOnResourceTypes(
-                                                  Collections.singletonList(projectId),
-                                                  ModelDBActionEnum.ModelDBServiceActions.UPDATE,
-                                                  ModelDBServiceResourceTypes.PROJECT)
-                                              .thenCompose(
-                                                  allowed -> {
-                                                    if (!allowed) {
-                                                      throw new PermissionDeniedException(
-                                                          "Destination project is not accessible");
-                                                    }
-                                                    return InternalFuture.completedInternalFuture(
-                                                        projectId);
-                                                  },
-                                                  executor);
-                                        }
-                                        return InternalFuture.completedInternalFuture(projectId);
-                                      },
-                                      executor)
-                                  .thenApply(
-                                      projectId ->
-                                          cloneExperimentRunBuilder
-                                              .setExperimentId(request.getDestExperimentId())
-                                              .setProjectId(projectId),
-                                      executor);
-                            }
-                          }
-                          return InternalFuture.completedInternalFuture(cloneExperimentRunBuilder);
-                        },
+                        cloneExperimentRunBuilder ->
+                            checkPermissionAndPopulateFieldsBasedOnDestExperimentId(
+                                request, cloneExperimentRunBuilder),
                         executor)
                     .thenCompose(
                         desExperimentRunBuilder -> {
@@ -1572,5 +1520,57 @@ public class FutureExperimentRunDAO {
                         },
                         executor),
             executor);
+  }
+
+  private InternalFuture<ExperimentRun.Builder>
+      checkPermissionAndPopulateFieldsBasedOnDestExperimentId(
+          CloneExperimentRun request, ExperimentRun.Builder cloneExperimentRunBuilder) {
+    if (!request.getDestExperimentId().isEmpty()) {
+      if (!cloneExperimentRunBuilder.getExperimentId().equals(request.getDestExperimentId())) {
+        return jdbi.withHandle(
+                handle ->
+                    handle
+                        .createQuery("SELECT project_id FROM experiment where id = :id")
+                        .bind("id", request.getDestExperimentId())
+                        .mapTo(String.class)
+                        .findOne())
+            .thenApply(
+                projectId -> {
+                  if (projectId.isEmpty()) {
+                    throw new NotFoundException(
+                        "Experiment not found for given ID: " + request.getDestExperimentId());
+                  }
+                  return projectId.get();
+                },
+                executor)
+            .thenCompose(
+                projectId -> {
+                  if (!projectId.equals(cloneExperimentRunBuilder.getProjectId())) {
+                    return getEntityPermissionBasedOnResourceTypes(
+                            Collections.singletonList(projectId),
+                            ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                            ModelDBServiceResourceTypes.PROJECT)
+                        .thenCompose(
+                            allowed -> {
+                              if (!allowed) {
+                                throw new PermissionDeniedException(
+                                    "Destination project is not accessible");
+                              }
+                              return InternalFuture.completedInternalFuture(projectId);
+                            },
+                            executor);
+                  }
+                  return InternalFuture.completedInternalFuture(projectId);
+                },
+                executor)
+            .thenApply(
+                projectId ->
+                    cloneExperimentRunBuilder
+                        .setExperimentId(request.getDestExperimentId())
+                        .setProjectId(projectId),
+                executor);
+      }
+    }
+    return InternalFuture.completedInternalFuture(cloneExperimentRunBuilder);
   }
 }
