@@ -5,7 +5,7 @@ import copy
 from verta._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 
 from verta._internal_utils import _utils
-from . import dataset_version
+from . import _dataset_version
 
 
 class DatasetVersions(_utils.LazyList):
@@ -51,7 +51,7 @@ class DatasetVersions(_utils.LazyList):
         return response.dataset_versions, response.total_records
 
     def _create_element(self, msg):
-        return dataset_version.DatasetVersion(self._conn, self._conf, msg)
+        return _dataset_version.DatasetVersion(self._conn, self._conf, msg)
 
     def with_dataset(self, dataset):
         """
