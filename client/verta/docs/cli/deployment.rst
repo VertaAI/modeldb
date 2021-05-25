@@ -3,24 +3,24 @@ Deployment
 
 .. click:: verta._cli.deployment:create
     :prog: verta deployment create
-    :show-nested:
+    :nested: full
 
 .. click:: verta._cli.deployment:download
     :prog: verta deployment download
-    :show-nested:
+    :nested: full
 
 .. click:: verta._cli.deployment:get
     :prog: verta deployment get
-    :show-nested:
+    :nested: full
 
 .. click:: verta._cli.deployment:lst
     :prog: verta deployment list
-    :show-nested:
+    :nested: full
 
 .. click:: verta._cli.deployment:predict
     :prog: verta deployment predict
-    :show-nested:
+    :nested: full
 
 .. click:: verta._cli.deployment:update
     :prog: verta deployment update
-    :show-nested:
+    :nested: full
