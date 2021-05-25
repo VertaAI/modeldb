@@ -11,6 +11,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Value;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -93,6 +94,8 @@ public class PredicatesHandler extends PredicateHandlerUtils {
         return processAttributePredicate(index, predicate, names[1], "attributes");
 
       case ModelDBConstants.OBSERVATIONS:
+        return processObservationPredicate(
+            index, predicate, Arrays.copyOfRange(names, 1, names.length));
         // case ModelDBConstants.FEATURES: TODO?
       case ModelDBConstants.TAGS:
         return processTagsPredicate(index, predicate);
@@ -160,6 +163,25 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     }
   }
 
+  private InternalFuture<QueryFilterContext> processObservationPredicate(
+      long index, KeyValueQuery predicate, String[] names) {
+
+    final var errorMessage =
+        "Invalid predicate for observations, Valid format is like `observations.attribute.att_key`";
+    if (names.length != 2) {
+      return InternalFuture.failedStage(new InvalidArgumentException(errorMessage));
+    }
+
+    switch (names[0]) {
+      case "attribute":
+        return processKeyValuePredicate(index, predicate, names[1], "observations");
+      case "artifact":
+        // TODO: Implement here after adding support on insertion ER
+      default:
+        return InternalFuture.failedStage(new InvalidArgumentException(errorMessage));
+    }
+  }
+
   private InternalFuture<QueryFilterContext> processKeyValuePredicate(
       long index, KeyValueQuery predicate, String name, String fieldType) {
     final var value = predicate.getValue();
@@ -169,16 +191,28 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     final var valueBindingName = String.format("v_p_%d", index);
     final var fieldTypeName = String.format("field_type_%d", index);
 
-    var sql =
-        "select distinct experiment_run_id from keyvalue where entity_name=\"ExperimentRunEntity\" and field_type=:"
-            + fieldTypeName;
-    sql += String.format(" and kv_key=:%s ", valueBindingKey);
+    String sql;
+    if (fieldType.equals("observations")) {
+      sql =
+          "select distinct ob.experiment_run_id from observation as ob "
+              + " inner join keyvalue as kv ON kv.id = ob.keyvaluemapping_id"
+              + " where ob.entity_name=:entityName and ob.field_type=:"
+              + fieldTypeName
+              + " and kv.field_type = 'attributes' ";
+    } else {
+      sql =
+          "select distinct kv.experiment_run_id from keyvalue as kv where kv.entity_name=:entityName and kv.field_type=:"
+              + fieldTypeName;
+    }
+
+    sql += String.format(" and kv.kv_key=:%s ", valueBindingKey);
     sql += " and ";
 
-    final var colValue = "kv_value";
+    final var colValue = "kv.kv_value";
     var queryContext =
         new QueryFilterContext()
             .addBind(q -> q.bind(valueBindingKey, name))
+            .addBind(q -> q.bind("entityName", "ExperimentRunEntity"))
             .addBind(q -> q.bind(fieldTypeName, fieldType));
 
     switch (value.getKindCase()) {
