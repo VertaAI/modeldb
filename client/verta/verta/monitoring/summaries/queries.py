@@ -6,6 +6,7 @@ from verta._internal_utils._utils import as_list_of_str
 from verta._internal_utils import pagination_utils, time_utils
 from ..utils import extract_ids, maybe
 from verta._protos.public.monitoring.Summary_pb2 import (
+    AggregationQuerySummary,
     FilterQuerySummarySample,
     FindSummaryRequest,
     FindSummarySampleRequest,
@@ -197,6 +198,7 @@ class SummarySampleQuery(object):
         labels=None,
         time_window_start=None,
         time_window_end=None,
+        aggregation=None,
         created_after=None,
         page_number=1,
         page_limit=None,
@@ -209,6 +211,7 @@ class SummarySampleQuery(object):
         self._labels = maybe(_labels_proto, labels)
         self._time_window_start = time_window_start
         self._time_window_end = time_window_end
+        self._aggregation = aggregation
         self._created_after = created_after
         self._page_number = page_number
         self._page_limit = page_limit
@@ -236,6 +239,23 @@ class SummarySampleQuery(object):
         summary_query = SummaryQuery._from_proto_request(proto_summary_query)
         self._summary_query = summary_query
 
+    @property
+    def aggregation(self):
+        return self._aggregation
+
+    @aggregation.setter
+    def aggregation(self, value):
+        if value is None:
+            self._aggregation = None
+        elif isinstance(value, AggregationQuerySummary):
+            self._aggregation = Aggregation._from_proto(value)
+        elif isinstance(value, Aggregation):
+            self._aggregation = value
+        else:
+            raise ValueError(
+                "Not a valid aggregation type"
+            )  # TODO: better error message
+
     @classmethod
     def _from_proto_request(cls, msg):
         # set attrs after creation to bypass conversion logic in __init__()
@@ -252,12 +272,14 @@ class SummarySampleQuery(object):
         obj._created_after = time_utils.datetime_from_millis(
             msg.filter.created_at_after_millis
         )
+        obj.aggregation = msg.aggregation
         obj._page_number = msg.page_number
         obj._page_limit = pagination_utils.page_limit_from_proto(msg.page_limit)
 
         return obj
 
     def _to_proto_request(self):
+        aggregation_proto = maybe(lambda agg: agg._to_proto(), self.aggregation)
         return FindSummarySampleRequest(
             filter=FilterQuerySummarySample(
                 find_summaries=self._find_summaries,
@@ -271,6 +293,7 @@ class SummarySampleQuery(object):
                 ),
                 created_at_after_millis=time_utils.epoch_millis(self._created_after),
             ),
+            aggregation=aggregation_proto,
             page_number=self._page_number,
             page_limit=pagination_utils.page_limit_to_proto(self._page_limit),
         )
