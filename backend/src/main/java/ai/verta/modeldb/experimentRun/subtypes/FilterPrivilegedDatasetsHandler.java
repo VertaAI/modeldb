@@ -113,10 +113,22 @@ public class FilterPrivilegedDatasetsHandler {
                                         ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET)
                                     .thenApply(
                                         allowed -> {
-                                          // We are throws error while creating entities
-                                          // if we are fetching entities then we are just skip those
-                                          // datasets from response
-                                          // and skipped PermissionDeniedException on fetch
+                                          /**
+                                           * Point 1:
+                                           *
+                                           * <p>- While creating ER with dataset which is has
+                                           * linked_artifact_id .
+                                           *
+                                           * <p>- If user do not have access of linked_artifact_id
+                                           * then we are throwing PermissionDeniedException
+                                           *
+                                           * <p>Point 2:
+                                           *
+                                           * <p>- While fetching ER if user do not have access on
+                                           * linked_artifact_id then we are just ignore to throw
+                                           * PermissionDeniedException and skipped to populate it in
+                                           * response ER.
+                                           */
                                           if (!allowed && errorOut) {
                                             throw new PermissionDeniedException(
                                                 "Permission denied");
