@@ -1,0 +1,7 @@
+CLI
+===
+
+.. toctree::
+    :titlesonly:
+
+    deployment

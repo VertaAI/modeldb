@@ -5,4 +5,5 @@ Verta: The Complete MLOps Platform
     :titlesonly:
 
     Python API <python>
+    cli/index
     changelog
