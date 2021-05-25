@@ -1390,7 +1390,14 @@ public class FutureExperimentRunDAO {
                                 .build(),
                         executor),
             executor)
-        .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
+        .thenCompose(
+            unused -> createExperimentRunHandler.createExperimentRunFromRequest(request), executor)
+        .thenCompose(
+            experimentRun ->
+                createExperimentRunHandler
+                    .insertExperimentRun(experimentRun)
+                    .thenApply(unused2 -> experimentRun, executor),
+            executor);
   }
 
   public InternalFuture<Void> logEnvironment(LogEnvironment request) {
@@ -1477,7 +1484,7 @@ public class FutureExperimentRunDAO {
                     .thenApply(
                         findExperimentRuns -> {
                           if (findExperimentRuns.getExperimentRunsList().isEmpty()) {
-                            throw new PermissionDeniedException("Permission Denied");
+                            throw new NotFoundException("Source experiment run not found");
                           }
                           ExperimentRun srcExperimentRun = findExperimentRuns.getExperimentRuns(0);
                           return srcExperimentRun.toBuilder().clone();
@@ -1510,7 +1517,7 @@ public class FutureExperimentRunDAO {
                                 .setOwner(userInfo.getVertaInfo().getUserId());
                           }
                           return createExperimentRunHandler
-                              .createClonedExperimentRun(desExperimentRunBuilder.build())
+                              .insertExperimentRun(desExperimentRunBuilder.build())
                               .thenApply(
                                   unused1 ->
                                       CloneExperimentRun.Response.newBuilder()
@@ -1544,9 +1551,8 @@ public class FutureExperimentRunDAO {
                 },
                 executor)
             .thenCompose(
-                projectId -> {
-                  if (!projectId.equals(cloneExperimentRunBuilder.getProjectId())) {
-                    return getEntityPermissionBasedOnResourceTypes(
+                projectId ->
+                    getEntityPermissionBasedOnResourceTypes(
                             Collections.singletonList(projectId),
                             ModelDBActionEnum.ModelDBServiceActions.UPDATE,
                             ModelDBServiceResourceTypes.PROJECT)
@@ -1558,10 +1564,7 @@ public class FutureExperimentRunDAO {
                               }
                               return InternalFuture.completedInternalFuture(projectId);
                             },
-                            executor);
-                  }
-                  return InternalFuture.completedInternalFuture(projectId);
-                },
+                            executor),
                 executor)
             .thenApply(
                 projectId ->

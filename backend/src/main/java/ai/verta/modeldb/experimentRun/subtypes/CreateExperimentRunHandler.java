@@ -74,7 +74,8 @@ public class CreateExperimentRunHandler {
     this.versionInputHandler = versionInputHandler;
   }
 
-  public InternalFuture<ExperimentRun> createExperimentRun(final CreateExperimentRun request) {
+  public InternalFuture<ExperimentRun> createExperimentRunFromRequest(
+      final CreateExperimentRun request) {
     return FutureGrpc.ClientRequest(
             uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
         .thenCompose(
@@ -88,19 +89,7 @@ public class CreateExperimentRunHandler {
                           TrialUtils.validateMaxArtifactsForTrial(
                               config.trial, experimentRun.getArtifactsCount(), 0);
 
-                          return insertExperimentRun(experimentRun)
-                              .thenCompose(
-                                  unused2 ->
-                                      jdbi.useHandle(
-                                          handle ->
-                                              handle
-                                                  .createUpdate(
-                                                      "UPDATE experiment_run SET created=:created WHERE id=:id")
-                                                  .bind("created", true)
-                                                  .bind("id", experimentRun.getId())
-                                                  .execute()),
-                                  executor)
-                              .thenApply(unused2 -> experimentRun, executor);
+                          return InternalFuture.completedInternalFuture(experimentRun);
                         },
                         executor),
             executor);
@@ -188,7 +177,7 @@ public class CreateExperimentRunHandler {
     return experimentRunBuilder.build();
   }
 
-  private InternalFuture<Void> insertExperimentRun(ExperimentRun newExperimentRun) {
+  public InternalFuture<Void> insertExperimentRun(ExperimentRun newExperimentRun) {
     final var now = Calendar.getInstance().getTimeInMillis();
     return jdbi.useHandle(
             handle ->
@@ -319,7 +308,17 @@ public class CreateExperimentRunHandler {
                   .thenAccept(unused2 -> {}, executor);
             },
             executor)
-        .thenCompose(unused2 -> createRoleBindingsForExperimentRun(newExperimentRun), executor);
+        .thenCompose(unused2 -> createRoleBindingsForExperimentRun(newExperimentRun), executor)
+        .thenCompose(
+            unused2 ->
+                jdbi.useHandle(
+                    handle ->
+                        handle
+                            .createUpdate("UPDATE experiment_run SET created=:created WHERE id=:id")
+                            .bind("created", true)
+                            .bind("id", newExperimentRun.getId())
+                            .execute()),
+            executor);
   }
 
   private Boolean checkInsertedEntityAlreadyExists(Handle handle, ExperimentRun experimentRun) {
@@ -383,9 +382,5 @@ public class CreateExperimentRunHandler {
               LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response);
             },
             executor);
-  }
-
-  public InternalFuture<Void> createClonedExperimentRun(ExperimentRun experimentRun) {
-    return insertExperimentRun(experimentRun);
   }
 }
