@@ -81,6 +81,7 @@ message ModelDBResourceEnum {
         REGISTERED_MODEL_VERSION = 10;
         MONITORED_ENTITY = 11;
         NOTIFICATION_CHANNEL = 12;
+        BUILD = 13;
     }
 };
 
