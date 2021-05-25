@@ -135,7 +135,7 @@ class ReferenceAlerter(_Alerter):
     comparison : :mod:`~verta.monitoring.comparison`
         Alert condition. An alert is active if the distance between a queried
         sample and `reference_sample` meets this condition.
-    reference_sample : :class:`~verta.monitoring.summaries.SummarySample`
+    reference_sample : :class:`~verta.monitoring.summaries.summary_sample.SummarySample`
         An existing summary sample to compare queried samples with.
 
     Examples
@@ -145,7 +145,7 @@ class ReferenceAlerter(_Alerter):
         from verta import Client
         from verta.monitoring.comparison import GreaterThan
         from verta.monitoring.alert import ReferenceAlerter
-        from verta.monitoring.summaries import SummarySampleQuery
+        from verta.monitoring.summaries.queries import SummarySampleQuery
 
         ref_sample = summary.find_samples(SummarySampleQuery(ids=[123]))[0]
         alerter = ReferenceAlerter(
@@ -166,6 +166,10 @@ class ReferenceAlerter(_Alerter):
     def __init__(self, comparison, reference_sample):
         self._comparison = _Alerter._validate_comparison(comparison)
         self._reference_sample_id = utils.extract_id(reference_sample)
+
+    @property
+    def comparison(self):
+        return self._comparison
 
     @classmethod
     def _get_proto_class(self):

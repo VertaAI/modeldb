@@ -327,11 +327,12 @@ public class CreateExperimentRunHandler {
             + " name = :experimentRunName "
             + " AND project_id = :projectId "
             + " AND experiment_id = :experimentId "
-            + " AND deleted = false ";
+            + " AND deleted = :deleted ";
 
     var query = handle.createQuery(queryStr).bind("experimentRunName", experimentRun.getName());
     query.bind("projectId", experimentRun.getProjectId());
     query.bind("experimentId", experimentRun.getExperimentId());
+    query.bind("deleted", false);
 
     long count = query.mapTo(Long.class).one();
     return count > 0;

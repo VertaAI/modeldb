@@ -934,8 +934,12 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void getExperimentRunsByDatasetVersionId(
       GetExperimentRunsByDatasetVersionId request,
       StreamObserver<GetExperimentRunsByDatasetVersionId.Response> responseObserver) {
-    responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+    try {
+      final var response = futureExperimentRunDAO.getExperimentRunsByDatasetVersionId(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

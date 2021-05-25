@@ -28,9 +28,9 @@ class Client(object):
     ----------
     profilers : :class:`~verta.monitoring.profilers.Profilers`
         Profilers collection.
-    summaries : :class:`~verta.monitoring.summaries.Summaries`
+    summaries : :class:`~verta.monitoring.summaries.summaries.Summaries`
         Summaries collection.
-    summary_samples : :class:`~verta.monitoring.summaries.SummarySamples`
+    summary_samples : :class:`~verta.monitoring.summaries.summary_samples.SummarySamples`
         Summary samples collection.
     labels : :class:`~verta.monitoring.labels.Labels`
         Labels collection for finding label keys and values.
