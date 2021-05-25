@@ -15,6 +15,9 @@ class Aggregation(object):
         self.granularity = granularity
         self.operation = operation
 
+    def __repr__(self):
+        return "Aggregation('{}',{})".format(self.granularity, self.operation)
+
     @property
     def granularity(self):
         return self._granularity
@@ -34,8 +37,8 @@ class Aggregation(object):
         self._operation = parsed_operation
 
     def _to_proto(self):
-        operation_proto = self._OPERATIONS[self.operation]
         granularity_proto = time_utils.timedelta_millis(self.granularity)
+        operation_proto = self._OPERATIONS[self.operation]
         return AggregationQuerySummary(
             time_granularity_millis=granularity_proto, operation=operation_proto
         )
@@ -43,6 +46,12 @@ class Aggregation(object):
     @classmethod
     def _from_proto(cls, msg):
         return cls(msg.time_granularity_millis, msg.operation)
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self._to_proto() == other._to_proto()
 
     @classmethod
     def operations(cls):
