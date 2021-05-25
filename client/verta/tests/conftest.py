@@ -22,7 +22,7 @@ from verta._internal_utils import _utils
 
 import hypothesis
 import pytest
-from . import credentials, utils
+from . import constants, utils
 
 
 RANDOM_SEED = 0
@@ -55,43 +55,43 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture(scope="session")
 def host():
-    return credentials.HOST
+    return constants.HOST
 
 
 @pytest.fixture(scope="session")
 def port():
-    return credentials.PORT
+    return constants.PORT
 
 
 @pytest.fixture(scope="session")
 def email():
-    return credentials.EMAIL
+    return constants.EMAIL
 
 
 @pytest.fixture(scope="session")
 def dev_key():
-    return credentials.DEV_KEY
+    return constants.DEV_KEY
 
 
 # for collaboration tests
 @pytest.fixture(scope="session")
 def email_2():
-    return credentials.EMAIL_2
+    return constants.EMAIL_2
 
 
 @pytest.fixture(scope="session")
 def dev_key_2():
-    return credentials.DEV_KEY_2
+    return constants.DEV_KEY_2
 
 
 @pytest.fixture(scope="session")
 def email_3():
-    return credentials.EMAIL_3
+    return constants.EMAIL_3
 
 
 @pytest.fixture(scope="session")
 def dev_key_3():
-    return credentials.DEV_KEY_3
+    return constants.DEV_KEY_3
 
 
 @pytest.fixture
