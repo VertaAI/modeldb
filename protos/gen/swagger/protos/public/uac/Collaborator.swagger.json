@@ -483,7 +483,8 @@
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
               "MONITORED_ENTITY",
-              "NOTIFICATION_CHANNEL"
+              "NOTIFICATION_CHANNEL",
+              "BUILD"
             ],
             "default": "UNKNOWN"
           },
@@ -625,7 +626,8 @@
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
               "MONITORED_ENTITY",
-              "NOTIFICATION_CHANNEL"
+              "NOTIFICATION_CHANNEL",
+              "BUILD"
             ],
             "default": "UNKNOWN"
           },
@@ -1161,7 +1163,8 @@
         "REGISTERED_MODEL",
         "REGISTERED_MODEL_VERSION",
         "MONITORED_ENTITY",
-        "NOTIFICATION_CHANNEL"
+        "NOTIFICATION_CHANNEL",
+        "BUILD"
       ],
       "default": "UNKNOWN"
     },
