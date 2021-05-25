@@ -7501,7 +7501,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsByDatasetVersionId endpoint")
   public void findExperimentRunsByDatasetVersionId() {
     LOGGER.info("FindExperimentRuns test start................................");
 

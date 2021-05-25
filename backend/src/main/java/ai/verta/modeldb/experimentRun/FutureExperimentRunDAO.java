@@ -2,7 +2,10 @@ package ai.verta.modeldb.experimentRun;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
+import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
@@ -22,6 +25,7 @@ import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunCodeVersion;
+import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
 import ai.verta.modeldb.GetHyperparameters;
 import ai.verta.modeldb.GetMetrics;
 import ai.verta.modeldb.GetObservations;
@@ -45,6 +49,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -90,6 +95,8 @@ import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Value;
+import com.google.rpc.Code;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1450,5 +1457,90 @@ public class FutureExperimentRunDAO {
             futureVersionedInputs,
             this::getEntityPermissionBasedOnResourceTypes)
         .thenApply(versioningEntryMap -> versioningEntryMap.get(request.getId()), executor);
+  }
+
+  public InternalFuture<GetExperimentRunsByDatasetVersionId.Response>
+      getExperimentRunsByDatasetVersionId(GetExperimentRunsByDatasetVersionId request) {
+    var validationFuture =
+        InternalFuture.runAsync(
+            () -> {
+              // Validate request parameter
+              if (request.getDatasetVersionId().isEmpty()) {
+                throw new ModelDBException(
+                    "DatasetVersion Id should not be empty", Code.INVALID_ARGUMENT);
+              }
+            },
+            executor);
+    return validationFuture
+        .thenAccept(
+            unused ->
+                // Validate requested dataset version exists
+                jdbi.useHandle(
+                    handle -> {
+                      handle
+                          .createQuery("SELECT COUNT(id) FROM commit WHERE id = :id")
+                          .bind("id", request.getDatasetVersionId())
+                          .mapTo(Long.class)
+                          .findOne()
+                          .orElseThrow(() -> new NotFoundException("DatasetVersion not found"));
+
+                      // Validate requested dataset version mappings with datasets
+                      List<Long> mappingDatasetIds =
+                          handle
+                              .createQuery(
+                                  "SELECT repository_id FROM repository_commit WHERE commit_hash = :id")
+                              .bind("id", request.getDatasetVersionId())
+                              .mapTo(Long.class)
+                              .list();
+
+                      if (mappingDatasetIds.size() == 0) {
+                        throw new InternalErrorException(
+                            "DatasetVersion not attached with the dataset");
+                      } else if (mappingDatasetIds.size() > 1) {
+                        throw new InternalErrorException(
+                            "DatasetVersion '"
+                                + request.getDatasetVersionId()
+                                + "' associated with multiple datasets");
+                      }
+                    }),
+            executor)
+        .thenApply(
+            unused -> {
+              // Create find ER request using dataset version predicate and requested pagination
+              // parameters
+              KeyValueQuery entityKeyValuePredicate =
+                  KeyValueQuery.newBuilder()
+                      .setKey(ModelDBConstants.DATASETS + "." + ModelDBConstants.LINKED_ARTIFACT_ID)
+                      .setValue(
+                          Value.newBuilder().setStringValue(request.getDatasetVersionId()).build())
+                      .setOperator(OperatorEnum.Operator.EQ)
+                      .setValueType(ValueTypeEnum.ValueType.STRING)
+                      .build();
+
+              return FindExperimentRuns.newBuilder()
+                  .setPageNumber(request.getPageNumber())
+                  .setPageLimit(request.getPageLimit())
+                  .setAscending(request.getAscending())
+                  .setSortKey(request.getSortKey())
+                  .addPredicates(entityKeyValuePredicate)
+                  .build();
+            },
+            executor)
+        .thenCompose(this::findExperimentRuns, executor)
+        .thenApply(
+            findExperimentRunsResponse -> {
+              // Build GetExperimentRunsByDatasetVersionId response from find ER response
+              LOGGER.trace(
+                  "Final return experiment_run count for dataset version: {}",
+                  findExperimentRunsResponse.getExperimentRunsCount());
+              LOGGER.trace(
+                  "Final return total record count : {}",
+                  findExperimentRunsResponse.getTotalRecords());
+              return GetExperimentRunsByDatasetVersionId.Response.newBuilder()
+                  .addAllExperimentRuns(findExperimentRunsResponse.getExperimentRunsList())
+                  .setTotalRecords(findExperimentRunsResponse.getTotalRecords())
+                  .build();
+            },
+            executor);
   }
 }
