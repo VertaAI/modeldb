@@ -8,7 +8,6 @@ import ai.verta.modeldb.common.reconcilers.Reconciler;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import java.util.LinkedList;
 import java.util.List;

@@ -43,6 +43,7 @@ import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Observation;
+import ai.verta.modeldb.UpdateExperimentRunDescription;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
@@ -1542,5 +1543,27 @@ public class FutureExperimentRunDAO {
                   .build();
             },
             executor);
+  }
+
+  public InternalFuture<Void> updateExperimentRunDescription(
+      UpdateExperimentRunDescription request) {
+    final var runId = request.getId();
+    final var description = request.getDescription();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenAccept(
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        handle
+                            .createUpdate(
+                                "UPDATE experiment_run SET description = :description WHERE id = :id")
+                            .bind("id", runId)
+                            .bind("description", description)
+                            .execute()),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
 }
