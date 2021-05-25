@@ -22,16 +22,11 @@ from verta._internal_utils import _utils
 
 import hypothesis
 import pytest
-from . import utils
+from . import constants, utils
 
 
 RANDOM_SEED = 0
 INPUT_LENGTH = 12  # length of iterable input fixture
-
-DEFAULT_HOST = None
-DEFAULT_PORT = None
-DEFAULT_EMAIL = None
-DEFAULT_DEV_KEY = None
 
 
 # hypothesis on Jenkins is apparently too slow
@@ -60,43 +55,43 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture(scope="session")
 def host():
-    return os.environ.get("VERTA_HOST", DEFAULT_HOST)
+    return os.environ.get(constants.HOST_ENV_VAR, constants.DEFAULT_HOST)
 
 
 @pytest.fixture(scope="session")
 def port():
-    return os.environ.get("VERTA_PORT", DEFAULT_PORT)
+    return os.environ.get(constants.PORT_ENV_VAR, constants.DEFAULT_PORT)
 
 
 @pytest.fixture(scope="session")
 def email():
-    return os.environ.get("VERTA_EMAIL", DEFAULT_EMAIL)
+    return os.environ.get(constants.EMAIL_ENV_VAR, constants.DEFAULT_EMAIL)
 
 
 @pytest.fixture(scope="session")
 def dev_key():
-    return os.environ.get("VERTA_DEV_KEY", DEFAULT_DEV_KEY)
+    return os.environ.get(constants.DEV_KEY_ENV_VAR, constants.DEFAULT_DEV_KEY)
 
 
 # for collaboration tests
 @pytest.fixture(scope="session")
 def email_2():
-    return os.environ.get("VERTA_EMAIL_2")
+    return os.environ.get(constants.EMAIL_2_ENV_VAR)
 
 
 @pytest.fixture(scope="session")
 def dev_key_2():
-    return os.environ.get("VERTA_DEV_KEY_2")
+    return os.environ.get(constants.DEV_KEY_2_ENV_VAR)
 
 
 @pytest.fixture(scope="session")
 def email_3():
-    return os.environ.get("VERTA_EMAIL_3")
+    return os.environ.get(constants.EMAIL_3_ENV_VAR)
 
 
 @pytest.fixture(scope="session")
 def dev_key_3():
-    return os.environ.get("VERTA_DEV_KEY_3")
+    return os.environ.get(constants.DEV_KEY_3_ENV_VAR)
 
 
 @pytest.fixture
