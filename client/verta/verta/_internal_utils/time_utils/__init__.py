@@ -38,9 +38,7 @@ def epoch_millis(dt):
 
 def timedelta_millis(delta):
     if isinstance(delta, timedelta):
-        millis_from_seconds = delta.total_seconds() * 1000
-        millis_from_micros = delta.microseconds // 1000
-        return millis_from_seconds + millis_from_micros
+        return int(delta.total_seconds() * 1000)
     elif type(delta) == int and delta > 0:
         return delta
     else:
