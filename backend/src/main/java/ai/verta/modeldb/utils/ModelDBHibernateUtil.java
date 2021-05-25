@@ -10,7 +10,6 @@ import ai.verta.modeldb.common.CommonHibernateUtil;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
-import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.MigrationConfig;
@@ -140,8 +139,7 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
           DatasetRepositoryMappingEntity.class,
           UploadStatusEntity.class,
           KeyValuePropertyMappingEntity.class,
-          QueryDatasetComponentBlobEntity.class,
-          AuditLogLocalEntity.class
+          QueryDatasetComponentBlobEntity.class
         };
   }
 
