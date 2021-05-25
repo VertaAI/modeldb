@@ -70,17 +70,15 @@ class TestCreate:
             entity.delete()
             client._ctx.proj = None  # otherwise client teardown tries to delete
 
-    def test_endpoint(self, client, organization):
+    def test_endpoint(self, client, organization, created_entities):
         visibility = OrgCustom(write=True)
 
         endpoint = client.create_endpoint(
             path=_utils.generate_default_name(),
             workspace=organization.name, visibility=visibility,
         )
-        try:
-            assert_endpoint_visibility(endpoint, visibility)
-        finally:
-            endpoint.delete()
+        created_entities.append(endpoint)
+        assert_endpoint_visibility(endpoint, visibility)
 
     @pytest.mark.skip(reason="client.create_repository() does not yet exist")
     def test_repository(self, client, organization):
@@ -111,38 +109,36 @@ class TestSet:
             entity.delete()
             client._ctx.proj = None  # otherwise client teardown tries to delete
 
-    def test_endpoint(self, client, organization):
+    def test_endpoint(self, client, organization, created_entities):
         visibility = OrgCustom(write=True)
 
         endpoint = client.set_endpoint(
             path=_utils.generate_default_name(),
             workspace=organization.name, visibility=visibility,
         )
-        try:
-            assert_endpoint_visibility(endpoint, visibility)
+        created_entities.append(endpoint)
 
-            # second set ignores visibility
-            with pytest.warns(UserWarning, match="cannot set"):
-                endpoint = client.set_endpoint(path=endpoint.path, workspace=organization.name, visibility=Private())
-            assert_endpoint_visibility(endpoint, visibility)
-        finally:
-            endpoint.delete()
+        assert_endpoint_visibility(endpoint, visibility)
 
-    def test_repository(self, client, organization):
+        # second set ignores visibility
+        with pytest.warns(UserWarning, match="cannot set"):
+            endpoint = client.set_endpoint(path=endpoint.path, workspace=organization.name, visibility=Private())
+        assert_endpoint_visibility(endpoint, visibility)
+
+    def test_repository(self, client, organization, created_entities):
         visibility = OrgCustom(write=True)
 
         repo = client.set_repository(
             name=_utils.generate_default_name(),
             workspace=organization.name, visibility=visibility,
         )
-        try:
-            assert_repository_visibility(repo, visibility)
+        created_entities.append(repo)
 
-            # second set ignores visibility
-            repo = client.set_repository(name=repo.name, workspace=organization.name, visibility=Private())
-            assert_repository_visibility(repo, visibility)
-        finally:
-            repo.delete()
+        assert_repository_visibility(repo, visibility)
+
+        # second set ignores visibility
+        repo = client.set_repository(name=repo.name, workspace=organization.name, visibility=Private())
+        assert_repository_visibility(repo, visibility)
 
 
 class TestPublicWithinOrg:
@@ -151,31 +147,29 @@ class TestPublicWithinOrg:
     compatibility with older backends.
 
     """
-    def test_dataset(self, client, organization):
+    def test_dataset(self, client, organization, created_entities):
         visibility = OrgCustom(write=True)
-        entity = client.set_dataset(workspace=organization.name, visibility=visibility)
-        try:
-            if visibility._to_public_within_org():
-                assert entity._msg.dataset_visibility == _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
-            else:
-                assert entity._msg.dataset_visibility == _DatasetService.DatasetVisibilityEnum.PRIVATE
-        finally:
-            entity.delete()
+        dataset = client.set_dataset(workspace=organization.name, visibility=visibility)
+        created_entities.append(dataset)
 
-    def test_endpoint(self, client, organization):
+        if visibility._to_public_within_org():
+            assert dataset._msg.dataset_visibility == _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
+        else:
+            assert dataset._msg.dataset_visibility == _DatasetService.DatasetVisibilityEnum.PRIVATE
+
+    def test_endpoint(self, client, organization, created_entities):
         visibility = OrgCustom(write=True)
         endpoint = client.set_endpoint(
             path=_utils.generate_default_name(),
             workspace=organization.name, visibility=visibility,
         )
-        try:
-            endpoint_json = endpoint._get_json_by_id(endpoint._conn, endpoint.workspace, endpoint.id)
-            if visibility._to_public_within_org():
-                assert endpoint_json['creator_request']['visibility'] == "ORG_SCOPED_PUBLIC"
-            else:
-                assert endpoint_json['creator_request']['visibility'] == "PRIVATE"
-        finally:
-            endpoint.delete()
+        created_entities.append(endpoint)
+
+        endpoint_json = endpoint._get_json_by_id(endpoint._conn, endpoint.workspace, endpoint.id)
+        if visibility._to_public_within_org():
+            assert endpoint_json['creator_request']['visibility'] == "ORG_SCOPED_PUBLIC"
+        else:
+            assert endpoint_json['creator_request']['visibility'] == "PRIVATE"
 
     def test_project(self, client, organization):
         visibility = OrgCustom(write=True)
@@ -189,28 +183,26 @@ class TestPublicWithinOrg:
             entity.delete()
             client._ctx.proj = None  # otherwise client teardown tries to delete
 
-    def test_registered_model(self, client, organization):
+    def test_registered_model(self, client, organization, created_entities):
         visibility = OrgCustom(write=True)
         entity = client.set_registered_model(workspace=organization.name, visibility=visibility)
-        try:
-            if visibility._to_public_within_org():
-                assert entity._msg.visibility == _CommonCommonService.VisibilityEnum.ORG_SCOPED_PUBLIC
-            else:
-                assert entity._msg.visibility == _CommonCommonService.VisibilityEnum.PRIVATE
-        finally:
-            entity.delete()
+        created_entities.append(entity)
 
-    def test_repository(self, client, organization):
+        if visibility._to_public_within_org():
+            assert entity._msg.visibility == _CommonCommonService.VisibilityEnum.ORG_SCOPED_PUBLIC
+        else:
+            assert entity._msg.visibility == _CommonCommonService.VisibilityEnum.PRIVATE
+
+    def test_repository(self, client, organization, created_entities):
         visibility = OrgCustom(write=True)
         repo = client.set_repository(
             name=_utils.generate_default_name(),
             workspace=organization.name, visibility=visibility,
         )
-        try:
-            retrieved_visibility = repo._get_proto_by_id(repo._conn, repo.id).repository_visibility
-            if visibility._to_public_within_org():
-                assert retrieved_visibility == _VersioningService.RepositoryVisibilityEnum.ORG_SCOPED_PUBLIC
-            else:
-                assert retrieved_visibility == _VersioningService.RepositoryVisibilityEnum.PRIVATE
-        finally:
-            repo.delete()
+        created_entities.append(repo)
+
+        retrieved_visibility = repo._get_proto_by_id(repo._conn, repo.id).repository_visibility
+        if visibility._to_public_within_org():
+            assert retrieved_visibility == _VersioningService.RepositoryVisibilityEnum.ORG_SCOPED_PUBLIC
+        else:
+            assert retrieved_visibility == _VersioningService.RepositoryVisibilityEnum.PRIVATE

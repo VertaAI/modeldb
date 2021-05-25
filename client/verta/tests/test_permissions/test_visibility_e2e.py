@@ -190,7 +190,7 @@ class TestLink:
         # private run
         created_entities.append(client_3.create_project(visibility=Private()))
         run = client_3.create_experiment_run()
-        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+        with pytest.raises(requests.HTTPError, match="^404.*not found"):
             reg_model.create_version_from_run(run.id)
 
         # org run
@@ -216,7 +216,7 @@ class TestLink:
         run = client_3.create_experiment_run()
         run.log_model(LogisticRegression(), custom_modules=[])
         run.log_environment(Python(["scikit-learn"]))
-        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+        with pytest.raises(requests.HTTPError, match="^404.*not found"):
             endpoint.update(run)
 
         # org run, deploy=False

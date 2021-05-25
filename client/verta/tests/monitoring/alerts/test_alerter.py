@@ -61,6 +61,7 @@ class TestReference:
     )
     def test_create(self, comparison, threshold, reference_sample_id):
         alerter = ReferenceAlerter(comparison(threshold), reference_sample_id)
+        assert alerter.comparison is not None
 
         msg = _AlertService.AlertReference(
             threshold=threshold,
@@ -83,6 +84,7 @@ class TestReference:
 
         alerter = _Alerter._from_proto(msg)
         assert type(alerter) is ReferenceAlerter
+        assert alerter.comparison is not None
         assert alerter._as_proto() == msg
 
     @hypothesis.given(
