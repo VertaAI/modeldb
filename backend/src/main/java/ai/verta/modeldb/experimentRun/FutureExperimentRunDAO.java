@@ -27,6 +27,7 @@ import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunCodeVersion;
 import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
+import ai.verta.modeldb.GetExperimentRunsInExperiment;
 import ai.verta.modeldb.GetHyperparameters;
 import ai.verta.modeldb.GetMetrics;
 import ai.verta.modeldb.GetObservations;
@@ -44,6 +45,7 @@ import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Observation;
+import ai.verta.modeldb.UpdateExperimentRunDescription;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
@@ -1020,7 +1022,7 @@ public class FutureExperimentRunDAO {
                                                         .filterAndGetPrivilegedDatasetsOnly(
                                                             artifactMapSubtypes.get(
                                                                 builder.getId()),
-                                                            true,
+                                                            false,
                                                             this
                                                                 ::getEntityPermissionBasedOnResourceTypes)
                                                         .thenCompose(
@@ -1551,6 +1553,77 @@ public class FutureExperimentRunDAO {
                   .setTotalRecords(findExperimentRunsResponse.getTotalRecords())
                   .build();
             },
+            executor);
+  }
+
+  public InternalFuture<Void> updateExperimentRunDescription(
+      UpdateExperimentRunDescription request) {
+    final var runId = request.getId();
+    final var description = request.getDescription();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenAccept(
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        handle
+                            .createUpdate(
+                                "UPDATE experiment_run SET description = :description WHERE id = :id")
+                            .bind("id", runId)
+                            .bind("description", description)
+                            .execute()),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<GetExperimentRunsInExperiment.Response> getExperimentRunsInExperiment(
+      GetExperimentRunsInExperiment request) {
+    final var requestValidationFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getExperimentId().isEmpty()) {
+                String errorMessage = "Experiment ID not present";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+    return requestValidationFuture
+        .thenCompose(
+            unused ->
+                jdbi.withHandle(
+                    handle ->
+                        handle
+                            .createQuery("SELECT COUNT(id) FROM experiment WHERE id = :id")
+                            .bind("id", request.getExperimentId())
+                            .mapTo(Long.class)
+                            .one()),
+            executor)
+        .thenAccept(
+            count -> {
+              if (count == 0) {
+                throw new NotFoundException("Experiment not found");
+              }
+            },
+            executor)
+        .thenCompose(
+            unused ->
+                findExperimentRuns(
+                    FindExperimentRuns.newBuilder()
+                        .setExperimentId(request.getExperimentId())
+                        .setSortKey(request.getSortKey())
+                        .setAscending(request.getAscending())
+                        .setPageLimit(request.getPageLimit())
+                        .setPageNumber(request.getPageNumber())
+                        .build()),
+            executor)
+        .thenApply(
+            findResponse ->
+                GetExperimentRunsInExperiment.Response.newBuilder()
+                    .addAllExperimentRuns(findResponse.getExperimentRunsList())
+                    .setTotalRecords(findResponse.getTotalRecords())
+                    .build(),
             executor);
   }
 
