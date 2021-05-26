@@ -5,12 +5,11 @@ import warnings
 from datetime import datetime, timedelta
 
 import pytimeparse
+from verta.external import six
 
-from ...external.six import PY2, PY3
-
-if PY3:
+if six.PY3:
     from ._utc_py3 import utc
-if PY2:
+if six.PY2:
     from ._utc_py2 import utc
 
 
@@ -28,7 +27,7 @@ def now_in_millis():
 def epoch_millis(dt):
     if isinstance(dt, datetime):
         return int(round((dt - UNIX_EPOCH).total_seconds() * 1000))
-    elif type(dt) == int:
+    elif isinstance(dt, int):
         return dt
     elif dt is None:
         return dt
@@ -51,9 +50,9 @@ def timedelta_millis(delta):
     if isinstance(delta, timedelta):
         delta = _force_millisecond_resolution(delta)
         return int(delta.total_seconds() * 1000)
-    elif type(delta) is int and delta > 0:
+    elif isinstance(delta, int) and delta > 0:
         return delta
-    raise ValueError("Cannot convert argument to duration milliseconds")
+    raise ValueError("cannot convert argument to duration milliseconds")
 
 
 def datetime_from_millis(millis):
@@ -62,19 +61,19 @@ def datetime_from_millis(millis):
 
 def parse_duration(value):
     duration = None
-    if type(value) is str:
+    if isinstance(value, six.string_types):
         try:
-            dur_seconds = pytimeparse.parse(value)
+            dur_seconds = pytimeparse.parse(six.ensure_str(value))
             duration = timedelta(seconds=dur_seconds)
         except:
-            raise ValueError("Cannot convert string argument to timedelta")
-    if type(value) is int:
+            raise ValueError("cannot convert string argument to timedelta")
+    if isinstance(value, int):
         if value < 0:
-            raise ValueError("Cannot accept negative integer as a millisecond duration")
+            raise ValueError("cannot accept negative integer as a millisecond duration")
         duration = timedelta(milliseconds=value)
-    if type(value) is timedelta:
+    if isinstance(value, timedelta):
         duration = value
     if duration:
         duration = _force_millisecond_resolution(duration)
         return duration
-    raise ValueError("Cannot convert argument to a time duration")
+    raise ValueError("cannot convert argument to a time duration")
