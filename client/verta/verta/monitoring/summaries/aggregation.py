@@ -72,9 +72,5 @@ class Aggregation(object):
                 op_name = AggregationQuerySummary.AggregationOperation.Name(value)
                 return op_name.lower()
             except:
-                raise ValueError(
-                    "Could not parse int value as operation"
-                )  # TODO: better error message
-        raise ValueError(
-            "Could not parse value as operation"
-        )  # TODO: better error message
+                raise ValueError("could not parse int value as operation")
+        raise ValueError("could not parse value as operation")
