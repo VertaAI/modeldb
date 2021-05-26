@@ -39,7 +39,7 @@ def epoch_millis(dt):
 def timedelta_millis(delta):
     if isinstance(delta, timedelta):
         return int(delta.total_seconds() * 1000)
-    elif type(delta) == int and delta > 0:
+    elif type(delta) is int and delta > 0:
         return delta
     else:
         raise ValueError("Cannot convert argument to duration milliseconds")
