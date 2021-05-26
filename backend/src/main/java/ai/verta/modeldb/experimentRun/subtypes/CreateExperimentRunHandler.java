@@ -74,8 +74,7 @@ public class CreateExperimentRunHandler {
     this.versionInputHandler = versionInputHandler;
   }
 
-  public InternalFuture<ExperimentRun> createExperimentRunFromRequest(
-      final CreateExperimentRun request) {
+  public InternalFuture<ExperimentRun> convertCreateRequest(final CreateExperimentRun request) {
     return FutureGrpc.ClientRequest(
             uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
         .thenCompose(

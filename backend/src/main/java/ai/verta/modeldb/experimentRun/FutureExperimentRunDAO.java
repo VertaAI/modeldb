@@ -1402,8 +1402,7 @@ public class FutureExperimentRunDAO {
                                 .build(),
                         executor),
             executor)
-        .thenCompose(
-            unused -> createExperimentRunHandler.createExperimentRunFromRequest(request), executor)
+        .thenCompose(unused -> createExperimentRunHandler.convertCreateRequest(request), executor)
         .thenCompose(
             experimentRun ->
                 createExperimentRunHandler
