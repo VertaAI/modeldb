@@ -13,6 +13,7 @@ public class ReconcilerInitializer {
   public static SoftDeleteExperimentRuns softDeleteExperimentRuns;
   public static SoftDeleteRepositories softDeleteRepositories;
   public static SoftDeleteRepositories softDeleteDatasets;
+  public static UpdateParentTimestampReconcile updateParentTimestampReconcile;
 
   public static void initialize(Config config, ServiceSet services) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
@@ -24,6 +25,7 @@ public class ReconcilerInitializer {
         new SoftDeleteRepositories(new ReconcilerConfig(), services.roleService, false);
     softDeleteDatasets =
         new SoftDeleteRepositories(new ReconcilerConfig(), services.roleService, true);
+    updateParentTimestampReconcile = new UpdateParentTimestampReconcile(new ReconcilerConfig());
     LOGGER.info("Exit from ReconcilerUtils: initialize()");
   }
 }
