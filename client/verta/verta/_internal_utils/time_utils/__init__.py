@@ -41,8 +41,7 @@ def timedelta_millis(delta):
         return int(delta.total_seconds() * 1000)
     elif type(delta) is int and delta > 0:
         return delta
-    else:
-        raise ValueError("Cannot convert argument to duration milliseconds")
+    raise ValueError("Cannot convert argument to duration milliseconds")
 
 
 def datetime_from_millis(millis):
