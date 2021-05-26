@@ -2,6 +2,7 @@
 
 from datetime import datetime, timedelta
 import time
+import warnings
 
 import pytimeparse
 
@@ -36,8 +37,20 @@ def epoch_millis(dt):
         raise ValueError("Cannot convert argument to epoch milliseconds")
 
 
+def _force_millisecond_resolution(delta):
+    microseconds = delta.microseconds % 1000
+    if microseconds > 0:
+        warnings.warn(
+            "Microsecond resolution unsupported, converting to millisecond resolution"
+        )
+        return delta - timedelta(microseconds=microseconds)
+    else:
+        return delta
+
+
 def timedelta_millis(delta):
     if isinstance(delta, timedelta):
+        delta = _force_millisecond_resolution(delta)
         return int(delta.total_seconds() * 1000)
     elif type(delta) is int and delta > 0:
         return delta
@@ -49,16 +62,20 @@ def datetime_from_millis(millis):
 
 
 def parse_duration(value):
+    duration = None
     if type(value) is str:
         try:
             dur_seconds = pytimeparse.parse(value)
-            return timedelta(seconds=dur_seconds)
+            duration = timedelta(seconds=dur_seconds)
         except:
             raise ValueError("Cannot convert string argument to timedelta")
     if type(value) is int:
         if value < 0:
             raise ValueError("Cannot accept negative integer as a millisecond duration")
-        return timedelta(milliseconds=value)
+        duration = timedelta(milliseconds=value)
     if type(value) is timedelta:
-        return value
+        duration = value
+    if duration:
+        duration = _force_millisecond_resolution(duration)
+        return duration
     raise ValueError("Cannot convert argument to a time duration")
