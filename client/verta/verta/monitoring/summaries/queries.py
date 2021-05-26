@@ -178,13 +178,16 @@ class SummarySampleQuery(object):
     .. code-block:: python
 
         from datetime import datetime, timezone
-        from verta.monitoring.summary import SummaryQuery, SummarySampleQuery
+        from verta.monitoring.summaries.aggregation import Aggregation
+        from verta.monitoring.summaries.queries import SummaryQuery, SummarySampleQuery
 
         samples = Client().monitoring.summary_samples
+
         sample_query = SummarySampleQuery(
             summary_query=SummaryQuery(names=["Income Distributions"]),
             labels={"datasource": ["census2010", "census2020"]},
             created_after=datetime(year=2021, month=2, day=22, tzinfo=timezone.utc),
+            aggregation=Aggregation(timedelta(days=7), "sum")
         )
 
         for sample in samples.find(sample_query):

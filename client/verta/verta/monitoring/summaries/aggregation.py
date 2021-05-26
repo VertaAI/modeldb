@@ -8,6 +8,27 @@ from verta.external import six
 
 
 class Aggregation(object):
+    """A query object specifying how summary samples should be aggregated.
+
+    Attributes
+    ----------
+    granularity : :class:`datetime.timedelta`
+        The granularity of aggregation.
+    operation : str
+        The aggregation operation to perform.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from datetime import timedelta
+        from verta.monitoring.summaries.aggregation import Aggregation
+
+        weekly_agg = Aggregation(timedelta(days=7), "sum")
+        hourly_agg = Aggregation("1h", "sum")
+        minute_agg = Aggregation(1000 * 60, "sum")
+
+    """
 
     _OPERATIONS = {
         k.lower(): v for k, v in AggregationQuerySummary.AggregationOperation.items()
@@ -22,6 +43,11 @@ class Aggregation(object):
 
     @property
     def granularity(self):
+        """The granularity of aggregation.
+
+        :getter: Returns the specified time granularity of aggregation
+        :setter: Sets the time granularity from a timedelta, string, or int of epoch milliseconds.
+        """
         return self._granularity
 
     @granularity.setter
@@ -31,6 +57,11 @@ class Aggregation(object):
 
     @property
     def operation(self):
+        """The operation of aggregation used to combine summary samples.
+
+        :getter: Returns the operation
+        :setter: Sets the time operation from a string
+        """
         return self._operation
 
     @operation.setter
@@ -57,7 +88,14 @@ class Aggregation(object):
 
     @classmethod
     def operations(cls):
-        return cls._OPERATIONS.keys()
+        """Return the set of supported aggregation operations.
+
+        Returns
+        -------
+        set of str
+            A set of valid aggregation operations.
+        """
+        return set(cls._OPERATIONS.keys())
 
     @classmethod
     def _parse_operation(cls, value):
