@@ -26,6 +26,7 @@ import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunCodeVersion;
 import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
+import ai.verta.modeldb.GetExperimentRunsInExperiment;
 import ai.verta.modeldb.GetHyperparameters;
 import ai.verta.modeldb.GetMetrics;
 import ai.verta.modeldb.GetObservations;
@@ -1565,5 +1566,54 @@ public class FutureExperimentRunDAO {
                             .execute()),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<GetExperimentRunsInExperiment.Response> getExperimentRunsInExperiment(
+      GetExperimentRunsInExperiment request) {
+    final var requestValidationFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getExperimentId().isEmpty()) {
+                String errorMessage = "Experiment ID not present";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+    return requestValidationFuture
+        .thenCompose(
+            unused ->
+                jdbi.withHandle(
+                    handle ->
+                        handle
+                            .createQuery("SELECT COUNT(id) FROM experiment WHERE id = :id")
+                            .bind("id", request.getExperimentId())
+                            .mapTo(Long.class)
+                            .one()),
+            executor)
+        .thenAccept(
+            count -> {
+              if (count == 0) {
+                throw new NotFoundException("Experiment not found");
+              }
+            },
+            executor)
+        .thenCompose(
+            unused ->
+                findExperimentRuns(
+                    FindExperimentRuns.newBuilder()
+                        .setExperimentId(request.getExperimentId())
+                        .setSortKey(request.getSortKey())
+                        .setAscending(request.getAscending())
+                        .setPageLimit(request.getPageLimit())
+                        .setPageNumber(request.getPageNumber())
+                        .build()),
+            executor)
+        .thenApply(
+            findResponse ->
+                GetExperimentRunsInExperiment.Response.newBuilder()
+                    .addAllExperimentRuns(findResponse.getExperimentRunsList())
+                    .setTotalRecords(findResponse.getTotalRecords())
+                    .build(),
+            executor);
   }
 }

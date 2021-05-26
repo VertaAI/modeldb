@@ -105,31 +105,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       GetExperimentRunsInExperiment request,
       StreamObserver<GetExperimentRunsInExperiment.Response> responseObserver) {
     try {
-      final var requestValidationFuture =
-          InternalFuture.runAsync(
-              () -> {
-                if (request.getExperimentId().isEmpty()) {
-                  String errorMessage = "Experiment ID not present";
-                  throw new InvalidArgumentException(errorMessage);
-                }
-              },
-              executor);
-      final var response =
-          requestValidationFuture
-              .thenCompose(
-                  unused ->
-                      futureExperimentRunDAO.findExperimentRuns(
-                          FindExperimentRuns.newBuilder()
-                              .setExperimentId(request.getExperimentId())
-                              .build()),
-                  executor)
-              .thenApply(
-                  findResponse ->
-                      GetExperimentRunsInExperiment.Response.newBuilder()
-                          .addAllExperimentRuns(findResponse.getExperimentRunsList())
-                          .setTotalRecords(findResponse.getTotalRecords())
-                          .build(),
-                  executor);
+      final var response = futureExperimentRunDAO.getExperimentRunsInExperiment(request);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
