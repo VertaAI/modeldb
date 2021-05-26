@@ -163,7 +163,7 @@ class SummarySampleQuery(object):
     created_after : datetime.datetime or int, optional
         Only fetch samples created at or after this time. Either a timezone
         aware datetime object or unix epoch milliseconds.
-    aggregation : :class:`Aggregation`, optional
+    aggregation : :class:`~verta.monitoring.summaries.aggregation.Aggregation`, optional
         Parameters for aggregation of summary samples
     page_number : int, default 1
         Pagination page number for the backend query request. Used in
