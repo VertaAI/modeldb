@@ -177,7 +177,7 @@ class SummarySampleQuery(object):
     --------
     .. code-block:: python
 
-        from datetime import datetime, timezone
+        from datetime import datetime, timedelta, timezone
         from verta.monitoring.summaries.aggregation import Aggregation
         from verta.monitoring.summaries.queries import SummaryQuery, SummarySampleQuery
 
