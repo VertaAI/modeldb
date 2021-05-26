@@ -7958,7 +7958,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: cloneExperimentRun endpoint")
   public void cloneExperimentRun() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Clone experimentRun test start................................");
 
