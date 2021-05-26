@@ -2,9 +2,9 @@
 
 from __future__ import print_function
 
-from verta._internal_utils._utils import as_list_of_str
+from verta import data_types
 from verta._internal_utils import pagination_utils, time_utils
-from ..utils import extract_ids, maybe
+from verta._internal_utils._utils import as_list_of_str
 from verta._protos.public.monitoring.Summary_pb2 import (
     AggregationQuerySummary,
     FilterQuerySummarySample,
@@ -12,7 +12,8 @@ from verta._protos.public.monitoring.Summary_pb2 import (
     FindSummarySampleRequest,
     LabelFilterQuerySummarySample,
 )
-from verta import data_types
+
+from ..utils import extract_ids, maybe
 from .aggregation import Aggregation
 
 
@@ -253,8 +254,8 @@ class SummarySampleQuery(object):
             self._aggregation = value
         else:
             raise ValueError(
-                "Not a valid aggregation type"
-            )  # TODO: better error message
+                "value must be Aggregation object or proto, not {}".format(type(value))
+            )
 
     @classmethod
     def _from_proto_request(cls, msg):

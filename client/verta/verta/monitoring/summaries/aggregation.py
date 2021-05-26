@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-from verta._protos.public.monitoring.Summary_pb2 import AggregationQuerySummary
+
 from verta._internal_utils import time_utils
+from verta._protos.public.monitoring.Summary_pb2 import AggregationQuerySummary
+from verta.external import six
 
 
 class Aggregation(object):
@@ -61,7 +63,8 @@ class Aggregation(object):
     def _parse_operation(cls, value):
         if value in cls._OPERATIONS:
             return value
-        if type(value) is str:
+        if isinstance(value, six.string_types):
+            value = six.ensure_str(value)
             if value in AggregationQuerySummary.AggregationOperation.keys():
                 return value.lower()
         if type(value) is int:

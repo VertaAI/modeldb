@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timedelta
 import time
 import warnings
+from datetime import datetime, timedelta
 
 import pytimeparse
 
 from ...external.six import PY2, PY3
-
 
 if PY3:
     from ._utc_py3 import utc
