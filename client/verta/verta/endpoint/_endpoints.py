@@ -9,6 +9,20 @@ from ._endpoint import Endpoint
 
 # a rough copy of LazyList's API, because Endpoints don't use protos, find, or pagination
 class Endpoints(object):
+    """Collection object for finding endpoints.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta import Client
+
+        client = Client()
+        # delete all endpoints in a given workspace
+        for endpoint in client.endpoints.with_workspace("Demos"):
+            endpoint.delete()
+
+    """
     def __init__(self, conn, conf, workspace_name):
         self._conn = conn
         self._conf = conf

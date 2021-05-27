@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Entities for logging projects and experiments to the Verta backend."""
 
 from verta._internal_utils import documentation
 

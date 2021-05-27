@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""XGBoost callback for automatic experiment run logging."""
 
 from ...external import six
 

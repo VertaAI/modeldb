@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""A collection of summary samples."""
 
 from __future__ import print_function
 

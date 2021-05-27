@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""A snapshot or window of data."""
 
 from __future__ import print_function
 

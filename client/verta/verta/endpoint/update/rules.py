@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Rules to guide canary endpoint updates."""
 
 import abc
 import json

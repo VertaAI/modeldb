@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Monitoring alerts."""
 
 from verta._internal_utils import documentation
 

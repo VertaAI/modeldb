@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Strategies for endpoint rollouts."""
 
 from verta._internal_utils import documentation
 

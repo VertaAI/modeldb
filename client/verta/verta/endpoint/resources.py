@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Resource configuration for endpoints."""
 
 import abc
 import re

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""A entity with associated data summaries and alerts."""
 
 from __future__ import print_function
 

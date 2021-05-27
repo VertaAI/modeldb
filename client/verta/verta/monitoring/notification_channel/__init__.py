@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Notification channels to which to propagate alert messages."""
 
 from verta._internal_utils import documentation
 
