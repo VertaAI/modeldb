@@ -26,6 +26,7 @@ def now_in_millis():
 
 def epoch_millis(dt):
     if isinstance(dt, datetime):
+        dt = _promote_naive_to_utc(dt)
         return int(round((dt - UNIX_EPOCH).total_seconds() * 1000))
     elif isinstance(dt, int):
         return dt
@@ -33,6 +34,14 @@ def epoch_millis(dt):
         return dt
     else:
         raise ValueError("Cannot convert argument to epoch milliseconds")
+
+
+def _promote_naive_to_utc(dt):
+    if dt.tzinfo is None:
+        warnings.warn("Time zone naive datetime found, assuming UTC time zone")
+        return dt.astimezone(utc)
+    else:
+        return dt
 
 
 def _force_millisecond_resolution(delta):
