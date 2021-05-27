@@ -238,9 +238,22 @@ class ExperimentRuns(_utils.LazyList):
 
         return new_runs
 
-    def with_workspace(self, workspace_name=None):
+    def with_workspace(self, workspace=None):
+        """Returns experiment runs in the specified workspace.
+
+        Parameters
+        ----------
+        workspace : str, optional
+            Workspace name. If not provided, uses personal workspace.
+
+        Returns
+        -------
+        :class:`ExperimentRuns`
+            Filtered experiment runs.
+
+        """
         new_list = copy.deepcopy(self)
         new_list._msg.ClearField('project_id')
         new_list._msg.ClearField('experiment_id')
-        new_list._msg.workspace_name = workspace_name or ''
+        new_list._msg.workspace_name = workspace or ''
         return new_list

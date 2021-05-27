@@ -52,14 +52,13 @@ class Datasets(_utils.LazyList):
     def _create_element(self, msg):
         return _dataset.Dataset(self._conn, self._conf, msg)
 
-    def with_workspace(self, workspace_name=None):
-        """
-        Returns datasets in the specified workspace.
+    def with_workspace(self, workspace=None):
+        """Returns datasets in the specified workspace.
 
         Parameters
         ----------
-        workspace_name : str or None, default None
-            Workspace name. If ``None``, uses personal workspace.
+        workspace : str, optional
+            Workspace name. If not provided, uses personal workspace.
 
         Returns
         -------
@@ -68,12 +67,11 @@ class Datasets(_utils.LazyList):
 
         """
         new_list = copy.deepcopy(self)
-        new_list._msg.workspace_name = workspace_name
+        new_list._msg.workspace_name = workspace
         return new_list
 
     def with_ids(self, ids):
-        """
-        Returns datasets with the specified IDs.
+        """Returns datasets with the specified IDs.
 
         Parameters
         ----------

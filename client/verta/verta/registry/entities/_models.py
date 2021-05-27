@@ -41,10 +41,23 @@ class RegisteredModels(_utils.LazyList):
     def _create_element(self, msg):
         return RegisteredModel(self._conn, self._conf, msg)
 
-    def with_workspace(self, workspace_name=None):
+    def with_workspace(self, workspace=None):
+        """Returns registered models in the specified workspace.
+
+        Parameters
+        ----------
+        workspace : str, optional
+            Workspace name. If not provided, uses personal workspace.
+
+        Returns
+        -------
+        :class:`RegisteredModels`
+            Filtered registered models.
+
+        """
         new_list = copy.deepcopy(self)
-        if workspace_name is not None:
-            new_list._msg.workspace_name = workspace_name
+        if workspace is not None:
+            new_list._msg.workspace_name = workspace
         else:
             new_list._msg.workspace_name = ''
         return new_list
