@@ -49,8 +49,21 @@ class Experiments(_utils.LazyList):
             new_list._msg.project_id = ''
         return new_list
 
-    def with_workspace(self, workspace_name=None):
+    def with_workspace(self, workspace=None):
+        """Returns experiments in the specified workspace.
+
+        Parameters
+        ----------
+        workspace : str, optional
+            Workspace name. If not provided, uses personal workspace.
+
+        Returns
+        -------
+        :class:`Experiments`
+            Filtered experiments.
+
+        """
         new_list = copy.deepcopy(self)
         new_list._msg.ClearField('project_id')
-        new_list._msg.workspace_name = workspace_name or ''
+        new_list._msg.workspace_name = workspace or ''
         return new_list

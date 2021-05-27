@@ -27,16 +27,20 @@ class TestEndpoint:
     def test_create(self, client, created_entities):
         name = _utils.generate_default_name()
         endpoint = client.set_endpoint(name)
-        assert endpoint
         created_entities.append(endpoint)
+        assert endpoint
+
         name = verta._internal_utils._utils.generate_default_name()
         endpoint = client.create_endpoint(name)
+        created_entities.append(endpoint)
         assert endpoint
+
         with pytest.raises(requests.HTTPError) as excinfo:
             assert client.create_endpoint(name)
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already in use" in excinfo_value
+
         with pytest.warns(UserWarning, match='.*already exists.*'):
             client.set_endpoint(path=endpoint.path, description="new description")
 
@@ -655,9 +659,9 @@ class TestEndpoint:
         with pytest.raises(requests.HTTPError) as excinfo:
             endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
-        excinfo_value = str(excinfo.value).strip()
-        assert "403" in excinfo_value
-        assert "Access Denied" in excinfo_value
+        exc_msg = str(excinfo.value).strip()
+        assert exc_msg.startswith("404")
+        assert "not found" in exc_msg
 
     def test_update_from_version_diff_workspace_no_access_error(self, client_2, model_version, created_entities):
         np = pytest.importorskip("numpy")

@@ -44,9 +44,22 @@ class Endpoints(object):
     def __len__(self):
         return len(self._ids)
 
-    def with_workspace(self, workspace_name):  # unlike MDB endpoints, workspace required
+    def with_workspace(self, workspace):  # unlike MDB endpoints, workspace required
+        """Returns endpoints in the specified workspace.
+
+        Parameters
+        ----------
+        workspace : str, optional
+            Workspace name. If not provided, uses personal workspace.
+
+        Returns
+        -------
+        :class:`Endpoints`
+            Filtered endpoints.
+
+        """
         new_list = copy.deepcopy(self)
-        new_list._workspace_name = workspace_name
+        new_list._workspace_name = workspace
         # store state Clientside because we can't make paginated calls anyway
         new_list._ids = new_list._get_ids()
         return new_list

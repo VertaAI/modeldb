@@ -734,15 +734,42 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="set-created-true-for-existing-experiment-run" author="anandJ">
+    <changeSet id="set-created-true-for-existing-experiment-run" author="anandJ" failOnError="false">
+        <validCheckSum>8:c72ea307ca64028f75921f962f871d96</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <or>
+                <dbms type="mysql"/>
+                <dbms type="postgres"/>
+            </or>
+        </preConditions>
+        <update tableName="experiment_run">
+            <column name="created" valueBoolean="true"/>
+            <where>created=false AND deleted=false</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="db_version_2.25" author="anandJ">
+        <tagDatabase tag="db_version_2.25"/>
+    </changeSet>
+
+    <changeSet id="set-created-true-based-on-column-type-existing-experiment-run" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mssql"/>
+            <not>
+                <or>
+                    <dbms type="mysql"/>
+                    <dbms type="postgres"/>
+                </or>
+            </not>
+        </preConditions>
         <update tableName="experiment_run">
             <column name="created" valueBoolean="true"/>
             <where>created=0 AND deleted=0</where>
         </update>
     </changeSet>
 
-    <changeSet id="db_version_2.25" author="anandJ">
-        <tagDatabase tag="db_version_2.25"/>
+    <changeSet id="db_version_2.26" author="anandJ">
+        <tagDatabase tag="db_version_2.26"/>
     </changeSet>
 
 </databaseChangeLog>

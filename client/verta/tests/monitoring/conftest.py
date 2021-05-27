@@ -28,10 +28,7 @@ def summary(client, monitored_entity, created_entities):
         monitored_entity,
     )
 
-    yield summary
-
-    # TODO: use `created_entities` if/when Summary reimplements delete()
-    client.monitoring.summaries.delete([summary])
+    return summary
 
 
 @pytest.fixture

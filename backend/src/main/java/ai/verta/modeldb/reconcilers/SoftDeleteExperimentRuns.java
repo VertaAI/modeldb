@@ -60,11 +60,13 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
 
       Transaction transaction = session.beginTransaction();
       String delete =
-          String.format(
-              "DELETE FROM %s WHERE entity_id IN (:ids)", CommentEntity.class.getSimpleName());
+          String.format("FROM %s WHERE entity_id IN (:ids)", CommentEntity.class.getSimpleName());
       Query deleteQuery = session.createQuery(delete);
-      deleteQuery.setParameter("ids", ids);
-      deleteQuery.executeUpdate();
+      deleteQuery.setParameterList("ids", ids);
+      List<CommentEntity> comments = deleteQuery.list();
+      for (CommentEntity commentEntity : comments) {
+        session.delete(commentEntity);
+      }
       transaction.commit();
 
       for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {

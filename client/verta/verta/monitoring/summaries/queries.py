@@ -3,17 +3,19 @@
 
 from __future__ import print_function
 
-
-from verta._internal_utils._utils import as_list_of_str
+from verta import data_types
 from verta._internal_utils import pagination_utils, time_utils
-from ..utils import extract_ids, maybe
+from verta._internal_utils._utils import as_list_of_str
 from verta._protos.public.monitoring.Summary_pb2 import (
+    AggregationQuerySummary,
     FilterQuerySummarySample,
     FindSummaryRequest,
     FindSummarySampleRequest,
     LabelFilterQuerySummarySample,
 )
-from verta import data_types
+
+from ..utils import extract_ids, maybe
+from .aggregation import Aggregation
 
 
 def _labels_proto(labels):
@@ -163,6 +165,8 @@ class SummarySampleQuery(object):
     created_after : datetime.datetime or int, optional
         Only fetch samples created at or after this time. Either a timezone
         aware datetime object or unix epoch milliseconds.
+    aggregation : :class:`~verta.monitoring.summaries.aggregation.Aggregation`, optional
+        Parameters for aggregation of summary samples.
     page_number : int, default 1
         Pagination page number for the backend query request. Used in
         conjunction with `page_limit`.
@@ -174,14 +178,17 @@ class SummarySampleQuery(object):
     --------
     .. code-block:: python
 
-        from datetime import datetime, timezone
-        from verta.monitoring.summary import SummaryQuery, SummarySampleQuery
+        from datetime import datetime, timedelta, timezone
+        from verta.monitoring.summaries.aggregation import Aggregation
+        from verta.monitoring.summaries.queries import SummaryQuery, SummarySampleQuery
 
         samples = Client().monitoring.summary_samples
+
         sample_query = SummarySampleQuery(
             summary_query=SummaryQuery(names=["Income Distributions"]),
             labels={"datasource": ["census2010", "census2020"]},
             created_after=datetime(year=2021, month=2, day=22, tzinfo=timezone.utc),
+            aggregation=Aggregation(timedelta(days=7), "sum")
         )
 
         for sample in samples.find(sample_query):
@@ -196,6 +203,7 @@ class SummarySampleQuery(object):
         labels=None,
         time_window_start=None,
         time_window_end=None,
+        aggregation=None,
         created_after=None,
         page_number=1,
         page_limit=None,
@@ -208,6 +216,7 @@ class SummarySampleQuery(object):
         self._labels = maybe(_labels_proto, labels)
         self._time_window_start = time_window_start
         self._time_window_end = time_window_end
+        self._aggregation = aggregation
         self._created_after = created_after
         self._page_number = page_number
         self._page_limit = page_limit
@@ -235,6 +244,23 @@ class SummarySampleQuery(object):
         summary_query = SummaryQuery._from_proto_request(proto_summary_query)
         self._summary_query = summary_query
 
+    @property
+    def aggregation(self):
+        return self._aggregation
+
+    @aggregation.setter
+    def aggregation(self, value):
+        if value is None:
+            self._aggregation = None
+        elif isinstance(value, AggregationQuerySummary):
+            self._aggregation = Aggregation._from_proto(value)
+        elif isinstance(value, Aggregation):
+            self._aggregation = value
+        else:
+            raise ValueError(
+                "value must be Aggregation object or proto, not {}".format(type(value))
+            )
+
     @classmethod
     def _from_proto_request(cls, msg):
         # set attrs after creation to bypass conversion logic in __init__()
@@ -251,12 +277,14 @@ class SummarySampleQuery(object):
         obj._created_after = time_utils.datetime_from_millis(
             msg.filter.created_at_after_millis
         )
+        obj.aggregation = msg.aggregation
         obj._page_number = msg.page_number
         obj._page_limit = pagination_utils.page_limit_from_proto(msg.page_limit)
 
         return obj
 
     def _to_proto_request(self):
+        aggregation_proto = maybe(lambda agg: agg._to_proto(), self.aggregation)
         return FindSummarySampleRequest(
             filter=FilterQuerySummarySample(
                 find_summaries=self._find_summaries,
@@ -270,13 +298,10 @@ class SummarySampleQuery(object):
                 ),
                 created_at_after_millis=time_utils.epoch_millis(self._created_after),
             ),
+            aggregation=aggregation_proto,
             page_number=self._page_number,
             page_limit=pagination_utils.page_limit_to_proto(self._page_limit),
         )
 
     def __repr__(self):
         return "SummarySampleQuery({})".format(self._to_proto_request())
-
-    def _set_created_after(self, created_after):
-        """To avoid having the alerter assign directly to a private attr."""
-        self._created_after = created_after

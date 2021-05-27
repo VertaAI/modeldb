@@ -71,14 +71,14 @@ class TestMDBIntegration:
         created_entities.append(registered_model)
 
         with pytest.raises(requests.HTTPError) as excinfo:
-            model_version = registered_model.create_version_from_run(
+            registered_model.create_version_from_run(
                 run_id=experiment_run.id,
                 name="From Run {}".format(experiment_run.id)
             )
 
-        excinfo_value = str(excinfo.value).strip()
-        assert "403" in excinfo_value
-        assert "Access Denied" in excinfo_value
+        exc_msg = str(excinfo.value).strip()
+        assert exc_msg.startswith("404")
+        assert "not found" in exc_msg
 
 
 class TestModelVersion:
@@ -190,10 +190,8 @@ class TestModelVersion:
         model_version.add_labels(["tag2", "tag4", "tag1", "tag5"])
         assert model_version.get_labels() == ["tag1", "tag2", "tag3", "tag4", "tag5"]
 
-    def test_description(self, client, created_entities):
+    def test_description(self, client, registered_model):
         desc = "description"
-        registered_model = client.get_or_create_registered_model()
-        created_entities.append(registered_model)
         model_version = registered_model.get_or_create_version(name="my version")
         model_version.set_description(desc)
         assert desc == model_version.get_description()
@@ -315,14 +313,13 @@ class TestFind:
             assert labels1 == labels2
             assert item._msg == msg_other
 
-    def test_find_stage(self, client, created_entities):
+    def test_find_stage(self, registered_model):
         # TODO: expand with other stages once client impls version transition
-        reg_model = client.create_registered_model()
-        assert len(reg_model.versions.find("stage == development")) == 0
+        assert len(registered_model.versions.find("stage == development")) == 0
 
-        reg_model.create_version()
-        assert len(reg_model.versions.find("stage == development")) == 1
-        assert len(reg_model.versions.find("stage == staging")) == 0
+        registered_model.create_version()
+        assert len(registered_model.versions.find("stage == development")) == 1
+        assert len(registered_model.versions.find("stage == staging")) == 0
 
 
 class TestArtifacts:
@@ -398,10 +395,10 @@ class TestArtifacts:
         dirpath, _ = dir_and_files
 
         model_version.log_artifact(key, dirpath)
-        model_version.download_artifact(key, download_path)
+        retrieved_path = model_version.download_artifact(key, download_path)
 
         # contents match
-        utils.assert_dirs_match(dirpath, download_path)
+        utils.assert_dirs_match(dirpath, retrieved_path)
 
     def test_wrong_key(self, model_version):
         with pytest.raises(KeyError) as excinfo:
@@ -527,17 +524,18 @@ class TestDeployability:
     def test_download_sklearn(self, model_version, in_tempdir):
         LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
 
-        upload_filepath = "model.pkl"
-        download_filepath = "retrieved_model.pkl"
+        upload_path = "model.pkl"
+        download_path = "retrieved_model.pkl"
 
         model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
-        with open(upload_filepath, 'wb') as f:
+        with open(upload_path, 'wb') as f:
             pickle.dump(model, f)
 
         model_version.log_model(model, custom_modules=[])
-        model_version.download_model(download_filepath)
+        returned_path = model_version.download_model(download_path)
+        assert returned_path == os.path.abspath(download_path)
 
-        with open(download_filepath, 'rb') as f:
+        with open(download_path, 'rb') as f:
             downloaded_model = pickle.load(f)
 
         assert downloaded_model.get_params() == model.get_params()
@@ -676,7 +674,8 @@ class TestArbitraryModels:
         download_path = strs[0]
 
         model_version.log_model(dirpath)
-        model_version.download_model(download_path)
+        returned_path = model_version.download_model(download_path)
+        assert returned_path == os.path.abspath(download_path)
 
         # contents match
         utils.assert_dirs_match(dirpath, download_path)
@@ -698,7 +697,8 @@ class TestArbitraryModels:
             run_id=experiment_run.id,
             name="From Run {}".format(experiment_run.id),
         )
-        model_version.download_model(download_path)
+        returned_path = model_version.download_model(download_path)
+        assert returned_path == os.path.abspath(download_path)
 
         utils.assert_dirs_match(dirpath, download_path)
 
@@ -715,7 +715,8 @@ class TestArbitraryModels:
             )
 
         model_version.log_model(upload_path)
-        model_version.download_model(download_path)
+        returned_path = model_version.download_model(download_path)
+        assert returned_path == os.path.abspath(download_path)
 
         assert zipfile.is_zipfile(download_path)
         assert filecmp.cmp(upload_path, download_path)

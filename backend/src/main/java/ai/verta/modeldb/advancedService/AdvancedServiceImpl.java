@@ -18,6 +18,8 @@ import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.*;
@@ -39,6 +41,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -54,8 +57,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   private final ExperimentDAO experimentDAO;
   private final DatasetDAO datasetDAO;
   private final DatasetVersionDAO datasetVersionDAO;
+  private final Executor executor;
 
-  public AdvancedServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+  public AdvancedServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
     this.authService = serviceSet.authService;
     this.roleService = serviceSet.roleService;
     this.projectDAO = daoSet.projectDAO;
@@ -65,6 +69,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     this.datasetDAO = daoSet.datasetDAO;
     this.datasetVersionDAO = daoSet.datasetVersionDAO;
     this.futureExperimentRunDAO = daoSet.futureExperimentRunDAO;
+    this.executor = executor;
   }
 
   private List<HydratedProject> getHydratedProjects(List<Project> projects)
@@ -486,34 +491,43 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         LOGGER.trace("Validated experiment accessibility");
       }
 
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-      final var experimentRunPaginationDTO =
-          futureExperimentRunDAO.findExperimentRuns(request).get();
+      final var experimentRunPaginationDTOFuture =
+          futureExperimentRunDAO.findExperimentRuns(request);
       //      ExperimentRunPaginationDTO experimentRunPaginationDTO =
       //          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo, request);
-      LOGGER.debug(
-          ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
+      var futureResponse =
+          experimentRunPaginationDTOFuture.thenCompose(
+              experimentRunPaginationDTO -> {
+                LOGGER.debug(
+                    ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG,
+                    experimentRunPaginationDTO.getTotalRecords());
 
-      List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
-      if (request.getIdsOnly()) {
-        for (ExperimentRun experimentRun : experimentRunPaginationDTO.getExperimentRunsList()) {
-          hydratedExperimentRuns.add(
-              HydratedExperimentRun.newBuilder().setExperimentRun(experimentRun).build());
-        }
-      } else if (!experimentRunPaginationDTO.getExperimentRunsList().isEmpty()) {
-        hydratedExperimentRuns =
-            getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRunsList());
-      }
+                List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
+                if (request.getIdsOnly()) {
+                  for (ExperimentRun experimentRun :
+                      experimentRunPaginationDTO.getExperimentRunsList()) {
+                    hydratedExperimentRuns.add(
+                        HydratedExperimentRun.newBuilder().setExperimentRun(experimentRun).build());
+                  }
+                } else if (!experimentRunPaginationDTO.getExperimentRunsList().isEmpty()) {
+                  try {
+                    hydratedExperimentRuns =
+                        getHydratedExperimentRuns(
+                            experimentRunPaginationDTO.getExperimentRunsList());
+                  } catch (InvalidProtocolBufferException e) {
+                    return InternalFuture.failedStage(e);
+                  }
+                }
 
-      LOGGER.debug("hydratedExperimentRuns size {}", hydratedExperimentRuns.size());
-
-      responseObserver.onNext(
-          AdvancedQueryExperimentRunsResponse.newBuilder()
-              .addAllHydratedExperimentRuns(hydratedExperimentRuns)
-              .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
-              .build());
-      responseObserver.onCompleted();
-
+                LOGGER.debug("hydratedExperimentRuns size {}", hydratedExperimentRuns.size());
+                return InternalFuture.completedInternalFuture(
+                    AdvancedQueryExperimentRunsResponse.newBuilder()
+                        .addAllHydratedExperimentRuns(hydratedExperimentRuns)
+                        .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
+                        .build());
+              },
+              executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(
           responseObserver, e, AdvancedQueryExperimentRunsResponse.getDefaultInstance());

@@ -2,8 +2,12 @@ package ai.verta.modeldb.experimentRun;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
+import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddExperimentRunTags;
+import ai.verta.modeldb.CloneExperimentRun;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
 import ai.verta.modeldb.CommitMultipartArtifact;
@@ -22,6 +26,8 @@ import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunCodeVersion;
+import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
+import ai.verta.modeldb.GetExperimentRunsInExperiment;
 import ai.verta.modeldb.GetHyperparameters;
 import ai.verta.modeldb.GetMetrics;
 import ai.verta.modeldb.GetObservations;
@@ -39,12 +45,14 @@ import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Observation;
+import ai.verta.modeldb.UpdateExperimentRunDescription;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -80,6 +88,7 @@ import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.Action;
+import ai.verta.uac.Empty;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
@@ -90,16 +99,20 @@ import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Value;
+import com.google.rpc.Code;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -593,13 +606,18 @@ public class FutureExperimentRunDAO {
 
   public InternalFuture<Void> logDatasets(LogDatasets request) {
     final var runId = request.getId();
-    final var artifacts = request.getDatasetsList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> datasetHandler.logArtifacts(runId, artifacts, request.getOverwrite()),
+            unused ->
+                privilegedDatasetsHandler.filterAndGetPrivilegedDatasetsOnly(
+                    request.getDatasetsList(), true, this::getEntityPermissionBasedOnResourceTypes),
+            executor)
+        .thenCompose(
+            privilegedDatasets ->
+                datasetHandler.logArtifacts(runId, privilegedDatasets, request.getOverwrite()),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
   }
@@ -732,7 +750,8 @@ public class FutureExperimentRunDAO {
     final var futureExperimentRuns =
         futureProjectIds.thenCompose(
             accessibleProjectIdsQueryContext -> {
-              if (accessibleProjectIdsQueryContext.getConditions().isEmpty()) {
+              // accessibleProjectIdsQueryContext == null means not allowed anything
+              if (accessibleProjectIdsQueryContext == null) {
                 return InternalFuture.completedInternalFuture(new ArrayList<ExperimentRun>());
               } else {
                 final var futureProjectIdsContext =
@@ -1003,7 +1022,7 @@ public class FutureExperimentRunDAO {
                                                         .filterAndGetPrivilegedDatasetsOnly(
                                                             artifactMapSubtypes.get(
                                                                 builder.getId()),
-                                                            true,
+                                                            false,
                                                             this
                                                                 ::getEntityPermissionBasedOnResourceTypes)
                                                         .thenCompose(
@@ -1137,7 +1156,8 @@ public class FutureExperimentRunDAO {
     final var futureCount =
         futureProjectIds.thenCompose(
             accessibleProjectIdsQueryContext -> {
-              if (accessibleProjectIdsQueryContext.getConditions().isEmpty()) {
+              // accessibleProjectIdsQueryContext == null means not allowed anything
+              if (accessibleProjectIdsQueryContext == null) {
                 return InternalFuture.completedInternalFuture(0L);
               } else {
                 final var futureProjectIdsContext =
@@ -1195,7 +1215,7 @@ public class FutureExperimentRunDAO {
                           .flatMap(x -> x.getResourceIdsList().stream())
                           .collect(Collectors.toList());
                   if (accessibleProjectIds.isEmpty()) {
-                    return new QueryFilterContext();
+                    return null;
                   } else {
                     return new QueryFilterContext()
                         .addCondition("experiment_run.project_id in (<authz_project_ids>)")
@@ -1384,7 +1404,13 @@ public class FutureExperimentRunDAO {
                                 .build(),
                         executor),
             executor)
-        .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
+        .thenCompose(unused -> createExperimentRunHandler.convertCreateRequest(request), executor)
+        .thenCompose(
+            experimentRun ->
+                createExperimentRunHandler
+                    .insertExperimentRun(experimentRun)
+                    .thenApply(unused2 -> experimentRun, executor),
+            executor);
   }
 
   public InternalFuture<Void> logEnvironment(LogEnvironment request) {
@@ -1443,5 +1469,280 @@ public class FutureExperimentRunDAO {
             futureVersionedInputs,
             this::getEntityPermissionBasedOnResourceTypes)
         .thenApply(versioningEntryMap -> versioningEntryMap.get(request.getId()), executor);
+  }
+
+  public InternalFuture<GetExperimentRunsByDatasetVersionId.Response>
+      getExperimentRunsByDatasetVersionId(GetExperimentRunsByDatasetVersionId request) {
+    var validationFuture =
+        InternalFuture.runAsync(
+            () -> {
+              // Validate request parameter
+              if (request.getDatasetVersionId().isEmpty()) {
+                throw new ModelDBException(
+                    "DatasetVersion Id should not be empty", Code.INVALID_ARGUMENT);
+              }
+            },
+            executor);
+    return validationFuture
+        .thenAccept(
+            unused ->
+                // Validate requested dataset version exists
+                jdbi.useHandle(
+                    handle -> {
+                      handle
+                          .createQuery("SELECT COUNT(id) FROM commit WHERE id = :id")
+                          .bind("id", request.getDatasetVersionId())
+                          .mapTo(Long.class)
+                          .findOne()
+                          .orElseThrow(() -> new NotFoundException("DatasetVersion not found"));
+
+                      // Validate requested dataset version mappings with datasets
+                      List<Long> mappingDatasetIds =
+                          handle
+                              .createQuery(
+                                  "SELECT repository_id FROM repository_commit WHERE commit_hash = :id")
+                              .bind("id", request.getDatasetVersionId())
+                              .mapTo(Long.class)
+                              .list();
+
+                      if (mappingDatasetIds.size() == 0) {
+                        throw new InternalErrorException(
+                            "DatasetVersion not attached with the dataset");
+                      } else if (mappingDatasetIds.size() > 1) {
+                        throw new InternalErrorException(
+                            "DatasetVersion '"
+                                + request.getDatasetVersionId()
+                                + "' associated with multiple datasets");
+                      }
+                    }),
+            executor)
+        .thenApply(
+            unused -> {
+              // Create find ER request using dataset version predicate and requested pagination
+              // parameters
+              KeyValueQuery entityKeyValuePredicate =
+                  KeyValueQuery.newBuilder()
+                      .setKey(ModelDBConstants.DATASETS + "." + ModelDBConstants.LINKED_ARTIFACT_ID)
+                      .setValue(
+                          Value.newBuilder().setStringValue(request.getDatasetVersionId()).build())
+                      .setOperator(OperatorEnum.Operator.EQ)
+                      .setValueType(ValueTypeEnum.ValueType.STRING)
+                      .build();
+
+              return FindExperimentRuns.newBuilder()
+                  .setPageNumber(request.getPageNumber())
+                  .setPageLimit(request.getPageLimit())
+                  .setAscending(request.getAscending())
+                  .setSortKey(request.getSortKey())
+                  .addPredicates(entityKeyValuePredicate)
+                  .build();
+            },
+            executor)
+        .thenCompose(this::findExperimentRuns, executor)
+        .thenApply(
+            findExperimentRunsResponse -> {
+              // Build GetExperimentRunsByDatasetVersionId response from find ER response
+              LOGGER.trace(
+                  "Final return experiment_run count for dataset version: {}",
+                  findExperimentRunsResponse.getExperimentRunsCount());
+              LOGGER.trace(
+                  "Final return total record count : {}",
+                  findExperimentRunsResponse.getTotalRecords());
+              return GetExperimentRunsByDatasetVersionId.Response.newBuilder()
+                  .addAllExperimentRuns(findExperimentRunsResponse.getExperimentRunsList())
+                  .setTotalRecords(findExperimentRunsResponse.getTotalRecords())
+                  .build();
+            },
+            executor);
+  }
+
+  public InternalFuture<Void> updateExperimentRunDescription(
+      UpdateExperimentRunDescription request) {
+    final var runId = request.getId();
+    final var description = request.getDescription();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkPermission(
+            Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenAccept(
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        handle
+                            .createUpdate(
+                                "UPDATE experiment_run SET description = :description WHERE id = :id")
+                            .bind("id", runId)
+                            .bind("description", description)
+                            .execute()),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<GetExperimentRunsInExperiment.Response> getExperimentRunsInExperiment(
+      GetExperimentRunsInExperiment request) {
+    final var requestValidationFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getExperimentId().isEmpty()) {
+                String errorMessage = "Experiment ID not present";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+    return requestValidationFuture
+        .thenCompose(
+            unused ->
+                jdbi.withHandle(
+                    handle ->
+                        handle
+                            .createQuery("SELECT COUNT(id) FROM experiment WHERE id = :id")
+                            .bind("id", request.getExperimentId())
+                            .mapTo(Long.class)
+                            .one()),
+            executor)
+        .thenAccept(
+            count -> {
+              if (count == 0) {
+                throw new NotFoundException("Experiment not found");
+              }
+            },
+            executor)
+        .thenCompose(
+            unused ->
+                findExperimentRuns(
+                    FindExperimentRuns.newBuilder()
+                        .setExperimentId(request.getExperimentId())
+                        .setSortKey(request.getSortKey())
+                        .setAscending(request.getAscending())
+                        .setPageLimit(request.getPageLimit())
+                        .setPageNumber(request.getPageNumber())
+                        .build()),
+            executor)
+        .thenApply(
+            findResponse ->
+                GetExperimentRunsInExperiment.Response.newBuilder()
+                    .addAllExperimentRuns(findResponse.getExperimentRunsList())
+                    .setTotalRecords(findResponse.getTotalRecords())
+                    .build(),
+            executor);
+  }
+
+  public InternalFuture<CloneExperimentRun.Response> cloneExperimentRun(
+      CloneExperimentRun request) {
+    var validateRequestParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getSrcExperimentRunId().isEmpty()) {
+                throw new InvalidArgumentException("Source ExperimentRun Id should not be empty");
+              }
+            },
+            executor);
+
+    return validateRequestParamFuture
+        .thenCompose(
+            unused ->
+                FutureGrpc.ClientRequest(
+                    uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
+            executor)
+        .thenCompose(
+            userInfo ->
+                findExperimentRuns(
+                        FindExperimentRuns.newBuilder()
+                            .addExperimentRunIds(request.getSrcExperimentRunId())
+                            .build())
+                    .thenApply(
+                        findExperimentRuns -> {
+                          if (findExperimentRuns.getExperimentRunsList().isEmpty()) {
+                            throw new NotFoundException("Source experiment run not found");
+                          }
+                          ExperimentRun srcExperimentRun = findExperimentRuns.getExperimentRuns(0);
+                          return srcExperimentRun.toBuilder().clone();
+                        },
+                        executor)
+                    .thenCompose(
+                        cloneExperimentRunBuilder ->
+                            checkPermissionAndPopulateFieldsBasedOnDestExperimentId(
+                                request, cloneExperimentRunBuilder),
+                        executor)
+                    .thenCompose(
+                        desExperimentRunBuilder -> {
+                          desExperimentRunBuilder
+                              .setId(UUID.randomUUID().toString())
+                              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+                              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
+                              .setStartTime(Calendar.getInstance().getTimeInMillis())
+                              .setEndTime(Calendar.getInstance().getTimeInMillis());
+
+                          if (!request.getDestExperimentRunName().isEmpty()) {
+                            desExperimentRunBuilder.setName(request.getDestExperimentRunName());
+                          } else {
+                            desExperimentRunBuilder.setName(
+                                desExperimentRunBuilder.getName() + " - " + new Date().getTime());
+                          }
+
+                          if (userInfo != null) {
+                            desExperimentRunBuilder
+                                .clearOwner()
+                                .setOwner(userInfo.getVertaInfo().getUserId());
+                          }
+                          return createExperimentRunHandler
+                              .insertExperimentRun(desExperimentRunBuilder.build())
+                              .thenApply(
+                                  unused1 ->
+                                      CloneExperimentRun.Response.newBuilder()
+                                          .setRun(desExperimentRunBuilder.build())
+                                          .build(),
+                                  executor);
+                        },
+                        executor),
+            executor);
+  }
+
+  private InternalFuture<ExperimentRun.Builder>
+      checkPermissionAndPopulateFieldsBasedOnDestExperimentId(
+          CloneExperimentRun request, ExperimentRun.Builder cloneExperimentRunBuilder) {
+    if (!request.getDestExperimentId().isEmpty()) {
+      if (!cloneExperimentRunBuilder.getExperimentId().equals(request.getDestExperimentId())) {
+        return jdbi.withHandle(
+                handle ->
+                    handle
+                        .createQuery("SELECT project_id FROM experiment where id = :id")
+                        .bind("id", request.getDestExperimentId())
+                        .mapTo(String.class)
+                        .findOne())
+            .thenApply(
+                projectId -> {
+                  if (projectId.isEmpty()) {
+                    throw new NotFoundException(
+                        "Experiment not found for given ID: " + request.getDestExperimentId());
+                  }
+                  return projectId.get();
+                },
+                executor)
+            .thenCompose(
+                projectId ->
+                    getEntityPermissionBasedOnResourceTypes(
+                            Collections.singletonList(projectId),
+                            ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                            ModelDBServiceResourceTypes.PROJECT)
+                        .thenCompose(
+                            allowed -> {
+                              if (!allowed) {
+                                throw new PermissionDeniedException(
+                                    "Destination project is not accessible");
+                              }
+                              return InternalFuture.completedInternalFuture(projectId);
+                            },
+                            executor),
+                executor)
+            .thenApply(
+                projectId ->
+                    cloneExperimentRunBuilder
+                        .setExperimentId(request.getDestExperimentId())
+                        .setProjectId(projectId),
+                executor);
+      }
+    }
+    return InternalFuture.completedInternalFuture(cloneExperimentRunBuilder);
   }
 }

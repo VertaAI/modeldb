@@ -68,13 +68,12 @@ class TestIntegration:
 
         alert = summary.alerts.create(name, alerter)
         assert alert.status == Ok()
-        assert alert._last_evaluated_or_created_millis == alert._msg.created_at_millis
+        assert alert.last_evaluated_at is None
 
         alert.set_status(Alerting([summary_sample]))
         assert alert.status == Alerting([summary_sample])
-        assert (
-            alert._last_evaluated_or_created_millis
-            == alert._msg.last_evaluated_at_millis
+        assert alert.last_evaluated_at == time_utils.datetime_from_millis(
+            alert._msg.last_evaluated_at_millis
         )
 
         alert.set_status(Ok())
@@ -111,6 +110,37 @@ class TestAlert:
         labels = {"datasource": ["census2010", "census2020"]}
         starting_from = datetime.datetime(year=2021, month=5, day=10, tzinfo=time_utils.utc)
 
+        # none passed
+        alert = summary.alerts.create(
+            name,
+            alerter,
+        )
+        expected_sample_query = SummarySampleQuery(
+            summary_query=summary.alerts._build_summary_query(),
+            time_window_end=alert.created_at,
+            created_after=alert.created_at,
+        )
+        assert alert.summary_sample_query == expected_sample_query
+        assert alert.labels == {}
+        assert alert.starting_from is None
+
+        # just labels
+        alert = summary.alerts.create(
+            name,
+            alerter,
+            labels=labels,
+        )
+        expected_sample_query = SummarySampleQuery(
+            summary_query=summary.alerts._build_summary_query(),
+            labels=labels,
+            time_window_end=alert.created_at,
+            created_after=alert.created_at,
+        )
+        assert alert.summary_sample_query == expected_sample_query
+        assert alert.labels == labels
+        assert alert.starting_from is None
+
+        # starting_from
         alert = summary.alerts.create(
             name,
             alerter,
@@ -121,9 +151,11 @@ class TestAlert:
             summary_query=summary.alerts._build_summary_query(),
             labels=labels,
             time_window_end=starting_from,
+            created_after=alert.created_at,
         )
-
         assert alert.summary_sample_query == expected_sample_query
+        assert alert.labels == labels
+        assert alert.starting_from == starting_from
 
     def test_creation_override_datetimes(self, summary, strs):
         strs = iter(strs)

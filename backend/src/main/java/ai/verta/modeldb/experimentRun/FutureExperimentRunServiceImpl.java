@@ -5,8 +5,8 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -68,16 +68,48 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void getExperimentRunsInProject(
       GetExperimentRunsInProject request,
       StreamObserver<GetExperimentRunsInProject.Response> responseObserver) {
-    responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getProjectId().isEmpty()) {
+                  String errorMessage = "Project ID not present";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentRunDAO.findExperimentRuns(
+                          FindExperimentRuns.newBuilder()
+                              .setProjectId(request.getProjectId())
+                              .build()),
+                  executor)
+              .thenApply(
+                  findResponse ->
+                      GetExperimentRunsInProject.Response.newBuilder()
+                          .addAllExperimentRuns(findResponse.getExperimentRunsList())
+                          .setTotalRecords(findResponse.getTotalRecords())
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getExperimentRunsInExperiment(
       GetExperimentRunsInExperiment request,
       StreamObserver<GetExperimentRunsInExperiment.Response> responseObserver) {
-    responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+    try {
+      final var response = futureExperimentRunDAO.getExperimentRunsInExperiment(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -190,8 +222,29 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void updateExperimentRunDescription(
       UpdateExperimentRunDescription request,
       StreamObserver<UpdateExperimentRunDescription.Response> responseObserver) {
-    responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+    try {
+      final var response =
+          futureExperimentRunDAO
+              .updateExperimentRunDescription(request)
+              .thenApply(
+                  unused -> {
+                    try {
+                      return experimentRunDAO.getExperimentRun(request.getId());
+                    } catch (Exception e) {
+                      throw new ModelDBException(e);
+                    }
+                  },
+                  executor)
+              .thenApply(
+                  experimentRun ->
+                      UpdateExperimentRunDescription.Response.newBuilder()
+                          .setExperimentRun(experimentRun)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -878,8 +931,12 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void getExperimentRunsByDatasetVersionId(
       GetExperimentRunsByDatasetVersionId request,
       StreamObserver<GetExperimentRunsByDatasetVersionId.Response> responseObserver) {
-    responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+    try {
+      final var response = futureExperimentRunDAO.getExperimentRunsByDatasetVersionId(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -955,7 +1012,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   @Override
   public void cloneExperimentRun(
       CloneExperimentRun request, StreamObserver<CloneExperimentRun.Response> responseObserver) {
-    responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+    try {
+      final var response = futureExperimentRunDAO.cloneExperimentRun(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 }
