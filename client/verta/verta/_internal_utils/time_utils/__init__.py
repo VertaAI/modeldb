@@ -28,7 +28,7 @@ def epoch_millis(dt):
     if isinstance(dt, datetime):
         dt = _promote_naive_to_utc(dt)
         return int(round((dt - UNIX_EPOCH).total_seconds() * 1000))
-    elif isinstance(dt, int):
+    elif isinstance(dt, int) and dt >= 0:
         return dt
     elif dt is None:
         return dt
@@ -55,7 +55,7 @@ def _force_millisecond_resolution(delta):
         return delta
 
 
-def timedelta_millis(delta):
+def duration_millis(delta):
     if isinstance(delta, timedelta):
         delta = _force_millisecond_resolution(delta)
         return int(delta.total_seconds() * 1000)
