@@ -59,7 +59,7 @@ def duration_millis(delta):
     if isinstance(delta, timedelta):
         delta = _force_millisecond_resolution(delta)
         return int(delta.total_seconds() * 1000)
-    elif isinstance(delta, int) and delta > 0:
+    elif isinstance(delta, int) and delta >= 0:
         return delta
     raise ValueError("cannot convert argument to duration milliseconds")
 
@@ -82,7 +82,7 @@ def parse_duration(value):
         duration = timedelta(milliseconds=value)
     if isinstance(value, timedelta):
         duration = value
-    if duration:
+    if duration is not None:
         duration = _force_millisecond_resolution(duration)
         return duration
     raise ValueError("cannot convert argument to a time duration")

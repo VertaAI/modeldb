@@ -33,6 +33,10 @@ class TestEpochMillis:
 
 
 class TestDurationMillis:
+    def test_zero_millis(self):
+        assert time_utils.duration_millis(0) == 0
+        assert time_utils.duration_millis(timedelta()) == 0
+
     @given(millis=millis_uint64_strategy)
     def test_duration_millis(self, millis):
         duration = time_utils.duration_millis(millis)
@@ -51,7 +55,7 @@ class TestDurationMillis:
             duration = time_utils.duration_millis(delta)
             assert duration == millis
 
-    @given(negative_int=st.integers(max_value=0))
+    @given(negative_int=st.integers(max_value=-1))
     def test_reject_negative_duration(self, negative_int):
         with pytest.raises(ValueError):
             time_utils.duration_millis(negative_int)
@@ -61,6 +65,10 @@ class TestParseDuration:
     def test_parse_duration(self):
         one_day = time_utils.parse_duration("1d")
         assert one_day == timedelta(days=1)
+
+    def test_parse_zero(self):
+        zero_dur = time_utils.parse_duration(0)
+        assert isinstance(zero_dur, timedelta)
 
     @given(millis=millis_uint64_strategy)
     def test_parse_duration_delta(self, millis):
