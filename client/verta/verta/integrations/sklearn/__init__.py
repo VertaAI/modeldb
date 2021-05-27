@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 """
 scikit-learn dynamic patch that automates logging to Verta during training.
 

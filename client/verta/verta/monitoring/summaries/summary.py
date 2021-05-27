@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""An entity to create and contain samples, persisted to Verta."""
 
 from __future__ import print_function
 

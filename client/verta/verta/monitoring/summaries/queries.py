@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Queries for summaries and summary samples."""
 
 from __future__ import print_function
 

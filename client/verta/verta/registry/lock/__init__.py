@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Lock levels for registered models."""
 
 from verta._internal_utils import documentation
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Autoscaling configuration for endpoints."""
 
 from verta._internal_utils import documentation
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Monitoring sub-client."""
 
 from __future__ import print_function
 
