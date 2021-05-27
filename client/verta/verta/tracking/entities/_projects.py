@@ -41,7 +41,20 @@ class Projects(_utils.LazyList):
     def _create_element(self, msg):
         return Project(self._conn, self._conf, msg)
 
-    def with_workspace(self, workspace_name=None):
+    def with_workspace(self, workspace=None):
+        """Returns projects in the specified workspace.
+
+        Parameters
+        ----------
+        workspace : str, optional
+            Workspace name. If not provided, uses personal workspace.
+
+        Returns
+        -------
+        :class:`Projects`
+            Filtered projects.
+
+        """
         new_list = copy.deepcopy(self)
-        new_list._msg.workspace_name = workspace_name or ''
+        new_list._msg.workspace_name = workspace or ''
         return new_list
