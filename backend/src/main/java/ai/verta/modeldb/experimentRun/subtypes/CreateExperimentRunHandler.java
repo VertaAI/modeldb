@@ -16,11 +16,13 @@ import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.uac.*;
+import com.mysql.cj.jdbc.exceptions.MySQLTransactionRollbackException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class CreateExperimentRunHandler {
@@ -178,10 +180,47 @@ public class CreateExperimentRunHandler {
 
   public InternalFuture<Void> insertExperimentRun(ExperimentRun newExperimentRun) {
     final var now = Calendar.getInstance().getTimeInMillis();
+    Map<String, Object> runValueMap = new LinkedHashMap<>();
+    runValueMap.put("id", newExperimentRun.getId());
+    runValueMap.put("project_id", newExperimentRun.getProjectId());
+    runValueMap.put("experiment_id", newExperimentRun.getExperimentId());
+    runValueMap.put("name", newExperimentRun.getName());
+    runValueMap.put("description", newExperimentRun.getDescription());
+    runValueMap.put("date_created", newExperimentRun.getDateCreated());
+    runValueMap.put("date_updated", newExperimentRun.getDateUpdated());
+    runValueMap.put("start_time", newExperimentRun.getStartTime());
+    runValueMap.put("end_time", newExperimentRun.getEndTime());
+    runValueMap.put("code_version", newExperimentRun.getCodeVersion());
+    runValueMap.put("job_id", newExperimentRun.getJobId());
+    runValueMap.put("parent_id", newExperimentRun.getParentId());
+    runValueMap.put("owner", newExperimentRun.getOwner());
+
+    runValueMap.put("environment", null);
+    runValueMap.put("deleted", false);
+    runValueMap.put("created", false);
+
+    // Created comma separated field names from keys of above map
+    String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
+    String commaFields = String.join(",", fieldsArr);
+
+    StringBuilder queryStrBuilder =
+        new StringBuilder("insert into experiment_run ( ").append(commaFields).append(") values (");
+
+    // Created comma separated query bind arguments for the values
+    // based on the
+    // keys of
+    // above the map
+    // Ex: VALUES (:project_id, :experiment_id, :name) etc.
+    String bindArguments =
+        String.join(",", Arrays.stream(fieldsArr).map(s -> ":" + s).toArray(String[]::new));
+
+    queryStrBuilder.append(bindArguments);
+    queryStrBuilder.append(" ) ");
+
     return jdbi.useHandle(
             handle ->
                 handle.useTransaction(
-                    TransactionIsolationLevel.SERIALIZABLE,
+                    TransactionIsolationLevel.READ_COMMITTED,
                     handleForTransaction -> {
                       Boolean exists =
                           checkInsertedEntityAlreadyExists(handleForTransaction, newExperimentRun);
@@ -192,47 +231,6 @@ public class CreateExperimentRunHandler {
                                 + "' already exists in database");
                       }
 
-                      Map<String, Object> runValueMap = new LinkedHashMap<>();
-                      runValueMap.put("id", newExperimentRun.getId());
-                      runValueMap.put("project_id", newExperimentRun.getProjectId());
-                      runValueMap.put("experiment_id", newExperimentRun.getExperimentId());
-                      runValueMap.put("name", newExperimentRun.getName());
-                      runValueMap.put("description", newExperimentRun.getDescription());
-                      runValueMap.put("date_created", newExperimentRun.getDateCreated());
-                      runValueMap.put("date_updated", newExperimentRun.getDateUpdated());
-                      runValueMap.put("start_time", newExperimentRun.getStartTime());
-                      runValueMap.put("end_time", newExperimentRun.getEndTime());
-                      runValueMap.put("code_version", newExperimentRun.getCodeVersion());
-                      runValueMap.put("job_id", newExperimentRun.getJobId());
-                      runValueMap.put("parent_id", newExperimentRun.getParentId());
-                      runValueMap.put("owner", newExperimentRun.getOwner());
-
-                      runValueMap.put("environment", null);
-                      runValueMap.put("deleted", false);
-                      runValueMap.put("created", false);
-
-                      // Created comma separated field names from keys of above map
-                      String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
-                      String commaFields = String.join(",", fieldsArr);
-
-                      StringBuilder queryStrBuilder =
-                          new StringBuilder("insert into experiment_run ( ")
-                              .append(commaFields)
-                              .append(") values (");
-
-                      // Created comma separated query bind arguments for the values
-                      // based on the
-                      // keys of
-                      // above the map
-                      // Ex: VALUES (:project_id, :experiment_id, :name) etc.
-                      String bindArguments =
-                          String.join(
-                              ",",
-                              Arrays.stream(fieldsArr).map(s -> ":" + s).toArray(String[]::new));
-
-                      queryStrBuilder.append(bindArguments);
-                      queryStrBuilder.append(" ) ");
-
                       LOGGER.trace(
                           "insert experiment run query string: " + queryStrBuilder.toString());
                       var query = handleForTransaction.createUpdate(queryStrBuilder.toString());
@@ -241,8 +239,19 @@ public class CreateExperimentRunHandler {
                       for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {
                         query.bind(objectEntry.getKey(), objectEntry.getValue());
                       }
-                      int count = query.execute();
-                      LOGGER.trace("ExperimentRun Inserted : " + (count > 0));
+
+                      try {
+                        int count = query.execute();
+                        LOGGER.trace("ExperimentRun Inserted : " + (count > 0));
+                      } catch (UnableToExecuteStatementException exception) {
+                        if (exception.getCause() instanceof MySQLTransactionRollbackException) {
+                          // take a brief pause before resubmitting its query/transaction
+                          Thread.sleep(100); // Time in ms
+                          LOGGER.trace("Retry to insert ExperimentRun");
+                          int count = query.execute();
+                          LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
+                        }
+                      }
                     }))
         .thenCompose(
             unused -> {
