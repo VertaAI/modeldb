@@ -120,6 +120,9 @@ class Client(object):
             dev_key = os.environ['VERTA_DEV_KEY']
             print("set developer key from environment")
         dev_key = self._set_from_config_if_none(dev_key, "dev_key")
+        self._workspace = os.environ.get('VERTA_WORKSPACE')
+        if self._workspace is not None:
+            print("set workspace from environment")
 
         if host is None:
             raise ValueError("`host` must be provided")
@@ -184,7 +187,6 @@ class Client(object):
         self._conf = _utils.Configuration(use_git, debug)
 
         self._ctx = _Context(self._conn, self._conf)
-        self._workspace = None
 
     @property
     def proj(self):
