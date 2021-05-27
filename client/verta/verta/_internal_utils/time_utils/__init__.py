@@ -73,7 +73,7 @@ def parse_duration(value):
         duration = timedelta(milliseconds=value)
     if isinstance(value, timedelta):
         duration = value
-    if duration:
+    if duration is not None:
         duration = _force_millisecond_resolution(duration)
         return duration
-    raise ValueError("cannot convert argument to a time duration")
+    raise ValueError("cannot convert {} to a time duration".format(value))
