@@ -86,6 +86,7 @@ class TestMetadata:  # essentially copied from test_dataset.py
 
 class TestCreateGet:
     def test_creation_updates_dataset_timestamp(self, client, dataset):
+        """Version creation should update its dataset's time_updated field."""
         time_updated = dataset._msg.time_updated
 
         dataset_version = dataset.create_version(Path(["conftest.py"]))
