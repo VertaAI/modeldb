@@ -70,7 +70,7 @@ class Aggregation(object):
         self._operation = parsed_operation
 
     def _to_proto(self):
-        granularity_proto = time_utils.timedelta_millis(self.granularity)
+        granularity_proto = time_utils.duration_millis(self.granularity)
         operation_proto = self._OPERATIONS[self.operation]
         return AggregationQuerySummary(
             time_granularity_millis=granularity_proto, operation=operation_proto

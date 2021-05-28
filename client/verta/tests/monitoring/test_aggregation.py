@@ -6,7 +6,6 @@ from datetime import timedelta
 import hypothesis.strategies as st  # import builds, sampled_from,
 import pytest
 from hypothesis import given
-from verta._internal_utils.time_utils import timedelta_millis
 from verta.monitoring.summaries.aggregation import Aggregation
 
 from .strategies import aggregation_query_strategy, granularity_strategy, ops_strategy

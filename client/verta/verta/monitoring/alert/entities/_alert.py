@@ -154,7 +154,7 @@ class Alert(_entity._ModelDBEntity):
     def starting_from(self):
         self._refresh_cache()
 
-        millis = self._msg.sample_find_base.filter.time_window_end_at_millis
+        millis = self._msg.sample_find_base.filter.time_window_start_at_millis
         if not millis:
             return None
         return time_utils.datetime_from_millis(millis)
@@ -192,8 +192,8 @@ class Alert(_entity._ModelDBEntity):
 
         # if user did not set `starting_from` during alert creation,
         # only fetch samples pertaining to present, not backfilled samples
-        if not sample_query_msg.filter.time_window_end_at_millis:
-            sample_query_msg.filter.time_window_end_at_millis = last_evaluated_at
+        if not sample_query_msg.filter.time_window_start_at_millis:
+            sample_query_msg.filter.time_window_start_at_millis = last_evaluated_at
 
         return SummarySampleQuery._from_proto_request(sample_query_msg)
 
@@ -487,7 +487,7 @@ class Alerts(object):
         summary_sample_query = SummarySampleQuery(
             summary_query=self._build_summary_query(),
             labels=labels,
-            time_window_end=time_utils.epoch_millis(starting_from),
+            time_window_start=time_utils.epoch_millis(starting_from),
         )
 
         if notification_channels is None:

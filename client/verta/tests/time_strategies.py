@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 
-import hypothesis.strategies as st
 from datetime import timedelta
 
-from verta._internal_utils.time_utils import timedelta_millis
+import hypothesis.strategies as st
+from verta._internal_utils.time_utils import duration_millis
+import warnings
+
+
+def duration_millis_ignore_warn(delta):
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        return duration_millis(delta)
 
 
 millis_timedelta_strategy = st.timedeltas(min_value=timedelta(milliseconds=1))
 
-millis_uint64_strategy = millis_timedelta_strategy.map(timedelta_millis)
+millis_uint64_strategy = millis_timedelta_strategy.map(duration_millis_ignore_warn)
