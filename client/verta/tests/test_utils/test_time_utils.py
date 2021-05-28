@@ -53,7 +53,7 @@ class TestDurationMillis:
         delta = timedelta(milliseconds=millis, microseconds=2)
         with pytest.warns(UserWarning):
             duration = time_utils.duration_millis(delta)
-            assert duration == millis
+        assert duration == millis
 
     @given(negative_int=st.integers(max_value=-1))
     def test_reject_negative_duration(self, negative_int):
@@ -81,4 +81,4 @@ class TestParseDuration:
         delta = timedelta(milliseconds=millis, microseconds=5)
         with pytest.warns(UserWarning):
             duration = time_utils.parse_duration(delta)
-            assert duration == timedelta(milliseconds=millis)
+        assert duration == timedelta(milliseconds=millis)
