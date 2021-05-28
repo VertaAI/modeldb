@@ -20,7 +20,7 @@ class TestEpochMillis:
         assert naive_dt.tzinfo is None
         with pytest.warns(UserWarning):
             millis = time_utils.epoch_millis(naive_dt)
-            _check_positive_millis(millis)
+        _check_positive_millis(millis)
 
     def test_aware_dt(self):
         aware_dt = datetime.now(time_utils.utc)
