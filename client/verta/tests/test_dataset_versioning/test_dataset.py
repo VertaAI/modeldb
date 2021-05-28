@@ -4,6 +4,7 @@ import pytest
 import requests
 
 import verta
+from verta.dataset import Path
 
 
 class TestMetadata:
@@ -71,6 +72,17 @@ class TestMetadata:
 
 
 class TestCreateGet:
+    def test_creation_updates_dataset_timestamp(self, client, dataset):
+        """Version creation should update its dataset's time_updated field."""
+        time_updated = dataset._msg.time_updated
+
+        dataset_version = dataset.create_version(Path(["conftest.py"]))
+
+        dataset._fetch_with_no_cache()
+        assert dataset._msg.time_updated > time_updated
+        # TODO: might be close but not equal
+        assert dataset._msg.time_updated == dataset_version._msg.time_logged
+
     def test_create(self, client, created_entities):
         dataset = client.set_dataset()
         assert dataset
