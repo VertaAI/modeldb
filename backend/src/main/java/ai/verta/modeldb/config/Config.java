@@ -27,6 +27,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
   public TrialConfig trial;
   public List<MigrationConfig> migrations;
   private FutureJdbi jdbi;
+  public int jdbi_retry_time = 100; // Time in ms
 
   public static Config getInstance() throws InternalErrorException {
     if (config == null) {

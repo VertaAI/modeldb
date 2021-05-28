@@ -246,7 +246,7 @@ public class CreateExperimentRunHandler {
                       } catch (UnableToExecuteStatementException exception) {
                         if (exception.getCause() instanceof MySQLTransactionRollbackException) {
                           // take a brief pause before resubmitting its query/transaction
-                          Thread.sleep(100); // Time in ms
+                          Thread.sleep(config.jdbi_retry_time); // Time in ms
                           LOGGER.trace("Retry to insert ExperimentRun");
                           int count = query.execute();
                           LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
