@@ -85,6 +85,16 @@ class TestMetadata:  # essentially copied from test_dataset.py
 
 
 class TestCreateGet:
+    def test_creation_updates_dataset_timestamp(self, client, dataset):
+        time_updated = dataset._msg.time_updated
+
+        dataset_version = dataset.create_version(Path(["conftest.py"]))
+
+        dataset._fetch_with_no_cache()
+        assert dataset._msg.time_updated > time_updated
+        # TODO: might be close but not equal
+        assert dataset._msg.time_updated == dataset_version._msg.time_logged
+
     def test_create_get_path(self, client, created_entities):
         name = verta._internal_utils._utils.generate_default_name()
         dataset = client.set_dataset(name)
