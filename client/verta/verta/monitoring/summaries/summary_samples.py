@@ -58,7 +58,9 @@ class SummarySamples:
             )
         msg = query._to_proto_request()
         endpoint = "/api/v1/summaries/findSample"
-        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        response = self._conn.make_proto_request(
+            "POST", endpoint, body=msg, include_default=False
+        )
         maybe_samples = self._conn.must_proto_response(response, msg.Response)
         return [
             SummarySample(self._conn, self._conf, sample)
