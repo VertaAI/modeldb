@@ -92,7 +92,7 @@ public class FilterPrivilegedDatasetsHandler {
                     && datasetVersionDatasetMap.get(datasetVersionId) != null) {
                   datasetIds.add(datasetVersionDatasetMap.get(datasetVersionId));
                 } else if (errorOut) { // While reading datasets for 'Find*', 'get*' we should not
-                                       // error out and just skip it.
+                  // error out and just skip it.
                   return InternalFuture.failedStage(
                       new InvalidArgumentException(
                           "Dataset not found for dataset version: " + datasetVersionId));
