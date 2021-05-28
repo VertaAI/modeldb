@@ -31,12 +31,22 @@ class TestNumericSummarySamples:
 
     @pytest.fixture(scope="class")
     def numeric_samples(self, class_client, numeric_summary):
+        created = []
         for numeric in self.numeric_values:
-            numeric_summary.log_sample(numeric, self.labels, self.yesterday, self.now)
+            logged = numeric_summary.log_sample(
+                numeric, self.labels, self.yesterday, self.now
+            )
+            created.append(logged)
+        return created
 
     def test_find_summary_samples(self, class_client, numeric_summary, numeric_samples):
         found_samples = numeric_summary.find_samples()
         assert len(found_samples) == len(self.values)
+
+        created_ids = list(map(lambda sample: sample.id, numeric_samples))
+        found_ids = list(map(lambda sample: sample.id, found_samples))
+        for id in found_ids:
+            assert id in created_ids
 
     def test_aggregate_summary_samples(
         self, class_client, numeric_summary, numeric_samples
