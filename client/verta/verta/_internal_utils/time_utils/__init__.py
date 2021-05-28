@@ -26,13 +26,22 @@ def now_in_millis():
 
 def epoch_millis(dt):
     if isinstance(dt, datetime):
+        dt = _promote_naive_to_utc(dt)
         return int(round((dt - UNIX_EPOCH).total_seconds() * 1000))
-    elif isinstance(dt, int):
+    elif isinstance(dt, int) and dt >= 0:
         return dt
     elif dt is None:
         return dt
     else:
         raise ValueError("Cannot convert argument to epoch milliseconds")
+
+
+def _promote_naive_to_utc(dt):
+    if dt.tzinfo is None:
+        warnings.warn("Time zone naive datetime found, assuming UTC time zone")
+        return dt.astimezone(utc)
+    else:
+        return dt
 
 
 def _force_millisecond_resolution(delta):
@@ -46,11 +55,11 @@ def _force_millisecond_resolution(delta):
         return delta
 
 
-def timedelta_millis(delta):
+def duration_millis(delta):
     if isinstance(delta, timedelta):
         delta = _force_millisecond_resolution(delta)
         return int(delta.total_seconds() * 1000)
-    elif isinstance(delta, int) and delta > 0:
+    elif isinstance(delta, int) and delta >= 0:
         return delta
     raise ValueError("cannot convert argument to duration milliseconds")
 
@@ -73,7 +82,7 @@ def parse_duration(value):
         duration = timedelta(milliseconds=value)
     if isinstance(value, timedelta):
         duration = value
-    if duration:
+    if duration is not None:
         duration = _force_millisecond_resolution(duration)
         return duration
     raise ValueError("cannot convert argument to a time duration")

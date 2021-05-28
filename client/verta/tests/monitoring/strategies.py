@@ -6,7 +6,7 @@ from datetime import timedelta
 import hypothesis.strategies as st
 import pytest
 from hypothesis import given
-from verta._internal_utils.time_utils import timedelta_millis
+from verta._internal_utils.time_utils import duration_millis
 from verta._protos.public.monitoring.Summary_pb2 import AggregationQuerySummary
 from verta.monitoring.summaries.aggregation import Aggregation
 from ..time_strategies import millis_timedelta_strategy, millis_uint64_strategy
