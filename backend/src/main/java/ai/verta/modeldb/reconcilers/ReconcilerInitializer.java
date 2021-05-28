@@ -1,6 +1,7 @@
 package ai.verta.modeldb.reconcilers;
 
 import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.config.Config;
 import org.apache.logging.log4j.LogManager;
@@ -15,7 +16,7 @@ public class ReconcilerInitializer {
   public static SoftDeleteRepositories softDeleteDatasets;
   public static UpdateParentTimestampReconcile updateParentTimestampReconcile;
 
-  public static void initialize(Config config, ServiceSet services) {
+  public static void initialize(Config config, ServiceSet services, FutureJdbi futureJdbi) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
     softDeleteProjects = new SoftDeleteProjects(new ReconcilerConfig(), services.roleService);
     softDeleteExperiments = new SoftDeleteExperiments(new ReconcilerConfig(), services.roleService);
@@ -25,7 +26,8 @@ public class ReconcilerInitializer {
         new SoftDeleteRepositories(new ReconcilerConfig(), services.roleService, false);
     softDeleteDatasets =
         new SoftDeleteRepositories(new ReconcilerConfig(), services.roleService, true);
-    updateParentTimestampReconcile = new UpdateParentTimestampReconcile(new ReconcilerConfig());
+    updateParentTimestampReconcile =
+        new UpdateParentTimestampReconcile(new ReconcilerConfig(), futureJdbi);
     LOGGER.info("Exit from ReconcilerUtils: initialize()");
   }
 }
