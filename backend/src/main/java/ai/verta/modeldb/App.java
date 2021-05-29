@@ -12,7 +12,6 @@ import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
-import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
@@ -218,7 +217,6 @@ public class App implements ApplicationContextAware {
       serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());
       serverBuilder.intercept(new AuthInterceptor());
-      serverBuilder.intercept(new AuditLogInterceptor(config.grpcServer.quitOnAuditMissing));
 
       // Add APIs
       initializeBackendServices(serverBuilder, services, daos, handleExecutor);

@@ -2,7 +2,6 @@
 grpcServer:
   port: 8085
   requestTimeout: 30 #time in second
-  quitOnAuditMissing: false
   maxInboundMessageSize: 4000000
 
 springServer:
