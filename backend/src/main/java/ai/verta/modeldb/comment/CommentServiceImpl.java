@@ -11,17 +11,27 @@ import ai.verta.modeldb.GetComments.Response;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateComment;
+import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.monitoring.MonitoringInterceptor;
+import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UserInfo;
 import io.grpc.stub.StreamObserver;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,6 +43,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
   private final RoleService roleService;
   private final CommentDAO commentDAO;
   private final ExperimentRunDAO experimentRunDAO;
+  private final AuditLogLocalDAO auditLogLocalDAO;
   private static final String SERVICE_NAME =
       String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.COMMENT);
 
@@ -43,6 +54,30 @@ public class CommentServiceImpl extends CommentServiceImplBase {
     this.roleService = serviceSet.roleService;
     this.commentDAO = daoSet.commentDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
+    this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
+  }
+
+  private void saveAuditLog(
+      Optional<UserInfo> userInfo,
+      ModelDBServiceActions action,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      Map<String, Long> resourceIdWorkspaceIdMap,
+      String request,
+      String response,
+      Long workspaceId) {
+    auditLogLocalDAO.saveAuditLog(
+        new AuditLogLocalEntity(
+            SERVICE_NAME,
+            authService.getVertaIdFromUserInfo(
+                userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
+            action,
+            resourceIdWorkspaceIdMap,
+            modelDBServiceResourceTypes,
+            ServiceEnum.Service.MODELDB_SERVICE,
+            MonitoringInterceptor.METHOD_NAME.get(),
+            request,
+            response,
+            workspaceId));
   }
 
   /**
@@ -117,6 +152,18 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           commentDAO.addComment(experimentRunEntity, request.getEntityId(), comment);
       AddComment.Response response =
           AddComment.Response.newBuilder().setComment(newComment).build();
+
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getEntityId());
+      GetResourcesResponseItem responseItem =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.UPDATE,
+          ModelDBServiceResourceTypes.EXPERIMENT_RUN,
+          Collections.singletonMap(newComment.getId(), responseItem.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -135,6 +182,17 @@ public class CommentServiceImpl extends CommentServiceImplBase {
           commentDAO.updateComment(experimentRunEntity, request.getEntityId(), updatedComment);
       UpdateComment.Response response =
           UpdateComment.Response.newBuilder().setComment(updatedComment).build();
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getEntityId());
+      GetResourcesResponseItem responseItem =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.UPDATE,
+          ModelDBServiceResourceTypes.EXPERIMENT_RUN,
+          Collections.singletonMap(updatedComment.getId(), responseItem.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -159,6 +217,19 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       List<Comment> comments = commentDAO.getComments(experimentRunEntity, request.getEntityId());
       GetComments.Response response =
           GetComments.Response.newBuilder().addAllComments(comments).build();
+      GetResourcesResponseItem responseItem =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
+      Map<String, Long> auditResourceMap = new HashMap<>();
+      comments.forEach(
+          comment -> auditResourceMap.put(comment.getId(), responseItem.getWorkspaceId()));
+      saveAuditLog(
+          Optional.empty(),
+          ModelDBServiceActions.READ,
+          ModelDBServiceResourceTypes.EXPERIMENT_RUN,
+          auditResourceMap,
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -190,6 +261,17 @@ public class CommentServiceImpl extends CommentServiceImplBase {
               experimentRunEntity, request.getEntityId(), request.getId(), userInfo);
       DeleteComment.Response response =
           DeleteComment.Response.newBuilder().setStatus(status).build();
+      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getEntityId());
+      GetResourcesResponseItem responseItem =
+          roleService.getEntityResource(projectId, ModelDBServiceResourceTypes.PROJECT);
+      saveAuditLog(
+          Optional.of(userInfo),
+          ModelDBServiceActions.UPDATE,
+          ModelDBServiceResourceTypes.EXPERIMENT_RUN,
+          Collections.singletonMap(request.getId(), responseItem.getWorkspaceId()),
+          ModelDBUtils.getStringFromProtoObject(request),
+          ModelDBUtils.getStringFromProtoObject(response),
+          responseItem.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {

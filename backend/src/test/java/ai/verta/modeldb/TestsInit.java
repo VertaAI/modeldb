@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
+import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
@@ -90,6 +91,7 @@ public class TestsInit {
     serverBuilder.intercept(new ExceptionInterceptor());
     serverBuilder.intercept(new MonitoringInterceptor());
     serverBuilder.intercept(new AuthInterceptor());
+    serverBuilder.intercept(new AuditLogInterceptor(false));
     // Initialize cron jobs
     CronJobUtils.initializeCronJobs(config, services);
     ReconcilerInitializer.initialize(config, services);
