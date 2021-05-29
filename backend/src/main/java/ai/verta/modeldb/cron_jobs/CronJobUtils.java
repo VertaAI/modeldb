@@ -39,6 +39,9 @@ public class CronJobUtils {
           task =
               new PopulateEnvironmentInRunCron(
                   services.artifactStoreService, cronJob.getValue().record_update_limit);
+        } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_AUDIT_LOGS)
+            && config.hasServiceAccount()) {
+          task = new AuditLogsCron(cronJob.getValue().record_update_limit);
         } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
             && (config.hasServiceAccount() || !services.roleService.IsImplemented())) {
           task =

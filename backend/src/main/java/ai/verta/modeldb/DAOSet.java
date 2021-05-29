@@ -3,6 +3,10 @@ package ai.verta.modeldb;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
+import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
+import ai.verta.modeldb.audit_log.AuditLogLocalDAODisabled;
+import ai.verta.modeldb.audit_log.AuditLogLocalDAORdbImpl;
+import ai.verta.modeldb.authservice.PublicAuthServiceUtils;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -27,6 +31,7 @@ import ai.verta.modeldb.versioning.*;
 import java.util.concurrent.Executor;
 
 public class DAOSet {
+  public AuditLogLocalDAO auditLogLocalDAO;
   public ArtifactStoreDAO artifactStoreDAO;
   public BlobDAO blobDAO;
   public CommentDAO commentDAO;
@@ -78,6 +83,11 @@ public class DAOSet {
     set.lineageDAO = new LineageDAORdbImpl();
     set.datasetVersionDAO =
         new DatasetVersionDAORdbImpl(services.authService, services.roleService);
+    if ((services.authService instanceof PublicAuthServiceUtils) || config.disabled_audits) {
+      set.auditLogLocalDAO = new AuditLogLocalDAODisabled();
+    } else {
+      set.auditLogLocalDAO = new AuditLogLocalDAORdbImpl();
+    }
 
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(

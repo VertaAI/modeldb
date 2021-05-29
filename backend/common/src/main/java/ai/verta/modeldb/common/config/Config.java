@@ -25,6 +25,7 @@ public abstract class Config {
   public SpringServerConfig springServer;
   public TestConfig test;
   public ServiceUserConfig service_user;
+  public boolean disabled_audits = false;
 
   public void Validate() throws InvalidConfigException {
 
