@@ -22,7 +22,6 @@ public class ParentTimestampUpdateCron extends TimerTask {
     this.isPostgres = isPostgres;
     initExperimentUpdateQueryString(recordUpdateLimit);
     initProjectUpdateQueryString(recordUpdateLimit);
-    initRepositoryUpdateQueryString(recordUpdateLimit);
   }
 
   public void initExperimentUpdateQueryString(int recordUpdateLimit) {
@@ -80,44 +79,6 @@ public class ParentTimestampUpdateCron extends TimerTask {
               .append(" ) exp_alias ")
               .append(" ON  p.id = exp_alias.project_id ")
               .append(" SET p.date_updated = exp_alias.max_date WHERE p.id = exp_alias.project_id")
-              .toString();
-    }
-  }
-
-  private void initRepositoryUpdateQueryString(int recordUpdateLimit) {
-    if (isPostgres) {
-      updateRepositoryQuery =
-          new StringBuilder("with cm_alias as ")
-              .append(" ( SELECT rc.repository_id, MAX(cm.date_created) AS max_date ")
-              .append(" FROM commit cm INNER JOIN repository_commit rc ")
-              .append(" ON rc.commit_hash = cm.commit_hash ")
-              .append(" INNER JOIN commit_parent cp ")
-              .append(" ON cp.parent_hash IS NOT NULL ")
-              .append(" AND cp.child_hash = cm.commit_hash ")
-              .append(" GROUP BY rc.repository_id limit ")
-              .append(recordUpdateLimit)
-              .append(" ) UPDATE repository as rp ")
-              .append(" SET date_updated = cm_alias.max_date ")
-              .append(
-                  " from cm_alias WHERE rp.id = cm_alias.repository_id and rp.date_updated < cm_alias.max_date")
-              .toString();
-    } else {
-      updateRepositoryQuery =
-          new StringBuilder("UPDATE repository rp INNER JOIN ")
-              .append(" (SELECT rc.repository_id, MAX(cm.date_created) AS max_date ")
-              .append(" FROM `commit` cm INNER JOIN repository_commit rc ")
-              .append(" ON rc.commit_hash = cm.commit_hash ")
-              .append(" INNER JOIN commit_parent cp ")
-              .append(" ON cp.parent_hash IS NOT NULL ")
-              .append(" AND cp.child_hash = cm.commit_hash ")
-              .append(" INNER JOIN repository rp ")
-              .append(" ON rp.id = rc.repository_id AND rp.date_updated < cm.date_created ")
-              .append(" GROUP BY rc.repository_id LIMIT ")
-              .append(recordUpdateLimit)
-              .append(" ) cm_alias ")
-              .append(" ON rp.id = cm_alias.repository_id AND rp.date_updated < cm_alias.max_date ")
-              .append(
-                  " SET rp.date_updated = cm_alias.max_date WHERE rp.id = cm_alias.repository_id")
               .toString();
     }
   }
