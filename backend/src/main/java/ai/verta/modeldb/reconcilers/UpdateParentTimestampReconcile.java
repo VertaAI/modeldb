@@ -1,11 +1,14 @@
 package ai.verta.modeldb.reconcilers;
 
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import java.util.AbstractMap;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,10 +16,13 @@ public class UpdateParentTimestampReconcile
     extends Reconciler<AbstractMap.SimpleEntry<Long, Long>> {
   private static final Logger LOGGER = LogManager.getLogger(UpdateParentTimestampReconcile.class);
   private final FutureJdbi futureJdbi;
+  private final Executor executor;
 
-  public UpdateParentTimestampReconcile(ReconcilerConfig config, FutureJdbi futureJdbi) {
+  public UpdateParentTimestampReconcile(
+      ReconcilerConfig config, FutureJdbi futureJdbi, Executor executor) {
     super(config, LOGGER);
     this.futureJdbi = futureJdbi;
+    this.executor = executor;
   }
 
   @Override
@@ -52,22 +58,26 @@ public class UpdateParentTimestampReconcile
   @Override
   protected ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<Long, Long>> updatedMaxDateMap) {
     LOGGER.debug("Reconciling parent time update for repository" + updatedMaxDateMap.size());
+    try {
+      return futureJdbi
+          .useHandle(
+              handle -> {
+                var updateDatasetTimestampQuery =
+                    "UPDATE repository SET date_updated = :updatedDate WHERE id = :id";
 
-    futureJdbi.useHandle(
-        handle -> {
-          var updateDatasetTimestampQuery =
-              "UPDATE repository SET date_updated = :updatedDate WHERE id = :id";
+                final var batch = handle.prepareBatch(updateDatasetTimestampQuery);
+                for (AbstractMap.SimpleEntry<Long, Long> updatedRecord : updatedMaxDateMap) {
+                  long id = updatedRecord.getKey();
+                  long updatedDate = updatedRecord.getValue();
+                  batch.bind("id", id).bind("updatedDate", updatedDate).add();
+                }
 
-          final var batch = handle.prepareBatch(updateDatasetTimestampQuery);
-          for (AbstractMap.SimpleEntry<Long, Long> updatedRecord : updatedMaxDateMap) {
-            long id = updatedRecord.getKey();
-            long updatedDate = updatedRecord.getValue();
-            batch.bind("id", id).bind("updatedDate", updatedDate).add();
-          }
-
-          batch.execute();
-        });
-
-    return new ReconcileResult();
+                batch.execute();
+              })
+          .thenApply(unused -> new ReconcileResult(), executor)
+          .get();
+    } catch (ExecutionException | InterruptedException ex) {
+      throw new ModelDBException(ex);
+    }
   }
 }

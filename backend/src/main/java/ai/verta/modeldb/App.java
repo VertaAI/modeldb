@@ -198,7 +198,7 @@ public class App implements ApplicationContextAware {
 
       // Initialize cron jobs
       CronJobUtils.initializeCronJobs(config, services);
-      ReconcilerInitializer.initialize(config, services, config.getJdbi());
+      ReconcilerInitializer.initialize(config, services, config.getJdbi(), handleExecutor);
 
       // Initialize grpc server
       ServerBuilder<?> serverBuilder =
