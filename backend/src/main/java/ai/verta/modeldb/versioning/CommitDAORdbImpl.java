@@ -585,6 +585,7 @@ public class CommitDAORdbImpl implements CommitDAO {
               "skipping deleting commit corresponding to dataset version {}", datasetVersionId);
           continue;
         }
+        session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
 
         if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
           throw new ModelDBException(
@@ -639,7 +640,6 @@ public class CommitDAORdbImpl implements CommitDAO {
         }
 
         session.beginTransaction();
-        session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
         if (!commitEntity.getChild_commits().isEmpty()) {
           CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
           session.lock(childCommit, LockMode.PESSIMISTIC_WRITE);
