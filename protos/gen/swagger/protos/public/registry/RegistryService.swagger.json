@@ -368,7 +368,7 @@
         },
         "parameters": [
           {
-            "name": "project_id",
+            "name": "registered_model_id",
             "in": "query",
             "required": false,
             "type": "string"
