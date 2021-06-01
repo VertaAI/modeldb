@@ -587,8 +587,15 @@ public class CommitDAORdbImpl implements CommitDAO {
         }
 
         CommitEntity parentDatasetVersion = commitEntity.getParent_commits().get(0);
+        CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
+        var childLockKey = "";
+        if (childCommit != null){
+          childLockKey = childCommit.getCommit_hash();
+        }
+
         try(AutoCloseable ignored = acquireWriteLock(commitEntity.getCommit_hash());
-                AutoCloseable ignored2 = acquireWriteLock(parentDatasetVersion.getCommit_hash())){
+                AutoCloseable ignored2 = acquireWriteLock(parentDatasetVersion.getCommit_hash());
+            AutoCloseable ignored3 = acquireWriteLock(childLockKey)){
           if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
             throw new ModelDBException(
                 "DatasetVersion '"
@@ -641,8 +648,7 @@ public class CommitDAORdbImpl implements CommitDAO {
 
           session.beginTransaction();
           session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
-          if (!commitEntity.getChild_commits().isEmpty()) {
-            CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
+          if (childCommit != null) {
             session.lock(childCommit, LockMode.PESSIMISTIC_WRITE);
             String updateChildEntity =
                 "UPDATE commit_parent SET parent_hash = :parentHash WHERE child_hash = :childHash";
