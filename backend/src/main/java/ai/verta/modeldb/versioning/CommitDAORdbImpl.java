@@ -586,6 +586,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           continue;
         }
         session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
+        session.lock(commitEntity.getParent_commits().get(0), LockMode.PESSIMISTIC_WRITE);
 
         if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
           throw new ModelDBException(
