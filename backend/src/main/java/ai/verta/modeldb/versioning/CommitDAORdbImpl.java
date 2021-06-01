@@ -589,7 +589,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         CommitEntity parentDatasetVersion = commitEntity.getParent_commits().get(0);
         CommitEntity childCommit = null;
         var childLockKey = "";
-        if(!commitEntity.getChild_commits().isEmpty()){
+        if (!commitEntity.getChild_commits().isEmpty()) {
           childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
           childLockKey = childCommit.getCommit_hash();
         }
