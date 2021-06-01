@@ -587,16 +587,8 @@ public class CommitDAORdbImpl implements CommitDAO {
         }
 
         CommitEntity parentDatasetVersion = commitEntity.getParent_commits().get(0);
-        CommitEntity childCommit = null;
-        var childLockKey = "";
-        if (!commitEntity.getChild_commits().isEmpty()) {
-          childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
-          childLockKey = childCommit.getCommit_hash();
-        }
-
         try (AutoCloseable ignored = acquireWriteLock(commitEntity.getCommit_hash());
-            AutoCloseable ignored2 = acquireWriteLock(parentDatasetVersion.getCommit_hash());
-            AutoCloseable ignored3 = acquireWriteLock(childLockKey)) {
+            AutoCloseable ignored2 = acquireWriteLock(parentDatasetVersion.getCommit_hash())) {
           if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
             throw new ModelDBException(
                 "DatasetVersion '"
@@ -650,17 +642,19 @@ public class CommitDAORdbImpl implements CommitDAO {
 
           session.beginTransaction();
           session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
-          if (childCommit != null) {
-            session.lock(childCommit, LockMode.PESSIMISTIC_WRITE);
-            String updateChildEntity =
-                "UPDATE commit_parent SET parent_hash = :parentHash WHERE child_hash = :childHash";
-            Query updateChildQuery =
-                session
-                    .createSQLQuery(updateChildEntity)
-                    .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
-            updateChildQuery.setParameter("parentHash", parentDatasetVersion.getCommit_hash());
-            updateChildQuery.setParameter("childHash", childCommit.getCommit_hash());
-            updateChildQuery.executeUpdate();
+          if(!commitEntity.getChild_commits().isEmpty()){
+            CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
+            try (AutoCloseable childLock = acquireWriteLock(childCommit.getCommit_hash())) {
+              String updateChildEntity =
+                  "UPDATE commit_parent SET parent_hash = :parentHash WHERE child_hash = :childHash";
+              Query updateChildQuery =
+                  session
+                      .createSQLQuery(updateChildEntity)
+                      .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+              updateChildQuery.setParameter("parentHash", parentDatasetVersion.getCommit_hash());
+              updateChildQuery.setParameter("childHash", childCommit.getCommit_hash());
+              updateChildQuery.executeUpdate();
+            }
           }
 
           String compositeId =
