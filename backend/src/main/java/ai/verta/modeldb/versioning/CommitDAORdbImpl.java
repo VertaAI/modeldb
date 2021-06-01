@@ -642,7 +642,7 @@ public class CommitDAORdbImpl implements CommitDAO {
 
           session.beginTransaction();
           session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
-          if(!commitEntity.getChild_commits().isEmpty()){
+          if (!commitEntity.getChild_commits().isEmpty()) {
             CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
             try (AutoCloseable childLock = acquireWriteLock(childCommit.getCommit_hash())) {
               String updateChildEntity =
