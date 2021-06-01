@@ -554,7 +554,7 @@ public class CommitDAORdbImpl implements CommitDAO {
    * commit
    */
   @Override
-  public void deleteDatasetVersions(
+  public synchronized void deleteDatasetVersions(
       RepositoryIdentification repositoryIdentification,
       List<String> datasetVersionIds,
       RepositoryDAO repositoryDAO)
