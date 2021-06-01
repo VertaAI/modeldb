@@ -8,6 +8,7 @@ import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LogAttributes;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -157,6 +158,25 @@ public class FutureProjectDAO {
                 throw new PermissionDeniedException("Permission denied");
               }
             },
+            executor);
+  }
+
+  public InternalFuture<Long> getProjectDatasetCount(String projectId) {
+    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(
+            unused ->
+                jdbi.withHandle(
+                    handle -> {
+                      var queryStr =
+                          "SELECT COUNT(ar.id) from artifact ar inner join experiment_run er ON er.id = ar.experiment_run_id "
+                              + " WHERE er.project_id = :projectId AND ar.field_type = :fieldType AND ar.experiment_run_id is not null";
+                      return handle
+                          .createQuery(queryStr)
+                          .bind("projectId", projectId)
+                          .bind("fieldType", ModelDBConstants.DATASETS)
+                          .mapTo(Long.class)
+                          .one();
+                    }),
             executor);
   }
 }

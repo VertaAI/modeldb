@@ -2809,4 +2809,15 @@ public class ProjectTest extends TestsInit {
     LOGGER.info("Project delete successfully. Status : {}", deleteProjectResponse.toString());
     assertTrue(deleteProjectResponse.getStatus());
   }
+
+  @Test
+  public void getProjectDatasetCount() {
+    GetProjectDatasetCount.Response response =
+        projectServiceStub.getProjectDatasetCount(
+            GetProjectDatasetCount.newBuilder().setProjectId(project.getId()).build());
+    assertEquals(
+        "Project dataset count not match with expected Project dataset count",
+        experimentRun.getDatasetsCount(),
+        response.getDatasetCount());
+  }
 }
