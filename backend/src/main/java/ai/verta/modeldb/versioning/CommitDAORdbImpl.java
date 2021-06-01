@@ -593,9 +593,9 @@ public class CommitDAORdbImpl implements CommitDAO {
           childLockKey = childCommit.getCommit_hash();
         }
 
-        try(AutoCloseable ignored = acquireWriteLock(commitEntity.getCommit_hash());
-                AutoCloseable ignored2 = acquireWriteLock(parentDatasetVersion.getCommit_hash());
-            AutoCloseable ignored3 = acquireWriteLock(childLockKey)){
+        try (AutoCloseable ignored = acquireWriteLock(commitEntity.getCommit_hash());
+            AutoCloseable ignored2 = acquireWriteLock(parentDatasetVersion.getCommit_hash());
+            AutoCloseable ignored3 = acquireWriteLock(childLockKey)) {
           if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
             throw new ModelDBException(
                 "DatasetVersion '"
@@ -603,7 +603,8 @@ public class CommitDAORdbImpl implements CommitDAO {
                     + "' associated with multiple datasets",
                 Code.INTERNAL);
           } else if (commitEntity.getRepository() == null) {
-            throw new ModelDBException("DatasetVersion not associated with datasets", Code.INTERNAL);
+            throw new ModelDBException(
+                "DatasetVersion not associated with datasets", Code.INTERNAL);
           }
           Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
           if (repositoryIdentification == null) {
