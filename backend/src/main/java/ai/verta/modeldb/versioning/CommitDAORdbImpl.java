@@ -554,7 +554,7 @@ public class CommitDAORdbImpl implements CommitDAO {
    * commit
    */
   @Override
-  public void deleteDatasetVersions(
+  public synchronized void deleteDatasetVersions(
       RepositoryIdentification repositoryIdentification,
       List<String> datasetVersionIds,
       RepositoryDAO repositoryDAO)
@@ -586,95 +586,91 @@ public class CommitDAORdbImpl implements CommitDAO {
           continue;
         }
 
-        CommitEntity parentDatasetVersion = commitEntity.getParent_commits().get(0);
-        try (AutoCloseable ignored = acquireWriteLock(commitEntity.getCommit_hash());
-            AutoCloseable ignored2 = acquireWriteLock(parentDatasetVersion.getCommit_hash())) {
-          if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
+        if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
+          throw new ModelDBException(
+              "DatasetVersion '"
+                  + commitEntity.getCommit_hash()
+                  + "' associated with multiple datasets",
+              Code.INTERNAL);
+        } else if (commitEntity.getRepository() == null) {
+          throw new ModelDBException("DatasetVersion not associated with datasets", Code.INTERNAL);
+        }
+        Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
+        if (repositoryIdentification == null) {
+          repositoryIdentification =
+              RepositoryIdentification.newBuilder().setRepoId(newRepoId).build();
+        } else {
+          if (repositoryIdentification.getRepoId() != newRepoId) {
             throw new ModelDBException(
                 "DatasetVersion '"
                     + commitEntity.getCommit_hash()
                     + "' associated with multiple datasets",
                 Code.INTERNAL);
-          } else if (commitEntity.getRepository() == null) {
-            throw new ModelDBException(
-                "DatasetVersion not associated with datasets", Code.INTERNAL);
           }
-          Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
-          if (repositoryIdentification == null) {
-            repositoryIdentification =
-                RepositoryIdentification.newBuilder().setRepoId(newRepoId).build();
-          } else {
-            if (repositoryIdentification.getRepoId() != newRepoId) {
-              throw new ModelDBException(
-                  "DatasetVersion '"
-                      + commitEntity.getCommit_hash()
-                      + "' associated with multiple datasets",
-                  Code.INTERNAL);
-            }
-          }
-
-          if (repositoryEntity == null) {
-            repositoryEntity =
-                repositoryDAO.getRepositoryById(
-                    session,
-                    repositoryIdentification,
-                    true,
-                    false,
-                    RepositoryEnums.RepositoryTypeEnum.REGULAR);
-          }
-
-          Query query = session.createQuery(RepositoryDAORdbImpl.CHECK_BRANCH_IN_REPOSITORY_HQL);
-          query.setParameter("repositoryId", repositoryEntity.getId());
-          query.setParameter("branch", ModelDBConstants.MASTER_BRANCH);
-          BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
-
-          if (branchEntity != null
-              && branchEntity.getCommit_hash().equals(commitEntity.getCommit_hash())) {
-            repositoryDAO.setBranch(
-                SetBranchRequest.newBuilder()
-                    .setRepositoryId(repositoryIdentification)
-                    .setBranch(ModelDBConstants.MASTER_BRANCH)
-                    .setCommitSha(parentDatasetVersion.getCommit_hash())
-                    .build(),
-                false,
-                RepositoryEnums.RepositoryTypeEnum.DATASET);
-          }
-
-          session.beginTransaction();
-          session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
-          if (!commitEntity.getChild_commits().isEmpty()) {
-            CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
-            try (AutoCloseable childLock = acquireWriteLock(childCommit.getCommit_hash())) {
-              String updateChildEntity =
-                  "UPDATE commit_parent SET parent_hash = :parentHash WHERE child_hash = :childHash";
-              Query updateChildQuery =
-                  session
-                      .createSQLQuery(updateChildEntity)
-                      .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
-              updateChildQuery.setParameter("parentHash", parentDatasetVersion.getCommit_hash());
-              updateChildQuery.setParameter("childHash", childCommit.getCommit_hash());
-              updateChildQuery.executeUpdate();
-            }
-          }
-
-          String compositeId =
-              VersioningUtils.getVersioningCompositeId(
-                  repositoryEntity.getId(),
-                  commitEntity.getCommit_hash(),
-                  Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
-          DeleteEntitiesCron.deleteLabels(
-              session, compositeId, IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB);
-          DeleteEntitiesCron.deleteAttribute(session, compositeId);
-          session.delete(commitEntity);
-          session.getTransaction().commit();
-          session.clear();
         }
+
+        if (repositoryEntity == null) {
+          repositoryEntity =
+              repositoryDAO.getRepositoryById(
+                  session,
+                  repositoryIdentification,
+                  true,
+                  false,
+                  RepositoryEnums.RepositoryTypeEnum.REGULAR);
+        }
+
+        Query query = session.createQuery(RepositoryDAORdbImpl.CHECK_BRANCH_IN_REPOSITORY_HQL);
+        query.setParameter("repositoryId", repositoryEntity.getId());
+        query.setParameter("branch", ModelDBConstants.MASTER_BRANCH);
+        BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
+
+        CommitEntity parentDatasetVersion = commitEntity.getParent_commits().get(0);
+
+        if (branchEntity != null
+            && branchEntity.getCommit_hash().equals(commitEntity.getCommit_hash())) {
+          repositoryDAO.setBranch(
+              SetBranchRequest.newBuilder()
+                  .setRepositoryId(repositoryIdentification)
+                  .setBranch(ModelDBConstants.MASTER_BRANCH)
+                  .setCommitSha(parentDatasetVersion.getCommit_hash())
+                  .build(),
+              false,
+              RepositoryEnums.RepositoryTypeEnum.DATASET);
+        }
+
+        session.beginTransaction();
+        session.lock(commitEntity, LockMode.PESSIMISTIC_WRITE);
+        if (!commitEntity.getChild_commits().isEmpty()) {
+          CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
+          session.lock(childCommit, LockMode.PESSIMISTIC_WRITE);
+          String updateChildEntity =
+              "UPDATE commit_parent SET parent_hash = :parentHash WHERE child_hash = :childHash";
+          Query updateChildQuery =
+              session
+                  .createSQLQuery(updateChildEntity)
+                  .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+          updateChildQuery.setParameter("parentHash", parentDatasetVersion.getCommit_hash());
+          updateChildQuery.setParameter("childHash", childCommit.getCommit_hash());
+          updateChildQuery.executeUpdate();
+        }
+
+        String compositeId =
+            VersioningUtils.getVersioningCompositeId(
+                repositoryEntity.getId(),
+                commitEntity.getCommit_hash(),
+                Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
+        DeleteEntitiesCron.deleteLabels(
+            session, compositeId, IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB);
+        DeleteEntitiesCron.deleteAttribute(session, compositeId);
+        session.delete(commitEntity);
+        session.getTransaction().commit();
+        session.clear();
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         deleteDatasetVersions(repositoryIdentification, datasetVersionIds, repositoryDAO);
       } else {
-        throw new ModelDBException(ex);
+        throw ex;
       }
     }
   }
