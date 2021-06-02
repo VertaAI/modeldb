@@ -21,12 +21,7 @@ public class CronJobUtils {
     if (config.cron_job != null) {
       for (Map.Entry<String, CronJobConfig> cronJob : config.cron_job.entrySet()) {
         TimerTask task = null;
-        if (cronJob.getKey().equals(ModelDBConstants.UPDATE_PARENT_TIMESTAMP)) {
-          task =
-              new ParentTimestampUpdateCron(
-                  cronJob.getValue().record_update_limit,
-                  config.database.RdbConfiguration.isPostgres());
-        } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
+        if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
             && (config.hasServiceAccount() || !services.roleService.IsImplemented())) {
           task =
               new DeleteEntitiesCron(
