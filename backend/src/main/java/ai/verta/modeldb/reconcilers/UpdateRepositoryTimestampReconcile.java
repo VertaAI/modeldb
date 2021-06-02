@@ -12,13 +12,14 @@ import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class UpdateParentTimestampReconcile
+public class UpdateRepositoryTimestampReconcile
     extends Reconciler<AbstractMap.SimpleEntry<Long, Long>> {
-  private static final Logger LOGGER = LogManager.getLogger(UpdateParentTimestampReconcile.class);
+  private static final Logger LOGGER =
+      LogManager.getLogger(UpdateRepositoryTimestampReconcile.class);
   private final FutureJdbi futureJdbi;
   private final Executor executor;
 
-  public UpdateParentTimestampReconcile(
+  public UpdateRepositoryTimestampReconcile(
       ReconcilerConfig config, FutureJdbi futureJdbi, Executor executor) {
     super(config, LOGGER);
     this.futureJdbi = futureJdbi;
