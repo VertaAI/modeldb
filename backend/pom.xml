@@ -24,7 +24,7 @@
         <grpc.version>1.28.1</grpc.version>
         <postgres.version>42.2.6</postgres.version>
         <liquibase.version>3.8.0</liquibase.version>
-        <prometheus.version>0.8.1</prometheus.version>
+        <prometheus.version>0.10.0</prometheus.version>
         <protobuf.version>3.8.0</protobuf.version>
         <aws.version>1.11.878</aws.version>
 
@@ -223,6 +223,17 @@
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_hotspot</artifactId>
             <version>${prometheus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_hibernate</artifactId>
+            <version>${prometheus.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.prometheus.jmx/collector -->
+        <dependency>
+            <groupId>io.prometheus.jmx</groupId>
+            <artifactId>collector</artifactId>
+            <version>0.15.0</version>
         </dependency>
         <!-- Mysql Connector -->
         <dependency>

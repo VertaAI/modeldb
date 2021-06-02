@@ -39,6 +39,8 @@ import io.grpc.health.v1.HealthCheckResponse;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import io.prometheus.jmx.BuildInfoCollector;
+import io.prometheus.jmx.JmxCollector;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -48,6 +50,7 @@ import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import javax.management.MalformedObjectNameException;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -102,9 +105,14 @@ public class App implements ApplicationContextAware {
     return app.applicationContext;
   }
 
+  // Export all JMX metrics to Prometheus
+  private static final String rules = "---\n" + "rules:\n" + "  - pattern: \".*\"";
   @Bean
-  public ServletRegistrationBean<MetricsServlet> servletRegistrationBean() {
+  public ServletRegistrationBean<MetricsServlet> servletRegistrationBean()
+      throws MalformedObjectNameException {
     DefaultExports.initialize();
+    new BuildInfoCollector().register();
+    new JmxCollector(rules).register();
     return new ServletRegistrationBean<>(new MetricsServlet(), "/metrics");
   }
 
