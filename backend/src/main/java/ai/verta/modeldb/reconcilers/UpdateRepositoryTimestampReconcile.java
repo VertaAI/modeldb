@@ -9,6 +9,7 @@ import java.util.AbstractMap;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,14 +17,10 @@ public class UpdateRepositoryTimestampReconcile
     extends Reconciler<AbstractMap.SimpleEntry<Long, Long>> {
   private static final Logger LOGGER =
       LogManager.getLogger(UpdateRepositoryTimestampReconcile.class);
-  private final FutureJdbi futureJdbi;
-  private final Executor executor;
 
   public UpdateRepositoryTimestampReconcile(
       ReconcilerConfig config, FutureJdbi futureJdbi, Executor executor) {
-    super(config, LOGGER);
-    this.futureJdbi = futureJdbi;
-    this.executor = executor;
+    super(config, LOGGER, futureJdbi, executor);
   }
 
   @Override
@@ -58,7 +55,11 @@ public class UpdateRepositoryTimestampReconcile
 
   @Override
   protected ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<Long, Long>> updatedMaxDateMap) {
-    LOGGER.debug("Reconciling parent time update for repository" + updatedMaxDateMap.size());
+    LOGGER.debug(
+        "Reconciling update timestamp for repositories: "
+            + updatedMaxDateMap.stream()
+                .map(AbstractMap.SimpleEntry::getKey)
+                .collect(Collectors.toList()));
     try {
       return futureJdbi
           .useHandle(
