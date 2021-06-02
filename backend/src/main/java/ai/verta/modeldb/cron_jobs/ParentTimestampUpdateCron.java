@@ -14,13 +14,11 @@ public class ParentTimestampUpdateCron extends TimerTask {
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private final boolean isPostgres;
   private static String updateExperimentQuery;
-  private static String updateProjectQuery;
 
   public ParentTimestampUpdateCron(int recordUpdateLimit, boolean isPostgres) {
 
     this.isPostgres = isPostgres;
     initExperimentUpdateQueryString(recordUpdateLimit);
-    initProjectUpdateQueryString(recordUpdateLimit);
   }
 
   public void initExperimentUpdateQueryString(int recordUpdateLimit) {
@@ -53,35 +51,6 @@ public class ParentTimestampUpdateCron extends TimerTask {
     }
   }
 
-  private void initProjectUpdateQueryString(int recordUpdateLimit) {
-    if (isPostgres) {
-      updateProjectQuery =
-          new StringBuilder("with ex_alias as ")
-              .append(" ( SELECT ex.project_id, MAX(ex.date_updated) AS max_date ")
-              .append(" FROM experiment ex ")
-              .append(" GROUP BY ex.project_id limit ")
-              .append(recordUpdateLimit)
-              .append(" ) UPDATE project as p ")
-              .append(" SET date_updated = ex_alias.max_date ")
-              .append(" from ex_alias WHERE p.id = ex_alias.project_id ")
-              .append(" and p.date_updated < ex_alias.max_date")
-              .toString();
-    } else {
-      updateProjectQuery =
-          new StringBuilder("UPDATE project p ")
-              .append(" INNER JOIN ")
-              .append(" (SELECT ex.project_id, MAX(ex.date_updated) AS max_date ")
-              .append(" FROM experiment ex INNER JOIN project p ")
-              .append(" ON  p.id = ex.project_id AND p.date_updated < ex.date_updated ")
-              .append(" GROUP BY ex.project_id LIMIT ")
-              .append(recordUpdateLimit)
-              .append(" ) exp_alias ")
-              .append(" ON  p.id = exp_alias.project_id ")
-              .append(" SET p.date_updated = exp_alias.max_date WHERE p.id = exp_alias.project_id")
-              .toString();
-    }
-  }
-
   /** The action to be performed by this timer task. */
   @Override
   public void run() {
@@ -98,17 +67,6 @@ public class ParentTimestampUpdateCron extends TimerTask {
       } finally {
         session.getTransaction().commit();
       }
-
-      // Update project timestamp
-      session.beginTransaction();
-      try {
-        updateProjectByExperimentTimestamp(session);
-      } catch (Exception ex) {
-        LOGGER.warn(
-            "ParentTimestampUpdateCron : updateProjectByExperimentTimestamp Exception: ", ex);
-      } finally {
-        session.getTransaction().commit();
-      }
     } catch (OptimisticLockException ex) {
       LOGGER.info("ParentTimestampUpdateCron Exception: {}", ex.getMessage());
     } catch (Exception ex) {
@@ -119,13 +77,6 @@ public class ParentTimestampUpdateCron extends TimerTask {
     }
 
     LOGGER.info("ParentTimestampUpdateCron finish tasks and reschedule");
-  }
-
-  private void updateProjectByExperimentTimestamp(Session session) {
-    LOGGER.trace("Project timestamp updating");
-    Query query = session.createSQLQuery(updateProjectQuery);
-    int count = query.executeUpdate();
-    LOGGER.info("Project timestamp updated successfully : Updated projects count {}", count);
   }
 
   private void updateExperimentByExperimentRunTimestamp(Session session) {
