@@ -107,6 +107,7 @@ public class App implements ApplicationContextAware {
 
   // Export all JMX metrics to Prometheus
   private static final String rules = "---\n" + "rules:\n" + "  - pattern: \".*\"";
+
   @Bean
   public ServletRegistrationBean<MetricsServlet> servletRegistrationBean()
       throws MalformedObjectNameException {
