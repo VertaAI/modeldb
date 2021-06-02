@@ -26,24 +26,24 @@ public class UpdateProjectTimestampReconcile
   public void resync() {
     var fetchUpdatedProjectIds =
         new StringBuilder("SELECT ex.project_id, MAX(ex.date_updated) AS max_date ")
-            .append(" FROM experiment ex ")
+            .append(" FROM experiment ex INNER JOIN project p ")
+            .append(" ON  p.id = ex.project_id AND p.date_updated < ex.date_updated ")
             .append(" GROUP BY ex.project_id")
             .toString();
 
     futureJdbi.useHandle(
-        handle -> {
-          handle
-              .createQuery(fetchUpdatedProjectIds)
-              .setFetchSize(config.maxSync)
-              .map(
-                  (rs, ctx) -> {
-                    String projectId = rs.getString("ex.project_id");
-                    Long maxUpdatedDate = rs.getLong("max_date");
-                    this.insert(new AbstractMap.SimpleEntry<>(projectId, maxUpdatedDate));
-                    return rs;
-                  })
-              .list();
-        });
+        handle ->
+            handle
+                .createQuery(fetchUpdatedProjectIds)
+                .setFetchSize(config.maxSync)
+                .map(
+                    (rs, ctx) -> {
+                      String projectId = rs.getString("ex.project_id");
+                      Long maxUpdatedDate = rs.getLong("max_date");
+                      this.insert(new AbstractMap.SimpleEntry<>(projectId, maxUpdatedDate));
+                      return rs;
+                    })
+                .list());
   }
 
   @Override
