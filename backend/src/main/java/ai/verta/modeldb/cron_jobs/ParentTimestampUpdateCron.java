@@ -15,7 +15,6 @@ public class ParentTimestampUpdateCron extends TimerTask {
   private final boolean isPostgres;
   private static String updateExperimentQuery;
   private static String updateProjectQuery;
-  private static String updateRepositoryQuery;
 
   public ParentTimestampUpdateCron(int recordUpdateLimit, boolean isPostgres) {
 
@@ -110,17 +109,6 @@ public class ParentTimestampUpdateCron extends TimerTask {
       } finally {
         session.getTransaction().commit();
       }
-
-      // Update repository timestamp
-      session.beginTransaction();
-      try {
-        updateRepositoryByCommitTimestamp(session);
-      } catch (Exception ex) {
-        LOGGER.warn(
-            "ParentTimestampUpdateCron : updateRepositoryByCommitTimestamp Exception: ", ex);
-      } finally {
-        session.getTransaction().commit();
-      }
     } catch (OptimisticLockException ex) {
       LOGGER.info("ParentTimestampUpdateCron Exception: {}", ex.getMessage());
     } catch (Exception ex) {
@@ -145,12 +133,5 @@ public class ParentTimestampUpdateCron extends TimerTask {
     Query query = session.createSQLQuery(updateExperimentQuery);
     int count = query.executeUpdate();
     LOGGER.info("Experiment timestamp updated successfully : Updated experiments count {}", count);
-  }
-
-  private void updateRepositoryByCommitTimestamp(Session session) {
-    LOGGER.trace("Repository timestamp updating");
-    Query query = session.createSQLQuery(updateRepositoryQuery);
-    int count = query.executeUpdate();
-    LOGGER.info("Repository timestamp updated successfully : Updated repositories count {}", count);
   }
 }
