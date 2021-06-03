@@ -60,6 +60,27 @@ class NumericValue(_VertaDataType):
         )
 
     def dist(self, other):
+        r"""Calculate the distance from `other` to this value.
+
+        Parameters
+        ----------
+        other : :class:`NumericValue`
+            Value to calculate distance from.
+
+        Returns
+        -------
+        float
+            Relative difference between the values.
+
+        Notes
+        -----
+        This method uses relative difference:
+
+        .. math::
+
+            \text{dist}=\left\lvert\frac{\text{self}-\text{other}}{\text{other}}\right\rvert
+
+        """
         if not isinstance(other, type(self)):
             raise TypeError(
                 "`other` must be type {}, not {}".format(type(self), type(other))

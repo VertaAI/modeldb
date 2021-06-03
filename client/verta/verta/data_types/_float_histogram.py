@@ -73,6 +73,19 @@ class FloatHistogram(_VertaDataType):
         return cls(bucket_limits=data["bucketLimits"], data=data["data"])
 
     def dist(self, other):
+        """Calculate the distance from `other` to this value.
+
+        Parameters
+        ----------
+        other : :class:`FloatHistogram`
+            Value to calculate distance from.
+
+        Returns
+        -------
+        float
+            Cosine distance between the normalized bucket values.
+
+        """
         if not isinstance(other, type(self)):
             raise TypeError(
                 "`other` must be type {}, not {}".format(type(self), type(other))

@@ -49,6 +49,19 @@ class StringValue(_VertaDataType):
         return cls(value=data["value"])
 
     def dist(self, other):
+        """Calculate the distance from `other` to this value.
+
+        Parameters
+        ----------
+        other : :class:`StringValue`
+            Value to calculate distance from.
+
+        Returns
+        -------
+        int
+            0 if the strings are equal, otherwise 1.
+
+        """
         if not isinstance(other, type(self)):
             raise TypeError(
                 "`other` must be type {}, not {}".format(type(self), type(other))
