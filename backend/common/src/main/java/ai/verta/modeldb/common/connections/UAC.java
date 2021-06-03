@@ -2,23 +2,12 @@ package ai.verta.modeldb.common.connections;
 
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
-import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
-import ai.verta.modeldb.common.interceptors.MetadataForwarder;
-import ai.verta.uac.AuthzServiceGrpc;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.RoleServiceGrpc;
-import ai.verta.uac.UACServiceGrpc;
-import ai.verta.uac.WorkspaceServiceGrpc;
+import ai.verta.uac.*;
 import io.grpc.*;
-import io.grpc.stub.AbstractStub;
-import io.grpc.stub.MetadataUtils;
-import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.Optional;
 
 public class UAC extends Connection {
   private static final Logger LOGGER = LogManager.getLogger(UAC.class);
@@ -30,6 +19,7 @@ public class UAC extends Connection {
   private final WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspaceServiceFutureStub;
   private final AuthzServiceGrpc.AuthzServiceFutureStub authzServiceFutureStub;
   private final RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub;
+  private final OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub;
 
   public static UAC FromConfig(Config config) {
     if (!config.hasAuth()) return null;
@@ -62,6 +52,7 @@ public class UAC extends Connection {
     workspaceServiceFutureStub = WorkspaceServiceGrpc.newFutureStub(authServiceChannel);
     authzServiceFutureStub = AuthzServiceGrpc.newFutureStub(authServiceChannel);
     roleServiceFutureStub = RoleServiceGrpc.newFutureStub(authServiceChannel);
+    organizationServiceFutureStub = OrganizationServiceGrpc.newFutureStub(authServiceChannel);
   }
 
   public CollaboratorServiceGrpc.CollaboratorServiceFutureStub getCollaboratorService() {
@@ -78,6 +69,10 @@ public class UAC extends Connection {
 
   public AuthzServiceGrpc.AuthzServiceFutureStub getAuthzService() {
     return attachInterceptors(authzServiceFutureStub);
+  }
+
+  public OrganizationServiceGrpc.OrganizationServiceFutureStub getOrganizationService( ) {
+    return attachInterceptors(organizationServiceFutureStub);
   }
 
   public RoleServiceGrpc.RoleServiceFutureStub getRoleService() {

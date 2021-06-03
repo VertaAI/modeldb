@@ -70,8 +70,21 @@ class RegisteredModelVersions(_utils.LazyList):
     def _page_number(self, msg):
         return msg.pagination.page_number
 
-    def with_workspace(self, workspace_name=None):
+    def with_workspace(self, workspace=None):
+        """Returns model versions in the specified workspace.
+
+        Parameters
+        ----------
+        workspace : str, optional
+            Workspace name. If not provided, uses personal workspace.
+
+        Returns
+        -------
+        :class:`RegisteredModelVersions`
+            Filtered model versions.
+
+        """
         new_list = copy.deepcopy(self)
         new_list._msg.id.ClearField('registered_model_id')
-        new_list._msg.id.named_id.workspace_name = workspace_name or ''
+        new_list._msg.id.named_id.workspace_name = workspace or ''
         return new_list

@@ -7,6 +7,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddExperimentRunTags;
+import ai.verta.modeldb.CloneExperimentRun;
 import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
 import ai.verta.modeldb.CommitMultipartArtifact;
@@ -26,6 +27,7 @@ import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunCodeVersion;
 import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
+import ai.verta.modeldb.GetExperimentRunsInExperiment;
 import ai.verta.modeldb.GetHyperparameters;
 import ai.verta.modeldb.GetMetrics;
 import ai.verta.modeldb.GetObservations;
@@ -86,6 +88,7 @@ import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.Action;
+import ai.verta.uac.Empty;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
@@ -102,12 +105,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -1017,7 +1022,7 @@ public class FutureExperimentRunDAO {
                                                         .filterAndGetPrivilegedDatasetsOnly(
                                                             artifactMapSubtypes.get(
                                                                 builder.getId()),
-                                                            true,
+                                                            false,
                                                             this
                                                                 ::getEntityPermissionBasedOnResourceTypes)
                                                         .thenCompose(
@@ -1399,7 +1404,13 @@ public class FutureExperimentRunDAO {
                                 .build(),
                         executor),
             executor)
-        .thenCompose(unused -> createExperimentRunHandler.createExperimentRun(request), executor);
+        .thenCompose(unused -> createExperimentRunHandler.convertCreateRequest(request), executor)
+        .thenCompose(
+            experimentRun ->
+                createExperimentRunHandler
+                    .insertExperimentRun(experimentRun)
+                    .thenApply(unused2 -> experimentRun, executor),
+            executor);
   }
 
   public InternalFuture<Void> logEnvironment(LogEnvironment request) {
@@ -1565,5 +1576,173 @@ public class FutureExperimentRunDAO {
                             .execute()),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+  }
+
+  public InternalFuture<GetExperimentRunsInExperiment.Response> getExperimentRunsInExperiment(
+      GetExperimentRunsInExperiment request) {
+    final var requestValidationFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getExperimentId().isEmpty()) {
+                String errorMessage = "Experiment ID not present";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+    return requestValidationFuture
+        .thenCompose(
+            unused ->
+                jdbi.withHandle(
+                    handle ->
+                        handle
+                            .createQuery("SELECT COUNT(id) FROM experiment WHERE id = :id")
+                            .bind("id", request.getExperimentId())
+                            .mapTo(Long.class)
+                            .one()),
+            executor)
+        .thenAccept(
+            count -> {
+              if (count == 0) {
+                throw new NotFoundException("Experiment not found");
+              }
+            },
+            executor)
+        .thenCompose(
+            unused ->
+                findExperimentRuns(
+                    FindExperimentRuns.newBuilder()
+                        .setExperimentId(request.getExperimentId())
+                        .setSortKey(request.getSortKey())
+                        .setAscending(request.getAscending())
+                        .setPageLimit(request.getPageLimit())
+                        .setPageNumber(request.getPageNumber())
+                        .build()),
+            executor)
+        .thenApply(
+            findResponse ->
+                GetExperimentRunsInExperiment.Response.newBuilder()
+                    .addAllExperimentRuns(findResponse.getExperimentRunsList())
+                    .setTotalRecords(findResponse.getTotalRecords())
+                    .build(),
+            executor);
+  }
+
+  public InternalFuture<CloneExperimentRun.Response> cloneExperimentRun(
+      CloneExperimentRun request) {
+    var validateRequestParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getSrcExperimentRunId().isEmpty()) {
+                throw new InvalidArgumentException("Source ExperimentRun Id should not be empty");
+              }
+            },
+            executor);
+
+    return validateRequestParamFuture
+        .thenCompose(
+            unused ->
+                FutureGrpc.ClientRequest(
+                    uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
+            executor)
+        .thenCompose(
+            userInfo ->
+                findExperimentRuns(
+                        FindExperimentRuns.newBuilder()
+                            .addExperimentRunIds(request.getSrcExperimentRunId())
+                            .build())
+                    .thenApply(
+                        findExperimentRuns -> {
+                          if (findExperimentRuns.getExperimentRunsList().isEmpty()) {
+                            throw new NotFoundException("Source experiment run not found");
+                          }
+                          ExperimentRun srcExperimentRun = findExperimentRuns.getExperimentRuns(0);
+                          return srcExperimentRun.toBuilder().clone();
+                        },
+                        executor)
+                    .thenCompose(
+                        cloneExperimentRunBuilder ->
+                            checkPermissionAndPopulateFieldsBasedOnDestExperimentId(
+                                request, cloneExperimentRunBuilder),
+                        executor)
+                    .thenCompose(
+                        desExperimentRunBuilder -> {
+                          desExperimentRunBuilder
+                              .setId(UUID.randomUUID().toString())
+                              .setDateCreated(Calendar.getInstance().getTimeInMillis())
+                              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
+                              .setStartTime(Calendar.getInstance().getTimeInMillis())
+                              .setEndTime(Calendar.getInstance().getTimeInMillis());
+
+                          if (!request.getDestExperimentRunName().isEmpty()) {
+                            desExperimentRunBuilder.setName(request.getDestExperimentRunName());
+                          } else {
+                            desExperimentRunBuilder.setName(
+                                desExperimentRunBuilder.getName() + " - " + new Date().getTime());
+                          }
+
+                          if (userInfo != null) {
+                            desExperimentRunBuilder
+                                .clearOwner()
+                                .setOwner(userInfo.getVertaInfo().getUserId());
+                          }
+                          return createExperimentRunHandler
+                              .insertExperimentRun(desExperimentRunBuilder.build())
+                              .thenApply(
+                                  unused1 ->
+                                      CloneExperimentRun.Response.newBuilder()
+                                          .setRun(desExperimentRunBuilder.build())
+                                          .build(),
+                                  executor);
+                        },
+                        executor),
+            executor);
+  }
+
+  private InternalFuture<ExperimentRun.Builder>
+      checkPermissionAndPopulateFieldsBasedOnDestExperimentId(
+          CloneExperimentRun request, ExperimentRun.Builder cloneExperimentRunBuilder) {
+    if (!request.getDestExperimentId().isEmpty()) {
+      if (!cloneExperimentRunBuilder.getExperimentId().equals(request.getDestExperimentId())) {
+        return jdbi.withHandle(
+                handle ->
+                    handle
+                        .createQuery("SELECT project_id FROM experiment where id = :id")
+                        .bind("id", request.getDestExperimentId())
+                        .mapTo(String.class)
+                        .findOne())
+            .thenApply(
+                projectId -> {
+                  if (projectId.isEmpty()) {
+                    throw new NotFoundException(
+                        "Experiment not found for given ID: " + request.getDestExperimentId());
+                  }
+                  return projectId.get();
+                },
+                executor)
+            .thenCompose(
+                projectId ->
+                    getEntityPermissionBasedOnResourceTypes(
+                            Collections.singletonList(projectId),
+                            ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                            ModelDBServiceResourceTypes.PROJECT)
+                        .thenCompose(
+                            allowed -> {
+                              if (!allowed) {
+                                throw new PermissionDeniedException(
+                                    "Destination project is not accessible");
+                              }
+                              return InternalFuture.completedInternalFuture(projectId);
+                            },
+                            executor),
+                executor)
+            .thenApply(
+                projectId ->
+                    cloneExperimentRunBuilder
+                        .setExperimentId(request.getDestExperimentId())
+                        .setProjectId(projectId),
+                executor);
+      }
+    }
+    return InternalFuture.completedInternalFuture(cloneExperimentRunBuilder);
   }
 }

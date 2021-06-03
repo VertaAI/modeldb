@@ -35,7 +35,9 @@ DEFAULT_DEV_KEY = None
 
 
 # hypothesis on Jenkins is apparently too slow
-hypothesis.settings.register_profile("default", suppress_health_check=[hypothesis.HealthCheck.too_slow])
+hypothesis.settings.register_profile(
+    "default", suppress_health_check=[hypothesis.HealthCheck.too_slow]
+)
 hypothesis.settings.load_profile("default")
 
 
@@ -47,52 +49,52 @@ def pytest_collection_modifyitems(config, items):
     if config.getoption("--oss"):
         skip_not_oss = pytest.mark.skip(reason="not available in OSS")
         for item in items:
-            if 'not_oss' in item.keywords:
+            if "not_oss" in item.keywords:
                 item.add_marker(skip_not_oss)
     else:
         skip_oss = pytest.mark.skip(reason="only applicable to OSS")
         for item in items:
-            if 'oss' in item.keywords:
+            if "oss" in item.keywords:
                 item.add_marker(skip_oss)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def host():
     return os.environ.get("VERTA_HOST", DEFAULT_HOST)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def port():
     return os.environ.get("VERTA_PORT", DEFAULT_PORT)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def email():
     return os.environ.get("VERTA_EMAIL", DEFAULT_EMAIL)
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def dev_key():
     return os.environ.get("VERTA_DEV_KEY", DEFAULT_DEV_KEY)
 
 
 # for collaboration tests
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def email_2():
     return os.environ.get("VERTA_EMAIL_2")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def dev_key_2():
     return os.environ.get("VERTA_DEV_KEY_2")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def email_3():
     return os.environ.get("VERTA_EMAIL_3")
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def dev_key_3():
     return os.environ.get("VERTA_DEV_KEY_3")
 
@@ -104,7 +106,7 @@ def seed():
 
 @pytest.fixture
 def nones():
-    return [None]*INPUT_LENGTH
+    return [None] * INPUT_LENGTH
 
 
 @pytest.fixture
@@ -116,20 +118,22 @@ def bools(seed):
 @pytest.fixture
 def floats(seed):
     random.seed(seed)
-    return [random.uniform(-3**2, 3**3) for _ in range(INPUT_LENGTH)]
+    return [random.uniform(-(3 ** 2), 3 ** 3) for _ in range(INPUT_LENGTH)]
 
 
 @pytest.fixture
 def ints(seed):
     random.seed(seed)
-    return [random.randint(-3**4, 3**5) for _ in range(INPUT_LENGTH)]
+    return [random.randint(-(3 ** 4), 3 ** 5) for _ in range(INPUT_LENGTH)]
 
 
 @pytest.fixture
 def strs(seed):
     """no duplicates"""
     random.seed(seed)
-    gen_str = lambda: ''.join(random.choice(string.ascii_letters) for _ in range(INPUT_LENGTH))
+    gen_str = lambda: "".join(
+        random.choice(string.ascii_letters) for _ in range(INPUT_LENGTH)
+    )
     result = set()
     while len(result) < INPUT_LENGTH:
         single_str = gen_str()
@@ -145,10 +149,7 @@ def flat_lists(seed, nones, bools, floats, ints, strs):
     random.seed(seed)
     values = (nones, bools, floats, ints, strs)
     return [
-        [
-            values[random.choice(range(len(values)))][i]
-            for i in range(INPUT_LENGTH)
-        ]
+        [values[random.choice(range(len(values)))][i] for i in range(INPUT_LENGTH)]
         for _ in range(INPUT_LENGTH)
     ]
 
@@ -171,19 +172,15 @@ def nested_lists(seed, nones, bools, floats, ints, strs):
     random.seed(seed)
     values = (nones, bools, floats, ints, strs)
     flat_values = [value for type_values in values for value in type_values]
+
     def gen_value(p=1):
         if random.random() < p:
-            return [
-                gen_value(p/2)
-                for _ in range(random.choice(range(4)))
-            ]
+            return [gen_value(p / 2) for _ in range(random.choice(range(4)))]
         else:
             return random.choice(flat_values)
+
     return [
-        [
-            gen_value()
-            for _ in range(random.choice(range(3))+1)
-        ]
+        [gen_value() for _ in range(random.choice(range(3)) + 1)]
         for _ in range(INPUT_LENGTH)
     ]
 
@@ -193,33 +190,33 @@ def nested_dicts(seed, nones, bools, floats, ints, strs):
     random.seed(seed)
     values = (nones, bools, floats, ints, strs)
     flat_values = [value for type_values in values for value in type_values]
+
     def gen_value(p=1):
         if random.random() < p:
             return {
-                key: gen_value(p/2)
+                key: gen_value(p / 2)
                 for key, _ in zip(strs, range(random.choice(range(4))))
             }
         else:
             return random.choice(flat_values)
+
     return [
-        {
-            key: gen_value()
-            for key, _ in zip(strs, range(random.choice(range(3))+1))
-        }
+        {key: gen_value() for key, _ in zip(strs, range(random.choice(range(3)) + 1))}
         for _ in range(INPUT_LENGTH)
     ]
 
 
 @pytest.fixture
 def scalar_values(nones, bools, floats, ints, strs):
-    return [type_values[0]
-            for type_values in (nones, bools, floats, ints, strs)]
+    return [type_values[0] for type_values in (nones, bools, floats, ints, strs)]
 
 
 @pytest.fixture
 def collection_values(flat_lists, flat_dicts, nested_lists, nested_dicts):
-    return [type_values[0]
-            for type_values in (flat_lists, flat_dicts, nested_lists, nested_dicts)]
+    return [
+        type_values[0]
+        for type_values in (flat_lists, flat_dicts, nested_lists, nested_dicts)
+    ]
 
 
 @pytest.fixture
@@ -227,14 +224,14 @@ def all_values(scalar_values, collection_values):
     return scalar_values + collection_values
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def output_path():
     dirpath = ".outputs"
     while len(dirpath) < 1024:
         try:  # avoid name collisions
             os.mkdir(dirpath)
         except OSError:
-            dirpath += '_'
+            dirpath += "_"
         else:
             yield os.path.join(dirpath, "{}")
             break
@@ -307,7 +304,9 @@ def in_tempdir(tempdir_root):
 def mark_time():
     print("\n[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
     yield
-    print("\n[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow()))
+    print(
+        "\n[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow())
+    )
 
 
 @pytest.fixture
@@ -317,8 +316,20 @@ def client(host, port, email, dev_key, created_entities):
     yield client
 
     proj = client._ctx.proj
-    if (proj is not None
-            and proj.id not in {entity.id for entity in created_entities}):
+    if proj is not None and proj.id not in {entity.id for entity in created_entities}:
+        proj.delete()
+
+
+@pytest.fixture(scope="class")
+def class_client(host, port, email, dev_key, class_created_entities):
+    client = Client(host, port, email, dev_key, debug=True)
+
+    yield client
+
+    proj = client._ctx.proj
+    if proj is not None and proj.id not in {
+        entity.id for entity in class_created_entities
+    }:
         proj.delete()
 
 
@@ -364,18 +375,18 @@ def model_for_deployment(strs):
 
     num_rows, num_cols = 36, 6
 
-    data = pd.DataFrame(np.tile(np.arange(num_rows).reshape(-1, 1),
-                                num_cols),
-                        columns=strs[:num_cols])
-    X_train = data.iloc[:,:-1]  # pylint: disable=bad-whitespace
+    data = pd.DataFrame(
+        np.tile(np.arange(num_rows).reshape(-1, 1), num_cols), columns=strs[:num_cols]
+    )
+    X_train = data.iloc[:, :-1]  # pylint: disable=bad-whitespace
     y_train = data.iloc[:, -1]
 
     return {
-        'model': sklearn.linear_model.LogisticRegression(),
-        'model_api': verta.utils.ModelAPI(X_train, y_train),
-        'requirements': six.StringIO("scikit-learn=={}".format(sklearn.__version__)),
-        'train_features': X_train,
-        'train_targets': y_train,
+        "model": sklearn.linear_model.LogisticRegression(),
+        "model_api": verta.utils.ModelAPI(X_train, y_train),
+        "requirements": six.StringIO("scikit-learn=={}".format(sklearn.__version__)),
+        "train_features": X_train,
+        "train_targets": y_train,
     }
 
 
@@ -412,6 +423,28 @@ def created_entities():
 
     # move orgs to the end
     from verta.tracking._organization import Organization
+
+    is_org = lambda entity: entity.__class__ is Organization
+    to_delete = itertools.chain(
+        filterfalse(is_org, to_delete),
+        filter(is_org, to_delete),
+    )
+
+    # TODO: avoid duplicates
+    for entity in to_delete:
+        entity.delete()
+
+
+@pytest.fixture(scope="class")
+def class_created_entities():
+    """Container to track and clean up ModelDB, Registry, etc. entities created during tests."""
+    to_delete = []
+
+    yield to_delete
+
+    # move orgs to the end
+    from verta.tracking._organization import Organization
+
     is_org = lambda entity: entity.__class__ is Organization
     to_delete = itertools.chain(
         filterfalse(is_org, to_delete),
@@ -448,9 +481,9 @@ def organization(client, created_entities):
 
 @pytest.fixture
 def requirements_file():
-    with tempfile.NamedTemporaryFile('w+') as tempf:
+    with tempfile.NamedTemporaryFile("w+") as tempf:
         # create requirements file from pip freeze
-        pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+        pip_freeze = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
         pip_freeze = six.ensure_str(pip_freeze)
         tempf.write(pip_freeze)
         tempf.flush()  # flush object buffer

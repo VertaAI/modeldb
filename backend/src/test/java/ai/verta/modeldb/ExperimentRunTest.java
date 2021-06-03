@@ -743,7 +743,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInExperiment endpoint")
   public void bb_getExperimentRunFromExperimentTest() {
     LOGGER.info("Get ExperimentRun from Experiment test start................................");
 
@@ -773,7 +772,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInExperiment endpoint")
   public void bb_getExperimentRunWithPaginationFromExperimentTest() {
     LOGGER.info(
         "Get ExperimentRun using pagination from Experiment test start................................");
@@ -887,7 +885,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInExperiment endpoint")
   public void bb_getExperimentFromExperimentNegativeTest() {
     LOGGER.info(
         "Get ExperimentRun from Experiment Negative test start................................");
@@ -910,7 +907,7 @@ public class ExperimentRunTest extends TestsInit {
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
 
     LOGGER.info(
@@ -7961,7 +7958,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: cloneExperimentRun endpoint")
   public void cloneExperimentRun() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Clone experimentRun test start................................");
 

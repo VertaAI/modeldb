@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timedelta
 import time
+import warnings
+from datetime import datetime, timedelta
 
-from ...external.six import PY2, PY3
+import pytimeparse
+from verta.external import six
 
-if PY3:
+if six.PY3:
     from ._utc_py3 import utc
-if PY2:
+if six.PY2:
     from ._utc_py2 import utc
 
 
@@ -24,8 +26,9 @@ def now_in_millis():
 
 def epoch_millis(dt):
     if isinstance(dt, datetime):
+        dt = _promote_naive_to_utc(dt)
         return int(round((dt - UNIX_EPOCH).total_seconds() * 1000))
-    elif type(dt) == int:
+    elif isinstance(dt, int) and dt >= 0:
         return dt
     elif dt is None:
         return dt
@@ -33,5 +36,53 @@ def epoch_millis(dt):
         raise ValueError("Cannot convert argument to epoch milliseconds")
 
 
+def _promote_naive_to_utc(dt):
+    if dt.tzinfo is None:
+        warnings.warn("Time zone naive datetime found, assuming UTC time zone")
+        return dt.astimezone(utc)
+    else:
+        return dt
+
+
+def _force_millisecond_resolution(delta):
+    microseconds = delta.microseconds % 1000
+    if microseconds > 0:
+        warnings.warn(
+            "Microsecond resolution unsupported, converting to millisecond resolution"
+        )
+        return delta - timedelta(microseconds=microseconds)
+    else:
+        return delta
+
+
+def duration_millis(delta):
+    if isinstance(delta, timedelta):
+        delta = _force_millisecond_resolution(delta)
+        return int(delta.total_seconds() * 1000)
+    elif isinstance(delta, int) and delta >= 0:
+        return delta
+    raise ValueError("cannot convert argument to duration milliseconds")
+
+
 def datetime_from_millis(millis):
     return UNIX_EPOCH + timedelta(milliseconds=millis)
+
+
+def parse_duration(value):
+    duration = None
+    if isinstance(value, six.string_types):
+        try:
+            dur_seconds = pytimeparse.parse(six.ensure_str(value))
+            duration = timedelta(seconds=dur_seconds)
+        except:
+            raise ValueError("cannot convert string argument to timedelta")
+    if isinstance(value, int):
+        if value < 0:
+            raise ValueError("cannot accept negative integer as a millisecond duration")
+        duration = timedelta(milliseconds=value)
+    if isinstance(value, timedelta):
+        duration = value
+    if duration is not None:
+        duration = _force_millisecond_resolution(duration)
+        return duration
+    raise ValueError("cannot convert argument to a time duration")
