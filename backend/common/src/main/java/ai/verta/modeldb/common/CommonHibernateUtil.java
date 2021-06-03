@@ -5,6 +5,8 @@ import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
+import com.mysql.cj.jdbc.MysqlDataSource;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.prometheus.client.hibernate.HibernateStatisticsCollector;
 import liquibase.Contexts;
@@ -32,6 +34,7 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.exception.JDBCConnectionException;
+import org.hibernate.hikaricp.internal.HikariCPConnectionProvider;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 
@@ -39,6 +42,7 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.Properties;
+import org.postgresql.ds.PGSimpleDataSource;
 
 public abstract class CommonHibernateUtil {
   private static final Logger LOGGER = LogManager.getLogger(CommonHibernateUtil.class);
@@ -72,21 +76,32 @@ public abstract class CommonHibernateUtil {
         Properties settings = new Properties();
         RdbConfig rdb = config.RdbConfiguration;
 
-        String connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
-        settings.put(Environment.DRIVER, rdb.RdbDriver);
-        settings.put(Environment.URL, connectionString);
-        settings.put(Environment.USER, rdb.RdbUsername);
-        settings.put(Environment.PASS, rdb.RdbPassword);
+        final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
+        final var idleTimeoutMillis = Integer.parseInt(config.connectionTimeout) * 1000;
+        final var connectionTimeoutMillis = 30000;
+        final var connectionMaxLifetimeMillis = idleTimeoutMillis - 5000;
+        final var url = RdbConfig.buildDatabaseConnectionString(rdb);
+        final var connectionProviderClass = HikariCPConnectionProvider.class.getName();
+        final var datasourceClass = getDatasourceClass(rdb);
+
         settings.put(Environment.DIALECT, rdb.RdbDialect);
         settings.put(Environment.HBM2DDL_AUTO, "validate");
         settings.put(Environment.SHOW_SQL, "false");
-        settings.put("hibernate.hikari.maxLifetime", config.maxLifetime);
-        settings.put("hibernate.hikari.idleTimeout", config.idleTimeout);
-        settings.put("hibernate.hikari.minimumIdle", config.minConnectionPoolSize);
-        settings.put("hibernate.hikari.maximumPoolSize", config.maxConnectionPoolSize);
-        settings.put("hibernate.hikari.connectionTimeout", config.connectionTimeout);
         settings.put(Environment.QUERY_PLAN_CACHE_MAX_SIZE, 200);
         settings.put(Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, 20);
+        settings.put("hibernate.connection.provider_class", connectionProviderClass);
+        settings.put("hibernate.hikari.dataSourceClassName", datasourceClass);
+        settings.put("hibernate.hikari.dataSource.url", url);
+        settings.put("hibernate.hikari.dataSource.user", rdb.RdbUsername);
+        settings.put("hibernate.hikari.dataSource.password", rdb.RdbPassword);
+        settings.put("hibernate.hikari.idleTimeout", String.valueOf(idleTimeoutMillis));
+        settings.put(
+            "hibernate.hikari.connectionTimeout", String.valueOf(connectionTimeoutMillis));
+        settings.put("hibernate.hikari.minimumIdle", config.minConnectionPoolSize);
+        settings.put("hibernate.hikari.maximumPoolSize", config.maxConnectionPoolSize);
+        settings.put(
+            "hibernate.hikari.maxLifetime", String.valueOf(connectionMaxLifetimeMillis));
+        settings.put("hibernate.hikari.poolName", "hibernate");
         settings.put("hibernate.generate_statistics", "true");
         settings.put("hibernate.jmx.enabled", "true");
         configuration.setProperties(settings);
@@ -129,6 +144,19 @@ public abstract class CommonHibernateUtil {
     } else {
       return loopBack(sessionFactory);
     }
+  }
+
+  private String getDatasourceClass(RdbConfig rdbConfiguration) {
+    if (rdbConfiguration.isMssql()) {
+      return SQLServerDataSource.class.getName();
+    }
+    if (rdbConfiguration.isMysql()) {
+      return MysqlDataSource.class.getName();
+    }
+    if (rdbConfiguration.isPostgres()) {
+      return PGSimpleDataSource.class.getName();
+    }
+    throw new ModelDBException("Unrecognized database " + rdbConfiguration.RdbDialect);
   }
 
   public static void changeCharsetToUtf(JdbcConnection jdbcCon) throws DatabaseException, SQLException {
