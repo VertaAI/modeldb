@@ -10,6 +10,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.List;
@@ -105,6 +106,9 @@ public class Config extends ai.verta.modeldb.common.config.Config {
     hikariDataSource.setPassword(databaseConfig.RdbConfiguration.RdbPassword);
     hikariDataSource.setMinimumIdle(Integer.parseInt(databaseConfig.minConnectionPoolSize));
     hikariDataSource.setMaximumPoolSize(Integer.parseInt(databaseConfig.maxConnectionPoolSize));
+    hikariDataSource.setRegisterMbeans(true);
+    hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
+    hikariDataSource.setPoolName("modeldb");
 
     final Jdbi jdbi = Jdbi.create(hikariDataSource);
     final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);

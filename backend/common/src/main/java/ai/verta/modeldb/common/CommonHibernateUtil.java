@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import io.grpc.health.v1.HealthCheckResponse;
+import io.prometheus.client.hibernate.HibernateStatisticsCollector;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -86,6 +87,8 @@ public abstract class CommonHibernateUtil {
         settings.put("hibernate.hikari.connectionTimeout", config.connectionTimeout);
         settings.put(Environment.QUERY_PLAN_CACHE_MAX_SIZE, 200);
         settings.put(Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, 20);
+        settings.put("hibernate.generate_statistics", "true");
+        settings.put("hibernate.jmx.enabled", "true");
         configuration.setProperties(settings);
 
         LOGGER.trace("connectionString {}", connectionString);
@@ -106,7 +109,7 @@ public abstract class CommonHibernateUtil {
 
         // Create session factory and validate entity
         sessionFactory = metaDataSrc.buildMetadata().buildSessionFactory();
-
+        new HibernateStatisticsCollector(sessionFactory, "modeldb").register();
         // Export schema
         if (CommonConstants.EXPORT_SCHEMA) {
           exportSchema(metaDataSrc.buildMetadata());
