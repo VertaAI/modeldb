@@ -70,12 +70,7 @@ public abstract class CommonHibernateUtil {
         // Initialize background utils count
         CommonUtils.initializeBackgroundUtilsCount();
 
-        // Hibernate settings equivalent to hibernate.cfg.xml's properties
-        Configuration configuration = new Configuration();
-
-        Properties settings = new Properties();
-        RdbConfig rdb = config.RdbConfiguration;
-
+        final var rdb = config.RdbConfiguration;
         final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
         final var idleTimeoutMillis = Integer.parseInt(config.connectionTimeout) * 1000;
         final var connectionTimeoutMillis = 30000;
@@ -84,32 +79,34 @@ public abstract class CommonHibernateUtil {
         final var connectionProviderClass = HikariCPConnectionProvider.class.getName();
         final var datasourceClass = getDatasourceClass(rdb);
 
-        settings.put(Environment.DIALECT, rdb.RdbDialect);
-        settings.put(Environment.HBM2DDL_AUTO, "validate");
-        settings.put(Environment.SHOW_SQL, "false");
-        settings.put(Environment.QUERY_PLAN_CACHE_MAX_SIZE, 200);
-        settings.put(Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, 20);
-        settings.put("hibernate.connection.provider_class", connectionProviderClass);
-        settings.put("hibernate.hikari.dataSourceClassName", datasourceClass);
-        settings.put("hibernate.hikari.dataSource.url", url);
-        settings.put("hibernate.hikari.dataSource.user", rdb.RdbUsername);
-        settings.put("hibernate.hikari.dataSource.password", rdb.RdbPassword);
-        settings.put("hibernate.hikari.idleTimeout", String.valueOf(idleTimeoutMillis));
-        settings.put(
-            "hibernate.hikari.connectionTimeout", String.valueOf(connectionTimeoutMillis));
-        settings.put("hibernate.hikari.minimumIdle", config.minConnectionPoolSize);
-        settings.put("hibernate.hikari.maximumPoolSize", config.maxConnectionPoolSize);
-        settings.put(
-            "hibernate.hikari.maxLifetime", String.valueOf(connectionMaxLifetimeMillis));
-        settings.put("hibernate.hikari.poolName", "hibernate");
-        settings.put("hibernate.generate_statistics", "true");
-        settings.put("hibernate.jmx.enabled", "true");
-        configuration.setProperties(settings);
+        // Hibernate settings equivalent to hibernate.cfg.xml's properties
+        final var configuration = new Configuration()
+            .setProperty("hibernate.hbm2ddl.auto", "validate")
+            .setProperty("hibernate.dialect", rdb.RdbDialect)
+            .setProperty("hibernate.connection.provider_class", connectionProviderClass)
+            .setProperty("hibernate.hikari.dataSourceClassName", datasourceClass)
+            .setProperty("hibernate.hikari.dataSource.url", url)
+            .setProperty("hibernate.hikari.dataSource.user", rdb.RdbUsername)
+            .setProperty("hibernate.hikari.dataSource.password", rdb.RdbPassword)
+            .setProperty("hibernate.hikari.idleTimeout", String.valueOf(idleTimeoutMillis))
+            .setProperty(
+                "hibernate.hikari.connectionTimeout", String.valueOf(connectionTimeoutMillis))
+            .setProperty("hibernate.hikari.minimumIdle", config.minConnectionPoolSize)
+            .setProperty("hibernate.hikari.maximumPoolSize", config.maxConnectionPoolSize)
+            .setProperty(
+                "hibernate.hikari.maxLifetime", String.valueOf(connectionMaxLifetimeMillis))
+            .setProperty("hibernate.hikari.poolName", "hibernate")
+            .setProperty("hibernate.hikari.registerMbeans", "true")
+            .setProperty("hibernate.generate_statistics", "true")
+            .setProperty("hibernate.jmx.enabled", "true")
+            .setProperty(Environment.QUERY_PLAN_CACHE_MAX_SIZE, String.valueOf(200))
+            .setProperty(
+                Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, String.valueOf(20));
 
         LOGGER.trace("connectionString {}", connectionString);
         // Create registry builder
         StandardServiceRegistryBuilder registryBuilder =
-            new StandardServiceRegistryBuilder().applySettings(settings);
+            new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
         registry = registryBuilder.build();
         MetadataSources metaDataSrc = new MetadataSources(registry);
         for (Class<?> entity : entities) {
@@ -124,7 +121,8 @@ public abstract class CommonHibernateUtil {
 
         // Create session factory and validate entity
         sessionFactory = metaDataSrc.buildMetadata().buildSessionFactory();
-        new HibernateStatisticsCollector(sessionFactory, "modeldb").register();
+        // Enable JMX metrics collection from hibernate
+        new HibernateStatisticsCollector(sessionFactory, "hibernate").register();
         // Export schema
         if (CommonConstants.EXPORT_SCHEMA) {
           exportSchema(metaDataSrc.buildMetadata());
