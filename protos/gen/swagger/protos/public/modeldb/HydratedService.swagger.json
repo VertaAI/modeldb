@@ -867,7 +867,8 @@
         "UPDATE",
         "DELETE",
         "UPDATE_PERMISSIONS",
-        "PREDICT"
+        "PREDICT",
+        "CONTROL"
       ],
       "default": "UNKNOWN"
     },
@@ -2481,6 +2482,17 @@
         }
       }
     },
+    "versioningAptEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "versioningDatasetBlob": {
       "type": "object",
       "properties": {
@@ -2529,6 +2541,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "apt": {
+          "$ref": "#/definitions/versioningAptEnvironmentBlob"
         }
       }
     },

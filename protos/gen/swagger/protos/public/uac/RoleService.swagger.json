@@ -99,7 +99,8 @@
             "enum": [
               "UNKNOWN",
               "ALL",
-              "ENDPOINT"
+              "ENDPOINT",
+              "BUILD"
             ],
             "default": "UNKNOWN"
           }
@@ -530,7 +531,8 @@
         "UPDATE",
         "DELETE",
         "UPDATE_PERMISSIONS",
-        "PREDICT"
+        "PREDICT",
+        "CONTROL"
       ],
       "default": "UNKNOWN"
     },
@@ -539,7 +541,8 @@
       "enum": [
         "UNKNOWN",
         "ALL",
-        "ENDPOINT"
+        "ENDPOINT",
+        "BUILD"
       ],
       "default": "UNKNOWN"
     },
