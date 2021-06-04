@@ -20,14 +20,20 @@ public class ReconcilerInitializer {
   public static void initialize(
       Config config, ServiceSet services, FutureJdbi futureJdbi, Executor executor) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
-    softDeleteProjects = new SoftDeleteProjects(new ReconcilerConfig(), services.roleService);
-    softDeleteExperiments = new SoftDeleteExperiments(new ReconcilerConfig(), services.roleService);
+    softDeleteProjects =
+        new SoftDeleteProjects(new ReconcilerConfig(), services.roleService, futureJdbi, executor);
+    softDeleteExperiments =
+        new SoftDeleteExperiments(
+            new ReconcilerConfig(), services.roleService, futureJdbi, executor);
     softDeleteExperimentRuns =
-        new SoftDeleteExperimentRuns(new ReconcilerConfig(), services.roleService);
+        new SoftDeleteExperimentRuns(
+            new ReconcilerConfig(), services.roleService, futureJdbi, executor);
     softDeleteRepositories =
-        new SoftDeleteRepositories(new ReconcilerConfig(), services.roleService, false);
+        new SoftDeleteRepositories(
+            new ReconcilerConfig(), services.roleService, false, futureJdbi, executor);
     softDeleteDatasets =
-        new SoftDeleteRepositories(new ReconcilerConfig(), services.roleService, true);
+        new SoftDeleteRepositories(
+            new ReconcilerConfig(), services.roleService, true, futureJdbi, executor);
     updateRepositoryTimestampReconcile =
         new UpdateRepositoryTimestampReconcile(new ReconcilerConfig(), futureJdbi, executor);
     LOGGER.info("Exit from ReconcilerUtils: initialize()");

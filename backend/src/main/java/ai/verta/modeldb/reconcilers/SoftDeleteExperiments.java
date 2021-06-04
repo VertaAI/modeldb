@@ -3,6 +3,7 @@ package ai.verta.modeldb.reconcilers;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
@@ -12,6 +13,7 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -24,8 +26,9 @@ public class SoftDeleteExperiments extends Reconciler<String> {
       ModelDBHibernateUtil.getInstance();
   private final RoleService roleService;
 
-  public SoftDeleteExperiments(ReconcilerConfig config, RoleService roleService) {
-    super(config, LOGGER);
+  public SoftDeleteExperiments(
+      ReconcilerConfig config, RoleService roleService, FutureJdbi futureJdbi, Executor executor) {
+    super(config, LOGGER, futureJdbi, executor);
     this.roleService = roleService;
   }
 

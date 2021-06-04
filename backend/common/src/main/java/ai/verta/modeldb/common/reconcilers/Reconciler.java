@@ -27,10 +27,6 @@ public abstract class Reconciler<T> {
   protected final FutureJdbi futureJdbi;
   protected final Executor executor;
 
-  protected Reconciler(ReconcilerConfig config, Logger logger) {
-    this(config, logger, null, null);
-  }
-
   protected Reconciler(ReconcilerConfig config, Logger logger, FutureJdbi futureJdbi, Executor executor) {
     this.logger = logger;
     this.config = config;
