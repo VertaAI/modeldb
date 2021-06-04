@@ -404,12 +404,22 @@ class Endpoint(object):
         return response_json
 
     def get_access_token(self):
-        """
-        Gets the access token of the Endpoint.
+        """Gets an arbitrary access token of the endpoint.
 
         Returns
         -------
         str or None
+
+        """
+        tokens = self.get_access_tokens()
+        return tokens[0] if tokens else None
+
+    def get_access_tokens(self):
+        """Returns all existing tokens of the endpoint.
+
+        Returns
+        -------
+        list of str
 
         """
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/accesstokens".format(
@@ -421,11 +431,15 @@ class Endpoint(object):
         )
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
+
         data = response.json()
-        tokens = data["tokens"]
-        if len(tokens) == 0:
-            return None
-        return tokens[0]['creator_request']['value']
+        token_items = data.get("tokens", [])
+        tokens = [
+            token["creator_request"]["value"]
+            for token
+            in token_items
+        ]
+        return tokens
 
     def create_access_token(self, token):
         """
