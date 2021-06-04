@@ -109,6 +109,7 @@ public class App implements ApplicationContextAware {
   // Export all JMX metrics to Prometheus
   private static final String rules = "---\n" + "rules:\n" + "  - pattern: \".*\"";
   private static final AtomicBoolean metricsInitialized = new AtomicBoolean(false);
+
   @Bean
   public ServletRegistrationBean<MetricsServlet> servletRegistrationBean()
       throws MalformedObjectNameException {
