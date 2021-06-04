@@ -38,11 +38,14 @@ def get_git_test_autocapture_cases():
         [None, _git_utils.get_git_commit_hash("HEAD")],  # commit_hash
         [None, True, False],  # is_dirty
     ]
-    cases = set(itertools.product(*valid_values))
+    cases = enumerate(set(itertools.product(*valid_values)))
     cases = [  # only keep cases if they satisfy (2a)
         case for case in cases
-        if sum(val is not None for val in case[1:4]) <= 1
+        if sum(val is not None for val in case[1][1:4]) <= 1
     ]
+
+    cases = sorted(cases, key=lambda x: x[0])
+    cases = [case[1] for case in cases]
 
     return cases
 
