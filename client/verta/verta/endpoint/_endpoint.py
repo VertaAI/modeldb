@@ -39,9 +39,9 @@ class Endpoint(object):
     Attributes
     ----------
     id : int
-        ID of this Endpoint.
+        ID of this endpoint.
     path : str
-        Path of this Endpoint.
+        Path of this endpoint.
 
     """
     def __init__(self, conn, conf, workspace, id):
@@ -57,7 +57,7 @@ class Endpoint(object):
         try:
             curl = self.get_deployed_model().get_curl()
         except RuntimeError:
-            curl = "<Endpoint not deployed>"
+            curl = "<endpoint not deployed>"
 
         return '\n'.join((
             "path: {}".format(data['creator_request']['path']),
@@ -170,20 +170,20 @@ class Endpoint(object):
     def update(self, model_reference, strategy=None, wait=False, resources=None,
                autoscaling=None, env_vars=None):
         """
-        Updates the Endpoint with a model logged in an Experiment Run or a Model Version.
+        Updates the endpoint with a model logged in an Experiment Run or a Model Version.
 
         Parameters
         ----------
         model_reference : :class:`~verta.tracking.entities.ExperimentRun` or :class:`~verta.registry.entities.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
         strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
-            Strategy (direct or canary) for updating the Endpoint.
+            Strategy (direct or canary) for updating the endpoint.
         wait : bool, default False
-            Whether to wait for the Endpoint to finish updating before returning.
+            Whether to wait for the endpoint to finish updating before returning.
         resources : :class:`~verta.endpoint.resources.Resources`, optional
-            Resources allowed for the updated Endpoint.
+            Resources allowed for the updated endpoint.
         autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
-            Autoscaling condition for the updated Endpoint.
+            Autoscaling condition for the updated endpoint.
         env_vars : dict of str to str, optional
             Environment variables.
 
@@ -302,14 +302,14 @@ class Endpoint(object):
 
     def update_from_config(self, filepath, wait=False):
         """
-        Updates the Endpoint via a YAML or JSON config file.
+        Updates the endpoint via a YAML or JSON config file.
 
         Parameters
         ----------
         filepath : str
             Path to the YAML or JSON config file.
         wait : bool, default False
-            Whether to wait for the Endpoint to finish updating before returning.
+            Whether to wait for the endpoint to finish updating before returning.
 
         Returns
         -------
@@ -443,7 +443,7 @@ class Endpoint(object):
 
     def create_access_token(self, token):
         """
-        Creates an access token for the Endpoint.
+        Creates an access token for the endpoint.
 
         Parameters
         ----------
