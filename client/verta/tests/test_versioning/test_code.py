@@ -38,8 +38,11 @@ def get_git_test_autocapture_cases():
         [None, _git_utils.get_git_commit_hash("HEAD")],  # commit_hash
         [None, True, False],  # is_dirty
     ]
-    cases = set(itertools.product(*valid_values))
-    cases = [  # only keep cases if they satisfy (2a)
+    cases = list(itertools.product(*valid_values))
+    # remove dups, but maintain consistent original order for pytest-xdist
+    cases = sorted(set(cases), key=cases.index)
+    # only keep cases if they satisfy (2a)
+    cases = [
         case for case in cases
         if sum(val is not None for val in case[1:4]) <= 1
     ]
