@@ -39,29 +39,6 @@ def get_clients():
     return clients
 
 
-def delete_orgs(clients):
-    for client in clients:
-        for org_name in client._conn._get_visible_orgs():
-            if org_name == "do-not-delete":
-                continue
-
-            try:
-                client._get_organization(org_name).delete()
-            except requests.HTTPError as e:
-                msg = "{} failed to delete {} ({})".format(
-                    client._conn.email,
-                    org_name,
-                    e.response.status_code,
-                )
-            else:
-                msg = "{} deleted {}".format(
-                    client._conn.email,
-                    org_name,
-                )
-
-            print(msg)
-
-
 def delete_build(args):
     client, workspace, build_id = args
 
@@ -149,6 +126,29 @@ def delete_endpoints(clients):
                     )
 
                 print(msg)
+
+
+def delete_orgs(clients):
+    for client in clients:
+        for org_name in client._conn._get_visible_orgs():
+            if "do-not-delete" in org_name:
+                continue
+
+            try:
+                client._get_organization(org_name).delete()
+            except requests.HTTPError as e:
+                msg = "{} failed to delete {} ({})".format(
+                    client._conn.email,
+                    org_name,
+                    e.response.status_code,
+                )
+            else:
+                msg = "{} deleted {}".format(
+                    client._conn.email,
+                    org_name,
+                )
+
+            print(msg)
 
 
 def main():
