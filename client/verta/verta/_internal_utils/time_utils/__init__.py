@@ -57,8 +57,12 @@ def _force_millisecond_resolution(delta):
 
 def duration_millis(delta):
     if isinstance(delta, timedelta):
+        # NB: The following explicitly avoids floating point errors
+        # which occur when computing millis via delta.total_seconds() * 1000
         delta = _force_millisecond_resolution(delta)
-        return int(delta.total_seconds() * 1000)
+        millis_from_seconds = int(delta.total_seconds()) * 1000
+        millis_from_micro = int(delta.microseconds / 1000)
+        return millis_from_seconds + millis_from_micro
     elif isinstance(delta, int) and delta >= 0:
         return delta
     raise ValueError("cannot convert argument to duration milliseconds")

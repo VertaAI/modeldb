@@ -60,6 +60,13 @@ class TestDurationMillis:
         with pytest.raises(ValueError):
             time_utils.duration_millis(negative_int)
 
+    @given(millis=millis_uint64_strategy)
+    def test_round_trip_from_delta(self, millis):
+        delta = timedelta(milliseconds=millis)
+        delta_millis = time_utils.duration_millis(delta)
+        delta_parsed = time_utils.parse_duration(delta_millis)
+        assert delta == delta_parsed
+
 
 class TestParseDuration:
     def test_parse_duration(self):
