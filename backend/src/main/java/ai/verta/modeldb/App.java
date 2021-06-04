@@ -49,6 +49,7 @@ import java.util.Optional;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.management.MalformedObjectNameException;
 import liquibase.exception.LiquibaseException;
@@ -107,13 +108,16 @@ public class App implements ApplicationContextAware {
 
   // Export all JMX metrics to Prometheus
   private static final String rules = "---\n" + "rules:\n" + "  - pattern: \".*\"";
+  private static final AtomicBoolean metricsInitialized = new AtomicBoolean(false);
 
   @Bean
   public ServletRegistrationBean<MetricsServlet> servletRegistrationBean()
       throws MalformedObjectNameException {
-    DefaultExports.initialize();
-    new BuildInfoCollector().register();
-    new JmxCollector(rules).register();
+    if (!metricsInitialized.getAndSet(true)) {
+      DefaultExports.initialize();
+      new BuildInfoCollector().register();
+      new JmxCollector(rules).register();
+    }
     return new ServletRegistrationBean<>(new MetricsServlet(), "/metrics");
   }
 
