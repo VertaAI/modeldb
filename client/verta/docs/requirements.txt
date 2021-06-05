@@ -2,4 +2,4 @@ sphinx==3.5.4; python_version != '2.7'
 sphinx_copybutton; python_version != '2.7'
 
 click; python_version != '2.7'
-sphinx-click; python_version != '2.7'
+sphinx-click==2.7.1; python_version != '2.7'
