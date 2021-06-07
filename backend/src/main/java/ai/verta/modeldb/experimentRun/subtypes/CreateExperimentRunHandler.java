@@ -12,7 +12,7 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.metadata.MetadataServiceImpl;
+import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.uac.*;
@@ -130,7 +130,7 @@ public class CreateExperimentRunHandler {
      * id in ExperimentRun for uniqueness.
      */
     if (request.getName().isEmpty()) {
-      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
+      request = request.toBuilder().setName(MetadataDAORdbImpl.createRandomName()).build();
     }
 
     ExperimentRun.Builder experimentRunBuilder =

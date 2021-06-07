@@ -25,7 +25,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
-import ai.verta.modeldb.metadata.MetadataServiceImpl;
+import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -148,7 +148,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
      * set times to current time
      */
     if (request.getName().isEmpty()) {
-      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
+      request = request.toBuilder().setName(MetadataDAORdbImpl.createRandomName()).build();
     }
     Dataset.Builder datasetBuilder =
         Dataset.newBuilder()
@@ -425,7 +425,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       } else if (request.getId().isEmpty()) {
         errorMessage = ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST;
       } else if (request.getName().isEmpty()) {
-        request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
+        request = request.toBuilder().setName(MetadataDAORdbImpl.createRandomName()).build();
       }
 
       if (errorMessage != null) {

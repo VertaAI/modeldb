@@ -13,7 +13,7 @@ import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.metadata.MetadataServiceImpl;
+import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.ListRepositoriesRequest.Response;
@@ -166,7 +166,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                     request
                         .getRepository()
                         .toBuilder()
-                        .setName(MetadataServiceImpl.createRandomName()))
+                        .setName(MetadataDAORdbImpl.createRandomName()))
                 .build();
       }
 
@@ -215,7 +215,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                     request
                         .getRepository()
                         .toBuilder()
-                        .setName(MetadataServiceImpl.createRandomName()))
+                        .setName(MetadataDAORdbImpl.createRandomName()))
                 .build();
       }
 
