@@ -9,8 +9,6 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -1415,10 +1413,6 @@ public class DatasetTest extends TestsInit {
           "ExperimentRun date_updated field not update on database",
           experimentRun.getDateUpdated(),
           response.getExperimentRun().getDateUpdated());
-
-      ParentTimestampUpdateCron parentTimestampUpdateCron =
-          new ParentTimestampUpdateCron(100, config.database.RdbConfiguration.isPostgres());
-      parentTimestampUpdateCron.run();
 
       LastExperimentByDatasetId lastExperimentByDatasetId =
           LastExperimentByDatasetId.newBuilder().setDatasetId(dataset.getId()).build();

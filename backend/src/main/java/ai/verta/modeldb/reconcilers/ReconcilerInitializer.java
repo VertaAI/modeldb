@@ -16,6 +16,8 @@ public class ReconcilerInitializer {
   public static SoftDeleteRepositories softDeleteRepositories;
   public static SoftDeleteRepositories softDeleteDatasets;
   public static UpdateRepositoryTimestampReconcile updateRepositoryTimestampReconcile;
+  public static UpdateExperimentTimestampReconcile updateExperimentTimestampReconcile;
+  public static UpdateProjectTimestampReconcile updateProjectTimestampReconcile;
 
   public static void initialize(
       Config config, ServiceSet services, FutureJdbi futureJdbi, Executor executor) {
@@ -36,6 +38,10 @@ public class ReconcilerInitializer {
             new ReconcilerConfig(), services.roleService, true, futureJdbi, executor);
     updateRepositoryTimestampReconcile =
         new UpdateRepositoryTimestampReconcile(new ReconcilerConfig(), futureJdbi, executor);
+    updateExperimentTimestampReconcile =
+        new UpdateExperimentTimestampReconcile(new ReconcilerConfig(), futureJdbi, executor);
+    updateProjectTimestampReconcile =
+        new UpdateProjectTimestampReconcile(new ReconcilerConfig(), futureJdbi, executor);
     LOGGER.info("Exit from ReconcilerUtils: initialize()");
   }
 }
