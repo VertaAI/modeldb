@@ -92,7 +92,7 @@ public class TestsInit {
     serverBuilder.intercept(new AuditLogInterceptor(false));
     // Initialize cron jobs
     CronJobUtils.initializeCronJobs(config, services);
-    ReconcilerInitializer.initialize(config, services);
+    ReconcilerInitializer.initialize(config, services, config.getTestJdbi(), handleExecutor);
 
     if (config.test != null) {
       authClientInterceptor = new AuthClientInterceptor(config.test);
