@@ -1,5 +1,9 @@
 package ai.verta.modeldb.common.config;
 
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.TestConfig;
 import io.jaegertracing.Configuration;
 import io.opentracing.Tracer;
@@ -9,7 +13,11 @@ import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import io.opentracing.contrib.grpc.TracingServerInterceptor;
 import io.opentracing.contrib.jdbc.TracingDriver;
 import io.opentracing.util.GlobalTracer;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -27,6 +35,22 @@ public abstract class Config {
   public ServiceUserConfig service_user;
   public boolean disabled_audits = false;
   public int jdbi_retry_time = 100; // Time in ms
+
+  public static <T> T getInstance(Class<T> configType, String configFile) throws InternalErrorException {
+    try {
+      Yaml yaml = new Yaml(new Constructor(configType));
+      String filePath = System.getenv(configFile);
+      filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
+      InputStream inputStream = new FileInputStream(filePath);
+      return yaml.loadAs(inputStream, configType);
+    } catch (ModelDBException ex) {
+      throw ex;
+    } catch (NullPointerException ex) {
+      throw ex;
+    } catch (Exception ex) {
+      throw new InternalErrorException(ex.getMessage());
+    }
+  }
 
   public void Validate() throws InvalidConfigException {
 

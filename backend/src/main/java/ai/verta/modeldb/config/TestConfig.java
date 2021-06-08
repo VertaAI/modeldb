@@ -1,27 +1,21 @@
 package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import org.jdbi.v3.core.Jdbi;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
 
 public class TestConfig extends Config {
   private static TestConfig config = null;
@@ -36,20 +30,8 @@ public class TestConfig extends Config {
 
   public static TestConfig getInstance() throws InternalErrorException {
     if (config == null) {
-      try {
-        Yaml yaml = new Yaml(new Constructor(TestConfig.class));
-        String filePath = System.getenv(ModelDBConstants.VERTA_MODELDB_TEST_CONFIG);
-        filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
-        InputStream inputStream = new FileInputStream(filePath);
-        config = yaml.loadAs(inputStream, TestConfig.class);
-        config.Validate();
-      } catch (ModelDBException ex) {
-        throw ex;
-      } catch (NullPointerException ex) {
-        throw ex;
-      } catch (Exception ex) {
-        throw new InternalErrorException(ex.getMessage());
-      }
+      config = getInstance(TestConfig.class, ModelDBConstants.VERTA_MODELDB_TEST_CONFIG);
+      config.Validate();
     }
     return config;
   }
