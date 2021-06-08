@@ -9,17 +9,26 @@ def test_abstract_methods():
     """Abstract methods must be implemented."""
     ERROR_MSG_REGEX = "^Can't instantiate abstract class .* with abstract method"
 
-    class Model1(VertaModelBase):
+    class NoImpl(VertaModelBase):
         pass
 
-    class Model2(VertaModelBase):
+    class OnlyInit(VertaModelBase):
         def __init__(self, artifacts):
             pass
 
-    class Model3(VertaModelBase):
+    class OnlyPredict(VertaModelBase):
         def predict(self, input):
             pass
 
-    for model_cls in [Model1, Model2, Model3]:
+    class Both(VertaModelBase):
+        def __init__(self, artifacts):
+            pass
+
+        def predict(self, input):
+            pass
+
+    for model_cls in [NoImpl, OnlyInit, OnlyPredict]:
         with pytest.raises(TypeError, match=ERROR_MSG_REGEX):
             model_cls(None)
+
+    assert Both(None)
