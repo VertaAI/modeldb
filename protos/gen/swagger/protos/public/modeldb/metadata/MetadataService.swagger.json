@@ -10,8 +10,39 @@
   "produces": [
     "application/json"
   ],
-  "paths": {},
+  "paths": {
+    "/metadata/generateRandomName": {
+      "get": {
+        "operationId": "MetadataService_GenerateRandomName",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataGenerateRandomNameRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "tags": [
+          "MetadataService"
+        ]
+      }
+    }
+  },
   "definitions": {
+    "metadataGenerateRandomNameRequestResponse": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
