@@ -133,3 +133,11 @@ message GenerateRandomNameRequest {
         string name = 1;
     }
 }
+
+service MetadataService {
+    rpc GenerateRandomName(GenerateRandomNameRequest) returns (GenerateRandomNameRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/generateRandomName"
+        };
+    };
+}
