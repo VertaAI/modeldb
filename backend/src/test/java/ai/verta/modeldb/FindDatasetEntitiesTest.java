@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.GetUser;
@@ -1439,7 +1438,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
   public void findDatasetVersionsByFuzzyOwnerTest() {
     LOGGER.info(
         "FindDatasetVersions by owner fuzzy search test start................................");
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }

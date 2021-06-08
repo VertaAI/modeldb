@@ -50,6 +50,7 @@ import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -60,7 +61,7 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -143,12 +144,14 @@ public class FutureExperimentRunDAO {
   private final CreateExperimentRunHandler createExperimentRunHandler;
   private final HyperparametersFromConfigHandler hyperparametersFromConfigHandler;
   private final Config config;
+  private final TrialConfig trialConfig;
   private final CodeVersionFromBlobHandler codeVersionFromBlobHandler;
 
   public FutureExperimentRunDAO(
       Executor executor,
       FutureJdbi jdbi,
       Config config,
+      TrialConfig trialConfig,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
       DatasetVersionDAO datasetVersionDAO,
@@ -159,6 +162,7 @@ public class FutureExperimentRunDAO {
     this.jdbi = jdbi;
     this.uac = uac;
     this.config = config;
+    this.trialConfig = trialConfig;
 
     attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
     hyperparametersHandler =
@@ -191,6 +195,7 @@ public class FutureExperimentRunDAO {
             executor,
             jdbi,
             config,
+            trialConfig,
             uac,
             attributeHandler,
             hyperparametersHandler,

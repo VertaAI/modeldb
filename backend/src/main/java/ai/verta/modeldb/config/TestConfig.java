@@ -2,9 +2,11 @@ package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.config.RdbConfig;
+import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -13,30 +15,33 @@ import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
-public class Config extends ai.verta.modeldb.common.config.Config {
+public class TestConfig extends Config {
+  private static TestConfig config = null;
 
-  private static Config config = null;
-  public String starterProject;
-  public ArtifactStoreConfig artifactStoreConfig;
-  public TelemetryConfig telemetry;
+  public Map<String, ServiceUserConfig> testUsers = new HashMap<>();
+
   public TrialConfig trial;
+  public ArtifactStoreConfig artifactStoreConfig;
   public List<MigrationConfig> migrations;
   private FutureJdbi jdbi;
+  public int jdbi_retry_time = 100; // Time in ms
 
-  public static Config getInstance() throws InternalErrorException {
+  public static TestConfig getInstance() throws InternalErrorException {
     if (config == null) {
       try {
-        Yaml yaml = new Yaml(new Constructor(Config.class));
-        String filePath = System.getenv(ModelDBConstants.VERTA_MODELDB_CONFIG);
+        Yaml yaml = new Yaml(new Constructor(TestConfig.class));
+        String filePath = System.getenv(ModelDBConstants.VERTA_MODELDB_TEST_CONFIG);
         filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
         InputStream inputStream = new FileInputStream(filePath);
-        config = yaml.loadAs(inputStream, Config.class);
+        config = yaml.loadAs(inputStream, TestConfig.class);
         config.Validate();
       } catch (ModelDBException ex) {
         throw ex;
@@ -50,18 +55,24 @@ public class Config extends ai.verta.modeldb.common.config.Config {
   }
 
   public void Validate() throws InvalidConfigException {
-    super.Validate();
-
-    if (artifactStoreConfig == null)
-      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
-    artifactStoreConfig.Validate("artifactStoreConfig");
+    if (database == null) throw new InvalidConfigException("database", TestConfig.MISSING_REQUIRED);
+    database.Validate("database");
 
     if (service_user != null) {
       service_user.Validate("service_user");
     }
 
-    if (telemetry == null) telemetry = new TelemetryConfig();
-    telemetry.Validate("telemetry");
+    if (config.hasAuth() && testUsers == null) {
+      throw new InvalidConfigException("testUsers", TestConfig.MISSING_REQUIRED);
+    }
+
+    for (Map.Entry<String, ServiceUserConfig> entry : testUsers.entrySet()) {
+      entry.getValue().Validate(entry.getKey());
+    }
+
+    if (artifactStoreConfig == null)
+      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
+    artifactStoreConfig.Validate("artifactStoreConfig");
 
     if (trial != null) {
       trial.Validate("trial");
@@ -74,12 +85,16 @@ public class Config extends ai.verta.modeldb.common.config.Config {
     }
   }
 
+  public boolean hasAuth() {
+    return authService != null;
+  }
+
   @Override
   public boolean hasServiceAccount() {
     return service_user != null;
   }
 
-  public FutureJdbi getJdbi() {
+  public FutureJdbi getTestJdbi() {
     if (this.jdbi == null) {
       // Initialize HikariCP and jdbi
       final var databaseConfig = config.database;
@@ -98,7 +113,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
     hikariDataSource.setMaximumPoolSize(Integer.parseInt(databaseConfig.maxConnectionPoolSize));
     hikariDataSource.setRegisterMbeans(true);
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
-    hikariDataSource.setPoolName("modeldb");
+    hikariDataSource.setPoolName("modeldb_test");
 
     final Jdbi jdbi = Jdbi.create(hikariDataSource);
     final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);

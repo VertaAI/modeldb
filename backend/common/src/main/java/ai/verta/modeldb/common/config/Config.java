@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.config;
 
+import ai.verta.modeldb.config.TestConfig;
 import io.jaegertracing.Configuration;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
@@ -23,9 +24,9 @@ public abstract class Config {
   public boolean enableTrace = false;
   public GrpcServerConfig grpcServer;
   public SpringServerConfig springServer;
-  public TestConfig test;
   public ServiceUserConfig service_user;
   public boolean disabled_audits = false;
+  public int jdbi_retry_time = 100; // Time in ms
 
   public void Validate() throws InvalidConfigException {
 
@@ -47,10 +48,6 @@ public abstract class Config {
 
     if (springServer == null) throw new InvalidConfigException("springServer", MISSING_REQUIRED);
     springServer.Validate("springServer");
-
-    if (test != null) {
-      test.Validate(this, "test");
-    }
   }
 
   public boolean hasAuth() {

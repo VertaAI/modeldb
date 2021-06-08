@@ -7,9 +7,10 @@ import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.ArtifactStoreConfig;
 import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +25,8 @@ public class ServiceSet {
   public RoleService roleService;
   public App app;
 
-  public static ServiceSet fromConfig(Config config) throws IOException {
+  public static ServiceSet fromConfig(Config config, ArtifactStoreConfig artifactStoreConfig)
+      throws IOException {
     ServiceSet set = new ServiceSet();
     set.authService = AuthServiceUtils.FromConfig(config);
     set.uac = UAC.FromConfig(config);
@@ -33,8 +35,8 @@ public class ServiceSet {
     // Initialize App.java singleton instance
     set.app = App.getInstance();
 
-    if (config.artifactStoreConfig.enabled) {
-      set.artifactStoreService = initializeArtifactStore(config);
+    if (artifactStoreConfig.enabled) {
+      set.artifactStoreService = initializeArtifactStore(artifactStoreConfig);
     } else {
       System.getProperties().put("scan.packages", "dummyPackageName");
       SpringApplication.run(App.class);
@@ -43,51 +45,46 @@ public class ServiceSet {
     return set;
   }
 
-  private static ArtifactStoreService initializeArtifactStore(Config config)
-      throws ModelDBException, IOException {
+  private static ArtifactStoreService initializeArtifactStore(
+      ArtifactStoreConfig artifactStoreConfig) throws ModelDBException, IOException {
     // ------------- Start Initialize Cloud storage base on configuration ------------------
     ArtifactStoreService artifactStoreService;
 
-    if (config.artifactStoreConfig.artifactEndpoint != null) {
+    if (artifactStoreConfig.artifactEndpoint != null) {
+      System.getProperties()
+          .put(
+              "artifactEndpoint.storeArtifact", artifactStoreConfig.artifactEndpoint.storeArtifact);
+      System.getProperties()
+          .put("artifactEndpoint.getArtifact", artifactStoreConfig.artifactEndpoint.getArtifact);
+    }
+
+    if (artifactStoreConfig.NFS != null && artifactStoreConfig.NFS.artifactEndpoint != null) {
       System.getProperties()
           .put(
               "artifactEndpoint.storeArtifact",
-              config.artifactStoreConfig.artifactEndpoint.storeArtifact);
+              artifactStoreConfig.NFS.artifactEndpoint.storeArtifact);
       System.getProperties()
           .put(
-              "artifactEndpoint.getArtifact",
-              config.artifactStoreConfig.artifactEndpoint.getArtifact);
+              "artifactEndpoint.getArtifact", artifactStoreConfig.NFS.artifactEndpoint.getArtifact);
     }
 
-    if (config.artifactStoreConfig.NFS != null
-        && config.artifactStoreConfig.NFS.artifactEndpoint != null) {
-      System.getProperties()
-          .put(
-              "artifactEndpoint.storeArtifact",
-              config.artifactStoreConfig.NFS.artifactEndpoint.storeArtifact);
-      System.getProperties()
-          .put(
-              "artifactEndpoint.getArtifact",
-              config.artifactStoreConfig.NFS.artifactEndpoint.getArtifact);
-    }
-
-    switch (config.artifactStoreConfig.artifactStoreType) {
+    switch (artifactStoreConfig.artifactStoreType) {
       case "S3":
-        if (!config.artifactStoreConfig.S3.s3presignedURLEnabled) {
+        if (!artifactStoreConfig.S3.s3presignedURLEnabled) {
           System.setProperty(
-              ModelDBConstants.CLOUD_BUCKET_NAME, config.artifactStoreConfig.S3.cloudBucketName);
+              ModelDBConstants.CLOUD_BUCKET_NAME, artifactStoreConfig.S3.cloudBucketName);
           System.getProperties()
               .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
           SpringApplication.run(App.class);
           artifactStoreService = App.getInstance().applicationContext.getBean(S3Service.class);
         } else {
-          artifactStoreService = new S3Service(config.artifactStoreConfig.S3.cloudBucketName);
+          artifactStoreService = new S3Service(artifactStoreConfig.S3.cloudBucketName);
           System.getProperties().put("scan.packages", "dummyPackageName");
           SpringApplication.run(App.class);
         }
         break;
       case "NFS":
-        String rootDir = config.artifactStoreConfig.NFS.nfsRootPath;
+        String rootDir = artifactStoreConfig.NFS.nfsRootPath;
         LOGGER.trace("NFS server root path {}", rootDir);
 
         System.getProperties().put("file.upload-dir", rootDir);

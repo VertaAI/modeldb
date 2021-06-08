@@ -118,7 +118,7 @@ public class GlobalSharingTest extends TestsInit {
   public void createProjectWithGlobalSharingOrganization() {
     LOGGER.info("Global organization Project test start................................");
 
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       Assert.assertTrue(true);
       return;
     }

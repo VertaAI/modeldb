@@ -198,13 +198,14 @@ public class App implements ApplicationContextAware {
       System.getProperties().put("server.port", config.springServer.port);
 
       // Initialize services that we depend on
-      ServiceSet services = ServiceSet.fromConfig(config);
+      ServiceSet services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
 
       // Initialize executor so we don't lose context using Futures
       final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
 
       // Initialize data access
-      DAOSet daos = DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config);
+      DAOSet daos =
+          DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config, config.trial);
 
       // Initialize telemetry
       initializeTelemetryBasedOnConfig(config);
