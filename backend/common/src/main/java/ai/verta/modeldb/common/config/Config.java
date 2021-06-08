@@ -3,6 +3,10 @@ package ai.verta.modeldb.common.config;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.futures.FutureJdbi;
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
 import io.jaegertracing.Configuration;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
@@ -11,6 +15,7 @@ import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import io.opentracing.contrib.grpc.TracingServerInterceptor;
 import io.opentracing.contrib.jdbc.TracingDriver;
 import io.opentracing.util.GlobalTracer;
+import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -19,6 +24,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 
 public abstract class Config {
   public static String MISSING_REQUIRED = "required field is missing";
@@ -111,4 +117,22 @@ public abstract class Config {
     initializeTracing();
     return Optional.ofNullable(tracingClientInterceptor);
   }
+
+  public FutureJdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
+    final var hikariDataSource = new HikariDataSource();
+    final var dbUrl = RdbConfig.buildDatabaseConnectionString(databaseConfig.RdbConfiguration);
+    hikariDataSource.setJdbcUrl(dbUrl);
+    hikariDataSource.setUsername(databaseConfig.RdbConfiguration.RdbUsername);
+    hikariDataSource.setPassword(databaseConfig.RdbConfiguration.RdbPassword);
+    hikariDataSource.setMinimumIdle(Integer.parseInt(databaseConfig.minConnectionPoolSize));
+    hikariDataSource.setMaximumPoolSize(Integer.parseInt(databaseConfig.maxConnectionPoolSize));
+    hikariDataSource.setRegisterMbeans(true);
+    hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
+    hikariDataSource.setPoolName(poolName);
+
+    final Jdbi jdbi = Jdbi.create(hikariDataSource);
+    final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);
+    return new FutureJdbi(jdbi, dbExecutor);
+  }
+
 }
