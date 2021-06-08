@@ -1,10 +1,8 @@
 package ai.verta.modeldb.common.config;
 
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.TestConfig;
 import io.jaegertracing.Configuration;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
