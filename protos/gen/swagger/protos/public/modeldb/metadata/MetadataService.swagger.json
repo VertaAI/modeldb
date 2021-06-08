@@ -32,13 +32,676 @@
           "MetadataService"
         ]
       }
+    },
+    "/metadata/getLabelIds": {
+      "get": {
+        "operationId": "MetadataService_GetLabelIds",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataGetLabelIdsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "labels",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "operator",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "EQ",
+              "NE",
+              "GT",
+              "GTE",
+              "LT",
+              "LTE",
+              "CONTAIN",
+              "NOT_CONTAIN",
+              "IN"
+            ],
+            "default": "EQ"
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      }
+    },
+    "/metadata/keyValueProperties": {
+      "get": {
+        "operationId": "MetadataService_GetKeyValueProperties",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataGetKeyValuePropertiesRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.id_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "VERSIONING_REPOSITORY",
+              "VERSIONING_COMMIT",
+              "VERSIONING_REPO_COMMIT_BLOB",
+              "VERSIONING_REPO_COMMIT"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "id.int_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.string_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "property_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "keys",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "getAll",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      },
+      "delete": {
+        "operationId": "MetadataService_DeleteKeyValueProperties",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataDeleteKeyValuePropertiesRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/metadataDeleteKeyValuePropertiesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      },
+      "put": {
+        "operationId": "MetadataService_AddKeyValueProperties",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataAddKeyValuePropertiesRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/metadataAddKeyValuePropertiesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      }
+    },
+    "/metadata/labels": {
+      "get": {
+        "operationId": "MetadataService_GetLabels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataGetLabelsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.id_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "VERSIONING_REPOSITORY",
+              "VERSIONING_COMMIT",
+              "VERSIONING_REPO_COMMIT_BLOB",
+              "VERSIONING_REPO_COMMIT"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "id.int_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.string_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      },
+      "delete": {
+        "operationId": "MetadataService_DeleteLabels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataDeleteLabelsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/metadataDeleteLabelsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      },
+      "post": {
+        "operationId": "MetadataService_UpdateLabels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataAddLabelsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/metadataAddLabelsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      },
+      "put": {
+        "operationId": "MetadataService_AddLabels",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataAddLabelsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/metadataAddLabelsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      }
+    },
+    "/metadata/property": {
+      "get": {
+        "operationId": "MetadataService_GetProperty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataGetPropertyRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.id_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "VERSIONING_REPOSITORY",
+              "VERSIONING_COMMIT",
+              "VERSIONING_REPO_COMMIT_BLOB",
+              "VERSIONING_REPO_COMMIT"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "id.int_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.string_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      },
+      "delete": {
+        "operationId": "MetadataService_DeleteProperty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataDeletePropertyRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/metadataDeletePropertyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      },
+      "put": {
+        "operationId": "MetadataService_AddProperty",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/metadataAddPropertyRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/metadataAddPropertyRequest"
+            }
+          }
+        ],
+        "tags": [
+          "MetadataService"
+        ]
+      }
     }
   },
   "definitions": {
+    "IDTypeEnumIDType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "VERSIONING_REPOSITORY",
+        "VERSIONING_COMMIT",
+        "VERSIONING_REPO_COMMIT_BLOB",
+        "VERSIONING_REPO_COMMIT"
+      ],
+      "default": "UNKNOWN"
+    },
+    "OperatorEnumOperator": {
+      "type": "string",
+      "enum": [
+        "EQ",
+        "NE",
+        "GT",
+        "GTE",
+        "LT",
+        "LTE",
+        "CONTAIN",
+        "NOT_CONTAIN",
+        "IN"
+      ],
+      "default": "EQ"
+    },
+    "metadataAddKeyValuePropertiesRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/metadataIdentificationType"
+        },
+        "property_name": {
+          "type": "string"
+        },
+        "key_value_property": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/metadataKeyValueStringProperty"
+          }
+        }
+      }
+    },
+    "metadataAddKeyValuePropertiesRequestResponse": {
+      "type": "object"
+    },
+    "metadataAddLabelsRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/metadataIdentificationType"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "metadataAddLabelsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "metadataAddPropertyRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/metadataIdentificationType"
+        },
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "metadataAddPropertyRequestResponse": {
+      "type": "object"
+    },
+    "metadataDeleteKeyValuePropertiesRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/metadataIdentificationType"
+        },
+        "property_name": {
+          "type": "string"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "deleteAll": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      },
+      "title": "if deleteAll flag is true ignores keys and deletes all key value properties corresponding to id and property_name"
+    },
+    "metadataDeleteKeyValuePropertiesRequestResponse": {
+      "type": "object"
+    },
+    "metadataDeleteLabelsRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/metadataIdentificationType"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "delete_all": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "metadataDeleteLabelsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "metadataDeletePropertyRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/metadataIdentificationType"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "metadataDeletePropertyRequestResponse": {
+      "type": "object"
+    },
     "metadataGenerateRandomNameRequestResponse": {
       "type": "object",
       "properties": {
         "name": {
+          "type": "string"
+        }
+      }
+    },
+    "metadataGetKeyValuePropertiesRequestResponse": {
+      "type": "object",
+      "properties": {
+        "key_value_property": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/metadataKeyValueStringProperty"
+          }
+        }
+      }
+    },
+    "metadataGetLabelIdsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/metadataIdentificationType"
+          }
+        }
+      }
+    },
+    "metadataGetLabelsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "metadataGetPropertyRequestResponse": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "metadataIdentificationType": {
+      "type": "object",
+      "properties": {
+        "id_type": {
+          "$ref": "#/definitions/IDTypeEnumIDType"
+        },
+        "int_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "string_id": {
+          "type": "string"
+        }
+      }
+    },
+    "metadataKeyValueStringProperty": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
           "type": "string"
         }
       }
