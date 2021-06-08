@@ -12,7 +12,7 @@ class VertaModelBase(object):
     .. note::
 
         ``__init__()`` and :meth:`predict` **must** be implemented by
-        subclasses. All other methods are optional.
+        subclasses. Any other methods are optional.
 
     Parameters
     ----------
