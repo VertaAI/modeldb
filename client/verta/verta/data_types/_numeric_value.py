@@ -7,6 +7,7 @@ import numbers
 from ..external import six
 
 from .._internal_utils import arg_handler
+from .._internal_utils.importer import maybe_dependency
 
 from . import _VertaDataType
 
@@ -37,6 +38,8 @@ class NumericValue(_VertaDataType):
 
     @arg_handler.args_to_builtin(ignore_self=True)
     def __init__(self, value, unit=None):
+        self._numpy = maybe_dependency("numpy")
+
         if not isinstance(value, numbers.Real):
             raise TypeError("`value` must be a number, not {}".format(type(value)))
         if unit and not isinstance(unit, six.string_types):
@@ -64,5 +67,12 @@ class NumericValue(_VertaDataType):
             raise TypeError(
                 "`other` must be type {}, not {}".format(type(self), type(other))
             )
+        if self._numpy.isclose(self._value, other._value):
+            return 0.0
 
-        return abs((self._value - other._value) / other._value)
+        denom = abs(other._value) + abs(self._value)
+        if self._numpy.isclose(0, denom):
+            return float("inf")
+
+        numer = abs(self._value - other._value)
+        return numer / denom
