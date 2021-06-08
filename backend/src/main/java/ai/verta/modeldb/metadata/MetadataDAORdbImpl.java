@@ -10,7 +10,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
-import com.oblac.nomen.Nomen;
 import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -459,9 +458,5 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       }
       session.getTransaction().commit();
     }
-  }
-
-  public static String createRandomName() {
-    return Nomen.est().adjective().color().animal().withSeparator("-").get();
   }
 }

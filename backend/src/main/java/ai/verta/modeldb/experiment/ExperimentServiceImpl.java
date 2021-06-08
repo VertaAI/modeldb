@@ -19,7 +19,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
+import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -93,7 +93,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     if (request.getProjectId().isEmpty()) {
       errorMessage = "Project ID not found in CreateExperiment request";
     } else if (request.getName().isEmpty()) {
-      request = request.toBuilder().setName(MetadataDAORdbImpl.createRandomName()).build();
+      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
     }
 
     if (errorMessage != null) {
@@ -351,7 +351,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             "Experiment ID not found in UpdateExperimentNameOrDescription request";
         throw new InvalidArgumentException(errorMessage);
       } else if (request.getName().isEmpty()) {
-        request = request.toBuilder().setName(MetadataDAORdbImpl.createRandomName()).build();
+        request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
       }
 
       Map<String, String> projectIdFromExperimentMap =
@@ -412,7 +412,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         throw new InvalidArgumentException(
             "Experiment ID not found in UpdateExperimentName request");
       } else if (request.getName().isEmpty()) {
-        request = request.toBuilder().setName(MetadataDAORdbImpl.createRandomName()).build();
+        request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
       }
 
       Map<String, String> projectIdFromExperimentMap =

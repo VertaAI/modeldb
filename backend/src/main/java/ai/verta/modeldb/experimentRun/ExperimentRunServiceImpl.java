@@ -20,7 +20,7 @@ import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
-import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
+import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CommitDAO;
@@ -117,7 +117,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     } else if (request.getExperimentId().isEmpty()) {
       errorMessage = "Experiment ID not found in CreateExperimentRun request";
     } else if (request.getName().isEmpty()) {
-      request = request.toBuilder().setName(MetadataDAORdbImpl.createRandomName()).build();
+      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
     }
 
     if (errorMessage != null) {

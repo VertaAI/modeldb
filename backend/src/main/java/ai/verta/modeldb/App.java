@@ -23,6 +23,7 @@ import ai.verta.modeldb.experimentRun.FutureExperimentRunServiceImpl;
 import ai.verta.modeldb.health.HealthServiceImpl;
 import ai.verta.modeldb.health.HealthStatusManager;
 import ai.verta.modeldb.lineage.LineageServiceImpl;
+import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.FutureProjectServiceImpl;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
@@ -298,6 +299,8 @@ public class App implements ApplicationContextAware {
 
     wrapService(serverBuilder, new VersioningServiceImpl(services, daos, new FileHasher()));
     LOGGER.trace("Versioning serviceImpl initialized");
+    wrapService(serverBuilder, new MetadataServiceImpl());
+    LOGGER.trace("Metadata serviceImpl initialized");
     LOGGER.info("All services initialized and resolved dependency before server start");
   }
 

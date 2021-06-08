@@ -21,7 +21,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
+import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -177,7 +177,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   private Project getProjectFromRequest(CreateProject request, UserInfo userInfo) {
 
     if (request.getName().isEmpty()) {
-      request = request.toBuilder().setName(MetadataDAORdbImpl.createRandomName()).build();
+      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
     }
 
     String projectShortName = ModelDBUtils.convertToProjectShortName(request.getName());
