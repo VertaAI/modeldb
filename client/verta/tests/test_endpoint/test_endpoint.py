@@ -115,7 +115,7 @@ class TestEndpoint:
         assert "path: {}".format(endpoint.path) in str_repr
         assert "url" in str_repr
         assert "id: {}".format(endpoint.id) in str_repr
-        assert "curl: <Endpoint not deployed>" in str_repr
+        assert "curl: <endpoint not deployed>" in str_repr
 
         # these fields might have changed:
         assert "status" in str_repr
