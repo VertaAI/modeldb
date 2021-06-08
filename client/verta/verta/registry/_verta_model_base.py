@@ -79,40 +79,40 @@ class VertaModelBase(object):
         """
         raise NotImplementedError
 
-    def describe(self):
-        """Return a rich description of the model's behavior for use by the model sandbox.
+    # def describe(self):
+    #     """Return a rich description of the model's behavior for use by the model sandbox.
 
-        Returns
-        -------
-        dict of str to str
-            A mapping where values are textual descriptions, and keys are of
-            the following values:
+    #     Returns
+    #     -------
+    #     dict of str to str
+    #         A mapping where values are textual descriptions, and keys are of
+    #         the following values:
 
-            - method
-            - args
-            - returns
-            - description
-            - input_description
-            - output_description
+    #         - method
+    #         - args
+    #         - returns
+    #         - description
+    #         - input_description
+    #         - output_description
 
-        """
-        raise NotImplementedError
+    #     """
+    #     raise NotImplementedError
 
-    def example(self):
-        """Return example input data for :meth:`predict` for use by the model sandbox.
+    # def example(self):
+    #     """Return example input data for :meth:`predict` for use by the model sandbox.
 
-        Returns
-        -------
-        any JSON-compatible type
-            Example model input
+    #     Returns
+    #     -------
+    #     any JSON-compatible type
+    #         Example model input
 
-        Examples
-        --------
-        .. code-block:: python
+    #     Examples
+    #     --------
+    #     .. code-block:: python
 
-            output = model.predict(
-                input=model.example(),
-            )
+    #         output = model.predict(
+    #             input=model.example(),
+    #         )
 
-        """
-        raise NotImplementedError
+    #     """
+    #     raise NotImplementedError
