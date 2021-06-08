@@ -135,6 +135,79 @@ message GenerateRandomNameRequest {
 }
 
 service MetadataService {
+    rpc GetLabels(GetLabelsRequest) returns (GetLabelsRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/labels"
+        };
+    };
+
+    rpc GetLabelIds(GetLabelIdsRequest) returns (GetLabelIdsRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/getLabelIds"
+        };
+    };
+
+    rpc AddLabels(AddLabelsRequest) returns (AddLabelsRequest.Response) {
+        option (google.api.http) = {
+            put: "/v1/metadata/labels"
+            body: "*"
+        };
+    };
+
+    rpc UpdateLabels(AddLabelsRequest) returns (AddLabelsRequest.Response) {
+        option (google.api.http) = {
+            post: "/v1/metadata/labels"
+            body: "*"
+        };
+    };
+
+    rpc DeleteLabels(DeleteLabelsRequest) returns (DeleteLabelsRequest.Response) {
+        option (google.api.http) = {
+            delete: "/v1/metadata/labels"
+            body: "*"
+        };
+    };
+
+    rpc GetProperty(GetPropertyRequest) returns (GetPropertyRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/property"
+        };
+    };
+
+    rpc AddProperty(AddPropertyRequest) returns (AddPropertyRequest.Response) {
+        option (google.api.http) = {
+            put: "/v1/metadata/property"
+            body: "*"
+        };
+    };
+
+    rpc DeleteProperty(DeletePropertyRequest) returns (DeletePropertyRequest.Response) {
+        option (google.api.http) = {
+            delete: "/v1/metadata/property"
+            body: "*"
+        };
+    };
+
+    rpc AddKeyValueProperties(AddKeyValuePropertiesRequest) returns (AddKeyValuePropertiesRequest.Response) {
+        option (google.api.http) = {
+            put: "/v1/metadata/keyValueProperties"
+            body: "*"
+        };
+    };
+
+    rpc GetKeyValueProperties(GetKeyValuePropertiesRequest) returns (GetKeyValuePropertiesRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/metadata/keyValueProperties"
+        };
+    };
+
+    rpc DeleteKeyValueProperties(DeleteKeyValuePropertiesRequest) returns (DeleteKeyValuePropertiesRequest.Response) {
+        option (google.api.http) = {
+            delete: "/v1/metadata/keyValueProperties"
+            body: "*"
+        };
+    };
+
     rpc GenerateRandomName(GenerateRandomNameRequest) returns (GenerateRandomNameRequest.Response) {
         option (google.api.http) = {
             get: "/v1/metadata/generateRandomName"
