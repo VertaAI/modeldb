@@ -1128,7 +1128,8 @@
         "GOOGLE",
         "VERTA",
         "SAML",
-        "AD_OAUTH2"
+        "AD_OAUTH2",
+        "LDAP"
       ],
       "default": "UNKNOWN"
     },
