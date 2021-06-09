@@ -103,10 +103,6 @@ feature-flag:
   disabled-artifact-store: false
 
 cron_job:
-  update_parent_timestamp:
-    initial_delay: 300 #delay timestamp in second, default 300second = 5min
-    frequency: 60 #frequency to update parent timestamp in second, default 60
-    record_update_limit: 100
   delete_entities:
     initial_delay: 300 #delay timestamp in second, default 300second = 5min
     frequency: 60 #frequency to delete entities in second, default 60

@@ -7,7 +7,6 @@ import ai.verta.common.ArtifactPart;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.versioning.DatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.S3DatasetBlob;
@@ -1046,7 +1045,7 @@ public class DatasetVersionTest extends TestsInit {
   public void deleteDatasetVersionTest() {
     LOGGER.info("delete DatasetVersion by parent entities owner test start........");
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestUser(
               dataset.getId(),
@@ -1079,7 +1078,7 @@ public class DatasetVersionTest extends TestsInit {
     DeleteDatasetVersions deleteDatasetVersionsRequest =
         DeleteDatasetVersions.newBuilder().addAllIds(datasetVersionIds).build();
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       try {
         datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
       } catch (StatusRuntimeException e) {

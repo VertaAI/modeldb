@@ -1,11 +1,13 @@
 package ai.verta.modeldb.common.reconcilers;
 
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.futures.FutureJdbi;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,10 +24,14 @@ public abstract class Reconciler<T> {
   final Condition notEmpty = lock.newCondition();
 
   protected final ReconcilerConfig config;
+  protected final FutureJdbi futureJdbi;
+  protected final Executor executor;
 
-  protected Reconciler(ReconcilerConfig config, Logger logger) {
+  protected Reconciler(ReconcilerConfig config, Logger logger, FutureJdbi futureJdbi, Executor executor) {
     this.logger = logger;
     this.config = config;
+    this.futureJdbi = futureJdbi;
+    this.executor = executor;
 
     startResync();
     startWorkers();

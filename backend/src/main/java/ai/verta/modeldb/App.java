@@ -48,6 +48,7 @@ import java.util.Optional;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.management.MalformedObjectNameException;
 import liquibase.exception.LiquibaseException;
@@ -106,13 +107,16 @@ public class App implements ApplicationContextAware {
 
   // Export all JMX metrics to Prometheus
   private static final String rules = "---\n" + "rules:\n" + "  - pattern: \".*\"";
+  private static final AtomicBoolean metricsInitialized = new AtomicBoolean(false);
 
   @Bean
   public ServletRegistrationBean<MetricsServlet> servletRegistrationBean()
       throws MalformedObjectNameException {
-    DefaultExports.initialize();
-    new BuildInfoCollector().register();
-    new JmxCollector(rules).register();
+    if (!metricsInitialized.getAndSet(true)) {
+      DefaultExports.initialize();
+      new BuildInfoCollector().register();
+      new JmxCollector(rules).register();
+    }
     return new ServletRegistrationBean<>(new MetricsServlet(), "/metrics");
   }
 
@@ -193,20 +197,21 @@ public class App implements ApplicationContextAware {
       System.getProperties().put("server.port", config.springServer.port);
 
       // Initialize services that we depend on
-      ServiceSet services = ServiceSet.fromConfig(config);
+      ServiceSet services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
 
       // Initialize executor so we don't lose context using Futures
       final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
 
       // Initialize data access
-      DAOSet daos = DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config);
+      DAOSet daos =
+          DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config, config.trial);
 
       // Initialize telemetry
       initializeTelemetryBasedOnConfig(config);
 
       // Initialize cron jobs
       CronJobUtils.initializeCronJobs(config, services);
-      ReconcilerInitializer.initialize(config, services);
+      ReconcilerInitializer.initialize(config, services, config.getJdbi(), handleExecutor);
 
       // Initialize grpc server
       ServerBuilder<?> serverBuilder =

@@ -11,6 +11,38 @@
     "application/json"
   ],
   "paths": {
+    "/organization/addAdmins": {
+      "post": {
+        "operationId": "OrganizationService_addAdmins",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacModifyOrganizationAdmins"
+            }
+          }
+        ],
+        "tags": [
+          "OrganizationService"
+        ]
+      }
+    },
     "/organization/addUser": {
       "post": {
         "summary": "Adds the given user to the organization\nOnly enabled if the requester is the creator of the organization",
@@ -255,6 +287,38 @@
         ]
       }
     },
+    "/organization/removeAdmins": {
+      "post": {
+        "operationId": "OrganizationService_removeAdmins",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacModifyOrganizationAdmins"
+            }
+          }
+        ],
+        "tags": [
+          "OrganizationService"
+        ]
+      }
+    },
     "/organization/removeUser": {
       "post": {
         "summary": "Removes the given user to the organization\nOnly enabled if the requester is the creator of the organization\nThe owner can never be removed",
@@ -340,6 +404,17 @@
       ],
       "default": "UNKNOWN"
     },
+    "OrganizationBaselinePermissionsBaselinePermissions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "PRIVATE",
+        "READ",
+        "WRITE",
+        "ADMIN"
+      ],
+      "default": "UNKNOWN"
+    },
     "TernaryEnumTernary": {
       "type": "string",
       "enum": [
@@ -419,6 +494,9 @@
         }
       }
     },
+    "uacEmpty": {
+      "type": "object"
+    },
     "uacGetOrganizationByIdResponse": {
       "type": "object",
       "properties": {
@@ -469,6 +547,26 @@
       "type": "object",
       "properties": {
         "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uacModifyOrganizationAdmins": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string"
+        },
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "team_ids": {
           "type": "array",
           "items": {
             "type": "string"
@@ -534,6 +632,46 @@
         },
         "default_notification_channel_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
+        },
+        "admins": {
+          "$ref": "#/definitions/uacOrganizationAdmins"
+        },
+        "baseline_permissions": {
+          "$ref": "#/definitions/uacOrganizationBaselinePermissions"
+        }
+      }
+    },
+    "uacOrganizationAdmins": {
+      "type": "object",
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uacOrganizationBaselinePermissions": {
+      "type": "object",
+      "properties": {
+        "minimum_resources_permission": {
+          "$ref": "#/definitions/OrganizationBaselinePermissionsBaselinePermissions"
+        },
+        "project_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "registry_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "endpoint_can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },

@@ -6,12 +6,13 @@ import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
@@ -33,6 +34,7 @@ public class CreateExperimentRunHandler {
   private final FutureJdbi jdbi;
   private final UAC uac;
   private final Config config;
+  private final TrialConfig trialConfig;
 
   private final AttributeHandler attributeHandler;
   private final KeyValueHandler hyperparametersHandler;
@@ -49,6 +51,7 @@ public class CreateExperimentRunHandler {
       Executor executor,
       FutureJdbi jdbi,
       Config config,
+      TrialConfig trialConfig,
       UAC uac,
       AttributeHandler attributeHandler,
       KeyValueHandler hyperparametersHandler,
@@ -62,6 +65,7 @@ public class CreateExperimentRunHandler {
     this.executor = executor;
     this.jdbi = jdbi;
     this.config = config;
+    this.trialConfig = trialConfig;
     this.uac = uac;
 
     this.attributeHandler = attributeHandler;
@@ -81,14 +85,14 @@ public class CreateExperimentRunHandler {
             uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
         .thenCompose(
             currentLoginUserInfo ->
-                TrialUtils.futureValidateExperimentRunPerWorkspaceForTrial(config.trial, executor)
+                TrialUtils.futureValidateExperimentRunPerWorkspaceForTrial(trialConfig, executor)
                     .thenCompose(
                         unused -> {
                           final var experimentRun =
                               getExperimentRunFromRequest(request, currentLoginUserInfo);
 
                           TrialUtils.validateMaxArtifactsForTrial(
-                              config.trial, experimentRun.getArtifactsCount(), 0);
+                              trialConfig, experimentRun.getArtifactsCount(), 0);
 
                           return InternalFuture.completedInternalFuture(experimentRun);
                         },
