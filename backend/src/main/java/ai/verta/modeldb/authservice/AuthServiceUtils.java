@@ -1,16 +1,12 @@
 package ai.verta.modeldb.authservice;
 
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.common.config.Config;
 
 public class AuthServiceUtils extends ai.verta.modeldb.common.authservice.AuthServiceUtils {
   public static ai.verta.modeldb.common.authservice.AuthService FromConfig(Config config) {
     if (!config.hasAuth()) return new PublicAuthServiceUtils();
-    else return new AuthServiceUtils();
-  }
-
-  public AuthServiceUtils() {
-    this(Config.getInstance());
+    else return new AuthServiceUtils(config);
   }
 
   private AuthServiceUtils(Config config) {

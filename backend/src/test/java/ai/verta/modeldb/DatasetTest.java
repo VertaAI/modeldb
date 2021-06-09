@@ -202,7 +202,7 @@ public class DatasetTest extends TestsInit {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -414,7 +414,7 @@ public class DatasetTest extends TestsInit {
         assertEquals("Shared dataset name not match", dataset.getName(), sharedDataset.getName());
       }
 
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorTest.addCollaboratorRequestDataset(
                 dataset,
@@ -493,7 +493,7 @@ public class DatasetTest extends TestsInit {
   @Test
   public void k_getDatasetByNameWithWorkspace() {
     LOGGER.info("Get Dataset by name with workspace test start................................");
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -1674,7 +1674,7 @@ public class DatasetTest extends TestsInit {
   public void createDatasetWithGlobalSharingOrganization() {
     LOGGER.info("Global organization Dataset test start................................");
 
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       Assert.assertTrue(true);
       return;
     }

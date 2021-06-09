@@ -149,7 +149,7 @@ public class RepositoryTest extends TestsInit {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -205,7 +205,7 @@ public class RepositoryTest extends TestsInit {
         versioningServiceBlockingStub.createRepository(setRepository);
         Assert.fail();
       } catch (StatusRuntimeException e) {
-        if (config.hasAuth()) {
+        if (testConfig.hasAuth()) {
           assertEquals(Status.PERMISSION_DENIED.getCode(), e.getStatus().getCode());
         } else {
           assertEquals(Status.ALREADY_EXISTS.getCode(), e.getStatus().getCode());
@@ -218,7 +218,7 @@ public class RepositoryTest extends TestsInit {
                 .setRepository(
                     Repository.newBuilder().setName("Repo-updated-name-" + new Date().getTime()))
                 .build());
-        if (config.hasAuth()) {
+        if (testConfig.hasAuth()) {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
@@ -229,7 +229,7 @@ public class RepositoryTest extends TestsInit {
             GetRepositoryRequest.newBuilder()
                 .setId(RepositoryIdentification.newBuilder().setRepoId(id))
                 .build());
-        if (config.hasAuth()) {
+        if (testConfig.hasAuth()) {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
@@ -242,14 +242,14 @@ public class RepositoryTest extends TestsInit {
               .build();
       try {
         versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
-        if (config.hasAuth()) {
+        if (testConfig.hasAuth()) {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
       }
 
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         DeleteRepositoryRequest.Response deleteResult =
             versioningServiceBlockingStub.deleteRepository(deleteRepository);
         Assert.assertTrue(deleteResult.getStatus());
@@ -318,7 +318,7 @@ public class RepositoryTest extends TestsInit {
         "Repository name not match with expected repository name",
         repository.getName(),
         getByNameResult.getRepository().getName());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       UserInfo userInfo =
           uacServiceStub.getUser(
               GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
@@ -425,7 +425,7 @@ public class RepositoryTest extends TestsInit {
         "Repository name not match with expected repository name",
         repository.getName(),
         getByNameResult.getRepository().getName());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       UserInfo userInfo =
           uacServiceStub.getUser(
               GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
@@ -736,7 +736,7 @@ public class RepositoryTest extends TestsInit {
         assertTrue(status.getDescription().contains(": tags"));
       }
 
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         findRepositoriesRequest =
             FindRepositories.newBuilder()
                 .addPredicates(
@@ -818,7 +818,7 @@ public class RepositoryTest extends TestsInit {
   @Test
   public void findRepositoriesByFuzzyOwnerTest() {
     LOGGER.info("FindRepositories by owner fuzzy search test start ...");
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -898,7 +898,7 @@ public class RepositoryTest extends TestsInit {
   @Test
   public void findRepositoriesByOwnerArrWithInOperatorTest() {
     LOGGER.info("FindRepositories by owner fuzzy search test start ...");
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -1137,7 +1137,7 @@ public class RepositoryTest extends TestsInit {
   @Test
   public void findRepositoriesFoSharedUserTest() {
     LOGGER.info("FindRepositories by owner fuzzy search test start ....");
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }

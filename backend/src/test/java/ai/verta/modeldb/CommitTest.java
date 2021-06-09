@@ -592,7 +592,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -778,7 +778,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -832,7 +832,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -909,7 +909,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -1036,7 +1036,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -1243,7 +1243,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -1435,7 +1435,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -2032,7 +2032,7 @@ public class CommitTest extends TestsInit {
           datasetBlob.toBuilder().build(),
           listCommitBlobsResponse.getBlobsList().get(0).getBlob());
 
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         findRepositoriesBlobs =
             FindRepositoriesBlobs.newBuilder()
                 .addPredicates(
@@ -2116,7 +2116,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -2294,7 +2294,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -2444,7 +2444,7 @@ public class CommitTest extends TestsInit {
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -2528,7 +2528,7 @@ public class CommitTest extends TestsInit {
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 

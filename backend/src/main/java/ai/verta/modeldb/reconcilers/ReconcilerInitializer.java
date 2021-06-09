@@ -1,9 +1,9 @@
 package ai.verta.modeldb.reconcilers;
 
 import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
-import ai.verta.modeldb.config.Config;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

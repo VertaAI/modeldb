@@ -15,9 +15,9 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
@@ -38,11 +38,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   public static ai.verta.modeldb.authservice.RoleService FromConfig(
       Config config, AuthService authService, UAC uac) {
     if (!config.hasAuth()) return new PublicRoleServiceUtils(authService);
-    else return new RoleServiceUtils(authService, uac);
-  }
-
-  public RoleServiceUtils(AuthService authService, UAC uac) {
-    this(Config.getInstance(), authService, uac);
+    else return new RoleServiceUtils(config, authService, uac);
   }
 
   private RoleServiceUtils(Config config, AuthService authService, UAC uac) {

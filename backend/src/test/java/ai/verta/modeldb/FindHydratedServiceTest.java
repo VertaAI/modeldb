@@ -5,7 +5,6 @@ import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInt
 import static org.junit.Assert.*;
 
 import ai.verta.common.CollaboratorTypeEnum;
-import ai.verta.modeldb.authservice.*;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.UserInfo;
@@ -152,7 +151,7 @@ public class FindHydratedServiceTest extends TestsInit {
   public void findHydratedProjectsWithSingleUserCollaboratorTest() {
     LOGGER.info("FindHydratedProjects with single user collaborator test start............");
 
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -249,7 +248,7 @@ public class FindHydratedServiceTest extends TestsInit {
     commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       GetUser getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       // Get the user info by vertaId form the AuthService

@@ -4,6 +4,7 @@ public interface ModelDBConstants {
 
   // Properties Keys
   String VERTA_MODELDB_CONFIG = "VERTA_MODELDB_CONFIG";
+  String VERTA_MODELDB_TEST_CONFIG = "VERTA_MODELDB_TEST_CONFIG";
   String ARTIFACT_ENDPOINT = "artifactEndpoint";
   String ARTIFACT_STORE_CONFIG = "artifactStoreConfig";
   String ARTIFACT_STORE_TYPE = "artifactStoreType";
