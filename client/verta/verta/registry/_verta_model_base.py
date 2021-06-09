@@ -62,9 +62,19 @@ class VertaModelBase(object):
 
         .. note::
 
-            This method should expect to recieve and return values that are
-            JSON-compatible (most Python built-in types) to ensure
-            interoperability with Verta deployment.
+            To ensure interoperability with Verta deployment, this method
+            should expect the parameter `input` to be one of the following types:
+
+            - ``int``
+            - ``float``
+            - ``bool``
+            - ``str``
+            - ``NoneType``
+            - ``list``
+            - ``dict``
+            - nested ``dict``/``list`` of the above
+
+            The value returned by this method should also be one of the above types.
 
         Parameters
         ----------
