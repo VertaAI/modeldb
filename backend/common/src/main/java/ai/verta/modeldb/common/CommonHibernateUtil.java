@@ -80,29 +80,30 @@ public abstract class CommonHibernateUtil {
         final var datasourceClass = getDatasourceClass(rdb);
 
         // Hibernate settings equivalent to hibernate.cfg.xml's properties
-        final var configuration = new Configuration()
-            .setProperty("hibernate.hbm2ddl.auto", "validate")
-            .setProperty("hibernate.dialect", rdb.RdbDialect)
-            .setProperty("hibernate.connection.provider_class", connectionProviderClass)
-            .setProperty("hibernate.hikari.dataSourceClassName", datasourceClass)
-            .setProperty("hibernate.hikari.dataSource.url", url)
-            .setProperty("hibernate.hikari.dataSource.user", rdb.RdbUsername)
-            .setProperty("hibernate.hikari.dataSource.password", rdb.RdbPassword)
-            .setProperty("hibernate.hikari.idleTimeout", String.valueOf(idleTimeoutMillis))
-            .setProperty(
-                "hibernate.hikari.connectionTimeout", String.valueOf(connectionTimeoutMillis))
-            .setProperty("hibernate.hikari.minimumIdle", config.minConnectionPoolSize)
-            .setProperty("hibernate.hikari.maximumPoolSize", config.maxConnectionPoolSize)
-            .setProperty(
-                "hibernate.hikari.maxLifetime", String.valueOf(connectionMaxLifetimeMillis))
-            .setProperty("hibernate.hikari.poolName", "hibernate")
-            .setProperty("hibernate.hikari.registerMbeans", "true")
-            .setProperty("hibernate.generate_statistics", "true")
-            .setProperty("hibernate.jmx.enabled", "true")
+        final var configuration =
+            new Configuration()
+                .setProperty("hibernate.hbm2ddl.auto", "validate")
+                .setProperty("hibernate.dialect", rdb.RdbDialect)
+                .setProperty("hibernate.connection.provider_class", connectionProviderClass)
+                .setProperty("hibernate.hikari.dataSourceClassName", datasourceClass)
+                .setProperty("hibernate.hikari.dataSource.url", url)
+                .setProperty("hibernate.hikari.dataSource.user", rdb.RdbUsername)
+                .setProperty("hibernate.hikari.dataSource.password", rdb.RdbPassword)
+                .setProperty("hibernate.hikari.idleTimeout", String.valueOf(idleTimeoutMillis))
+                .setProperty(
+                    "hibernate.hikari.connectionTimeout", String.valueOf(connectionTimeoutMillis))
+                .setProperty("hibernate.hikari.minimumIdle", config.minConnectionPoolSize)
+                .setProperty("hibernate.hikari.maximumPoolSize", config.maxConnectionPoolSize)
+                .setProperty(
+                    "hibernate.hikari.maxLifetime", String.valueOf(connectionMaxLifetimeMillis))
+                .setProperty("hibernate.hikari.poolName", "hibernate")
+                .setProperty("hibernate.hikari.registerMbeans", "true")
+                .setProperty("hibernate.generate_statistics", "true")
+                .setProperty("hibernate.jmx.enabled", "true")
                 .setProperty("hibernate.hbm2ddl.auto", "none")
-            .setProperty(Environment.QUERY_PLAN_CACHE_MAX_SIZE, String.valueOf(200))
-            .setProperty(
-                Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, String.valueOf(20));
+                .setProperty(Environment.QUERY_PLAN_CACHE_MAX_SIZE, String.valueOf(200))
+                .setProperty(
+                    Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, String.valueOf(20));
 
         LOGGER.trace("connectionString {}", connectionString);
         // Create registry builder
@@ -158,11 +159,13 @@ public abstract class CommonHibernateUtil {
     throw new ModelDBException("Unrecognized database " + rdbConfiguration.RdbDialect);
   }
 
-  public static void changeCharsetToUtf(JdbcConnection jdbcCon) throws DatabaseException, SQLException {
+  public static void changeCharsetToUtf(JdbcConnection jdbcCon)
+      throws DatabaseException, SQLException {
     Statement stmt = jdbcCon.createStatement();
     String dbName = jdbcCon.getCatalog();
-    String sql = String
-        .format("ALTER DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
+    String sql =
+        String.format(
+            "ALTER DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
     int result = stmt.executeUpdate(sql);
     LOGGER.info("ALTER charset execute result: {}", result);
   }
@@ -518,8 +521,7 @@ public abstract class CommonHibernateUtil {
     properties.put("sslMode", rdb.sslMode);
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
     LOGGER.info("Connecting to DB server url " + dbUrl);
-    Connection connection =
-        DriverManager.getConnection(dbUrl, properties);
+    Connection connection = DriverManager.getConnection(dbUrl, properties);
     ResultSet resultSet = connection.getMetaData().getCatalogs();
 
     while (resultSet.next()) {
