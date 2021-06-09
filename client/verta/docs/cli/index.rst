@@ -5,3 +5,4 @@ CLI
     :titlesonly:
 
     deployment
+    registry
