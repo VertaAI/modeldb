@@ -8,7 +8,9 @@ import sys
 
 from ..external import six
 
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
+)
 from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
 
 from .._internal_utils import _pip_requirements_utils
@@ -29,6 +31,8 @@ class Python(_environment._Environment):
         captured.
     env_vars : list of str, optional
         Names of environment variables to capture. If not provided, nothing will be captured.
+    apt_packages : list of str, optional
+        Apt packages to be installed alongside a Python environment
     _autocapture : bool, default True
         Whether to enable the automatic capturing behavior of parameters above.
 
@@ -36,6 +40,8 @@ class Python(_environment._Environment):
     ----------
     requirements : list of str
         pip requirements.
+    apt_packages : list of str
+        apt packages to be installed alongside a Python environment
 
     Examples
     --------
@@ -43,16 +49,26 @@ class Python(_environment._Environment):
 
         from verta.environment import Python
         env1 = Python(requirements=Python.read_pip_environment())
+        env1.apt_packages = ["python3-opencv"]
+
         env2 = Python(requirements=Python.read_pip_file("../requirements.txt"))
+
         env3 = Python(
             requirements=["tensorflow"],
             env_vars=["CUDA_VISIBLE_DEVICES"],
+            apt_packages=["python3-opencv"]
         )
-
     """
 
-    def __init__(self, requirements, constraints=None, env_vars=None, _autocapture=True):
-        super(Python, self).__init__(env_vars, _autocapture)
+    def __init__(
+        self,
+        requirements,
+        constraints=None,
+        env_vars=None,
+        apt_packages=None,
+        _autocapture=True,
+    ):
+        super(Python, self).__init__(env_vars, _autocapture, apt_packages=apt_packages)
 
         if _autocapture:
             self._capture_python_version()
@@ -64,17 +80,18 @@ class Python(_environment._Environment):
     def __repr__(self):
         lines = ["Python Version"]
         if self._msg.python.version.major:
-            lines.append("Python {}.{}.{}".format(
-                self._msg.python.version.major,
-                self._msg.python.version.minor,
-                self._msg.python.version.patch,
-            ))
+            lines.append(
+                "Python {}.{}.{}".format(
+                    self._msg.python.version.major,
+                    self._msg.python.version.minor,
+                    self._msg.python.version.patch,
+                )
+            )
         if self._msg.python.requirements:
             lines.append("requirements:")
             lines.extend(
                 "    {}".format(self._req_spec_msg_to_str(req_spec_msg))
-                for req_spec_msg
-                in sorted(
+                for req_spec_msg in sorted(
                     self._msg.python.requirements,
                     key=lambda req_spec_msg: req_spec_msg.library,
                 )
@@ -83,8 +100,7 @@ class Python(_environment._Environment):
             lines.append("constraints:")
             lines.extend(
                 "    {}".format(self._req_spec_msg_to_str(req_spec_msg))
-                for req_spec_msg
-                in sorted(
+                for req_spec_msg in sorted(
                     self._msg.python.constraints,
                     key=lambda req_spec_msg: req_spec_msg.library,
                 )
@@ -93,19 +109,14 @@ class Python(_environment._Environment):
             lines.append("environment variables:")
             lines.extend(
                 "    {}={}".format(env_var_msg.name, env_var_msg.value)
-                for env_var_msg
-                in sorted(
+                for env_var_msg in sorted(
                     self._msg.environment_variables,
                     key=lambda env_var_msg: env_var_msg.name,
                 )
             )
         if self._msg.command_line:
             lines.append("command line arguments:")
-            lines.extend(
-                "    {}".format(arg)
-                for arg
-                in self._msg.command_line
-            )
+            lines.extend("    {}".format(arg) for arg in self._msg.command_line)
 
         return "\n    ".join(lines)
 
@@ -145,10 +156,8 @@ class Python(_environment._Environment):
         msg : PythonRequirementEnvironmentBlob
 
         """
-        library, constraint, version = _pip_requirements_utils.parse_req_spec(
-            req_spec)
-        major, minor, patch, suffix = _pip_requirements_utils.parse_version(
-            version)
+        library, constraint, version = _pip_requirements_utils.parse_req_spec(req_spec)
+        major, minor, patch, suffix = _pip_requirements_utils.parse_version(version)
 
         req_blob_msg = _EnvironmentService.PythonRequirementEnvironmentBlob()
         req_blob_msg.library = library
@@ -182,7 +191,7 @@ class Python(_environment._Environment):
                 msg.version.minor,
                 msg.version.patch,
                 msg.version.suffix,
-            )
+            ),
         )
 
     def _capture_python_version(self):
@@ -191,13 +200,16 @@ class Python(_environment._Environment):
         self._msg.python.version.patch = sys.version_info.micro
 
     def _capture_requirements(self, requirements):
-        if (isinstance(requirements, list)
-                and all(isinstance(req, six.string_types) for req in requirements)):
+        if isinstance(requirements, list) and all(
+            isinstance(req, six.string_types) for req in requirements
+        ):
             req_specs = copy.copy(requirements)
             _pip_requirements_utils.process_requirements(req_specs)
         else:
-            raise TypeError("`requirements` must be list of str,"
-                            " not {}".format(type(requirements)))
+            raise TypeError(
+                "`requirements` must be list of str,"
+                " not {}".format(type(requirements))
+            )
 
         self._msg.python.requirements.extend(
             map(
@@ -209,12 +221,14 @@ class Python(_environment._Environment):
     def _capture_constraints(self, constraints):
         if constraints is None:
             return
-        elif (isinstance(constraints, list)
-              and all(isinstance(req, six.string_types) for req in constraints)):
+        elif isinstance(constraints, list) and all(
+            isinstance(req, six.string_types) for req in constraints
+        ):
             req_specs = copy.copy(constraints)
         else:
-            raise TypeError("`constraints` must be list of str,"
-                            " not {}".format(type(constraints)))
+            raise TypeError(
+                "`constraints` must be list of str," " not {}".format(type(constraints))
+            )
 
         self._msg.python.constraints.extend(
             map(
@@ -240,7 +254,7 @@ class Python(_environment._Environment):
 
         """
         filepath = os.path.expanduser(filepath)
-        with open(filepath, 'r') as f:
+        with open(filepath, "r") as f:
             return _pip_requirements_utils.clean_reqs_file_lines(f.readlines())
 
     @staticmethod
