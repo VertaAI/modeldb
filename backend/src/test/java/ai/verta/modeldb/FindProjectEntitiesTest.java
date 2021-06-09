@@ -1696,13 +1696,9 @@ public class FindProjectEntitiesTest extends TestsInit {
             .addAllPredicates(predicates)
             // .setIdsOnly(true)
             .build();
-    try {
-      experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
-      fail();
-    } catch (StatusRuntimeException exc) {
-      Status status = Status.fromThrowable(exc);
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
+    AdvancedQueryExperimentRunsResponse response =
+        hydratedServiceBlockingStub.findHydratedExperimentRuns(findExperimentRuns);
+    assertEquals("Expected response not found", 0, response.getHydratedExperimentRunsCount());
 
     // If key is not set in predicate
     findExperimentRuns =
@@ -2295,21 +2291,21 @@ public class FindProjectEntitiesTest extends TestsInit {
     for (int index = 0; index < response.getExperimentRunsCount(); index++) {
       ExperimentRun experimentRun = response.getExperimentRunsList().get(index);
       if (index == 0) {
-        assertNotEquals(
+        assertEquals(
             "ExperimentRun not match with expected experimentRun", experimentRun21, experimentRun);
         assertEquals(
             "ExperimentRun Id not match with expected experimentRun Id",
             experimentRun21.getId(),
             experimentRun.getId());
       } else if (index == 1) {
-        assertNotEquals(
+        assertEquals(
             "ExperimentRun not match with expected experimentRun", experimentRun12, experimentRun);
         assertEquals(
             "ExperimentRun Id not match with expected experimentRun Id",
             experimentRun12.getId(),
             experimentRun.getId());
       } else if (index == 2) {
-        assertNotEquals(
+        assertEquals(
             "ExperimentRun not match with expected experimentRun", experimentRun11, experimentRun);
         assertEquals(
             "ExperimentRun Id not match with expected experimentRun Id",

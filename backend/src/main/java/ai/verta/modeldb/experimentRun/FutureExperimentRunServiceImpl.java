@@ -85,6 +85,10 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       futureExperimentRunDAO.findExperimentRuns(
                           FindExperimentRuns.newBuilder()
                               .setProjectId(request.getProjectId())
+                              .setPageLimit(request.getPageLimit())
+                              .setPageNumber(request.getPageNumber())
+                              .setAscending(request.getAscending())
+                              .setSortKey(request.getSortKey())
                               .build()),
                   executor)
               .thenApply(

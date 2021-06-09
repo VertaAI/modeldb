@@ -75,6 +75,11 @@ public class PredicatesHandler extends PredicateHandlerUtils {
         // case visibility:
       case "":
         return InternalFuture.failedStage(new InvalidArgumentException("Key is empty"));
+      case "end_time":
+        return InternalFuture.completedInternalFuture(
+            new QueryFilterContext()
+                .addCondition("experiment_run.end_time = :" + bindingName)
+                .addBind(q -> q.bind(bindingName, value.getStringValue())));
     }
 
     String[] names = key.split("\\.");

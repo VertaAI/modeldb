@@ -574,7 +574,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentRunFromProjectRunTest() {
     LOGGER.info("Get ExperimentRun from Project test start................................");
 
@@ -604,7 +603,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentRunWithPaginationFromProjectRunTest() {
     LOGGER.info(
         "Get ExperimentRun using pagination from Project test start................................");
@@ -715,7 +713,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentFromProjectRunNegativeTest() {
     LOGGER.info(
         "Get ExperimentRun from Project Negative test start................................");
@@ -731,12 +728,9 @@ public class ExperimentRunTest extends TestsInit {
     }
 
     getExperiment = GetExperimentRunsInProject.newBuilder().setProjectId("sdfdsfsd").build();
-    try {
-      experimentRunServiceStub.getExperimentRunsInProject(getExperiment);
-      fail();
-    } catch (StatusRuntimeException e) {
-      checkEqualsAssert(e);
-    }
+    GetExperimentRunsInProject.Response response =
+        experimentRunServiceStub.getExperimentRunsInProject(getExperiment);
+    assertEquals("Expected response not found", 0, response.getExperimentRunsCount());
 
     LOGGER.info(
         "Get ExperimentRun from Project Negative test stop................................");
