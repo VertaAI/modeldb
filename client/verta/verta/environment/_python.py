@@ -32,7 +32,7 @@ class Python(_environment._Environment):
     env_vars : list of str, optional
         Names of environment variables to capture. If not provided, nothing will be captured.
     apt_packages : list of str, optional
-        Apt packages to be installed alongside a Python environment
+        Apt packages to be installed alongside a Python environment.
     _autocapture : bool, default True
         Whether to enable the automatic capturing behavior of parameters above.
 
@@ -41,7 +41,7 @@ class Python(_environment._Environment):
     requirements : list of str
         pip requirements.
     apt_packages : list of str
-        apt packages to be installed alongside a Python environment
+        Apt packages to be installed alongside a Python environment.
 
     Examples
     --------
