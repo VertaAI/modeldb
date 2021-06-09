@@ -203,6 +203,38 @@
         ]
       }
     },
+    "/collaborator/addResourceAdmins": {
+      "post": {
+        "operationId": "CollaboratorService_addResourceAdmins",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacModifyResourceAdmins"
+            }
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
     "/collaborator/getDatasetCollaborators": {
       "get": {
         "operationId": "CollaboratorService_getDatasetCollaborators",
@@ -376,6 +408,116 @@
             "in": "query",
             "required": false,
             "type": "string"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/getResourceAdmins": {
+      "get": {
+        "operationId": "CollaboratorService_getResourceAdmins",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacResourceAdmins"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ROLE_SERVICE",
+              "AUTHZ_SERVICE",
+              "MODELDB_SERVICE",
+              "DEPLOYMENT_SERVICE"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resource_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resource_type.role_service_resource_type",
+            "description": "Separate based on the service itself.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ROLE",
+              "ROLE_BINDING"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resource_type.authz_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ORGANIZATION",
+              "TEAM",
+              "WORKSPACE",
+              "USER",
+              "SERVICE_ACCOUNT"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resource_type.modeldb_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "PROJECT",
+              "EXPERIMENT",
+              "EXPERIMENT_RUN",
+              "DATASET",
+              "DATASET_VERSION",
+              "DASHBOARD",
+              "REPOSITORY",
+              "REGISTERED_MODEL",
+              "REGISTERED_MODEL_VERSION",
+              "MONITORED_ENTITY",
+              "NOTIFICATION_CHANNEL"
+            ],
+            "default": "UNKNOWN"
+          },
+          {
+            "name": "resource_type.deployment_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ALL",
+              "ENDPOINT",
+              "BUILD"
+            ],
+            "default": "UNKNOWN"
           }
         ],
         "tags": [
@@ -1005,6 +1147,38 @@
         ]
       }
     },
+    "/collaborator/removeResourceAdmins": {
+      "post": {
+        "operationId": "CollaboratorService_removeResourceAdmins",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacModifyResourceAdmins"
+            }
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
     "/collaborator/setResource": {
       "post": {
         "summary": "The caller must have permission to CREATE or UPDATE the resource accordingly",
@@ -1167,6 +1341,17 @@
         "REGISTERED_MODEL_VERSION",
         "MONITORED_ENTITY",
         "NOTIFICATION_CHANNEL"
+      ],
+      "default": "UNKNOWN"
+    },
+    "OrganizationBaselinePermissionsBaselinePermissions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "PRIVATE",
+        "READ",
+        "WRITE",
+        "ADMIN"
       ],
       "default": "UNKNOWN"
     },
@@ -1350,6 +1535,9 @@
     "uacDeleteResourcesResponse": {
       "type": "object"
     },
+    "uacEmpty": {
+      "type": "object"
+    },
     "uacFlagEnum": {
       "type": "string",
       "enum": [
@@ -1444,6 +1632,27 @@
         }
       }
     },
+    "uacModifyResourceAdmins": {
+      "type": "object",
+      "properties": {
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
+        },
+        "resource_id": {
+          "type": "string"
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
+        },
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "repeated string user_ids = 4; // Not currently supported"
+        }
+      }
+    },
     "uacOrganization": {
       "type": "object",
       "properties": {
@@ -1502,6 +1711,46 @@
         },
         "default_notification_channel_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
+        },
+        "admins": {
+          "$ref": "#/definitions/uacOrganizationAdmins"
+        },
+        "baseline_permissions": {
+          "$ref": "#/definitions/uacOrganizationBaselinePermissions"
+        }
+      }
+    },
+    "uacOrganizationAdmins": {
+      "type": "object",
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uacOrganizationBaselinePermissions": {
+      "type": "object",
+      "properties": {
+        "minimum_resources_permission": {
+          "$ref": "#/definitions/OrganizationBaselinePermissionsBaselinePermissions"
+        },
+        "project_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "registry_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "endpoint_can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -1516,6 +1765,23 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/uacAction"
+          }
+        }
+      }
+    },
+    "uacResourceAdmins": {
+      "type": "object",
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
