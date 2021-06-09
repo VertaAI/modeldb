@@ -99,6 +99,7 @@ public abstract class CommonHibernateUtil {
             .setProperty("hibernate.hikari.registerMbeans", "true")
             .setProperty("hibernate.generate_statistics", "true")
             .setProperty("hibernate.jmx.enabled", "true")
+                .setProperty("hibernate.hbm2ddl.auto", "none")
             .setProperty(Environment.QUERY_PLAN_CACHE_MAX_SIZE, String.valueOf(200))
             .setProperty(
                 Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, String.valueOf(20));
