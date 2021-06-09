@@ -80,8 +80,7 @@ public abstract class CommonHibernateUtil {
         final var datasourceClass = getDatasourceClass(rdb);
 
         // Hibernate settings equivalent to hibernate.cfg.xml's properties
-        final var configuration =
-            new Configuration()
+        final var configuration = new Configuration()
                 .setProperty("hibernate.hbm2ddl.auto", "validate")
                 .setProperty("hibernate.dialect", rdb.RdbDialect)
                 .setProperty("hibernate.connection.provider_class", connectionProviderClass)
