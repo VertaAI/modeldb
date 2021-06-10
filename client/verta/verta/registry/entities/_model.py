@@ -246,6 +246,10 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
 
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+
         """
         model_validator.check_verta(model_cls)
 
@@ -273,6 +277,33 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
+        """
+
+        Parameters
+        ----------
+        obj : :class:`sklearn.base.BaseEstimator <https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html>`
+            scikit-learn model.
+        environment : :class:`~verta.environment.Python`
+            pip and apt dependencies.
+        model_api : :class:`~verta.utils.ModelAPI`
+            Model API specifying the model's expected input and output
+        name : str, optional
+            Name of the model version. If no name is provided, one will be
+            generated.
+        desc : str, optional
+            Description of the model version.
+        labels : list of str, optional
+            Labels of the model version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the model version.
+        lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
+            Lock level to set when creating this model version.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        """
         model_validator.check_sklearn(obj)
 
         self._create_version_from_standard_verta_model(
@@ -297,6 +328,33 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
+        """
+
+        Parameters
+        ----------
+        obj : :class:`torch.nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`
+            PyTorch ``Module``.
+        environment : :class:`~verta.environment.Python`
+            pip and apt dependencies.
+        model_api : :class:`~verta.utils.ModelAPI`
+            Model API specifying the model's expected input and output
+        name : str, optional
+            Name of the model version. If no name is provided, one will be
+            generated.
+        desc : str, optional
+            Description of the model version.
+        labels : list of str, optional
+            Labels of the model version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the model version.
+        lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
+            Lock level to set when creating this model version.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        """
         model_validator.check_torch(obj)
 
         self._create_version_from_standard_verta_model(
@@ -321,6 +379,33 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
+        """
+
+        Parameters
+        ----------
+        obj : :class:`xgboost.sklearn.XGBModel <https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn>`
+            XGBoost model using their scikit-learn wrapper interface.
+        environment : :class:`~verta.environment.Python`
+            pip and apt dependencies.
+        model_api : :class:`~verta.utils.ModelAPI`
+            Model API specifying the model's expected input and output
+        name : str, optional
+            Name of the model version. If no name is provided, one will be
+            generated.
+        desc : str, optional
+            Description of the model version.
+        labels : list of str, optional
+            Labels of the model version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the model version.
+        lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
+            Lock level to set when creating this model version.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        """
         model_validator.check_xgboost_sklearn(obj)
 
         self._create_version_from_standard_verta_model(
