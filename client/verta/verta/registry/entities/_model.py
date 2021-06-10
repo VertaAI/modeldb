@@ -6,7 +6,7 @@ import requests
 from verta._internal_utils._utils import check_unnecessary_params_warning
 from verta.tracking import _Context
 from verta.tracking.entities import _entity
-from verta._internal_utils import _utils
+from verta._internal_utils import _utils, model_validator
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
@@ -165,6 +165,47 @@ class RegisteredModel(_entity._ModelDBEntity):
             date_created=time_created, lock_level=lock_level,
         )
 
+    def _create_version_from_standard_verta_model(
+        self,
+        model,
+        environment,
+        code_dependencies=None,
+        model_api=None,
+        artifacts=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        artifacts = artifacts or {}
+        attrs = attrs or {}
+        attrs.update({
+            "__verta_reserved__model_language": "Python",
+            "__verta_reserved__model_type": "StandardVertaModel",
+        })
+
+        model_ver = self.create_version(
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+        try:
+            for key, artifact in artifacts.items():
+                model_ver.log_artifact(key, artifact)
+            model_ver.log_model(
+                model=model,
+                custom_modules=code_dependencies,
+                model_api=model_api,
+                artifacts=list(artifacts.keys()),
+            )
+            model_ver.log_environment(environment)
+        except Exception as e:
+            model_ver.delete()
+            raise e
+
     def create_version_from_model_spec(
         self,
         model_cls,
@@ -206,74 +247,20 @@ class RegisteredModel(_entity._ModelDBEntity):
             Lock level to set when creating this model version.
 
         """
-        if not issubclass(model_cls, VertaModelBase):
-            raise TypeError(
-                "`model_cls` must be a subclass of"
-                " verta.registry.VertaModelBase, not"
-                " {}".format(type(model_cls))
-            )
-        artifacts = artifacts or {}
-        attrs = attrs or {}
-        attrs.update({
-            "__verta_reserved__model_language": "Python",
-            "__verta_reserved__model_type": "StandardVertaModel",
-        })
+        model_validator.check_verta(model_cls)
 
-        model_ver = self.create_version(
+        self._create_version_from_standard_verta_model(
+            model=model_cls,
+            environment=environment,
+            code_dependencies=code_dependencies,
+            model_api=model_api,
+            artifacts=artifacts,
             name=name,
             desc=desc,
             labels=labels,
             attrs=attrs,
             lock_level=lock_level,
         )
-        try:
-            for key, artifact in artifacts.items():
-                model_ver.log_artifact(key, artifact)
-            model_ver.log_model(
-                model=model_cls,
-                custom_modules=code_dependencies,
-                model_api=model_api,
-                artifacts=list(artifacts.keys()),
-            )
-            model_ver.log_environment(environment)
-        except Exception as e:
-            model_ver.delete()
-            raise e
-
-    def _create_version_from_scilib_model(
-        self,
-        obj,
-        environment,
-        model_api=None,
-        name=None,
-        desc=None,
-        labels=None,
-        attrs=None,
-        lock_level=None,
-    ):
-        """Create a StandardVertaModel from a scientific library model."""
-        attrs = attrs or {}
-        attrs.update({
-            "__verta_reserved__model_language": "Python",
-            "__verta_reserved__model_type": "StandardVertaModel",
-        })
-
-        model_ver = self.create_version(
-            name=name,
-            desc=desc,
-            labels=labels,
-            attrs=attrs,
-            lock_level=lock_level,
-        )
-        try:
-            model_ver.log_model(
-                model=obj,
-                model_api=model_api,
-            )
-            model_ver.log_environment(environment)
-        except Exception as e:
-            model_ver.delete()
-            raise e
 
     def create_version_from_sklearn_model(
         self,
@@ -286,9 +273,10 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
-        # TODO: validate type of `obj`
-        self._create_version_from_scilib_model(
-            obj=obj,
+        model_validator.check_sklearn(obj)
+
+        self._create_version_from_standard_verta_model(
+            model=obj,
             environment=environment,
             model_api=model_api,
             name=name,
@@ -309,9 +297,10 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
-        # TODO: validate type of `obj`
-        self._create_version_from_scilib_model(
-            obj=obj,
+        model_validator.check_torch(obj)
+
+        self._create_version_from_standard_verta_model(
+            model=obj,
             environment=environment,
             model_api=model_api,
             name=name,
@@ -332,9 +321,10 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
-        # TODO: validate type of `obj`
-        self._create_version_from_scilib_model(
-            obj=obj,
+        model_validator.check_xgboost_sklearn(obj)
+
+        self._create_version_from_standard_verta_model(
+            model=obj,
             environment=environment,
             model_api=model_api,
             name=name,
