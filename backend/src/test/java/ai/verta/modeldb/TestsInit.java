@@ -34,6 +34,8 @@ public class TestsInit {
   protected static TestConfig testConfig;
   protected static DeleteEntitiesCron deleteEntitiesCron;
   protected static AuthService authService;
+  protected static Executor handleExecutor;
+  protected static ServiceSet services;
 
   // all service stubs
   protected static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
@@ -78,10 +80,9 @@ public class TestsInit {
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     testConfig = TestConfig.getInstance();
-    final Executor handleExecutor =
-        FutureGrpc.initializeExecutor(testConfig.grpcServer.threadCount);
+    handleExecutor = FutureGrpc.initializeExecutor(testConfig.grpcServer.threadCount);
     // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
+    services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
     authService = services.authService;
     // Initialize data access
     DAOSet daos =
