@@ -74,16 +74,20 @@ class VertaModelBase(object):
             - ``dict``
             - nested ``dict``/``list`` of the above
 
-            The value returned by this method should also be one of the above types.
+            `input` should be manually cast to a NumPy array, pandas DataFrame,
+            etc. in order to be used as such.
+
+            The value returned by this method should also be converted to one
+            of the above types.
 
         Parameters
         ----------
-        input : any JSON-compatible type
+        input : any JSON-compatible Python type
             Model input.
 
         Returns
         -------
-        any JSON-compatible type
+        any JSON-compatible Python type
             Model output.
 
         """
