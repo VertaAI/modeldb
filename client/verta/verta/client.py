@@ -89,19 +89,34 @@ class Client(object):
     ----------
     max_retries : int
         Maximum number of times to retry a request on a connection failure. Changes to this value
-        propagate to any objects that are/were created from this Client.
+        propagate to any objects that are/were created from this client.
     ignore_conn_err : bool
         Whether to ignore connection errors and instead return successes with empty contents. Changes
-        to this value propagate to any objects that are/were created from this Client.
+        to this value propagate to any objects that are/were created from this client.
     debug : bool
         Whether to print extra verbose information to aid in debugging. Changes to this value propagate
-        to any objects that are/were created from this Client.
+        to any objects that are/were created from this client.
     monitoring : :class:`verta.monitoring.client.Client`
         Monitoring sub-client
     proj : :class:`~verta.tracking.entities.Project` or None
-        Currently active Project.
+        Currently active project.
+    projects : :class:`~verta.tracking.entities.Projects`
+        Projects in the current default workspace.
     expt : :class:`~verta.tracking.entities.Experiment` or None
-        Currently active Experiment.
+        Currently active experiment.
+    experiments : :class:`~verta.tracking.entities.Experiments`
+        Experiments in the current default workspace.
+    expt_runs : :class:`~verta.tracking.entities.ExperimentRuns`
+        Experiment runs in the current default workspace.
+    registered_models : :class:`~verta.registry.entities.RegisteredModels`
+        Registered models in the current default workspace.
+    registered_model_versions : :class:`~verta.registry.entities.RegisteredModelVersions`
+        Registered model versions in the current default workspace.
+    endpoints : :class:`~verta.endpoint.Endpoints`
+        Endpoints in the current default workspace.
+    datasets : :class:`~verta.dataset.entities.Datasets`
+        Datasets in the current default workspace.
+
 
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
