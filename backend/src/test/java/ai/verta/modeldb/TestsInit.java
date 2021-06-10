@@ -87,7 +87,7 @@ public class TestsInit {
     // Initialize data access
     DAOSet daos =
         DAOSet.fromServices(
-            services, testConfig.getTestJdbi(), handleExecutor, testConfig, testConfig.trial);
+            services, testConfig.getJdbi(), handleExecutor, testConfig, testConfig.trial);
     App.migrate(testConfig.database, testConfig.migrations);
 
     App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
@@ -97,8 +97,7 @@ public class TestsInit {
     serverBuilder.intercept(new AuthInterceptor());
     // Initialize cron jobs
     CronJobUtils.initializeCronJobs(testConfig, services);
-    ReconcilerInitializer.initialize(
-        testConfig, services, testConfig.getTestJdbi(), handleExecutor);
+    ReconcilerInitializer.initialize(testConfig, services, testConfig.getJdbi(), handleExecutor);
 
     if (testConfig.testUsers != null && !testConfig.testUsers.isEmpty()) {
       authClientInterceptor = new AuthClientInterceptor(testConfig.testUsers);
