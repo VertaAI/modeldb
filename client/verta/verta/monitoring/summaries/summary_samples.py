@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""A collection of summary samples."""
 
 from __future__ import print_function
 
@@ -42,12 +43,12 @@ class SummarySamples:
 
         Parameters
         ----------
-        query : :class:`SummarySampleQuery`, optional
+        query : :class:`~verta.monitoring.summaries.queries.SummarySampleQuery`, optional
             A query object which filters the set of summary samples.
 
         Returns
         -------
-        list of :class:`SummarySample`
+        list of :class:`~verta.monitoring.summaries.summary_sample.SummarySample`
             A list of summary samples matching the query.
         """
         if query is None:
@@ -70,7 +71,7 @@ class SummarySamples:
 
         Parameters
         ----------
-        summary_samples : list of :class:`SummarySample`
+        summary_samples : list of :class:`~verta.monitoring.summaries.summary_sample.SummarySample`
             The summary samples which should be deleted from this summary.
 
         Returns

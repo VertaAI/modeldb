@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+"""Summary labels."""
 
 from verta._protos.public.monitoring.Summary_pb2 import FilterQuerySummarySample
 

@@ -1,5 +1,5 @@
-Release Notes
-=============
+Changelog
+=========
 
 
 .. This comment block is a template for version release notes.

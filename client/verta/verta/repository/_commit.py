@@ -405,7 +405,7 @@ class Commit(object):
         ----------
         path : str
             Location to add `blob` to.
-        blob : :ref:`Blob <blobs>`
+        blob : :mod:`~verta._repository.blob`
             ModelDB versioning blob.
 
         """
@@ -430,7 +430,7 @@ class Commit(object):
 
         Returns
         -------
-        blob : :ref:`Blob <blobs>`
+        blob : :mod:`~verta._repository.blob`
             ModelDB versioning blob.
 
         Raises

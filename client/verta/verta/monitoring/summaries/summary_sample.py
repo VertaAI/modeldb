@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""A snapshot or window of data."""
 
 from __future__ import print_function
 
@@ -15,7 +16,7 @@ class SummarySample(_entity._ModelDBEntity):
 
     Users should obtain summary samples through one of the query or create
     methods on a :class:`Summary` or the ``summary_samples`` attribute on the
-    monitoring sub-:class:`~verta.opertaions.monitoring.client.Client` instead
+    monitoring sub-:class:`~verta.monitoring.client.Client` instead
     of initializing SummarySample objects directly.
 
     Parameters
@@ -30,7 +31,7 @@ class SummarySample(_entity._ModelDBEntity):
     Attributes
     ----------
     content
-        A :class:`~verta.data_types._VertaDataType` consistent with the type of this summary.
+        A :mod:`VertaDataType <verta.data_types>` consistent with the type of this summary.
     labels : dict of str to str, optional
         A mapping between label keys and values.
     time_window_start : datetime.datetime or int

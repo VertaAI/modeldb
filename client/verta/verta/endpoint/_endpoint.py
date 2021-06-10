@@ -34,7 +34,7 @@ class Endpoint(object):
 
     There should not be a need to instantiate this class directly; please use
     :meth:`Client.get_or_create_endpoint()
-    <verta.client.Client.get_or_create_endpoint>`.
+    <verta.Client.get_or_create_endpoint>`.
 
     Attributes
     ----------
@@ -176,7 +176,7 @@ class Endpoint(object):
         ----------
         model_reference : :class:`~verta.tracking.entities.ExperimentRun` or :class:`~verta.registry.entities.RegisteredModelVersion`
             An Experiment Run or a Model Version with a model logged.
-        strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
+        strategy : :mod:`~verta.endpoint.update`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the endpoint.
         wait : bool, default False
             Whether to wait for the endpoint to finish updating before returning.

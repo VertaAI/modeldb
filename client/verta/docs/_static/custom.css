@@ -442,6 +442,14 @@ p.admonition-title {
   font-weight: 500;
 }
 
+div.admonition.note > ul {
+  padding-bottom: 1rem;
+}
+
+div.admonition.note > ul > li {
+  padding: 0;
+}
+
 .admonition.warning {
   border-color: rgb(247, 125, 5);
 }
@@ -508,6 +516,11 @@ table.docutils p {
 
 .section h3 {
   font-size: 18px;
+}
+
+.toctree-wrapper li {
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 ul.simple ol.simple p {

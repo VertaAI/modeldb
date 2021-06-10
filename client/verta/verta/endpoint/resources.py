@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Resource configuration for endpoints."""
 
 import abc
 import re
@@ -9,7 +10,7 @@ from ..external import six
 class Resources(object):
     """
     Computational resources allowed for an endpoint's model, to be passed to
-    :meth:`Endpoint.update() <verta.endpoint._endpoint.Endpoint.update>`.
+    :meth:`Endpoint.update() <verta.endpoint.Endpoint.update>`.
 
     Verta uses the same representation for memory `as Kubernetes
     <https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory>`__:

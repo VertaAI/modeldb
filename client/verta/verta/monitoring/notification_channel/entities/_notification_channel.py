@@ -228,7 +228,7 @@ class NotificationChannels(object):
         ----------
         name : str
             A unique name for this notification channel.
-        channel : :class:`~verta.monitoring.notification_channel._NotificationChannel`
+        channel : :mod:`~verta.monitoring.notification_channel`
             The configuration for this notification channel.
         workspace : str, optional
             Workspace in which to create this notification channel. Defaults to
@@ -337,7 +337,7 @@ class NotificationChannels(object):
         ----------
         name : str, optional
             A unique name for this notification channel.
-        channel : :class:`~verta.monitoring.notification_channel._NotificationChannel`, optional
+        channel : :mod:`~verta.monitoring.notification_channel`, optional
             The configuration for this notification channel.
         workspace : str, optional
             Workspace in which to create this notification channel. Defaults to

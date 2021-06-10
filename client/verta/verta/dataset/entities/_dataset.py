@@ -29,7 +29,7 @@ class Dataset(_entity._ModelDBEntity):
     This class provides read/write functionality for dataset metadata and access to its versions.
 
     There should not be a need to instantiate this class directly; please use
-    :meth:`Client.create_dataset() <verta.client.Client.create_dataset>`.
+    :meth:`Client.create_dataset() <verta.Client.create_dataset>`.
 
     Attributes
     ----------

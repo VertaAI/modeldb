@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""A entity with associated data summaries and alerts."""
 
 from __future__ import print_function
 
@@ -18,7 +19,7 @@ class MonitoredEntity(_entity._ModelDBEntity):
 
     A monitored entity provides a named context to gather together data
     summaries and alert configurations. Users should obtain a monitored entity
-    through the :meth:`~verta.opertaions.monitoring.client.Client.get_or_create_monitored_entity`
+    through the :meth:`~verta.monitoring.client.Client.get_or_create_monitored_entity`
     method of the monitoring sub-client.
 
     Parameters
