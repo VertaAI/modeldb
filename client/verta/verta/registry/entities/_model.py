@@ -3,14 +3,15 @@
 from __future__ import print_function
 import requests
 
-from ..._internal_utils._utils import check_unnecessary_params_warning
-from ...tracking import _Context
-from ...tracking.entities import _entity
-from ..._internal_utils import _utils
+from verta._internal_utils._utils import check_unnecessary_params_warning
+from verta.tracking import _Context
+from verta.tracking.entities import _entity
+from verta._internal_utils import _utils
 
-from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
-from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
 
+from .. import VertaModelBase
 from ._modelversion import RegisteredModelVersion
 from ._modelversions import RegisteredModelVersions
 
@@ -163,6 +164,53 @@ class RegisteredModel(_entity._ModelDBEntity):
             name=name, desc=desc, tags=labels, attrs=attrs,
             date_created=time_created, lock_level=lock_level,
         )
+
+    def create_version_from_model_spec(
+        self,
+        model_cls,
+        library_dependencies,
+        os_dependencies=None,
+        code_dependencies=None,
+        model_api=None,
+        artifacts=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        if not issubclass(model_cls, VertaModelBase):
+            raise TypeError(
+                "`model_cls` must be a subclass of"
+                " verta.registry.VertaModelBase, not"
+                " {}".format(type(model_cls))
+            )
+        attrs = attrs or {}
+        attrs.update({
+            "__verta_reserved__model_language": "Python",
+            "__verta_reserved__model_type": "StandardVertaModel",
+        })
+
+        model_ver = self.create_version(
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+        try:
+            for key, artifact in artifacts.items():
+                model_ver.log_artifact(key, artifact)
+            model_ver.log_model(
+                model=model_cls,
+                custom_modules=code_dependencies,
+                model_api=model_api,
+                artifacts=artifacts.keys(),
+            )
+            model_ver.log_environment(library_dependencies)
+        except Exception as e:
+            model_ver.delete()
+            raise e
 
 
     def create_version_from_run(self, run_id, name=None, lock_level=None):
