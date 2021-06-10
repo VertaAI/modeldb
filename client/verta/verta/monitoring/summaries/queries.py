@@ -216,7 +216,7 @@ class SummarySampleQuery(object):
         self._labels = maybe(_labels_proto, labels)
         self._time_window_start = time_window_start
         self._time_window_end = time_window_end
-        self._aggregation = aggregation
+        self.aggregation = aggregation
         self._created_after = created_after
         self._page_number = page_number
         self._page_limit = page_limit

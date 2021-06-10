@@ -78,7 +78,10 @@ class Aggregation(object):
 
     @classmethod
     def _from_proto(cls, msg):
-        return cls(msg.time_granularity_millis, msg.operation)
+        if msg.time_granularity_millis == 0:
+            return None
+        else:
+            return cls(msg.time_granularity_millis, msg.operation)
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):

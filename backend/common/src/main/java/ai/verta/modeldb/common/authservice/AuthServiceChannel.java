@@ -7,7 +7,6 @@ import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.uac.*;
-import ai.verta.uac.versioning.AuditLogServiceGrpc;
 import io.grpc.*;
 import io.grpc.stub.AbstractStub;
 import io.grpc.stub.MetadataUtils;
@@ -25,7 +24,6 @@ public class AuthServiceChannel implements AutoCloseable {
   private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStub;
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
-  private AuditLogServiceGrpc.AuditLogServiceBlockingStub auditLogServiceBlockingStub;
   private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStub;
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
   private String serviceUserEmail;
@@ -150,18 +148,6 @@ public class AuthServiceChannel implements AutoCloseable {
       initOrganizationServiceStubChannel();
     }
     return organizationServiceBlockingStub;
-  }
-
-  private void initAuditLogServiceStubChannel() {
-    auditLogServiceBlockingStub =
-        attachInterceptors(AuditLogServiceGrpc.newBlockingStub(authServiceChannel), null);
-  }
-
-  public AuditLogServiceGrpc.AuditLogServiceBlockingStub getAuditLogServiceBlockingStub() {
-    if (auditLogServiceBlockingStub == null) {
-      initAuditLogServiceStubChannel();
-    }
-    return auditLogServiceBlockingStub;
   }
 
   private void initWorkspaceServiceStubChannel() {

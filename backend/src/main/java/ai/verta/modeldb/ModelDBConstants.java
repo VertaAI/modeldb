@@ -4,6 +4,7 @@ public interface ModelDBConstants {
 
   // Properties Keys
   String VERTA_MODELDB_CONFIG = "VERTA_MODELDB_CONFIG";
+  String VERTA_MODELDB_TEST_CONFIG = "VERTA_MODELDB_TEST_CONFIG";
   String ARTIFACT_ENDPOINT = "artifactEndpoint";
   String ARTIFACT_STORE_CONFIG = "artifactStoreConfig";
   String ARTIFACT_STORE_TYPE = "artifactStoreType";
@@ -263,11 +264,9 @@ public interface ModelDBConstants {
   String FREQUENCY = "frequency"; // frequency to run cron job in second
   String RECORD_UPDATE_LIMIT = "record_update_limit";
   String CRON_JOB = "cron_job";
-  String UPDATE_PARENT_TIMESTAMP = "update_parent_timestamp";
   String DELETE_ENTITIES = "delete_entities";
   String EXPIRED_TOKEN = "ExpiredToken";
   String UPDATE_RUN_ENVIRONMENTS = "update_run_environments";
-  String DELETE_AUDIT_LOGS = "delete_audit_logs";
   String CLEAN_UP_ENTITIES = "clean_up_entities";
 
   // Audit log constants

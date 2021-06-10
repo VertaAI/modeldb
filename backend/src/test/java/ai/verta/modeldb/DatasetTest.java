@@ -9,8 +9,6 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -204,7 +202,7 @@ public class DatasetTest extends TestsInit {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -416,7 +414,7 @@ public class DatasetTest extends TestsInit {
         assertEquals("Shared dataset name not match", dataset.getName(), sharedDataset.getName());
       }
 
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorTest.addCollaboratorRequestDataset(
                 dataset,
@@ -495,7 +493,7 @@ public class DatasetTest extends TestsInit {
   @Test
   public void k_getDatasetByNameWithWorkspace() {
     LOGGER.info("Get Dataset by name with workspace test start................................");
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -1416,10 +1414,6 @@ public class DatasetTest extends TestsInit {
           experimentRun.getDateUpdated(),
           response.getExperimentRun().getDateUpdated());
 
-      ParentTimestampUpdateCron parentTimestampUpdateCron =
-          new ParentTimestampUpdateCron(100, config.database.RdbConfiguration.isPostgres());
-      parentTimestampUpdateCron.run();
-
       LastExperimentByDatasetId lastExperimentByDatasetId =
           LastExperimentByDatasetId.newBuilder().setDatasetId(dataset.getId()).build();
       LastExperimentByDatasetId.Response lastExperimentResponse =
@@ -1680,7 +1674,7 @@ public class DatasetTest extends TestsInit {
   public void createDatasetWithGlobalSharingOrganization() {
     LOGGER.info("Global organization Dataset test start................................");
 
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       Assert.assertTrue(true);
       return;
     }

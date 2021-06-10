@@ -46,26 +46,20 @@ import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.audit_log.AuditLogLocalDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
-import ai.verta.uac.Workspace;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
@@ -91,7 +85,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   private final ProjectDAO projectDAO;
   private final ExperimentRunDAO experimentRunDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
-  private final AuditLogLocalDAO auditLogLocalDAO;
   private static final String SERVICE_NAME =
       String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.PROJECT);
 
@@ -101,29 +94,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     this.projectDAO = daoSet.projectDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
-    this.auditLogLocalDAO = daoSet.auditLogLocalDAO;
-  }
-
-  private void saveAuditLog(
-      Optional<UserInfo> userInfo,
-      ModelDBServiceActions action,
-      Map<String, Long> resourceIdWorkspaceIdMap,
-      String request,
-      String response,
-      Long workspaceId) {
-    auditLogLocalDAO.saveAuditLog(
-        new AuditLogLocalEntity(
-            SERVICE_NAME,
-            authService.getVertaIdFromUserInfo(
-                userInfo.orElseGet(authService::getCurrentLoginUserInfo)),
-            action,
-            resourceIdWorkspaceIdMap,
-            ModelDBServiceResourceTypes.PROJECT,
-            Service.MODELDB_SERVICE,
-            MonitoringInterceptor.METHOD_NAME.get(),
-            request,
-            response,
-            workspaceId));
   }
 
   /**
@@ -146,14 +116,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       CreateProject.Response response =
           CreateProject.Response.newBuilder().setProject(project).build();
-      saveAuditLog(
-          Optional.of(userInfo),
-          ModelDBServiceActions.CREATE,
-          Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          project.getWorkspaceServiceId());
-
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -188,13 +150,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.updateProjectDescription(request.getId(), request.getDescription());
       UpdateProjectDescription.Response response =
           UpdateProjectDescription.Response.newBuilder().setProject(updatedProject).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -231,13 +186,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.addProjectAttributes(request.getId(), request.getAttributesList());
       AddProjectAttributes.Response response =
           AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -280,13 +228,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.updateProjectAttributes(request.getId(), request.getAttribute());
       UpdateProjectAttributes.Response response =
           UpdateProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -333,15 +274,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       GetAttributes.Response response =
           GetAttributes.Response.newBuilder().addAllAttributes(attributes).build();
-      GetResourcesResponseItem resource =
-          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.READ,
-          Collections.singletonMap(resource.getResourceId(), resource.getWorkspaceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          resource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -381,13 +313,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
       DeleteProjectAttributes.Response response =
           DeleteProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -422,13 +347,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
       AddProjectTags.Response response =
           AddProjectTags.Response.newBuilder().setProject(updatedProject).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -451,16 +369,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
       List<String> tags = projectDAO.getProjectTags(request.getId());
-      GetResourcesResponseItem resource =
-          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.PROJECT);
       GetTags.Response response = GetTags.Response.newBuilder().addAllTags(tags).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.READ,
-          Collections.singletonMap(resource.getResourceId(), resource.getWorkspaceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          resource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -502,13 +411,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               request.getId(), request.getTagsList(), request.getDeleteAll());
       DeleteProjectTags.Response response =
           DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -546,13 +448,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
       AddProjectTag.Response response =
           AddProjectTag.Response.newBuilder().setProject(updatedProject).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -587,13 +482,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.deleteProjectTags(request.getId(), Arrays.asList(request.getTag()), false);
       DeleteProjectTag.Response response =
           DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -618,20 +506,10 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      GetResourcesResponseItem entityResource =
-          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.PROJECT);
       List<String> deletedProjectIds =
           projectDAO.deleteProjects(Collections.singletonList(request.getId()));
       DeleteProject.Response response =
           DeleteProject.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      saveAuditLog(
-          Optional.of(userInfo),
-          ModelDBServiceActions.DELETE,
-          Collections.singletonMap(entityResource.getResourceId(), entityResource.getWorkspaceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          entityResource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -671,24 +549,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               .addAllProjects(projects)
               .setTotalRecords(projectPaginationDTO.getTotalRecords())
               .build();
-      Workspace workspace =
-          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
-      List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              null,
-              projects.stream().map(Project::getId).collect(Collectors.toSet()),
-              ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLog(
-          Optional.of(userInfo),
-          ModelDBServiceActions.READ,
-          responseItems.stream()
-              .collect(
-                  Collectors.toMap(
-                      GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId)),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          workspace.getId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -714,13 +574,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       Project project = projectDAO.getProjectByID(request.getId());
       GetProjectById.Response response =
           GetProjectById.Response.newBuilder().setProject(project).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.READ,
-          Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -791,21 +644,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       responseBuilder.addAllSharedProjects(sharedProjects);
 
       GetProjectByName.Response response = responseBuilder.build();
-      Workspace workspace =
-          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
-      List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(null, projectIds, ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLog(
-          Optional.ofNullable(userInfo),
-          ModelDBServiceActions.READ,
-          responseItems.stream()
-              .collect(
-                  Collectors.toMap(
-                      GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId)),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          workspace.getId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -817,7 +655,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   @Override
   public void verifyConnection(
       Empty request, StreamObserver<VerifyConnectionResponse> responseObserver) {
-    AuditLogInterceptor.increaseAuditCountStatic();
     responseObserver.onNext(VerifyConnectionResponse.newBuilder().setStatus(true).build());
     responseObserver.onCompleted();
   }
@@ -838,13 +675,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       Project project = projectDAO.deepCopyProjectForUser(request.getId(), userInfo);
       DeepCopyProject.Response response =
           DeepCopyProject.Response.newBuilder().setProject(project).build();
-      saveAuditLog(
-          Optional.of(userInfo),
-          ModelDBServiceActions.CREATE,
-          Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -960,13 +790,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       GetSummary.Response response = responseBuilder.build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.READ,
-          Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1002,13 +825,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.updateProjectReadme(request.getId(), request.getReadmeText());
       SetProjectReadme.Response response =
           SetProjectReadme.Response.newBuilder().setProject(updatedProject).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1033,13 +849,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       Project project = projectDAO.getProjectByID(request.getId());
       GetProjectReadme.Response response =
           GetProjectReadme.Response.newBuilder().setReadmeText(project.getReadmeText()).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.READ,
-          Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1082,13 +891,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.setProjectShortName(request.getId(), request.getShortName(), userInfo);
       SetProjectShortName.Response response =
           SetProjectShortName.Response.newBuilder().setProject(project).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1114,13 +916,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       Project project = projectDAO.getProjectByID(request.getId());
       GetProjectShortName.Response response =
           GetProjectShortName.Response.newBuilder().setShortName(project.getShortName()).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.READ,
-          Collections.singletonMap(project.getId(), project.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          project.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1165,13 +960,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       /*Build response*/
       LogProjectCodeVersion.Response.Builder responseBuilder =
           LogProjectCodeVersion.Response.newBuilder().setProject(updatedProject);
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(responseBuilder.build()),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -1202,14 +990,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       GetProjectCodeVersion.Response response =
           GetProjectCodeVersion.Response.newBuilder().setCodeVersion(codeVersion).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.READ,
-          Collections.singletonMap(
-              existingProject.getId(), existingProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          existingProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1236,24 +1016,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               .addAllProjects(projects)
               .setTotalRecords(projectPaginationDTO.getTotalRecords())
               .build();
-      Workspace workspace =
-          roleService.getWorkspaceByWorkspaceName(userInfo, request.getWorkspaceName());
-      List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              null,
-              projects.stream().map(Project::getId).collect(Collectors.toSet()),
-              ModelDBServiceResourceTypes.PROJECT);
-      saveAuditLog(
-          Optional.ofNullable(userInfo),
-          ModelDBServiceActions.READ,
-          responseItems.stream()
-              .collect(
-                  Collectors.toMap(
-                      GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId)),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          workspace.getId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1286,8 +1048,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
-      GetResourcesResponseItem resource =
-          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.PROJECT);
 
       String s3Key = null;
 
@@ -1306,13 +1066,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
       GetUrlForArtifact.Response response =
           artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.READ,
-          Collections.singletonMap(resource.getResourceId(), resource.getWorkspaceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          resource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1354,13 +1107,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       Project updatedProject = projectDAO.logArtifacts(request.getId(), artifactList);
       LogProjectArtifacts.Response.Builder responseBuilder =
           LogProjectArtifacts.Response.newBuilder().setProject(updatedProject);
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(responseBuilder.build()),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -1381,19 +1127,10 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
-      GetResourcesResponseItem resource =
-          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.PROJECT);
 
       List<Artifact> artifactList = projectDAO.getProjectArtifacts(request.getId());
       GetArtifacts.Response response =
           GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.READ,
-          Collections.singletonMap(resource.getResourceId(), resource.getWorkspaceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          resource.getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1423,13 +1160,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       Project updatedProject = projectDAO.deleteArtifacts(request.getId(), request.getKey());
       DeleteProjectArtifact.Response response =
           DeleteProjectArtifact.Response.newBuilder().setProject(updatedProject).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.UPDATE,
-          Collections.singletonMap(updatedProject.getId(), updatedProject.getWorkspaceServiceId()),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          updatedProject.getWorkspaceServiceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1448,23 +1178,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw new InvalidArgumentException("Project IDs not found in DeleteProjects request");
       }
 
-      List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              null, new HashSet<>(request.getIdsList()), ModelDBServiceResourceTypes.PROJECT);
       List<String> deletedProjectIds = projectDAO.deleteProjects(request.getIdsList());
       DeleteProjects.Response response =
           DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
-      saveAuditLog(
-          Optional.empty(),
-          ModelDBServiceActions.DELETE,
-          responseItems.stream()
-              .collect(
-                  Collectors.toMap(
-                      GetResourcesResponseItem::getResourceId,
-                      GetResourcesResponseItem::getWorkspaceId)),
-          ModelDBUtils.getStringFromProtoObject(request),
-          ModelDBUtils.getStringFromProtoObject(response),
-          responseItems.get(0).getWorkspaceId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
