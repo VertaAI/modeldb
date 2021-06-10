@@ -168,8 +168,7 @@ class RegisteredModel(_entity._ModelDBEntity):
     def create_version_from_model_spec(
         self,
         model_cls,
-        library_dependencies,
-        os_dependencies=None,
+        environment,
         code_dependencies=None,
         model_api=None,
         artifacts=None,
@@ -207,7 +206,7 @@ class RegisteredModel(_entity._ModelDBEntity):
                 model_api=model_api,
                 artifacts=artifacts.keys(),
             )
-            model_ver.log_environment(library_dependencies)
+            model_ver.log_environment(environment)
         except Exception as e:
             model_ver.delete()
             raise e
