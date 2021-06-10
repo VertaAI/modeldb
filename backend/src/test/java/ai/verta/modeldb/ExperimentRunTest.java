@@ -1945,7 +1945,7 @@ public class ExperimentRunTest extends TestsInit {
         "there should be five observations", 5, response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 3
     responseObservation = response.getExperimentRun().getObservations(1);
-    Observation responseObservation2 = response.getExperimentRun().getObservations(4);
+    Observation responseObservation2 = response.getExperimentRun().getObservations(3);
     assertEquals(
         "observations have same key",
         responseObservation.getAttribute().getKey(),

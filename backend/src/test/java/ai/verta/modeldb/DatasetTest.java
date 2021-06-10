@@ -9,17 +9,14 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.DeleteOrganization;
-import ai.verta.uac.GetRoleByName;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.RoleScope;
 import ai.verta.uac.SetOrganization;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.ListValue;
@@ -1701,19 +1698,6 @@ public class DatasetTest extends TestsInit {
         "Organization name not matched with expected organization name",
         orgName,
         organization.getName());
-
-    String orgRoleName = "O_" + organization.getId() + DatasetDAORdbImpl.GLOBAL_SHARING;
-    GetRoleByName getRoleByName =
-        GetRoleByName.newBuilder()
-            .setName(orgRoleName)
-            .setScope(RoleScope.newBuilder().setOrgId(organization.getId()).build())
-            .build();
-    GetRoleByName.Response getRoleByNameResponse =
-        roleServiceBlockingStub.getRoleByName(getRoleByName);
-    assertEquals(
-        "Expected role name not found in DB",
-        orgRoleName,
-        getRoleByNameResponse.getRole().getName());
 
     CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
     createDatasetRequest =
