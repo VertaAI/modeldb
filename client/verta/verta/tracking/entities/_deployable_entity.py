@@ -371,7 +371,7 @@ class _DeployableEntity(_ModelDBEntity):
            Instead of uploading the data itself as a CSV artifact ``'train_data'``, this method now
            generates a histogram for internal use by our deployment data monitoring system.
 
-        .. deprecated:: 0.17.7
+        .. deprecated:: 0.18.0
             This method is no longer supported. Please see our documentation
             for information about our platform's data monitoring features.
 
