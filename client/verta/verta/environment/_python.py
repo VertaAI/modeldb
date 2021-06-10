@@ -114,6 +114,9 @@ class Python(_environment._Environment):
                     key=lambda env_var_msg: env_var_msg.name,
                 )
             )
+        if self.apt_packages:
+            lines.append("apt packages:")
+            lines.extend("    {}".format(package) for package in self.apt_packages)
         if self._msg.command_line:
             lines.append("command line arguments:")
             lines.extend("    {}".format(arg) for arg in self._msg.command_line)
