@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Visibility settings for use with the model registry."""
+"""Visibility settings for use with entities."""
 
 from verta._internal_utils import documentation
 
