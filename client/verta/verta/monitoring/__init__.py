@@ -1,1 +1,5 @@
-"""Model and data monitoring."""
+"""Model and data monitoring.
+
+.. versionadded:: 0.18.0
+
+"""
