@@ -211,6 +211,108 @@ class RegisteredModel(_entity._ModelDBEntity):
             model_ver.delete()
             raise e
 
+    def _create_version_from_scilib_model(
+        self,
+        obj,
+        environment,
+        model_api=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        attrs = attrs or {}
+        attrs.update({
+            "__verta_reserved__model_language": "Python",
+            "__verta_reserved__model_type": "StandardVertaModel",
+        })
+
+        model_ver = self.create_version(
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+        try:
+            model_ver.log_model(
+                model=obj,
+                model_api=model_api,
+            )
+            model_ver.log_environment(environment)
+        except Exception as e:
+            model_ver.delete()
+            raise e
+
+    def create_version_from_sklearn_model(
+        self,
+        obj,
+        environment,
+        model_api=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        # TODO: validate type of `obj`
+        self._create_version_from_scilib_model(
+            obj=obj,
+            environment=environment,
+            model_api=model_api,
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+
+    def create_version_from_torch_model(
+        self,
+        obj,
+        environment,
+        model_api=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        # TODO: validate type of `obj`
+        self._create_version_from_scilib_model(
+            obj=obj,
+            environment=environment,
+            model_api=model_api,
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+
+    def create_version_from_xgboost_model(
+        self,
+        obj,
+        environment,
+        model_api=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        # TODO: validate type of `obj`
+        self._create_version_from_scilib_model(
+            obj=obj,
+            environment=environment,
+            model_api=model_api,
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
 
     def create_version_from_run(self, run_id, name=None, lock_level=None):
         """
