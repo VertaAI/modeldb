@@ -117,7 +117,6 @@ class Client(object):
     datasets : :class:`~verta.dataset.entities.Datasets`
         Datasets in the current default workspace.
 
-
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
                  max_retries=5, ignore_conn_err=False, use_git=True, debug=False, _connect=True):
