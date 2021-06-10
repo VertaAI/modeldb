@@ -178,6 +178,34 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
+        """
+
+        Parameters
+        ----------
+        model_cls : subclass of :class:`~verta.registry.VertaModelBase`
+            Model class that implements ``VertaModelBase``.
+        environment : :class:`~verta.environment.Python`
+            pip and apt dependencies.
+        code_dependencies : list of str, optional
+            Paths to local Python code files that `model_cls` depends on.
+        model_api : :class:`~verta.utils.ModelAPI`
+            Model API specifying the model's expected input and output
+        artifacts : dict of str to obj
+            A mapping from artifact keys to artifacts. These will be logged
+            and uploaded, then provided to the model when deployed.
+        name : str, optional
+            Name of the model version. If no name is provided, one will be
+            generated.
+        desc : str, optional
+            Description of the model version.
+        labels : list of str, optional
+            Labels of the model version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the model version.
+        lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
+            Lock level to set when creating this model version.
+
+        """
         if not issubclass(model_cls, VertaModelBase):
             raise TypeError(
                 "`model_cls` must be a subclass of"
@@ -222,6 +250,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
+        """Create a StandardVertaModel from a scientific library model."""
         attrs = attrs or {}
         attrs.update({
             "__verta_reserved__model_language": "Python",
