@@ -19,6 +19,7 @@ import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetProjectById;
 import ai.verta.modeldb.GetProjectByName;
 import ai.verta.modeldb.GetProjectCodeVersion;
+import ai.verta.modeldb.GetProjectDatasetCount;
 import ai.verta.modeldb.GetProjectReadme;
 import ai.verta.modeldb.GetProjectShortName;
 import ai.verta.modeldb.GetProjects;
@@ -364,5 +365,25 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   public void deleteProjects(
       DeleteProjects request, StreamObserver<DeleteProjects.Response> responseObserver) {
     super.deleteProjects(request, responseObserver);
+  }
+
+  @Override
+  public void getProjectDatasetCount(
+      GetProjectDatasetCount request,
+      StreamObserver<GetProjectDatasetCount.Response> responseObserver) {
+    try {
+      final var response =
+          futureProjectDAO
+              .getProjectDatasetCount(request.getProjectId())
+              .thenApply(
+                  datasetCount ->
+                      GetProjectDatasetCount.Response.newBuilder()
+                          .setDatasetCount(datasetCount)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 }
