@@ -43,9 +43,9 @@
 <h3 align="center">
   <a href="#up-and-running-in-5-minutes">Quickstart</a>
   <span> · </span>
-  <a href="https://docs.verta.ai/en/master/tutorials/workflow.html">Workflow</a>
+  <a href="https://docs.verta.ai/verta/tutorials/metadata">Workflow</a>
   <span> · </span>
-  <a href="https://docs.verta.ai/en/master/examples.html">Examples</a>
+  <a href="https://github.com/VertaAI/modeldb/tree/master/client/workflows">Examples</a>
   <span> · </span>
   <a href="#contributions">Contribute</a>
   <span> · </span>
@@ -105,7 +105,7 @@ docker-compose -f docker-compose-all.yaml up
 pip install verta
 ```
 
-3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://docs.verta.ai/en/master/examples.html) in our repository.*
+3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://github.com/VertaAI/modeldb/tree/master/client/workflows) in our repository.*
 
 ```python
 from verta import Client
@@ -146,13 +146,13 @@ For information on debugging the Docker-based ModelDB installation, check [here]
 
 ## Documentation
 
-Official documentation for ModelDB can be found [here](https://docs.verta.ai/en/master/).
+Official documentation for ModelDB can be found [here](https://docs.verta.ai/).
 
 ----
 
 ## Community
 
-For Getting Started guides, Tutorials, and API reference check out our [docs](https://docs.verta.ai/en/master/).
+For Getting Started guides, Tutorials, and API reference check out our [docs](https://docs.verta.ai/).
 
 To report a bug, file a documentation issue, or submit a feature request, please open a GitHub issue.
 

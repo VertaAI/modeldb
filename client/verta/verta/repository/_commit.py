@@ -861,7 +861,7 @@ class Commit(object):
                 "merge conflict",
                 "resolution is not currently supported through the Client",
                 "please create a new Commit with the updated blobs",
-                "see https://docs.verta.ai/en/master/examples/tutorials/merge.html for instructions",
+                "see https://docs.verta.ai/verta/experiment-management/guides/merge for instructions",
             ]))
 
         self._become_saved_child(response_msg.commit.commit_sha)

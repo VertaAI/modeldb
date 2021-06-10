@@ -404,9 +404,9 @@ v0.15.0 (2020-08-24)
 New Features
 ^^^^^^^^^^^^
 - `Verta model registry
-  <https://docs.verta.ai/en/master/api/api/registered_model.html>`__
+  <https://verta.readthedocs.io/en/master/_autogen/verta.registry.html>`__
 - `Verta endpoints
-  <https://docs.verta.ai/en/master/api/api/endpoint.html>`__
+  <https://verta.readthedocs.io/en/master/_autogen/verta.endpoint.html>`__
 
 Enhancements
 ^^^^^^^^^^^^
