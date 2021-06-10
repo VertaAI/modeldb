@@ -6,7 +6,6 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
-import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
@@ -22,9 +21,10 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import java.util.concurrent.Executor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import java.util.concurrent.Executor;
 
 public class TestsInit {
 
@@ -94,7 +94,6 @@ public class TestsInit {
     serverBuilder.intercept(new ExceptionInterceptor());
     serverBuilder.intercept(new MonitoringInterceptor());
     serverBuilder.intercept(new AuthInterceptor());
-    serverBuilder.intercept(new AuditLogInterceptor(false));
     // Initialize cron jobs
     CronJobUtils.initializeCronJobs(testConfig, services);
     ReconcilerInitializer.initialize(

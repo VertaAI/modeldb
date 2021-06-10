@@ -37,7 +37,6 @@ public abstract class Config {
   public GrpcServerConfig grpcServer;
   public SpringServerConfig springServer;
   public ServiceUserConfig service_user;
-  public boolean disabled_audits = false;
   public int jdbi_retry_time = 100; // Time in ms
 
   public static <T> T getInstance(Class<T> configType, String configFile) throws InternalErrorException {

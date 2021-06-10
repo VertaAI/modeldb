@@ -772,4 +772,57 @@
         <tagDatabase tag="db_version_2.26"/>
     </changeSet>
 
+    <changeSet id="delete-audit_resource_workspace_mapping-table" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="audit_resource_workspace_mapping"/>
+        </preConditions>
+        <delete tableName="audit_resource_workspace_mapping"/>
+        <rollback>
+            <createTable tableName="audit_resource_workspace_mapping">
+                <column name="audit_log_id" type="int8">
+                    <constraints foreignKeyName="audit_fk_audit_service_local_audit_log_id" referencedTableName="audit_service_local_audit_log"
+                                 referencedColumnNames="id"/>
+                </column>
+                <column name="resource_id" type="VARCHAR(255)">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="workspace_id" type="int8" />
+            </createTable>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="delete-audit_service_local_audit_log-table" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="audit_service_local_audit_log"/>
+        </preConditions>
+        <delete tableName="audit_service_local_audit_log"/>
+        <rollback>
+            <createTable tableName="audit_service_local_audit_log">
+                <column autoIncrement="true" name="id" type="int8">
+                    <constraints primaryKey="true"/>
+                </column>
+                <column name="local_id" type="VARCHAR(255)">
+                    <constraints nullable="false" unique="true"/>
+                </column>
+                <column name="user_id" type="VARCHAR(255)">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="action" type="int4">
+                    <constraints nullable="false"/>
+                </column>
+                <column name="resource_type" type="int4" />
+                <column name="resource_service" type="int4" />
+                <column name="ts_nano" type="int8" />
+                <column name="method_name" type="text" />
+                <column name="request" type="longtext" />
+                <column name="response" type="longtext" />
+                <column name="workspace_id" type="int8" />
+            </createTable>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.27" author="anandJ">
+        <tagDatabase tag="db_version_2.27"/>
+    </changeSet>
+
 </databaseChangeLog>
