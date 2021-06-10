@@ -212,6 +212,7 @@ class RegisteredModel(_entity._ModelDBEntity):
                 " verta.registry.VertaModelBase, not"
                 " {}".format(type(model_cls))
             )
+        artifacts = artifacts or {}
         attrs = attrs or {}
         attrs.update({
             "__verta_reserved__model_language": "Python",
@@ -232,7 +233,7 @@ class RegisteredModel(_entity._ModelDBEntity):
                 model=model_cls,
                 custom_modules=code_dependencies,
                 model_api=model_api,
-                artifacts=artifacts.keys(),
+                artifacts=list(artifacts.keys()),
             )
             model_ver.log_environment(environment)
         except Exception as e:
