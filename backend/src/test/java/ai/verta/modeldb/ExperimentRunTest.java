@@ -574,7 +574,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentRunFromProjectRunTest() {
     LOGGER.info("Get ExperimentRun from Project test start................................");
 
@@ -604,7 +603,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentRunWithPaginationFromProjectRunTest() {
     LOGGER.info(
         "Get ExperimentRun using pagination from Project test start................................");
@@ -715,7 +713,6 @@ public class ExperimentRunTest extends TestsInit {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getExperimentRunsInProject endpoint")
   public void b_getExperimentFromProjectRunNegativeTest() {
     LOGGER.info(
         "Get ExperimentRun from Project Negative test start................................");
@@ -731,12 +728,9 @@ public class ExperimentRunTest extends TestsInit {
     }
 
     getExperiment = GetExperimentRunsInProject.newBuilder().setProjectId("sdfdsfsd").build();
-    try {
-      experimentRunServiceStub.getExperimentRunsInProject(getExperiment);
-      fail();
-    } catch (StatusRuntimeException e) {
-      checkEqualsAssert(e);
-    }
+    GetExperimentRunsInProject.Response response =
+        experimentRunServiceStub.getExperimentRunsInProject(getExperiment);
+    assertEquals("Expected response not found", 0, response.getExperimentRunsCount());
 
     LOGGER.info(
         "Get ExperimentRun from Project Negative test stop................................");
@@ -1951,7 +1945,7 @@ public class ExperimentRunTest extends TestsInit {
         "there should be five observations", 5, response.getExperimentRun().getObservationsCount());
     // Observations are sorted by auto incr id so the observation of interest is on index 3
     responseObservation = response.getExperimentRun().getObservations(1);
-    Observation responseObservation2 = response.getExperimentRun().getObservations(4);
+    Observation responseObservation2 = response.getExperimentRun().getObservations(3);
     assertEquals(
         "observations have same key",
         responseObservation.getAttribute().getKey(),

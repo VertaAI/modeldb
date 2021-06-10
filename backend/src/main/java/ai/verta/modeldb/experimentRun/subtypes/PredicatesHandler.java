@@ -61,9 +61,10 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                 .addCondition("experiment_run.project_id = :" + bindingName)
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
       case "experiment_id":
+        String operator = predicate.getOperator().equals(OperatorEnum.Operator.NE) ? "<>" : "=";
         return InternalFuture.completedInternalFuture(
             new QueryFilterContext()
-                .addCondition("experiment_run.experiment_id = :" + bindingName)
+                .addCondition("experiment_run.experiment_id " + operator + " :" + bindingName)
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
       case "name":
         return InternalFuture.completedInternalFuture(
@@ -75,6 +76,11 @@ public class PredicatesHandler extends PredicateHandlerUtils {
         // case visibility:
       case "":
         return InternalFuture.failedStage(new InvalidArgumentException("Key is empty"));
+      case "end_time":
+        return InternalFuture.completedInternalFuture(
+            new QueryFilterContext()
+                .addCondition("experiment_run.end_time = :" + bindingName)
+                .addBind(q -> q.bind(bindingName, value.getStringValue())));
     }
 
     String[] names = key.split("\\.");
