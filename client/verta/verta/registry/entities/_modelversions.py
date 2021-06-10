@@ -11,6 +11,14 @@ from ._modelversion import RegisteredModelVersion
 
 
 class RegisteredModelVersions(_utils.LazyList):
+    """Collection object for finding registered model versions.
+
+    There should not be a need to instantiate this class directly; please use
+    :attr:`Client.registered_model_versions <verta.Client>` or
+    :attr:`RegisteredModel.versions <verta.registry.entities.RegisteredModel>`
+
+    """
+
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
         'id',
