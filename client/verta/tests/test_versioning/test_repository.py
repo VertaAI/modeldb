@@ -260,7 +260,6 @@ class TestCommit:
 
         excinfo_value = str(excinfo.value).strip()
         assert "403" in excinfo_value
-        assert "Access Denied" in excinfo_value
 
         repository.delete()
 
