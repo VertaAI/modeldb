@@ -651,8 +651,6 @@ class TestLogDatasetVersion:
 
         excinfo_value = str(excinfo.value).strip()
         assert "403" in excinfo_value
-        assert "Access Denied" in excinfo_value
-
 
     def test_overwrite(self, client, created_entities, experiment_run, s3_bucket):
         dataset = client.set_dataset(type="local")
