@@ -266,6 +266,57 @@ class RegisteredModel(_entity._ModelDBEntity):
             lock_level=lock_level,
         )
 
+    def create_version_from_keras_model(
+        self,
+        obj,
+        environment,
+        model_api=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        """Create a Standard Verta Model version from a TensorFlow-backend Keras model.
+
+        Parameters
+        ----------
+        obj : :class:`tf.keras.Sequential <https://keras.io/api/models/sequential/>` or `functional API <https://keras.io/guides/functional_api/>`__ ``keras.Model``
+            Keras model.
+        environment : :class:`~verta.environment.Python`
+            pip and apt dependencies.
+        model_api : :class:`~verta.utils.ModelAPI`
+            Model API specifying the model's expected input and output
+        name : str, optional
+            Name of the model version. If no name is provided, one will be
+            generated.
+        desc : str, optional
+            Description of the model version.
+        labels : list of str, optional
+            Labels of the model version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the model version.
+        lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
+            Lock level to set when creating this model version.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        """
+        model_validator.check_keras(obj)
+
+        self._create_version_from_standard_verta_model(
+            model=obj,
+            environment=environment,
+            model_api=model_api,
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+
     def create_version_from_sklearn_model(
         self,
         obj,

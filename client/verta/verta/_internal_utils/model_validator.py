@@ -5,12 +5,20 @@ from verta.registry import VertaModelBase
 from . import importer
 
 
-def check_verta(model):
-    if not issubclass(model, VertaModelBase):
+def check_keras(model):
+    keras = importer.maybe_dependency("tensorflow.keras")
+    keras_functional = importer.maybe_dependency(
+        "tensorflow.python.keras.engine.functional",
+    )
+    if keras is None or keras_functional is None:
         raise TypeError(
-            "model must be a subclass of"
-            " verta.registry.VertaModelBase, not"
-            " {}".format(model)
+            "TensorFlow is not installed;"
+            " try `pip install tensorflow`"
+        )
+    if not isinstance(model, (keras.Sequential, keras_functional.Functional)):
+        raise TypeError(
+            "model must be either a Keras Sequential or Functional model,"
+            " not {}".format(type(model))
         )
 
     return True
@@ -59,6 +67,17 @@ def check_xgboost_sklearn(model):
         raise TypeError(
             "model must be from XGBoost's scikit-learn API,"
             " not {}".format(type(model))
+        )
+
+    return True
+
+
+def check_verta(model):
+    if not issubclass(model, VertaModelBase):
+        raise TypeError(
+            "model must be a subclass of"
+            " verta.registry.VertaModelBase, not"
+            " {}".format(model)
         )
 
     return True
