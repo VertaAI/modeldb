@@ -6,7 +6,7 @@ from verta.external import six
 
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
 
-from verta.monitoring import utils
+from verta._internal_utils import arg_handler
 
 
 # TODO: move into separate files
@@ -17,7 +17,7 @@ class _AlertStatus(object):
     _ALERT_STATUS = _AlertService.AlertStatusEnum.UNKNOWN
 
     def __init__(self, summary_samples):
-        self._sample_ids = utils.extract_ids(summary_samples) if summary_samples else []
+        self._sample_ids = arg_handler.extract_ids(summary_samples) if summary_samples else []
 
     def __eq__(self, other):
         if not isinstance(other, _AlertStatus):

@@ -20,9 +20,8 @@ from verta._protos.public.monitoring.DataMonitoringService_pb2 import (
     DeployStatusEnum as DeployStatus,
     BuildStatusEnum as BuildStatus,
 )
-from verta._internal_utils import _utils
+from verta._internal_utils import _utils, arg_handler
 from verta.environment import Python
-from .utils import extract_id
 
 
 class ProfilerReference(_entity._ModelDBEntity):
@@ -99,7 +98,7 @@ class ProfilerReference(_entity._ModelDBEntity):
             return self._blocking_enable(monitored_entity, environment)
 
         profiler_id = self.id
-        monitored_entity_id = extract_id(monitored_entity)
+        monitored_entity_id = arg_handler.extract_id(monitored_entity)
         environment = environment.copy() if environment else dict()
         environment["PROFILER_ID"] = profiler_id
         key_values = [

@@ -4,7 +4,7 @@
 from __future__ import print_function
 
 from verta import data_types
-from verta._internal_utils import pagination_utils, time_utils
+from verta._internal_utils import arg_handler, pagination_utils, time_utils
 from verta._internal_utils._utils import as_list_of_str
 from verta._protos.public.monitoring.Summary_pb2 import (
     AggregationQuerySummary,
@@ -14,7 +14,6 @@ from verta._protos.public.monitoring.Summary_pb2 import (
     LabelFilterQuerySummarySample,
 )
 
-from ..utils import extract_ids, maybe
 from .aggregation import Aggregation
 
 
@@ -73,12 +72,12 @@ class SummaryQuery(object):
         page_number=1,
         page_limit=None,
     ):
-        self._ids = extract_ids(ids) if ids else None
+        self._ids = arg_handler.extract_ids(ids) if ids else None
         self._names = names
 
         self._initialize_data_types(data_type_classes)
         self._monitored_entity_ids = (
-            extract_ids(monitored_entities) if monitored_entities else None
+            arg_handler.extract_ids(monitored_entities) if monitored_entities else None
         )
         self._page_number = page_number
         self._page_limit = page_limit
@@ -212,8 +211,8 @@ class SummarySampleQuery(object):
             summary_query = SummaryQuery()
 
         self._summary_query = summary_query
-        self._sample_ids = extract_ids(ids) if ids else None
-        self._labels = maybe(_labels_proto, labels)
+        self._sample_ids = arg_handler.extract_ids(ids) if ids else None
+        self._labels = arg_handler.maybe(_labels_proto, labels)
         self._time_window_start = time_window_start
         self._time_window_end = time_window_end
         self.aggregation = aggregation
@@ -284,7 +283,7 @@ class SummarySampleQuery(object):
         return obj
 
     def _to_proto_request(self):
-        aggregation_proto = maybe(lambda agg: agg._to_proto(), self.aggregation)
+        aggregation_proto = arg_handler.maybe(lambda agg: agg._to_proto(), self.aggregation)
         return FindSummarySampleRequest(
             filter=FilterQuerySummarySample(
                 find_summaries=self._find_summaries,
