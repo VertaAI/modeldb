@@ -3,10 +3,9 @@
 import warnings
 
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
-from verta._internal_utils import _utils, time_utils
+from verta._internal_utils import _utils, arg_handler, time_utils
 from verta.tracking import _Context
 from verta.tracking.entities import _entity
-from ... import utils
 
 
 class NotificationChannel(_entity._ModelDBEntity):
@@ -479,7 +478,7 @@ class NotificationChannels(object):
             If the delete failed.
 
         """
-        channel_ids = utils.extract_ids(channels)
+        channel_ids = arg_handler.extract_ids(channels)
         msg = _AlertService.DeleteNotificationChannelRequest(ids=channel_ids)
         endpoint = "/api/v1/alerts/deleteNotificationChannel"
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
