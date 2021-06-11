@@ -219,7 +219,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
-        """
+        """Create a Standard Verta Model version from a Verta Model Specification.
 
         Parameters
         ----------
@@ -277,7 +277,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
-        """
+        """Create a Standard Verta Model version from a scikit-learn model.
 
         Parameters
         ----------
@@ -328,7 +328,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
-        """
+        """Create a Standard Verta Model version from a PyTorch model.
 
         Parameters
         ----------
@@ -379,7 +379,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
     ):
-        """
+        """Create a Standard Verta Model version from an XGBoost model.
 
         Parameters
         ----------
@@ -420,8 +420,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         )
 
     def create_version_from_run(self, run_id, name=None, lock_level=None):
-        """
-        Creates a model registry entry based on an Experiment Run.
+        """Create a model version copied from an experiment run.
 
         Parameters
         ----------
