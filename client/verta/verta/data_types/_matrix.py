@@ -52,7 +52,7 @@ class Matrix(_VertaDataType):
         data = d[cls._TYPE_NAME]
         return cls(value=data["value"])
 
-    def dist(self, other):
+    def diff(self, other):
         if not isinstance(other, type(self)):
             raise TypeError(
                 "`other` must be type {}, not {}".format(type(self), type(other))
