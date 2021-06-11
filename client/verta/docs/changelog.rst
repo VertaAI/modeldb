@@ -37,7 +37,7 @@ Changelog
      <>`__
 
 
-v0.18.0 (2021-06-10)
+v0.18.0 (2021-06-11)
 --------------------
 
 Backwards Incompatibilities
