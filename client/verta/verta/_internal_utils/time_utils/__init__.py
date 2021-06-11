@@ -80,7 +80,7 @@ def parse_duration(value):
             duration = timedelta(seconds=dur_seconds)
         except:
             raise ValueError("cannot convert string argument to timedelta")
-    if isinstance(value, int):
+    if isinstance(value, six.integer_types):
         if value < 0:
             raise ValueError("cannot accept negative integer as a millisecond duration")
         duration = timedelta(milliseconds=value)
