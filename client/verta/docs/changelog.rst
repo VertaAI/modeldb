@@ -63,7 +63,7 @@ Deprecations
   <https://github.com/VertaAI/modeldb/pull/2253>`__
 - `log_requirements(), being superseded by log_environment()
   <https://github.com/VertaAI/modeldb/pull/2258>`__
-- `TFSavedModel utility, long-since superceded by Verta Standard Models
+- `TFSavedModel utility, long-since superseded by Verta Standard Models
   <https://github.com/VertaAI/modeldb/pull/2307/files#diff-38dbfbb4b30b23b1fa5af3f91dc2046c18f405169c49865db152d0a37558072a>`__
 
 New Features
