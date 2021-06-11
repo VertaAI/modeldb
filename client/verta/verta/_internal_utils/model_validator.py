@@ -31,9 +31,10 @@ def check_sklearn(model):
             "scikit-learn is not installed;"
             " try `pip install scikit-learn`"
         )
-    if not isinstance(model, sklearn_base.BaseEstimator):
+    if not (isinstance(model, sklearn_base.BaseEstimator)
+            and hasattr(model, "predict")):
         raise TypeError(
-            "model must be a scikit-learn estimator,"
+            "model must be a scikit-learn estimator with a predict() method,"
             " not {}".format(type(model))
         )
 
