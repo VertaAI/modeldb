@@ -1414,7 +1414,7 @@ public class DatasetTest extends TestsInit {
           response.getExperimentRun().getDateUpdated());
 
       ReconcilerInitializer.initialize(
-          testConfig, services, testConfig.getTestJdbi(), handleExecutor);
+          testConfig, services, testConfig.getJdbi(), handleExecutor);
 
       LastExperimentByDatasetId lastExperimentByDatasetId =
           LastExperimentByDatasetId.newBuilder().setDatasetId(dataset.getId()).build();
