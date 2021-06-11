@@ -281,7 +281,7 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         Parameters
         ----------
-        obj : `tf.keras.Sequential <https://keras.io/api/models/sequential/>`__ or `functional API keras.Model <https://keras.io/guides/functional_api/>`__
+        obj : `tf.keras.Sequential <https://keras.io/guides/sequential_model/>`__ or `functional API keras.Model <https://keras.io/guides/functional_api/>`__
             Keras model.
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
