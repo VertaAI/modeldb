@@ -48,13 +48,13 @@ class StringValue(_VertaDataType):
         data = d[cls._TYPE_NAME]
         return cls(value=data["value"])
 
-    def dist(self, other):
-        """Calculate the distance from `other` to this value.
+    def diff(self, other):
+        """Calculate the difference between `other` and this value.
 
         Parameters
         ----------
         other : :class:`StringValue`
-            Value to calculate distance from.
+            Value to calculate difference from.
 
         Returns
         -------

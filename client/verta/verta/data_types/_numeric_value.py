@@ -59,13 +59,13 @@ class NumericValue(_VertaDataType):
             unit=data.get("unit"),
         )
 
-    def dist(self, other):
-        r"""Calculate the distance from `other` to this value.
+    def diff(self, other):
+        r"""Calculate the difference between `other` and this value.
 
         Parameters
         ----------
         other : :class:`NumericValue`
-            Value to calculate distance from.
+            Value to calculate difference from.
 
         Returns
         -------
@@ -78,7 +78,7 @@ class NumericValue(_VertaDataType):
 
         .. math::
 
-            \text{dist}=\left\lvert\frac{\text{self}-\text{other}}{\text{other}}\right\rvert
+            \text{diff}=\left\lvert\frac{\text{self}-\text{other}}{\text{other}}\right\rvert
 
         """
         if not isinstance(other, type(self)):

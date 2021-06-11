@@ -72,13 +72,13 @@ class DiscreteHistogram(_VertaDataType):
             data=data["data"],
         )
 
-    def dist(self, other):
-        """Calculate the distance from `other` to this value.
+    def diff(self, other):
+        """Calculate the difference between `other` and this value.
 
         Parameters
         ----------
         other : :class:`FloatHistogram`
-            Value to calculate distance from.
+            Value to calculate difference from.
 
         Returns
         -------

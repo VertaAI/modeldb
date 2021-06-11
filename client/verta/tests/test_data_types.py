@@ -80,7 +80,7 @@ class TestDiscreteHistogram:
             buckets=["c", "a"],
             data=[1, 0],
         )
-        d = one.dist(two)
+        d = one.diff(two)
         np.isclose(d, 0)
 
 

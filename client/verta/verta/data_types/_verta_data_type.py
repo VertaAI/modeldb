@@ -68,5 +68,5 @@ class _VertaDataType(object):
         return map(cls._from_type_string, type_strings)
 
     @abc.abstractmethod
-    def dist(self, other):
+    def diff(self, other):
         raise NotImplementedError
