@@ -159,4 +159,22 @@ public class FutureProjectDAO {
             },
             executor);
   }
+
+  public InternalFuture<Long> getProjectDatasetCount(String projectId) {
+    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ)
+        .thenCompose(
+            unused ->
+                jdbi.withHandle(
+                    handle -> {
+                      var queryStr =
+                          "SELECT COUNT(distinct ar.linked_artifact_id) from artifact ar inner join experiment_run er ON er.id = ar.experiment_run_id "
+                              + " WHERE er.project_id = :projectId AND ar.experiment_run_id is not null AND ar.linked_artifact_id <> '' ";
+                      return handle
+                          .createQuery(queryStr)
+                          .bind("projectId", projectId)
+                          .mapTo(Long.class)
+                          .one();
+                    }),
+            executor);
+  }
 }

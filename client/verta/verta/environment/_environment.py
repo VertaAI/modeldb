@@ -19,7 +19,8 @@ class _Environment(_blob.Blob):
     Handles environment variables and command line arguments.
 
     """
-    def __init__(self, env_vars, autocapture):
+
+    def __init__(self, env_vars, autocapture, apt_packages=None):
         super(_Environment, self).__init__()
 
         # TODO: don't use proto to store data
@@ -29,6 +30,20 @@ class _Environment(_blob.Blob):
             self._capture_env_vars(env_vars)
         if autocapture:
             self._capture_cmd_line_args()
+        if apt_packages:
+            self.apt_packages = apt_packages
+
+    @property
+    def apt_packages(self):
+        return list(self._msg.apt.packages)
+
+    @apt_packages.setter
+    def apt_packages(self, packages):
+        if packages:
+            apt_blob = _EnvironmentService.AptEnvironmentBlob(packages=packages)
+            self._msg.apt.CopyFrom(apt_blob)
+        else:
+            self._msg.apt.Clear()
 
     def _as_env_proto(self):
         """Returns this environment blob as an environment protobuf message.
@@ -45,19 +60,14 @@ class _Environment(_blob.Blob):
             return
 
         try:
-            env_vars_dict = {
-                name: os.environ[name]
-                for name
-                in env_vars
-            }
+            env_vars_dict = {name: os.environ[name] for name in env_vars}
         except KeyError as e:
             new_e = KeyError("'{}' not found in environment".format(e.args[0]))
             six.raise_from(new_e, None)
 
         self._msg.environment_variables.extend(
             _EnvironmentService.EnvironmentVariablesBlob(name=name, value=value)
-            for name, value
-            in six.viewitems(env_vars_dict)
+            for name, value in six.viewitems(env_vars_dict)
         )
 
     def _capture_cmd_line_args(self):

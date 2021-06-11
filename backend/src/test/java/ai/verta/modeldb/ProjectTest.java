@@ -199,7 +199,7 @@ public class ProjectTest extends TestsInit {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -1210,7 +1210,7 @@ public class ProjectTest extends TestsInit {
         assertEquals("Shared project name not match", project.getName(), sharedProject.getName());
       }
 
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorTest.addCollaboratorRequestProject(
                 project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -1294,7 +1294,7 @@ public class ProjectTest extends TestsInit {
   @Test
   public void k_getProjectByNameWithWorkspace() {
     LOGGER.info("Get Project by name with workspace test start................................");
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -2074,7 +2074,7 @@ public class ProjectTest extends TestsInit {
 
         // Create two collaborator for above project
         // For Collaborator1
-        if (config.hasAuth()) {
+        if (testConfig.hasAuth()) {
           AddCollaboratorRequest addCollaboratorRequest =
               CollaboratorTest.addCollaboratorRequestProjectInterceptor(
                   project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -2114,7 +2114,7 @@ public class ProjectTest extends TestsInit {
         GetExperimentsInProject getExperiment =
             GetExperimentsInProject.newBuilder().setProjectId(project.getId()).build();
         experimentServiceStub.getExperimentsInProject(getExperiment);
-        if (config.hasAuth()) {
+        if (testConfig.hasAuth()) {
           fail();
         }
       } catch (StatusRuntimeException ex) {
@@ -2127,7 +2127,7 @@ public class ProjectTest extends TestsInit {
             GetExperimentRunsInProject.newBuilder().setProjectId(project.getId()).build();
         GetExperimentRunsInProject.Response runResponse =
             experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
-        if (config.hasAuth()) {
+        if (testConfig.hasAuth()) {
           assertEquals(0, runResponse.getExperimentRunsCount());
           assertEquals(0, runResponse.getTotalRecords());
         }
@@ -2142,7 +2142,7 @@ public class ProjectTest extends TestsInit {
       GetComments.Response getCommentsResponse;
       try {
         commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-        if (config.hasAuth()) {
+        if (testConfig.hasAuth()) {
           fail();
         }
       } catch (StatusRuntimeException e) {
@@ -2159,7 +2159,7 @@ public class ProjectTest extends TestsInit {
       }
 
       // Start cross-checking for project collaborator
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         GetCollaborator getCollaboratorRequest =
             GetCollaborator.newBuilder().setEntityId(project.getId()).build();
         try {
@@ -2248,7 +2248,7 @@ public class ProjectTest extends TestsInit {
 
           // Create two collaborator for above project
           // For Collaborator1
-          if (config.hasAuth()) {
+          if (testConfig.hasAuth()) {
             AddCollaboratorRequest addCollaboratorRequest =
                 CollaboratorTest.addCollaboratorRequestProjectInterceptor(
                     project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -2288,7 +2288,7 @@ public class ProjectTest extends TestsInit {
           GetExperimentsInProject getExperiment =
               GetExperimentsInProject.newBuilder().setProjectId(project.getId()).build();
           experimentServiceStub.getExperimentsInProject(getExperiment);
-          if (config.hasAuth()) {
+          if (testConfig.hasAuth()) {
             fail();
           }
         } catch (StatusRuntimeException ex) {
@@ -2301,7 +2301,7 @@ public class ProjectTest extends TestsInit {
               GetExperimentRunsInProject.newBuilder().setProjectId(project.getId()).build();
           GetExperimentRunsInProject.Response getResponse =
               experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
-          if (config.hasAuth() && getResponse.getExperimentRunsCount() > 0) {
+          if (testConfig.hasAuth() && getResponse.getExperimentRunsCount() > 0) {
             fail();
           }
         } catch (StatusRuntimeException e) {
@@ -2313,7 +2313,7 @@ public class ProjectTest extends TestsInit {
         getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
         try {
           commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-          if (config.hasAuth()) {
+          if (testConfig.hasAuth()) {
             fail();
           }
         } catch (StatusRuntimeException e) {
@@ -2324,7 +2324,7 @@ public class ProjectTest extends TestsInit {
         getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
         try {
           commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-          if (config.hasAuth()) {
+          if (testConfig.hasAuth()) {
             fail();
           }
         } catch (StatusRuntimeException e) {
@@ -2332,7 +2332,7 @@ public class ProjectTest extends TestsInit {
         }
 
         // Start cross-checking for project collaborator
-        if (config.hasAuth()) {
+        if (testConfig.hasAuth()) {
           GetCollaborator getCollaboratorRequest =
               GetCollaborator.newBuilder().setEntityId(project.getId()).build();
           try {
@@ -2808,5 +2808,16 @@ public class ProjectTest extends TestsInit {
     deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project delete successfully. Status : {}", deleteProjectResponse.toString());
     assertTrue(deleteProjectResponse.getStatus());
+  }
+
+  @Test
+  public void getProjectDatasetCount() {
+    GetProjectDatasetCount.Response response =
+        projectServiceStub.getProjectDatasetCount(
+            GetProjectDatasetCount.newBuilder().setProjectId(project.getId()).build());
+    assertEquals(
+        "Project dataset count not match with expected Project dataset count",
+        experimentRun.getDatasetsCount(),
+        response.getDatasetCount());
   }
 }

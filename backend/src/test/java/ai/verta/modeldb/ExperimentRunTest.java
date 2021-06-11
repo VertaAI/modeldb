@@ -289,7 +289,7 @@ public class ExperimentRunTest extends TestsInit {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -5217,7 +5217,7 @@ public class ExperimentRunTest extends TestsInit {
     LOGGER.info(
         "Delete ExperimentRun by parent entities owner test start.........................");
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
               project, CollaboratorType.READ_ONLY, authClientInterceptor);
@@ -5256,7 +5256,7 @@ public class ExperimentRunTest extends TestsInit {
             .addAllIds(experimentRunIds.subList(0, experimentRunIds.size() - 1))
             .build();
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       try {
         experimentRunServiceStubClient2.deleteExperimentRuns(deleteExperimentRuns);
       } catch (StatusRuntimeException e) {
@@ -5589,11 +5589,11 @@ public class ExperimentRunTest extends TestsInit {
           logVersionedInput.getVersionedInputs(),
           getVersionedInputResponse.getVersionedInputs());
 
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
         getVersionedInputResponse =
             experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
-        if (config.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.populateConnectionsBasedOnPrivileges) {
           assertTrue(
               "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
               getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
@@ -5625,7 +5625,7 @@ public class ExperimentRunTest extends TestsInit {
     long repoId = RepositoryTest.createRepository(versioningServiceBlockingStub, repoName);
 
     String testUser1UserName = null;
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       GetUser getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
       // Get the user info by vertaId form the AuthService
@@ -5674,7 +5674,7 @@ public class ExperimentRunTest extends TestsInit {
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     commit = commitResponse.getCommit();
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       AddCollaboratorRequest addCollaboratorRequest =
           CollaboratorTest.addCollaboratorRequestProject(
               project, authClientInterceptor.getClient2Email(), CollaboratorType.READ_WRITE);
@@ -6438,7 +6438,7 @@ public class ExperimentRunTest extends TestsInit {
         }
       }
 
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
             AddCollaboratorRequest.newBuilder()
                 .setShareWith(authClientInterceptor.getClient2Email())
@@ -6472,7 +6472,7 @@ public class ExperimentRunTest extends TestsInit {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        if (config.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.populateConnectionsBasedOnPrivileges) {
           assertEquals(
               "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               1,
@@ -6517,7 +6517,7 @@ public class ExperimentRunTest extends TestsInit {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        if (config.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.populateConnectionsBasedOnPrivileges) {
           assertEquals(
               "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               3,
@@ -7134,7 +7134,7 @@ public class ExperimentRunTest extends TestsInit {
         if (exprRun.getId().equals(experimentRun2.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-          if (config.populateConnectionsBasedOnPrivileges) {
+          if (testConfig.populateConnectionsBasedOnPrivileges) {
             assertFalse(
                 "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
           } else {
@@ -7151,7 +7151,7 @@ public class ExperimentRunTest extends TestsInit {
         } else if (exprRun.getId().equals(experimentRun3.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
-          if (config.populateConnectionsBasedOnPrivileges) {
+          if (testConfig.populateConnectionsBasedOnPrivileges) {
             assertFalse(
                 "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
           } else {
@@ -7174,7 +7174,7 @@ public class ExperimentRunTest extends TestsInit {
       ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
       String locationKey =
           ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-      if (config.populateConnectionsBasedOnPrivileges) {
+      if (testConfig.populateConnectionsBasedOnPrivileges) {
         assertFalse("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
       } else {
         assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
@@ -7708,7 +7708,7 @@ public class ExperimentRunTest extends TestsInit {
           experimentRun11,
           response.getExperimentRuns(0));
 
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
             addCollaboratorRequestProjectInterceptor(
                 project, CollaboratorType.READ_ONLY, authClientInterceptor);
@@ -7730,7 +7730,7 @@ public class ExperimentRunTest extends TestsInit {
             "ExperimentRun count not match with expected experimentRun count",
             1,
             response.getExperimentRunsCount());
-        if (config.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.populateConnectionsBasedOnPrivileges) {
           assertEquals(
               "ExperimentRun not match with expected experimentRun",
               0,

@@ -75,6 +75,7 @@ message DeploymentActionEnum {
         DELETE = 5;
         UPDATE_PERMISSIONS = 8;
         PREDICT = 9;
+        CONTROL = 10;
     }
 };
 
@@ -115,6 +116,7 @@ message DeploymentResourceEnum {
         UNKNOWN = 0; // Resource 0 should always cause an error
         ALL = 1;
         ENDPOINT = 2;
+        BUILD = 3;
     }
 };
 

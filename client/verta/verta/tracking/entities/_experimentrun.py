@@ -1162,8 +1162,8 @@ class ExperimentRun(_DeployableEntity):
         Logs a model artifact, a model API, requirements, and a dataset CSV to deploy on Verta.
 
         .. deprecated:: 0.13.13
-           This function has been superseded by :meth:`log_model`, :meth:`log_requirements`, and
-           :meth:`log_training_data`; consider using them instead.
+           This function has been superseded by :meth:`log_model` and
+           :meth:`log_requirements`; consider using them instead.
 
         Parameters
         ----------

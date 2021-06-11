@@ -3,8 +3,8 @@ package ai.verta.modeldb.cron_jobs;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.CronJobConfig;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.Map;
 import java.util.TimerTask;
@@ -21,12 +21,7 @@ public class CronJobUtils {
     if (config.cron_job != null) {
       for (Map.Entry<String, CronJobConfig> cronJob : config.cron_job.entrySet()) {
         TimerTask task = null;
-        if (cronJob.getKey().equals(ModelDBConstants.UPDATE_PARENT_TIMESTAMP)) {
-          task =
-              new ParentTimestampUpdateCron(
-                  cronJob.getValue().record_update_limit,
-                  config.database.RdbConfiguration.isPostgres());
-        } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
+        if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
             && (config.hasServiceAccount() || !services.roleService.IsImplemented())) {
           task =
               new DeleteEntitiesCron(
@@ -39,9 +34,6 @@ public class CronJobUtils {
           task =
               new PopulateEnvironmentInRunCron(
                   services.artifactStoreService, cronJob.getValue().record_update_limit);
-        } else if (cronJob.getKey().equals(ModelDBConstants.DELETE_AUDIT_LOGS)
-            && config.hasServiceAccount()) {
-          task = new AuditLogsCron(cronJob.getValue().record_update_limit);
         } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
             && (config.hasServiceAccount() || !services.roleService.IsImplemented())) {
           task =

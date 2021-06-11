@@ -12,7 +12,6 @@ import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
-import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
@@ -39,6 +38,8 @@ import io.grpc.health.v1.HealthCheckResponse;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import io.prometheus.jmx.BuildInfoCollector;
+import io.prometheus.jmx.JmxCollector;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -47,7 +48,9 @@ import java.util.Optional;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import javax.management.MalformedObjectNameException;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -102,9 +105,18 @@ public class App implements ApplicationContextAware {
     return app.applicationContext;
   }
 
+  // Export all JMX metrics to Prometheus
+  private static final String rules = "---\n" + "rules:\n" + "  - pattern: \".*\"";
+  private static final AtomicBoolean metricsInitialized = new AtomicBoolean(false);
+
   @Bean
-  public ServletRegistrationBean<MetricsServlet> servletRegistrationBean() {
-    DefaultExports.initialize();
+  public ServletRegistrationBean<MetricsServlet> servletRegistrationBean()
+      throws MalformedObjectNameException {
+    if (!metricsInitialized.getAndSet(true)) {
+      DefaultExports.initialize();
+      new BuildInfoCollector().register();
+      new JmxCollector(rules).register();
+    }
     return new ServletRegistrationBean<>(new MetricsServlet(), "/metrics");
   }
 
@@ -185,20 +197,21 @@ public class App implements ApplicationContextAware {
       System.getProperties().put("server.port", config.springServer.port);
 
       // Initialize services that we depend on
-      ServiceSet services = ServiceSet.fromConfig(config);
+      ServiceSet services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
 
       // Initialize executor so we don't lose context using Futures
       final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
 
       // Initialize data access
-      DAOSet daos = DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config);
+      DAOSet daos =
+          DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config, config.trial);
 
       // Initialize telemetry
       initializeTelemetryBasedOnConfig(config);
 
       // Initialize cron jobs
       CronJobUtils.initializeCronJobs(config, services);
-      ReconcilerInitializer.initialize(config, services);
+      ReconcilerInitializer.initialize(config, services, config.getJdbi(), handleExecutor);
 
       // Initialize grpc server
       ServerBuilder<?> serverBuilder =
@@ -218,7 +231,6 @@ public class App implements ApplicationContextAware {
       serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());
       serverBuilder.intercept(new AuthInterceptor());
-      serverBuilder.intercept(new AuditLogInterceptor(config.grpcServer.quitOnAuditMissing));
 
       // Add APIs
       initializeBackendServices(serverBuilder, services, daos, handleExecutor);

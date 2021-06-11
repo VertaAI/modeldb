@@ -232,6 +232,8 @@ message ListAlertHistoryItem {
     uint64 event_time_millis = 1;
     AlertStatusEnum.AlertStatus status = 2;
     repeated uint64 violating_summary_sample_ids = 3;
+    // Optional. Doesn't need to be output on the response
+    string event_id = 4;
 }
 
 service AlertService {

@@ -508,7 +508,7 @@ public class HydratedServiceTest extends TestsInit {
     commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       // For Collaborator1
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
@@ -569,7 +569,7 @@ public class HydratedServiceTest extends TestsInit {
     commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       GetUser getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       // Get the user info by vertaId form the AuthService
@@ -659,7 +659,7 @@ public class HydratedServiceTest extends TestsInit {
     commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       // Create two collaborator for above project
       // For Collaborator1
       AddCollaboratorRequest addCollaboratorRequest =
@@ -697,7 +697,7 @@ public class HydratedServiceTest extends TestsInit {
               experimentRunMap.get(hydratedExperimentRun.getExperimentRun().getId()),
               hydratedExperimentRun.getExperimentRun());
 
-          if (config.hasAuth()) {
+          if (testConfig.hasAuth()) {
             assertEquals(
                 "Expected experimentRun owner does not match with the hydratedExperimentRun owner",
                 experimentRunMap.get(hydratedExperimentRun.getExperimentRun().getId()).getOwner(),
@@ -779,7 +779,7 @@ public class HydratedServiceTest extends TestsInit {
 
     // Create two collaborator for above project
     // For Collaborator1
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       AddCollaboratorRequest addCollaboratorRequest =
           addCollaboratorRequestProjectInterceptor(
               project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -801,7 +801,7 @@ public class HydratedServiceTest extends TestsInit {
         experiment1.getName(),
         getHydratedExperimentRunsResponse.getHydratedExperimentRun().getExperiment().getName());
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       assertEquals(
           "Hydrated comments not match with expected ExperimentRun comments",
           Collections.singletonList(comment1),
@@ -2163,7 +2163,7 @@ public class HydratedServiceTest extends TestsInit {
 
     try {
       hydratedServiceBlockingStub.findHydratedExperiments(findExperiments);
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         fail();
       }
     } catch (StatusRuntimeException e) {
@@ -2187,7 +2187,7 @@ public class HydratedServiceTest extends TestsInit {
 
     try {
       hydratedServiceBlockingStub.findHydratedExperiments(findExperiments);
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         fail();
       }
     } catch (StatusRuntimeException e) {
@@ -2816,7 +2816,7 @@ public class HydratedServiceTest extends TestsInit {
 
     try {
       response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
-      if (!config.hasAuth()) {
+      if (!testConfig.hasAuth()) {
         assertEquals(0, response.getTotalRecords());
       } else {
         fail();
@@ -2851,7 +2851,7 @@ public class HydratedServiceTest extends TestsInit {
   public void findHydratedProjectsByWorkspaceTest() {
     LOGGER.info("FindHydratedProjectsByWorkspace test start................................");
 
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -3039,7 +3039,7 @@ public class HydratedServiceTest extends TestsInit {
   public void checkCollaboratorDeleteActionTest() {
     LOGGER.info("Check collaborator has delete action test start.........");
 
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       Assert.assertTrue(true);
       return;
     }

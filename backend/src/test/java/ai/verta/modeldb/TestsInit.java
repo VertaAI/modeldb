@@ -6,8 +6,7 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
-import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
@@ -22,16 +21,17 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import java.util.concurrent.Executor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+
+import java.util.concurrent.Executor;
 
 public class TestsInit {
 
   private static InProcessServerBuilder serverBuilder;
   protected static AuthClientInterceptor authClientInterceptor;
 
-  protected static Config config;
+  protected static TestConfig testConfig;
   protected static DeleteEntitiesCron deleteEntitiesCron;
   protected static AuthService authService;
 
@@ -77,35 +77,39 @@ public class TestsInit {
     InProcessChannelBuilder client2ChannelBuilder =
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
-    config = Config.getInstance();
-    final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
+    testConfig = TestConfig.getInstance();
+    final Executor handleExecutor =
+        FutureGrpc.initializeExecutor(testConfig.grpcServer.threadCount);
     // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(config);
+    ServiceSet services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
     authService = services.authService;
     // Initialize data access
-    DAOSet daos = DAOSet.fromServices(services, config.getTestJdbi(), handleExecutor, config);
-    App.migrate(config.test.database, config.migrations);
+    DAOSet daos =
+        DAOSet.fromServices(
+            services, testConfig.getTestJdbi(), handleExecutor, testConfig, testConfig.trial);
+    App.migrate(testConfig.database, testConfig.migrations);
 
     App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
     serverBuilder.intercept(new MetadataForwarder());
     serverBuilder.intercept(new ExceptionInterceptor());
     serverBuilder.intercept(new MonitoringInterceptor());
     serverBuilder.intercept(new AuthInterceptor());
-    serverBuilder.intercept(new AuditLogInterceptor(false));
     // Initialize cron jobs
-    CronJobUtils.initializeCronJobs(config, services);
-    ReconcilerInitializer.initialize(config, services);
+    CronJobUtils.initializeCronJobs(testConfig, services);
+    ReconcilerInitializer.initialize(
+        testConfig, services, testConfig.getTestJdbi(), handleExecutor);
 
-    if (config.test != null) {
-      authClientInterceptor = new AuthClientInterceptor(config.test);
+    if (testConfig.testUsers != null && !testConfig.testUsers.isEmpty()) {
+      authClientInterceptor = new AuthClientInterceptor(testConfig.testUsers);
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
     deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
 
-    if (config.authService != null) {
+    if (testConfig.authService != null) {
       ManagedChannel authServiceChannel =
-          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
+          ManagedChannelBuilder.forTarget(
+                  testConfig.authService.host + ":" + testConfig.authService.port)
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
@@ -115,7 +119,8 @@ public class TestsInit {
       collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
 
       ManagedChannel authServiceChannelClient2 =
-          ManagedChannelBuilder.forTarget(config.authService.host + ":" + config.authService.port)
+          ManagedChannelBuilder.forTarget(
+                  testConfig.authService.host + ":" + testConfig.authService.port)
               .usePlaintext()
               .intercept(authClientInterceptor.getClient2AuthInterceptor())
               .build();
