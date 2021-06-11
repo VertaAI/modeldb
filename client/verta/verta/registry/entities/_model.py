@@ -281,7 +281,7 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         Parameters
         ----------
-        obj : :class:`tf.keras.Sequential <https://keras.io/api/models/sequential/>` or `functional API <https://keras.io/guides/functional_api/>`__ ``keras.Model``
+        obj : `tf.keras.Sequential <https://keras.io/api/models/sequential/>`__ or `functional API keras.Model <https://keras.io/guides/functional_api/>`__
             Keras model.
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
@@ -332,7 +332,7 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         Parameters
         ----------
-        obj : :class:`sklearn.base.BaseEstimator <https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html>`
+        obj : `sklearn.base.BaseEstimator <https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html>`__
             scikit-learn model.
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
@@ -383,7 +383,7 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         Parameters
         ----------
-        obj : :class:`torch.nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`
+        obj : `torch.nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`__
             PyTorch ``Module``.
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
@@ -434,7 +434,7 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         Parameters
         ----------
-        obj : :class:`xgboost.sklearn.XGBModel <https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn>`
+        obj : `xgboost.sklearn.XGBModel <https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn>`__
             XGBoost model using their scikit-learn wrapper interface.
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
