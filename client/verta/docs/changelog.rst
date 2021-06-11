@@ -101,7 +101,9 @@ New Features
   `#2355 <https://github.com/VertaAI/modeldb/pull/2355>`__,
   `#2356 <https://github.com/VertaAI/modeldb/pull/2356>`__,
   `#2360 <https://github.com/VertaAI/modeldb/pull/2360>`__,
-  `#2374 <https://github.com/VertaAI/modeldb/pull/2374>`__)
+  `#2370 <https://github.com/VertaAI/modeldb/pull/2370>`__,
+  `#2374 <https://github.com/VertaAI/modeldb/pull/2374>`__,
+  `#2399 <https://github.com/VertaAI/modeldb/pull/2399>`__)
 - `allow setting workspace through environment variable
   <https://github.com/VertaAI/modeldb/pull/2351>`__
 - `add apt_packages to Python()
