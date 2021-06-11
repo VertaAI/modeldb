@@ -37,6 +37,107 @@ Changelog
      <>`__
 
 
+v0.18.0 (2021-06-11)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `rename with_workspace(workspace_name) parameter to
+  with_workspace(workspace)
+  <https://github.com/VertaAI/modeldb/pull/2352>`__
+- move formerly-private modules and entity classes to public import paths
+  (`#2011 <https://github.com/VertaAI/modeldb/pull/2011>`__,
+  `#2308 <https://github.com/VertaAI/modeldb/pull/2308>`__,
+  `#2313 <https://github.com/VertaAI/modeldb/pull/2313>`__,
+  `#2314 <https://github.com/VertaAI/modeldb/pull/2314>`__)
+- `set upper version bounds on dependency libraries
+  <https://github.com/VertaAI/modeldb/pull/2293>`__
+- `add pytimeparse as a dependency
+  <https://github.com/VertaAI/modeldb/pull/2348/files#diff-6890bb89ea3cf891e88298d45a9a377077ca81742d1675fb72b11c5043b99e37R33>`__
+- `hide sklearn integration's internally-used functions
+  <https://github.com/VertaAI/modeldb/pull/2307/files#diff-8393105a4ae4d198e065ad00cf00f62b64ebb4ac6bb7695b1aedbaa077c4cf22>`__
+
+Deprecations
+^^^^^^^^^^^^
+- `log_training_data(), being superseded by new monitoring functionality
+  <https://github.com/VertaAI/modeldb/pull/2253>`__
+- `log_requirements(), being superseded by log_environment()
+  <https://github.com/VertaAI/modeldb/pull/2258>`__
+- `TFSavedModel utility, long-since superceded by Verta Standard Models
+  <https://github.com/VertaAI/modeldb/pull/2307/files#diff-38dbfbb4b30b23b1fa5af3f91dc2046c18f405169c49865db152d0a37558072a>`__
+
+New Features
+^^^^^^^^^^^^
+- add monitoring sub-client
+  (`#2077 <https://github.com/VertaAI/modeldb/pull/2077>`__,
+  `#2096 <https://github.com/VertaAI/modeldb/pull/2096>`__,
+  `#2097 <https://github.com/VertaAI/modeldb/pull/2097>`__,
+  `#2095 <https://github.com/VertaAI/modeldb/pull/2095>`__,
+  `#2091 <https://github.com/VertaAI/modeldb/pull/2091>`__,
+  `#2133 <https://github.com/VertaAI/modeldb/pull/2133>`__,
+  `#2120 <https://github.com/VertaAI/modeldb/pull/2120>`__,
+  `#2126 <https://github.com/VertaAI/modeldb/pull/2126>`__,
+  `#2134 <https://github.com/VertaAI/modeldb/pull/2134>`__,
+  `#2145 <https://github.com/VertaAI/modeldb/pull/2145>`__,
+  `#2159 <https://github.com/VertaAI/modeldb/pull/2159>`__,
+  `#2162 <https://github.com/VertaAI/modeldb/pull/2162>`__,
+  `#2164 <https://github.com/VertaAI/modeldb/pull/2164>`__,
+  `#2182 <https://github.com/VertaAI/modeldb/pull/2182>`__,
+  `#2186 <https://github.com/VertaAI/modeldb/pull/2186>`__,
+  `#2187 <https://github.com/VertaAI/modeldb/pull/2187>`__,
+  `#2184 <https://github.com/VertaAI/modeldb/pull/2184>`__,
+  `#2200 <https://github.com/VertaAI/modeldb/pull/2200>`__,
+  `#2201 <https://github.com/VertaAI/modeldb/pull/2201>`__,
+  `#2212 <https://github.com/VertaAI/modeldb/pull/2212>`__,
+  `#2252 <https://github.com/VertaAI/modeldb/pull/2252>`__,
+  `#2262 <https://github.com/VertaAI/modeldb/pull/2262>`__,
+  `#2263 <https://github.com/VertaAI/modeldb/pull/2263>`__,
+  `#2269 <https://github.com/VertaAI/modeldb/pull/2269>`__,
+  `#2317 <https://github.com/VertaAI/modeldb/pull/2317>`__,
+  `#2318 <https://github.com/VertaAI/modeldb/pull/2318>`__,
+  `#2332 <https://github.com/VertaAI/modeldb/pull/2332>`__,
+  `#2326 <https://github.com/VertaAI/modeldb/pull/2326>`__,
+  `#2348 <https://github.com/VertaAI/modeldb/pull/2348>`__,
+  `#2355 <https://github.com/VertaAI/modeldb/pull/2355>`__,
+  `#2356 <https://github.com/VertaAI/modeldb/pull/2356>`__,
+  `#2360 <https://github.com/VertaAI/modeldb/pull/2360>`__,
+  `#2370 <https://github.com/VertaAI/modeldb/pull/2370>`__,
+  `#2374 <https://github.com/VertaAI/modeldb/pull/2374>`__,
+  `#2399 <https://github.com/VertaAI/modeldb/pull/2399>`__)
+- `allow setting workspace through environment variable
+  <https://github.com/VertaAI/modeldb/pull/2351>`__
+- `add apt_packages to Python()
+  <https://github.com/VertaAI/modeldb/pull/2385>`__
+- `add NumericValue and StringValue to verta.data_types
+  <https://github.com/VertaAI/modeldb/pull/2085>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `add __repr__()s to verta.data_types
+  <https://github.com/VertaAI/modeldb/pull/2087>`__
+
+Bug Fixes
+^^^^^^^^^
+- `return path from download_model()
+  <https://github.com/VertaAI/modeldb/pull/2325>`__
+- `support mismatched buckets for discrete histogram data_type
+  <https://github.com/VertaAI/modeldb/pull/2215>`__
+- `remove local version identifier from captured library version numbers to
+  unblock deployment
+  <https://github.com/VertaAI/modeldb/pull/2257>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `use __subclasses__() instead of a manual list
+  <https://github.com/VertaAI/modeldb/pull/2102>`__
+- `add client._conn.email
+  <https://github.com/VertaAI/modeldb/pull/2254>`__
+- `rewrite __module__s to public import paths
+  <https://github.com/VertaAI/modeldb/pull/2307>`__
+- `move verta._dataset_versioning to verta.dataset.entities
+  <https://github.com/VertaAI/modeldb/pull/2313>`__
+
+
 v0.17.6 (2021-04-23)
 --------------------
 

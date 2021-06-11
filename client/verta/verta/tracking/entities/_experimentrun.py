@@ -1806,7 +1806,7 @@ class ExperimentRun(_DeployableEntity):
         """
         Logs a pip requirements file for Verta model deployment.
 
-        .. deprecated:: 0.17.7
+        .. deprecated:: 0.18.0
             This method is deprecated and will be removed in an upcoming
             version; consider using :meth:`log_environment` instead.
 
