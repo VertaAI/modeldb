@@ -6,24 +6,25 @@ import os
 import logging
 import pathlib2
 import pickle
+import warnings
 from google.protobuf.struct_pb2 import Value
 
 import requests
 
-from ..._protos.public.registry import (
+from verta._protos.public.registry import (
     RegistryService_pb2 as _RegistryService,
     StageService_pb2 as _StageService,
 )
-from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 
-from ...external import six
+from verta.external import six
 
-from ..._internal_utils import _utils, _artifact_utils, importer, _request_utils
-from ... import utils
+from verta._internal_utils import _utils, _artifact_utils, importer, _request_utils
+from verta import utils
 
-from ...tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
-from ...tracking.entities._deployable_entity import _DeployableEntity
-from ...environment import _Environment, Python
+from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
+from verta.tracking.entities._deployable_entity import _DeployableEntity
+from verta.environment import _Environment, Python
 from .. import lock
 
 
@@ -937,13 +938,19 @@ class RegisteredModelVersion(_DeployableEntity):
         attribute_keyvals = []
         existing_attrs = self.get_attributes()
         for key, value in six.viewitems(attrs):
-            if not key in existing_attrs or overwrite:
-                attribute_keyvals.append(
-                    _CommonCommonService.KeyValue(
-                        key=key,
-                        value=_utils.python_to_val_proto(value, allow_collection=True),
-                    )
+            if key in existing_attrs and not overwrite:
+                warnings.warn(
+                    "attribute {} already exists;"
+                    " set `overwrite=True` to overwrite".format(key)
                 )
+                continue
+
+            attribute_keyvals.append(
+                _CommonCommonService.KeyValue(
+                    key=key,
+                    value=_utils.python_to_val_proto(value, allow_collection=True),
+                )
+            )
 
         self._update(self.ModelVersionMessage(attributes=attribute_keyvals))
 
