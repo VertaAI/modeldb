@@ -6,7 +6,7 @@ from __future__ import print_function
 
 from .monitored_entity import MonitoredEntity
 from .notification_channel.entities import NotificationChannels
-from .profilers import Profilers
+from ._profilers import Profilers
 from .summaries.summaries import Summaries
 from .summaries.summary_samples import SummarySamples
 from .labels import Labels
@@ -27,8 +27,6 @@ class Client(object):
 
     Attributes
     ----------
-    profilers : :class:`~verta.monitoring.profilers.Profilers`
-        Profilers collection.
     summaries : :class:`~verta.monitoring.summaries.summaries.Summaries`
         Summaries collection.
     summary_samples : :class:`~verta.monitoring.summaries.summary_samples.SummarySamples`
@@ -70,7 +68,7 @@ class Client(object):
         return self._client._ctx
 
     @property
-    def profilers(self):
+    def _profilers(self):
         return Profilers(self._conn, self._conf, self._client)
 
     @property
