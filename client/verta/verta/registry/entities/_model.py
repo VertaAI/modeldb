@@ -384,7 +384,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         Parameters
         ----------
         obj : `torch.nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`__
-            PyTorch ``Module``.
+            PyTorch model.
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
         model_api : :class:`~verta.utils.ModelAPI`
