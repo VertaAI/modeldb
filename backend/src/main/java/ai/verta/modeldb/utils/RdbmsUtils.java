@@ -308,7 +308,7 @@ public class RdbmsUtils {
     return observationList;
   }
 
-  private static String getObservationCompareKey(Observation observation) {
+  public static String getObservationCompareKey(Observation observation) {
     if (observation.hasArtifact()) {
       return observation.getArtifact().getKey();
     } else {

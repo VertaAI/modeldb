@@ -1816,7 +1816,7 @@ public class ExperimentTest extends TestsInit {
       } catch (StatusRuntimeException e) {
         Status status = Status.fromThrowable(e);
         LOGGER.info("Error Code : " + status.getCode() + " Error : " + status.getDescription());
-        assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+        assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
       }
     }
 
