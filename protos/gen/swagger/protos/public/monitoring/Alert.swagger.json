@@ -392,9 +392,13 @@
         },
         "operation": {
           "$ref": "#/definitions/AggregationQuerySummaryAggregationOperation"
+        },
+        "include_observations": {
+          "type": "boolean",
+          "format": "boolean"
         }
       },
-      "description": "If any of the fields are not provided, we assume that the original value from the sample is kept.\nFor example, if time_granularity_millis=0, then time for the \"aggregated sample\" must match the\ntime of all the original samples associated with it."
+      "description": "If any of the fields are not provided, we assume that the original value from the sample is kept.\nFor example, if time_granularity_millis=0, then time for the \"aggregated sample\" must match the\ntime of all the original samples associated with it.\nBy default the aggregation will include any logged observations for the time window.  This\nbehavior can be disable to exclude the observations."
     },
     "monitoringAlert": {
       "type": "object",
