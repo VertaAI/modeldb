@@ -2303,17 +2303,6 @@
       ],
       "default": "UNKNOWN"
     },
-    "versioningAptEnvironmentBlob": {
-      "type": "object",
-      "properties": {
-        "packages": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "versioningDockerEnvironmentBlob": {
       "type": "object",
       "properties": {
@@ -2348,9 +2337,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "apt": {
-          "$ref": "#/definitions/versioningAptEnvironmentBlob"
         }
       }
     },

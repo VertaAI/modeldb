@@ -2,7 +2,6 @@
 import grpc
 
 from ..uac import Collaborator_pb2 as uac_dot_Collaborator__pb2
-from ..uac import UACService_pb2 as uac_dot_UACService__pb2
 
 
 class CollaboratorServiceStub(object):
@@ -34,21 +33,6 @@ class CollaboratorServiceStub(object):
         '/ai.verta.uac.CollaboratorService/deleteResources',
         request_serializer=uac_dot_Collaborator__pb2.DeleteResources.SerializeToString,
         response_deserializer=uac_dot_Collaborator__pb2.DeleteResources.Response.FromString,
-        )
-    self.getResourceAdmins = channel.unary_unary(
-        '/ai.verta.uac.CollaboratorService/getResourceAdmins',
-        request_serializer=uac_dot_Collaborator__pb2.GetResourceAdmins.SerializeToString,
-        response_deserializer=uac_dot_Collaborator__pb2.ResourceAdmins.FromString,
-        )
-    self.addResourceAdmins = channel.unary_unary(
-        '/ai.verta.uac.CollaboratorService/addResourceAdmins',
-        request_serializer=uac_dot_Collaborator__pb2.ModifyResourceAdmins.SerializeToString,
-        response_deserializer=uac_dot_UACService__pb2.Empty.FromString,
-        )
-    self.removeResourceAdmins = channel.unary_unary(
-        '/ai.verta.uac.CollaboratorService/removeResourceAdmins',
-        request_serializer=uac_dot_Collaborator__pb2.ModifyResourceAdmins.SerializeToString,
-        response_deserializer=uac_dot_UACService__pb2.Empty.FromString,
         )
     self.addOrUpdateProjectCollaborator = channel.unary_unary(
         '/ai.verta.uac.CollaboratorService/addOrUpdateProjectCollaborator',
@@ -171,27 +155,6 @@ class CollaboratorServiceServicer(object):
   def deleteResources(self, request, context):
     """The caller must have permission to DELETE the resource accordingly
     """
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getResourceAdmins(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def addResourceAdmins(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def removeResourceAdmins(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -344,21 +307,6 @@ def add_CollaboratorServiceServicer_to_server(servicer, server):
           servicer.deleteResources,
           request_deserializer=uac_dot_Collaborator__pb2.DeleteResources.FromString,
           response_serializer=uac_dot_Collaborator__pb2.DeleteResources.Response.SerializeToString,
-      ),
-      'getResourceAdmins': grpc.unary_unary_rpc_method_handler(
-          servicer.getResourceAdmins,
-          request_deserializer=uac_dot_Collaborator__pb2.GetResourceAdmins.FromString,
-          response_serializer=uac_dot_Collaborator__pb2.ResourceAdmins.SerializeToString,
-      ),
-      'addResourceAdmins': grpc.unary_unary_rpc_method_handler(
-          servicer.addResourceAdmins,
-          request_deserializer=uac_dot_Collaborator__pb2.ModifyResourceAdmins.FromString,
-          response_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
-      ),
-      'removeResourceAdmins': grpc.unary_unary_rpc_method_handler(
-          servicer.removeResourceAdmins,
-          request_deserializer=uac_dot_Collaborator__pb2.ModifyResourceAdmins.FromString,
-          response_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
       ),
       'addOrUpdateProjectCollaborator': grpc.unary_unary_rpc_method_handler(
           servicer.addOrUpdateProjectCollaborator,

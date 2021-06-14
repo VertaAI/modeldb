@@ -14,8 +14,6 @@ message EnvironmentBlob {
     }
     repeated EnvironmentVariablesBlob environment_variables = 3;
     repeated string command_line = 4;
-    AptEnvironmentBlob apt = 5;
-
 }
 
 message EnvironmentVariablesBlob {
@@ -46,10 +44,6 @@ message DockerEnvironmentBlob {
     string repository = 1;
     string tag = 2;
     string sha = 3;
-}
-
-message AptEnvironmentBlob {
-    repeated string packages = 1;
 }
 
 message EnvironmentDiff {

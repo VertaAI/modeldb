@@ -867,8 +867,7 @@
         "UPDATE",
         "DELETE",
         "UPDATE_PERMISSIONS",
-        "PREDICT",
-        "CONTROL"
+        "PREDICT"
       ],
       "default": "UNKNOWN"
     },
@@ -891,8 +890,7 @@
         "GOOGLE",
         "VERTA",
         "SAML",
-        "AD_OAUTH2",
-        "LDAP"
+        "AD_OAUTH2"
       ],
       "default": "UNKNOWN"
     },
@@ -928,17 +926,6 @@
         "IN"
       ],
       "default": "EQ"
-    },
-    "OrganizationBaselinePermissionsBaselinePermissions": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "PRIVATE",
-        "READ",
-        "WRITE",
-        "ADMIN"
-      ],
-      "default": "UNKNOWN"
     },
     "PathLocationTypeEnumPathLocationType": {
       "type": "string",
@@ -2362,46 +2349,6 @@
         },
         "default_notification_channel_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
-        },
-        "admins": {
-          "$ref": "#/definitions/uacOrganizationAdmins"
-        },
-        "baseline_permissions": {
-          "$ref": "#/definitions/uacOrganizationBaselinePermissions"
-        }
-      }
-    },
-    "uacOrganizationAdmins": {
-      "type": "object",
-      "properties": {
-        "user_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "team_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "uacOrganizationBaselinePermissions": {
-      "type": "object",
-      "properties": {
-        "minimum_resources_permission": {
-          "$ref": "#/definitions/OrganizationBaselinePermissionsBaselinePermissions"
-        },
-        "project_can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        },
-        "registry_can_deploy": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        },
-        "endpoint_can_predict": {
-          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -2534,17 +2481,6 @@
         }
       }
     },
-    "versioningAptEnvironmentBlob": {
-      "type": "object",
-      "properties": {
-        "packages": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "versioningDatasetBlob": {
       "type": "object",
       "properties": {
@@ -2593,9 +2529,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "apt": {
-          "$ref": "#/definitions/versioningAptEnvironmentBlob"
         }
       }
     },

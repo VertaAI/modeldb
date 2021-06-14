@@ -157,26 +157,6 @@ message DeleteResources {
     message Response{}
 }
 
-message ResourceAdmins {
-    repeated string user_ids = 1;
-    repeated string team_ids = 2;
-}
-
-message GetResourceAdmins {
-    ServiceEnum.Service service = 1;
-    string resource_id = 2;
-    ResourceType resource_type = 3;
-}
-
-message ModifyResourceAdmins {
-    ServiceEnum.Service service = 1;
-    string resource_id = 2;
-    ResourceType resource_type = 3;
-
-    // repeated string user_ids = 4; // Not currently supported
-    repeated string team_ids = 5;
-}
-
 service CollaboratorService {
     // The caller must have permission to GET the resource accordingly
     rpc getResources (GetResources) returns (GetResources.Response) {
@@ -203,26 +183,6 @@ service CollaboratorService {
 
     // The caller must have permission to DELETE the resource accordingly
     rpc deleteResources (DeleteResources) returns (DeleteResources.Response) {
-    };
-
-    rpc getResourceAdmins (GetResourceAdmins) returns (ResourceAdmins) {
-        option (google.api.http) = {
-            get: "/v1/collaborator/getResourceAdmins"
-        };
-    };
-
-    rpc addResourceAdmins (ModifyResourceAdmins) returns (Empty) {
-        option (google.api.http) = {
-            post: "/v1/collaborator/addResourceAdmins"
-            body: "*"
-        };
-    };
-
-    rpc removeResourceAdmins (ModifyResourceAdmins) returns (Empty) {
-        option (google.api.http) = {
-            post: "/v1/collaborator/removeResourceAdmins"
-            body: "*"
-        };
     };
 
     rpc addOrUpdateProjectCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){

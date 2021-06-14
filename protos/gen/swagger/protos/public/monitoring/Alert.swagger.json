@@ -863,10 +863,6 @@
             "type": "string",
             "format": "uint64"
           }
-        },
-        "event_id": {
-          "type": "string",
-          "title": "Optional. Doesn't need to be output on the response"
         }
       },
       "title": "Tracks previous calls to (UpdateAlertStatusRequest) based on its arguments"

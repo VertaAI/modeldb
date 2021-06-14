@@ -2,7 +2,6 @@
 import grpc
 
 from ..uac import Organization_pb2 as uac_dot_Organization__pb2
-from ..uac import UACService_pb2 as uac_dot_UACService__pb2
 
 
 class OrganizationServiceStub(object):
@@ -64,16 +63,6 @@ class OrganizationServiceStub(object):
         '/ai.verta.uac.OrganizationService/removeUser',
         request_serializer=uac_dot_Organization__pb2.RemoveUser.SerializeToString,
         response_deserializer=uac_dot_Organization__pb2.RemoveUser.Response.FromString,
-        )
-    self.addAdmins = channel.unary_unary(
-        '/ai.verta.uac.OrganizationService/addAdmins',
-        request_serializer=uac_dot_Organization__pb2.ModifyOrganizationAdmins.SerializeToString,
-        response_deserializer=uac_dot_UACService__pb2.Empty.FromString,
-        )
-    self.removeAdmins = channel.unary_unary(
-        '/ai.verta.uac.OrganizationService/removeAdmins',
-        request_serializer=uac_dot_Organization__pb2.ModifyOrganizationAdmins.SerializeToString,
-        response_deserializer=uac_dot_UACService__pb2.Empty.FromString,
         )
 
 
@@ -158,20 +147,6 @@ class OrganizationServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def addAdmins(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def removeAdmins(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
 
 def add_OrganizationServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -224,16 +199,6 @@ def add_OrganizationServiceServicer_to_server(servicer, server):
           servicer.removeUser,
           request_deserializer=uac_dot_Organization__pb2.RemoveUser.FromString,
           response_serializer=uac_dot_Organization__pb2.RemoveUser.Response.SerializeToString,
-      ),
-      'addAdmins': grpc.unary_unary_rpc_method_handler(
-          servicer.addAdmins,
-          request_deserializer=uac_dot_Organization__pb2.ModifyOrganizationAdmins.FromString,
-          response_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
-      ),
-      'removeAdmins': grpc.unary_unary_rpc_method_handler(
-          servicer.removeAdmins,
-          request_deserializer=uac_dot_Organization__pb2.ModifyOrganizationAdmins.FromString,
-          response_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

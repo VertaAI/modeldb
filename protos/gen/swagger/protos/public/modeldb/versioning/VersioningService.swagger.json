@@ -2830,17 +2830,6 @@
       ],
       "default": "UNKNOWN"
     },
-    "versioningAptEnvironmentBlob": {
-      "type": "object",
-      "properties": {
-        "packages": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "versioningBlob": {
       "type": "object",
       "properties": {
@@ -3250,9 +3239,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "apt": {
-          "$ref": "#/definitions/versioningAptEnvironmentBlob"
         }
       }
     },
