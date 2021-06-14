@@ -246,6 +246,28 @@ class TestModelVersion:
         # Deleting non-existing key:
         model_version.del_attribute("non-existing")
 
+    def test_attributes_overwrite(self, client, registered_model):
+        old_attr = ("a", 1)
+        new_attr = ("a", 2)
+        second_attr = ("b", 2)
+
+        model_version = registered_model.create_version()
+        model_version.add_attribute(*old_attr)
+
+        # without `overwrite`
+        with pytest.warns(
+            UserWarning,
+            match="^skipping.*{}.*already exists".format(old_attr[0]),
+        ):
+            model_version.add_attributes(dict([new_attr, second_attr]))
+        assert model_version.get_attributes() == dict([old_attr, second_attr])
+
+        # with `overwrite`
+        with pytest.warns(None) as record:
+            model_version.add_attributes(dict([new_attr, second_attr]), overwrite=True)
+        assert not record  # no warning
+        assert model_version.get_attributes() == dict([new_attr, second_attr])
+
     def test_patch(self, registered_model):
         NAME = "name"
         DESCRIPTION = "description"
