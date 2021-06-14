@@ -63,7 +63,7 @@ Deprecations
   <https://github.com/VertaAI/modeldb/pull/2253>`__
 - `log_requirements(), being superseded by log_environment()
   <https://github.com/VertaAI/modeldb/pull/2258>`__
-- `TFSavedModel utility, long-since superseded by Verta Standard Models
+- `TFSavedModel utility, long-since superseded by Standard Verta Models
   <https://github.com/VertaAI/modeldb/pull/2307/files#diff-38dbfbb4b30b23b1fa5af3f91dc2046c18f405169c49865db152d0a37558072a>`__
 
 New Features
@@ -110,6 +110,8 @@ New Features
   <https://github.com/VertaAI/modeldb/pull/2385>`__
 - `add NumericValue and StringValue to verta.data_types
   <https://github.com/VertaAI/modeldb/pull/2085>`__
+- `add verta.registry.VertaModelBase for Standard Verta Models
+  <https://github.com/VertaAI/modeldb/pull/2378>`__
 
 Enhancements
 ^^^^^^^^^^^^
