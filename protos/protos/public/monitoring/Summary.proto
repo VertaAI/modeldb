@@ -156,7 +156,7 @@ message LabelFilterQuerySummarySample {
 // If any of the fields are not provided, we assume that the original value from the sample is kept.
 // For example, if time_granularity_millis=0, then time for the "aggregated sample" must match the
 // time of all the original samples associated with it.
-// By default the aggregation will include any logged observations for the time window.  This
+// By default the aggregation will include any logged values for the time window.  This
 // behavior can be disable to exclude the observations.
 message AggregationQuerySummary {
     // Optional time granularity for aggregation
@@ -169,7 +169,7 @@ message AggregationQuerySummary {
       SUM = 0;
     }
     AggregationOperation operation = 2;
-    bool include_observations = 3; // default true
+    bool exclude_values = 3; // default false.  Set to true to explicitly exclude logged values from aggregation.
 }
 
 // Request to delete summary samples
