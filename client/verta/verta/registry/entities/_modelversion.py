@@ -940,7 +940,7 @@ class RegisteredModelVersion(_DeployableEntity):
         for key, value in six.viewitems(attrs):
             if key in existing_attrs and not overwrite:
                 warnings.warn(
-                    "attribute {} already exists;"
+                    "skipping attribute {} which already exists;"
                     " set `overwrite=True` to overwrite".format(key)
                 )
                 continue
