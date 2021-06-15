@@ -5,8 +5,8 @@ import abc
 from verta.external import six
 
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
+from verta._internal_utils import arg_handler
 from verta.monitoring import comparison as comparison_module
-from verta.monitoring import utils
 
 
 # TODO: move into separate files
@@ -128,13 +128,13 @@ class FixedAlerter(_Alerter):
 
 
 class ReferenceAlerter(_Alerter):
-    """Compare distances between samples and a reference against a threshold.
+    """Compare differences between samples and a reference against a threshold.
 
     Parameters
     ----------
     comparison : :mod:`~verta.monitoring.comparison`
-        Alert condition. An alert is active if the distance between a queried
-        sample and `reference_sample` meets this condition.
+        Alert condition. An alert is active if the difference between a
+        queried sample and `reference_sample` meets this condition.
     reference_sample : :class:`~verta.monitoring.summaries.summary_sample.SummarySample`
         An existing summary sample to compare queried samples with.
 
@@ -165,7 +165,7 @@ class ReferenceAlerter(_Alerter):
 
     def __init__(self, comparison, reference_sample):
         self._comparison = _Alerter._validate_comparison(comparison)
-        self._reference_sample_id = utils.extract_id(reference_sample)
+        self._reference_sample_id = arg_handler.extract_id(reference_sample)
 
     @property
     def comparison(self):

@@ -4,8 +4,8 @@
 from __future__ import print_function
 
 
-from ..utils import extract_ids
 from verta._protos.public.monitoring.Summary_pb2 import DeleteSummarySampleRequest
+from verta._internal_utils import arg_handler
 from .queries import SummarySampleQuery
 from .summary_sample import SummarySample
 
@@ -79,7 +79,7 @@ class SummarySamples:
         bool
             True if the delete was successful.
         """
-        summary_sample_ids = extract_ids(summary_samples)
+        summary_sample_ids = arg_handler.extract_ids(summary_samples)
         msg = DeleteSummarySampleRequest(ids=summary_sample_ids)
         endpoint = "/api/v1/summaries/deleteSample"
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)

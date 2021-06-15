@@ -75,6 +75,38 @@
         ]
       }
     },
+    "/api/v1/monitoring/summaries/createValue": {
+      "post": {
+        "operationId": "SummaryService_createValue",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringSummaryValue"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateSummaryValue"
+            }
+          }
+        ],
+        "tags": [
+          "SummaryService"
+        ]
+      }
+    },
     "/api/v1/monitoring/summaries/deleteSample": {
       "delete": {
         "operationId": "SummaryService_deleteSample",
@@ -222,9 +254,13 @@
         },
         "operation": {
           "$ref": "#/definitions/AggregationQuerySummaryAggregationOperation"
+        },
+        "exclude_values": {
+          "type": "boolean",
+          "format": "boolean"
         }
       },
-      "description": "If any of the fields are not provided, we assume that the original value from the sample is kept.\nFor example, if time_granularity_millis=0, then time for the \"aggregated sample\" must match the\ntime of all the original samples associated with it."
+      "description": "If any of the fields are not provided, we assume that the original value from the sample is kept.\nFor example, if time_granularity_millis=0, then time for the \"aggregated sample\" must match the\ntime of all the original samples associated with it.\nBy default the aggregation will include any logged values for the time window.  This\nbehavior can be disable to exclude the observations."
     },
     "monitoringCreateSummaryRequest": {
       "type": "object",
@@ -291,6 +327,57 @@
         }
       },
       "title": "Request to create a summary sample"
+    },
+    "monitoringCreateSummaryValue": {
+      "type": "object",
+      "properties": {
+        "monitored_entity_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Summary info if detailed (e.g. want to avoid the extra hop to fetch the id and do the creation dance)"
+        },
+        "summary_name": {
+          "type": "string"
+        },
+        "summary_type_name": {
+          "type": "string"
+        },
+        "summary_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "or just the summary id"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Sample info"
+        },
+        "type": {
+          "$ref": "#/definitions/monitoringSummaryValueType"
+        },
+        "string_value": {
+          "type": "string"
+        },
+        "double_value": {
+          "type": "number",
+          "format": "double"
+        },
+        "boolean_value": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "created_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "timestamp_millis": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "Request to create a summary value"
     },
     "monitoringDeleteSummaryRequest": {
       "type": "object",
@@ -556,6 +643,57 @@
         }
       },
       "description": "Summary sample is one instance of a summary corresponding to a given time range and a given set of labels."
+    },
+    "monitoringSummaryValue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "summary_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "type": {
+          "$ref": "#/definitions/monitoringSummaryValueType"
+        },
+        "string_value": {
+          "type": "string"
+        },
+        "double_value": {
+          "type": "number",
+          "format": "double"
+        },
+        "boolean_value": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "created_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "timestamp_millis": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "description": "Summary value is a single data point for a summary corresponding to a specific time and a given set of labels."
+    },
+    "monitoringSummaryValueType": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "BOOLEAN"
+      ],
+      "default": "STRING"
     },
     "protobufAny": {
       "type": "object",

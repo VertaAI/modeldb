@@ -13,6 +13,7 @@ import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
@@ -53,10 +54,23 @@ public class FutureProjectDAO {
     final var projectId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
+    var validateArgumentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (projectId.isEmpty()) {
+                throw new InvalidArgumentException("Project ID not present");
+              }
+            },
+            executor);
+
     final Optional<List<String>> maybeKeys =
         request.getDeleteAll() ? Optional.empty() : Optional.of(request.getAttributeKeysList());
 
-    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return validateArgumentFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
         .thenCompose(unused -> attributeHandler.deleteKeyValues(projectId, maybeKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
   }
@@ -66,7 +80,22 @@ public class FutureProjectDAO {
     final var keys = request.getAttributeKeysList();
     final var getAll = request.getGetAll();
 
-    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ)
+    var validateArgumentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (projectId.isEmpty()) {
+                throw new InvalidArgumentException("Project ID not present");
+              } else if (keys.isEmpty() && !getAll) {
+                throw new InvalidArgumentException("Attribute keys not present");
+              }
+            },
+            executor);
+
+    return validateArgumentFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
         .thenCompose(unused -> attributeHandler.getKeyValues(projectId, keys, getAll), executor);
   }
 
@@ -75,7 +104,22 @@ public class FutureProjectDAO {
     final var attributes = request.getAttributesList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    var validateArgumentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (projectId.isEmpty()) {
+                throw new InvalidArgumentException("Project ID not present");
+              } else if (attributes.isEmpty()) {
+                throw new InvalidArgumentException("Attributes not present");
+              }
+            },
+            executor);
+
+    return validateArgumentFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
         .thenCompose(unused -> attributeHandler.logKeyValues(projectId, attributes), executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
   }
@@ -85,7 +129,22 @@ public class FutureProjectDAO {
     final var attribute = request.getAttribute();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    var validateArgumentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (projectId.isEmpty()) {
+                throw new InvalidArgumentException("Project ID not present");
+              } else if (attribute.getKey().isEmpty()) {
+                throw new InvalidArgumentException("Attribute not present");
+              }
+            },
+            executor);
+
+    return validateArgumentFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
         .thenCompose(unused -> attributeHandler.updateKeyValue(projectId, attribute), executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
   }
@@ -95,7 +154,22 @@ public class FutureProjectDAO {
     final var tags = request.getTagsList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    var validateArgumentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (projectId.isEmpty()) {
+                throw new InvalidArgumentException("Project ID not present");
+              } else if (tags.isEmpty()) {
+                throw new InvalidArgumentException("Tags not present");
+              }
+            },
+            executor);
+
+    return validateArgumentFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
         .thenCompose(unused -> tagsHandler.addTags(projectId, tags), executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
   }
@@ -104,18 +178,43 @@ public class FutureProjectDAO {
     final var projectId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
+    var validateArgumentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (projectId.isEmpty()) {
+                throw new InvalidArgumentException("Project ID not present");
+              }
+            },
+            executor);
+
     final Optional<List<String>> maybeTags =
         request.getDeleteAll() ? Optional.empty() : Optional.of(request.getTagsList());
 
-    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    return validateArgumentFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
         .thenCompose(unused -> tagsHandler.deleteTags(projectId, maybeTags), executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
   }
 
   public InternalFuture<List<String>> getTags(GetTags request) {
     final var projectId = request.getId();
+    var validateArgumentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (projectId.isEmpty()) {
+                throw new InvalidArgumentException("Project ID not present");
+              }
+            },
+            executor);
 
-    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ)
+    return validateArgumentFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
         .thenCompose(unused -> tagsHandler.getTags(projectId), executor);
   }
 

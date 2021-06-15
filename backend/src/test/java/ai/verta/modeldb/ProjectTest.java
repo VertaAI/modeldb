@@ -834,7 +834,7 @@ public class ProjectTest extends TestsInit {
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
     }
 
     LOGGER.info("Add Project tags negative test stop................................");
@@ -993,7 +993,7 @@ public class ProjectTest extends TestsInit {
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
     }
 
     LOGGER.info("Delete Project tag negative test stop................................");

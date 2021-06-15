@@ -5,7 +5,6 @@ from __future__ import print_function
 import warnings
 
 
-from ..utils import extract_id
 from verta._protos.public.monitoring.Summary_pb2 import (
     CreateSummaryRequest,
     DeleteSummaryRequest,
@@ -14,6 +13,7 @@ from verta._protos.public.monitoring.Summary_pb2 import (
     Summary as SummaryProto,
 )
 from verta import data_types
+from verta._internal_utils import arg_handler
 
 from .summary import Summary
 from .queries import SummaryQuery
@@ -116,7 +116,7 @@ class Summaries:
         #         )
         #     )
         if retrieved:
-            monitored_entity_id = extract_id(monitored_entity)
+            monitored_entity_id = arg_handler.extract_id(monitored_entity)
             cond = (
                 lambda s: s.name == name
                 and s.monitored_entity_id == monitored_entity_id
