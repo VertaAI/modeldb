@@ -68,12 +68,13 @@ class _DeployableEntity(_ModelDBEntity):
         ----------
         model : str or object
             Model. For deployment, this parameter can be one of the following types:
-                - any scikit-learn model that implements ``predict()``
-                - Keras model from their `Sequential model API <https://keras.io/guides/sequential_model/>`__
+                - any scikit-learn model object that implements ``predict()``
+                - Keras model object from their `Sequential model API <https://keras.io/guides/sequential_model/>`__
                   or `Functional model API <https://keras.io/guides/functional_api/>`__
-                - any PyTorch model
-                - XGBoost model from their `scikit-learn API
+                - any PyTorch model object
+                - XGBoost model object from their `scikit-learn API
                   <https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn>`__
+                - user-defined class that inherits from :class:`~verta.registry.VertaModelBase`
             For more general model logging, the following types are also supported:
                 - ``str`` path to a file or directory
                 - arbitrary ``pickle``\ able object
