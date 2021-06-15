@@ -54,6 +54,49 @@ class _DeployableEntity(_ModelDBEntity):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def log_model(
+        self,
+        model,
+        custom_modules=None,
+        model_api=None,
+        artifacts=None,
+        overwrite=False,
+    ):
+        r"""Logs a model and associated code dependencies.
+
+        Parameters
+        ----------
+        model : str or object
+            Model. For deployment, this parameter can be one of the following types:
+                - any scikit-learn model object that implements ``predict()``
+                - Keras model object from their `Sequential model API <https://keras.io/guides/sequential_model/>`__
+                  or `Functional model API <https://keras.io/guides/functional_api/>`__
+                - any PyTorch model object
+                - XGBoost model object from their `scikit-learn API
+                  <https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn>`__
+                - user-defined class that inherits from :class:`~verta.registry.VertaModelBase`
+            For more general model logging, the following types are also supported:
+                - ``str`` path to a file or directory
+                - arbitrary ``pickle``\ able object
+        custom_modules : list of str, optional
+            Paths to local Python modules and other files that the deployed model depends on.
+                - If directories are provided, all files within—excluding virtual environments—will
+                  be included.
+                - If module names are provided, all files within the corresponding module inside a
+                  folder in ``sys.path`` will be included.
+                - If not provided, all Python files located within ``sys.path``—excluding virtual
+                  environments—will be included.
+        model_api : :class:`~verta.utils.ModelAPI`, optional
+            Model API specifying details about the model and its deployment.
+        artifacts : list of str, optional
+            Keys of logged artifacts to be used by a class model.
+        overwrite : bool, default False
+            Whether to allow overwriting existing model artifacts.
+
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def download_artifact(self, key, download_to_path):
         """Downloads the artifact with name `key` to path `download_to_path`.
 
