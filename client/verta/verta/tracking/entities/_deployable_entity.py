@@ -62,22 +62,28 @@ class _DeployableEntity(_ModelDBEntity):
         artifacts=None,
         overwrite=False,
     ):
-        """Logs a model and associated code dependencies.
+        r"""Logs a model and associated code dependencies.
 
         Parameters
         ----------
         model : str or object
-            Model for deployment.
-                - If str, then it will be interpreted as a filesystem path to a serialized model file
-                  for upload.
-                - Otherwise, the object will be serialized and uploaded as an artifact.
+            Model. For deployment, this parameter can be one of the following types:
+                - any scikit-learn model that implements ``predict()``
+                - Keras model from their `Sequential model API <https://keras.io/guides/sequential_model/>`__
+                  or `Functional model API <https://keras.io/guides/functional_api/>`__
+                - any PyTorch model
+                - XGBoost model from their `scikit-learn API
+                  <https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn>`__
+            For more general model logging, the following types are also supported:
+                - ``str`` path to a file or directory
+                - arbitrary ``pickle``\ able object
         custom_modules : list of str, optional
             Paths to local Python modules and other files that the deployed model depends on.
                 - If directories are provided, all files within—excluding virtual environments—will
                   be included.
                 - If module names are provided, all files within the corresponding module inside a
-                  folder in `sys.path` will be included.
-                - If not provided, all Python files located within `sys.path`—excluding virtual
+                  folder in ``sys.path`` will be included.
+                - If not provided, all Python files located within ``sys.path``—excluding virtual
                   environments—will be included.
         model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying details about the model and its deployment.
