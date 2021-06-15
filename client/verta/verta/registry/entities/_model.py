@@ -251,7 +251,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         :class:`~verta.registry.entities.RegisteredModelVersion`
 
         """
-        model_validator.check_verta(model_cls)
+        model_validator.must_verta(model_cls)
 
         self._create_version_from_standard_verta_model(
             model=model_cls,
@@ -304,7 +304,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         :class:`~verta.registry.entities.RegisteredModelVersion`
 
         """
-        model_validator.check_keras(obj)
+        model_validator.must_keras(obj)
 
         self._create_version_from_standard_verta_model(
             model=obj,
@@ -355,7 +355,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         :class:`~verta.registry.entities.RegisteredModelVersion`
 
         """
-        model_validator.check_sklearn(obj)
+        model_validator.must_sklearn(obj)
 
         self._create_version_from_standard_verta_model(
             model=obj,
@@ -406,7 +406,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         :class:`~verta.registry.entities.RegisteredModelVersion`
 
         """
-        model_validator.check_torch(obj)
+        model_validator.must_torch(obj)
 
         self._create_version_from_standard_verta_model(
             model=obj,
@@ -457,7 +457,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         :class:`~verta.registry.entities.RegisteredModelVersion`
 
         """
-        model_validator.check_xgboost_sklearn(obj)
+        model_validator.must_xgboost_sklearn(obj)
 
         self._create_version_from_standard_verta_model(
             model=obj,

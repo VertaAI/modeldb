@@ -5,7 +5,7 @@ from verta.registry import VertaModelBase
 from . import importer
 
 
-def check_keras(model):
+def must_keras(model):
     keras = importer.maybe_dependency("tensorflow.keras")
     keras_functional = importer.maybe_dependency(
         "tensorflow.python.keras.engine.functional",
@@ -21,7 +21,7 @@ def check_keras(model):
     return True
 
 
-def check_sklearn(model):
+def must_sklearn(model):
     sklearn_base = importer.maybe_dependency("sklearn.base")
     if sklearn_base is None:
         raise TypeError(
@@ -38,7 +38,7 @@ def check_sklearn(model):
     return True
 
 
-def check_torch(model):
+def must_torch(model):
     torch_nn = importer.maybe_dependency("torch.nn")
     if torch_nn is None:
         raise TypeError("torch is not installed;" " try `pip install torch`")
@@ -50,7 +50,7 @@ def check_torch(model):
     return True
 
 
-def check_xgboost_sklearn(model):
+def must_xgboost_sklearn(model):
     xgboost_sklearn = importer.maybe_dependency("xgboost.sklearn")
     if xgboost_sklearn is None:
         raise TypeError("xgboost is not installed;" " try `pip install xgboost`")
@@ -63,7 +63,7 @@ def check_xgboost_sklearn(model):
     return True
 
 
-def check_verta(model):
+def must_verta(model):
     if not issubclass(model, VertaModelBase):
         raise TypeError(
             "model must be a subclass of"
