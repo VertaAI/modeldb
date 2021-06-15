@@ -264,31 +264,6 @@ class RegisteredModelVersion(_DeployableEntity):
         artifacts=None,
         overwrite=False,
     ):
-        """
-        Logs a model to this Model Version.
-
-        Parameters
-        ----------
-        model : str or file-like or object
-            Model or some representation thereof.
-                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
-                  and uploaded as an artifact. If it is a directory path, its contents will be zipped.
-                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
-                - Otherwise, the object will be serialized and uploaded as an artifact.
-        custom_modules : list of str, optional
-            Paths to local Python modules and other files that the deployed model depends on.
-                - If directories are provided, all files within—excluding virtual environments—will
-                  be included.
-                - If not provided, all Python files located within `sys.path`—excluding virtual
-                  environments—will be included.
-        model_api : :class:`~verta.utils.ModelAPI`, optional
-            Model API specifying details about the model and its deployment.
-        artifacts : list of str, optional
-            Keys of logged artifacts to be used by a class model.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing artifact with key `key`.
-
-        """
         if self.has_model and not overwrite:
             raise ValueError("model already exists; consider setting overwrite=True")
 
