@@ -6,7 +6,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 public class PredicatesHandler extends PredicateHandlerUtils {
-  private final Config config = Config.getInstance();
   private final HyperparameterPredicatesHandler hyperparameterPredicatesHandler;
 
   public PredicatesHandler() {

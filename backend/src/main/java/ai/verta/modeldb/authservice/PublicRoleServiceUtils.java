@@ -2,6 +2,7 @@ package ai.verta.modeldb.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
@@ -40,6 +41,7 @@ public class PublicRoleServiceUtils implements RoleService {
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, this);
     ExperimentRunDAO experimentRunDAO =
         new ExperimentRunDAORdbImpl(
+            App.getInstance().config,
             authService,
             this,
             new RepositoryDAORdbImpl(authService, this, commitDAO, metadataDAO),

@@ -1,9 +1,9 @@
 package ai.verta.modeldb.telemetry;
 
 import ai.verta.common.KeyValue;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.config.InvalidConfigException;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.io.FileNotFoundException;
@@ -41,7 +41,7 @@ public class TelemetryUtils {
       LOGGER.info("Found value for telemetryInitialized : {}", telemetryInitialized);
 
       try (Connection connection = modelDBHibernateUtil.getConnection()) {
-        final var database = Config.getInstance().database;
+        final var database = App.getInstance().config.database;
         final var existStatus =
             modelDBHibernateUtil.tableExists(connection, database, "modeldb_deployment_info");
         if (!existStatus) {

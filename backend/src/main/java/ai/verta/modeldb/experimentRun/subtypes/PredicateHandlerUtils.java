@@ -1,11 +1,12 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.OperatorEnum;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.config.Config;
 import java.util.regex.Pattern;
 
 public class PredicateHandlerUtils {
-  private static final Config config = Config.getInstance();
+  private static final Config config = App.getInstance().config;
 
   protected String columnAsNumber(String colName, boolean isString) {
     if (config.database.RdbConfiguration.isPostgres()) {

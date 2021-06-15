@@ -1,10 +1,10 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.Artifact;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import java.util.AbstractMap;
@@ -235,7 +235,7 @@ public class ArtifactHandlerBase {
                       for (final var artifact : artifacts) {
                         var storeTypePath =
                             !artifact.getPathOnly()
-                                ? Config.getInstance().artifactStoreConfig.storeTypePathPrefix()
+                                ? App.getInstance().config.artifactStoreConfig.storeTypePathPrefix()
                                     + artifact.getPath()
                                 : "";
                         handle

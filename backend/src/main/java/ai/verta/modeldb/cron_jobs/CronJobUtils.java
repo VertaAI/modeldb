@@ -3,8 +3,8 @@ package ai.verta.modeldb.cron_jobs;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.CronJobConfig;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.Map;
 import java.util.TimerTask;
@@ -33,7 +33,7 @@ public class CronJobUtils {
             && !(services.artifactStoreService instanceof ArtifactStoreDAODisabled)) {
           task =
               new PopulateEnvironmentInRunCron(
-                  services.artifactStoreService, cronJob.getValue().record_update_limit);
+                  services.artifactStoreService, cronJob.getValue().record_update_limit, config);
         } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
             && (config.hasServiceAccount() || !services.roleService.IsImplemented())) {
           task =
