@@ -29,7 +29,7 @@ class TestProfilers(object):
         assert created_profiler.id == retrieved_profiler.id
 
         listed_profilers = profilers.list()
-        assert len(listed_profilers) > 1
+        assert len(listed_profilers) >= 1
         assert created_profiler.id in map(lambda p: p.id, listed_profilers)
 
         old_name = created_profiler.name
