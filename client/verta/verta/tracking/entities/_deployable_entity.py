@@ -74,7 +74,7 @@ class _DeployableEntity(_ModelDBEntity):
                 - any PyTorch model object
                 - XGBoost model object from their `scikit-learn API
                   <https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn>`__
-                - user-defined class that inherits from :class:`~verta.registry.VertaModelBase`
+                - user-defined Standard Verta Model class that inherits from :class:`~verta.registry.VertaModelBase`
             For more general model logging, the following types are also supported:
                 - ``str`` path to a file or directory
                 - arbitrary ``pickle``\ able object
@@ -89,7 +89,7 @@ class _DeployableEntity(_ModelDBEntity):
         model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying details about the model and its deployment.
         artifacts : list of str, optional
-            Keys of logged artifacts to be used by a class model.
+            Keys of logged artifacts to be used by a Standard Verta Model.
         overwrite : bool, default False
             Whether to allow overwriting existing model artifacts.
 
@@ -220,7 +220,7 @@ class _DeployableEntity(_ModelDBEntity):
 
     def fetch_artifacts(self, keys):
         """
-        Downloads artifacts that are associated with a class model.
+        Downloads artifacts that are associated with a Standard Verta Model.
 
         Parameters
         ----------
@@ -231,7 +231,7 @@ class _DeployableEntity(_ModelDBEntity):
         -------
         dict of str to str
             Map of artifacts' keys to their cache filepaths—for use as the ``artifacts`` parameter
-            to a Verta class model.
+            to a Standard Verta Model.
 
         Examples
         --------

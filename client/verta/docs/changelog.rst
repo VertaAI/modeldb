@@ -1012,9 +1012,9 @@ New Features
 ^^^^^^^^^^^^
 - `support logging classes as models
   <https://github.com/VertaAI/modeldb-client/pull/298>`__
-- `support associating artifact dependencies with class models
+- `support associating artifact dependencies with Standard Verta Models
   <https://github.com/VertaAI/modeldb-client/pull/299>`__
-- `enable downloading artifacts into a local cache for use with class models
+- `enable downloading artifacts into a local cache for use with Standard Verta Models
   <https://github.com/VertaAI/modeldb-client/pull/300>`__
 
 
