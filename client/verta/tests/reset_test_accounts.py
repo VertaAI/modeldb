@@ -152,6 +152,8 @@ def delete_orgs(clients):
 
 
 def main():
+    configure_logger()
+
     clients = get_clients()
 
     delete_builds(clients)
@@ -160,6 +162,5 @@ def main():
     delete_orgs(clients)
 
 
-configure_logger()
 if __name__ == "__main__":
     main()
