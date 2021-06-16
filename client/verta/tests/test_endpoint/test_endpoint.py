@@ -619,6 +619,7 @@ class TestEndpoint:
 
         # updating endpoint
         endpoint.update(new_model_version, DirectUpdateStrategy(), wait=True)
+        time.sleep(60)  # add a delay for API routing to finish transitioning
         assert endpoint.get_deployed_model().predict("foo") == "B"
 
     def test_update_from_run_diff_workspace(self, client, organization, created_entities, experiment_run, model_for_deployment):
