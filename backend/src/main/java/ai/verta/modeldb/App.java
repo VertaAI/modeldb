@@ -175,7 +175,7 @@ public class App implements ApplicationContextAware {
           Boolean.parseBoolean(
               Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))
                   .orElse("false"));
-      LOGGER.info("runLiquibaseSeparate: ", runLiquibaseSeparate);
+      LOGGER.info("runLiquibaseSeparate: " + runLiquibaseSeparate);
       if (runLiquibaseSeparate) {
         return true;
       }
@@ -203,6 +203,7 @@ public class App implements ApplicationContextAware {
         LOGGER.info("Migrations have completed.  System exiting.");
         return;
       }
+      LOGGER.info("Migrations are disabled, starting application.");
 
       // Configure server
       System.getProperties().put("server.port", config.springServer.port);
