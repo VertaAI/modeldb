@@ -201,6 +201,7 @@ public class App implements ApplicationContextAware {
       // Initialize database configuration and maybe run migration
       if (migrate(config.database, config.migrations)) {
         LOGGER.info("Migrations have completed.  System exiting.");
+        initiateShutdown(0);
         return;
       }
       LOGGER.info("Migrations are disabled, starting application.");
