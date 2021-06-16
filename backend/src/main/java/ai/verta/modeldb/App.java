@@ -194,14 +194,14 @@ public class App implements ApplicationContextAware {
       // --------------- Start reading properties --------------------------
       Config config = Config.getInstance();
 
-      // Initialize services that we depend on
-      ServiceSet services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
-
       // Initialize database configuration and maybe run migration
       if (migrate(config.database, config.migrations)) return;
 
       // Configure server
       System.getProperties().put("server.port", config.springServer.port);
+
+      // Initialize services that we depend on
+      ServiceSet services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
 
       // Initialize executor so we don't lose context using Futures
       final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
