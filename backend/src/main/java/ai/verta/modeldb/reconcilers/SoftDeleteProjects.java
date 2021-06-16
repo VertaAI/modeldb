@@ -36,7 +36,8 @@ public class SoftDeleteProjects extends Reconciler<String> {
   public void resync() {
     String queryString =
         String.format(
-            "select id from %s where deleted=:deleted OR (created=:created AND date_created < :dateCreated) ", ProjectEntity.class.getSimpleName());
+            "select id from %s where deleted=:deleted OR (created=:created AND date_created < :dateCreated) ",
+            ProjectEntity.class.getSimpleName());
 
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query deletedQuery = session.createQuery(queryString);
