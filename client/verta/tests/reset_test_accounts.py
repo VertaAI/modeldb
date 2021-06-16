@@ -10,31 +10,18 @@ import constants  # pylint: disable=relative-import
 
 
 def get_clients():
-    clients = [
-        Client(
-            constants.HOST,
-            email=constants.EMAIL,
-            dev_key=constants.DEV_KEY,
-        )
+    credentials = [
+        (constants.EMAIL, constants.DEV_KEY),
+        (constants.EMAIL_2, constants.DEV_KEY_2),
+        (constants.EMAIL_3, constants.DEV_KEY_3),
     ]
 
-    if constants.EMAIL_2 and constants.DEV_KEY_2:
-        clients.append(
-            Client(
-                constants.HOST,
-                email=constants.EMAIL_2,
-                dev_key=constants.DEV_KEY_2,
+    clients = []
+    for email, dev_key in credentials:
+        if email and dev_key:
+            clients.append(
+                Client(constants.HOST, email=email, dev_key=dev_key)
             )
-        )
-
-    if constants.EMAIL_3 and constants.DEV_KEY_3:
-        clients.append(
-            Client(
-                constants.HOST,
-                email=constants.EMAIL_3,
-                dev_key=constants.DEV_KEY_3,
-            )
-        )
 
     return clients
 
