@@ -6,13 +6,14 @@ from . import importer
 
 
 def must_keras(model):
+    # TODO: figure out how to check if the model is from the Functional API
+    # tensorflow.python.keras.engine.functional.Functional doesn't appear to
+    # exist in all versions of tensorflow
+
     keras = importer.maybe_dependency("tensorflow.keras")
-    keras_functional = importer.maybe_dependency(
-        "tensorflow.python.keras.engine.functional",
-    )
-    if keras is None or keras_functional is None:
+    if keras is None:
         raise TypeError("TensorFlow is not installed;" " try `pip install tensorflow`")
-    if not isinstance(model, (keras.Sequential, keras_functional.Functional)):
+    if not isinstance(model, (keras.Sequential, keras.Model)):
         raise TypeError(
             "model must be either a Keras Sequential or Functional model,"
             " not {}".format(type(model))
@@ -44,7 +45,7 @@ def must_torch(model):
         raise TypeError("torch is not installed;" " try `pip install torch`")
     if not isinstance(model, torch_nn.Module):
         raise TypeError(
-            "model must be a torch.nn.Module," " not {}".format(type(model))
+            "model must be a torch.nn.Module, not {}".format(type(model))
         )
 
     return True
@@ -64,7 +65,7 @@ def must_xgboost_sklearn(model):
 
 
 def must_verta(model):
-    if not issubclass(model, VertaModelBase):
+    if not (isinstance(model, type) and issubclass(model, VertaModelBase)):
         raise TypeError(
             "model must be a subclass of"
             " verta.registry.VertaModelBase, not"
