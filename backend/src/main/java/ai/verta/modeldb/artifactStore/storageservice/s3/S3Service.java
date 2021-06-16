@@ -316,6 +316,7 @@ public class S3Service implements ArtifactStoreService {
 
     if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
       LOGGER.debug("S3Service - generatePresignedUrl - returning " + method + " url");
+      LOGGER.debug("part number: " + partNumber);
       parameters.put("part_number", partNumber);
       parameters.put("upload_id", uploadId);
       final var url = getUploadUrl(
