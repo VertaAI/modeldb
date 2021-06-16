@@ -92,6 +92,8 @@ message ListMyOrganizations {
 
 message SetOrganization {
     Organization organization = 1;
+    // if True, do not attempt to change creator's default workpspace
+    bool prevent_changing_default_org = 2;
 
     message Response {
         Organization organization = 1;
@@ -125,6 +127,8 @@ message ListTeams {
 message AddUser {
     string org_id = 1;
     string share_with = 2;
+    // if True, do not attempt to change new member's default workpspace
+    bool prevent_changing_default_workspace = 3;
 
     message Response {
         bool status = 1;
