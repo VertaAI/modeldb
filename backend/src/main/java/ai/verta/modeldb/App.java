@@ -88,6 +88,7 @@ public class App implements ApplicationContextAware {
   private static final Logger LOGGER = LogManager.getLogger(App.class);
 
   private static App app = null;
+  public Config config;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -122,7 +123,9 @@ public class App implements ApplicationContextAware {
 
   @Bean
   public GracefulShutdown gracefulShutdown() {
-    Config config = Config.getInstance();
+    if (config == null) {
+      return new GracefulShutdown(30L);
+    }
     return new GracefulShutdown(config.springServer.shutdownTimeout);
   }
 
@@ -156,6 +159,7 @@ public class App implements ApplicationContextAware {
             Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
                 .orElse("false"));
     ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
+    modelDBHibernateUtil.initializedConfigAndDatabase(App.getInstance().config, databaseConfig);
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
       modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);

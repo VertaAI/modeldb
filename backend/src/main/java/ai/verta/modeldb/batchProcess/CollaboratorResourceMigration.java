@@ -4,6 +4,7 @@ import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
@@ -50,11 +51,12 @@ public class CollaboratorResourceMigration {
   public CollaboratorResourceMigration() {}
 
   public static void execute() {
+    Config config = App.getInstance().config;
     CollaboratorResourceMigration.paginationSize = 100;
-    if (Config.getInstance().hasAuth()) {
-      authService = AuthServiceUtils.FromConfig(Config.getInstance());
-      uac = UAC.FromConfig(Config.getInstance());
-      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
+    if (config.hasAuth()) {
+      authService = AuthServiceUtils.FromConfig(config);
+      uac = UAC.FromConfig(config);
+      roleService = RoleServiceUtils.FromConfig(config, authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found, OSS setup found");
       return;

@@ -5,8 +5,8 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -61,6 +61,7 @@ public class DAOSet {
     set.experimentDAO = new ExperimentDAORdbImpl(services.authService, services.roleService);
     set.experimentRunDAO =
         new ExperimentRunDAORdbImpl(
+            config,
             services.authService,
             services.roleService,
             set.repositoryDAO,
@@ -72,7 +73,7 @@ public class DAOSet {
             services.authService, services.roleService, set.experimentDAO, set.experimentRunDAO);
     set.futureProjectDAO = new FutureProjectDAO(executor, jdbi, services.uac);
     if (services.artifactStoreService != null) {
-      set.artifactStoreDAO = new ArtifactStoreDAORdbImpl(services.artifactStoreService);
+      set.artifactStoreDAO = new ArtifactStoreDAORdbImpl(services.artifactStoreService, config);
     } else {
       set.artifactStoreDAO = new ArtifactStoreDAODisabled();
     }

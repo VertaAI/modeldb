@@ -7,10 +7,10 @@ import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.ArtifactStoreConfig;
+import ai.verta.modeldb.config.Config;
 import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +34,7 @@ public class ServiceSet {
 
     // Initialize App.java singleton instance
     set.app = App.getInstance();
+    set.app.config = config;
 
     if (artifactStoreConfig.enabled) {
       set.artifactStoreService = initializeArtifactStore(artifactStoreConfig);

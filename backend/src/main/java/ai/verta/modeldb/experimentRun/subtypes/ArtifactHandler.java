@@ -29,7 +29,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
 
   private final CodeVersionHandler codeVersionHandler;
   private final DatasetHandler datasetHandler;
-  private final Config config = Config.getInstance();
+  private final Config config = App.getInstance().config;
 
   private final ArtifactStoreDAO artifactStoreDAO;
   private final DatasetVersionDAO datasetVersionDAO;

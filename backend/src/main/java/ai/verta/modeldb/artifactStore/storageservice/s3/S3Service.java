@@ -39,8 +39,8 @@ public class S3Service implements ArtifactStoreService {
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
   private S3Client s3Client;
   private String bucketName;
-  private App app = App.getInstance();
-  private Config config = Config.getInstance();
+  private final App app = App.getInstance();
+  private final Config config = app.config;
 
   public S3Service(String cloudBucketName) throws ModelDBException, IOException {
     s3Client = new S3Client(cloudBucketName);
