@@ -1,12 +1,28 @@
 # -*- coding: utf-8 -*-
 
 import itertools
+import logging
 import multiprocessing
+import sys
 
 import requests
 from verta import Client
 
 import constants  # pylint: disable=relative-import
+
+
+logger = logging.getLogger(__name__)
+
+
+def configure_logger():
+    formatter = logging.Formatter("%(levelname)s - %(message)s")
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(formatter)
+
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
 
 
 def get_clients():
@@ -39,20 +55,20 @@ def delete_build(args):
         headers=client._conn.auth,
     )
     if not response.ok:
-        msg = "{} failed to delete {} in {} ({})".format(
+        logger.warning(
+            "%s failed to delete %s in %s (%s)",
             client._conn.email,
             build_id,
             workspace,
             response.status_code,
         )
     else:
-        msg = "{} deleted {} in {}".format(
+        logger.info(
+            "%s deleted %s in %s",
             client._conn.email,
             build_id,
             workspace,
         )
-
-    print(msg)
 
 
 def delete_builds(clients):
@@ -71,13 +87,13 @@ def delete_builds(clients):
                 ),
                 headers=client._conn.auth,
             )
-            if not response.ok:
-                print(
-                    "{} failed to list builds in {} ({})".format(
-                        client._conn.email,
-                        workspace,
-                        response.status_code,
-                    )
+            try:
+                client._conn.must_response(response)
+            except requests.HTTPError:
+                logger.exception(
+                    "%s failed to list builds in %s",
+                    client._conn.email,
+                    workspace,
                 )
                 continue
 
@@ -99,46 +115,45 @@ def delete_endpoints(clients):
                 try:
                     endpoint.delete()
                 except requests.HTTPError as e:
-                    msg = "{} failed to delete {} in {} ({})".format(
+                    logger.warning(
+                        "%s failed to delete %s in %s (%s)",
                         client._conn.email,
                         path,
                         workspace,
                         e.response.status_code,
                     )
                 else:
-                    msg = "{} deleted {} in {}".format(
+                    logger.info(
+                        "%s deleted %s in %s",
                         client._conn.email,
                         path,
                         workspace,
                     )
 
-                print(msg)
-
 
 def delete_orgs(clients):
     for client in clients:
         for org_name in client._conn._get_visible_orgs():
-            if "do-not-delete" in org_name:
-                continue
-
             try:
                 client._get_organization(org_name).delete()
             except requests.HTTPError as e:
-                msg = "{} failed to delete {} ({})".format(
+                logger.warning(
+                    "%s failed to delete %s (%s)",
                     client._conn.email,
                     org_name,
                     e.response.status_code,
                 )
             else:
-                msg = "{} deleted {}".format(
+                logger.info(
+                    "%s deleted %s",
                     client._conn.email,
                     org_name,
                 )
 
-            print(msg)
-
 
 def main():
+    configure_logger()
+
     clients = get_clients()
 
     delete_builds(clients)
