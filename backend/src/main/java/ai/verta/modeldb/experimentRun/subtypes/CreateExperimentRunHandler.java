@@ -361,7 +361,7 @@ public class CreateExperimentRunHandler {
         ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN;
     String roleName = ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER;
     return FutureGrpc.ClientRequest(
-            uac.getServiceAccountRoleServiceFutureStub()
+            uac.getRoleService()
                 .setRoleBinding(
                     SetRoleBinding.newBuilder()
                         .setRoleBinding(
