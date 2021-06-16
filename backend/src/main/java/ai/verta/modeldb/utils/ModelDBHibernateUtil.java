@@ -238,8 +238,8 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
   public void runMigration(DatabaseConfig databaseConfig, List<MigrationConfig> migrations)
       throws ClassNotFoundException, ModelDBException, DatabaseException, SQLException {
     RdbConfig rdb = databaseConfig.RdbConfiguration;
-
     if (migrations != null) {
+      LOGGER.debug("Running code migrations.");
       for (MigrationConfig migrationConfig : migrations) {
         if (!migrationConfig.enabled) {
           continue;
@@ -268,7 +268,9 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
         }
       }
     }
-
+    LOGGER.debug("Completed code migrations.");
+    LOGGER.debug("Running collaborator resource migration.");
     CollaboratorResourceMigration.execute();
+    LOGGER.debug("Completed collaborator resource migration.");
   }
 }
