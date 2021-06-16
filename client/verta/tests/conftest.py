@@ -53,6 +53,15 @@ def pytest_collection_modifyitems(config, items):
                 item.add_marker(skip_oss)
 
 
+@pytest.fixture(autouse=True)
+def mark_time():
+    print("\n[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
+    yield
+    print(
+        "\n[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow())
+    )
+
+
 @pytest.fixture(scope="session")
 def host():
     return constants.HOST
@@ -293,15 +302,6 @@ def in_tempdir(tempdir_root):
             yield dirpath
     finally:
         shutil.rmtree(dirpath)
-
-
-@pytest.fixture(autouse=True)
-def mark_time():
-    print("\n[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
-    yield
-    print(
-        "\n[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow())
-    )
 
 
 @pytest.fixture
