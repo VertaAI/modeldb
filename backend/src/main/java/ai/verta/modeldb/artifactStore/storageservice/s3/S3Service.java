@@ -319,24 +319,26 @@ public class S3Service implements ArtifactStoreService {
       LOGGER.debug("part number: " + partNumber);
       parameters.put("part_number", partNumber);
       parameters.put("upload_id", uploadId);
-      final var url = getUploadUrl(
-          parameters,
-          config.artifactStoreConfig.protocol,
-          config.artifactStoreConfig.artifactEndpoint.storeArtifact,
-          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
-          config.artifactStoreConfig.host);
+      final var url =
+          getUploadUrl(
+              parameters,
+              config.artifactStoreConfig.protocol,
+              config.artifactStoreConfig.artifactEndpoint.storeArtifact,
+              config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+              config.artifactStoreConfig.host);
       LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
       return url;
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.debug("S3Service - generatePresignedUrl - returning " + method + " url");
       String filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
       parameters.put(ModelDBConstants.FILENAME, filename);
-      final var url = getDownloadUrl(
-          parameters,
-          config.artifactStoreConfig.protocol,
-          config.artifactStoreConfig.artifactEndpoint.getArtifact,
-          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
-          config.artifactStoreConfig.host);
+      final var url =
+          getDownloadUrl(
+              parameters,
+              config.artifactStoreConfig.protocol,
+              config.artifactStoreConfig.artifactEndpoint.getArtifact,
+              config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+              config.artifactStoreConfig.host);
       LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
       return url;
     } else {
