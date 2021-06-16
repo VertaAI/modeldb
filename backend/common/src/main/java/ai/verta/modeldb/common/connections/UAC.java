@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.uac.*;
 import io.grpc.*;
+import io.grpc.stub.MetadataUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -19,6 +20,7 @@ public class UAC extends Connection {
   private final WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspaceServiceFutureStub;
   private final AuthzServiceGrpc.AuthzServiceFutureStub authzServiceFutureStub;
   private final RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub;
+  private final RoleServiceGrpc.RoleServiceFutureStub serviceAccountRoleServiceFutureStub;
   private final OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub;
 
   public static UAC FromConfig(Config config) {
@@ -52,7 +54,22 @@ public class UAC extends Connection {
     workspaceServiceFutureStub = WorkspaceServiceGrpc.newFutureStub(authServiceChannel);
     authzServiceFutureStub = AuthzServiceGrpc.newFutureStub(authServiceChannel);
     roleServiceFutureStub = RoleServiceGrpc.newFutureStub(authServiceChannel);
+    serviceAccountRoleServiceFutureStub = RoleServiceGrpc.newFutureStub(authServiceChannel)
+            .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
     organizationServiceFutureStub = OrganizationServiceGrpc.newFutureStub(authServiceChannel);
+  }
+
+  private Metadata getServiceUserMetadata(Config config) {
+    Metadata requestHeaders = new Metadata();
+    Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
+    Metadata.Key<String> dev_key =
+            Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+    Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+
+    requestHeaders.put(email_key, config.service_user.email);
+    requestHeaders.put(dev_key, config.service_user.devKey);
+    requestHeaders.put(source_key, "PythonClient");
+    return requestHeaders;
   }
 
   public CollaboratorServiceGrpc.CollaboratorServiceFutureStub getCollaboratorService() {
@@ -77,5 +94,9 @@ public class UAC extends Connection {
 
   public RoleServiceGrpc.RoleServiceFutureStub getRoleService() {
     return attachInterceptors(roleServiceFutureStub);
+  }
+
+  public RoleServiceGrpc.RoleServiceFutureStub getServiceAccountRoleServiceFutureStub() {
+    return serviceAccountRoleServiceFutureStub;
   }
 }
