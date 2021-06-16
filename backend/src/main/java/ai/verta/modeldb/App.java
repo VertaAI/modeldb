@@ -175,6 +175,7 @@ public class App implements ApplicationContextAware {
           Boolean.parseBoolean(
               Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))
                   .orElse("false"));
+      LOGGER.info("runLiquibaseSeparate: ", runLiquibaseSeparate);
       if (runLiquibaseSeparate) {
         return true;
       }
@@ -198,7 +199,10 @@ public class App implements ApplicationContextAware {
       ServiceSet services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
 
       // Initialize database configuration and maybe run migration
-      if (migrate(config.database, config.migrations)) return;
+      if (migrate(config.database, config.migrations)) {
+        LOGGER.info("Migrations have completed.  System exiting.");
+        return;
+      }
 
       // Configure server
       System.getProperties().put("server.port", config.springServer.port);
