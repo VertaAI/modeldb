@@ -797,7 +797,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private void setRoleBindingOnAuthService(boolean retry, RoleBinding roleBinding) {
-    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannelWithServiceUser()) {
       LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       SetRoleBinding.Response setRoleBindingResponse =
           authServiceChannel
