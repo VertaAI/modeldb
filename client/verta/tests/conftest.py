@@ -23,7 +23,7 @@ from verta._internal_utils import _utils
 import hypothesis
 import pytest
 from . import constants, utils
-from . import reset_test_accounts
+from . import clean_test_accounts
 
 
 RANDOM_SEED = 0
@@ -79,7 +79,7 @@ def create_dummy_workspace():
 
     """
     dummy_orgs = []
-    for client in reset_test_accounts.get_clients():
+    for client in clean_test_accounts.get_clients():
         current_default_workspace = client._conn.get_default_workspace()
 
         name = _utils.generate_default_name
