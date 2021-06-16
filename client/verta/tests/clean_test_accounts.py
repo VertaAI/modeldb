@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def configure_logger():
+    """Configure logger formatting and verbosity."""
     formatter = logging.Formatter("%(levelname)s - %(message)s")
 
     handler = logging.StreamHandler(sys.stdout)
@@ -26,6 +27,13 @@ def configure_logger():
 
 
 def get_clients():
+    """Return test account clients using available env var credentials.
+
+    Returns
+    -------
+    list of :class:`~verta.Client`
+
+    """
     credentials = [
         (constants.EMAIL, constants.DEV_KEY),
         (constants.EMAIL_2, constants.DEV_KEY_2),
@@ -43,6 +51,20 @@ def get_clients():
 
 
 def delete_build(args):
+    """Helper function to delete a single build.
+
+    This is meant to be called from :func:`delete_builds`.
+
+    Parameters
+    ----------
+    args : 3-tuple of :class:`~verta.Client`, workspace str, and build ID int
+
+    Notes
+    -----
+    This would take more helpful parameters than just `args` if not for
+    ``starmap()`` being unavailable in Python 2's ``multiprocessing``.
+
+    """
     client, workspace, build_id = args
 
     response = requests.delete(
@@ -72,6 +94,13 @@ def delete_build(args):
 
 
 def delete_builds(clients):
+    """Delete all builds in all workspaces of `clients`.
+
+    Parameters
+    ----------
+    clients : list of :class:`~verta.Client`
+
+    """
     for client in clients:
         workspaces = (
             client._conn._get_visible_orgs()
@@ -104,6 +133,13 @@ def delete_builds(clients):
 
 
 def delete_endpoints(clients):
+    """Delete all endpoints in all workspaces of `clients`.
+
+    Parameters
+    ----------
+    clients : list of :class:`~verta.Client`
+
+    """
     for client in clients:
         workspaces = (
             client._conn._get_visible_orgs()
@@ -132,6 +168,13 @@ def delete_endpoints(clients):
 
 
 def delete_orgs(clients):
+    """Delete all organizations of `clients`.
+
+    Parameters
+    ----------
+    clients : list of :class:`~verta.Client`
+
+    """
     for client in clients:
         for org_name in client._conn._get_visible_orgs():
             try:
