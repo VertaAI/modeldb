@@ -21,10 +21,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
+import java.util.concurrent.Executor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-
-import java.util.concurrent.Executor;
 
 public class TestsInit {
 

@@ -844,12 +844,12 @@ public class RepositoryTest extends TestsInit {
     LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
     assertEquals(
         "Project count not match with expected project count",
-        3,
+        repositoryMap.size(),
         findRepositoriesResponse.getRepositoriesCount());
 
     assertEquals(
         "Total records count not matched with expected records count",
-        3,
+        repositoryMap.size(),
         findRepositoriesResponse.getTotalRecords());
 
     keyValueQuery =
@@ -926,9 +926,9 @@ public class RepositoryTest extends TestsInit {
         FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
     FindRepositories.Response findRepositoriesResponse =
         versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
-    LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
+    LOGGER.info("FindRepositories Response : " + findRepositoriesResponse.getRepositoriesList());
     assertEquals(
-        "Project count not match with expected project count",
+        "Repositories count not match with expected Repositories count",
         3,
         findRepositoriesResponse.getRepositoriesCount());
 

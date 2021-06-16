@@ -5,7 +5,6 @@ import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-
 import java.util.HashMap;
 import java.util.Map;
 
