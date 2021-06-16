@@ -10,6 +10,7 @@ import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -35,11 +36,13 @@ public class SoftDeleteProjects extends Reconciler<String> {
   public void resync() {
     String queryString =
         String.format(
-            "select id from %s where deleted=:deleted", ProjectEntity.class.getSimpleName());
+            "select id from %s where deleted=:deleted OR (created=:created AND date_created < :dateCreated) ", ProjectEntity.class.getSimpleName());
 
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query deletedQuery = session.createQuery(queryString);
       deletedQuery.setParameter("deleted", true);
+      deletedQuery.setParameter("created", false);
+      deletedQuery.setParameter("dateCreated", new Date().getTime() - 60000L); // before 1 min
       deletedQuery.setMaxResults(config.maxSync);
       deletedQuery.stream().forEach(id -> this.insert((String) id));
     }

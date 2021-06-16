@@ -1411,7 +1411,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("FindDatasets Response : " + response.getDatasetsCount());
     assertEquals(
         "Total records count not matched with expected records count",
-        datasetVersionMap.size(),
+        datasetMap.size(),
         response.getTotalRecords());
 
     response
