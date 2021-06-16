@@ -195,6 +195,10 @@ public class App implements ApplicationContextAware {
       // --------------- Start reading properties --------------------------
       Config config = Config.getInstance();
 
+      // Configure spring HTTP server
+      LOGGER.info("Configuring spring HTTP traffic on port " + config.springServer.port);
+      System.getProperties().put("server.port", config.springServer.port);
+
       // Initialize services that we depend on
       ServiceSet services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
 
@@ -205,9 +209,6 @@ public class App implements ApplicationContextAware {
         return;
       }
       LOGGER.info("Migrations are disabled, starting application.");
-
-      // Configure server
-      System.getProperties().put("server.port", config.springServer.port);
 
       // Initialize executor so we don't lose context using Futures
       final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
@@ -243,6 +244,7 @@ public class App implements ApplicationContextAware {
       serverBuilder.intercept(new AuthInterceptor());
 
       // Add APIs
+      LOGGER.info("Initializing backend services.");
       initializeBackendServices(serverBuilder, services, daos, handleExecutor);
 
       // Create the server
@@ -314,7 +316,7 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("Versioning serviceImpl initialized");
     wrapService(serverBuilder, new MetadataServiceImpl(daos));
     LOGGER.trace("Metadata serviceImpl initialized");
-    LOGGER.info("All services initialized and resolved dependency before server start");
+    LOGGER.info("All services initialized and dependencies resolved");
   }
 
   private static void wrapService(ServerBuilder<?> serverBuilder, BindableService bindableService) {
