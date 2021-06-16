@@ -175,7 +175,7 @@ public class App implements ApplicationContextAware {
           Boolean.parseBoolean(
               Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))
                   .orElse("false"));
-      LOGGER.info("runLiquibaseSeparate: " + runLiquibaseSeparate);
+      LOGGER.trace("run Liquibase separate: " + runLiquibaseSeparate);
       if (runLiquibaseSeparate) {
         return true;
       }
