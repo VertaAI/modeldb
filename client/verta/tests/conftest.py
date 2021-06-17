@@ -22,16 +22,11 @@ from verta._internal_utils import _utils
 
 import hypothesis
 import pytest
-from . import utils
+from . import constants, utils
 
 
 RANDOM_SEED = 0
 INPUT_LENGTH = 12  # length of iterable input fixture
-
-DEFAULT_HOST = None
-DEFAULT_PORT = None
-DEFAULT_EMAIL = None
-DEFAULT_DEV_KEY = None
 
 
 # hypothesis on Jenkins is apparently too slow
@@ -60,43 +55,43 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture(scope="session")
 def host():
-    return os.environ.get("VERTA_HOST", DEFAULT_HOST)
+    return constants.HOST
 
 
 @pytest.fixture(scope="session")
 def port():
-    return os.environ.get("VERTA_PORT", DEFAULT_PORT)
+    return constants.PORT
 
 
 @pytest.fixture(scope="session")
 def email():
-    return os.environ.get("VERTA_EMAIL", DEFAULT_EMAIL)
+    return constants.EMAIL
 
 
 @pytest.fixture(scope="session")
 def dev_key():
-    return os.environ.get("VERTA_DEV_KEY", DEFAULT_DEV_KEY)
+    return constants.DEV_KEY
 
 
 # for collaboration tests
 @pytest.fixture(scope="session")
 def email_2():
-    return os.environ.get("VERTA_EMAIL_2")
+    return constants.EMAIL_2
 
 
 @pytest.fixture(scope="session")
 def dev_key_2():
-    return os.environ.get("VERTA_DEV_KEY_2")
+    return constants.DEV_KEY_2
 
 
 @pytest.fixture(scope="session")
 def email_3():
-    return os.environ.get("VERTA_EMAIL_3")
+    return constants.EMAIL_3
 
 
 @pytest.fixture(scope="session")
 def dev_key_3():
-    return os.environ.get("VERTA_DEV_KEY_3")
+    return constants.DEV_KEY_3
 
 
 @pytest.fixture
@@ -312,6 +307,9 @@ def mark_time():
 @pytest.fixture
 def client(host, port, email, dev_key, created_entities):
     client = Client(host, port, email, dev_key, debug=True)
+    client._conn._set_default_workspace(
+        client._conn.get_personal_workspace(),
+    )
 
     yield client
 
@@ -340,8 +338,16 @@ def client_2(host, port, email_2, dev_key_2, created_entities):
         pytest.skip("second account credentials not present")
 
     client = Client(host, port, email_2, dev_key_2, debug=True)
+    client._conn._set_default_workspace(
+        client._conn.get_personal_workspace(),
+    )
 
-    return client
+    yield client
+
+    proj = client._ctx.proj
+    if (proj is not None
+            and proj.id not in {entity.id for entity in created_entities}):
+        proj.delete()
 
 
 @pytest.fixture
@@ -351,8 +357,16 @@ def client_3(host, port, email_3, dev_key_3, created_entities):
         pytest.skip("second account credentials not present")
 
     client = Client(host, port, email_3, dev_key_3, debug=True)
+    client._conn._set_default_workspace(
+        client._conn.get_personal_workspace(),
+    )
 
-    return client
+    yield client
+
+    proj = client._ctx.proj
+    if (proj is not None
+            and proj.id not in {entity.id for entity in created_entities}):
+        proj.delete()
 
 
 @pytest.fixture
