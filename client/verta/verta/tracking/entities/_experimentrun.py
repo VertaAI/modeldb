@@ -1284,32 +1284,6 @@ class ExperimentRun(_DeployableEntity):
                            _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip')
 
     def log_model(self, model, custom_modules=None, model_api=None, artifacts=None, overwrite=False):
-        """
-        Logs a model artifact for Verta model deployment.
-
-        Parameters
-        ----------
-        model : str or object
-            Model for deployment.
-                - If str, then it will be interpreted as a filesystem path to a serialized model file
-                  for upload.
-                - Otherwise, the object will be serialized and uploaded as an artifact.
-        custom_modules : list of str, optional
-            Paths to local Python modules and other files that the deployed model depends on.
-                - If directories are provided, all files within—excluding virtual environments—will
-                  be included.
-                - If module names are provided, all files within the corresponding module inside a
-                  folder in `sys.path` will be included.
-                - If not provided, all Python files located within `sys.path`—excluding virtual
-                  environments—will be included.
-        model_api : :class:`~verta.utils.ModelAPI`, optional
-            Model API specifying details about the model and its deployment.
-        artifacts : list of str, optional
-            Keys of logged artifacts to be used by a class model.
-        overwrite : bool, default False
-            Whether to allow overwriting existing artifacts.
-
-        """
         if model_api and not isinstance(model_api, utils.ModelAPI):
             raise ValueError(
                 "`model_api` must be `verta.utils.ModelAPI`, not {}".format(type(model_api)))
@@ -1806,7 +1780,7 @@ class ExperimentRun(_DeployableEntity):
         """
         Logs a pip requirements file for Verta model deployment.
 
-        .. deprecated:: 0.17.7
+        .. deprecated:: 0.18.0
             This method is deprecated and will be removed in an upcoming
             version; consider using :meth:`log_environment` instead.
 

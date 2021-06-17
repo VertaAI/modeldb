@@ -15,11 +15,9 @@ import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.uac.AddUser;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteOrganization;
-import ai.verta.uac.GetRoleByName;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.RoleScope;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.SetOrganization;
 import ai.verta.uac.SetResource;
@@ -123,7 +121,7 @@ public class GlobalSharingTest extends TestsInit {
       return;
     }
 
-    String orgName = "Org-test-verta";
+    String orgName = "Org-test-verta-" + new Date().getTime();
     SetOrganization setOrganization =
         SetOrganization.newBuilder()
             .setOrganization(
@@ -140,18 +138,6 @@ public class GlobalSharingTest extends TestsInit {
         orgName,
         organization.getName());
 
-    String orgRoleName = "O_" + organization.getId() + "_GLOBAL_SHARING";
-    GetRoleByName getRoleByName =
-        GetRoleByName.newBuilder()
-            .setName(orgRoleName)
-            .setScope(RoleScope.newBuilder().setOrgId(organization.getId()).build())
-            .build();
-    GetRoleByName.Response getRoleByNameResponse =
-        roleServiceBlockingStub.getRoleByName(getRoleByName);
-    assertEquals(
-        "Expected role name not found in DB",
-        orgRoleName,
-        getRoleByNameResponse.getRole().getName());
     organizationServiceBlockingStub.addUser(
         AddUser.newBuilder()
             .setOrgId(organization.getId())

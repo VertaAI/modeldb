@@ -48,7 +48,20 @@ class StringValue(_VertaDataType):
         data = d[cls._TYPE_NAME]
         return cls(value=data["value"])
 
-    def dist(self, other):
+    def diff(self, other):
+        """Calculate the difference between `other` and this value.
+
+        Parameters
+        ----------
+        other : :class:`StringValue`
+            Value to calculate difference from.
+
+        Returns
+        -------
+        int
+            0 if the strings are equal, otherwise 1.
+
+        """
         if not isinstance(other, type(self)):
             raise TypeError(
                 "`other` must be type {}, not {}".format(type(self), type(other))

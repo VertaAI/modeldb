@@ -5,7 +5,7 @@ import pytest
 from verta.environment import Python
 from verta._internal_utils._utils import generate_default_name
 from verta.monitoring.profiler import ContinuousHistogramProfiler
-from verta.monitoring.profilers import ProfilerReference
+from verta.monitoring._profilers import ProfilerReference
 import pytest
 
 
@@ -16,7 +16,7 @@ class TestProfilers(object):
         for req in requirements:
             pytest.importorskip(req)
 
-        profilers = client.monitoring.profilers
+        profilers = client.monitoring._profilers
 
         profiler_name = "age_column_profiler_{}".format(generate_default_name())
         python_env = Python(requirements=requirements)
@@ -29,7 +29,7 @@ class TestProfilers(object):
         assert created_profiler.id == retrieved_profiler.id
 
         listed_profilers = profilers.list()
-        assert len(listed_profilers) > 1
+        assert len(listed_profilers) >= 1
         assert created_profiler.id in map(lambda p: p.id, listed_profilers)
 
         old_name = created_profiler.name

@@ -3,11 +3,10 @@
 import warnings
 
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
-from verta._internal_utils import _utils, time_utils
+from verta._internal_utils import arg_handler, time_utils
 from verta.tracking import _Context
 from verta.tracking.entities import _entity
 from verta.monitoring import notification_channel
-from verta.monitoring import utils
 from verta.monitoring.summaries.queries import (
     SummaryQuery,
     SummarySampleQuery,
@@ -617,7 +616,7 @@ class Alerts(object):
             If the delete failed.
 
         """
-        alert_ids = utils.extract_ids(alerts)
+        alert_ids = arg_handler.extract_ids(alerts)
         msg = _AlertService.DeleteAlertRequest(ids=alert_ids)
         endpoint = "/api/v1/alerts/deleteAlert"
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)

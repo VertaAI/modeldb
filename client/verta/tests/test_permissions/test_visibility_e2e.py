@@ -55,7 +55,7 @@ class TestAccess:
         retrieved_entity = getattr(client_2, "get_{}".format(entity_name))(name)
         assert retrieved_entity.id == entity.id
 
-        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+        with pytest.raises(requests.HTTPError, match="^403"):
             retrieved_entity.delete()
 
     def test_read_registry(self, client, client_2, organization, created_entities):
@@ -67,12 +67,12 @@ class TestAccess:
 
         reg_model = client.create_registered_model(visibility=visibility)
         retrieved_reg_model = client_2.get_registered_model(reg_model.name)
-        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+        with pytest.raises(requests.HTTPError, match="^403"):
             retrieved_reg_model.add_label("foo")
 
         model_ver = reg_model.create_version()
         retrieved_model_ver = retrieved_reg_model.get_version(model_ver.name)
-        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+        with pytest.raises(requests.HTTPError, match="^403"):
             retrieved_model_ver.add_label("foo")
 
     @pytest.mark.parametrize(
@@ -116,7 +116,7 @@ class TestAccess:
         created_entities.append(read_repo)
         retrieved_repo = client_2.set_repository(read_repo.name)
         assert retrieved_repo.id == read_repo.id
-        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+        with pytest.raises(requests.HTTPError, match="^403"):
             retrieved_repo.delete()
 
         # read-write
@@ -143,7 +143,7 @@ class TestLink:
         repo = client_3.set_repository(_utils.generate_default_name(), visibility=Private())
         created_entities.append(repo)
         commit = repo.get_commit()
-        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+        with pytest.raises(requests.HTTPError, match="^403"):
             run.log_commit(commit)
 
         # org commit
@@ -167,7 +167,7 @@ class TestLink:
         dataset = client_3.create_dataset(visibility=Private())
         created_entities.append(dataset)
         dataver = dataset.create_version(Path(__file__))
-        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+        with pytest.raises(requests.HTTPError, match="^403"):
             run.log_dataset_version("train", dataver)
 
         # org dataset version
@@ -224,7 +224,7 @@ class TestLink:
         run = client_3.create_experiment_run()
         run.log_model(LogisticRegression(), custom_modules=[])
         run.log_environment(Python(["scikit-learn"]))
-        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+        with pytest.raises(requests.HTTPError, match="^403"):
             endpoint.update(run)
 
         # org run, deploy=True
@@ -252,7 +252,7 @@ class TestLink:
         model_ver = reg_model.create_version()
         model_ver.log_model(LogisticRegression(), custom_modules=[])
         model_ver.log_environment(Python(["scikit-learn"]))
-        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+        with pytest.raises(requests.HTTPError, match="^403"):
             endpoint.update(model_ver)
 
         # org model version, deploy=False
@@ -261,7 +261,7 @@ class TestLink:
         model_ver = reg_model.create_version()
         model_ver.log_model(LogisticRegression(), custom_modules=[])
         model_ver.log_environment(Python(["scikit-learn"]))
-        with pytest.raises(requests.HTTPError, match="Access Denied|Forbidden"):
+        with pytest.raises(requests.HTTPError, match="^403"):
             endpoint.update(model_ver)
 
         # org model version, deploy=True

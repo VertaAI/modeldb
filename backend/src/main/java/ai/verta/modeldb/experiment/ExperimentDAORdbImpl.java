@@ -208,10 +208,11 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     createRoleBindingsForExperiment(experiment, userInfo);
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
-      session.save(RdbmsUtils.generateExperimentEntity(experiment));
+      ExperimentEntity experimentEntity = RdbmsUtils.generateExperimentEntity(experiment);
+      session.save(experimentEntity);
       transaction.commit();
       LOGGER.debug("Experiment created successfully");
-      return experiment;
+      return experimentEntity.getProtoObject();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return insertExperiment(experiment, userInfo);

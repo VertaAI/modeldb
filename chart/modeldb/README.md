@@ -23,7 +23,7 @@ By default, the "default" namespace on your Kubernetes cluster is used.
 ### What next?
 
 Now that you have modelDB up and running on your K8s cluster, please visit
-[our user guide and documentation](https://docs.verta.ai/en/master/index.html) to get started.
+[our user guide and documentation](https://docs.verta.ai/) to get started.
 
 ### Using Custom Images
 

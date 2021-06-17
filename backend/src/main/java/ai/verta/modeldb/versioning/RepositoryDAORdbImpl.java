@@ -445,6 +445,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     }
 
     RepositoryEntity repositoryEntity;
+    boolean nameChanged = false;
     Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
     if (create) {
       String name = repository.getName();
@@ -480,6 +481,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           && !repositoryEntity.getName().equals(repository.getName())) {
         // TODO: Remove this after UAC support update entity name using SetResource
         checkIfEntityAlreadyExists(session, workspace, repository.getName(), repositoryType);
+        nameChanged = true;
       }
       repositoryEntity.update(repository);
     }
@@ -510,7 +512,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
     }
     session.getTransaction().commit();
-    if (create) {
+    if (create || nameChanged) {
       try {
         ResourceVisibility resourceVisibility = repository.getVisibility();
         if (repository.getVisibility().equals(ResourceVisibility.UNKNOWN)) {

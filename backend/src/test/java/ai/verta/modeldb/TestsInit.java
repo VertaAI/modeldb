@@ -21,10 +21,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
+import java.util.concurrent.Executor;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-
-import java.util.concurrent.Executor;
 
 public class TestsInit {
 
@@ -34,6 +33,8 @@ public class TestsInit {
   protected static TestConfig testConfig;
   protected static DeleteEntitiesCron deleteEntitiesCron;
   protected static AuthService authService;
+  protected static Executor handleExecutor;
+  protected static ServiceSet services;
 
   // all service stubs
   protected static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
@@ -78,15 +79,14 @@ public class TestsInit {
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     testConfig = TestConfig.getInstance();
-    final Executor handleExecutor =
-        FutureGrpc.initializeExecutor(testConfig.grpcServer.threadCount);
+    handleExecutor = FutureGrpc.initializeExecutor(testConfig.grpcServer.threadCount);
     // Initialize services that we depend on
-    ServiceSet services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
+    services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
     authService = services.authService;
     // Initialize data access
     DAOSet daos =
         DAOSet.fromServices(
-            services, testConfig.getTestJdbi(), handleExecutor, testConfig, testConfig.trial);
+            services, testConfig.getJdbi(), handleExecutor, testConfig, testConfig.trial);
     App.migrate(testConfig.database, testConfig.migrations);
 
     App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
@@ -96,8 +96,7 @@ public class TestsInit {
     serverBuilder.intercept(new AuthInterceptor());
     // Initialize cron jobs
     CronJobUtils.initializeCronJobs(testConfig, services);
-    ReconcilerInitializer.initialize(
-        testConfig, services, testConfig.getTestJdbi(), handleExecutor);
+    ReconcilerInitializer.initialize(testConfig, services, testConfig.getJdbi(), handleExecutor);
 
     if (testConfig.testUsers != null && !testConfig.testUsers.isEmpty()) {
       authClientInterceptor = new AuthClientInterceptor(testConfig.testUsers);

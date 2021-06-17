@@ -1,25 +1,17 @@
 package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class TestConfig extends Config {
   private static TestConfig config = null;
 
   public Map<String, ServiceUserConfig> testUsers = new HashMap<>();
-
-  public TrialConfig trial;
-  public ArtifactStoreConfig artifactStoreConfig;
-  public List<MigrationConfig> migrations;
-  private FutureJdbi jdbi;
-  public int jdbi_retry_time = 100; // Time in ms
 
   public static TestConfig getInstance() throws InternalErrorException {
     if (config == null) {
@@ -69,11 +61,11 @@ public class TestConfig extends Config {
     return service_user != null;
   }
 
-  public FutureJdbi getTestJdbi() {
+  public FutureJdbi getJdbi() {
     if (this.jdbi == null) {
       // Initialize HikariCP and jdbi
       final var databaseConfig = config.database;
-      this.jdbi = initializeJdbi(databaseConfig, "modeldb_test");
+      this.jdbi = initializeJdbi(databaseConfig, "modeldb-test");
     }
     return this.jdbi;
   }

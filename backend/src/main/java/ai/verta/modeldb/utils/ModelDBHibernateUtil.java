@@ -8,10 +8,10 @@ import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
 import ai.verta.modeldb.common.CommonHibernateUtil;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
@@ -84,8 +84,6 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
   }
 
   private static void initializedUtil() {
-    config = Config.getInstance();
-    databaseConfig = config.database;
     liquibaseRootFilePath = "\\src\\main\\resources\\liquibase\\db-changelog-master.xml";
     entities =
         new Class[] {
@@ -141,6 +139,11 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
           KeyValuePropertyMappingEntity.class,
           QueryDatasetComponentBlobEntity.class
         };
+  }
+
+  public void initializedConfigAndDatabase(Config mdbConfig, DatabaseConfig dbConfig) {
+    config = mdbConfig;
+    databaseConfig = dbConfig;
   }
 
   // TODO: this will removed after merging of the PR: https://github.com/VertaAI/modeldb/pull/1846
@@ -235,8 +238,8 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
   public void runMigration(DatabaseConfig databaseConfig, List<MigrationConfig> migrations)
       throws ClassNotFoundException, ModelDBException, DatabaseException, SQLException {
     RdbConfig rdb = databaseConfig.RdbConfiguration;
-
     if (migrations != null) {
+      LOGGER.debug("Running code migrations.");
       for (MigrationConfig migrationConfig : migrations) {
         if (!migrationConfig.enabled) {
           continue;
@@ -265,7 +268,9 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
         }
       }
     }
-
+    LOGGER.debug("Completed code migrations.");
+    LOGGER.debug("Running collaborator resource migration.");
     CollaboratorResourceMigration.execute();
+    LOGGER.debug("Completed collaborator resource migration.");
   }
 }

@@ -6,7 +6,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.concurrent.Executor;
 
 public class PredicatesHandler extends PredicateHandlerUtils {
-  private final Config config = Config.getInstance();
   private final HyperparameterPredicatesHandler hyperparameterPredicatesHandler;
 
   public PredicatesHandler() {
@@ -61,9 +59,10 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                 .addCondition("experiment_run.project_id = :" + bindingName)
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
       case "experiment_id":
+        String operator = predicate.getOperator().equals(OperatorEnum.Operator.NE) ? "<>" : "=";
         return InternalFuture.completedInternalFuture(
             new QueryFilterContext()
-                .addCondition("experiment_run.experiment_id = :" + bindingName)
+                .addCondition("experiment_run.experiment_id " + operator + " :" + bindingName)
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
       case "name":
         return InternalFuture.completedInternalFuture(
@@ -75,6 +74,11 @@ public class PredicatesHandler extends PredicateHandlerUtils {
         // case visibility:
       case "":
         return InternalFuture.failedStage(new InvalidArgumentException("Key is empty"));
+      case "end_time":
+        return InternalFuture.completedInternalFuture(
+            new QueryFilterContext()
+                .addCondition("experiment_run.end_time = :" + bindingName)
+                .addBind(q -> q.bind(bindingName, value.getStringValue())));
     }
 
     String[] names = key.split("\\.");

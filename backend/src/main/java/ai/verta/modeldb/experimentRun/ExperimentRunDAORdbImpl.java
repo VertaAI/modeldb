@@ -13,6 +13,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
@@ -67,8 +68,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private static final boolean OVERWRITE_VERSION_MAP = false;
-  private App app = App.getInstance();
-  private ai.verta.modeldb.config.Config config = ai.verta.modeldb.config.Config.getInstance();
+  private final Config config;
   private static final long CACHE_SIZE = 1000;
   private static final int DURATION = 10;
   private final AuthService authService;
@@ -211,12 +211,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   public ExperimentRunDAORdbImpl(
+      Config config,
       AuthService authService,
       RoleService roleService,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       BlobDAO blobDAO,
       MetadataDAO metadataDAO) {
+    this.config = config;
     this.authService = authService;
     this.roleService = roleService;
     this.repositoryDAO = repositoryDAO;

@@ -11,6 +11,13 @@ from ._model import RegisteredModel
 
 
 class RegisteredModels(_utils.LazyList):
+    """Collection object for finding registered models.
+
+    There should not be a need to instantiate this class directly; please use
+    :attr:`Client.registered_models <verta.Client>`.
+
+    """
+
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
         'id',

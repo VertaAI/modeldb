@@ -96,7 +96,7 @@ class TestGet:
         assert not result.exception
         assert "path: {}".format(endpoint.path) in result.output
         assert "id: {}".format(endpoint.id) in result.output
-        assert "curl: <Endpoint not deployed>" in result.output
+        assert "curl: <endpoint not deployed>" in result.output
 
         assert "status" in result.output
         assert "date created" in result.output

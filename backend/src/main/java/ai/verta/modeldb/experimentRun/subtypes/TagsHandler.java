@@ -4,6 +4,7 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.*;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
@@ -92,7 +93,7 @@ public class TagsHandler {
         .thenCompose(unused -> getTags(entityId), executor)
         .thenCompose(
             existingTags -> {
-              final var tagsSet = new HashSet<>(tags);
+              final var tagsSet = new HashSet<>(ModelDBUtils.checkEntityTagsLength(tags));
               tagsSet.removeAll(existingTags);
               if (tagsSet.isEmpty()) {
                 return InternalFuture.completedInternalFuture(null);

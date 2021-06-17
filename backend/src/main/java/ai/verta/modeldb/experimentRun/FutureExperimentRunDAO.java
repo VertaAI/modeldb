@@ -20,6 +20,7 @@ import ai.verta.modeldb.DeleteHyperparameters;
 import ai.verta.modeldb.DeleteMetrics;
 import ai.verta.modeldb.DeleteObservations;
 import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.Feature;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
@@ -84,6 +85,7 @@ import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
@@ -106,6 +108,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -236,7 +239,13 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> observationHandler.getObservations(runId, key), executor);
+        .thenCompose(unused -> observationHandler.getObservations(runId, key), executor)
+        .thenApply(
+            observations ->
+                observations.stream()
+                    .sorted(Comparator.comparing(RdbmsUtils::getObservationCompareKey))
+                    .collect(Collectors.toList()),
+            executor);
   }
 
   public InternalFuture<Void> logObservations(LogObservations request) {
@@ -300,7 +309,13 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused -> metricsHandler.getKeyValues(runId, Collections.emptyList(), true), executor);
+            unused -> metricsHandler.getKeyValues(runId, Collections.emptyList(), true), executor)
+        .thenApply(
+            keyValues ->
+                keyValues.stream()
+                    .sorted(Comparator.comparing(KeyValue::getKey))
+                    .collect(Collectors.toList()),
+            executor);
   }
 
   public InternalFuture<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
@@ -310,6 +325,12 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
             unused -> hyperparametersHandler.getKeyValues(runId, Collections.emptyList(), true),
+            executor)
+        .thenApply(
+            hyperparameters ->
+                hyperparameters.stream()
+                    .sorted(Comparator.comparing(KeyValue::getKey))
+                    .collect(Collectors.toList()),
             executor);
   }
 
@@ -320,7 +341,13 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> attributeHandler.getKeyValues(runId, keys, getAll), executor);
+        .thenCompose(unused -> attributeHandler.getKeyValues(runId, keys, getAll), executor)
+        .thenApply(
+            attributes ->
+                attributes.stream()
+                    .sorted(Comparator.comparing(KeyValue::getKey))
+                    .collect(Collectors.toList()),
+            executor);
   }
 
   public InternalFuture<Void> logMetrics(LogMetrics request) {
@@ -388,7 +415,8 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> tagsHandler.getTags(runId), executor);
+        .thenCompose(unused -> tagsHandler.getTags(runId), executor)
+        .thenApply(tags -> tags.stream().sorted().collect(Collectors.toList()), executor);
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
@@ -591,7 +619,13 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> artifactHandler.getArtifacts(runId, maybeKey), executor);
+        .thenCompose(unused -> artifactHandler.getArtifacts(runId, maybeKey), executor)
+        .thenApply(
+            artifacts ->
+                artifacts.stream()
+                    .sorted(Comparator.comparing(Artifact::getKey))
+                    .collect(Collectors.toList()),
+            executor);
   }
 
   public InternalFuture<Void> deleteArtifacts(DeleteArtifact request) {
@@ -632,7 +666,13 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()), executor);
+        .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()), executor)
+        .thenApply(
+            datasets ->
+                datasets.stream()
+                    .sorted(Comparator.comparing(Artifact::getKey))
+                    .collect(Collectors.toList()),
+            executor);
   }
 
   public InternalFuture<Void> logCodeVersion(LogExperimentRunCodeVersion request) {
@@ -1194,14 +1234,63 @@ public class FutureExperimentRunDAO {
             },
             executor);
 
-    return futureExperimentRuns.thenCombine(
-        futureCount,
-        (runs, count) ->
-            FindExperimentRuns.Response.newBuilder()
-                .addAllExperimentRuns(runs)
-                .setTotalRecords(count)
-                .build(),
-        executor);
+    return futureExperimentRuns
+        .thenApply(this::sortExperimentRunFields, executor)
+        .thenCombine(
+            futureCount,
+            (runs, count) ->
+                FindExperimentRuns.Response.newBuilder()
+                    .addAllExperimentRuns(runs)
+                    .setTotalRecords(count)
+                    .build(),
+            executor);
+  }
+
+  private List<ExperimentRun> sortExperimentRunFields(List<ExperimentRun> experimentRuns) {
+    List<ExperimentRun> sortedRuns = new LinkedList<>();
+    for (ExperimentRun run : experimentRuns) {
+      ExperimentRun.Builder experimentRunBuilder = ExperimentRun.newBuilder(run);
+      experimentRunBuilder
+          .clearTags()
+          .addAllTags(run.getTagsList().stream().sorted().collect(Collectors.toList()))
+          .clearAttributes()
+          .addAllAttributes(
+              run.getAttributesList().stream()
+                  .sorted(Comparator.comparing(KeyValue::getKey))
+                  .collect(Collectors.toList()))
+          .clearHyperparameters()
+          .addAllHyperparameters(
+              run.getHyperparametersList().stream()
+                  .sorted(Comparator.comparing(KeyValue::getKey))
+                  .collect(Collectors.toList()))
+          .clearArtifacts()
+          .addAllArtifacts(
+              run.getArtifactsList().stream()
+                  .sorted(Comparator.comparing(Artifact::getKey))
+                  .collect(Collectors.toList()))
+          .clearDatasets()
+          .addAllDatasets(
+              run.getDatasetsList().stream()
+                  .sorted(Comparator.comparing(Artifact::getKey))
+                  .collect(Collectors.toList()))
+          .clearMetrics()
+          .addAllMetrics(
+              run.getMetricsList().stream()
+                  .sorted(Comparator.comparing(KeyValue::getKey))
+                  .collect(Collectors.toList()))
+          .clearObservations()
+          .addAllObservations(
+              run.getObservationsList().stream()
+                  .sorted(Comparator.comparing(RdbmsUtils::getObservationCompareKey))
+                  .collect(Collectors.toList()))
+          .clearFeatures()
+          .addAllFeatures(
+              run.getFeaturesList().stream()
+                  .sorted(Comparator.comparing(Feature::getName))
+                  .collect(Collectors.toList()));
+      sortedRuns.add(experimentRunBuilder.build());
+    }
+    return sortedRuns;
   }
 
   private InternalFuture<QueryFilterContext> getAccessibleProjectIdsQueryFilterContext(
@@ -1414,7 +1503,11 @@ public class FutureExperimentRunDAO {
             experimentRun ->
                 createExperimentRunHandler
                     .insertExperimentRun(experimentRun)
-                    .thenApply(unused2 -> experimentRun, executor),
+                    .thenApply(
+                        unused2 ->
+                            sortExperimentRunFields(Collections.singletonList(experimentRun))
+                                .get(0),
+                        executor),
             executor);
   }
 

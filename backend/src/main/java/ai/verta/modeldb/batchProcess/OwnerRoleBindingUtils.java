@@ -1,6 +1,7 @@
 package ai.verta.modeldb.batchProcess;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
@@ -41,10 +42,11 @@ public class OwnerRoleBindingUtils {
   private static RoleService roleService;
 
   public static void execute() {
-    if (Config.getInstance().hasAuth()) {
-      authService = AuthServiceUtils.FromConfig(Config.getInstance());
-      uac = UAC.FromConfig(Config.getInstance());
-      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
+    Config config = App.getInstance().config;
+    if (config.hasAuth()) {
+      authService = AuthServiceUtils.FromConfig(config);
+      uac = UAC.FromConfig(config);
+      roleService = RoleServiceUtils.FromConfig(config, authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
       return;

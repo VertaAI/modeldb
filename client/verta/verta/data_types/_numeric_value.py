@@ -59,7 +59,28 @@ class NumericValue(_VertaDataType):
             unit=data.get("unit"),
         )
 
-    def dist(self, other):
+    def diff(self, other):
+        r"""Calculate the difference between `other` and this value.
+
+        Parameters
+        ----------
+        other : :class:`NumericValue`
+            Value to calculate difference from.
+
+        Returns
+        -------
+        float
+            Relative difference between the values.
+
+        Notes
+        -----
+        This method uses relative difference:
+
+        .. math::
+
+            \text{diff}=\left\lvert\frac{\text{self}-\text{other}}{\text{other}}\right\rvert
+
+        """
         if not isinstance(other, type(self)):
             raise TypeError(
                 "`other` must be type {}, not {}".format(type(self), type(other))

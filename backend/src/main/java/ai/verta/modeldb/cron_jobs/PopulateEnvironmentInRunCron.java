@@ -5,6 +5,7 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -44,8 +45,8 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
   private final Integer recordUpdateLimit;
 
   public PopulateEnvironmentInRunCron(
-      ArtifactStoreService artifactStoreService, Integer recordUpdateLimit) {
-    this.artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService);
+      ArtifactStoreService artifactStoreService, Integer recordUpdateLimit, Config config) {
+    this.artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService, config);
     this.recordUpdateLimit = recordUpdateLimit;
   }
 

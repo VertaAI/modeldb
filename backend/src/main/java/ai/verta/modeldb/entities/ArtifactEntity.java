@@ -2,7 +2,6 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.config.Config;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,8 +24,7 @@ public class ArtifactEntity {
     setKey(artifact.getKey());
     setPath(artifact.getPath());
     if (!artifact.getPathOnly()) {
-      setStore_type_path(
-          Config.getInstance().artifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
+      setStore_type_path(app.config.artifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
     }
     setArtifact_type(artifact.getArtifactTypeValue());
     setPath_only(artifact.getPathOnly());
