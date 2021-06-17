@@ -8,7 +8,7 @@ import sys
 import requests
 from verta import Client
 
-import constants  # pylint: disable=relative-import
+from . import constants
 
 
 logger = logging.getLogger(__name__)
