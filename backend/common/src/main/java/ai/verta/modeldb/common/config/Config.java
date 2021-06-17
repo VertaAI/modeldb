@@ -15,6 +15,7 @@ import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import io.opentracing.contrib.grpc.TracingServerInterceptor;
 import io.opentracing.contrib.jdbc.TracingDriver;
 import io.opentracing.util.GlobalTracer;
+import io.opentracing.contrib.jdbi.OpenTracingCollector;
 import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -130,6 +131,10 @@ public abstract class Config {
     hikariDataSource.setPoolName(poolName);
 
     final Jdbi jdbi = Jdbi.create(hikariDataSource);
+    if (enableTrace) {
+      final var tracer = Configuration.fromEnv().getTracer();
+      jdbi.setSqlLogger(new OpenTracingCollector(tracer));
+    }
     final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);
     return new FutureJdbi(jdbi, dbExecutor);
   }

@@ -49,6 +49,9 @@
         <Logger name="io.jaegertracing" level="WARN" additivity="false">
             <AppenderRef ref="ConsoleJSONAppender" level="WARN" />
         </Logger>
+        <Logger name="com.zaxxer.hikari" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
         <Root level="DEBUG" additivity="false">
             <AppenderRef ref="ConsoleJSONAppender" />
         </Root>
