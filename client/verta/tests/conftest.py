@@ -82,7 +82,7 @@ def create_dummy_workspace():
     for client in clean_test_accounts.get_clients():
         current_default_workspace = client._conn.get_default_workspace()
 
-        name = _utils.generate_default_name
+        name = _utils.generate_default_name()
         dummy_orgs.append(client._create_organization(name))
 
         client._conn._set_default_workspace(current_default_workspace)
