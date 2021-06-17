@@ -165,7 +165,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             date_created=time_created, lock_level=lock_level,
         )
 
-    def _create_version_from_standard_verta_model(
+    def _create_standard_model_from_spec(
         self,
         model,
         environment,
@@ -206,7 +206,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             model_ver.delete()
             raise e
 
-    def create_version_from_model_spec(
+    def create_standard_model(
         self,
         model_cls,
         environment,
@@ -253,7 +253,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         model_validator.must_verta(model_cls)
 
-        self._create_version_from_standard_verta_model(
+        self._create_standard_model_from_spec(
             model=model_cls,
             environment=environment,
             code_dependencies=code_dependencies,
@@ -266,7 +266,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             lock_level=lock_level,
         )
 
-    def create_version_from_keras_model(
+    def create_standard_model_from_keras(
         self,
         obj,
         environment,
@@ -306,7 +306,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         model_validator.must_keras(obj)
 
-        self._create_version_from_standard_verta_model(
+        self._create_standard_model_from_spec(
             model=obj,
             environment=environment,
             model_api=model_api,
@@ -317,7 +317,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             lock_level=lock_level,
         )
 
-    def create_version_from_sklearn_model(
+    def create_standard_model_from_sklearn(
         self,
         obj,
         environment,
@@ -357,7 +357,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         model_validator.must_sklearn(obj)
 
-        self._create_version_from_standard_verta_model(
+        self._create_standard_model_from_spec(
             model=obj,
             environment=environment,
             model_api=model_api,
@@ -368,7 +368,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             lock_level=lock_level,
         )
 
-    def create_version_from_torch_model(
+    def create_standard_model_from_torch(
         self,
         obj,
         environment,
@@ -408,7 +408,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         model_validator.must_torch(obj)
 
-        self._create_version_from_standard_verta_model(
+        self._create_standard_model_from_spec(
             model=obj,
             environment=environment,
             model_api=model_api,
@@ -419,7 +419,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             lock_level=lock_level,
         )
 
-    def create_version_from_xgboost_model(
+    def create_standard_model_from_xgboost(
         self,
         obj,
         environment,
@@ -459,7 +459,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         model_validator.must_xgboost_sklearn(obj)
 
-        self._create_version_from_standard_verta_model(
+        self._create_standard_model_from_spec(
             model=obj,
             environment=environment,
             model_api=model_api,

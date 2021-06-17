@@ -18,7 +18,7 @@ from verta.registry import VertaModelBase
 from verta._internal_utils import model_validator
 
 
-def spec_models():
+def verta_models():
     models = []
 
     class ModelSpec(VertaModelBase):
@@ -123,16 +123,16 @@ class TestModelValidator:
 
     @pytest.mark.parametrize(
         "model",
-        spec_models(),
+        verta_models(),
     )
-    def test_model_spec(self, model):
+    def test_verta(self, model):
         assert model_validator.must_verta(model)
 
     @pytest.mark.parametrize(
         "model",
         keras_models() + sklearn_models() + torch_models() + xgboost_models(),
     )
-    def test_not_model_spec(self, model):
+    def test_not_verta(self, model):
         msg_match = r"^model must be a subclass of verta.registry.VertaModelBase.*"
         with pytest.raises(TypeError, match=msg_match):
             model_validator.must_verta(model)
@@ -146,7 +146,7 @@ class TestModelValidator:
 
     @pytest.mark.parametrize(
         "model",
-        spec_models() + sklearn_models() + torch_models() + xgboost_models(),
+        verta_models() + sklearn_models() + torch_models() + xgboost_models(),
     )
     def test_not_keras(self, model):
         msg_match = r"^model must be either a Keras Sequential or Functional model.*"
@@ -162,7 +162,7 @@ class TestModelValidator:
 
     @pytest.mark.parametrize(
         "model",
-        spec_models() + keras_models() + torch_models(),
+        verta_models() + keras_models() + torch_models(),
         # xgboost_models() works because it uses a scikit-learn interface
     )
     def test_not_sklearn(self, model):
@@ -179,7 +179,7 @@ class TestModelValidator:
 
     @pytest.mark.parametrize(
         "model",
-        spec_models() + keras_models() + sklearn_models() + xgboost_models(),
+        verta_models() + keras_models() + sklearn_models() + xgboost_models(),
     )
     def test_not_torch(self, model):
         msg_match = r"^model must be a torch.nn.Module.*"
@@ -195,7 +195,7 @@ class TestModelValidator:
 
     @pytest.mark.parametrize(
         "model",
-        spec_models() + keras_models() + sklearn_models() + torch_models(),
+        verta_models() + keras_models() + sklearn_models() + torch_models(),
     )
     def test_not_xgboost(self, model):
         msg_match = r"^model must be from XGBoost's scikit-learn API.*"
@@ -204,7 +204,7 @@ class TestModelValidator:
 
 
 class TestStandardModels:
-    def test_model_spec(self, registered_model):
+    def test_verta(self, registered_model):
         raise NotImplementedError
 
     def test_keras(self, registered_model):
