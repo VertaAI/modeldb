@@ -88,6 +88,7 @@ public class App implements ApplicationContextAware {
   private static final Logger LOGGER = LogManager.getLogger(App.class);
 
   private static App app = null;
+  public Config config;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -122,7 +123,9 @@ public class App implements ApplicationContextAware {
 
   @Bean
   public GracefulShutdown gracefulShutdown() {
-    Config config = Config.getInstance();
+    if (config == null) {
+      return new GracefulShutdown(30L);
+    }
     return new GracefulShutdown(config.springServer.shutdownTimeout);
   }
 
@@ -156,6 +159,7 @@ public class App implements ApplicationContextAware {
             Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
                 .orElse("false"));
     ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
+    modelDBHibernateUtil.initializedConfigAndDatabase(App.getInstance().config, databaseConfig);
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
       modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
@@ -171,6 +175,7 @@ public class App implements ApplicationContextAware {
           Boolean.parseBoolean(
               Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))
                   .orElse("false"));
+      LOGGER.trace("run Liquibase separate: " + runLiquibaseSeparate);
       if (runLiquibaseSeparate) {
         return true;
       }
@@ -190,14 +195,20 @@ public class App implements ApplicationContextAware {
       // --------------- Start reading properties --------------------------
       Config config = Config.getInstance();
 
-      // Initialize database configuration and maybe run migration
-      if (migrate(config.database, config.migrations)) return;
-
-      // Configure server
+      // Configure spring HTTP server
+      LOGGER.info("Configuring spring HTTP traffic on port " + config.springServer.port);
       System.getProperties().put("server.port", config.springServer.port);
 
       // Initialize services that we depend on
       ServiceSet services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
+
+      // Initialize database configuration and maybe run migration
+      if (migrate(config.database, config.migrations)) {
+        LOGGER.info("Migrations have completed.  System exiting.");
+        initiateShutdown(0);
+        return;
+      }
+      LOGGER.info("Migrations are disabled, starting application.");
 
       // Initialize executor so we don't lose context using Futures
       final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
@@ -233,6 +244,7 @@ public class App implements ApplicationContextAware {
       serverBuilder.intercept(new AuthInterceptor());
 
       // Add APIs
+      LOGGER.info("Initializing backend services.");
       initializeBackendServices(serverBuilder, services, daos, handleExecutor);
 
       // Create the server
@@ -304,7 +316,7 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("Versioning serviceImpl initialized");
     wrapService(serverBuilder, new MetadataServiceImpl(daos));
     LOGGER.trace("Metadata serviceImpl initialized");
-    LOGGER.info("All services initialized and resolved dependency before server start");
+    LOGGER.info("All services initialized and dependencies resolved");
   }
 
   private static void wrapService(ServerBuilder<?> serverBuilder, BindableService bindableService) {

@@ -1305,17 +1305,15 @@ class ExperimentRun(_DeployableEntity):
                     sorted(unlogged_artifact_keys)))
 
         # serialize model
-        try:
-            extension = _artifact_utils.get_file_ext(model)
-        except (TypeError, ValueError):
-            extension = None
         _utils.THREAD_LOCALS.active_experiment_run = self
         try:
             serialized_model, method, model_type = _artifact_utils.serialize_model(
                 model)
         finally:
             _utils.THREAD_LOCALS.active_experiment_run = None
-        if extension is None:
+        try:
+            extension = _artifact_utils.get_file_ext(serialized_model)
+        except (TypeError, ValueError):
             extension = _artifact_utils.ext_from_method(method)
         if self._conf.debug:
             print("[DEBUG] model is type {}".format(model_type))

@@ -3,6 +3,7 @@ package ai.verta.modeldb.batchProcess;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.EntitiesEnum;
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetTypeEnum;
 import ai.verta.modeldb.DatasetVersion;
@@ -67,9 +68,10 @@ public class DatasetToRepositoryMigration {
 
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
-    authService = AuthServiceUtils.FromConfig(ai.verta.modeldb.config.Config.getInstance());
-    uac = UAC.FromConfig(Config.getInstance());
-    roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
+    Config config = App.getInstance().config;
+    authService = AuthServiceUtils.FromConfig(config);
+    uac = UAC.FromConfig(config);
+    roleService = RoleServiceUtils.FromConfig(config, authService, uac);
 
     commitDAO = new CommitDAORdbImpl(authService, roleService);
     repositoryDAO = new RepositoryDAORdbImpl(authService, roleService, commitDAO, metadataDAO);
@@ -77,7 +79,7 @@ public class DatasetToRepositoryMigration {
     metadataDAO = new MetadataDAORdbImpl();
     experimentRunDAO =
         new ExperimentRunDAORdbImpl(
-            authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
+            config, authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
     migrateDatasetsToRepositories();
   }
 

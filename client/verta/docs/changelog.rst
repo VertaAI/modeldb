@@ -37,6 +37,20 @@ Changelog
      <>`__
 
 
+v0.18.1 (2021-06-17)
+--------------------
+
+Enhancements
+^^^^^^^^^^^^
+- `raise warning when duplicate attributes are ignored in model versions
+  <https://github.com/VertaAI/modeldb/pull/2405>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix zip-unzip magic for directories logged with run.log_model()
+  <https://github.com/VertaAI/modeldb/pull/2420>`__
+
+
 v0.18.0 (2021-06-11)
 --------------------
 

@@ -75,6 +75,8 @@ def get_file_ext(file):
     """
     Obtain the filename extension of `file`.
 
+    This method assumes `file` is accessible on the user's filesystem.
+
     Parameters
     ----------
     file : str or file handle
@@ -93,7 +95,7 @@ def get_file_ext(file):
         If the filepath lacks an extension.
 
     """
-    if isinstance(file, six.string_types):
+    if isinstance(file, six.string_types) and not os.path.isdir(file):
         filepath = file
     elif hasattr(file, 'read') and hasattr(file, 'name'):  # `open()` object
         filepath = file.name

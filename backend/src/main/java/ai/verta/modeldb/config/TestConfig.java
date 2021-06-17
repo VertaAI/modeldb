@@ -2,11 +2,10 @@ package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.config.InvalidConfigException;
-import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.futures.FutureJdbi;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class TestConfig extends Config {
@@ -60,5 +59,14 @@ public class TestConfig extends Config {
   @Override
   public boolean hasServiceAccount() {
     return service_user != null;
+  }
+
+  public FutureJdbi getJdbi() {
+    if (this.jdbi == null) {
+      // Initialize HikariCP and jdbi
+      final var databaseConfig = config.database;
+      this.jdbi = initializeJdbi(databaseConfig, "modeldb-test");
+    }
+    return this.jdbi;
   }
 }

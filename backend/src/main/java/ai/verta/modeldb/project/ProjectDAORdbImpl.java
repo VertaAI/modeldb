@@ -11,7 +11,6 @@ import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -163,7 +162,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     this.experimentDAO = experimentDAO;
     this.experimentRunDAO = experimentRunDAO;
     App app = App.getInstance();
-    this.starterProjectID = Config.getInstance().starterProject;
+    this.starterProjectID = app.config.starterProject;
   }
 
   /**

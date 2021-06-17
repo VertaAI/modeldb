@@ -54,6 +54,8 @@ public class ProjectTest extends TestsInit {
   // ExperimentRun Entities
   private static ExperimentRun experimentRun;
 
+  private static Dataset dataset;
+
   @Before
   public void createEntities() {
     // Create all entities
@@ -81,6 +83,14 @@ public class ProjectTest extends TestsInit {
 
     // ExperimentRun Entities
     experimentRun = null;
+
+    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
+    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
+    LOGGER.info("Dataset deleted successfully");
+    LOGGER.info(deleteDatasetResponse.toString());
+    assertTrue(deleteDatasetResponse.getStatus());
+
+    dataset = null;
 
     projectMap = new HashMap<>();
   }
@@ -158,11 +168,37 @@ public class ProjectTest extends TestsInit {
   }
 
   private static void createExperimentRunEntities() {
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
+    CreateDataset createDatasetRequest =
+        DatasetTest.getDatasetRequest("Dataset-" + new Date().getTime());
+    CreateDataset.Response createDatasetResponse =
+        datasetServiceStub.createDataset(createDatasetRequest);
+    dataset = createDatasetResponse.getDataset();
+    CreateDatasetVersion createDatasetVersionRequest =
+        DatasetVersionTest.getDatasetVersionRequest(dataset.getId());
+    CreateDatasetVersion.Response createDatasetVersionResponse =
+        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
+    DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
 
+    List<Artifact> datasets = new ArrayList<>();
+    datasets.add(
+        Artifact.newBuilder()
+            .setKey("Google developer datasets")
+            .setPath("This is data artifact type in Google developer datasets")
+            .setArtifactType(ArtifactType.MODEL)
+            .setLinkedArtifactId(datasetVersion1.getId())
+            .build());
+    datasets.add(
+        Artifact.newBuilder()
+            .setKey("Google Pay datasets")
+            .setPath("This is data artifact type in Google Pay datasets")
+            .setArtifactType(ArtifactType.DATA)
+            .setLinkedArtifactId(datasetVersion1.getId())
+            .build());
     CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
+        ExperimentRunTest.getCreateExperimentRunRequest(
             project.getId(), experiment.getId(), "ExperimentRun_sprt_1");
+    createExperimentRunRequest =
+        createExperimentRunRequest.toBuilder().clearDatasets().addAllDatasets(datasets).build();
     KeyValue metric1 =
         KeyValue.newBuilder()
             .setKey("loss")
@@ -2817,7 +2853,7 @@ public class ProjectTest extends TestsInit {
             GetProjectDatasetCount.newBuilder().setProjectId(project.getId()).build());
     assertEquals(
         "Project dataset count not match with expected Project dataset count",
-        experimentRun.getDatasetsCount(),
+        1,
         response.getDatasetCount());
   }
 }

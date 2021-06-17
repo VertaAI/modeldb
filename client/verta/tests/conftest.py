@@ -22,16 +22,12 @@ from verta._internal_utils import _utils
 
 import hypothesis
 import pytest
-from . import utils
+from . import constants, utils
+from . import clean_test_accounts
 
 
 RANDOM_SEED = 0
 INPUT_LENGTH = 12  # length of iterable input fixture
-
-DEFAULT_HOST = None
-DEFAULT_PORT = None
-DEFAULT_EMAIL = None
-DEFAULT_DEV_KEY = None
 
 
 # hypothesis on Jenkins is apparently too slow
@@ -58,45 +54,84 @@ def pytest_collection_modifyitems(config, items):
                 item.add_marker(skip_oss)
 
 
+@pytest.fixture(autouse=True)
+def mark_time():
+    print("\n[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
+    yield
+    print(
+        "\n[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow())
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_dummy_workspace():
+    """Prevent tests from uncontrollably changing accounts' default workspace.
+
+    When an account creates its first organization, or is added to its first
+    organization, UAC sets that organization as the account's default
+    workspace. This is undesired during test runs, because several tests
+    rely on new arbitrary orgs *not* being the active client's default
+    workspace.
+
+    This fixture creates a dummy "first" organization for each account, so
+    that organizations created for individual tests won't trigger this behavior
+    from UAC.
+
+    """
+    dummy_orgs = []
+    for client in clean_test_accounts.get_clients():
+        current_default_workspace = client._conn.get_default_workspace()
+
+        name = _utils.generate_default_name()
+        dummy_orgs.append(client._create_organization(name))
+
+        client._conn._set_default_workspace(current_default_workspace)
+
+    yield
+
+    for org in dummy_orgs:
+        org.delete()
+
+
 @pytest.fixture(scope="session")
 def host():
-    return os.environ.get("VERTA_HOST", DEFAULT_HOST)
+    return constants.HOST
 
 
 @pytest.fixture(scope="session")
 def port():
-    return os.environ.get("VERTA_PORT", DEFAULT_PORT)
+    return constants.PORT
 
 
 @pytest.fixture(scope="session")
 def email():
-    return os.environ.get("VERTA_EMAIL", DEFAULT_EMAIL)
+    return constants.EMAIL
 
 
 @pytest.fixture(scope="session")
 def dev_key():
-    return os.environ.get("VERTA_DEV_KEY", DEFAULT_DEV_KEY)
+    return constants.DEV_KEY
 
 
 # for collaboration tests
 @pytest.fixture(scope="session")
 def email_2():
-    return os.environ.get("VERTA_EMAIL_2")
+    return constants.EMAIL_2
 
 
 @pytest.fixture(scope="session")
 def dev_key_2():
-    return os.environ.get("VERTA_DEV_KEY_2")
+    return constants.DEV_KEY_2
 
 
 @pytest.fixture(scope="session")
 def email_3():
-    return os.environ.get("VERTA_EMAIL_3")
+    return constants.EMAIL_3
 
 
 @pytest.fixture(scope="session")
 def dev_key_3():
-    return os.environ.get("VERTA_DEV_KEY_3")
+    return constants.DEV_KEY_3
 
 
 @pytest.fixture
@@ -240,8 +275,13 @@ def output_path():
     shutil.rmtree(dirpath)
 
 
-@pytest.fixture
-def dir_and_files(strs, tmp_path):
+@pytest.fixture(
+    params=[  # directory name
+        "foo",
+        "foo.bar",  # ensure we can handle directories with periods
+    ]
+)
+def dir_and_files(strs, tmp_path, request):
     """
     Creates nested directory of empty files.
 
@@ -251,6 +291,8 @@ def dir_and_files(strs, tmp_path):
     filepaths : set of str
 
     """
+    dirpath = tmp_path / request.param
+
     filepaths = {
         os.path.join(strs[0], strs[1], strs[2]),
         os.path.join(strs[0], strs[1], strs[3]),
@@ -261,11 +303,11 @@ def dir_and_files(strs, tmp_path):
     }
 
     for filepath in filepaths:
-        p = tmp_path / filepath
+        p = dirpath / filepath
         p.parent.mkdir(parents=True, exist_ok=True)
         p.touch()
 
-    return str(tmp_path), filepaths
+    return str(dirpath), filepaths
 
 
 @pytest.fixture
@@ -300,18 +342,12 @@ def in_tempdir(tempdir_root):
         shutil.rmtree(dirpath)
 
 
-@pytest.fixture(autouse=True)
-def mark_time():
-    print("\n[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
-    yield
-    print(
-        "\n[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow())
-    )
-
-
 @pytest.fixture
 def client(host, port, email, dev_key, created_entities):
     client = Client(host, port, email, dev_key, debug=True)
+    client._conn._set_default_workspace(
+        client._conn.get_personal_workspace(),
+    )
 
     yield client
 
@@ -340,8 +376,16 @@ def client_2(host, port, email_2, dev_key_2, created_entities):
         pytest.skip("second account credentials not present")
 
     client = Client(host, port, email_2, dev_key_2, debug=True)
+    client._conn._set_default_workspace(
+        client._conn.get_personal_workspace(),
+    )
 
-    return client
+    yield client
+
+    proj = client._ctx.proj
+    if (proj is not None
+            and proj.id not in {entity.id for entity in created_entities}):
+        proj.delete()
 
 
 @pytest.fixture
@@ -351,8 +395,16 @@ def client_3(host, port, email_3, dev_key_3, created_entities):
         pytest.skip("second account credentials not present")
 
     client = Client(host, port, email_3, dev_key_3, debug=True)
+    client._conn._set_default_workspace(
+        client._conn.get_personal_workspace(),
+    )
 
-    return client
+    yield client
+
+    proj = client._ctx.proj
+    if (proj is not None
+            and proj.id not in {entity.id for entity in created_entities}):
+        proj.delete()
 
 
 @pytest.fixture

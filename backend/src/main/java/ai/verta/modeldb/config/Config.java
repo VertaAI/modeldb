@@ -14,7 +14,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
   public TelemetryConfig telemetry;
   public TrialConfig trial;
   public List<MigrationConfig> migrations;
-  private FutureJdbi jdbi;
+  protected FutureJdbi jdbi;
 
   public static Config getInstance() throws InternalErrorException {
     if (config == null) {

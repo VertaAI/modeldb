@@ -34,8 +34,8 @@ public class NFSService implements ArtifactStoreService {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSService.class);
   private final Path fileStorageLocation;
-  private App app = App.getInstance();
-  private Config config = Config.getInstance();
+  private final App app = App.getInstance();
+  private final Config config = app.config;
 
   /**
    * Create NFS service bean by springBoot and create root folder if not exists
