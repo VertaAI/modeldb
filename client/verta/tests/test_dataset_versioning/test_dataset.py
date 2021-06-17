@@ -1,4 +1,5 @@
 import collections
+import time
 
 import pytest
 import requests
@@ -78,9 +79,9 @@ class TestCreateGet:
 
         dataset_version = dataset.create_version(Path(["conftest.py"]))
 
+        time.sleep(30)  # wait for reconciler
         dataset._fetch_with_no_cache()
         assert dataset._msg.time_updated > time_updated
-        # TODO: might be close but not equal
         assert dataset._msg.time_updated == dataset_version._msg.time_logged
 
     def test_create(self, client, created_entities):
