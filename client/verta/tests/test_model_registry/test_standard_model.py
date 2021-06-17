@@ -2,8 +2,6 @@
 
 """ModelVersion.create_version_from_*() methods"""
 
-import pickle
-
 import pytest
 from verta._internal_utils import importer
 
@@ -16,25 +14,16 @@ xgb = importer.maybe_dependency("xgboost")
 if any(module is None for module in [ensemble, keras, np, svm, torch, xgb]):
     pytest.skip("missing dependency", allow_module_level=True)
 
-from verta.registry import VertaModelBase
 from verta.environment import Python
 from verta._internal_utils import model_validator
+
+from ..models import verta_model
 
 
 def verta_models():
     models = []
 
-    class ModelSpec(VertaModelBase):
-        ARTIFACT_KEY = "artifact"
-
-        def __init__(self, artifacts):
-            with open(artifacts[self.ARTIFACT_KEY], "rb") as f:
-                self.artifact = pickle.load(f)
-
-        def predict(self, input):
-            return self.artifact
-
-    models.append(ModelSpec)
+    models.append(verta_model.VertaModel)
 
     return models
 
@@ -220,7 +209,6 @@ class TestStandardModels:
         model_ver = registered_model.create_standard_model(
             model,
             Python([]),
-            code_dependencies=[],
             artifacts={model.ARTIFACT_KEY: artifact_value},
         )
 
