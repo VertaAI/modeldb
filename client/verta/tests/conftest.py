@@ -275,8 +275,13 @@ def output_path():
     shutil.rmtree(dirpath)
 
 
-@pytest.fixture
-def dir_and_files(strs, tmp_path):
+@pytest.fixture(
+    params=[  # directory name
+        "foo",
+        "foo.bar",  # ensure we can handle directories with periods
+    ]
+)
+def dir_and_files(strs, tmp_path, request):
     """
     Creates nested directory of empty files.
 
@@ -286,6 +291,8 @@ def dir_and_files(strs, tmp_path):
     filepaths : set of str
 
     """
+    dirpath = tmp_path / request.param
+
     filepaths = {
         os.path.join(strs[0], strs[1], strs[2]),
         os.path.join(strs[0], strs[1], strs[3]),
@@ -296,11 +303,11 @@ def dir_and_files(strs, tmp_path):
     }
 
     for filepath in filepaths:
-        p = tmp_path / filepath
+        p = dirpath / filepath
         p.parent.mkdir(parents=True, exist_ok=True)
         p.touch()
 
-    return str(tmp_path), filepaths
+    return str(dirpath), filepaths
 
 
 @pytest.fixture
