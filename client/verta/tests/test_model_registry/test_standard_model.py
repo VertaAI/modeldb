@@ -2,6 +2,8 @@
 
 """ModelVersion.create_version_from_*() methods"""
 
+import pickle
+
 import pytest
 from verta._internal_utils import importer
 
@@ -15,6 +17,7 @@ if any(module is None for module in [ensemble, keras, np, svm, torch, xgb]):
     pytest.skip("missing dependency", allow_module_level=True)
 
 from verta.registry import VertaModelBase
+from verta.environment import Python
 from verta._internal_utils import model_validator
 
 
@@ -22,11 +25,14 @@ def verta_models():
     models = []
 
     class ModelSpec(VertaModelBase):
+        ARTIFACT_KEY = "artifact"
+
         def __init__(self, artifacts):
-            pass
+            with open(artifacts[self.ARTIFACT_KEY], "rb") as f:
+                self.artifact = pickle.load(f)
 
         def predict(self, input):
-            return np.random.random(size=(3, 1)).tolist()
+            return self.artifact
 
     models.append(ModelSpec)
 
@@ -204,17 +210,48 @@ class TestModelValidator:
 
 
 class TestStandardModels:
-    def test_verta(self, registered_model):
+    @pytest.mark.parametrize(
+        "model",
+        verta_models(),
+    )
+    def test_verta(self, registered_model, endpoint, model):
+        artifact_value = [{"a": 1}]
+
+        model_ver = registered_model.create_standard_model(
+            model,
+            Python([]),
+            code_dependencies=[],
+            artifacts={model.ARTIFACT_KEY: artifact_value},
+        )
+
+        endpoint.update(model_ver, wait=True)
+        deployed_model = endpoint.get_deployed_model()
+        assert deployed_model.predict(artifact_value) == artifact_value
+
+    @pytest.mark.parametrize(
+        "model",
+        keras_models(),
+    )
+    def test_keras(self, registered_model, model):
         raise NotImplementedError
 
-    def test_keras(self, registered_model):
+    @pytest.mark.parametrize(
+        "model",
+        sklearn_models(),
+    )
+    def test_sklearn(self, registered_model, model):
         raise NotImplementedError
 
-    def test_sklearn(self, registered_model):
+    @pytest.mark.parametrize(
+        "model",
+        torch_models(),
+    )
+    def test_torch(self, registered_model, model):
         raise NotImplementedError
 
-    def test_torch(self, registered_model):
-        raise NotImplementedError
-
-    def test_xgboost(self, registered_model):
+    @pytest.mark.parametrize(
+        "model",
+        xgboost_models(),
+    )
+    def test_xgboost(self, registered_model, model):
         raise NotImplementedError
