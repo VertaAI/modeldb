@@ -23,6 +23,7 @@ from verta._internal_utils import _utils
 import hypothesis
 import pytest
 from . import constants, utils
+from . import clean_test_accounts
 
 
 RANDOM_SEED = 0
@@ -51,6 +52,45 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "oss" in item.keywords:
                 item.add_marker(skip_oss)
+
+
+@pytest.fixture(autouse=True)
+def mark_time():
+    print("\n[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
+    yield
+    print(
+        "\n[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow())
+    )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def create_dummy_workspace():
+    """Prevent tests from uncontrollably changing accounts' default workspace.
+
+    When an account creates its first organization, or is added to its first
+    organization, UAC sets that organization as the account's default
+    workspace. This is undesired during test runs, because several tests
+    rely on new arbitrary orgs *not* being the active client's default
+    workspace.
+
+    This fixture creates a dummy "first" organization for each account, so
+    that organizations created for individual tests won't trigger this behavior
+    from UAC.
+
+    """
+    dummy_orgs = []
+    for client in clean_test_accounts.get_clients():
+        current_default_workspace = client._conn.get_default_workspace()
+
+        name = _utils.generate_default_name
+        dummy_orgs.append(client._create_organization(name))
+
+        client._conn._set_default_workspace(current_default_workspace)
+
+    yield
+
+    for org in dummy_orgs:
+        org.delete()
 
 
 @pytest.fixture(scope="session")
@@ -293,15 +333,6 @@ def in_tempdir(tempdir_root):
             yield dirpath
     finally:
         shutil.rmtree(dirpath)
-
-
-@pytest.fixture(autouse=True)
-def mark_time():
-    print("\n[TEST LOG] test setup begun {} UTC".format(datetime.datetime.utcnow()))
-    yield
-    print(
-        "\n[TEST LOG] test teardown completed {} UTC".format(datetime.datetime.utcnow())
-    )
 
 
 @pytest.fixture
