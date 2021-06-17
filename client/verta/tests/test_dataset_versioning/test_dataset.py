@@ -79,7 +79,7 @@ class TestCreateGet:
 
         dataset_version = dataset.create_version(Path(["conftest.py"]))
 
-        time.sleep(30)  # wait for reconciler
+        time.sleep(60)  # wait for reconciler
         dataset._fetch_with_no_cache()
         assert dataset._msg.time_updated > time_updated
         assert dataset._msg.time_updated == dataset_version._msg.time_logged
