@@ -206,6 +206,8 @@ class RegisteredModel(_entity._ModelDBEntity):
             model_ver.delete()
             raise e
 
+        return model_ver
+
     def create_standard_model(
         self,
         model_cls,
@@ -253,7 +255,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         model_validator.must_verta(model_cls)
 
-        self._create_standard_model_from_spec(
+        return self._create_standard_model_from_spec(
             model=model_cls,
             environment=environment,
             code_dependencies=code_dependencies,
@@ -306,7 +308,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         model_validator.must_keras(obj)
 
-        self._create_standard_model_from_spec(
+        return self._create_standard_model_from_spec(
             model=obj,
             environment=environment,
             model_api=model_api,
@@ -357,7 +359,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         model_validator.must_sklearn(obj)
 
-        self._create_standard_model_from_spec(
+        return self._create_standard_model_from_spec(
             model=obj,
             environment=environment,
             model_api=model_api,
@@ -408,7 +410,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         model_validator.must_torch(obj)
 
-        self._create_standard_model_from_spec(
+        return self._create_standard_model_from_spec(
             model=obj,
             environment=environment,
             model_api=model_api,
@@ -459,7 +461,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         model_validator.must_xgboost_sklearn(obj)
 
-        self._create_standard_model_from_spec(
+        return self._create_standard_model_from_spec(
             model=obj,
             environment=environment,
             model_api=model_api,
