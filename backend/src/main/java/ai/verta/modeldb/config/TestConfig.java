@@ -65,7 +65,7 @@ public class TestConfig extends Config {
     if (this.jdbi == null) {
       // Initialize HikariCP and jdbi
       final var databaseConfig = config.database;
-      this.jdbi = initializeJdbi(databaseConfig, "modeldb-test");
+      this.jdbi = initializeFutureJdbi(databaseConfig, "modeldb-test");
     }
     return this.jdbi;
   }

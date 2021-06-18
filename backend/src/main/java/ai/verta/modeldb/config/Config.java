@@ -58,7 +58,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
     if (this.jdbi == null) {
       // Initialize HikariCP and jdbi
       final var databaseConfig = config.database;
-      this.jdbi = initializeJdbi(databaseConfig, "modeldb");
+      this.jdbi = initializeFutureJdbi(databaseConfig, "modeldb");
     }
     return this.jdbi;
   }
