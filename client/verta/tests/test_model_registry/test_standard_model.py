@@ -60,6 +60,7 @@ def unsupported_keras_models():
             x = self.layer1(inputs)
             x = self.layer2(x)
             return self.layer3(x)
+
     models.append(MyModel())
 
     return models
@@ -154,7 +155,9 @@ def unsupported_xgboost_models():
 
     # from https://xgboost.readthedocs.io/en/latest/python/model.html
     X, y = datasets.make_classification(
-        n_samples=100, n_informative=5, n_classes=3,
+        n_samples=100,
+        n_informative=5,
+        n_classes=3,
     )
     dtrain = xgb.DMatrix(data=X, label=y)
     models.append(
@@ -221,7 +224,9 @@ class TestModelValidator:
         # xgboost_models() works because it uses a scikit-learn interface
     )
     def test_not_sklearn(self, model):
-        msg_match = r"^model must be a scikit-learn estimator with a predict\(\) method.*"
+        msg_match = (
+            r"^model must be a scikit-learn estimator with a predict\(\) method.*"
+        )
         with pytest.raises(TypeError, match=msg_match):
             model_validator.must_sklearn(model)
 
@@ -250,7 +255,11 @@ class TestModelValidator:
 
     @pytest.mark.parametrize(
         "model",
-        verta_models() + keras_models() + sklearn_models() + torch_models() + unsupported_xgboost_models(),
+        verta_models()
+        + keras_models()
+        + sklearn_models()
+        + torch_models()
+        + unsupported_xgboost_models(),
     )
     def test_not_xgboost(self, model):
         msg_match = r"^model must be from XGBoost's scikit-learn API.*"
@@ -305,13 +314,19 @@ class TestStandardModels:
 
     @pytest.mark.parametrize(
         "model",
-        verta_models() + unsupported_keras_models() + sklearn_models() + torch_models() + xgboost_models(),
+        verta_models()
+        + unsupported_keras_models()
+        + sklearn_models()
+        + torch_models()
+        + xgboost_models(),
     )
     def test_not_keras(self, registered_model, model):
-        with pytest.raises((
-            TypeError,
-            NotImplementedError,  # Keras raises this for subclassing API
-        )):
+        with pytest.raises(
+            (
+                TypeError,
+                NotImplementedError,  # Keras raises this for subclassing API
+            )
+        ):
             registered_model.create_standard_model_from_keras(
                 model,
                 Python(["tensorflow"]),
@@ -390,7 +405,11 @@ class TestStandardModels:
 
     @pytest.mark.parametrize(
         "model",
-        verta_models() + keras_models() + sklearn_models() + torch_models() + unsupported_xgboost_models(),
+        verta_models()
+        + keras_models()
+        + sklearn_models()
+        + torch_models()
+        + unsupported_xgboost_models(),
     )
     def test_not_xgboost(self, registered_model, model):
         with pytest.raises(TypeError):

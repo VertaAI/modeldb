@@ -70,8 +70,8 @@ class _DeployableEntity(_ModelDBEntity):
             Model. For deployment, this parameter can be one of the following types:
                 - Keras model object from their `Sequential model API <https://keras.io/guides/sequential_model/>`__
                   or `Functional model API <https://keras.io/guides/functional_api/>`__
-                - any scikit-learn model object that implements ``predict()``
                 - any PyTorch model object
+                - any scikit-learn model object that implements ``predict()``
                 - XGBoost model object from their `scikit-learn API
                   <https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn>`__
                 - user-defined Standard Verta Model class that inherits from :class:`~verta.registry.VertaModelBase`
