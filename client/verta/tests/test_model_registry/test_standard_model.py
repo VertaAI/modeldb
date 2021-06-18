@@ -3,16 +3,6 @@
 """ModelVersion.create_version_from_*() methods"""
 
 import pytest
-from verta._internal_utils import importer
-
-ensemble = importer.maybe_dependency("sklearn.ensemble")
-keras = importer.maybe_dependency("tensorflow.keras")
-np = importer.maybe_dependency("numpy")
-svm = importer.maybe_dependency("sklearn.svm")
-torch = importer.maybe_dependency("torch")
-xgb = importer.maybe_dependency("xgboost")
-if any(module is None for module in [ensemble, keras, np, svm, torch, xgb]):
-    pytest.skip("missing dependency", allow_module_level=True)
 
 from verta.environment import Python
 from verta._internal_utils import model_validator
@@ -29,6 +19,8 @@ def verta_models():
 
 
 def keras_models():
+    keras = pytest.importorskip("tensorflow.keras")
+
     models = []
 
     # sequential API
@@ -52,6 +44,10 @@ def keras_models():
 
 
 def sklearn_models():
+    np = pytest.importorskip("numpy")
+    ensemble = pytest.importorskip("sklearn.ensemble")
+    svm = pytest.importorskip("sklearn.svm")
+
     models = []
 
     model = ensemble.RandomForestClassifier()
@@ -72,6 +68,8 @@ def sklearn_models():
 
 
 def torch_models():
+    torch = pytest.importorskip("torch")
+
     models = []
 
     # subclass API
@@ -101,6 +99,9 @@ def torch_models():
 
 
 def xgboost_models():
+    np = pytest.importorskip("numpy")
+    xgb = pytest.importorskip("xgboost")
+
     models = []
 
     model = xgb.XGBClassifier(use_label_encoder=False)
@@ -221,6 +222,8 @@ class TestStandardModels:
         keras_models(),
     )
     def test_keras(self, registered_model, endpoint, model):
+        np = pytest.importorskip("numpy")
+
         model_ver = registered_model.create_standard_model_from_keras(
             model,
             Python(["tensorflow"]),
@@ -235,6 +238,8 @@ class TestStandardModels:
         sklearn_models(),
     )
     def test_sklearn(self, registered_model, endpoint, model):
+        np = pytest.importorskip("numpy")
+
         model_ver = registered_model.create_standard_model_from_sklearn(
             model,
             Python(["scikit-learn"]),
@@ -249,6 +254,8 @@ class TestStandardModels:
         torch_models(),
     )
     def test_torch(self, registered_model, endpoint, model):
+        np = pytest.importorskip("numpy")
+
         model_ver = registered_model.create_standard_model_from_torch(
             model,
             Python(["torch"]),
@@ -263,6 +270,8 @@ class TestStandardModels:
         xgboost_models(),
     )
     def test_xgboost(self, registered_model, endpoint, model):
+        np = pytest.importorskip("numpy")
+
         model_ver = registered_model.create_standard_model_from_xgboost(
             model,
             Python(["xgboost"]),
