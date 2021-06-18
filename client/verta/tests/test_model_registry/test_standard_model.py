@@ -381,7 +381,7 @@ class TestStandardModels:
 
         model_ver = registered_model.create_standard_model_from_xgboost(
             model,
-            Python(["xgboost"]),
+            Python(["scikit-learn", "xgboost"]),
         )
 
         endpoint.update(model_ver, wait=True)
@@ -396,5 +396,5 @@ class TestStandardModels:
         with pytest.raises(TypeError):
             registered_model.create_standard_model_from_xgboost(
                 model,
-                Python(["xgboost"]),
+                Python(["scikit-learn", "xgboost"]),
             )
