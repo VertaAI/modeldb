@@ -116,7 +116,13 @@ public abstract class Config {
     return Optional.ofNullable(tracingClientInterceptor);
   }
 
-  public FutureJdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
+  public FutureJdbi initializeFutureJdbi(DatabaseConfig databaseConfig, String poolName) {
+    final Jdbi jdbi = initializeJdbi(databaseConfig, poolName);
+    final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);
+    return new FutureJdbi(jdbi, dbExecutor);
+  }
+
+  public Jdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
     final var hikariDataSource = new HikariDataSource();
     final var dbUrl = RdbConfig.buildDatabaseConnectionString(databaseConfig.RdbConfiguration);
     hikariDataSource.setJdbcUrl(dbUrl);
@@ -133,8 +139,7 @@ public abstract class Config {
       GlobalTracer.registerIfAbsent(tracer);
     }
     final Jdbi jdbi = Jdbi.create(hikariDataSource).installPlugins();
-    final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);
-    return new FutureJdbi(jdbi, dbExecutor);
+    return jdbi;
   }
 
 }
