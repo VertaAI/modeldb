@@ -308,7 +308,10 @@ class TestStandardModels:
         verta_models() + unsupported_keras_models() + sklearn_models() + torch_models() + xgboost_models(),
     )
     def test_not_keras(self, registered_model, model):
-        with pytest.raises(TypeError):
+        with pytest.raises((
+            TypeError,
+            NotImplementedError,  # Keras raises this for subclassing API
+        )):
             registered_model.create_standard_model_from_keras(
                 model,
                 Python(["tensorflow"]),
