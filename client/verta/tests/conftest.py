@@ -345,9 +345,6 @@ def in_tempdir(tempdir_root):
 @pytest.fixture
 def client(host, port, email, dev_key, created_entities):
     client = Client(host, port, email, dev_key, debug=True)
-    client._conn._set_default_workspace(
-        client._conn.get_personal_workspace(),
-    )
 
     yield client
 
@@ -376,16 +373,8 @@ def client_2(host, port, email_2, dev_key_2, created_entities):
         pytest.skip("second account credentials not present")
 
     client = Client(host, port, email_2, dev_key_2, debug=True)
-    client._conn._set_default_workspace(
-        client._conn.get_personal_workspace(),
-    )
 
-    yield client
-
-    proj = client._ctx.proj
-    if (proj is not None
-            and proj.id not in {entity.id for entity in created_entities}):
-        proj.delete()
+    return client
 
 
 @pytest.fixture
@@ -395,16 +384,8 @@ def client_3(host, port, email_3, dev_key_3, created_entities):
         pytest.skip("second account credentials not present")
 
     client = Client(host, port, email_3, dev_key_3, debug=True)
-    client._conn._set_default_workspace(
-        client._conn.get_personal_workspace(),
-    )
 
-    yield client
-
-    proj = client._ctx.proj
-    if (proj is not None
-            and proj.id not in {entity.id for entity in created_entities}):
-        proj.delete()
+    return client
 
 
 @pytest.fixture
