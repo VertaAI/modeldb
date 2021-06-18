@@ -220,26 +220,54 @@ class TestStandardModels:
         "model",
         keras_models(),
     )
-    def test_keras(self, registered_model, model):
-        raise NotImplementedError
+    def test_keras(self, registered_model, endpoint, model):
+        model_ver = registered_model.create_standard_model_from_keras(
+            model,
+            Python(["tensorflow"]),
+        )
+
+        endpoint.update(model_ver, wait=True)
+        deployed_model = endpoint.get_deployed_model()
+        assert deployed_model.predict(np.random.random(size=(3, 3)))
 
     @pytest.mark.parametrize(
         "model",
         sklearn_models(),
     )
-    def test_sklearn(self, registered_model, model):
-        raise NotImplementedError
+    def test_sklearn(self, registered_model, endpoint, model):
+        model_ver = registered_model.create_standard_model_from_sklearn(
+            model,
+            Python(["scikit-learn"]),
+        )
+
+        endpoint.update(model_ver, wait=True)
+        deployed_model = endpoint.get_deployed_model()
+        assert deployed_model.predict(np.random.random(size=(3, 3)))
 
     @pytest.mark.parametrize(
         "model",
         torch_models(),
     )
-    def test_torch(self, registered_model, model):
-        raise NotImplementedError
+    def test_torch(self, registered_model, endpoint, model):
+        model_ver = registered_model.create_standard_model_from_torch(
+            model,
+            Python(["torch"]),
+        )
+
+        endpoint.update(model_ver, wait=True)
+        deployed_model = endpoint.get_deployed_model()
+        assert deployed_model.predict(np.random.random(size=(3, 3)))
 
     @pytest.mark.parametrize(
         "model",
         xgboost_models(),
     )
-    def test_xgboost(self, registered_model, model):
-        raise NotImplementedError
+    def test_xgboost(self, registered_model, endpoint, model):
+        model_ver = registered_model.create_standard_model_from_xgboost(
+            model,
+            Python(["xgboost"]),
+        )
+
+        endpoint.update(model_ver, wait=True)
+        deployed_model = endpoint.get_deployed_model()
+        assert deployed_model.predict(np.random.random(size=(3, 3)))
