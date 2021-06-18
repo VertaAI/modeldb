@@ -15,16 +15,15 @@ import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import io.opentracing.contrib.grpc.TracingServerInterceptor;
 import io.opentracing.contrib.jdbc.TracingDriver;
 import io.opentracing.util.GlobalTracer;
-import org.jdbi.v3.core.Jdbi;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import org.jdbi.v3.core.Jdbi;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 public abstract class Config {
   public static String MISSING_REQUIRED = "required field is missing";
@@ -129,7 +128,11 @@ public abstract class Config {
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);
 
-    final Jdbi jdbi = Jdbi.create(hikariDataSource);
+    if (enableTrace) {
+      final var tracer = Configuration.fromEnv().getTracer();
+      GlobalTracer.registerIfAbsent(tracer);
+    }
+    final Jdbi jdbi = Jdbi.create(hikariDataSource).installPlugins();
     final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);
     return new FutureJdbi(jdbi, dbExecutor);
   }
