@@ -91,7 +91,7 @@ public abstract class Config {
     if (tracingServerInterceptor == null) {
       Tracer tracer = Configuration.fromEnv().getTracer();
       tracingServerInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
-      GlobalTracer.register(tracer);
+      GlobalTracer.registerIfAbsent(tracer);
       TracingDriver.load();
       TracingDriver.setInterceptorMode(true);
       TracingDriver.setInterceptorProperty(true);
@@ -128,10 +128,6 @@ public abstract class Config {
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);
 
-    if (enableTrace) {
-      final var tracer = Configuration.fromEnv().getTracer();
-      GlobalTracer.registerIfAbsent(tracer);
-    }
     final Jdbi jdbi = Jdbi.create(hikariDataSource).installPlugins();
     final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);
     return new FutureJdbi(jdbi, dbExecutor);
