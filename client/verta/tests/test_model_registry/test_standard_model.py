@@ -43,6 +43,28 @@ def keras_models():
     return models
 
 
+def unsupported_keras_models():
+    keras = pytest.importorskip("tensorflow.keras")
+
+    models = []
+
+    # subclassing API
+    class MyModel(keras.Model):
+        def __init__(self):
+            super(MyModel, self).__init__()
+            self.layer1 = keras.layers.Dense(3, activation="linear")
+            self.layer2 = keras.layers.Dense(2, activation="relu")
+            self.layer3 = keras.layers.Dense(2, activation="sigmoid")
+
+        def call(self, inputs):
+            x = self.layer1(inputs)
+            x = self.layer2(x)
+            return self.layer3(x)
+    models.append(MyModel())
+
+    return models
+
+
 def sklearn_models():
     np = pytest.importorskip("numpy")
     ensemble = pytest.importorskip("sklearn.ensemble")
@@ -63,6 +85,16 @@ def sklearn_models():
         [0, 0, 1],
     )
     models.append(model)
+
+    return models
+
+
+def unsupported_sklearn_models():
+    preprocessing = pytest.importorskip("sklearn.preprocessing")
+
+    models = []
+
+    models.append(preprocessing.Normalizer())
 
     return models
 
@@ -114,6 +146,32 @@ def xgboost_models():
     return models
 
 
+def unsupported_xgboost_models():
+    datasets = pytest.importorskip("sklearn.datasets")
+    xgb = pytest.importorskip("xgboost")
+
+    models = []
+
+    # from https://xgboost.readthedocs.io/en/latest/python/model.html
+    X, y = datasets.make_classification(
+        n_samples=100, n_informative=5, n_classes=3,
+    )
+    dtrain = xgb.DMatrix(data=X, label=y)
+    models.append(
+        xgb.train(
+            {
+                "num_parallel_tree": 4,
+                "subsample": 0.5,
+                "num_class": 3,
+            },
+            num_boost_round=16,
+            dtrain=dtrain,
+        )
+    )
+
+    return models
+
+
 class TestModelValidator:
     """verta._internal_utils.model_validator"""
 
@@ -143,6 +201,7 @@ class TestModelValidator:
     @pytest.mark.parametrize(
         "model",
         verta_models() + sklearn_models() + torch_models() + xgboost_models(),
+        # TODO: figure out how to detect unsupported_keras_models()
     )
     def test_not_keras(self, model):
         msg_match = r"^model must be either a Keras Sequential or Functional model.*"
@@ -158,7 +217,7 @@ class TestModelValidator:
 
     @pytest.mark.parametrize(
         "model",
-        verta_models() + keras_models() + torch_models(),
+        unsupported_sklearn_models() + verta_models() + keras_models() + torch_models(),
         # xgboost_models() works because it uses a scikit-learn interface
     )
     def test_not_sklearn(self, model):
@@ -191,7 +250,7 @@ class TestModelValidator:
 
     @pytest.mark.parametrize(
         "model",
-        verta_models() + keras_models() + sklearn_models() + torch_models(),
+        verta_models() + keras_models() + sklearn_models() + torch_models() + unsupported_xgboost_models(),
     )
     def test_not_xgboost(self, model):
         msg_match = r"^model must be from XGBoost's scikit-learn API.*"
@@ -219,6 +278,17 @@ class TestStandardModels:
 
     @pytest.mark.parametrize(
         "model",
+        keras_models() + sklearn_models() + torch_models() + xgboost_models(),
+    )
+    def test_not_verta(self, registered_model, model):
+        with pytest.raises(TypeError):
+            registered_model.create_standard_model(
+                model,
+                Python([]),
+            )
+
+    @pytest.mark.parametrize(
+        "model",
         keras_models(),
     )
     def test_keras(self, registered_model, endpoint, model):
@@ -232,6 +302,17 @@ class TestStandardModels:
         endpoint.update(model_ver, wait=True)
         deployed_model = endpoint.get_deployed_model()
         assert deployed_model.predict(np.random.random(size=(3, 3)))
+
+    @pytest.mark.parametrize(
+        "model",
+        verta_models() + unsupported_keras_models() + sklearn_models() + torch_models() + xgboost_models(),
+    )
+    def test_not_keras(self, registered_model, model):
+        with pytest.raises(TypeError):
+            registered_model.create_standard_model_from_keras(
+                model,
+                Python(["tensorflow"]),
+            )
 
     @pytest.mark.parametrize(
         "model",
@@ -251,6 +332,18 @@ class TestStandardModels:
 
     @pytest.mark.parametrize(
         "model",
+        unsupported_sklearn_models() + verta_models() + keras_models() + torch_models(),
+        # xgboost_models() works because it uses a scikit-learn interface
+    )
+    def test_not_sklearn(self, registered_model, model):
+        with pytest.raises(TypeError):
+            registered_model.create_standard_model_from_sklearn(
+                model,
+                Python(["scikit-learn"]),
+            )
+
+    @pytest.mark.parametrize(
+        "model",
         torch_models(),
     )
     def test_torch(self, registered_model, endpoint, model):
@@ -267,6 +360,17 @@ class TestStandardModels:
 
     @pytest.mark.parametrize(
         "model",
+        verta_models() + keras_models() + sklearn_models() + xgboost_models(),
+    )
+    def test_not_torch(self, registered_model, model):
+        with pytest.raises(TypeError):
+            registered_model.create_standard_model_from_torch(
+                model,
+                Python(["torch"]),
+            )
+
+    @pytest.mark.parametrize(
+        "model",
         xgboost_models(),
     )
     def test_xgboost(self, registered_model, endpoint, model):
@@ -280,3 +384,14 @@ class TestStandardModels:
         endpoint.update(model_ver, wait=True)
         deployed_model = endpoint.get_deployed_model()
         assert deployed_model.predict(np.random.random(size=(3, 3)))
+
+    @pytest.mark.parametrize(
+        "model",
+        verta_models() + keras_models() + sklearn_models() + torch_models() + unsupported_xgboost_models(),
+    )
+    def test_not_xgboost(self, registered_model, model):
+        with pytest.raises(TypeError):
+            registered_model.create_standard_model_from_xgboost(
+                model,
+                Python(["xgboost"]),
+            )
