@@ -29,11 +29,6 @@ class SummaryServiceStub(object):
         request_serializer=monitoring_dot_Summary__pb2.DeleteSummaryRequest.SerializeToString,
         response_deserializer=monitoring_dot_Summary__pb2.Empty.FromString,
         )
-    self.createValue = channel.unary_unary(
-        '/ai.verta.monitoring.SummaryService/createValue',
-        request_serializer=monitoring_dot_Summary__pb2.CreateSummaryValue.SerializeToString,
-        response_deserializer=monitoring_dot_Summary__pb2.SummaryValue.FromString,
-        )
     self.createSample = channel.unary_unary(
         '/ai.verta.monitoring.SummaryService/createSample',
         request_serializer=monitoring_dot_Summary__pb2.CreateSummarySample.SerializeToString,
@@ -70,13 +65,6 @@ class SummaryServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def deleteSummary(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def createValue(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -121,11 +109,6 @@ def add_SummaryServiceServicer_to_server(servicer, server):
           servicer.deleteSummary,
           request_deserializer=monitoring_dot_Summary__pb2.DeleteSummaryRequest.FromString,
           response_serializer=monitoring_dot_Summary__pb2.Empty.SerializeToString,
-      ),
-      'createValue': grpc.unary_unary_rpc_method_handler(
-          servicer.createValue,
-          request_deserializer=monitoring_dot_Summary__pb2.CreateSummaryValue.FromString,
-          response_serializer=monitoring_dot_Summary__pb2.SummaryValue.SerializeToString,
       ),
       'createSample': grpc.unary_unary_rpc_method_handler(
           servicer.createSample,
