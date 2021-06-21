@@ -124,7 +124,7 @@ message CreateSummarySample {
 
 // Request to create a batch of summary samples
 message CreateSummarySampleBatch {
-    repeated SummarySample samples = 1;
+    repeated CreateSummarySample samples = 1;
 }
 
 // Request to fetch multiple summary samples, potentially with aggregation.
@@ -220,7 +220,7 @@ service SummaryService {
 
     rpc createSampleBatch(CreateSummarySampleBatch) returns (Empty) {
         option (google.api.http) = {
-            post: "/api/v1/monitoring/summaries/createSamples"
+            post: "/api/v1/monitoring/summaries/createSampleBatch"
             body: "*"
         };
     };
