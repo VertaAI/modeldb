@@ -2230,8 +2230,7 @@ public class RdbmsUtils {
       OperatorEnum.Operator operator,
       Object value,
       Map<String, Object> parametersMap) {
-    long timestamp =
-        index0 + Math.round(100.0 * Math.random()) + Calendar.getInstance().getTimeInMillis();
+    long timestamp = index0 + new Random(System.nanoTime()).nextInt(Integer.MAX_VALUE);
     String key;
     switch (operator.ordinal()) {
       case OperatorEnum.Operator.GT_VALUE:
