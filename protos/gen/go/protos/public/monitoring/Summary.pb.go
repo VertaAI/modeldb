@@ -120,7 +120,7 @@ func (x AggregationQuerySummary_AggregationOperation) Number() protoreflect.Enum
 
 // Deprecated: Use AggregationQuerySummary_AggregationOperation.Descriptor instead.
 func (AggregationQuerySummary_AggregationOperation) EnumDescriptor() ([]byte, []int) {
-	return file_monitoring_Summary_proto_rawDescGZIP(), []int{12, 0}
+	return file_monitoring_Summary_proto_rawDescGZIP(), []int{13, 0}
 }
 
 type Empty struct {
@@ -974,6 +974,54 @@ func (x *CreateSummarySample) GetTimeWindowEndAtMillis() uint64 {
 	return 0
 }
 
+// Request to create a batch of summary samples
+type CreateSummarySampleBatch struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Samples []*CreateSummarySample `protobuf:"bytes,1,rep,name=samples,proto3" json:"samples,omitempty"`
+}
+
+func (x *CreateSummarySampleBatch) Reset() {
+	*x = CreateSummarySampleBatch{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_monitoring_Summary_proto_msgTypes[9]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CreateSummarySampleBatch) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateSummarySampleBatch) ProtoMessage() {}
+
+func (x *CreateSummarySampleBatch) ProtoReflect() protoreflect.Message {
+	mi := &file_monitoring_Summary_proto_msgTypes[9]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateSummarySampleBatch.ProtoReflect.Descriptor instead.
+func (*CreateSummarySampleBatch) Descriptor() ([]byte, []int) {
+	return file_monitoring_Summary_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *CreateSummarySampleBatch) GetSamples() []*CreateSummarySample {
+	if x != nil {
+		return x.Samples
+	}
+	return nil
+}
+
 // Request to fetch multiple summary samples, potentially with aggregation.
 type FindSummarySampleRequest struct {
 	state         protoimpl.MessageState
@@ -990,7 +1038,7 @@ type FindSummarySampleRequest struct {
 func (x *FindSummarySampleRequest) Reset() {
 	*x = FindSummarySampleRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_Summary_proto_msgTypes[9]
+		mi := &file_monitoring_Summary_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1003,7 +1051,7 @@ func (x *FindSummarySampleRequest) String() string {
 func (*FindSummarySampleRequest) ProtoMessage() {}
 
 func (x *FindSummarySampleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_Summary_proto_msgTypes[9]
+	mi := &file_monitoring_Summary_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1016,7 +1064,7 @@ func (x *FindSummarySampleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindSummarySampleRequest.ProtoReflect.Descriptor instead.
 func (*FindSummarySampleRequest) Descriptor() ([]byte, []int) {
-	return file_monitoring_Summary_proto_rawDescGZIP(), []int{9}
+	return file_monitoring_Summary_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *FindSummarySampleRequest) GetFilter() *FilterQuerySummarySample {
@@ -1064,7 +1112,7 @@ type FilterQuerySummarySample struct {
 func (x *FilterQuerySummarySample) Reset() {
 	*x = FilterQuerySummarySample{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_Summary_proto_msgTypes[10]
+		mi := &file_monitoring_Summary_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1077,7 +1125,7 @@ func (x *FilterQuerySummarySample) String() string {
 func (*FilterQuerySummarySample) ProtoMessage() {}
 
 func (x *FilterQuerySummarySample) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_Summary_proto_msgTypes[10]
+	mi := &file_monitoring_Summary_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1090,7 +1138,7 @@ func (x *FilterQuerySummarySample) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FilterQuerySummarySample.ProtoReflect.Descriptor instead.
 func (*FilterQuerySummarySample) Descriptor() ([]byte, []int) {
-	return file_monitoring_Summary_proto_rawDescGZIP(), []int{10}
+	return file_monitoring_Summary_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *FilterQuerySummarySample) GetFindSummaries() *FindSummaryRequest {
@@ -1147,7 +1195,7 @@ type LabelFilterQuerySummarySample struct {
 func (x *LabelFilterQuerySummarySample) Reset() {
 	*x = LabelFilterQuerySummarySample{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_Summary_proto_msgTypes[11]
+		mi := &file_monitoring_Summary_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1160,7 +1208,7 @@ func (x *LabelFilterQuerySummarySample) String() string {
 func (*LabelFilterQuerySummarySample) ProtoMessage() {}
 
 func (x *LabelFilterQuerySummarySample) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_Summary_proto_msgTypes[11]
+	mi := &file_monitoring_Summary_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1173,7 +1221,7 @@ func (x *LabelFilterQuerySummarySample) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LabelFilterQuerySummarySample.ProtoReflect.Descriptor instead.
 func (*LabelFilterQuerySummarySample) Descriptor() ([]byte, []int) {
-	return file_monitoring_Summary_proto_rawDescGZIP(), []int{11}
+	return file_monitoring_Summary_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *LabelFilterQuerySummarySample) GetLabelValue() []string {
@@ -1206,7 +1254,7 @@ type AggregationQuerySummary struct {
 func (x *AggregationQuerySummary) Reset() {
 	*x = AggregationQuerySummary{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_Summary_proto_msgTypes[12]
+		mi := &file_monitoring_Summary_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1219,7 +1267,7 @@ func (x *AggregationQuerySummary) String() string {
 func (*AggregationQuerySummary) ProtoMessage() {}
 
 func (x *AggregationQuerySummary) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_Summary_proto_msgTypes[12]
+	mi := &file_monitoring_Summary_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1232,7 +1280,7 @@ func (x *AggregationQuerySummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AggregationQuerySummary.ProtoReflect.Descriptor instead.
 func (*AggregationQuerySummary) Descriptor() ([]byte, []int) {
-	return file_monitoring_Summary_proto_rawDescGZIP(), []int{12}
+	return file_monitoring_Summary_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *AggregationQuerySummary) GetTimeGranularityMillis() uint64 {
@@ -1268,7 +1316,7 @@ type DeleteSummarySampleRequest struct {
 func (x *DeleteSummarySampleRequest) Reset() {
 	*x = DeleteSummarySampleRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_Summary_proto_msgTypes[13]
+		mi := &file_monitoring_Summary_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1281,7 +1329,7 @@ func (x *DeleteSummarySampleRequest) String() string {
 func (*DeleteSummarySampleRequest) ProtoMessage() {}
 
 func (x *DeleteSummarySampleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_Summary_proto_msgTypes[13]
+	mi := &file_monitoring_Summary_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1294,7 +1342,7 @@ func (x *DeleteSummarySampleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteSummarySampleRequest.ProtoReflect.Descriptor instead.
 func (*DeleteSummarySampleRequest) Descriptor() ([]byte, []int) {
-	return file_monitoring_Summary_proto_rawDescGZIP(), []int{13}
+	return file_monitoring_Summary_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *DeleteSummarySampleRequest) GetIds() []uint64 {
@@ -1316,7 +1364,7 @@ type FindSummaryRequest_Response struct {
 func (x *FindSummaryRequest_Response) Reset() {
 	*x = FindSummaryRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_Summary_proto_msgTypes[16]
+		mi := &file_monitoring_Summary_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1329,7 +1377,7 @@ func (x *FindSummaryRequest_Response) String() string {
 func (*FindSummaryRequest_Response) ProtoMessage() {}
 
 func (x *FindSummaryRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_Summary_proto_msgTypes[16]
+	mi := &file_monitoring_Summary_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1371,7 +1419,7 @@ type FindSummarySampleRequest_Response struct {
 func (x *FindSummarySampleRequest_Response) Reset() {
 	*x = FindSummarySampleRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_monitoring_Summary_proto_msgTypes[21]
+		mi := &file_monitoring_Summary_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1384,7 +1432,7 @@ func (x *FindSummarySampleRequest_Response) String() string {
 func (*FindSummarySampleRequest_Response) ProtoMessage() {}
 
 func (x *FindSummarySampleRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_monitoring_Summary_proto_msgTypes[21]
+	mi := &file_monitoring_Summary_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1397,7 +1445,7 @@ func (x *FindSummarySampleRequest_Response) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use FindSummarySampleRequest_Response.ProtoReflect.Descriptor instead.
 func (*FindSummarySampleRequest_Response) Descriptor() ([]byte, []int) {
-	return file_monitoring_Summary_proto_rawDescGZIP(), []int{9, 0}
+	return file_monitoring_Summary_proto_rawDescGZIP(), []int{10, 0}
 }
 
 func (x *FindSummarySampleRequest_Response) GetSamples() []*SummarySample {
@@ -1614,6 +1662,12 @@ var file_monitoring_Summary_proto_rawDesc = []byte{
 	0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09,
 	0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22,
+	0x5e, 0x0a, 0x18, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79,
+	0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x42, 0x61, 0x74, 0x63, 0x68, 0x12, 0x42, 0x0a, 0x07, 0x73,
+	0x61, 0x6d, 0x70, 0x6c, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x61,
+	0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69,
+	0x6e, 0x67, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79,
+	0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x52, 0x07, 0x73, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x73, 0x22,
 	0xe0, 0x02, 0x0a, 0x18, 0x46, 0x69, 0x6e, 0x64, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x53,
 	0x61, 0x6d, 0x70, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x45, 0x0a, 0x06,
 	0x66, 0x69, 0x6c, 0x74, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2d, 0x2e, 0x61,
@@ -1690,8 +1744,8 @@ var file_monitoring_Summary_proto_rawDesc = []byte{
 	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x07, 0x0a, 0x03, 0x53, 0x55, 0x4d, 0x10, 0x00, 0x22, 0x2e,
 	0x0a, 0x1a, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x53,
 	0x61, 0x6d, 0x70, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x10, 0x0a, 0x03,
-	0x69, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x04, 0x52, 0x03, 0x69, 0x64, 0x73, 0x32, 0xb6,
-	0x08, 0x0a, 0x0e, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
+	0x69, 0x64, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x04, 0x52, 0x03, 0x69, 0x64, 0x73, 0x32, 0xd2,
+	0x09, 0x0a, 0x0e, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
 	0x65, 0x12, 0x8f, 0x01, 0x0a, 0x0d, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x75, 0x6d, 0x6d,
 	0x61, 0x72, 0x79, 0x12, 0x29, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d,
 	0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
@@ -1738,32 +1792,42 @@ var file_monitoring_Summary_proto_rawDesc = []byte{
 	0x70, 0x6c, 0x65, 0x22, 0x34, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2e, 0x22, 0x29, 0x2f, 0x61, 0x70,
 	0x69, 0x2f, 0x76, 0x31, 0x2f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2f,
 	0x73, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x69, 0x65, 0x73, 0x2f, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65,
-	0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x3a, 0x01, 0x2a, 0x12, 0xa7, 0x01, 0x0a, 0x0a, 0x66, 0x69,
-	0x6e, 0x64, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x12, 0x2d, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65,
-	0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x46,
-	0x69, 0x6e, 0x64, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x36, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
-	0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x46, 0x69,
-	0x6e, 0x64, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
-	0x32, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2c, 0x22, 0x27, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x76, 0x31,
-	0x2f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2f, 0x73, 0x75, 0x6d, 0x6d,
-	0x61, 0x72, 0x69, 0x65, 0x73, 0x2f, 0x66, 0x69, 0x6e, 0x64, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65,
-	0x3a, 0x01, 0x2a, 0x12, 0x91, 0x01, 0x0a, 0x0c, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x61,
-	0x6d, 0x70, 0x6c, 0x65, 0x12, 0x2f, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
-	0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74,
-	0x65, 0x53, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1a, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61,
-	0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x45, 0x6d, 0x70, 0x74,
-	0x79, 0x22, 0x34, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x2e, 0x2a, 0x29, 0x2f, 0x61, 0x70, 0x69, 0x2f,
-	0x76, 0x31, 0x2f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2f, 0x73, 0x75,
-	0x6d, 0x6d, 0x61, 0x72, 0x69, 0x65, 0x73, 0x2f, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x61,
-	0x6d, 0x70, 0x6c, 0x65, 0x3a, 0x01, 0x2a, 0x42, 0x45, 0x50, 0x01, 0x5a, 0x41, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f,
-	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67,
-	0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62,
-	0x6c, 0x69, 0x63, 0x2f, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x3a, 0x01, 0x2a, 0x12, 0x99, 0x01, 0x0a, 0x11, 0x63, 0x72,
+	0x65, 0x61, 0x74, 0x65, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x42, 0x61, 0x74, 0x63, 0x68, 0x12,
+	0x2d, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74,
+	0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x75, 0x6d, 0x6d,
+	0x61, 0x72, 0x79, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x42, 0x61, 0x74, 0x63, 0x68, 0x1a, 0x1a,
+	0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f,
+	0x72, 0x69, 0x6e, 0x67, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x39, 0x82, 0xd3, 0xe4, 0x93,
+	0x02, 0x33, 0x22, 0x2e, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x76, 0x31, 0x2f, 0x6d, 0x6f, 0x6e, 0x69,
+	0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2f, 0x73, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x69, 0x65, 0x73,
+	0x2f, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x42, 0x61, 0x74,
+	0x63, 0x68, 0x3a, 0x01, 0x2a, 0x12, 0xa7, 0x01, 0x0a, 0x0a, 0x66, 0x69, 0x6e, 0x64, 0x53, 0x61,
+	0x6d, 0x70, 0x6c, 0x65, 0x12, 0x2d, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
+	0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x46, 0x69, 0x6e, 0x64, 0x53,
+	0x75, 0x6d, 0x6d, 0x61, 0x72, 0x79, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x1a, 0x36, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d,
+	0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x46, 0x69, 0x6e, 0x64, 0x53, 0x75,
+	0x6d, 0x6d, 0x61, 0x72, 0x79, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x32, 0x82, 0xd3, 0xe4,
+	0x93, 0x02, 0x2c, 0x22, 0x27, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x76, 0x31, 0x2f, 0x6d, 0x6f, 0x6e,
+	0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2f, 0x73, 0x75, 0x6d, 0x6d, 0x61, 0x72, 0x69, 0x65,
+	0x73, 0x2f, 0x66, 0x69, 0x6e, 0x64, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x3a, 0x01, 0x2a, 0x12,
+	0x91, 0x01, 0x0a, 0x0c, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65,
+	0x12, 0x2f, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e, 0x69,
+	0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x75, 0x6d,
+	0x6d, 0x61, 0x72, 0x79, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x1a, 0x1a, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x6e,
+	0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x22, 0x34, 0x82,
+	0xd3, 0xe4, 0x93, 0x02, 0x2e, 0x2a, 0x29, 0x2f, 0x61, 0x70, 0x69, 0x2f, 0x76, 0x31, 0x2f, 0x6d,
+	0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x2f, 0x73, 0x75, 0x6d, 0x6d, 0x61, 0x72,
+	0x69, 0x65, 0x73, 0x2f, 0x64, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x53, 0x61, 0x6d, 0x70, 0x6c, 0x65,
+	0x3a, 0x01, 0x2a, 0x42, 0x45, 0x50, 0x01, 0x5a, 0x41, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e,
+	0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d, 0x6f, 0x64, 0x65,
+	0x6c, 0x64, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67,
+	0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x2f,
+	0x6d, 0x6f, 0x6e, 0x69, 0x74, 0x6f, 0x72, 0x69, 0x6e, 0x67, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x33,
 }
 
 var (
@@ -1779,7 +1843,7 @@ func file_monitoring_Summary_proto_rawDescGZIP() []byte {
 }
 
 var file_monitoring_Summary_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_monitoring_Summary_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
+var file_monitoring_Summary_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
 var file_monitoring_Summary_proto_goTypes = []interface{}{
 	(SummaryValue_Type)(0),                            // 0: ai.verta.monitoring.SummaryValue.Type
 	(AggregationQuerySummary_AggregationOperation)(0), // 1: ai.verta.monitoring.AggregationQuerySummary.AggregationOperation
@@ -1792,59 +1856,63 @@ var file_monitoring_Summary_proto_goTypes = []interface{}{
 	(*CreateSummaryValue)(nil),            // 8: ai.verta.monitoring.CreateSummaryValue
 	(*SummarySample)(nil),                 // 9: ai.verta.monitoring.SummarySample
 	(*CreateSummarySample)(nil),           // 10: ai.verta.monitoring.CreateSummarySample
-	(*FindSummarySampleRequest)(nil),      // 11: ai.verta.monitoring.FindSummarySampleRequest
-	(*FilterQuerySummarySample)(nil),      // 12: ai.verta.monitoring.FilterQuerySummarySample
-	(*LabelFilterQuerySummarySample)(nil), // 13: ai.verta.monitoring.LabelFilterQuerySummarySample
-	(*AggregationQuerySummary)(nil),       // 14: ai.verta.monitoring.AggregationQuerySummary
-	(*DeleteSummarySampleRequest)(nil),    // 15: ai.verta.monitoring.DeleteSummarySampleRequest
-	nil,                                   // 16: ai.verta.monitoring.Summary.AttributesEntry
-	nil,                                   // 17: ai.verta.monitoring.CreateSummaryRequest.AttributesEntry
-	(*FindSummaryRequest_Response)(nil),   // 18: ai.verta.monitoring.FindSummaryRequest.Response
-	nil,                                   // 19: ai.verta.monitoring.SummaryValue.LabelsEntry
-	nil,                                   // 20: ai.verta.monitoring.CreateSummaryValue.LabelsEntry
-	nil,                                   // 21: ai.verta.monitoring.SummarySample.LabelsEntry
-	nil,                                   // 22: ai.verta.monitoring.CreateSummarySample.LabelsEntry
-	(*FindSummarySampleRequest_Response)(nil), // 23: ai.verta.monitoring.FindSummarySampleRequest.Response
-	nil,                                // 24: ai.verta.monitoring.FilterQuerySummarySample.LabelsEntry
-	(*FindMonitoredEntityRequest)(nil), // 25: ai.verta.monitoring.FindMonitoredEntityRequest
+	(*CreateSummarySampleBatch)(nil),      // 11: ai.verta.monitoring.CreateSummarySampleBatch
+	(*FindSummarySampleRequest)(nil),      // 12: ai.verta.monitoring.FindSummarySampleRequest
+	(*FilterQuerySummarySample)(nil),      // 13: ai.verta.monitoring.FilterQuerySummarySample
+	(*LabelFilterQuerySummarySample)(nil), // 14: ai.verta.monitoring.LabelFilterQuerySummarySample
+	(*AggregationQuerySummary)(nil),       // 15: ai.verta.monitoring.AggregationQuerySummary
+	(*DeleteSummarySampleRequest)(nil),    // 16: ai.verta.monitoring.DeleteSummarySampleRequest
+	nil,                                   // 17: ai.verta.monitoring.Summary.AttributesEntry
+	nil,                                   // 18: ai.verta.monitoring.CreateSummaryRequest.AttributesEntry
+	(*FindSummaryRequest_Response)(nil),   // 19: ai.verta.monitoring.FindSummaryRequest.Response
+	nil,                                   // 20: ai.verta.monitoring.SummaryValue.LabelsEntry
+	nil,                                   // 21: ai.verta.monitoring.CreateSummaryValue.LabelsEntry
+	nil,                                   // 22: ai.verta.monitoring.SummarySample.LabelsEntry
+	nil,                                   // 23: ai.verta.monitoring.CreateSummarySample.LabelsEntry
+	(*FindSummarySampleRequest_Response)(nil), // 24: ai.verta.monitoring.FindSummarySampleRequest.Response
+	nil,                                // 25: ai.verta.monitoring.FilterQuerySummarySample.LabelsEntry
+	(*FindMonitoredEntityRequest)(nil), // 26: ai.verta.monitoring.FindMonitoredEntityRequest
 }
 var file_monitoring_Summary_proto_depIdxs = []int32{
-	16, // 0: ai.verta.monitoring.Summary.attributes:type_name -> ai.verta.monitoring.Summary.AttributesEntry
-	17, // 1: ai.verta.monitoring.CreateSummaryRequest.attributes:type_name -> ai.verta.monitoring.CreateSummaryRequest.AttributesEntry
-	25, // 2: ai.verta.monitoring.FindSummaryRequest.find_monitored_entities:type_name -> ai.verta.monitoring.FindMonitoredEntityRequest
-	19, // 3: ai.verta.monitoring.SummaryValue.labels:type_name -> ai.verta.monitoring.SummaryValue.LabelsEntry
+	17, // 0: ai.verta.monitoring.Summary.attributes:type_name -> ai.verta.monitoring.Summary.AttributesEntry
+	18, // 1: ai.verta.monitoring.CreateSummaryRequest.attributes:type_name -> ai.verta.monitoring.CreateSummaryRequest.AttributesEntry
+	26, // 2: ai.verta.monitoring.FindSummaryRequest.find_monitored_entities:type_name -> ai.verta.monitoring.FindMonitoredEntityRequest
+	20, // 3: ai.verta.monitoring.SummaryValue.labels:type_name -> ai.verta.monitoring.SummaryValue.LabelsEntry
 	0,  // 4: ai.verta.monitoring.SummaryValue.type:type_name -> ai.verta.monitoring.SummaryValue.Type
-	20, // 5: ai.verta.monitoring.CreateSummaryValue.labels:type_name -> ai.verta.monitoring.CreateSummaryValue.LabelsEntry
+	21, // 5: ai.verta.monitoring.CreateSummaryValue.labels:type_name -> ai.verta.monitoring.CreateSummaryValue.LabelsEntry
 	0,  // 6: ai.verta.monitoring.CreateSummaryValue.type:type_name -> ai.verta.monitoring.SummaryValue.Type
-	21, // 7: ai.verta.monitoring.SummarySample.labels:type_name -> ai.verta.monitoring.SummarySample.LabelsEntry
-	22, // 8: ai.verta.monitoring.CreateSummarySample.labels:type_name -> ai.verta.monitoring.CreateSummarySample.LabelsEntry
-	12, // 9: ai.verta.monitoring.FindSummarySampleRequest.filter:type_name -> ai.verta.monitoring.FilterQuerySummarySample
-	14, // 10: ai.verta.monitoring.FindSummarySampleRequest.aggregation:type_name -> ai.verta.monitoring.AggregationQuerySummary
-	5,  // 11: ai.verta.monitoring.FilterQuerySummarySample.find_summaries:type_name -> ai.verta.monitoring.FindSummaryRequest
-	24, // 12: ai.verta.monitoring.FilterQuerySummarySample.labels:type_name -> ai.verta.monitoring.FilterQuerySummarySample.LabelsEntry
-	1,  // 13: ai.verta.monitoring.AggregationQuerySummary.operation:type_name -> ai.verta.monitoring.AggregationQuerySummary.AggregationOperation
-	3,  // 14: ai.verta.monitoring.FindSummaryRequest.Response.summaries:type_name -> ai.verta.monitoring.Summary
-	9,  // 15: ai.verta.monitoring.FindSummarySampleRequest.Response.samples:type_name -> ai.verta.monitoring.SummarySample
-	13, // 16: ai.verta.monitoring.FilterQuerySummarySample.LabelsEntry.value:type_name -> ai.verta.monitoring.LabelFilterQuerySummarySample
-	4,  // 17: ai.verta.monitoring.SummaryService.createSummary:input_type -> ai.verta.monitoring.CreateSummaryRequest
-	5,  // 18: ai.verta.monitoring.SummaryService.findSummary:input_type -> ai.verta.monitoring.FindSummaryRequest
-	6,  // 19: ai.verta.monitoring.SummaryService.deleteSummary:input_type -> ai.verta.monitoring.DeleteSummaryRequest
-	8,  // 20: ai.verta.monitoring.SummaryService.createValue:input_type -> ai.verta.monitoring.CreateSummaryValue
-	10, // 21: ai.verta.monitoring.SummaryService.createSample:input_type -> ai.verta.monitoring.CreateSummarySample
-	11, // 22: ai.verta.monitoring.SummaryService.findSample:input_type -> ai.verta.monitoring.FindSummarySampleRequest
-	15, // 23: ai.verta.monitoring.SummaryService.deleteSample:input_type -> ai.verta.monitoring.DeleteSummarySampleRequest
-	3,  // 24: ai.verta.monitoring.SummaryService.createSummary:output_type -> ai.verta.monitoring.Summary
-	18, // 25: ai.verta.monitoring.SummaryService.findSummary:output_type -> ai.verta.monitoring.FindSummaryRequest.Response
-	2,  // 26: ai.verta.monitoring.SummaryService.deleteSummary:output_type -> ai.verta.monitoring.Empty
-	7,  // 27: ai.verta.monitoring.SummaryService.createValue:output_type -> ai.verta.monitoring.SummaryValue
-	9,  // 28: ai.verta.monitoring.SummaryService.createSample:output_type -> ai.verta.monitoring.SummarySample
-	23, // 29: ai.verta.monitoring.SummaryService.findSample:output_type -> ai.verta.monitoring.FindSummarySampleRequest.Response
-	2,  // 30: ai.verta.monitoring.SummaryService.deleteSample:output_type -> ai.verta.monitoring.Empty
-	24, // [24:31] is the sub-list for method output_type
-	17, // [17:24] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	22, // 7: ai.verta.monitoring.SummarySample.labels:type_name -> ai.verta.monitoring.SummarySample.LabelsEntry
+	23, // 8: ai.verta.monitoring.CreateSummarySample.labels:type_name -> ai.verta.monitoring.CreateSummarySample.LabelsEntry
+	10, // 9: ai.verta.monitoring.CreateSummarySampleBatch.samples:type_name -> ai.verta.monitoring.CreateSummarySample
+	13, // 10: ai.verta.monitoring.FindSummarySampleRequest.filter:type_name -> ai.verta.monitoring.FilterQuerySummarySample
+	15, // 11: ai.verta.monitoring.FindSummarySampleRequest.aggregation:type_name -> ai.verta.monitoring.AggregationQuerySummary
+	5,  // 12: ai.verta.monitoring.FilterQuerySummarySample.find_summaries:type_name -> ai.verta.monitoring.FindSummaryRequest
+	25, // 13: ai.verta.monitoring.FilterQuerySummarySample.labels:type_name -> ai.verta.monitoring.FilterQuerySummarySample.LabelsEntry
+	1,  // 14: ai.verta.monitoring.AggregationQuerySummary.operation:type_name -> ai.verta.monitoring.AggregationQuerySummary.AggregationOperation
+	3,  // 15: ai.verta.monitoring.FindSummaryRequest.Response.summaries:type_name -> ai.verta.monitoring.Summary
+	9,  // 16: ai.verta.monitoring.FindSummarySampleRequest.Response.samples:type_name -> ai.verta.monitoring.SummarySample
+	14, // 17: ai.verta.monitoring.FilterQuerySummarySample.LabelsEntry.value:type_name -> ai.verta.monitoring.LabelFilterQuerySummarySample
+	4,  // 18: ai.verta.monitoring.SummaryService.createSummary:input_type -> ai.verta.monitoring.CreateSummaryRequest
+	5,  // 19: ai.verta.monitoring.SummaryService.findSummary:input_type -> ai.verta.monitoring.FindSummaryRequest
+	6,  // 20: ai.verta.monitoring.SummaryService.deleteSummary:input_type -> ai.verta.monitoring.DeleteSummaryRequest
+	8,  // 21: ai.verta.monitoring.SummaryService.createValue:input_type -> ai.verta.monitoring.CreateSummaryValue
+	10, // 22: ai.verta.monitoring.SummaryService.createSample:input_type -> ai.verta.monitoring.CreateSummarySample
+	11, // 23: ai.verta.monitoring.SummaryService.createSampleBatch:input_type -> ai.verta.monitoring.CreateSummarySampleBatch
+	12, // 24: ai.verta.monitoring.SummaryService.findSample:input_type -> ai.verta.monitoring.FindSummarySampleRequest
+	16, // 25: ai.verta.monitoring.SummaryService.deleteSample:input_type -> ai.verta.monitoring.DeleteSummarySampleRequest
+	3,  // 26: ai.verta.monitoring.SummaryService.createSummary:output_type -> ai.verta.monitoring.Summary
+	19, // 27: ai.verta.monitoring.SummaryService.findSummary:output_type -> ai.verta.monitoring.FindSummaryRequest.Response
+	2,  // 28: ai.verta.monitoring.SummaryService.deleteSummary:output_type -> ai.verta.monitoring.Empty
+	7,  // 29: ai.verta.monitoring.SummaryService.createValue:output_type -> ai.verta.monitoring.SummaryValue
+	9,  // 30: ai.verta.monitoring.SummaryService.createSample:output_type -> ai.verta.monitoring.SummarySample
+	2,  // 31: ai.verta.monitoring.SummaryService.createSampleBatch:output_type -> ai.verta.monitoring.Empty
+	24, // 32: ai.verta.monitoring.SummaryService.findSample:output_type -> ai.verta.monitoring.FindSummarySampleRequest.Response
+	2,  // 33: ai.verta.monitoring.SummaryService.deleteSample:output_type -> ai.verta.monitoring.Empty
+	26, // [26:34] is the sub-list for method output_type
+	18, // [18:26] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_monitoring_Summary_proto_init() }
@@ -1963,7 +2031,7 @@ func file_monitoring_Summary_proto_init() {
 			}
 		}
 		file_monitoring_Summary_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FindSummarySampleRequest); i {
+			switch v := v.(*CreateSummarySampleBatch); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1975,7 +2043,7 @@ func file_monitoring_Summary_proto_init() {
 			}
 		}
 		file_monitoring_Summary_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FilterQuerySummarySample); i {
+			switch v := v.(*FindSummarySampleRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1987,7 +2055,7 @@ func file_monitoring_Summary_proto_init() {
 			}
 		}
 		file_monitoring_Summary_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LabelFilterQuerySummarySample); i {
+			switch v := v.(*FilterQuerySummarySample); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1999,7 +2067,7 @@ func file_monitoring_Summary_proto_init() {
 			}
 		}
 		file_monitoring_Summary_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AggregationQuerySummary); i {
+			switch v := v.(*LabelFilterQuerySummarySample); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -2011,6 +2079,18 @@ func file_monitoring_Summary_proto_init() {
 			}
 		}
 		file_monitoring_Summary_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AggregationQuerySummary); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_monitoring_Summary_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteSummarySampleRequest); i {
 			case 0:
 				return &v.state
@@ -2022,7 +2102,7 @@ func file_monitoring_Summary_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_Summary_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_Summary_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FindSummaryRequest_Response); i {
 			case 0:
 				return &v.state
@@ -2034,7 +2114,7 @@ func file_monitoring_Summary_proto_init() {
 				return nil
 			}
 		}
-		file_monitoring_Summary_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+		file_monitoring_Summary_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FindSummarySampleRequest_Response); i {
 			case 0:
 				return &v.state
@@ -2063,7 +2143,7 @@ func file_monitoring_Summary_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_monitoring_Summary_proto_rawDesc,
 			NumEnums:      2,
-			NumMessages:   23,
+			NumMessages:   24,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -2095,6 +2175,7 @@ type SummaryServiceClient interface {
 	DeleteSummary(ctx context.Context, in *DeleteSummaryRequest, opts ...grpc.CallOption) (*Empty, error)
 	CreateValue(ctx context.Context, in *CreateSummaryValue, opts ...grpc.CallOption) (*SummaryValue, error)
 	CreateSample(ctx context.Context, in *CreateSummarySample, opts ...grpc.CallOption) (*SummarySample, error)
+	CreateSampleBatch(ctx context.Context, in *CreateSummarySampleBatch, opts ...grpc.CallOption) (*Empty, error)
 	FindSample(ctx context.Context, in *FindSummarySampleRequest, opts ...grpc.CallOption) (*FindSummarySampleRequest_Response, error)
 	DeleteSample(ctx context.Context, in *DeleteSummarySampleRequest, opts ...grpc.CallOption) (*Empty, error)
 }
@@ -2152,6 +2233,15 @@ func (c *summaryServiceClient) CreateSample(ctx context.Context, in *CreateSumma
 	return out, nil
 }
 
+func (c *summaryServiceClient) CreateSampleBatch(ctx context.Context, in *CreateSummarySampleBatch, opts ...grpc.CallOption) (*Empty, error) {
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, "/ai.verta.monitoring.SummaryService/createSampleBatch", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *summaryServiceClient) FindSample(ctx context.Context, in *FindSummarySampleRequest, opts ...grpc.CallOption) (*FindSummarySampleRequest_Response, error) {
 	out := new(FindSummarySampleRequest_Response)
 	err := c.cc.Invoke(ctx, "/ai.verta.monitoring.SummaryService/findSample", in, out, opts...)
@@ -2177,6 +2267,7 @@ type SummaryServiceServer interface {
 	DeleteSummary(context.Context, *DeleteSummaryRequest) (*Empty, error)
 	CreateValue(context.Context, *CreateSummaryValue) (*SummaryValue, error)
 	CreateSample(context.Context, *CreateSummarySample) (*SummarySample, error)
+	CreateSampleBatch(context.Context, *CreateSummarySampleBatch) (*Empty, error)
 	FindSample(context.Context, *FindSummarySampleRequest) (*FindSummarySampleRequest_Response, error)
 	DeleteSample(context.Context, *DeleteSummarySampleRequest) (*Empty, error)
 }
@@ -2199,6 +2290,9 @@ func (*UnimplementedSummaryServiceServer) CreateValue(context.Context, *CreateSu
 }
 func (*UnimplementedSummaryServiceServer) CreateSample(context.Context, *CreateSummarySample) (*SummarySample, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateSample not implemented")
+}
+func (*UnimplementedSummaryServiceServer) CreateSampleBatch(context.Context, *CreateSummarySampleBatch) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSampleBatch not implemented")
 }
 func (*UnimplementedSummaryServiceServer) FindSample(context.Context, *FindSummarySampleRequest) (*FindSummarySampleRequest_Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FindSample not implemented")
@@ -2301,6 +2395,24 @@ func _SummaryService_CreateSample_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _SummaryService_CreateSampleBatch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSummarySampleBatch)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SummaryServiceServer).CreateSampleBatch(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/ai.verta.monitoring.SummaryService/CreateSampleBatch",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SummaryServiceServer).CreateSampleBatch(ctx, req.(*CreateSummarySampleBatch))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _SummaryService_FindSample_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(FindSummarySampleRequest)
 	if err := dec(in); err != nil {
@@ -2360,6 +2472,10 @@ var _SummaryService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "createSample",
 			Handler:    _SummaryService_CreateSample_Handler,
+		},
+		{
+			MethodName: "createSampleBatch",
+			Handler:    _SummaryService_CreateSampleBatch_Handler,
 		},
 		{
 			MethodName: "findSample",

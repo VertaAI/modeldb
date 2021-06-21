@@ -43,6 +43,38 @@
         ]
       }
     },
+    "/api/v1/monitoring/summaries/createSampleBatch": {
+      "post": {
+        "operationId": "SummaryService_createSampleBatch",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateSummarySampleBatch"
+            }
+          }
+        ],
+        "tags": [
+          "SummaryService"
+        ]
+      }
+    },
     "/api/v1/monitoring/summaries/createSummary": {
       "post": {
         "operationId": "SummaryService_createSummary",
@@ -327,6 +359,18 @@
         }
       },
       "title": "Request to create a summary sample"
+    },
+    "monitoringCreateSummarySampleBatch": {
+      "type": "object",
+      "properties": {
+        "samples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringCreateSummarySample"
+          }
+        }
+      },
+      "title": "Request to create a batch of summary samples"
     },
     "monitoringCreateSummaryValue": {
       "type": "object",
