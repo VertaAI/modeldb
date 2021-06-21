@@ -39,6 +39,11 @@ class SummaryServiceStub(object):
         request_serializer=monitoring_dot_Summary__pb2.CreateSummarySample.SerializeToString,
         response_deserializer=monitoring_dot_Summary__pb2.SummarySample.FromString,
         )
+    self.createSampleBatch = channel.unary_unary(
+        '/ai.verta.monitoring.SummaryService/createSampleBatch',
+        request_serializer=monitoring_dot_Summary__pb2.CreateSummarySampleBatch.SerializeToString,
+        response_deserializer=monitoring_dot_Summary__pb2.Empty.FromString,
+        )
     self.findSample = channel.unary_unary(
         '/ai.verta.monitoring.SummaryService/findSample',
         request_serializer=monitoring_dot_Summary__pb2.FindSummarySampleRequest.SerializeToString,
@@ -90,6 +95,13 @@ class SummaryServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def createSampleBatch(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def findSample(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -131,6 +143,11 @@ def add_SummaryServiceServicer_to_server(servicer, server):
           servicer.createSample,
           request_deserializer=monitoring_dot_Summary__pb2.CreateSummarySample.FromString,
           response_serializer=monitoring_dot_Summary__pb2.SummarySample.SerializeToString,
+      ),
+      'createSampleBatch': grpc.unary_unary_rpc_method_handler(
+          servicer.createSampleBatch,
+          request_deserializer=monitoring_dot_Summary__pb2.CreateSummarySampleBatch.FromString,
+          response_serializer=monitoring_dot_Summary__pb2.Empty.SerializeToString,
       ),
       'findSample': grpc.unary_unary_rpc_method_handler(
           servicer.findSample,

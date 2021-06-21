@@ -122,6 +122,11 @@ message CreateSummarySample {
     uint64 time_window_end_at_millis = 9;
 }
 
+// Request to create a batch of summary samples
+message CreateSummarySampleBatch {
+    repeated SummarySample samples = 1;
+}
+
 // Request to fetch multiple summary samples, potentially with aggregation.
 message FindSummarySampleRequest {
     FilterQuerySummarySample filter = 1; // Optional
@@ -209,6 +214,13 @@ service SummaryService {
     rpc createSample(CreateSummarySample) returns (SummarySample) {
         option (google.api.http) = {
             post: "/api/v1/monitoring/summaries/createSample"
+            body: "*"
+        };
+    };
+
+    rpc createSampleBatch(CreateSummarySampleBatch) returns (Empty) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/summaries/createSamples"
             body: "*"
         };
     };
