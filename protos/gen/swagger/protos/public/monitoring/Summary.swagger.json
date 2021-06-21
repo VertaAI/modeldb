@@ -43,7 +43,7 @@
         ]
       }
     },
-    "/api/v1/monitoring/summaries/createSamples": {
+    "/api/v1/monitoring/summaries/createSampleBatch": {
       "post": {
         "operationId": "SummaryService_createSampleBatch",
         "responses": {
@@ -366,7 +366,7 @@
         "samples": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/monitoringSummarySample"
+            "$ref": "#/definitions/monitoringCreateSummarySample"
           }
         }
       },

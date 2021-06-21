@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.monitoring',
   syntax='proto3',
   serialized_options=b'P\001ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring',
-  serialized_pb=b'\n\x18monitoring/Summary.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a&monitoring/DataMonitoringService.proto\"\x07\n\x05\x45mpty\"\xc8\x01\n\x07Summary\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x1b\n\x13monitored_entity_id\x18\x02 \x01(\x04\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x11\n\ttype_name\x18\x04 \x01(\t\x12@\n\nattributes\x18\x05 \x03(\x0b\x32,.ai.verta.monitoring.Summary.AttributesEntry\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xd6\x01\n\x14\x43reateSummaryRequest\x12\x1b\n\x13monitored_entity_id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\ttype_name\x18\x03 \x01(\t\x12M\n\nattributes\x18\x04 \x03(\x0b\x32\x39.ai.verta.monitoring.CreateSummaryRequest.AttributesEntry\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xb1\x02\n\x12\x46indSummaryRequest\x12P\n\x17\x66ind_monitored_entities\x18\x05 \x01(\x0b\x32/.ai.verta.monitoring.FindMonitoredEntityRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12\x12\n\ntype_names\x18\x03 \x03(\t\x12\x1c\n\x14monitored_entity_ids\x18\x04 \x03(\x04\x12\x13\n\x0bpage_number\x18\x06 \x01(\x05\x12\x12\n\npage_limit\x18\x07 \x01(\x05\x1aR\n\x08Response\x12/\n\tsummaries\x18\x01 \x03(\x0b\x32\x1c.ai.verta.monitoring.Summary\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\"#\n\x14\x44\x65leteSummaryRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\"\x86\x03\n\x0cSummaryValue\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x12\n\nsummary_id\x18\x02 \x01(\x04\x12=\n\x06labels\x18\x03 \x03(\x0b\x32-.ai.verta.monitoring.SummaryValue.LabelsEntry\x12\x34\n\x04type\x18\x04 \x01(\x0e\x32&.ai.verta.monitoring.SummaryValue.Type\x12\x16\n\x0cstring_value\x18\x05 \x01(\tH\x00\x12\x16\n\x0c\x64ouble_value\x18\x06 \x01(\x01H\x00\x12\x17\n\rboolean_value\x18\x07 \x01(\x08H\x00\x12\x19\n\x11\x63reated_at_millis\x18\x08 \x01(\x04\x12\x18\n\x10timestamp_millis\x18\t \x01(\x04\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"+\n\x04Type\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x0b\n\x07\x42OOLEAN\x10\x02\x42\x07\n\x05value\"\xa7\x03\n\x12\x43reateSummaryValue\x12\x1b\n\x13monitored_entity_id\x18\x01 \x01(\x04\x12\x14\n\x0csummary_name\x18\x02 \x01(\t\x12\x19\n\x11summary_type_name\x18\x03 \x01(\t\x12\x12\n\nsummary_id\x18\x04 \x01(\x04\x12\x43\n\x06labels\x18\x05 \x03(\x0b\x32\x33.ai.verta.monitoring.CreateSummaryValue.LabelsEntry\x12\x34\n\x04type\x18\x06 \x01(\x0e\x32&.ai.verta.monitoring.SummaryValue.Type\x12\x16\n\x0cstring_value\x18\x07 \x01(\tH\x00\x12\x16\n\x0c\x64ouble_value\x18\x08 \x01(\x01H\x00\x12\x17\n\rboolean_value\x18\t \x01(\x08H\x00\x12\x19\n\x11\x63reated_at_millis\x18\n \x01(\x04\x12\x18\n\x10timestamp_millis\x18\x0b \x01(\x04\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\x07\n\x05value\"\x92\x02\n\rSummarySample\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x12\n\nsummary_id\x18\x02 \x01(\x04\x12>\n\x06labels\x18\x03 \x03(\x0b\x32..ai.verta.monitoring.SummarySample.LabelsEntry\x12\x0f\n\x07\x63ontent\x18\x04 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x06 \x01(\x04\x12#\n\x1btime_window_start_at_millis\x18\x07 \x01(\x04\x12!\n\x19time_window_end_at_millis\x18\x08 \x01(\x04\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe0\x02\n\x13\x43reateSummarySample\x12\x1b\n\x13monitored_entity_id\x18\x01 \x01(\x04\x12\x14\n\x0csummary_name\x18\x02 \x01(\t\x12\x19\n\x11summary_type_name\x18\x03 \x01(\t\x12\x12\n\nsummary_id\x18\x04 \x01(\x04\x12\x44\n\x06labels\x18\x05 \x03(\x0b\x32\x34.ai.verta.monitoring.CreateSummarySample.LabelsEntry\x12\x0f\n\x07\x63ontent\x18\x06 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x07 \x01(\x04\x12#\n\x1btime_window_start_at_millis\x18\x08 \x01(\x04\x12!\n\x19time_window_end_at_millis\x18\t \x01(\x04\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"O\n\x18\x43reateSummarySampleBatch\x12\x33\n\x07samples\x18\x01 \x03(\x0b\x32\".ai.verta.monitoring.SummarySample\"\x9d\x02\n\x18\x46indSummarySampleRequest\x12=\n\x06\x66ilter\x18\x01 \x01(\x0b\x32-.ai.verta.monitoring.FilterQuerySummarySample\x12\x41\n\x0b\x61ggregation\x18\x02 \x01(\x0b\x32,.ai.verta.monitoring.AggregationQuerySummary\x12\x13\n\x0bpage_number\x18\x03 \x01(\x05\x12\x12\n\npage_limit\x18\x04 \x01(\x05\x1aV\n\x08Response\x12\x33\n\x07samples\x18\x01 \x03(\x0b\x32\".ai.verta.monitoring.SummarySample\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\"\x86\x03\n\x18\x46ilterQuerySummarySample\x12?\n\x0e\x66ind_summaries\x18\x01 \x01(\x0b\x32\'.ai.verta.monitoring.FindSummaryRequest\x12\x12\n\nsample_ids\x18\x02 \x03(\x04\x12I\n\x06labels\x18\x03 \x03(\x0b\x32\x39.ai.verta.monitoring.FilterQuerySummarySample.LabelsEntry\x12#\n\x1btime_window_start_at_millis\x18\x04 \x01(\x04\x12!\n\x19time_window_end_at_millis\x18\x05 \x01(\x04\x12\x1f\n\x17\x63reated_at_after_millis\x18\x06 \x01(\x04\x1a\x61\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x41\n\x05value\x18\x02 \x01(\x0b\x32\x32.ai.verta.monitoring.LabelFilterQuerySummarySample:\x02\x38\x01\"4\n\x1dLabelFilterQuerySummarySample\x12\x13\n\x0blabel_value\x18\x01 \x03(\t\"\xc9\x01\n\x17\x41ggregationQuerySummary\x12\x1f\n\x17time_granularity_millis\x18\x01 \x01(\x04\x12T\n\toperation\x18\x02 \x01(\x0e\x32\x41.ai.verta.monitoring.AggregationQuerySummary.AggregationOperation\x12\x16\n\x0e\x65xclude_values\x18\x03 \x01(\x08\"\x1f\n\x14\x41ggregationOperation\x12\x07\n\x03SUM\x10\x00\")\n\x1a\x44\x65leteSummarySampleRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x32\xce\t\n\x0eSummaryService\x12\x8f\x01\n\rcreateSummary\x12).ai.verta.monitoring.CreateSummaryRequest\x1a\x1c.ai.verta.monitoring.Summary\"5\x82\xd3\xe4\x93\x02/\"*/api/v1/monitoring/summaries/createSummary:\x01*\x12\x9d\x01\n\x0b\x66indSummary\x12\'.ai.verta.monitoring.FindSummaryRequest\x1a\x30.ai.verta.monitoring.FindSummaryRequest.Response\"3\x82\xd3\xe4\x93\x02-\"(/api/v1/monitoring/summaries/findSummary:\x01*\x12\x8d\x01\n\rdeleteSummary\x12).ai.verta.monitoring.DeleteSummaryRequest\x1a\x1a.ai.verta.monitoring.Empty\"5\x82\xd3\xe4\x93\x02/**/api/v1/monitoring/summaries/deleteSummary:\x01*\x12\x8e\x01\n\x0b\x63reateValue\x12\'.ai.verta.monitoring.CreateSummaryValue\x1a!.ai.verta.monitoring.SummaryValue\"3\x82\xd3\xe4\x93\x02-\"(/api/v1/monitoring/summaries/createValue:\x01*\x12\x92\x01\n\x0c\x63reateSample\x12(.ai.verta.monitoring.CreateSummarySample\x1a\".ai.verta.monitoring.SummarySample\"4\x82\xd3\xe4\x93\x02.\")/api/v1/monitoring/summaries/createSample:\x01*\x12\x95\x01\n\x11\x63reateSampleBatch\x12-.ai.verta.monitoring.CreateSummarySampleBatch\x1a\x1a.ai.verta.monitoring.Empty\"5\x82\xd3\xe4\x93\x02/\"*/api/v1/monitoring/summaries/createSamples:\x01*\x12\xa7\x01\n\nfindSample\x12-.ai.verta.monitoring.FindSummarySampleRequest\x1a\x36.ai.verta.monitoring.FindSummarySampleRequest.Response\"2\x82\xd3\xe4\x93\x02,\"\'/api/v1/monitoring/summaries/findSample:\x01*\x12\x91\x01\n\x0c\x64\x65leteSample\x12/.ai.verta.monitoring.DeleteSummarySampleRequest\x1a\x1a.ai.verta.monitoring.Empty\"4\x82\xd3\xe4\x93\x02.*)/api/v1/monitoring/summaries/deleteSample:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
+  serialized_pb=b'\n\x18monitoring/Summary.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a&monitoring/DataMonitoringService.proto\"\x07\n\x05\x45mpty\"\xc8\x01\n\x07Summary\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x1b\n\x13monitored_entity_id\x18\x02 \x01(\x04\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x11\n\ttype_name\x18\x04 \x01(\t\x12@\n\nattributes\x18\x05 \x03(\x0b\x32,.ai.verta.monitoring.Summary.AttributesEntry\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xd6\x01\n\x14\x43reateSummaryRequest\x12\x1b\n\x13monitored_entity_id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x11\n\ttype_name\x18\x03 \x01(\t\x12M\n\nattributes\x18\x04 \x03(\x0b\x32\x39.ai.verta.monitoring.CreateSummaryRequest.AttributesEntry\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xb1\x02\n\x12\x46indSummaryRequest\x12P\n\x17\x66ind_monitored_entities\x18\x05 \x01(\x0b\x32/.ai.verta.monitoring.FindMonitoredEntityRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12\x12\n\ntype_names\x18\x03 \x03(\t\x12\x1c\n\x14monitored_entity_ids\x18\x04 \x03(\x04\x12\x13\n\x0bpage_number\x18\x06 \x01(\x05\x12\x12\n\npage_limit\x18\x07 \x01(\x05\x1aR\n\x08Response\x12/\n\tsummaries\x18\x01 \x03(\x0b\x32\x1c.ai.verta.monitoring.Summary\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\"#\n\x14\x44\x65leteSummaryRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\"\x86\x03\n\x0cSummaryValue\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x12\n\nsummary_id\x18\x02 \x01(\x04\x12=\n\x06labels\x18\x03 \x03(\x0b\x32-.ai.verta.monitoring.SummaryValue.LabelsEntry\x12\x34\n\x04type\x18\x04 \x01(\x0e\x32&.ai.verta.monitoring.SummaryValue.Type\x12\x16\n\x0cstring_value\x18\x05 \x01(\tH\x00\x12\x16\n\x0c\x64ouble_value\x18\x06 \x01(\x01H\x00\x12\x17\n\rboolean_value\x18\x07 \x01(\x08H\x00\x12\x19\n\x11\x63reated_at_millis\x18\x08 \x01(\x04\x12\x18\n\x10timestamp_millis\x18\t \x01(\x04\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"+\n\x04Type\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x0b\n\x07\x42OOLEAN\x10\x02\x42\x07\n\x05value\"\xa7\x03\n\x12\x43reateSummaryValue\x12\x1b\n\x13monitored_entity_id\x18\x01 \x01(\x04\x12\x14\n\x0csummary_name\x18\x02 \x01(\t\x12\x19\n\x11summary_type_name\x18\x03 \x01(\t\x12\x12\n\nsummary_id\x18\x04 \x01(\x04\x12\x43\n\x06labels\x18\x05 \x03(\x0b\x32\x33.ai.verta.monitoring.CreateSummaryValue.LabelsEntry\x12\x34\n\x04type\x18\x06 \x01(\x0e\x32&.ai.verta.monitoring.SummaryValue.Type\x12\x16\n\x0cstring_value\x18\x07 \x01(\tH\x00\x12\x16\n\x0c\x64ouble_value\x18\x08 \x01(\x01H\x00\x12\x17\n\rboolean_value\x18\t \x01(\x08H\x00\x12\x19\n\x11\x63reated_at_millis\x18\n \x01(\x04\x12\x18\n\x10timestamp_millis\x18\x0b \x01(\x04\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\x07\n\x05value\"\x92\x02\n\rSummarySample\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x12\n\nsummary_id\x18\x02 \x01(\x04\x12>\n\x06labels\x18\x03 \x03(\x0b\x32..ai.verta.monitoring.SummarySample.LabelsEntry\x12\x0f\n\x07\x63ontent\x18\x04 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x06 \x01(\x04\x12#\n\x1btime_window_start_at_millis\x18\x07 \x01(\x04\x12!\n\x19time_window_end_at_millis\x18\x08 \x01(\x04\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\xe0\x02\n\x13\x43reateSummarySample\x12\x1b\n\x13monitored_entity_id\x18\x01 \x01(\x04\x12\x14\n\x0csummary_name\x18\x02 \x01(\t\x12\x19\n\x11summary_type_name\x18\x03 \x01(\t\x12\x12\n\nsummary_id\x18\x04 \x01(\x04\x12\x44\n\x06labels\x18\x05 \x03(\x0b\x32\x34.ai.verta.monitoring.CreateSummarySample.LabelsEntry\x12\x0f\n\x07\x63ontent\x18\x06 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x07 \x01(\x04\x12#\n\x1btime_window_start_at_millis\x18\x08 \x01(\x04\x12!\n\x19time_window_end_at_millis\x18\t \x01(\x04\x1a-\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"U\n\x18\x43reateSummarySampleBatch\x12\x39\n\x07samples\x18\x01 \x03(\x0b\x32(.ai.verta.monitoring.CreateSummarySample\"\x9d\x02\n\x18\x46indSummarySampleRequest\x12=\n\x06\x66ilter\x18\x01 \x01(\x0b\x32-.ai.verta.monitoring.FilterQuerySummarySample\x12\x41\n\x0b\x61ggregation\x18\x02 \x01(\x0b\x32,.ai.verta.monitoring.AggregationQuerySummary\x12\x13\n\x0bpage_number\x18\x03 \x01(\x05\x12\x12\n\npage_limit\x18\x04 \x01(\x05\x1aV\n\x08Response\x12\x33\n\x07samples\x18\x01 \x03(\x0b\x32\".ai.verta.monitoring.SummarySample\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\"\x86\x03\n\x18\x46ilterQuerySummarySample\x12?\n\x0e\x66ind_summaries\x18\x01 \x01(\x0b\x32\'.ai.verta.monitoring.FindSummaryRequest\x12\x12\n\nsample_ids\x18\x02 \x03(\x04\x12I\n\x06labels\x18\x03 \x03(\x0b\x32\x39.ai.verta.monitoring.FilterQuerySummarySample.LabelsEntry\x12#\n\x1btime_window_start_at_millis\x18\x04 \x01(\x04\x12!\n\x19time_window_end_at_millis\x18\x05 \x01(\x04\x12\x1f\n\x17\x63reated_at_after_millis\x18\x06 \x01(\x04\x1a\x61\n\x0bLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x41\n\x05value\x18\x02 \x01(\x0b\x32\x32.ai.verta.monitoring.LabelFilterQuerySummarySample:\x02\x38\x01\"4\n\x1dLabelFilterQuerySummarySample\x12\x13\n\x0blabel_value\x18\x01 \x03(\t\"\xc9\x01\n\x17\x41ggregationQuerySummary\x12\x1f\n\x17time_granularity_millis\x18\x01 \x01(\x04\x12T\n\toperation\x18\x02 \x01(\x0e\x32\x41.ai.verta.monitoring.AggregationQuerySummary.AggregationOperation\x12\x16\n\x0e\x65xclude_values\x18\x03 \x01(\x08\"\x1f\n\x14\x41ggregationOperation\x12\x07\n\x03SUM\x10\x00\")\n\x1a\x44\x65leteSummarySampleRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x32\xd2\t\n\x0eSummaryService\x12\x8f\x01\n\rcreateSummary\x12).ai.verta.monitoring.CreateSummaryRequest\x1a\x1c.ai.verta.monitoring.Summary\"5\x82\xd3\xe4\x93\x02/\"*/api/v1/monitoring/summaries/createSummary:\x01*\x12\x9d\x01\n\x0b\x66indSummary\x12\'.ai.verta.monitoring.FindSummaryRequest\x1a\x30.ai.verta.monitoring.FindSummaryRequest.Response\"3\x82\xd3\xe4\x93\x02-\"(/api/v1/monitoring/summaries/findSummary:\x01*\x12\x8d\x01\n\rdeleteSummary\x12).ai.verta.monitoring.DeleteSummaryRequest\x1a\x1a.ai.verta.monitoring.Empty\"5\x82\xd3\xe4\x93\x02/**/api/v1/monitoring/summaries/deleteSummary:\x01*\x12\x8e\x01\n\x0b\x63reateValue\x12\'.ai.verta.monitoring.CreateSummaryValue\x1a!.ai.verta.monitoring.SummaryValue\"3\x82\xd3\xe4\x93\x02-\"(/api/v1/monitoring/summaries/createValue:\x01*\x12\x92\x01\n\x0c\x63reateSample\x12(.ai.verta.monitoring.CreateSummarySample\x1a\".ai.verta.monitoring.SummarySample\"4\x82\xd3\xe4\x93\x02.\")/api/v1/monitoring/summaries/createSample:\x01*\x12\x99\x01\n\x11\x63reateSampleBatch\x12-.ai.verta.monitoring.CreateSummarySampleBatch\x1a\x1a.ai.verta.monitoring.Empty\"9\x82\xd3\xe4\x93\x02\x33\"./api/v1/monitoring/summaries/createSampleBatch:\x01*\x12\xa7\x01\n\nfindSample\x12-.ai.verta.monitoring.FindSummarySampleRequest\x1a\x36.ai.verta.monitoring.FindSummarySampleRequest.Response\"2\x82\xd3\xe4\x93\x02,\"\'/api/v1/monitoring/summaries/findSample:\x01*\x12\x91\x01\n\x0c\x64\x65leteSample\x12/.ai.verta.monitoring.DeleteSummarySampleRequest\x1a\x1a.ai.verta.monitoring.Empty\"4\x82\xd3\xe4\x93\x02.*)/api/v1/monitoring/summaries/deleteSample:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,monitoring_dot_DataMonitoringService__pb2.DESCRIPTOR,])
 
@@ -66,8 +66,8 @@ _AGGREGATIONQUERYSUMMARY_AGGREGATIONOPERATION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3361,
-  serialized_end=3392,
+  serialized_start=3367,
+  serialized_end=3398,
 )
 _sym_db.RegisterEnumDescriptor(_AGGREGATIONQUERYSUMMARY_AGGREGATIONOPERATION)
 
@@ -952,7 +952,7 @@ _CREATESUMMARYSAMPLEBATCH = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=2374,
-  serialized_end=2453,
+  serialized_end=2459,
 )
 
 
@@ -989,8 +989,8 @@ _FINDSUMMARYSAMPLEREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2655,
-  serialized_end=2741,
+  serialized_start=2661,
+  serialized_end=2747,
 )
 
 _FINDSUMMARYSAMPLEREQUEST = _descriptor.Descriptor(
@@ -1040,8 +1040,8 @@ _FINDSUMMARYSAMPLEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2456,
-  serialized_end=2741,
+  serialized_start=2462,
+  serialized_end=2747,
 )
 
 
@@ -1078,8 +1078,8 @@ _FILTERQUERYSUMMARYSAMPLE_LABELSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3037,
-  serialized_end=3134,
+  serialized_start=3043,
+  serialized_end=3140,
 )
 
 _FILTERQUERYSUMMARYSAMPLE = _descriptor.Descriptor(
@@ -1143,8 +1143,8 @@ _FILTERQUERYSUMMARYSAMPLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2744,
-  serialized_end=3134,
+  serialized_start=2750,
+  serialized_end=3140,
 )
 
 
@@ -1174,8 +1174,8 @@ _LABELFILTERQUERYSUMMARYSAMPLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3136,
-  serialized_end=3188,
+  serialized_start=3142,
+  serialized_end=3194,
 )
 
 
@@ -1220,8 +1220,8 @@ _AGGREGATIONQUERYSUMMARY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3191,
-  serialized_end=3392,
+  serialized_start=3197,
+  serialized_end=3398,
 )
 
 
@@ -1251,8 +1251,8 @@ _DELETESUMMARYSAMPLEREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3394,
-  serialized_end=3435,
+  serialized_start=3400,
+  serialized_end=3441,
 )
 
 _SUMMARY_ATTRIBUTESENTRY.containing_type = _SUMMARY
@@ -1291,7 +1291,7 @@ _SUMMARYSAMPLE_LABELSENTRY.containing_type = _SUMMARYSAMPLE
 _SUMMARYSAMPLE.fields_by_name['labels'].message_type = _SUMMARYSAMPLE_LABELSENTRY
 _CREATESUMMARYSAMPLE_LABELSENTRY.containing_type = _CREATESUMMARYSAMPLE
 _CREATESUMMARYSAMPLE.fields_by_name['labels'].message_type = _CREATESUMMARYSAMPLE_LABELSENTRY
-_CREATESUMMARYSAMPLEBATCH.fields_by_name['samples'].message_type = _SUMMARYSAMPLE
+_CREATESUMMARYSAMPLEBATCH.fields_by_name['samples'].message_type = _CREATESUMMARYSAMPLE
 _FINDSUMMARYSAMPLEREQUEST_RESPONSE.fields_by_name['samples'].message_type = _SUMMARYSAMPLE
 _FINDSUMMARYSAMPLEREQUEST_RESPONSE.containing_type = _FINDSUMMARYSAMPLEREQUEST
 _FINDSUMMARYSAMPLEREQUEST.fields_by_name['filter'].message_type = _FILTERQUERYSUMMARYSAMPLE
@@ -1512,8 +1512,8 @@ _SUMMARYSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=3438,
-  serialized_end=4668,
+  serialized_start=3444,
+  serialized_end=4678,
   methods=[
   _descriptor.MethodDescriptor(
     name='createSummary',
@@ -1567,7 +1567,7 @@ _SUMMARYSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_CREATESUMMARYSAMPLEBATCH,
     output_type=_EMPTY,
-    serialized_options=b'\202\323\344\223\002/\"*/api/v1/monitoring/summaries/createSamples:\001*',
+    serialized_options=b'\202\323\344\223\0023\"./api/v1/monitoring/summaries/createSampleBatch:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='findSample',

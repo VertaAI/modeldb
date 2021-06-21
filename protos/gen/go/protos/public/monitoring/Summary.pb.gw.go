@@ -683,7 +683,7 @@ var (
 
 	pattern_SummaryService_CreateSample_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "summaries", "createSample"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_SummaryService_CreateSampleBatch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "summaries", "createSamples"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_SummaryService_CreateSampleBatch_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "summaries", "createSampleBatch"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_SummaryService_FindSample_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 2, 4}, []string{"api", "v1", "monitoring", "summaries", "findSample"}, "", runtime.AssumeColonVerbOpt(true)))
 
