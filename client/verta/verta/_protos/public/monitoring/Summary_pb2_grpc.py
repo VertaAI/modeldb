@@ -29,10 +29,20 @@ class SummaryServiceStub(object):
         request_serializer=monitoring_dot_Summary__pb2.DeleteSummaryRequest.SerializeToString,
         response_deserializer=monitoring_dot_Summary__pb2.Empty.FromString,
         )
+    self.createValue = channel.unary_unary(
+        '/ai.verta.monitoring.SummaryService/createValue',
+        request_serializer=monitoring_dot_Summary__pb2.CreateSummaryValue.SerializeToString,
+        response_deserializer=monitoring_dot_Summary__pb2.SummaryValue.FromString,
+        )
     self.createSample = channel.unary_unary(
         '/ai.verta.monitoring.SummaryService/createSample',
         request_serializer=monitoring_dot_Summary__pb2.CreateSummarySample.SerializeToString,
         response_deserializer=monitoring_dot_Summary__pb2.SummarySample.FromString,
+        )
+    self.createSampleBatch = channel.unary_unary(
+        '/ai.verta.monitoring.SummaryService/createSampleBatch',
+        request_serializer=monitoring_dot_Summary__pb2.CreateSummarySampleBatch.SerializeToString,
+        response_deserializer=monitoring_dot_Summary__pb2.Empty.FromString,
         )
     self.findSample = channel.unary_unary(
         '/ai.verta.monitoring.SummaryService/findSample',
@@ -71,7 +81,21 @@ class SummaryServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def createValue(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def createSample(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def createSampleBatch(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -110,10 +134,20 @@ def add_SummaryServiceServicer_to_server(servicer, server):
           request_deserializer=monitoring_dot_Summary__pb2.DeleteSummaryRequest.FromString,
           response_serializer=monitoring_dot_Summary__pb2.Empty.SerializeToString,
       ),
+      'createValue': grpc.unary_unary_rpc_method_handler(
+          servicer.createValue,
+          request_deserializer=monitoring_dot_Summary__pb2.CreateSummaryValue.FromString,
+          response_serializer=monitoring_dot_Summary__pb2.SummaryValue.SerializeToString,
+      ),
       'createSample': grpc.unary_unary_rpc_method_handler(
           servicer.createSample,
           request_deserializer=monitoring_dot_Summary__pb2.CreateSummarySample.FromString,
           response_serializer=monitoring_dot_Summary__pb2.SummarySample.SerializeToString,
+      ),
+      'createSampleBatch': grpc.unary_unary_rpc_method_handler(
+          servicer.createSampleBatch,
+          request_deserializer=monitoring_dot_Summary__pb2.CreateSummarySampleBatch.FromString,
+          response_serializer=monitoring_dot_Summary__pb2.Empty.SerializeToString,
       ),
       'findSample': grpc.unary_unary_rpc_method_handler(
           servicer.findSample,

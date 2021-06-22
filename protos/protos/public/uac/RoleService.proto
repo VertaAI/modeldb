@@ -62,6 +62,7 @@ message ModelDBActionEnum {
         LOCK = 9;
         UNLOCK = 10;
         UPDATE_REDACT = 11;
+        ALERTER = 12;
     }
 };
 

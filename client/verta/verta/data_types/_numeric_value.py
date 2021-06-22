@@ -56,7 +56,7 @@ class NumericValue(_VertaDataType):
         data = d[cls._TYPE_NAME]
         return cls(
             value=data["value"],
-            unit=data.get("unit"),
+            unit=data.get("unit") or None,
         )
 
     def diff(self, other):

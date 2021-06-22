@@ -53,6 +53,47 @@ message DeleteSummaryRequest {
     repeated uint64 ids = 1;
 }
 
+// Summary value is a single data point for a summary corresponding to a specific time and a given set of labels.
+message SummaryValue {
+    uint64 id = 1;
+    uint64 summary_id = 2;
+    map<string, string> labels = 3;
+    enum Type {
+        STRING = 0;
+        NUMBER = 1;
+        BOOLEAN = 2;
+    }
+    Type type = 4;
+    oneof value {
+        string string_value = 5;
+        double double_value = 6;
+        bool boolean_value = 7;
+    }
+    uint64 created_at_millis = 8;
+    uint64 timestamp_millis = 9;
+}
+
+// Request to create a summary value
+message CreateSummaryValue {
+    // Summary info if detailed (e.g. want to avoid the extra hop to fetch the id and do the creation dance)
+    uint64 monitored_entity_id = 1;
+    string summary_name = 2;
+    string summary_type_name = 3;
+    // or just the summary id
+    uint64 summary_id = 4;
+
+    // Sample info
+    map<string, string> labels = 5; // Any label starting with "verta_" should be blocked for internal use
+    SummaryValue.Type type = 6;
+    oneof value {
+        string string_value = 7;
+        double double_value = 8;
+        bool boolean_value = 9;
+    }
+    uint64 created_at_millis = 10;
+    uint64 timestamp_millis = 11;
+}
+
 // Summary sample is one instance of a summary corresponding to a given time range and a given set of labels.
 message SummarySample {
     uint64 id = 1;
@@ -79,6 +120,11 @@ message CreateSummarySample {
     uint64 created_at_millis = 7;
     uint64 time_window_start_at_millis = 8;
     uint64 time_window_end_at_millis = 9;
+}
+
+// Request to create a batch of summary samples
+message CreateSummarySampleBatch {
+    repeated CreateSummarySample samples = 1;
 }
 
 // Request to fetch multiple summary samples, potentially with aggregation.
@@ -115,6 +161,8 @@ message LabelFilterQuerySummarySample {
 // If any of the fields are not provided, we assume that the original value from the sample is kept.
 // For example, if time_granularity_millis=0, then time for the "aggregated sample" must match the
 // time of all the original samples associated with it.
+// By default the aggregation will include any logged values for the time window.  This
+// behavior can be disable to exclude the observations.
 message AggregationQuerySummary {
     // Optional time granularity for aggregation
     // This applies to time_window_start_at_millis and time_window_end_at_millis
@@ -126,6 +174,7 @@ message AggregationQuerySummary {
       SUM = 0;
     }
     AggregationOperation operation = 2;
+    bool exclude_values = 3; // default false.  Set to true to explicitly exclude logged values from aggregation.
 }
 
 // Request to delete summary samples
@@ -155,9 +204,23 @@ service SummaryService {
         };
     };
 
+    rpc createValue(CreateSummaryValue) returns (SummaryValue) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/summaries/createValue"
+            body: "*"
+        };
+    };
+
     rpc createSample(CreateSummarySample) returns (SummarySample) {
         option (google.api.http) = {
             post: "/api/v1/monitoring/summaries/createSample"
+            body: "*"
+        };
+    };
+
+    rpc createSampleBatch(CreateSummarySampleBatch) returns (Empty) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/summaries/createSampleBatch"
             body: "*"
         };
     };

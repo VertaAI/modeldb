@@ -560,7 +560,8 @@
         "UPDATE_PERMISSIONS",
         "LOCK",
         "UNLOCK",
-        "UPDATE_REDACT"
+        "UPDATE_REDACT",
+        "ALERTER"
       ],
       "default": "UNKNOWN"
     },
