@@ -7,6 +7,10 @@ import logging
 import pathlib2
 import pickle
 import warnings
+import pandas as pd
+import json
+import time
+
 from google.protobuf.struct_pb2 import Value
 
 import requests
@@ -26,6 +30,14 @@ from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities._deployable_entity import _DeployableEntity
 from verta.environment import _Environment, Python
 from .. import lock
+
+from verta._protos.public.monitoring.DeploymentIntegration_pb2 import FeatureDataInModelVersion
+from verta.monitoring.profiler import ContinuousHistogramProfiler, BinaryHistogramProfiler, MissingValuesProfiler
+from verta.data_types import (
+    DiscreteHistogram,
+    FloatHistogram,
+    NumericValue,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -1075,3 +1087,118 @@ class RegisteredModelVersion(_DeployableEntity):
         endpoint = "/api/v1/registry/model_versions/{}".format(self.id)
         response = self._conn.make_proto_request("DELETE", endpoint)
         self._conn.must_response(response)
+
+    def _normalize_attribute_name(self, name):
+        return "".join([x for x in name if (str.isalnum(x) or x == '_')])
+
+    def _add_time_attributes_to_feature_data(self, feature_data):
+        time_millis = int(time.time() * 1000)
+        feature_data.created_at_millis = time_millis
+        feature_data.time_window_start_at_millis = time_millis
+        feature_data.time_window_end_at_millis = time_millis
+
+    def _add_labels_to_feature_data(self, feature_data, labels):
+        for key in labels.keys():
+            feature_data.labels[key] = labels[key]
+
+    def create_missing_value_summary(self, df, col, labels):
+        feature_data = FeatureDataInModelVersion()
+        feature_data.feature_name = col
+        feature_data.profiler_name = "MissingValuesProfiler"
+        feature_data.summary_name = col + "--" + "MissingValues"
+        feature_data.summary_type_name = "DiscreteHistogram"
+        sample = MissingValuesProfiler(columns=[col]).profile(df)
+        for _, histogram in sample.items():
+            feature_data.content = json.dumps(DiscreteHistogram(
+                buckets = histogram._buckets,
+                data = histogram._data,
+            )._as_dict())
+            break
+        self._add_time_attributes_to_feature_data(feature_data)
+        self._add_labels_to_feature_data(feature_data, labels)
+        return feature_data
+
+    def create_continuous_histogram_summary(self, df, col, labels):
+        feature_data = FeatureDataInModelVersion()
+        feature_data.feature_name = col
+        feature_data.profiler_name = "ContinuousHistogramProfiler"
+        feature_data.summary_name = col + "--" + "Distribution"
+        feature_data.summary_type_name = "FloatHistogram"
+        sample = ContinuousHistogramProfiler(columns=[col]).profile(df)
+        for _, histogram in sample.items():
+            feature_data.content = json.dumps(FloatHistogram(
+                bucket_limits = histogram._bucket_limits,
+                data = histogram._data,
+            )._as_dict())
+            feature_data.profiler_parameters = json.dumps({"bins" : histogram._bucket_limits})
+            break
+        self._add_time_attributes_to_feature_data(feature_data)
+        self._add_labels_to_feature_data(feature_data, labels)
+        return feature_data
+
+    def create_discrete_histogram_summary(self, df, col, labels):
+        feature_data = FeatureDataInModelVersion()
+        feature_data.feature_name = col
+        feature_data.profiler_name = "BinaryHistogramProfiler"
+        feature_data.summary_name = col + "--" + "Distribution"
+        feature_data.summary_type_name = "DiscreteHistogram"
+        sample = BinaryHistogramProfiler(columns=[col]).profile(df)
+        for _, histogram in sample.items():
+            feature_data.content = json.dumps(DiscreteHistogram(
+                buckets = histogram._buckets,
+                data = histogram._data,
+            )._as_dict())
+            feature_data.profiler_parameters = json.dumps({"bins" : histogram._buckets})
+            break
+        self._add_time_attributes_to_feature_data(feature_data)
+        self._add_labels_to_feature_data(feature_data, labels)
+        return feature_data
+
+    def _get_metadata_for_df(self, df):
+        metadata = {}
+        for column in df:
+            metadata[column] = {}
+            metadata[column]["num_unique"] = df[column].value_counts().size
+            metadata[column]["type"] = str(df[column].dtypes)
+        return metadata
+
+    def compute_training_data_profile(self, in_df, out_df):
+        in_df_metadata = self._get_metadata_for_df(in_df)
+        out_df_metadata = self._get_metadata_for_df(out_df)
+
+        labels_list = [{"col_type" : "input"}, {"col_type" : "output"}]
+        metadata_list = [in_df_metadata, out_df_metadata]
+        df_list = [in_df, out_df]
+
+        feature_data_list = []
+        # we assume no overlap in names of input and output cols
+        for labels, metadata, df in zip(labels_list, metadata_list, df_list):
+            for key in metadata.keys():
+                # ignore unsupported types. currently only numeric
+                if metadata[key]["type"] not in ["float64", "int64"]:
+                    continue
+                feature_data_list.append(
+                    self.create_missing_value_summary(df, key, labels))
+                if metadata[key]["num_unique"] > 20:
+                    feature_data_list.append(
+                        self.create_continuous_histogram_summary(df, key, labels))
+                else:
+                    feature_data_list.append(
+                        self.create_discrete_histogram_summary(df, key, labels))
+        return feature_data_list
+
+    def log_feature_data_and_vis_attributes(self, feature_data_list):
+        for idx in range(len(feature_data_list)):
+            self.add_attribute(
+                "__verta_feature_data_" + str(idx),
+                _utils.proto_to_json(feature_data_list[idx], False))
+            self.add_attribute(
+                self._normalize_attribute_name(
+                    feature_data_list[idx].summary_name),
+                json.loads(feature_data_list[idx].content))
+
+    def log_training_data_profile(self, in_df, out_df):
+        if not isinstance(in_df, pd.DataFrame) or not isinstance(out_df, pd.DataFrame):
+            raise TypeError("`in_df` and `out_df` must be of type pd.DataFrame")
+        feature_data_list = self.compute_training_data_profile(in_df, out_df)
+        self.log_feature_data_and_vis_attributes(feature_data_list)
