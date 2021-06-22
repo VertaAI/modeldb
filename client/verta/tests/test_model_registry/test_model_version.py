@@ -26,6 +26,7 @@ from verta._internal_utils import (
     _artifact_utils,
     _utils,
 )
+from verta._protos.public.monitoring.DeploymentIntegration_pb2 import FeatureDataInModelVersion
 
 from .. import utils
 
@@ -846,3 +847,65 @@ class TestLockLevels:
         with pytest.raises(requests.HTTPError, match="^403"):
             user_model_ver.delete()
         admin_model_ver.delete()
+
+
+class TestAutoMonitoring:
+    def test_non_df(self, model_version):
+        pd = pytest.importorskip("pandas")
+        with pytest.raises(TypeError):
+            model_version.log_training_data_profile(
+                "abc", pd.DataFrame([1,2,3]))
+        with pytest.raises(TypeError):
+            model_version.log_training_data_profile(
+                pd.DataFrame([1,2,3]), 2)
+
+    def test_profile_training_data(self, model_version):
+        pd = pytest.importorskip("pandas")
+        np = pytest.importorskip("numpy")
+        uuid = pytest.importorskip("uuid")
+        datetime_module = pytest.importorskip("datetime")
+        json = pytest.importorskip("json")
+        from datetime import datetime
+  
+        cont_col = np.random.random(100)
+        discrete_col = np.random.choice(5, 100)
+        strs = ['a', 'b', 'c', 'd', 'e']
+        string_discrete_col =  [strs[x] for x in np.random.choice(5, 100)]
+        string_freeform_col =  [uuid.uuid4().hex.upper()[0:10] for x in range(100)]
+        other_col = [datetime.now() for x in range(100)]
+        output_col = np.random.choice(2, 100)
+
+        col_names = ['Continuous_Numeric', 'Discrete_Numeric', 'Discrete_String', "Freeform_String",
+                "Other", "Output_Col"]
+        supported_col_names = ['Continuous_Numeric', 'Discrete_Numeric', "Output_Col"]
+
+        # create dataframes
+        df  = pd.DataFrame(
+            list(zip(cont_col, discrete_col, string_discrete_col, string_freeform_col,
+                other_col, output_col)),
+            columns = col_names
+        )
+
+        # log to model version with new method
+        model_version.log_training_data_profile(
+            df.loc[:, df.columns != "Output_Col"], pd.DataFrame(df["Output_Col"]))
+
+        # get back attributes to validate
+        attributes = model_version.get_attributes()
+        discrete_col_missing_summary = _utils.json_to_proto(
+            model_version.get_attribute("__verta_feature_data_2"),
+            FeatureDataInModelVersion) # missing value
+        discrete_col_distribution_summary = _utils.json_to_proto(
+            model_version.get_attribute("__verta_feature_data_3"),
+            FeatureDataInModelVersion) # missing value
+
+        # missing value, distribution summary for each supported column +
+        # equal number of attributes for visualization
+        assert(len(attributes.keys()) == len(supported_col_names) * 2 * 2)
+        assert(discrete_col_distribution_summary.summary_type_name == "DiscreteHistogram")
+        assert(discrete_col_distribution_summary.profiler_name == "BinaryHistogramProfiler")
+        assert(len(json.loads(discrete_col_distribution_summary.content)["discreteHistogram"]["buckets"]) <= 5)
+
+        assert(discrete_col_missing_summary.summary_type_name == "DiscreteHistogram")
+        assert(discrete_col_missing_summary.profiler_name == "MissingValuesProfiler")
+        assert(len(json.loads(discrete_col_missing_summary.content)["discreteHistogram"]["buckets"]) == 2)
