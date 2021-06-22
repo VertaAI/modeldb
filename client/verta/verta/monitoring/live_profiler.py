@@ -46,6 +46,8 @@ class FeatureProfiler(object):
             labels = self.feature_data.labels,
             content = json.dumps(sample_value._as_dict()),
         )
+        create_summary_sample.labels["io_type"] = location
+        create_summary_sample.labels["feature"] = self.feature_data.feature_name
 
         return create_summary_sample
 
