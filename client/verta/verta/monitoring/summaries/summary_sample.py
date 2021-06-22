@@ -34,11 +34,11 @@ class SummarySample(_entity._ModelDBEntity):
         A :mod:`VertaDataType <verta.data_types>` consistent with the type of this summary.
     labels : dict of str to str, optional
         A mapping between label keys and values.
-    time_window_start : datetime.datetime or int
+    time_window_start_at : datetime.datetime or int
         Either a timezone aware datetime object or unix epoch milliseconds.
-    time_window_end : datetime.datetime or int
+    time_window_end_at : datetime.datetime or int
         Either a timezone aware datetime object or unix epoch milliseconds.
-    created_after : datetime.datetime or int, optional
+    created_at : datetime.datetime or int, optional
         Either a timezone aware datetime object or unix epoch milliseconds.
 
     Examples
