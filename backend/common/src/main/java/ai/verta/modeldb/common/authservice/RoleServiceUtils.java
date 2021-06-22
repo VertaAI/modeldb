@@ -114,7 +114,7 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.trace("SetResources message sent.  Response: " + setResourcesResponse);
       return true;
     } catch (StatusRuntimeException ex) {
-      LOGGER.error(ex);
+      LOGGER.trace(ex);
       CommonUtils.retryOrThrowException(ex, false, retry -> null, timeout);
     }
     return false;
@@ -139,7 +139,7 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.trace("DeleteResources message sent.  Response: " + response);
       return true;
     } catch (StatusRuntimeException ex) {
-      LOGGER.error(ex);
+      LOGGER.trace(ex);
       CommonUtils.retryOrThrowException(ex, false, retry -> null, timeout);
     }
     return false;
@@ -196,7 +196,7 @@ public class RoleServiceUtils implements RoleService {
         throw new NotFoundException(errorMessage.toString());
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.error(ex);
+      LOGGER.trace(ex);
       throw ex;
     }
   }
@@ -231,7 +231,7 @@ public class RoleServiceUtils implements RoleService {
         throw new NotFoundException(errorMessage.toString());
       }
     } catch (StatusRuntimeException ex) {
-      LOGGER.error(ex);
+      LOGGER.trace(ex);
       throw ex;
     }
   }
@@ -341,7 +341,7 @@ public class RoleServiceUtils implements RoleService {
           authServiceChannel.getCollaboratorServiceBlockingStub().getResources(builder.build());
       return response.getItemList();
     } catch (StatusRuntimeException ex) {
-      LOGGER.error(ex);
+      LOGGER.trace(ex);
       throw ex;
     }
   }
