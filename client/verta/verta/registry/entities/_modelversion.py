@@ -1185,6 +1185,7 @@ class RegisteredModelVersion(_DeployableEntity):
             metadata[column] = {}
             metadata[column]["num_unique"] = df[column].value_counts().size
             metadata[column]["type"] = str(df[column].dtypes)
+
         return metadata
 
     def compute_training_data_profile(self, in_df, out_df):
@@ -1210,6 +1211,7 @@ class RegisteredModelVersion(_DeployableEntity):
                 else:
                     feature_data_list.append(
                         self.create_discrete_histogram_summary(df, key, labels))
+
         return feature_data_list
 
     def log_feature_data_and_vis_attributes(self, feature_data_list):
