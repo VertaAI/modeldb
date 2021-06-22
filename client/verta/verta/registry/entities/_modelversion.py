@@ -2,28 +2,33 @@
 
 from __future__ import print_function
 
-import os
+import json
 import logging
+import os
 import pathlib2
 import pickle
 import warnings
-import pandas as pd
-import json
-import time
 
 from google.protobuf.struct_pb2 import Value
 
 import requests
 
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.monitoring.DeploymentIntegration_pb2 import FeatureDataInModelVersion
 from verta._protos.public.registry import (
     RegistryService_pb2 as _RegistryService,
     StageService_pb2 as _StageService,
 )
-from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 from verta.external import six
 
-from verta._internal_utils import _utils, _artifact_utils, importer, _request_utils
+from verta._internal_utils import (
+    _artifact_utils,
+    _request_utils,
+    _utils,
+    importer,
+    time_utils,
+)
 from verta import utils
 
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
@@ -31,12 +36,14 @@ from verta.tracking.entities._deployable_entity import _DeployableEntity
 from verta.environment import _Environment, Python
 from .. import lock
 
-from verta._protos.public.monitoring.DeploymentIntegration_pb2 import FeatureDataInModelVersion
-from verta.monitoring.profiler import ContinuousHistogramProfiler, BinaryHistogramProfiler, MissingValuesProfiler
+from verta.monitoring.profiler import (
+    ContinuousHistogramProfiler,
+    BinaryHistogramProfiler,
+    MissingValuesProfiler,
+)
 from verta.data_types import (
     DiscreteHistogram,
     FloatHistogram,
-    NumericValue,
 )
 
 
@@ -1092,7 +1099,7 @@ class RegisteredModelVersion(_DeployableEntity):
         return "".join([x for x in name if (str.isalnum(x) or x == '_')])
 
     def _add_time_attributes_to_feature_data(self, feature_data):
-        time_millis = int(time.time() * 1000)
+        time_millis = time_utils.now_in_millis()
         feature_data.created_at_millis = time_millis
         feature_data.time_window_start_at_millis = time_millis
         feature_data.time_window_end_at_millis = time_millis
@@ -1198,6 +1205,10 @@ class RegisteredModelVersion(_DeployableEntity):
                 json.loads(feature_data_list[idx].content))
 
     def log_training_data_profile(self, in_df, out_df):
+        pd = importer.maybe_dependency("pandas")
+        if pd is None:
+            e = ImportError("pandas is not installed; try `pip install pandas`")
+            six.raise_from(e, None)
         if not isinstance(in_df, pd.DataFrame) or not isinstance(out_df, pd.DataFrame):
             raise TypeError("`in_df` and `out_df` must be of type pd.DataFrame")
         feature_data_list = self.compute_training_data_profile(in_df, out_df)
