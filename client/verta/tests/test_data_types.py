@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import copy
+
 import pytest
 from verta import data_types
 from verta._internal_utils import importer
@@ -202,6 +204,26 @@ class TestNumericValue:
         }
         assert attr._as_dict() == d
         assert attr == data_types._VertaDataType._from_dict(d)
+
+    def test_from_dict_no_unit(self):
+        d1 = {
+            "type": "verta.numericValue.v1",
+            "numericValue": {
+                "value": 6,
+            },
+        }
+        d2 = copy.deepcopy(d1)
+        d2["numericValue"]["unit"] = ""
+        d3 = copy.deepcopy(d1)
+        d2["numericValue"]["unit"] = None
+
+        attr1 = data_types._VertaDataType._from_dict(d1)
+        attr2 = data_types._VertaDataType._from_dict(d2)
+        attr3 = data_types._VertaDataType._from_dict(d3)
+
+        for attr in [attr1, attr2, attr3]:
+            assert isinstance(attr, data_types.NumericValue)
+        assert attr1 == attr2 == attr3
 
     def test_numpy(self):
         np = pytest.importorskip("numpy")
