@@ -1213,14 +1213,15 @@ class RegisteredModelVersion(_DeployableEntity):
         return feature_data_list
 
     def log_feature_data_and_vis_attributes(self, feature_data_list):
-        for idx in range(len(feature_data_list)):
+        for i, feature_data in enumerate(feature_data_list):
             self.add_attribute(
-                "__verta_feature_data_" + str(idx),
-                _utils.proto_to_json(feature_data_list[idx], False))
+                "__verta_feature_data_{}".format(i),
+                _utils.proto_to_json(feature_data, False),
+            )
             self.add_attribute(
-                self._normalize_attribute_name(
-                    feature_data_list[idx].summary_name),
-                json.loads(feature_data_list[idx].content))
+                self._normalize_attribute_name(feature_data.summary_name),
+                json.loads(feature_data.content),
+            )
 
     def log_training_data_profile(self, in_df, out_df):
         pd = importer.maybe_dependency("pandas")
@@ -1229,5 +1230,6 @@ class RegisteredModelVersion(_DeployableEntity):
             six.raise_from(e, None)
         if not isinstance(in_df, pd.DataFrame) or not isinstance(out_df, pd.DataFrame):
             raise TypeError("`in_df` and `out_df` must be of type pd.DataFrame")
+
         feature_data_list = self.compute_training_data_profile(in_df, out_df)
         self.log_feature_data_and_vis_attributes(feature_data_list)
