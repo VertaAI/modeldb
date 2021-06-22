@@ -43,7 +43,7 @@ public class TelemetryUtils {
       try (Connection connection = modelDBHibernateUtil.getConnection()) {
         final var database = App.getInstance().config.database;
         final var existStatus =
-            modelDBHibernateUtil.tableExists(connection, database, "modeldb_deployment_info");
+            ModelDBHibernateUtil.tableExists(connection, database, "modeldb_deployment_info");
         if (!existStatus) {
           LOGGER.warn("modeldb_deployment_info table not found");
           LOGGER.info("Table modeldb_deployment_info creating");
@@ -90,7 +90,9 @@ public class TelemetryUtils {
             }
           }
         }
-        connection.commit();
+        if (!connection.getAutoCommit()) {
+          connection.commit();
+        }
         telemetryInitialized = true;
         LOGGER.info("Set value for telemetryInitialized : {}", telemetryInitialized);
       } catch (SQLException e) {
@@ -118,7 +120,7 @@ public class TelemetryUtils {
         LOGGER.error(
             "Error while insertion entry on ModelDB deployment info : {}", e.getMessage(), e);
       } finally {
-        if (connection != null) {
+        if (connection != null && !connection.getAutoCommit()) {
           connection.commit();
           connection.close();
         }
@@ -134,7 +136,7 @@ public class TelemetryUtils {
       String query = "DELETE FROM telemetry_information";
       int deletedRows = stmt.executeUpdate(query);
       LOGGER.info("Record deleted successfully : {}", deletedRows);
-      connection.commit();
+      if (!connection.getAutoCommit()) connection.commit();
     } catch (SQLException e) {
       LOGGER.error("Error while getting DB connection : {}", e.getMessage(), e);
     }
@@ -155,8 +157,9 @@ public class TelemetryUtils {
         LOGGER.error(
             "Error while insertion entry on ModelDB deployment info : {}", e.getMessage(), e);
       } finally {
-        connection.commit();
-        connection.close();
+        if (connection != null && !connection.getAutoCommit()) {
+          connection.commit();
+        }
       }
     } catch (SQLException e) {
       LOGGER.error("Error while getting DB connection : {}", e.getMessage(), e);
