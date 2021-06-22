@@ -121,6 +121,11 @@ class MissingValuesProfiler(Profiler):
 
         return (column + "_missing", DiscreteHistogram(["present", "missing"], [total - missing, missing]))
 
+    def profile_point(self, sample, reference):
+        if sample is None: # Missing
+            return DiscreteHistogram(reference._buckets, [0, 1])
+        return DiscreteHistogram(reference._buckets, [1, 0])
+
 
 # TODO: Rename to CategoricalHistogramProfiler?
 class BinaryHistogramProfiler(Profiler):
