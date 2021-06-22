@@ -1095,20 +1095,24 @@ class RegisteredModelVersion(_DeployableEntity):
         response = self._conn.make_proto_request("DELETE", endpoint)
         self._conn.must_response(response)
 
-    def _normalize_attribute_name(self, name):
+    @staticmethod
+    def _normalize_attribute_name(name):
         return "".join([x for x in name if (str.isalnum(x) or x == '_')])
 
-    def _add_time_attributes_to_feature_data(self, feature_data):
+    @staticmethod
+    def _add_time_attributes_to_feature_data(feature_data):
         time_millis = time_utils.now_in_millis()
         feature_data.created_at_millis = time_millis
         feature_data.time_window_start_at_millis = time_millis
         feature_data.time_window_end_at_millis = time_millis
 
-    def _add_labels_to_feature_data(self, feature_data, labels):
+    @staticmethod
+    def _add_labels_to_feature_data(feature_data, labels):
         for key in labels.keys():
             feature_data.labels[key] = labels[key]
 
-    def create_missing_value_summary(self, df, col, labels):
+    @classmethod
+    def create_missing_value_summary(cls, df, col, labels):
         data_type_cls = DiscreteHistogram
         profiler_cls = MissingValuesProfiler
 
@@ -1126,12 +1130,13 @@ class RegisteredModelVersion(_DeployableEntity):
                 )._as_dict()
             ),
         )
-        self._add_time_attributes_to_feature_data(feature_data)
-        self._add_labels_to_feature_data(feature_data, labels)
+        cls._add_time_attributes_to_feature_data(feature_data)
+        cls._add_labels_to_feature_data(feature_data, labels)
 
         return feature_data
 
-    def create_continuous_histogram_summary(self, df, col, labels):
+    @classmethod
+    def create_continuous_histogram_summary(cls, df, col, labels):
         data_type_cls = FloatHistogram
         profiler_cls = ContinuousHistogramProfiler
 
@@ -1150,12 +1155,13 @@ class RegisteredModelVersion(_DeployableEntity):
                 )._as_dict()
             ),
         )
-        self._add_time_attributes_to_feature_data(feature_data)
-        self._add_labels_to_feature_data(feature_data, labels)
+        cls._add_time_attributes_to_feature_data(feature_data)
+        cls._add_labels_to_feature_data(feature_data, labels)
 
         return feature_data
 
-    def create_discrete_histogram_summary(self, df, col, labels):
+    @classmethod
+    def create_discrete_histogram_summary(cls, df, col, labels):
         data_type_cls = DiscreteHistogram
         profiler_cls = BinaryHistogramProfiler
 
@@ -1174,12 +1180,13 @@ class RegisteredModelVersion(_DeployableEntity):
                 )._as_dict()
             ),
         )
-        self._add_time_attributes_to_feature_data(feature_data)
-        self._add_labels_to_feature_data(feature_data, labels)
+        cls._add_time_attributes_to_feature_data(feature_data)
+        cls._add_labels_to_feature_data(feature_data, labels)
 
         return feature_data
 
-    def _get_metadata_for_df(self, df):
+    @staticmethod
+    def _get_metadata_for_df(df):
         metadata = {}
         for column in df:
             metadata[column] = {}
@@ -1188,9 +1195,10 @@ class RegisteredModelVersion(_DeployableEntity):
 
         return metadata
 
-    def compute_training_data_profile(self, in_df, out_df):
-        in_df_metadata = self._get_metadata_for_df(in_df)
-        out_df_metadata = self._get_metadata_for_df(out_df)
+    @classmethod
+    def compute_training_data_profile(cls, in_df, out_df):
+        in_df_metadata = cls._get_metadata_for_df(in_df)
+        out_df_metadata = cls._get_metadata_for_df(out_df)
 
         labels_list = [{"col_type" : "input"}, {"col_type" : "output"}]
         metadata_list = [in_df_metadata, out_df_metadata]
@@ -1204,13 +1212,13 @@ class RegisteredModelVersion(_DeployableEntity):
                 if metadata[key]["type"] not in ["float64", "int64"]:
                     continue
                 feature_data_list.append(
-                    self.create_missing_value_summary(df, key, labels))
+                    cls.create_missing_value_summary(df, key, labels))
                 if metadata[key]["num_unique"] > 20:
                     feature_data_list.append(
-                        self.create_continuous_histogram_summary(df, key, labels))
+                        cls.create_continuous_histogram_summary(df, key, labels))
                 else:
                     feature_data_list.append(
-                        self.create_discrete_histogram_summary(df, key, labels))
+                        cls.create_discrete_histogram_summary(df, key, labels))
 
         return feature_data_list
 
