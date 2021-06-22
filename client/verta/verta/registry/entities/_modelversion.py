@@ -1113,19 +1113,22 @@ class RegisteredModelVersion(_DeployableEntity):
         profiler_cls = MissingValuesProfiler
 
         sample = profiler_cls(columns=[col]).profile(df)
-        feature_data = FeatureDataInModelVersion()
-        feature_data.feature_name = col
-        feature_data.summary_name = col + "--" + "MissingValues"
-        feature_data.summary_type_name = data_type_cls.__name__
-        feature_data.profiler_name = profiler_cls.__name__
-        for _, histogram in sample.items():
-            feature_data.content = json.dumps(data_type_cls(
-                buckets = histogram._buckets,
-                data = histogram._data,
-            )._as_dict())
-            break
+        histogram = list(sample.values())[0]
+        feature_data = FeatureDataInModelVersion(
+            feature_name=col,
+            profiler_name=profiler_cls.__name__,
+            summary_name=col + "--" + "MissingValues",
+            summary_type_name=data_type_cls.__name__,
+            content=json.dumps(
+                data_type_cls(
+                    buckets=histogram._buckets,
+                    data=histogram._data,
+                )._as_dict()
+            ),
+        )
         self._add_time_attributes_to_feature_data(feature_data)
         self._add_labels_to_feature_data(feature_data, labels)
+
         return feature_data
 
     def create_continuous_histogram_summary(self, df, col, labels):
@@ -1133,20 +1136,23 @@ class RegisteredModelVersion(_DeployableEntity):
         profiler_cls = ContinuousHistogramProfiler
 
         sample = profiler_cls(columns=[col]).profile(df)
-        feature_data = FeatureDataInModelVersion()
-        feature_data.feature_name = col
-        feature_data.summary_name = col + "--" + "Distribution"
-        feature_data.summary_type_name = data_type_cls.__name__
-        feature_data.profiler_name = profiler_cls.__name__
-        for _, histogram in sample.items():
-            feature_data.content = json.dumps(data_type_cls(
-                bucket_limits = histogram._bucket_limits,
-                data = histogram._data,
-            )._as_dict())
-            feature_data.profiler_parameters = json.dumps({"bins" : histogram._bucket_limits})
-            break
+        histogram = list(sample.values())[0]
+        feature_data = FeatureDataInModelVersion(
+            feature_name=col,
+            profiler_name=profiler_cls.__name__,
+            profiler_parameters=json.dumps({"bins" : histogram._bucket_limits}),
+            summary_name=col + "--" + "Distribution",
+            summary_type_name=data_type_cls.__name__,
+            content=json.dumps(
+                data_type_cls(
+                    bucket_limits=histogram._bucket_limits,
+                    data=histogram._data,
+                )._as_dict()
+            ),
+        )
         self._add_time_attributes_to_feature_data(feature_data)
         self._add_labels_to_feature_data(feature_data, labels)
+
         return feature_data
 
     def create_discrete_histogram_summary(self, df, col, labels):
@@ -1154,20 +1160,23 @@ class RegisteredModelVersion(_DeployableEntity):
         profiler_cls = BinaryHistogramProfiler
 
         sample = profiler_cls(columns=[col]).profile(df)
-        feature_data = FeatureDataInModelVersion()
-        feature_data.feature_name = col
-        feature_data.summary_name = col + "--" + "Distribution"
-        feature_data.summary_type_name = data_type_cls.__name__
-        feature_data.profiler_name = profiler_cls.__name__
-        for _, histogram in sample.items():
-            feature_data.content = json.dumps(data_type_cls(
-                buckets = histogram._buckets,
-                data = histogram._data,
-            )._as_dict())
-            feature_data.profiler_parameters = json.dumps({"bins" : histogram._buckets})
-            break
+        histogram = list(sample.values())[0]
+        feature_data = FeatureDataInModelVersion(
+            feature_name=col,
+            profiler_name=profiler_cls.__name__,
+            profiler_parameters=json.dumps({"bins" : histogram._buckets}),
+            summary_name=col + "--" + "Distribution",
+            summary_type_name=data_type_cls.__name__,
+            content=json.dumps(
+                data_type_cls(
+                    buckets=histogram._buckets,
+                    data=histogram._data,
+                )._as_dict()
+            ),
+        )
         self._add_time_attributes_to_feature_data(feature_data)
         self._add_labels_to_feature_data(feature_data, labels)
+
         return feature_data
 
     def _get_metadata_for_df(self, df):
