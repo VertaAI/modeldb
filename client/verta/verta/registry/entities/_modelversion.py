@@ -1109,14 +1109,17 @@ class RegisteredModelVersion(_DeployableEntity):
             feature_data.labels[key] = labels[key]
 
     def create_missing_value_summary(self, df, col, labels):
+        data_type_cls = DiscreteHistogram
+        profiler_cls = MissingValuesProfiler
+
+        sample = profiler_cls(columns=[col]).profile(df)
         feature_data = FeatureDataInModelVersion()
         feature_data.feature_name = col
-        feature_data.profiler_name = "MissingValuesProfiler"
         feature_data.summary_name = col + "--" + "MissingValues"
-        feature_data.summary_type_name = "DiscreteHistogram"
-        sample = MissingValuesProfiler(columns=[col]).profile(df)
+        feature_data.summary_type_name = data_type_cls.__name__
+        feature_data.profiler_name = profiler_cls.__name__
         for _, histogram in sample.items():
-            feature_data.content = json.dumps(DiscreteHistogram(
+            feature_data.content = json.dumps(data_type_cls(
                 buckets = histogram._buckets,
                 data = histogram._data,
             )._as_dict())
@@ -1126,14 +1129,17 @@ class RegisteredModelVersion(_DeployableEntity):
         return feature_data
 
     def create_continuous_histogram_summary(self, df, col, labels):
+        data_type_cls = FloatHistogram
+        profiler_cls = ContinuousHistogramProfiler
+
+        sample = profiler_cls(columns=[col]).profile(df)
         feature_data = FeatureDataInModelVersion()
         feature_data.feature_name = col
-        feature_data.profiler_name = "ContinuousHistogramProfiler"
         feature_data.summary_name = col + "--" + "Distribution"
-        feature_data.summary_type_name = "FloatHistogram"
-        sample = ContinuousHistogramProfiler(columns=[col]).profile(df)
+        feature_data.summary_type_name = data_type_cls.__name__
+        feature_data.profiler_name = profiler_cls.__name__
         for _, histogram in sample.items():
-            feature_data.content = json.dumps(FloatHistogram(
+            feature_data.content = json.dumps(data_type_cls(
                 bucket_limits = histogram._bucket_limits,
                 data = histogram._data,
             )._as_dict())
@@ -1144,14 +1150,17 @@ class RegisteredModelVersion(_DeployableEntity):
         return feature_data
 
     def create_discrete_histogram_summary(self, df, col, labels):
+        data_type_cls = DiscreteHistogram
+        profiler_cls = BinaryHistogramProfiler
+
+        sample = profiler_cls(columns=[col]).profile(df)
         feature_data = FeatureDataInModelVersion()
         feature_data.feature_name = col
-        feature_data.profiler_name = "BinaryHistogramProfiler"
         feature_data.summary_name = col + "--" + "Distribution"
-        feature_data.summary_type_name = "DiscreteHistogram"
-        sample = BinaryHistogramProfiler(columns=[col]).profile(df)
+        feature_data.summary_type_name = data_type_cls.__name__
+        feature_data.profiler_name = profiler_cls.__name__
         for _, histogram in sample.items():
-            feature_data.content = json.dumps(DiscreteHistogram(
+            feature_data.content = json.dumps(data_type_cls(
                 buckets = histogram._buckets,
                 data = histogram._data,
             )._as_dict())
