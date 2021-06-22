@@ -121,6 +121,11 @@ class MissingValuesProfiler(Profiler):
 
         return (column + "_missing", DiscreteHistogram(["present", "missing"], [total - missing, missing]))
 
+    def profile_point(self, sample, reference):
+        if sample is None: # Missing
+            return DiscreteHistogram(reference._buckets, [0, 1])
+        return DiscreteHistogram(reference._buckets, [1, 0])
+
 
 # TODO: Rename to CategoricalHistogramProfiler?
 class BinaryHistogramProfiler(Profiler):
@@ -166,6 +171,11 @@ class BinaryHistogramProfiler(Profiler):
         values = [v.item() for v in values]
         return (column + "_histogram", DiscreteHistogram(keys, values))
 
+    def profile_point(self, sample, reference):
+        if sample:
+            return DiscreteHistogram(reference._buckets, [0, 1])
+        return DiscreteHistogram(reference._buckets, [1, 0])
+
 
 # TODO: Consider design/interface for different bins
 class ContinuousHistogramProfiler(Profiler):
@@ -194,3 +204,8 @@ class ContinuousHistogramProfiler(Profiler):
         values = [v.item() for v in values]
         limits = [lim.item() for lim in limits]
         return (column + "_histogram", FloatHistogram(limits, values))
+
+    # TODO: consider the case where the data is outside of the bucket list
+    def profile_point(self, sample, reference):
+        values, _ = self._np.histogram([sample], bins=reference._bucket_limits)
+        return FloatHistogram(reference._bucket_limits, values)
