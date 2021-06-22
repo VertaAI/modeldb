@@ -17,6 +17,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -36,6 +37,8 @@ public class SoftDeleteRepositories extends Reconciler<String> {
       ModelDBHibernateUtil.getInstance();
   private final RoleService roleService;
   private final boolean isDataset;
+  // To prevent OptimisticLockException
+  private final Set<String> processingIdSet = new HashSet<>();
 
   public SoftDeleteRepositories(
       ReconcilerConfig config,
@@ -75,16 +78,24 @@ public class SoftDeleteRepositories extends Reconciler<String> {
   protected ReconcileResult reconcile(Set<String> ids) {
     LOGGER.debug("Reconciling repositories " + ids.toString());
 
-    if (isDataset) {
-      roleService.deleteEntityResourcesWithServiceUser(
-          new ArrayList<>(ids), ModelDBServiceResourceTypes.DATASET);
-    } else {
-      roleService.deleteEntityResourcesWithServiceUser(
-          new ArrayList<>(ids), ModelDBServiceResourceTypes.REPOSITORY);
-    }
+    ids = ids.stream().filter(id -> !processingIdSet.contains(id)).collect(Collectors.toSet());
+    if (!ids.isEmpty()) {
+      try {
+        processingIdSet.addAll(ids);
+        if (isDataset) {
+          roleService.deleteEntityResourcesWithServiceUser(
+              new ArrayList<>(ids), ModelDBServiceResourceTypes.DATASET);
+        } else {
+          roleService.deleteEntityResourcesWithServiceUser(
+              new ArrayList<>(ids), ModelDBServiceResourceTypes.REPOSITORY);
+        }
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      deleteRepositories(session, ids);
+        try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+          deleteRepositories(session, ids);
+        }
+      } finally {
+        processingIdSet.removeAll(ids);
+      }
     }
 
     return new ReconcileResult();
@@ -193,12 +204,13 @@ public class SoftDeleteRepositories extends Reconciler<String> {
           session.delete(repository);
           transaction.commit();
         } catch (OptimisticLockException ex) {
-          LOGGER.error("DeleteEntitiesCron : deleteRepositories : Exception: {}", ex.getMessage());
+          LOGGER.error(
+              "SoftDeleteRepositories : deleteRepositories : Exception: {}", ex.getMessage());
           if (transaction != null && transaction.getStatus().canRollback()) {
             transaction.rollback();
           }
         } catch (Exception ex) {
-          LOGGER.error("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
+          LOGGER.error("SoftDeleteRepositories : deleteRepositories : Exception: ", ex);
           if (transaction != null && transaction.getStatus().canRollback()) {
             transaction.rollback();
           }
