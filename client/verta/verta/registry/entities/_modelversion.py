@@ -1207,18 +1207,22 @@ class RegisteredModelVersion(_DeployableEntity):
         feature_data_list = []
         # we assume no overlap in names of input and output cols
         for labels, metadata, df in zip(labels_list, metadata_list, df_list):
-            for key in metadata.keys():
+            for col in metadata.keys():
                 # ignore unsupported types. currently only numeric
-                if metadata[key]["type"] not in ["float64", "int64"]:
-                    continue
+                if metadata[col]["type"] not in ["float64", "int64"]:
+                    logger.warning(
+                        "skipping column %s (unsupported data type %s)",
+                        metadata[col],
+                        metadata[col]["type"],
+                    )
                 feature_data_list.append(
-                    cls.create_missing_value_summary(df, key, labels))
-                if metadata[key]["num_unique"] > 20:
+                    cls.create_missing_value_summary(df, col, labels))
+                if metadata[col]["num_unique"] > 20:
                     feature_data_list.append(
-                        cls.create_continuous_histogram_summary(df, key, labels))
+                        cls.create_continuous_histogram_summary(df, col, labels))
                 else:
                     feature_data_list.append(
-                        cls.create_discrete_histogram_summary(df, key, labels))
+                        cls.create_discrete_histogram_summary(df, col, labels))
 
         return feature_data_list
 
