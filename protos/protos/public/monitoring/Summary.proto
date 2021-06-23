@@ -136,6 +136,9 @@ message FindSummarySampleRequest {
     int32 page_number = 3;
     int32 page_limit = 4;
 
+    // If there is an aggregation defined and this value is true, the aggregation will be stored to the database
+    bool store_aggregate = 5;
+
     message Response {
         repeated SummarySample samples = 1;
         int32 total_records = 2;
