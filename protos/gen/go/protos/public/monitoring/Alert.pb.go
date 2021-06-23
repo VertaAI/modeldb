@@ -842,6 +842,7 @@ type Alert struct {
 	// Use a map instead of a list to represent that this is a set
 	NotificationChannels map[uint64]bool `protobuf:"bytes,7,rep,name=notification_channels,json=notificationChannels,proto3" json:"notification_channels,omitempty" protobuf_key:"varint,1,opt,name=key,proto3" protobuf_val:"varint,2,opt,name=value,proto3"`
 	// Base for finding samples to be evaluated. The time will be the only field changing here
+	// If the base defines an aggregation, the alert is an aggregate alert.
 	SampleFindBase *FindSummarySampleRequest `protobuf:"bytes,8,opt,name=sample_find_base,json=sampleFindBase,proto3" json:"sample_find_base,omitempty"`
 	// Current status of this alert
 	Status AlertStatusEnum_AlertStatus `protobuf:"varint,9,opt,name=status,proto3,enum=ai.verta.monitoring.AlertStatusEnum_AlertStatus" json:"status,omitempty"`
