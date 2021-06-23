@@ -56,10 +56,10 @@ public class AuthServiceChannel implements AutoCloseable {
   }
 
   private Metadata getMetadataHeaders() {
-    int backgroundUtilsCount = CommonUtils.getRegisteredBackgroundUtilsCount();
-    LOGGER.trace("Header attaching with stub : backgroundUtilsCount : {}", backgroundUtilsCount);
+    boolean metadataNotExists = metadataInfo == null || metadataInfo.get() == null;
+    LOGGER.trace("Header info exists: {}", metadataNotExists);
     Metadata requestHeaders;
-    if (backgroundUtilsCount > 0 && (metadataInfo == null || metadataInfo.get() == null)) {
+    if (metadataNotExists) {
       requestHeaders = new Metadata();
       Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> dev_key =

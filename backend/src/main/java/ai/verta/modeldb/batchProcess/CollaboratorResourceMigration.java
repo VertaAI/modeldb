@@ -10,7 +10,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
-import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.Config;
@@ -63,15 +62,10 @@ public class CollaboratorResourceMigration {
     }
 
     LOGGER.info("Migration start");
-    CommonUtils.registeredBackgroundUtilsCount();
-    try {
-      migrateProjects();
-      LOGGER.info("Projects done migration");
-      migrateRepositories();
-      LOGGER.info("Repositories done migration");
-    } finally {
-      CommonUtils.unregisteredBackgroundUtilsCount();
-    }
+    migrateProjects();
+    LOGGER.info("Projects done migration");
+    migrateRepositories();
+    LOGGER.info("Repositories done migration");
 
     LOGGER.info("Migration End");
   }
