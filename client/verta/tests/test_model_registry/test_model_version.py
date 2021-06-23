@@ -21,10 +21,12 @@ import six
 import verta
 import verta.dataset
 from verta import visibility
+from verta.data_types import _verta_data_type
 from verta.environment import Python
 from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
 from verta.registry import lock
+from verta.monitoring import profiler
 from verta._internal_utils import (
     _artifact_utils,
     _utils,
@@ -926,3 +928,47 @@ class TestAutoMonitoring:
         assert(discrete_col_missing_summary.summary_type_name == "DiscreteHistogram")
         assert(discrete_col_missing_summary.profiler_name == "MissingValuesProfiler")
         assert(len(json.loads(discrete_col_missing_summary.content)["discreteHistogram"]["buckets"]) == 2)
+
+    def test_reconstruct_profilers(self, model_version):
+        np = pytest.importorskip("numpy")
+        pd = pytest.importorskip("pandas")
+
+        in_col = "continuous"
+        out_col = "discrete"
+        num_rows = 24
+        df = pd.DataFrame(
+            {
+                in_col: np.random.random(size=num_rows)*10,
+                out_col: range(num_rows),
+            },
+        )
+        model_version.log_training_data_profile(
+            in_df=df[[in_col]],
+            out_df=df[[out_col]],
+        )
+
+        for key, val in model_version.get_attributes().items():
+            if key.startswith(model_version._FEATURE_DATA_ATTR_KEY_PREFIX):
+                feature_data = val
+
+                reference_content = json.loads(feature_data["content"])
+                reference = _verta_data_type._VertaDataType._from_dict(reference_content)
+
+                profiler_name = feature_data["profiler_name"]
+                profiler_args = json.loads(feature_data["profiler_parameters"])
+                feature_profiler = getattr(profiler, profiler_name)(**profiler_args)
+
+                if isinstance(feature_profiler, profiler.MissingValuesProfiler):
+                    point = None
+                elif isinstance(feature_profiler, profiler.BinaryHistogramProfiler):
+                    point = np.random.randint(num_rows)
+                elif isinstance(feature_profiler, profiler.ContinuousHistogramProfiler):
+                    point = np.random.random()*10
+                else:
+                    raise ValueError(
+                        "this test doesn't support profiler type {}".format(
+                            type(feature_profiler)
+                        )
+                    )
+                point_profile = feature_profiler.profile_point(point, reference)
+                assert point_profile.__class__.__name__ == feature_data["summary_type_name"]
