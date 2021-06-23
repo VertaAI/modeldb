@@ -437,7 +437,7 @@
         },
         "sample_find_base": {
           "$ref": "#/definitions/monitoringFindSummarySampleRequest",
-          "title": "Base for finding samples to be evaluated. The time will be the only field changing here"
+          "description": "Base for finding samples to be evaluated. The time will be the only field changing here\nIf the base defines an aggregation, the alert is an aggregate alert."
         },
         "status": {
           "$ref": "#/definitions/AlertStatusEnumAlertStatus",
@@ -835,6 +835,11 @@
         "page_limit": {
           "type": "integer",
           "format": "int32"
+        },
+        "store_aggregate": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "If there is an aggregation defined and this value is true, the aggregation will be stored to the database"
         }
       },
       "description": "Request to fetch multiple summary samples, potentially with aggregation."
