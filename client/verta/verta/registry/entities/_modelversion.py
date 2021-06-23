@@ -1121,6 +1121,9 @@ class RegisteredModelVersion(_DeployableEntity):
         feature_data = FeatureDataInModelVersion(
             feature_name=col,
             profiler_name=profiler_cls.__name__,
+            profiler_parameters=json.dumps({
+                "columns": [col],
+            }),
             summary_name=col + "--" + "MissingValues",
             summary_type_name=data_type_cls.__name__,
             content=json.dumps(
@@ -1145,7 +1148,10 @@ class RegisteredModelVersion(_DeployableEntity):
         feature_data = FeatureDataInModelVersion(
             feature_name=col,
             profiler_name=profiler_cls.__name__,
-            profiler_parameters=json.dumps({"bins" : histogram._bucket_limits}),
+            profiler_parameters=json.dumps({
+                "columns": [col],
+                "bins": histogram._bucket_limits,
+            }),
             summary_name=col + "--" + "Distribution",
             summary_type_name=data_type_cls.__name__,
             content=json.dumps(
@@ -1170,7 +1176,9 @@ class RegisteredModelVersion(_DeployableEntity):
         feature_data = FeatureDataInModelVersion(
             feature_name=col,
             profiler_name=profiler_cls.__name__,
-            profiler_parameters=json.dumps({"bins" : histogram._buckets}),
+            profiler_parameters=json.dumps({
+                "columns": [col],
+            }),
             summary_name=col + "--" + "Distribution",
             summary_type_name=data_type_cls.__name__,
             content=json.dumps(
@@ -1229,7 +1237,7 @@ class RegisteredModelVersion(_DeployableEntity):
     def log_feature_data_and_vis_attributes(self, feature_data_list):
         for i, feature_data in enumerate(feature_data_list):
             self.add_attribute(
-                "__verta_feature_data_{}".format(i),
+                self._FEATURE_DATA_ATTR_KEY_PREFIX + str(i),
                 _utils.proto_to_json(feature_data, False),
             )
             self.add_attribute(

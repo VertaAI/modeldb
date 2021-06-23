@@ -41,6 +41,8 @@ _CACHE_DIR = os.path.join(
 
 @six.add_metaclass(abc.ABCMeta)
 class _DeployableEntity(_ModelDBEntity):
+    _FEATURE_DATA_ATTR_KEY_PREFIX = "__verta_feature_data_"
+
     @property
     def _histogram_endpoint(self):
         return "{}://{}/api/v1/monitoring/data/references/{}".format(
