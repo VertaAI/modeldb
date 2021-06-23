@@ -294,12 +294,12 @@ def dir_and_files(strs, tmp_path, request):
     dirpath = tmp_path / request.param
 
     filepaths = {
-        os.path.join(strs[0], strs[1], strs[2]),
-        os.path.join(strs[0], strs[1], strs[3]),
-        os.path.join(strs[0], strs[2]),
-        os.path.join(strs[0], strs[4]),
-        os.path.join(strs[2]),
-        os.path.join(strs[5]),
+        "/".join([strs[0], strs[1], strs[2]]),
+        "/".join([strs[0], strs[1], strs[3]]),
+        "/".join([strs[0], strs[2]]),
+        "/".join([strs[0], strs[4]]),
+        "/".join([strs[2]]),
+        "/".join([strs[5]]),
     }
 
     for filepath in filepaths:

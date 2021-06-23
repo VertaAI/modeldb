@@ -123,7 +123,7 @@ class TestArtifacts:
 
         # log using file handle
         for key, artifact_filepath in artifacts[:len(artifacts)//2]:
-            with open(artifact_filepath, 'r') as artifact_file:  # does not need to be 'rb'
+            with open(artifact_filepath, 'rb') as artifact_file:
                 experiment_run.log_artifact(key, artifact_file)
 
         # log using filepath
