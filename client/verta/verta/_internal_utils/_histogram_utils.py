@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+"""
+Utilities for generating histograms from pandas DataFrames.
+
+.. deprecated:: 0.18.0
+    With the deprecation of :meth:`~verta.tracking.entities._deployable_entity._DeployableEntity.log_training_data`,
+    this module is effectively defunct and remains solely for reference.
+
+"""
 
 from ..external import six
 
