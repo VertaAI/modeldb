@@ -171,10 +171,14 @@ class BinaryHistogramProfiler(Profiler):
         values = [v.item() for v in values]
         return (column + "_histogram", DiscreteHistogram(keys, values))
 
+    # TODO: consider the case where the data is not in the bucket list
     def profile_point(self, sample, reference):
+        buckets = reference._buckets
+        data = [0]*len(buckets)
+
         if sample:
-            return DiscreteHistogram(reference._buckets, [0, 1])
-        return DiscreteHistogram(reference._buckets, [1, 0])
+            data[buckets.index(sample)] = 1
+        return DiscreteHistogram(buckets, data)
 
 
 # TODO: Consider design/interface for different bins
