@@ -59,8 +59,8 @@ def series(draw, num_rows, data_type, name=None, has_missing=True):
         value_strategies.extend([
             st.floats(
                 # NumPy has limits on what values it can handle for histograms
-                min_value=-2**8,
-                max_value=2**8,
+                min_value=-2**32,
+                max_value=2**32,
                 allow_nan=False,
                 allow_infinity=False,
             ),
