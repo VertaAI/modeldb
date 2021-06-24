@@ -105,7 +105,14 @@ class RegisteredModelVersion(_DeployableEntity):
                 ),
                 "description: {}".format(msg.description),
                 "labels: {}".format(msg.labels),
-                "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
+                "attributes: {}".format(
+                    {
+                        key: val
+                        for key, val
+                        in _utils.unravel_key_values(msg.attributes).items()
+                        if not key.startswith("__verta_")
+                    }
+                ),
                 "id: {}".format(msg.id),
                 "registered model id: {}".format(msg.registered_model_id),
                 "experiment run id: {}".format(msg.experiment_run_id),
