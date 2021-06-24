@@ -925,43 +925,43 @@ class TestAutoMonitoring:
             feature_data = RegisteredModelVersion._create_missing_value_summary(
                 df, col, labels,
             )
-            sample = profiler.MissingValuesProfiler([col]).profile(df)
-            histogram = list(sample.values())[0]
+            _sample = profiler.MissingValuesProfiler([col]).profile(df)
+            _histogram = list(_sample.values())[0]
             assert feature_data.feature_name == col
             assert feature_data.profiler_name == "MissingValuesProfiler"
             assert json.loads(feature_data.profiler_parameters) == {"columns": [col]}
             assert feature_data.summary_type_name == "DiscreteHistogram"
             assert feature_data.labels == labels
-            assert json.loads(feature_data.content) == histogram._as_dict()
+            assert json.loads(feature_data.content) == _histogram._as_dict()
 
         # continuous distribution
         feature_data = RegisteredModelVersion._create_continuous_histogram_summary(
             df, "continuous", labels,
         )
-        sample = profiler.ContinuousHistogramProfiler(["continuous"]).profile(df)
-        histogram = list(sample.values())[0]
+        _sample = profiler.ContinuousHistogramProfiler(["continuous"]).profile(df)
+        _histogram = list(_sample.values())[0]
         assert feature_data.feature_name == "continuous"
         assert feature_data.profiler_name == "ContinuousHistogramProfiler"
         assert json.loads(feature_data.profiler_parameters) == {
             "columns": ["continuous"],
-            "bins": histogram._bucket_limits,
+            "bins": _histogram._bucket_limits,
         }
         assert feature_data.summary_type_name == "FloatHistogram"
         assert feature_data.labels == labels
-        assert json.loads(feature_data.content) == histogram._as_dict()
+        assert json.loads(feature_data.content) == _histogram._as_dict()
 
         # discrete distribution
         feature_data = RegisteredModelVersion._create_discrete_histogram_summary(
             df, "discrete", labels,
         )
-        sample = profiler.BinaryHistogramProfiler(["discrete"]).profile(df)
-        histogram = list(sample.values())[0]
+        _sample = profiler.BinaryHistogramProfiler(["discrete"]).profile(df)
+        _histogram = list(_sample.values())[0]
         assert feature_data.feature_name == "discrete"
         assert feature_data.profiler_name == "BinaryHistogramProfiler"
         assert json.loads(feature_data.profiler_parameters) == {"columns": ["discrete"]}
         assert feature_data.summary_type_name == "DiscreteHistogram"
         assert feature_data.labels == labels
-        assert json.loads(feature_data.content) == histogram._as_dict()
+        assert json.loads(feature_data.content) == _histogram._as_dict()
 
     def test_profile_training_data(self, model_version):
         """Integration test."""
