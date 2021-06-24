@@ -1223,6 +1223,7 @@ class RegisteredModelVersion(_DeployableEntity):
                         metadata[col],
                         metadata[col]["type"],
                     )
+                    continue
                 feature_data_list.append(
                     cls.create_missing_value_summary(df, col, labels))
                 if metadata[col]["num_unique"] > 20:
