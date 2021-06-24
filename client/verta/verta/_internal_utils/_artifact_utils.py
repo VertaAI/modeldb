@@ -520,7 +520,7 @@ def zip_dir(dirpath, followlinks=True):
 
     os.path.expanduser(dirpath)
 
-    tempf = tempfile.NamedTemporaryFile(suffix='.'+ZIP_EXTENSION)
+    tempf = tempfile.NamedTemporaryFile(suffix='.'+ZIP_EXTENSION, delete=False)
     with zipfile.ZipFile(tempf, 'w') as zipf:
         for root, _, files in os.walk(dirpath, followlinks=followlinks):
             for filename in files:
