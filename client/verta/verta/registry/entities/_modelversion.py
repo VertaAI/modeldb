@@ -926,6 +926,10 @@ class RegisteredModelVersion(_DeployableEntity):
         # validate all keys first
         for key in six.viewkeys(attrs):
             _utils.validate_flat_key(key)
+        # convert data_types to dicts
+        for key, value in attrs.items():
+            if isinstance(value, data_types._VertaDataType):
+                attrs[key] = value._as_dict()
 
         # build KeyValues
         attribute_keyvals = []
@@ -981,7 +985,13 @@ class RegisteredModelVersion(_DeployableEntity):
 
         """
         self._refresh_cache()
-        return _utils.unravel_key_values(self._msg.attributes)
+        attributes = _utils.unravel_key_values(self._msg.attributes)
+        for key, attribute in attributes.items():
+            try:
+                attributes[key] = data_types._VertaDataType._from_dict(attribute)
+            except (KeyError, TypeError, ValueError):
+                pass
+        return attributes
 
     def _get_attribute_keys(self):
         return list(map(lambda attribute: attribute.key, self.get_attributes()))
