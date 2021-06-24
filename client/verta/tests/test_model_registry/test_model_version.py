@@ -14,6 +14,8 @@ import uuid
 import zipfile
 
 import cloudpickle
+import hypothesis
+import hypothesis.strategies as st
 import pytest
 import requests
 import six
@@ -26,6 +28,7 @@ from verta.environment import Python
 from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from verta.endpoint.update import DirectUpdateStrategy
 from verta.registry import lock
+from verta.registry.entities import RegisteredModelVersion
 from verta.monitoring import profiler
 from verta._internal_utils import (
     _artifact_utils,
@@ -854,6 +857,40 @@ class TestLockLevels:
         admin_model_ver.delete()
 
 
+@st.composite
+def dataframes(draw):
+    pd = pytest.importorskip("pandas")
+
+    # not too many rows, for speed
+    num_rows = draw(st.integers(min_value=1, max_value=2**8))
+    discrete_values = draw(st.lists(
+        st.one_of(st.just(None), st.integers(), st.text()),
+        min_size=num_rows,
+        max_size=num_rows,
+    ))
+    continuous_values = draw(st.lists(
+        st.one_of(
+            st.just(None),
+            st.floats(
+                # numpy has limits on what values it can handle for histograms
+                min_value=-2**8,
+                max_value=2**8,
+                allow_nan=False,
+                allow_infinity=False,
+            ),
+        ),
+        min_size=num_rows,
+        max_size=num_rows,
+    ))
+    hypothesis.assume(len(set(continuous_values)) > 20)
+
+    df = pd.DataFrame({
+        "discrete": discrete_values,
+        "continuous": continuous_values,
+    })
+    return df.where(df.notnull(), None)
+
+
 class TestAutoMonitoring:
     def test_non_df(self, model_version):
         pd = pytest.importorskip("pandas")
@@ -873,7 +910,61 @@ class TestAutoMonitoring:
             pd.Series([1, 2, 3], name="out"),
         )
 
+    @hypothesis.settings(deadline=None)  # building DataFrames can be slow
+    @hypothesis.given(
+        df=dataframes(),  # pylint: disable=no-value-for-parameter
+        labels=st.dictionaries(st.text(), st.text()),
+    )
+    def test_create_summaries(self, df, labels):
+        """Unit test for profiling helper functions."""
+        pytest.importorskip("numpy")
+        # pytest.importorskip("pandas")
+
+        # missing
+        for col in ["continuous", "discrete"]:
+            feature_data = RegisteredModelVersion._create_missing_value_summary(
+                df, col, labels,
+            )
+            sample = profiler.MissingValuesProfiler([col]).profile(df)
+            histogram = list(sample.values())[0]
+            assert feature_data.feature_name == col
+            assert feature_data.profiler_name == "MissingValuesProfiler"
+            assert json.loads(feature_data.profiler_parameters) == {"columns": [col]}
+            assert feature_data.summary_type_name == "DiscreteHistogram"
+            assert feature_data.labels == labels
+            assert json.loads(feature_data.content) == histogram._as_dict()
+
+        # continuous distribution
+        feature_data = RegisteredModelVersion._create_continuous_histogram_summary(
+            df, "continuous", labels,
+        )
+        sample = profiler.ContinuousHistogramProfiler(["continuous"]).profile(df)
+        histogram = list(sample.values())[0]
+        assert feature_data.feature_name == "continuous"
+        assert feature_data.profiler_name == "ContinuousHistogramProfiler"
+        assert json.loads(feature_data.profiler_parameters) == {
+            "columns": ["continuous"],
+            "bins": histogram._bucket_limits,
+        }
+        assert feature_data.summary_type_name == "FloatHistogram"
+        assert feature_data.labels == labels
+        assert json.loads(feature_data.content) == histogram._as_dict()
+
+        # discrete distribution
+        feature_data = RegisteredModelVersion._create_discrete_histogram_summary(
+            df, "discrete", labels,
+        )
+        sample = profiler.BinaryHistogramProfiler(["discrete"]).profile(df)
+        histogram = list(sample.values())[0]
+        assert feature_data.feature_name == "discrete"
+        assert feature_data.profiler_name == "BinaryHistogramProfiler"
+        assert json.loads(feature_data.profiler_parameters) == {"columns": ["discrete"]}
+        assert feature_data.summary_type_name == "DiscreteHistogram"
+        assert feature_data.labels == labels
+        assert json.loads(feature_data.content) == histogram._as_dict()
+
     def test_profile_training_data(self, model_version):
+        """Integration test."""
         pd = pytest.importorskip("pandas")
         np = pytest.importorskip("numpy")
 
