@@ -131,6 +131,7 @@ message Alert {
     map<uint64,bool> notification_channels = 7;
 
     // Base for finding samples to be evaluated. The time will be the only field changing here
+    // If the base defines an aggregation, the alert is an aggregate alert.
     FindSummarySampleRequest sample_find_base = 8;
 
     // Current status of this alert
