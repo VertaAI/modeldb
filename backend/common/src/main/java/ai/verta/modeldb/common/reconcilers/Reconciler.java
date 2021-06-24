@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public abstract class Reconciler<T> {
   final Logger logger;
@@ -22,6 +23,8 @@ public abstract class Reconciler<T> {
   protected final LinkedList<T> order = new LinkedList<>();
   final Lock lock = new ReentrantLock();
   final Condition notEmpty = lock.newCondition();
+  // To prevent OptimisticLockException
+  private final Set<T> processingIdSet = new HashSet<>();
 
   protected final ReconcilerConfig config;
   protected final FutureJdbi futureJdbi;
@@ -61,7 +64,18 @@ public abstract class Reconciler<T> {
             while (true) {
               CommonUtils.registeredBackgroundUtilsCount();
               try {
-                reconcile(pop());
+                Set<T> processingIds =
+                        pop().stream()
+                        .filter(id -> !processingIdSet.contains(id))
+                        .collect(Collectors.toSet());
+                if (!processingIds.isEmpty()) {
+                  try {
+                    processingIdSet.addAll(processingIds);
+                    reconcile(processingIds);
+                  } finally {
+                    processingIdSet.removeAll(processingIds);
+                  }
+                }
               } catch (Exception ex) {
                 logger.error("Worker reconcile: ", ex);
               }
