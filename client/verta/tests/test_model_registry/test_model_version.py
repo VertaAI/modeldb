@@ -860,12 +860,18 @@ class TestAutoMonitoring:
 
         with pytest.raises(TypeError):
             model_version.log_training_data_profile(
-                "abc", pd.DataFrame([1,2,3]),
+                "abc", pd.DataFrame([1, 2, 3]),
             )
         with pytest.raises(TypeError):
             model_version.log_training_data_profile(
-                pd.DataFrame([1,2,3]), 2,
+                pd.DataFrame([1, 2, 3]), 2,
             )
+
+        # coerce out_df if Series
+        model_version.log_training_data_profile(
+            pd.DataFrame([1, 2, 3], columns=["in"]),
+            pd.Series([1, 2, 3], name="out"),
+        )
 
     def test_profile_training_data(self, model_version):
         pd = pytest.importorskip("pandas")
@@ -873,9 +879,8 @@ class TestAutoMonitoring:
 
         cont_col = np.random.random(100)
         discrete_col = np.random.choice(5, 100)
-        strs = ['a', 'b', 'c', 'd', 'e']
-        string_discrete_col = [strs[x] for x in np.random.choice(5, 100)]
-        string_freeform_col = [uuid.uuid4().hex.upper()[0:10] for x in range(100)]
+        string_discrete_col = np.random.choice(['a', 'b', 'c', 'd', 'e'], size=100)
+        string_freeform_col = [uuid.uuid4().hex.upper()[0:10] for _ in range(100)]
         other_col = [datetime.datetime.now() for x in range(100)]
         output_col = np.random.choice(2, 100)
 

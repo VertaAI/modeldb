@@ -1355,8 +1355,22 @@ class RegisteredModelVersion(_DeployableEntity):
         pd = importer.maybe_dependency("pandas")
         if pd is None:
             raise ImportError("pandas is not installed; try `pip install pandas`")
-        if not all(isinstance(df, pd.DataFrame) for df in [in_df, out_df]):
-            raise TypeError("`in_df` and `out_df` must be of type pd.DataFrame")
+        if isinstance(out_df, pd.Series):
+            # convert to DataFrame as a convenience
+            out_df = out_df.to_frame(name=str(out_df.name or "output"))
+        for df in [in_df, out_df]:
+            if not isinstance(df, pd.DataFrame):
+                raise TypeError(
+                    "`in_df` and `out_df` must be of type pd.DataFrame,"
+                    " not {}".format(type(df))
+                )
+            if not all(isinstance(col, six.string_types) for col in df.columns):
+                # helper fns run into type errors handling non-str column names
+                # TODO: try to resolve this restriction
+                raise TypeError(
+                    "column names in `in_df` and `out_df` must all be str;"
+                    " consider using `df.columns = df.columns.astype(str)`"
+                )
 
         feature_data_list = self._compute_training_data_profile(
             in_df, out_df,
