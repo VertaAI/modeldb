@@ -56,6 +56,14 @@ class DiscreteHistogram(_VertaDataType):
         self._data = data
         self._data_dict = defaultdict(int, zip(buckets, data))
 
+    def __repr__(self):
+        attrs = {
+            "buckets": self._buckets,
+            "data": self._data,
+        }
+        lines = ["{}: {}".format(key, value) for key, value in sorted(attrs.items())]
+        return "\n\t".join([type(self).__name__] + lines)
+
     def _as_dict(self):
         return self._as_dict_inner(
             {
