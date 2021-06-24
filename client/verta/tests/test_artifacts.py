@@ -47,7 +47,8 @@ class TestUtils:
         # create archive and move into cwd so it's deleted on teardown
         filepath = os.path.abspath("archive.zip")
         temp_zip = _artifact_utils.zip_dir(source_dirpath)
-        os.rename(temp_zip.name, filepath)
+        os.link(temp_zip.name, filepath)
+        temp_zip.close()
 
         # upload and download file
         experiment_run.log_artifact(key, filepath)
@@ -62,6 +63,7 @@ class TestUtils:
         assert filepath != downloaded_filepath
         # contents match
         assert filecmp.cmp(filepath, downloaded_filepath)
+        os.unlink(temp_zip.name)
 
     def test_download_zipped_dir_no_collision(self, experiment_run, dir_and_files, in_tempdir):
         source_dirpath, _ = dir_and_files
@@ -609,10 +611,11 @@ class TestImages:
     @staticmethod
     def matplotlib_to_pil(fig):
         PIL = pytest.importorskip("PIL")
+        from PIL import Image
 
         bytestream = six.BytesIO()
         fig.savefig(bytestream)
-        return PIL.Image.open(bytestream)
+        return Image.open(bytestream)
 
     def test_log_path(self, experiment_run, strs):
         strs, holdout = strs[:-1], strs[-1]  # reserve last key
@@ -628,9 +631,10 @@ class TestImages:
 
     def test_upload_blank_warning(self, experiment_run, strs):
         PIL = pytest.importorskip("PIL")
+        from PIL import Image
 
         key = strs[0]
-        img = PIL.Image.new('RGB', (64, 64), 'white')
+        img = Image.new('RGB', (64, 64), 'white')
 
         with pytest.warns(UserWarning):
             experiment_run.log_image(key, img)
@@ -665,10 +669,11 @@ class TestImages:
     def test_upload_pil(self, experiment_run, strs):
         np = pytest.importorskip("numpy")
         PIL = pytest.importorskip("PIL")
+        from PIL import Image
         import PIL.ImageDraw
 
         key = strs[0]
-        img = PIL.Image.new('RGB', (64, 64), 'gray')
+        img = Image.new('RGB', (64, 64), 'gray')
         PIL.ImageDraw.Draw(img).arc(np.r_[np.random.randint(32, size=(2)),
                                           np.random.randint(32, 64, size=(2))].tolist(),
                                     np.random.randint(360), np.random.randint(360),
@@ -680,8 +685,9 @@ class TestImages:
 
     def test_conflict(self, experiment_run, strs):
         PIL = pytest.importorskip("PIL")
+        from PIL import Image
 
-        images = dict(zip(strs, [PIL.Image.new('RGB', (64, 64), 'gray')]*3))
+        images = dict(zip(strs, [Image.new('RGB', (64, 64), 'gray')]*3))
 
         for key, image in six.viewitems(images):
             experiment_run.log_image(key, image)
