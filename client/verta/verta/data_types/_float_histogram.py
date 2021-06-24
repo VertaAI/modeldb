@@ -99,10 +99,10 @@ class FloatHistogram(_VertaDataType):
             )
 
         return self._scipy_spatial.distance.cosine(
-            self.normalized_data(),
-            other.normalized_data(),
+            self._normalized_data(),
+            other._normalized_data(),
         )
 
-    def normalized_data(self):
+    def _normalized_data(self):
         total = sum(self._data)
         return [x / total for x in self._data]
