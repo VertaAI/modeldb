@@ -91,6 +91,23 @@ class _ModelDBEntity(object):
     def _generate_default_name(cls):
         raise NotImplementedError
 
+    @staticmethod
+    def _normalize_attribute_key(key):
+        """Remove unsupported characters from `key`.
+
+        Parameters
+        ----------
+        key : str
+            Attribute key
+
+        Returns
+        -------
+        str
+            Sanitized `key`
+
+        """
+        return "".join([x for x in key if (str.isalnum(x) or x == '_')])
+
     @classmethod
     def _get_by_id(cls, conn, conf, id):
         msg = cls._get_proto_by_id(conn, id)

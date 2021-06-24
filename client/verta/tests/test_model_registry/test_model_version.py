@@ -965,7 +965,7 @@ class TestAutoMonitoring:
                 elif isinstance(feature_profiler, profiler.ContinuousHistogramProfiler):
                     point = np.random.random()*10
                 else:
-                    raise ValueError(
+                    raise TypeError(
                         "this test doesn't support profiler type {}".format(
                             type(feature_profiler)
                         )

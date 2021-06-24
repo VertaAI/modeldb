@@ -31,20 +31,12 @@ from verta._internal_utils import (
 )
 from verta import utils
 
+from verta import data_types
+from verta.environment import _Environment, Python
+from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities._deployable_entity import _DeployableEntity
-from verta.environment import _Environment, Python
 from .. import lock
-
-from verta.monitoring.profiler import (
-    ContinuousHistogramProfiler,
-    BinaryHistogramProfiler,
-    MissingValuesProfiler,
-)
-from verta.data_types import (
-    DiscreteHistogram,
-    FloatHistogram,
-)
 
 
 logger = logging.getLogger(__name__)
@@ -1096,25 +1088,63 @@ class RegisteredModelVersion(_DeployableEntity):
         self._conn.must_response(response)
 
     @staticmethod
-    def _normalize_attribute_name(name):
-        return "".join([x for x in name if (str.isalnum(x) or x == '_')])
+    def _get_metadata_for_df(df):
+        """Capture info about `df`'s cols to determine how to profile them.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame to be profiled downstream.
+
+        Returns
+        -------
+        dict
+            ``"num_unique"`` and ``"type"`` for each column in `df`.
+
+        """
+        metadata = {}
+        for column in df:
+            metadata[column] = {}
+            metadata[column]["num_unique"] = df[column].value_counts().size
+            metadata[column]["type"] = str(df[column].dtypes)
+
+        return metadata
 
     @staticmethod
     def _add_time_attributes_to_feature_data(feature_data):
+        """Set time-related fields of `feature_data` to to the current time.
+
+        Parameters
+        ----------
+        feature_data : DeploymentIntegration_pb2.FeatureDataInModelVersion
+
+        """
         time_millis = time_utils.now_in_millis()
         feature_data.created_at_millis = time_millis
         feature_data.time_window_start_at_millis = time_millis
         feature_data.time_window_end_at_millis = time_millis
 
-    @staticmethod
-    def _add_labels_to_feature_data(feature_data, labels):
-        for key in labels.keys():
-            feature_data.labels[key] = labels[key]
-
+    # TODO: factor out common code from _create_*_summary() methods
     @classmethod
-    def create_missing_value_summary(cls, df, col, labels):
-        data_type_cls = DiscreteHistogram
-        profiler_cls = MissingValuesProfiler
+    def _create_missing_value_summary(cls, df, col, labels):
+        """Profile a DataFrame column's missing values.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame containing column to be profiled.
+        col : str
+            Name of column to be profiled.
+        labels : dict of str to str
+            ``{"col_type" : "input"}`` or ``{"col_type" : "output"}``.
+
+        Returns
+        -------
+        DeploymentIntegration_pb2.FeatureDataInModelVersion
+
+        """
+        data_type_cls = data_types.DiscreteHistogram
+        profiler_cls = profiler.MissingValuesProfiler
 
         sample = profiler_cls(columns=[col]).profile(df)
         histogram = list(sample.values())[0]
@@ -1126,6 +1156,7 @@ class RegisteredModelVersion(_DeployableEntity):
             }),
             summary_name=col + "--" + "MissingValues",
             summary_type_name=data_type_cls.__name__,
+            labels=labels,
             content=json.dumps(
                 data_type_cls(
                     buckets=histogram._buckets,
@@ -1134,14 +1165,29 @@ class RegisteredModelVersion(_DeployableEntity):
             ),
         )
         cls._add_time_attributes_to_feature_data(feature_data)
-        cls._add_labels_to_feature_data(feature_data, labels)
 
         return feature_data
 
     @classmethod
-    def create_continuous_histogram_summary(cls, df, col, labels):
-        data_type_cls = FloatHistogram
-        profiler_cls = ContinuousHistogramProfiler
+    def _create_continuous_histogram_summary(cls, df, col, labels):
+        """Profile a DataFrame column as continuous data.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame containing column to be profiled.
+        col : str
+            Name of column to be profiled.
+        labels : dict of str to str
+            ``{"col_type" : "input"}`` or ``{"col_type" : "output"}``.
+
+        Returns
+        -------
+        DeploymentIntegration_pb2.FeatureDataInModelVersion
+
+        """
+        data_type_cls = data_types.FloatHistogram
+        profiler_cls = profiler.ContinuousHistogramProfiler
 
         sample = profiler_cls(columns=[col]).profile(df)
         histogram = list(sample.values())[0]
@@ -1154,6 +1200,7 @@ class RegisteredModelVersion(_DeployableEntity):
             }),
             summary_name=col + "--" + "Distribution",
             summary_type_name=data_type_cls.__name__,
+            labels=labels,
             content=json.dumps(
                 data_type_cls(
                     bucket_limits=histogram._bucket_limits,
@@ -1162,14 +1209,29 @@ class RegisteredModelVersion(_DeployableEntity):
             ),
         )
         cls._add_time_attributes_to_feature_data(feature_data)
-        cls._add_labels_to_feature_data(feature_data, labels)
 
         return feature_data
 
     @classmethod
-    def create_discrete_histogram_summary(cls, df, col, labels):
-        data_type_cls = DiscreteHistogram
-        profiler_cls = BinaryHistogramProfiler
+    def _create_discrete_histogram_summary(cls, df, col, labels):
+        """Profile a DataFrame column as discrete data.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            DataFrame containing column to be profiled.
+        col : str
+            Name of column to be profiled.
+        labels : dict of str to str
+            ``{"col_type" : "input"}`` or ``{"col_type" : "output"}``.
+
+        Returns
+        -------
+        DeploymentIntegration_pb2.FeatureDataInModelVersion
+
+        """
+        data_type_cls = data_types.DiscreteHistogram
+        profiler_cls = profiler.BinaryHistogramProfiler
 
         sample = profiler_cls(columns=[col]).profile(df)
         histogram = list(sample.values())[0]
@@ -1181,6 +1243,7 @@ class RegisteredModelVersion(_DeployableEntity):
             }),
             summary_name=col + "--" + "Distribution",
             summary_type_name=data_type_cls.__name__,
+            labels=labels,
             content=json.dumps(
                 data_type_cls(
                     buckets=histogram._buckets,
@@ -1189,22 +1252,26 @@ class RegisteredModelVersion(_DeployableEntity):
             ),
         )
         cls._add_time_attributes_to_feature_data(feature_data)
-        cls._add_labels_to_feature_data(feature_data, labels)
 
         return feature_data
 
-    @staticmethod
-    def _get_metadata_for_df(df):
-        metadata = {}
-        for column in df:
-            metadata[column] = {}
-            metadata[column]["num_unique"] = df[column].value_counts().size
-            metadata[column]["type"] = str(df[column].dtypes)
-
-        return metadata
-
     @classmethod
-    def compute_training_data_profile(cls, in_df, out_df):
+    def _compute_training_data_profile(cls, in_df, out_df):
+        """Profile training input and output data's features.
+
+        Parameters
+        ----------
+        in_df : pd.DataFrame
+            Input values.
+        out_df : pd.DataFrame
+            Output values.
+
+        Returns
+        -------
+        list of DeploymentIntegration_pb2.FeatureDataInModelVersion
+            DataFrame feature data.
+
+        """
         in_df_metadata = cls._get_metadata_for_df(in_df)
         out_df_metadata = cls._get_metadata_for_df(out_df)
 
@@ -1225,34 +1292,73 @@ class RegisteredModelVersion(_DeployableEntity):
                     )
                     continue
                 feature_data_list.append(
-                    cls.create_missing_value_summary(df, col, labels))
+                    cls._create_missing_value_summary(
+                        df, col, labels,
+                    )
+                )
+                # heuristic: > 20 unique values suggests continuous data
                 if metadata[col]["num_unique"] > 20:
                     feature_data_list.append(
-                        cls.create_continuous_histogram_summary(df, col, labels))
+                        cls._create_continuous_histogram_summary(
+                            df, col, labels,
+                        )
+                    )
                 else:
                     feature_data_list.append(
-                        cls.create_discrete_histogram_summary(df, col, labels))
+                        cls._create_discrete_histogram_summary(
+                            df, col, labels,
+                        )
+                    )
 
         return feature_data_list
 
-    def log_feature_data_and_vis_attributes(self, feature_data_list):
+    def _log_feature_data_and_vis_attributes(self, feature_data_list):
+        """Log DataFrame feature data as attributes.
+
+        Parameters
+        ----------
+        feature_data_list : list of DeploymentIntegration_pb2.FeatureDataInModelVersion
+
+        """
         for i, feature_data in enumerate(feature_data_list):
+            logger.info("logging feature %s", feature_data.feature_name)
             self.add_attribute(
                 self._FEATURE_DATA_ATTR_KEY_PREFIX + str(i),
                 _utils.proto_to_json(feature_data, False),
             )
             self.add_attribute(
-                self._normalize_attribute_name(feature_data.summary_name),
+                self._normalize_attribute_key(feature_data.summary_name),
                 json.loads(feature_data.content),
             )
 
     def log_training_data_profile(self, in_df, out_df):
+        """Capture the profiles of training input and output data.
+
+        Parameters
+        ----------
+        in_df : pd.DataFrame
+            Input values.
+        out_df : pd.DataFrame
+            Output values.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            df = pd.read_csv("census-train.csv")
+            in_df = df.iloc[:, :-1]
+            out_df = df.iloc[:, [-1]]
+
+            model_ver.log_training_data_profile(in_df, out_df)
+
+        """
         pd = importer.maybe_dependency("pandas")
         if pd is None:
-            e = ImportError("pandas is not installed; try `pip install pandas`")
-            six.raise_from(e, None)
-        if not isinstance(in_df, pd.DataFrame) or not isinstance(out_df, pd.DataFrame):
+            raise ImportError("pandas is not installed; try `pip install pandas`")
+        if not all(isinstance(df, pd.DataFrame) for df in [in_df, out_df]):
             raise TypeError("`in_df` and `out_df` must be of type pd.DataFrame")
 
-        feature_data_list = self.compute_training_data_profile(in_df, out_df)
-        self.log_feature_data_and_vis_attributes(feature_data_list)
+        feature_data_list = self._compute_training_data_profile(
+            in_df, out_df,
+        )
+        self._log_feature_data_and_vis_attributes(feature_data_list)
