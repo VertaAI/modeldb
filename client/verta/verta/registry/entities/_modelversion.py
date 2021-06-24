@@ -1334,6 +1334,10 @@ class RegisteredModelVersion(_DeployableEntity):
     def log_training_data_profile(self, in_df, out_df):
         """Capture the profiles of training input and output data.
 
+        The profiles are logged as structured data type attributes.
+
+        .. versionadded:: 0.18.1
+
         Parameters
         ----------
         in_df : pd.DataFrame
