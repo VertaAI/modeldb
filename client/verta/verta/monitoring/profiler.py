@@ -165,7 +165,7 @@ class BinaryHistogramProfiler(Profiler):
         dict
             A dictionary from summary data names to DiscreteHistogram instances.
         """
-        content = df[column].value_counts()
+        content = df[column].value_counts(dropna=True)
         keys = list(content.keys())
         values = [content[k] for k in keys]
         values = [v.item() for v in values]
