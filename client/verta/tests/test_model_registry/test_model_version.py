@@ -37,6 +37,7 @@ from verta._internal_utils import (
 from verta._protos.public.monitoring.DeploymentIntegration_pb2 import FeatureDataInModelVersion
 
 from .. import utils
+from ..monitoring import strategies
 
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
@@ -857,40 +858,6 @@ class TestLockLevels:
         admin_model_ver.delete()
 
 
-@st.composite
-def dataframes(draw):
-    pd = pytest.importorskip("pandas")
-
-    # not too many rows, for speed
-    num_rows = draw(st.integers(min_value=1, max_value=2**8))
-    discrete_values = draw(st.lists(
-        st.one_of(st.just(None), st.integers(), st.text()),
-        min_size=num_rows,
-        max_size=num_rows,
-    ))
-    continuous_values = draw(st.lists(
-        st.one_of(
-            st.just(None),
-            st.floats(
-                # numpy has limits on what values it can handle for histograms
-                min_value=-2**8,
-                max_value=2**8,
-                allow_nan=False,
-                allow_infinity=False,
-            ),
-        ),
-        min_size=num_rows,
-        max_size=num_rows,
-    ))
-    hypothesis.assume(len(set(continuous_values)) > 20)
-
-    df = pd.DataFrame({
-        "discrete": discrete_values,
-        "continuous": continuous_values,
-    })
-    return df.where(df.notnull(), None)
-
-
 class TestAutoMonitoring:
     def test_non_df(self, model_version):
         pd = pytest.importorskip("pandas")
@@ -912,7 +879,7 @@ class TestAutoMonitoring:
 
     @hypothesis.settings(deadline=None)  # building DataFrames can be slow
     @hypothesis.given(
-        df=dataframes(),  # pylint: disable=no-value-for-parameter
+        df=strategies.dataframes(),  # pylint: disable=no-value-for-parameter
         labels=st.dictionaries(st.text(), st.text()),
     )
     def test_create_summaries(self, df, labels):
