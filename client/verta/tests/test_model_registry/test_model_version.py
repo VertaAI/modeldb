@@ -883,9 +883,8 @@ class TestAutoMonitoring:
         labels=st.dictionaries(st.text(), st.text()),
     )
     def test_create_summaries(self, df, labels):
-        """Unit test for profiling helper functions."""
+        """Unit test for the profiling helper functions."""
         pytest.importorskip("numpy")
-        # pytest.importorskip("pandas")
 
         # missing
         for col in ["continuous", "discrete"]:
@@ -931,7 +930,7 @@ class TestAutoMonitoring:
         assert json.loads(feature_data.content) == _histogram._as_dict()
 
     def test_profile_training_data(self, model_version):
-        """Integration test."""
+        """Integration test for logging attributes with correct structure."""
         pd = pytest.importorskip("pandas")
         np = pytest.importorskip("numpy")
 
@@ -993,6 +992,7 @@ class TestAutoMonitoring:
         assert(len(json.loads(discrete_col_missing_summary.content)["discreteHistogram"]["buckets"]) == 2)
 
     def test_reconstruct_profilers(self, model_version):
+        """Profiler and ref distribution can be reconstructed from attr."""
         np = pytest.importorskip("numpy")
         pd = pytest.importorskip("pandas")
 
