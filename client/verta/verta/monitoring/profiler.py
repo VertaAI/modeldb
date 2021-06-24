@@ -204,9 +204,9 @@ class ContinuousHistogramProfiler(Profiler):
             bins = self._bins[column]
         else:
             bins = self._bins
-        values, limits = self._np.histogram(df[column], bins=bins)
-        values = [v.item() for v in values]
-        limits = [lim.item() for lim in limits]
+        values, limits = self._np.histogram(df[column].dropna(), bins=bins)
+        values = values.tolist()
+        limits = limits.tolist()
         return (column + "_histogram", FloatHistogram(limits, values))
 
     # TODO: consider the case where the data is outside of the bucket list
