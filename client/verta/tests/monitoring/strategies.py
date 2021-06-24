@@ -56,20 +56,24 @@ def series(draw, num_rows, data_type, name=None, has_missing=True):
     if has_missing:
         value_strategies.append(st.just(None))
     if data_type == "continuous":
-        value_strategies.extend([
-            st.floats(
-                # NumPy has limits on what values it can handle for histograms
-                min_value=-2**32,
-                max_value=2**32,
-                allow_nan=False,
-                allow_infinity=False,
-            ),
-        ])
+        value_strategies.extend(
+            [
+                st.floats(
+                    # NumPy has limits on what values it can handle for histograms
+                    min_value=-(2 ** 32),
+                    max_value=2 ** 32,
+                    allow_nan=False,
+                    allow_infinity=False,
+                ),
+            ]
+        )
     elif data_type == "discrete":
-        value_strategies.extend([
-            st.integers(),
-            st.text(),
-        ])
+        value_strategies.extend(
+            [
+                st.integers(),
+                st.text(),
+            ]
+        )
     else:
         raise ValueError("invalid data type {}".format(data_type))
 
@@ -95,7 +99,7 @@ def dataframes(draw):
     pd = pytest.importorskip("pandas")
 
     # Hypothesis suggests a limit on example sizes
-    num_rows = draw(st.integers(min_value=1, max_value=2**8))
+    num_rows = draw(st.integers(min_value=1, max_value=2 ** 8))
 
     continuous_col = "continuous"
     discrete_col = "discrete"
@@ -106,7 +110,9 @@ def dataframes(draw):
     # our profiler heuristics assume <= 20 unique values is discrete
     hypothesis.assume(len(set(continuous_series)) > 20)
 
-    return pd.DataFrame({
-        continuous_col: continuous_series,
-        discrete_col: discrete_series,
-    })
+    return pd.DataFrame(
+        {
+            continuous_col: continuous_series,
+            discrete_col: discrete_series,
+        }
+    )
