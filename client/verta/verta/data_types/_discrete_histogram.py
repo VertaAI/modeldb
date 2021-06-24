@@ -100,11 +100,11 @@ class DiscreteHistogram(_VertaDataType):
             )
         keys = list(set(self._buckets + other._buckets))
         return self._scipy_spatial.distance.cosine(
-            self._normalized_data(keys),
-            other._normalized_data(keys),
+            self.normalized_data(keys),
+            other.normalized_data(keys),
         )
 
-    def _normalized_data(self, keys=None):
+    def normalized_data(self, keys=None):
         total = sum(self._data)
         keys = keys if keys else self._buckets
         return [self._data_dict[k] / total for k in keys]
