@@ -122,7 +122,7 @@ class TestStandardModels:
 
         model_ver = registered_model.create_standard_model(
             model,
-            Python([]),
+            Python(["pytest"]),  # source module imports pytest
             artifacts={model.ARTIFACT_KEY: artifact_value},
         )
 
