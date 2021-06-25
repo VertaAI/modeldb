@@ -33,15 +33,15 @@ def keras_models():
     models = []
 
     # sequential API
-    model = keras.Sequential(
-        [
-            keras.layers.Dense(3, activation="linear", name="layer1"),
-            keras.layers.Dense(2, activation="relu", name="layer2"),
-            keras.layers.Dense(1, activation="sigmoid", name="layer3"),
-        ]
-    )
-    model(np.random.random(size=(3, 3)))  # initialize weights
-    models.append(model)
+    # model = keras.Sequential(
+    #     [
+    #         keras.layers.Dense(3, activation="linear", name="layer1"),
+    #         keras.layers.Dense(2, activation="relu", name="layer2"),
+    #         keras.layers.Dense(1, activation="sigmoid", name="layer3"),
+    #     ]
+    # )
+    # model(np.random.random(size=(3, 3)))  # initialize weights
+    # models.append(model)
 
     # functional API
     # inputs = keras.Input(shape=(3,))
@@ -58,19 +58,19 @@ def unsupported_keras_models():
     models = []
 
     # subclassing API
-    # class MyModel(keras.Model):
-    #     def __init__(self):
-    #         super(MyModel, self).__init__()
-    #         self.layer1 = keras.layers.Dense(3, activation="linear")
-    #         self.layer2 = keras.layers.Dense(2, activation="relu")
-    #         self.layer3 = keras.layers.Dense(2, activation="sigmoid")
+    class MyModel(keras.Model):
+        def __init__(self):
+            super(MyModel, self).__init__()
+            self.layer1 = keras.layers.Dense(3, activation="linear")
+            self.layer2 = keras.layers.Dense(2, activation="relu")
+            self.layer3 = keras.layers.Dense(2, activation="sigmoid")
 
-    #     def call(self, inputs):
-    #         x = self.layer1(inputs)
-    #         x = self.layer2(x)
-    #         return self.layer3(x)
+        def call(self, inputs):
+            x = self.layer1(inputs)
+            x = self.layer2(x)
+            return self.layer3(x)
 
-    # models.append(MyModel())
+    models.append(MyModel())
 
     return models
 
