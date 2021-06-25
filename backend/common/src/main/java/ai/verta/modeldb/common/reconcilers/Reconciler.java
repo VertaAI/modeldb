@@ -25,16 +25,18 @@ public abstract class Reconciler<T> {
   final Condition notEmpty = lock.newCondition();
   // To prevent OptimisticLockException
   private final Set<T> processingIdSet = new HashSet<>();
+  private final boolean deduplicate;
 
   protected final ReconcilerConfig config;
   protected final FutureJdbi futureJdbi;
   protected final Executor executor;
 
-  protected Reconciler(ReconcilerConfig config, Logger logger, FutureJdbi futureJdbi, Executor executor) {
+  protected Reconciler(ReconcilerConfig config, Logger logger, FutureJdbi futureJdbi, Executor executor, boolean deduplicate) {
     this.logger = logger;
     this.config = config;
     this.futureJdbi = futureJdbi;
     this.executor = executor;
+    this.deduplicate = deduplicate;
 
     startResync();
     startWorkers();
@@ -64,17 +66,21 @@ public abstract class Reconciler<T> {
             while (true) {
               CommonUtils.registeredBackgroundUtilsCount();
               try {
-                Set<T> processingIds =
-                        pop().stream()
-                        .filter(id -> !processingIdSet.contains(id))
-                        .collect(Collectors.toSet());
-                if (!processingIds.isEmpty()) {
-                  try {
-                    processingIdSet.addAll(processingIds);
-                    reconcile(processingIds);
-                  } finally {
-                    processingIdSet.removeAll(processingIds);
+                if (deduplicate) {
+                  Set<T> processingIds =
+                      pop().stream()
+                          .filter(id -> !processingIdSet.contains(id))
+                          .collect(Collectors.toSet());
+                  if (!processingIds.isEmpty()) {
+                    try {
+                      processingIdSet.addAll(processingIds);
+                      reconcile(processingIds);
+                    } finally {
+                      processingIdSet.removeAll(processingIds);
+                    }
                   }
+                } else {
+                  reconcile(pop());
                 }
               } catch (Exception ex) {
                 logger.error("Worker reconcile: ", ex);

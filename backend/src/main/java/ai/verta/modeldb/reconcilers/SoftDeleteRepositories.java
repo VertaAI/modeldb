@@ -43,7 +43,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
       boolean isDataset,
       FutureJdbi futureJdbi,
       Executor executor) {
-    super(config, LOGGER, futureJdbi, executor);
+    super(config, LOGGER, futureJdbi, executor, true);
     this.roleService = roleService;
     this.isDataset = isDataset;
   }
