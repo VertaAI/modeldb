@@ -28,19 +28,20 @@ def verta_models():
 
 def keras_models():
     keras = pytest.importorskip("tensorflow.keras")
+    np = pytest.importorskip("numpy")
 
     models = []
 
     # sequential API
-    models.append(
-        keras.Sequential(
-            [
-                keras.layers.Dense(3, activation="linear", name="layer1"),
-                keras.layers.Dense(2, activation="relu", name="layer2"),
-                keras.layers.Dense(1, activation="sigmoid", name="layer3"),
-            ]
-        )
+    model = keras.Sequential(
+        [
+            keras.layers.Dense(3, activation="linear", name="layer1"),
+            keras.layers.Dense(2, activation="relu", name="layer2"),
+            keras.layers.Dense(1, activation="sigmoid", name="layer3"),
+        ]
     )
+    model(np.random.random(size=(3, 3)))  # initialize weights
+    models.append(model)
 
     # functional API
     inputs = keras.Input(shape=(3,))
