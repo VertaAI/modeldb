@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,7 +25,7 @@ public abstract class Reconciler<T> {
   final Lock lock = new ReentrantLock();
   final Condition notEmpty = lock.newCondition();
   // To prevent OptimisticLockException
-  private final Set<T> processingIdSet = new HashSet<>();
+  private final Set<T> processingIdSet = ConcurrentHashMap.newKeySet();
   private final boolean deduplicate;
 
   protected final ReconcilerConfig config;
