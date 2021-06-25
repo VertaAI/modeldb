@@ -1,6 +1,6 @@
 package ai.verta.modeldb.common.authservice;
 
-import com.google.rpc.Status;
+import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.ForwardingServerCallListener;
@@ -9,9 +9,12 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCall.Listener;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
-import io.grpc.protobuf.StatusProto;
+import io.grpc.Status;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class AuthInterceptor implements ServerInterceptor {
+  private static final Logger LOGGER = LogManager.getLogger(AuthInterceptor.class);
   public static final Context.Key<Metadata> METADATA_INFO = Context.key("metadata");
 
   /**
@@ -27,7 +30,7 @@ public class AuthInterceptor implements ServerInterceptor {
       ServerCall<R, S> call, Metadata requestHeaders, ServerCallHandler<R, S> next) {
     Context context = Context.current().withValue(METADATA_INFO, requestHeaders);
 
-    // To protect empty headers from request
+    // validate empty headers from user request
     Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> dev_key =
         Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
@@ -37,8 +40,11 @@ public class AuthInterceptor implements ServerInterceptor {
         || !requestHeaders.containsKey(email_key)
         || !requestHeaders.containsKey(dev_key)
         || !requestHeaders.containsKey(source_key)) {
-      Status status = Status.newBuilder().setMessage("Required parameter is missing in metadata").build();
-      throw StatusProto.toStatusRuntimeException(status);
+      var message = "Required parameter is missing in metadata";
+      call.close(Status.PERMISSION_DENIED
+              .withDescription(message), requestHeaders);
+      LOGGER.debug(message);
+      return new ServerCall.Listener<>(){};
     }
 
     ServerCall.Listener<R> delegate = Contexts.interceptCall(context, call, requestHeaders, next);
