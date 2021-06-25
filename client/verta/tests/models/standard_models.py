@@ -8,6 +8,7 @@ from verta.registry import VertaModelBase
 
 
 class VertaModel(VertaModelBase):
+    print("Creating Verta models")
     ARTIFACT_KEY = "artifact"
 
     def __init__(self, artifacts):
@@ -27,6 +28,7 @@ def verta_models():
 
 
 def keras_models():
+    print("Creating Keras models")
     keras = pytest.importorskip("tensorflow.keras")
     np = pytest.importorskip("numpy")
 
@@ -53,6 +55,7 @@ def keras_models():
 
 
 def unsupported_keras_models():
+    print("Creating Keras models")
     keras = pytest.importorskip("tensorflow.keras")
 
     models = []
@@ -76,6 +79,7 @@ def unsupported_keras_models():
 
 
 def sklearn_models():
+    print("Creating scikit-learn models")
     np = pytest.importorskip("numpy")
     ensemble = pytest.importorskip("sklearn.ensemble")
     svm = pytest.importorskip("sklearn.svm")
@@ -100,6 +104,7 @@ def sklearn_models():
 
 
 def unsupported_sklearn_models():
+    print("Creating scikit-learn models")
     preprocessing = pytest.importorskip("sklearn.preprocessing")
 
     models = []
@@ -110,6 +115,7 @@ def unsupported_sklearn_models():
 
 
 def torch_models():
+    print("Creating PyTorch models")
     torch = pytest.importorskip("torch")
 
     models = []
@@ -141,6 +147,7 @@ def torch_models():
 
 
 def xgboost_models():
+    print("Creating XGBoost models")
     np = pytest.importorskip("numpy")
     xgb = pytest.importorskip("xgboost")
 
@@ -157,6 +164,7 @@ def xgboost_models():
 
 
 def unsupported_xgboost_models():
+    print("Creating XGBoost models")
     datasets = pytest.importorskip("sklearn.datasets")
     xgb = pytest.importorskip("xgboost")
 
