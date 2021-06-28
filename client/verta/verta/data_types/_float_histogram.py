@@ -59,6 +59,14 @@ class FloatHistogram(_VertaDataType):
         self._bucket_limits = bucket_limits
         self._data = data
 
+    def __repr__(self):
+        attrs = {
+            "bucket_limits": self._bucket_limits,
+            "data": self._data,
+        }
+        lines = ["{}: {}".format(key, value) for key, value in sorted(attrs.items())]
+        return "\n\t".join([type(self).__name__] + lines)
+
     def _as_dict(self):
         return self._as_dict_inner(
             {

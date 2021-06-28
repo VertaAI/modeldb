@@ -46,7 +46,7 @@ class DiscreteHistogram(_VertaDataType):
             raise ImportError("scipy is not installed; try `pip install scipy`")
 
         if len(buckets) != len(set(buckets)):
-            raise ValueError("`bucekts` elements must all be unique")
+            raise ValueError("`buckets` elements must all be unique")
         if len(buckets) != len(data):
             raise ValueError("`buckets` and `data` must have the same length")
         if not all(isinstance(count, six.integer_types) for count in data):
@@ -55,6 +55,14 @@ class DiscreteHistogram(_VertaDataType):
         self._buckets = buckets
         self._data = data
         self._data_dict = defaultdict(int, zip(buckets, data))
+
+    def __repr__(self):
+        attrs = {
+            "buckets": self._buckets,
+            "data": self._data,
+        }
+        lines = ["{}: {}".format(key, value) for key, value in sorted(attrs.items())]
+        return "\n\t".join([type(self).__name__] + lines)
 
     def _as_dict(self):
         return self._as_dict_inner(
