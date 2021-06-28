@@ -32,16 +32,17 @@ def keras_models():
 
     models = []
 
-    # sequential API
-    model = keras.Sequential(
-        [
-            keras.layers.Dense(3, activation="linear", name="layer1"),
-            keras.layers.Dense(2, activation="relu", name="layer2"),
-            keras.layers.Dense(1, activation="sigmoid", name="layer3"),
-        ]
-    )
-    model(np.random.random(size=(3, 3)))  # initialize weights
-    models.append(model)
+    # TODO: re-enable with VR-11962
+    # # sequential API
+    # model = keras.Sequential(
+    #     [
+    #         keras.layers.Dense(3, activation="linear", name="layer1"),
+    #         keras.layers.Dense(2, activation="relu", name="layer2"),
+    #         keras.layers.Dense(1, activation="sigmoid", name="layer3"),
+    #     ]
+    # )
+    # model(np.random.random(size=(3, 3)))  # initialize weights
+    # models.append(model)
 
     # functional API
     inputs = keras.Input(shape=(3,))
@@ -141,44 +142,46 @@ def torch_models():
 
 
 def xgboost_models():
-    np = pytest.importorskip("numpy")
-    xgb = pytest.importorskip("xgboost")
+    # TODO: re-enable with VR-11962
+    # np = pytest.importorskip("numpy")
+    # xgb = pytest.importorskip("xgboost")
 
     models = []
 
-    model = xgb.XGBClassifier(use_label_encoder=False)
-    model.fit(
-        np.random.random(size=(3, 3)),
-        [0, 0, 1],
-    )
-    models.append(model)
+    # model = xgb.XGBClassifier(use_label_encoder=False)
+    # model.fit(
+    #     np.random.random(size=(3, 3)),
+    #     [0, 0, 1],
+    # )
+    # models.append(model)
 
     return models
 
 
 def unsupported_xgboost_models():
-    datasets = pytest.importorskip("sklearn.datasets")
-    xgb = pytest.importorskip("xgboost")
+    # TODO: re-enable with VR-11962
+    # datasets = pytest.importorskip("sklearn.datasets")
+    # xgb = pytest.importorskip("xgboost")
 
     models = []
 
-    # from https://xgboost.readthedocs.io/en/latest/python/model.html
-    X, y = datasets.make_classification(
-        n_samples=100,
-        n_informative=5,
-        n_classes=3,
-    )
-    dtrain = xgb.DMatrix(data=X, label=y)
-    models.append(
-        xgb.train(
-            {
-                "num_parallel_tree": 4,
-                "subsample": 0.5,
-                "num_class": 3,
-            },
-            num_boost_round=16,
-            dtrain=dtrain,
-        )
-    )
+    # # from https://xgboost.readthedocs.io/en/latest/python/model.html
+    # X, y = datasets.make_classification(
+    #     n_samples=100,
+    #     n_informative=5,
+    #     n_classes=3,
+    # )
+    # dtrain = xgb.DMatrix(data=X, label=y)
+    # models.append(
+    #     xgb.train(
+    #         {
+    #             "num_parallel_tree": 4,
+    #             "subsample": 0.5,
+    #             "num_class": 3,
+    #         },
+    #         num_boost_round=16,
+    #         dtrain=dtrain,
+    #     )
+    # )
 
     return models
