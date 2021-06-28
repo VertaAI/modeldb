@@ -53,8 +53,8 @@ public class CollaboratorResourceMigration {
     Config config = App.getInstance().config;
     CollaboratorResourceMigration.paginationSize = 100;
     if (config.hasAuth()) {
-      authService = AuthServiceUtils.FromConfig(config);
       uac = UAC.FromConfig(config);
+      authService = AuthServiceUtils.FromConfig(config, uac);
       roleService = RoleServiceUtils.FromConfig(config, authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found, OSS setup found");
