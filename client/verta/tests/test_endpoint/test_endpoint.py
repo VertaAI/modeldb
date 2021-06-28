@@ -217,7 +217,8 @@ class TestEndpoint:
         e_msg = str(excinfo.value).strip()
         assert e_msg.startswith("endpoint update failed;")
         assert "Serving Flask app" in e_msg
-        assert "No module named 'sklearn'" in e_msg
+        assert "No module named" in e_msg
+        assert "sklearn" in e_msg
 
     def test_canary_update(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
