@@ -403,6 +403,35 @@ class Endpoint(object):
 
         return response_json
 
+    def get_logs(self):
+        """Get runtime logs of this endpoint.
+
+        Returns
+        -------
+        list of str
+            Lines of this endpoint's runtime logs.
+
+        """
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/logs".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_stage()
+        )
+        response = _utils.make_request("GET", url, self._conn)
+        self._conn.must_response(response)
+
+        logs = response.json().get("entries", [])
+        # remove duplicate lines
+        logs = {
+            log["id"]: log["message"]
+            for log in logs
+        }
+        # sort by line number
+        logs = sorted(logs.items(), key=lambda item: item[0])
+        return [item[1] for item in logs]
+
     def get_access_token(self):
         """Gets an arbitrary access token of the endpoint.
 
