@@ -818,7 +818,8 @@
         "CREATE",
         "READ",
         "UPDATE",
-        "DELETE"
+        "DELETE",
+        "READ_SECRETS"
       ],
       "default": "UNKNOWN"
     },
