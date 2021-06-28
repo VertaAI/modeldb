@@ -252,6 +252,33 @@ class RegisteredModel(_entity._ModelDBEntity):
         -------
         :class:`~verta.registry.entities.RegisteredModelVersion`
 
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.environment import Python
+            from verta.registry import VertaModelBase
+
+            class VertaModel(VertaModelBase):
+                def __init__(self, artifacts):
+                    import pickle
+
+                    with open(artifacts["weights"], "rb") as f:
+                        self.weights = pickle.load(f)
+
+                def predict(self, input):
+                    import numpy as np
+
+                    return np.matmul(self.weights, input)
+
+            model_ver = reg_model.create_standard_model(
+                VertaModel,
+                Python(["numpy"]),
+                artifacts={"weights": np.array(weights)},
+            )
+            endpoint.update(model_ver, wait=True)
+            endpoint.get_deployed_model().predict(input)
+
         """
         model_validator.must_verta(model_cls)
 
@@ -305,6 +332,26 @@ class RegisteredModel(_entity._ModelDBEntity):
         -------
         :class:`~verta.registry.entities.RegisteredModelVersion`
 
+        Examples
+        --------
+        .. code-block:: python
+
+            from tensorflow import keras
+            from verta.environment import Python
+
+            inputs = keras.Input(shape=(3,))
+            x = keras.layers.Dense(2, activation="relu")(inputs)
+            outputs = keras.layers.Dense(1, activation="sigmoid")(x)
+            model = keras.Model(inputs=inputs, outputs=outputs)
+            train(model, data)
+
+            model_ver = reg_model.create_standard_model_from_keras(
+                model,
+                Python(["tensorflow"]),
+            )
+            endpoint.update(model_ver, wait=True)
+            endpoint.get_deployed_model().predict(input)
+
         """
         model_validator.must_keras(obj)
 
@@ -355,6 +402,23 @@ class RegisteredModel(_entity._ModelDBEntity):
         Returns
         -------
         :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from sklearn.svm import LinearSVC
+            from verta.environment import Python
+
+            model = LinearSVC(**hyperparams)
+            model.fit(X_train, y_train)
+
+            model_ver = reg_model.create_standard_model_from_sklearn(
+                model,
+                Python(["scikit-learn"]),
+            )
+            endpoint.update(model_ver, wait=True)
+            endpoint.get_deployed_model().predict(input)
 
         """
         model_validator.must_sklearn(obj)
@@ -407,6 +471,33 @@ class RegisteredModel(_entity._ModelDBEntity):
         -------
         :class:`~verta.registry.entities.RegisteredModelVersion`
 
+        Examples
+        --------
+        .. code-block:: python
+
+            import torch
+            from verta.environment import Python
+
+            class Model(torch.nn.Module):
+                def __init__(self):
+                    super(Model, self).__init__()
+                    self.layer1 = torch.nn.Linear(3, 2)
+                    self.layer2 = torch.nn.Linear(2, 1)
+
+                def forward(self, x):
+                    x = torch.nn.functional.relu(self.layer1(x))
+                    return torch.sigmoid(self.layer2(x))
+
+            model = Model()
+            train(model, data)
+
+            model_ver = reg_model.create_standard_model_from_torch(
+                model,
+                Python(["torch"]),
+            )
+            endpoint.update(model_ver, wait=True)
+            endpoint.get_deployed_model().predict(input)
+
         """
         model_validator.must_torch(obj)
 
@@ -457,6 +548,23 @@ class RegisteredModel(_entity._ModelDBEntity):
         Returns
         -------
         :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        Examples
+        --------
+        .. code-block:: python
+
+            import xgboost as xgb
+            from verta.environment import Python
+
+            model = xgb.XGBClassifier(**hyperparams)
+            model.fit(X_train, y_train)
+
+            model_ver = reg_model.create_standard_model_from_xgboost(
+                model,
+                Python(["scikit-learn", "xgboost"]),
+            )
+            endpoint.update(model_ver, wait=True)
+            endpoint.get_deployed_model().predict(input)
 
         """
         model_validator.must_xgboost_sklearn(obj)

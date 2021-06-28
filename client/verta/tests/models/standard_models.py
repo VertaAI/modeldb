@@ -28,7 +28,6 @@ def verta_models():
 
 def keras_models():
     keras = pytest.importorskip("tensorflow.keras")
-    np = pytest.importorskip("numpy")
 
     models = []
 
