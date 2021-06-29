@@ -13,6 +13,7 @@ pytest>=4.3
 
 # unit testing dependencies
 boto3
+future; python_version == '2.7'  # for PyTorch
 google-cloud-bigquery
 h5py<3.0.0; python_version < '3.9'  # https://github.com/tensorflow/tensorflow/issues/44467
 matplotlib<3.0; python_version < '3.8'

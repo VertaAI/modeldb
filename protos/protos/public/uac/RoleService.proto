@@ -44,6 +44,7 @@ message AuthzActionEnum {
         READ = 5;
         UPDATE = 6;
         DELETE = 7;
+        READ_SECRETS = 8;
     }
 
 };

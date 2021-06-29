@@ -1,16 +1,86 @@
 # -*- coding: utf-8 -*-
 
 import pytest
+import hypothesis
 
+from verta import data_types
 from verta.environment import Python
 from verta._internal_utils._utils import generate_default_name
-from verta.monitoring.profiler import ContinuousHistogramProfiler
+from verta.monitoring.profiler import (
+    BinaryHistogramProfiler,
+    ContinuousHistogramProfiler,
+    MissingValuesProfiler,
+)
 from verta.monitoring._profilers import ProfilerReference
-import pytest
+
+from . import strategies
 
 
-class TestProfilers(object):
+class TestProfilers:
+    @hypothesis.settings(deadline=None)  # building DataFrames can be slow
+    @hypothesis.given(
+        df=strategies.dataframes(),  # pylint: disable=no-value-for-parameter
+    )
+    def test_continuous(self, df):
+        np = pytest.importorskip("numpy")
 
+        cols = ["continuous"]
+
+        profiler = ContinuousHistogramProfiler(cols)
+        profile = profiler.profile(df)
+
+        assert len(profile) == len(cols)
+        for name, data in profile.items():
+            assert isinstance(data, data_types.FloatHistogram)
+
+            series = df[name.split("_histogram")[0]]
+            values, limits = np.histogram(series.dropna(), bins=data._bucket_limits)
+            assert set(data._bucket_limits) == set(limits.tolist())
+            assert set(data._data) == set(values.tolist())
+            # missing values omitted
+            assert sum(data._data) == sum(~series.isna())
+
+    @hypothesis.settings(deadline=None)  # building DataFrames can be slow
+    @hypothesis.given(
+        df=strategies.dataframes(),  # pylint: disable=no-value-for-parameter
+    )
+    def test_discrete(self, df):
+        cols = ["discrete"]
+
+        profiler = BinaryHistogramProfiler(cols)
+        profile = profiler.profile(df)
+
+        assert len(profile) == len(cols)
+        for name, data in profile.items():
+            assert isinstance(data, data_types.DiscreteHistogram)
+
+            series = df[name.split("_histogram")[0]]
+            value_counts = series.value_counts()
+            assert set(data._buckets) == set(value_counts.index)
+            assert set(data._data) == set(value_counts.values)
+            # missing values omitted
+            assert sum(data._data) == sum(~series.isna())
+
+    @hypothesis.settings(deadline=None)  # building DataFrames can be slow
+    @hypothesis.given(
+        df=strategies.dataframes(),  # pylint: disable=no-value-for-parameter
+    )
+    def test_missing(self, df):
+        cols = ["continuous", "discrete"]
+
+        profiler = MissingValuesProfiler(cols)
+        profile = profiler.profile(df)
+
+        assert len(profile) == len(cols)
+        for name, data in profile.items():
+            assert isinstance(data, data_types.DiscreteHistogram)
+
+            series = df[name.split("_missing")[0]]
+            assert data._data[data._buckets.index("present")] == sum(~series.isna())
+            assert data._data[data._buckets.index("missing")] == sum(series.isna())
+
+
+class TestLiveProfilers(object):
     def test_profiler_crud(self, client):
         requirements = ["numpy", "scipy", "pandas"]
         for req in requirements:
