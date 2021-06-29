@@ -293,8 +293,8 @@ class TestFetchArtifacts:
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
                 for filename in files:
-                    filepath = os.path.join(root, filename)
-                    filepath = os.path.relpath(filepath, dirpath)
+                    filepath = "/".join([root, filename])
+                    filepath = os.path.relpath(filepath, dirpath).replace('\\', '/') 
                     retrieved_filepaths.add(filepath)
 
             assert filepaths == retrieved_filepaths
@@ -321,16 +321,17 @@ class TestFetchArtifacts:
     def test_fetch_tgz(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
         key = strs[0]
+        tempf  = tempfile.NamedTemporaryFile(suffix='.tgz', delete=False)
+        
+        # make archive
+        with tarfile.open(tempf.name, 'w:gz') as tarf:
+            tarf.add(dirpath, "")
+        tempf.flush()  # flush object buffer
+        os.fsync(tempf.fileno())  # flush OS buffer
+        tempf.seek(0)
+        tempf.close()
 
-        with tempfile.NamedTemporaryFile(suffix='.tgz') as tempf:
-            # make archive
-            with tarfile.open(tempf.name, 'w:gz') as tarf:
-                tarf.add(dirpath, "")
-            tempf.flush()  # flush object buffer
-            os.fsync(tempf.fileno())  # flush OS buffer
-            tempf.seek(0)
-
-            experiment_run.log_artifact(key, tempf.name)
+        experiment_run.log_artifact(key, tempf.name)
 
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
@@ -340,27 +341,28 @@ class TestFetchArtifacts:
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
                 for filename in files:
-                    filepath = os.path.join(root, filename)
-                    filepath = os.path.relpath(filepath, dirpath)
+                    filepath = "/".join([root, filename])
+                    filepath = os.path.relpath(filepath, dirpath).replace("\\", "/")
                     retrieved_filepaths.add(filepath)
 
             assert filepaths == retrieved_filepaths
+            os.remove(tempf.name)
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_tar(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
         key = strs[0]
+        tempf = tempfile.NamedTemporaryFile(suffix='.tar', delete=False)
+        # make archive
+        with tarfile.open(tempf.name, 'w') as tarf:
+            tarf.add(dirpath, "")
+        tempf.flush()  # flush object buffer
+        os.fsync(tempf.fileno())  # flush OS buffer
+        tempf.seek(0)
+        tempf.close()
 
-        with tempfile.NamedTemporaryFile(suffix='.tar') as tempf:
-            # make archive
-            with tarfile.open(tempf.name, 'w') as tarf:
-                tarf.add(dirpath, "")
-            tempf.flush()  # flush object buffer
-            os.fsync(tempf.fileno())  # flush OS buffer
-            tempf.seek(0)
-
-            experiment_run.log_artifact(key, tempf.name)
+        experiment_run.log_artifact(key, tempf.name)
 
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
@@ -370,27 +372,28 @@ class TestFetchArtifacts:
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
                 for filename in files:
-                    filepath = os.path.join(root, filename)
-                    filepath = os.path.relpath(filepath, dirpath)
+                    filepath = "/".join([root, filename])
+                    filepath = os.path.relpath(filepath, dirpath).replace("\\",  "/")
                     retrieved_filepaths.add(filepath)
 
             assert filepaths == retrieved_filepaths
+            os.remove(tempf.name)
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_fetch_tar_gz(self, experiment_run, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
         key = strs[0]
+        tempf = tempfile.NamedTemporaryFile(suffix='.tar.gz', delete=False)
+        # make archive
+        with tarfile.open(tempf.name, 'w:gz') as tarf:
+            tarf.add(dirpath, "")
+        tempf.flush()  # flush object buffer
+        os.fsync(tempf.fileno())  # flush OS buffer
+        tempf.seek(0)
+        tempf.close()
 
-        with tempfile.NamedTemporaryFile(suffix='.tar.gz') as tempf:
-            # make archive
-            with tarfile.open(tempf.name, 'w:gz') as tarf:
-                tarf.add(dirpath, "")
-            tempf.flush()  # flush object buffer
-            os.fsync(tempf.fileno())  # flush OS buffer
-            tempf.seek(0)
-
-            experiment_run.log_artifact(key, tempf.name)
+        experiment_run.log_artifact(key, tempf.name)
 
         try:
             dirpath = experiment_run.fetch_artifacts([key])[key]
@@ -400,11 +403,12 @@ class TestFetchArtifacts:
             retrieved_filepaths = set()
             for root, _, files in os.walk(dirpath):
                 for filename in files:
-                    filepath = os.path.join(root, filename)
-                    filepath = os.path.relpath(filepath, dirpath)
+                    filepath = "/".join([root, filename])
+                    filepath = os.path.relpath(filepath, dirpath).replace("\\", "/")
                     retrieved_filepaths.add(filepath)
 
             assert filepaths == retrieved_filepaths
+            os.remove(tempf.name)
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 

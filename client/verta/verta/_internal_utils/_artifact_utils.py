@@ -327,7 +327,7 @@ def serialize_model(model):
             break
         elif module_name.startswith("tensorflow.python.keras"):
             model_type = "tensorflow"
-            tempf = tempfile.NamedTemporaryFile()
+            tempf = tempfile.NamedTemporaryFile(delete=False)
             try:
                 if get_tensorflow_major_version() == 2:  # save_format param may not exist in TF 1.X
                     model.save(tempf.name, save_format='h5')  # TF 2.X uses SavedModel by default
@@ -387,7 +387,7 @@ def deserialize_model(bytestring, error_ok=False):
     keras = maybe_dependency("tensorflow.keras")
     if keras is not None:
         # try deserializing with Keras (HDF5)
-        with tempfile.NamedTemporaryFile() as tempf:
+        with tempfile.NamedTemporaryFile(delete=False) as tempf:
             tempf.write(bytestring)
             tempf.seek(0)
             try:

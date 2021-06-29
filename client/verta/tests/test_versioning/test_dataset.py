@@ -332,7 +332,7 @@ class TestPath:
     def test_base_path(self, paths, base_path):
         filepaths = _file_utils.flatten_file_trees(paths)
         expected_paths = set(
-            os.path.relpath(path, base_path)
+            os.path.relpath(path, base_path).replace("\\", "/")
             for path in filepaths
         )
 
@@ -836,7 +836,7 @@ class TestPathManagedVersioning:
         os.mkdir(reference_dir)
         # three .file files in tiny-files/
         for filename in ["tiny{}.file".format(i) for i in range(3)]:
-            with open(os.path.join(reference_dir, filename), 'wb') as f:
+            with open("/".join([reference_dir, filename]), 'wb') as f:
                 f.write(os.urandom(2**16))
 
         sub_dir = "bin/"

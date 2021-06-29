@@ -21,7 +21,7 @@ class TestPipRequirementsUtils:
             filter(
                 _pip_requirements_utils.SPACY_MODEL_REGEX.match,
                 six.ensure_str(
-                    subprocess.check_output([sys.executable, "-m", "pip", "freeze"]),
+                    subprocess.check_output([sys.executable, "-m", "pip", "list", "--format=freeze"]),
                 ).splitlines(),
             )
         )

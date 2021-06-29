@@ -43,9 +43,9 @@ def metadata(draw):
 
 @pytest.fixture
 def requirements_file_without_versions():
-    with tempfile.NamedTemporaryFile("w+") as tempf:
+    with tempfile.NamedTemporaryFile("w+", delete=False) as tempf:
         # create requirements file from pip freeze
-        pip_freeze = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
+        pip_freeze = subprocess.check_output([sys.executable, "-m", "pip", "list", "--format=freeze"])
         pip_freeze = six.ensure_str(pip_freeze)
         stripped_pip_freeze = "\n".join(
             line.split("==")[0] for line in pip_freeze.splitlines()
@@ -60,7 +60,7 @@ def requirements_file_without_versions():
 
 @pytest.fixture
 def requirements_file_with_unsupported_lines():
-    with tempfile.NamedTemporaryFile("w+") as tempf:
+    with tempfile.NamedTemporaryFile("w+", delete=False) as tempf:
         requirements = [
             "",
             "# this is a comment",
@@ -148,26 +148,34 @@ class TestPython:
         assert env._msg.python.requirements
 
     def test_reqs(self, requirements_file):
+        requirements_file.close()
         reqs = Python.read_pip_file(requirements_file.name)
         env = Python(requirements=reqs)
         assert env._msg.python.requirements
+        os.unlink(requirements_file.name)
 
     def test_reqs_without_versions(self, requirements_file_without_versions):
+        requirements_file_without_versions.close()
         reqs = Python.read_pip_file(requirements_file_without_versions.name)
         env = Python(requirements=reqs)
         assert env._msg.python.requirements
+        os.remove(requirements_file_without_versions.name)
 
     def test_constraints_from_file(self, requirements_file):
+        requirements_file.close()
         reqs = Python.read_pip_file(requirements_file.name)
         env = Python(requirements=[], constraints=reqs)
         assert env._msg.python.constraints
+        os.remove(requirements_file.name)
 
     def test_constraints_from_file_no_versions_error(
         self, requirements_file_without_versions
     ):
+        requirements_file_without_versions.close()
         reqs = Python.read_pip_file(requirements_file_without_versions.name)
         with pytest.raises(ValueError):
             Python(requirements=[], constraints=reqs)
+        os.remove(requirements_file_without_versions.name)
 
     def test_inject_verta_cloudpickle(self):
         env = Python(requirements=[])
@@ -177,12 +185,14 @@ class TestPython:
         assert "cloudpickle" in requirements
 
     def test_reqs_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
+        requirements_file_with_unsupported_lines.close()
         reqs = Python.read_pip_file(requirements_file_with_unsupported_lines.name)
         env = Python(requirements=reqs)
         requirements = {req.library for req in env._msg.python.requirements}
 
         # only has injected requirements
         assert requirements == {"verta", "cloudpickle"}
+        os.remove(requirements_file_with_unsupported_lines.name)
 
     def test_no_autocapture(self):
         env_ver = Python(requirements=[], _autocapture=False)

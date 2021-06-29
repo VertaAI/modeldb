@@ -43,60 +43,70 @@ class TestLogRequirements:
             experiment_run.log_requirements([self.NONSPECIFIC_REQ])
 
     def test_nonspecific_ver_file_warning(self, experiment_run):
-        with tempfile.NamedTemporaryFile('w+') as tempf:
-            tempf.write(self.NONSPECIFIC_REQ)
-            tempf.seek(0)
+        tempf = tempfile.NamedTemporaryFile('w+', delete=False)
+        tempf.write(self.NONSPECIFIC_REQ)
+        tempf.seek(0)
+        tempf.close()
 
-            with pytest.warns(UserWarning):
-                experiment_run.log_requirements(tempf.name)
+        with pytest.warns(UserWarning):
+            experiment_run.log_requirements(tempf.name)
+        os.remove(tempf.name)
 
     def test_invalid_pkg_name_list_error(self, experiment_run):
         with pytest.raises(ValueError):
             experiment_run.log_requirements([self.INVALID_REQ])
 
     def test_invalid_pkg_name_file_error(self, experiment_run):
-        with tempfile.NamedTemporaryFile('w+') as tempf:
-            tempf.write(self.INVALID_REQ)
-            tempf.seek(0)
+        tempf = tempfile.NamedTemporaryFile('w+', delete=False)
+        tempf.write(self.INVALID_REQ)
+        tempf.seek(0)
+        tempf.close()
 
-            with pytest.raises(ValueError):
-                experiment_run.log_requirements(tempf.name)
+        with pytest.raises(ValueError):
+            experiment_run.log_requirements(tempf.name)
+        os.remove(tempf.name)
 
     def test_unimportable_pkg_list_error(self, experiment_run):
         with pytest.raises(ValueError):
             experiment_run.log_requirements([self.UNIMPORTABLE_REQ])
 
     def test_unimportable_pkg_file_error(self, experiment_run):
-        with tempfile.NamedTemporaryFile('w+') as tempf:
-            tempf.write(self.UNIMPORTABLE_REQ)
-            tempf.seek(0)
+        tempf = tempfile.NamedTemporaryFile('w+', delete=False)
+        tempf.write(self.UNIMPORTABLE_REQ)
+        tempf.seek(0)
+        tempf.close()
 
-            with pytest.raises(ValueError):
-                experiment_run.log_requirements(tempf.name)
+        with pytest.raises(ValueError):
+            experiment_run.log_requirements(tempf.name)
+        os.remove(tempf.name)
 
     def test_verta_ver_mismatch_list_error(self, experiment_run):
         with pytest.raises(ValueError):
             experiment_run.log_requirements([self.VERTA_MISMATCH_REQ])
 
     def test_verta_ver_mismatch_file_error(self, experiment_run):
-        with tempfile.NamedTemporaryFile('w+') as tempf:
-            tempf.write(self.VERTA_MISMATCH_REQ)
-            tempf.seek(0)
+        tempf = tempfile.NamedTemporaryFile('w+', delete=False)
+        tempf.write(self.VERTA_MISMATCH_REQ)
+        tempf.seek(0)
+        tempf.close()
 
-            with pytest.raises(ValueError):
-                experiment_run.log_requirements(tempf.name)
+        with pytest.raises(ValueError):
+            experiment_run.log_requirements(tempf.name)
+        os.remove(tempf.name)
 
     def test_cloudpickle_ver_mismatch_list_error(self, experiment_run):
         with pytest.raises(ValueError):
             experiment_run.log_requirements([self.CLOUDPICKLE_MISMATCH_REQ])
 
     def test_cloudpickle_ver_mismatch_file_error(self, experiment_run):
-        with tempfile.NamedTemporaryFile('w+') as tempf:
-            tempf.write(self.CLOUDPICKLE_MISMATCH_REQ)
-            tempf.seek(0)
+        tempf = tempfile.NamedTemporaryFile('w+', delete=False)
+        tempf.write(self.CLOUDPICKLE_MISMATCH_REQ)
+        tempf.seek(0)
+        tempf.close()
 
-            with pytest.raises(ValueError):
-                experiment_run.log_requirements(tempf.name)
+        with pytest.raises(ValueError):
+            experiment_run.log_requirements(tempf.name)
+        os.remove(tempf.name)
 
     def test_injection_list(self, experiment_run):
         experiment_run.log_requirements([])
@@ -107,13 +117,15 @@ class TestLogRequirements:
         assert {'cloudpickle', 'verta'} == reqs
 
     def test_injection_file(self, experiment_run):
-        with tempfile.NamedTemporaryFile('w+') as tempf:
-            experiment_run.log_requirements(tempf.name)
+        tempf = tempfile.NamedTemporaryFile('w+', delete=False)
+        tempf.close()
+        experiment_run.log_requirements(tempf.name)
 
         reqs_txt = experiment_run.get_artifact(
             "requirements.txt").read().decode()
         reqs = set(req.split('==')[0].strip() for req in reqs_txt.splitlines())
         assert {'cloudpickle', 'verta'} == reqs
+        os.remove(tempf.name)
 
     def test_list(self, experiment_run):
         experiment_run.log_requirements(self.VALID_REQS)
@@ -124,16 +136,17 @@ class TestLogRequirements:
         assert set(self.VALID_REQS) == reqs
 
     def test_file(self, experiment_run):
-        with tempfile.NamedTemporaryFile('w+') as tempf:
-            tempf.write('\n'.join(self.VALID_REQS))
-            tempf.seek(0)
+        tempf = tempfile.NamedTemporaryFile('w+', delete=False)
+        tempf.write('\n'.join(self.VALID_REQS))
+        tempf.seek(0)
+        tempf.close()
 
-            experiment_run.log_requirements(tempf.name)
-
+        experiment_run.log_requirements(tempf.name)
         reqs_txt = experiment_run.get_artifact(
             "requirements.txt").read().decode()
         reqs = set(req.split('==')[0].strip() for req in reqs_txt.splitlines())
         assert set(self.VALID_REQS) == reqs
+        os.remove(tempf.name)
 
     def test_implicit_log_environment(self, experiment_run):
         assert not experiment_run.has_environment

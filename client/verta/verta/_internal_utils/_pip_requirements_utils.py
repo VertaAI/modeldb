@@ -44,7 +44,7 @@ SPACY_MODEL_REGEX = re.compile(SPACY_MODEL_PATTERN)
 
 
 def get_pip_freeze():
-    pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
+    pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'list', '--format=freeze'])
     pip_freeze = six.ensure_str(pip_freeze)
 
     req_specs = pip_freeze.splitlines()
@@ -217,7 +217,7 @@ def set_version_pins(requirements):
     pip_pkg_vers = dict(
         req_spec.split('==')
         for req_spec
-        in six.ensure_str(subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])).splitlines()
+        in six.ensure_str(subprocess.check_output([sys.executable, '-m', 'pip', 'list', '--format=freeze'])).splitlines()
         if '==' in req_spec
     )
 

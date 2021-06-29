@@ -63,7 +63,7 @@ class TestUtils:
         assert filepath != downloaded_filepath
         # contents match
         assert filecmp.cmp(filepath, downloaded_filepath)
-        os.unlink(temp_zip.name)
+        os.remove(temp_zip.name)
 
     def test_download_zipped_dir_no_collision(self, experiment_run, dir_and_files, in_tempdir):
         source_dirpath, _ = dir_and_files
