@@ -1119,13 +1119,8 @@ class RegisteredModelVersion(_DeployableEntity):
             ``"num_unique"`` and ``"type"`` for each column in `df`.
 
         """
-        metadata = {}
-        for column in df:
-            metadata[column] = {}
-            metadata[column]["num_unique"] = df[column].value_counts().size
-            metadata[column]["type"] = str(df[column].dtypes)
-
-        return metadata
+        get_col_metadata = lambda col: {"num_unique": col.value_counts().size, "type": str(col.dtypes)}
+        return df.apply(get_col_metadata).to_dict()
 
     @staticmethod
     def _add_time_attributes_to_feature_data(feature_data):
