@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common.authservice;
 
-import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.ForwardingServerCallListener;
