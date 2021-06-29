@@ -21,8 +21,7 @@ from verta.monitoring.comparison import (
 @st.composite
 def lower_and_higher(draw):
     lower = draw(st.floats(allow_nan=False, allow_infinity=False))
-    higher = draw(st.floats(min_value=lower, exclude_min=True, allow_nan=False))
-    hypothesis.assume(not _VertaComparison.isclose(lower, higher))
+    higher = draw(st.floats(min_value=lower+DEFAULT_TOLERANCE, exclude_min=True, allow_nan=False))
 
     return lower, higher
 
