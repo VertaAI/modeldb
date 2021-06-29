@@ -38,6 +38,9 @@ _CACHE_DIR = os.path.join(
     "cache",
 )
 
+_INTERNAL_ATTR_PREFIX = "__verta_"
+_FEATURE_DATA_ATTR_PREFIX = _INTERNAL_ATTR_PREFIX + "feature_data_"
+
 
 @six.add_metaclass(abc.ABCMeta)
 class _DeployableEntity(_ModelDBEntity):
