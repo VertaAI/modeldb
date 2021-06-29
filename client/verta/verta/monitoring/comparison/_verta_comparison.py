@@ -6,9 +6,6 @@ import math
 from verta.external import six
 
 
-_DEFAULT_TOLERANCE = 1e-9
-
-
 @six.add_metaclass(abc.ABCMeta)
 class _VertaComparison(object):
     """
@@ -29,8 +26,7 @@ class _VertaComparison(object):
         )
 
     @staticmethod
-    def isclose(a, b, rel_tol=_DEFAULT_TOLERANCE, abs_tol=0):
-        """Backport of Python 3's ``math.isclose()``."""
+    def isclose(a, b, rel_tol=1e-9, abs_tol=0):
         if six.PY3:
             # pylint: disable=no-member
             return math.isclose(a, b, rel_tol=rel_tol, abs_tol=abs_tol)
