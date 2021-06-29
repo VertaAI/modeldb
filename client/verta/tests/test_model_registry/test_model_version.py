@@ -23,6 +23,7 @@ import six
 import verta
 import verta.dataset
 from verta import visibility
+from verta import data_types
 from verta.data_types import _verta_data_type
 from verta.environment import Python
 from verta.tracking.entities._deployable_entity import _CACHE_DIR
@@ -33,6 +34,7 @@ from verta.monitoring import profiler
 from verta._internal_utils import (
     _artifact_utils,
     _utils,
+    importer,
 )
 from verta._protos.public.monitoring.DeploymentIntegration_pb2 import FeatureDataInModelVersion
 
@@ -858,6 +860,60 @@ class TestLockLevels:
         admin_model_ver.delete()
 
 
+# TODO: combine with test_experimentrun/test_attributes.py::TestComplexAttributes
+@pytest.mark.skipif(
+    importer.maybe_dependency("scipy") is None,
+    reason="scipy is not installed",
+)
+class TestComplexAttributes:
+    def test_creation(self, client, strs):
+        key = strs[0]
+        attr = data_types.DiscreteHistogram(
+            buckets=["yes", "no"],
+            data=[10, 20],
+        )
+
+        registered_model = client.create_registered_model()
+        model_version = registered_model.create_version(
+            attrs={key: attr},
+        )
+        assert model_version.get_attribute(key) == attr
+
+    def test_single(self, model_version, strs):
+        key = strs[0]
+        attr = data_types.Line(
+            x=[1, 2, 3],
+            y=[1, 4, 9],
+        )
+
+        model_version.add_attribute(key, attr)
+        assert model_version.get_attribute(key) == attr
+
+    def test_batch(self, model_version, strs):
+        key1, key2, key3 = strs[:3]
+        attr1 = data_types.Table(
+            data=[[1, "two", 3], [4, "five", 6]],
+            columns=["header1", "header2", "header3"],
+        )
+        attr2 = data_types.ConfusionMatrix(
+            value=[[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+            labels=["a", "b", "c"],
+        )
+        attr3 = {"a": 1}
+
+        model_version.add_attribute(key1, attr1)
+        assert model_version.get_attribute(key1) == attr1
+        model_version.add_attribute(key2, attr2)
+        assert model_version.get_attribute(key2) == attr2
+        model_version.add_attribute(key3, attr3)
+
+        assert model_version.get_attributes() == {
+            key1: attr1,
+            key2: attr2,
+            key3: attr3,
+        }
+
+
 class TestAutoMonitoring:
     def test_non_df(self, model_version):
         pd = pytest.importorskip("pandas")
@@ -990,6 +1046,12 @@ class TestAutoMonitoring:
         assert(discrete_col_missing_summary.summary_type_name == "DiscreteHistogram")
         assert(discrete_col_missing_summary.profiler_name == "MissingValuesProfiler")
         assert(len(json.loads(discrete_col_missing_summary.content)["discreteHistogram"]["buckets"]) == 2)
+
+        # reference distribution attributes can be fetched back as histograms
+        for col in supported_col_names:
+            key = col + "Distribution"
+            histogram = model_version.get_attribute(key)
+            assert isinstance(histogram, _verta_data_type._VertaDataType)
 
     def test_reconstruct_profilers(self, model_version):
         """Profiler and ref distribution can be reconstructed from attr."""
