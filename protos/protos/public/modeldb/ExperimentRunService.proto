@@ -28,7 +28,7 @@ message ExperimentRun {
     int64 end_time = 9;
 
     string code_version = 10;
-    CodeVersion code_version_snapshot = 11;
+    common.CodeVersion code_version_snapshot = 11;
     string parent_id = 12;
 
     //Requirement
@@ -44,30 +44,20 @@ message ExperimentRun {
     repeated Feature features = 27;
     string job_id = 28;
     string owner = 29;
-    VersioningEntry versioned_inputs = 30;
-    map<string, CodeVersion> code_version_from_blob = 31;
-}
-
-message VersioningEntry {
-    uint64 repository_id = 1;
-    string commit = 2;
-    map<string, Location> key_location_map = 3;
-}
-
-message Location {
-    repeated string location = 1;
+    common.VersioningEntry versioned_inputs = 30;
+    map<string, common.CodeVersion> code_version_from_blob = 31;
 }
 
 message LogVersionedInput {
     string id = 1;
-    VersioningEntry versioned_inputs = 2;
+    common.VersioningEntry versioned_inputs = 2;
     message Response {
     }
 }
 message GetVersionedInput {
     string id = 1;
     message Response {
-        VersioningEntry versioned_inputs = 1;
+        common.VersioningEntry versioned_inputs = 1;
     }
 }
 
@@ -92,7 +82,7 @@ message CreateExperimentRun {
     int64 start_time = 8;
     int64 end_time = 9;
     string code_version = 10;
-    CodeVersion code_version_snapshot = 11;
+    common.CodeVersion code_version_snapshot = 11;
     string parent_id = 12;
 
     repeated string tags = 20;
@@ -103,7 +93,7 @@ message CreateExperimentRun {
     repeated common.KeyValue metrics = 25;
     repeated Observation observations = 26;
     repeated Feature features = 27;
-    VersioningEntry versioned_inputs = 28;
+    common.VersioningEntry versioned_inputs = 28;
 
     message Response {
         ExperimentRun experiment_run = 1;
@@ -237,7 +227,7 @@ message DeleteExperimentRunAttributes {
 // code version
 message LogExperimentRunCodeVersion {
     string id = 1;
-    CodeVersion code_version = 2;
+    common.CodeVersion code_version = 2;
     bool overwrite = 3;
 
     message Response {
@@ -248,7 +238,7 @@ message GetExperimentRunCodeVersion {
     string id = 1;
 
     message Response {
-        CodeVersion code_version = 1;
+        common.CodeVersion code_version = 1;
     }
 }
 

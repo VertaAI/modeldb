@@ -189,6 +189,9 @@ message ModelVersion {
 
     // Current lock level for this model version
     ModelVersionLockLevelEnum.ModelVersionLockLevel lock_level = 19;
+
+    common.VersioningEntry versioned_inputs = 20;
+    map<string, common.CodeVersion> code_version_from_blob = 21;
 }
 
 message SetLockModelVersionRequest {
