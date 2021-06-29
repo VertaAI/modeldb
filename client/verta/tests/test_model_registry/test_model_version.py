@@ -26,7 +26,7 @@ from verta import visibility
 from verta import data_types
 from verta.data_types import _verta_data_type
 from verta.environment import Python
-from verta.tracking.entities._deployable_entity import _CACHE_DIR
+from verta.tracking.entities import _deployable_entity
 from verta.endpoint.update import DirectUpdateStrategy
 from verta.registry import lock
 from verta.registry.entities import RegisteredModelVersion
@@ -624,7 +624,7 @@ class TestDeployability:
             artifacts = model_version.fetch_artifacts(strs)
 
             assert set(six.viewkeys(artifacts)) == set(strs)
-            assert all(filepath.startswith(_CACHE_DIR)
+            assert all(filepath.startswith(_deployable_entity._CACHE_DIR)
                        for filepath in six.viewvalues(artifacts))
 
             for key, filepath in six.viewitems(artifacts):
@@ -634,7 +634,7 @@ class TestDeployability:
 
                 assert file_contents == artifact_contents
         finally:
-            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_deployable_entity._CACHE_DIR, ignore_errors=True)
 
     def test_model_artifacts(self, model_version, endpoint, in_tempdir):
         key = "foo"
@@ -1027,12 +1027,13 @@ class TestAutoMonitoring:
 
         # get back attributes to validate
         attributes = model_version.get_attributes()
+        key = _deployable_entity._FEATURE_DATA_ATTR_PREFIX + "{}"
         discrete_col_missing_summary = _utils.json_to_proto(
-            model_version.get_attribute("__verta_feature_data_2"),
+            model_version.get_attribute(key.format("2")),
             FeatureDataInModelVersion,  # missing value
         )
         discrete_col_distribution_summary = _utils.json_to_proto(
-            model_version.get_attribute("__verta_feature_data_3"),
+            model_version.get_attribute(key.format("3")),
             FeatureDataInModelVersion,  # missing value
         )
 
@@ -1073,7 +1074,7 @@ class TestAutoMonitoring:
         )
 
         for key, val in model_version.get_attributes().items():
-            if key.startswith(model_version._FEATURE_DATA_ATTR_KEY_PREFIX):
+            if key.startswith(_deployable_entity._FEATURE_DATA_ATTR_PREFIX):
                 feature_data = val
 
                 reference_content = json.loads(feature_data["content"])

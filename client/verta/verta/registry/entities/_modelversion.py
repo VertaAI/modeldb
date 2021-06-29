@@ -35,14 +35,14 @@ from verta import data_types
 from verta.environment import _Environment, Python
 from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
-from verta.tracking.entities._deployable_entity import _DeployableEntity
+from verta.tracking.entities import _deployable_entity
 from .. import lock
 
 
 logger = logging.getLogger(__name__)
 
 
-class RegisteredModelVersion(_DeployableEntity):
+class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     """
     Object representing a version of a Registered Model.
 
@@ -110,7 +110,7 @@ class RegisteredModelVersion(_DeployableEntity):
                         key: val
                         for key, val
                         in _utils.unravel_key_values(msg.attributes).items()
-                        if not key.startswith("__verta_")
+                        if not key.startswith(_deployable_entity._INTERNAL_ATTR_PREFIX)
                     }
                 ),
                 "id: {}".format(msg.id),
@@ -1335,7 +1335,7 @@ class RegisteredModelVersion(_DeployableEntity):
         for i, feature_data in enumerate(feature_data_list):
             logger.info("logging feature %s", feature_data.feature_name)
             self.add_attribute(
-                self._FEATURE_DATA_ATTR_KEY_PREFIX + str(i),
+                _deployable_entity._FEATURE_DATA_ATTR_PREFIX + str(i),
                 _utils.proto_to_json(feature_data, False),
             )
             self.add_attribute(
