@@ -689,6 +689,42 @@
         }
       }
     },
+    "commonCodeVersion": {
+      "type": "object",
+      "properties": {
+        "git_snapshot": {
+          "$ref": "#/definitions/commonGitSnapshot"
+        },
+        "code_archive": {
+          "$ref": "#/definitions/commonArtifact"
+        },
+        "date_logged": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "code version"
+    },
+    "commonGitSnapshot": {
+      "type": "object",
+      "properties": {
+        "filepaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -718,6 +754,24 @@
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
+        }
+      }
+    },
+    "commonVersioningEntry": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "key_location_map": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/vertacommonLocation"
+          }
         }
       }
     },
@@ -764,22 +818,6 @@
           "$ref": "#/definitions/modeldbDataset"
         }
       }
-    },
-    "modeldbCodeVersion": {
-      "type": "object",
-      "properties": {
-        "git_snapshot": {
-          "$ref": "#/definitions/modeldbGitSnapshot"
-        },
-        "code_archive": {
-          "$ref": "#/definitions/commonArtifact"
-        },
-        "date_logged": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "title": "code version"
     },
     "modeldbCreateDataset": {
       "type": "object",
@@ -1020,7 +1058,7 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "artifacts": {
           "type": "array",
@@ -1068,7 +1106,7 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "parent_id": {
           "type": "string"
@@ -1132,12 +1170,12 @@
           "type": "string"
         },
         "versioned_inputs": {
-          "$ref": "#/definitions/modeldbVersioningEntry"
+          "$ref": "#/definitions/commonVersioningEntry"
         },
         "code_version_from_blob": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/modeldbCodeVersion"
+            "$ref": "#/definitions/commonCodeVersion"
           }
         }
       },
@@ -1273,26 +1311,6 @@
         }
       }
     },
-    "modeldbGitSnapshot": {
-      "type": "object",
-      "properties": {
-        "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "repo": {
-          "type": "string"
-        },
-        "hash": {
-          "type": "string"
-        },
-        "is_dirty": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        }
-      }
-    },
     "modeldbLastExperimentByDatasetIdResponse": {
       "type": "object",
       "properties": {
@@ -1374,24 +1392,6 @@
       "properties": {
         "dataset": {
           "$ref": "#/definitions/modeldbDataset"
-        }
-      }
-    },
-    "modeldbVersioningEntry": {
-      "type": "object",
-      "properties": {
-        "repository_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "commit": {
-          "type": "string"
-        },
-        "key_location_map": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/vertamodeldbLocation"
-          }
         }
       }
     },
@@ -1577,7 +1577,7 @@
         }
       }
     },
-    "vertamodeldbLocation": {
+    "vertacommonLocation": {
       "type": "object",
       "properties": {
         "location": {

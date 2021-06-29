@@ -1719,6 +1719,42 @@
         }
       }
     },
+    "commonCodeVersion": {
+      "type": "object",
+      "properties": {
+        "git_snapshot": {
+          "$ref": "#/definitions/commonGitSnapshot"
+        },
+        "code_archive": {
+          "$ref": "#/definitions/commonArtifact"
+        },
+        "date_logged": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "code version"
+    },
+    "commonGitSnapshot": {
+      "type": "object",
+      "properties": {
+        "filepaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -1748,6 +1784,24 @@
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
+        }
+      }
+    },
+    "commonVersioningEntry": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "key_location_map": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/vertacommonLocation"
+          }
         }
       }
     },
@@ -2084,6 +2138,15 @@
         "lock_level": {
           "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel",
           "title": "Current lock level for this model version"
+        },
+        "versioned_inputs": {
+          "$ref": "#/definitions/commonVersioningEntry"
+        },
+        "code_version_from_blob": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/commonCodeVersion"
+          }
         }
       }
     },
@@ -2416,6 +2479,17 @@
         },
         "suffix": {
           "type": "string"
+        }
+      }
+    },
+    "vertacommonLocation": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

@@ -718,6 +718,20 @@
     }
   },
   "definitions": {
+    "ArtifactTypeEnumArtifactType": {
+      "type": "string",
+      "enum": [
+        "IMAGE",
+        "MODEL",
+        "TENSORBOARD",
+        "DATA",
+        "BLOB",
+        "STRING",
+        "CODE",
+        "CONTAINER"
+      ],
+      "default": "IMAGE"
+    },
     "DatasetTypeEnumDatasetType": {
       "type": "string",
       "enum": [
@@ -752,6 +766,15 @@
       ],
       "default": "LOCAL_FILE_SYSTEM"
     },
+    "TernaryEnumTernary": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "TRUE",
+        "FALSE"
+      ],
+      "default": "UNKNOWN"
+    },
     "ValueTypeEnumValueType": {
       "type": "string",
       "enum": [
@@ -762,6 +785,30 @@
       ],
       "default": "STRING"
     },
+    "commonArtifact": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "path_only": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "linked_artifact_id": {
+          "type": "string"
+        },
+        "filename_extension": {
+          "type": "string"
+        }
+      }
+    },
     "commonArtifactPart": {
       "type": "object",
       "properties": {
@@ -771,6 +818,42 @@
         },
         "etag": {
           "type": "string"
+        }
+      }
+    },
+    "commonCodeVersion": {
+      "type": "object",
+      "properties": {
+        "git_snapshot": {
+          "$ref": "#/definitions/commonGitSnapshot"
+        },
+        "code_archive": {
+          "$ref": "#/definitions/commonArtifact"
+        },
+        "date_logged": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "code version"
+    },
+    "commonGitSnapshot": {
+      "type": "object",
+      "properties": {
+        "filepaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -803,6 +886,24 @@
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
+        }
+      }
+    },
+    "commonVersioningEntry": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "key_location_map": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/vertacommonLocation"
+          }
         }
       }
     },
@@ -1025,6 +1126,15 @@
         },
         "dataset_blob": {
           "$ref": "#/definitions/versioningDatasetBlob"
+        },
+        "versioned_inputs": {
+          "$ref": "#/definitions/commonVersioningEntry"
+        },
+        "code_version_from_blob": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/commonCodeVersion"
+          }
         }
       }
     },
@@ -1540,6 +1650,17 @@
         },
         "s3_version_id": {
           "type": "string"
+        }
+      }
+    },
+    "vertacommonLocation": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     }
