@@ -349,6 +349,84 @@
         ]
       }
     },
+    "/registry/model_versions/{model_version_id}/logCodeVersionFromBlob": {
+      "post": {
+        "operationId": "RegistryService_logCodeVersionFromBlobInModelVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryLogCodeVersionFromBlobInModelVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryLogCodeVersionFromBlobInModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/model_versions/{model_version_id}/logDatasets": {
+      "post": {
+        "operationId": "RegistryService_logDatasetsInModelVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryLogDatasetsInModelVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryLogDatasetsInModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
     "/registry/registered_models/count": {
       "get": {
         "operationId": "RegistryService_GetRegisteredModelCount",
@@ -1787,24 +1865,6 @@
         }
       }
     },
-    "commonVersioningEntry": {
-      "type": "object",
-      "properties": {
-        "repository_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "commit": {
-          "type": "string"
-        },
-        "key_location_map": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/vertacommonLocation"
-          }
-        }
-      }
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -2049,6 +2109,50 @@
         }
       }
     },
+    "registryLogCodeVersionFromBlobInModelVersion": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "experiment_run_id": {
+          "type": "string",
+          "description": "Optional, If experiment_run_id defined here then backend will populate code_version_from_blob from ER and ignore below one."
+        },
+        "code_version_from_blob": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/commonCodeVersion"
+          }
+        }
+      }
+    },
+    "registryLogCodeVersionFromBlobInModelVersionResponse": {
+      "type": "object"
+    },
+    "registryLogDatasetsInModelVersion": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "experiment_run_id": {
+          "type": "string",
+          "description": "Optional, If experiment_run_id defined here then backend will populate datasets from ER and ignore below one."
+        },
+        "datasets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifact"
+          }
+        }
+      }
+    },
+    "registryLogDatasetsInModelVersionResponse": {
+      "type": "object"
+    },
     "registryModelVersion": {
       "type": "object",
       "properties": {
@@ -2139,8 +2243,11 @@
           "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel",
           "title": "Current lock level for this model version"
         },
-        "versioned_inputs": {
-          "$ref": "#/definitions/commonVersioningEntry"
+        "datasets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifact"
+          }
         },
         "code_version_from_blob": {
           "type": "object",
@@ -2479,17 +2586,6 @@
         },
         "suffix": {
           "type": "string"
-        }
-      }
-    },
-    "vertacommonLocation": {
-      "type": "object",
-      "properties": {
-        "location": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       }
     },

@@ -2433,24 +2433,6 @@
         }
       }
     },
-    "commonVersioningEntry": {
-      "type": "object",
-      "properties": {
-        "repository_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "commit": {
-          "type": "string"
-        },
-        "key_location_map": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/vertacommonLocation"
-          }
-        }
-      }
-    },
     "modeldbAddExperimentRunAttributes": {
       "type": "object",
       "properties": {
@@ -2657,7 +2639,7 @@
           }
         },
         "versioned_inputs": {
-          "$ref": "#/definitions/commonVersioningEntry"
+          "$ref": "#/definitions/vertamodeldbVersioningEntry"
         }
       }
     },
@@ -2957,7 +2939,7 @@
           "type": "string"
         },
         "versioned_inputs": {
-          "$ref": "#/definitions/commonVersioningEntry"
+          "$ref": "#/definitions/vertamodeldbVersioningEntry"
         },
         "code_version_from_blob": {
           "type": "object",
@@ -3260,7 +3242,7 @@
       "type": "object",
       "properties": {
         "versioned_inputs": {
-          "$ref": "#/definitions/commonVersioningEntry"
+          "$ref": "#/definitions/vertamodeldbVersioningEntry"
         }
       }
     },
@@ -3543,7 +3525,7 @@
           "type": "string"
         },
         "versioned_inputs": {
-          "$ref": "#/definitions/commonVersioningEntry"
+          "$ref": "#/definitions/vertamodeldbVersioningEntry"
         }
       }
     },
@@ -3824,17 +3806,6 @@
         }
       }
     },
-    "vertacommonLocation": {
-      "type": "object",
-      "properties": {
-        "location": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
     "vertacommonPagination": {
       "type": "object",
       "properties": {
@@ -3848,6 +3819,35 @@
         }
       },
       "title": "For pagination"
+    },
+    "vertamodeldbLocation": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "vertamodeldbVersioningEntry": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "key_location_map": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/vertamodeldbLocation"
+          }
+        }
+      }
     }
   },
   "basePath": "/v1"
