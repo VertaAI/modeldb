@@ -31,13 +31,15 @@ public class AuthInterceptor implements ServerInterceptor {
 
     // validate empty headers from user request
     Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-    Metadata.Key<String> dev_key =
+    Metadata.Key<String> dev_key_underscore =
         Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+    Metadata.Key<String> dev_key =
+            Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
     if (requestHeaders == null
         || !requestHeaders.containsKey(email_key)
-        || !requestHeaders.containsKey(dev_key)
+        || !(requestHeaders.containsKey(dev_key_underscore) || requestHeaders.containsKey(dev_key))
         || !requestHeaders.containsKey(source_key)) {
       var message = "Required parameter is missing in metadata";
       call.close(Status.PERMISSION_DENIED
