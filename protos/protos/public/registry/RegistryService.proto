@@ -190,7 +190,7 @@ message ModelVersion {
     // Current lock level for this model version
     ModelVersionLockLevelEnum.ModelVersionLockLevel lock_level = 19;
 
-    common.VersioningEntry versioned_inputs = 20;
+    repeated common.Artifact datasets = 20;
     map<string, common.CodeVersion> code_version_from_blob = 21;
 }
 
@@ -306,6 +306,26 @@ message CommitMultipartArtifact {
     uint64 model_version_id = 1;
     //artifact key
     string key = 2;
+
+    message Response { }
+}
+
+message LogDatasetsInModelVersion {
+    uint64 model_version_id = 1;
+
+    // Optional, If experiment_run_id defined here then backend will populate datasets from ER and ignore below one.
+    string experiment_run_id = 2;
+    repeated common.Artifact datasets = 3;
+
+    message Response { }
+}
+
+message LogCodeVersionFromBlobInModelVersion {
+    uint64 model_version_id = 1;
+
+    // Optional, If experiment_run_id defined here then backend will populate code_version_from_blob from ER and ignore below one.
+    string experiment_run_id = 2;
+    map<string, common.CodeVersion> code_version_from_blob = 3;
 
     message Response { }
 }
@@ -492,6 +512,20 @@ service RegistryService {
     rpc commitMultipartArtifact(CommitMultipartArtifact) returns (CommitMultipartArtifact.Response) {
         option (google.api.http) = {
             post: "/v1/registry/model_versions/{model_version_id}/commitMultipartArtifact"
+            body: "*"
+        };
+    };
+
+    rpc logDatasetsInModelVersion(LogDatasetsInModelVersion) returns (LogDatasetsInModelVersion.Response) {
+        option (google.api.http) = {
+            post: "/v1/registry/model_versions/{model_version_id}/logDatasets"
+            body: "*"
+        };
+    };
+
+    rpc logCodeVersionFromBlobInModelVersion(LogCodeVersionFromBlobInModelVersion) returns (LogCodeVersionFromBlobInModelVersion.Response) {
+        option (google.api.http) = {
+            post: "/v1/registry/model_versions/{model_version_id}/logCodeVersionFromBlob"
             body: "*"
         };
     };

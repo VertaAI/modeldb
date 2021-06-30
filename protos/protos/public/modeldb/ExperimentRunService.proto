@@ -44,20 +44,30 @@ message ExperimentRun {
     repeated Feature features = 27;
     string job_id = 28;
     string owner = 29;
-    common.VersioningEntry versioned_inputs = 30;
+    VersioningEntry versioned_inputs = 30;
     map<string, common.CodeVersion> code_version_from_blob = 31;
+}
+
+message VersioningEntry {
+    uint64 repository_id = 1;
+    string commit = 2;
+    map<string, Location> key_location_map = 3;
+}
+
+message Location {
+    repeated string location = 1;
 }
 
 message LogVersionedInput {
     string id = 1;
-    common.VersioningEntry versioned_inputs = 2;
+    VersioningEntry versioned_inputs = 2;
     message Response {
     }
 }
 message GetVersionedInput {
     string id = 1;
     message Response {
-        common.VersioningEntry versioned_inputs = 1;
+        VersioningEntry versioned_inputs = 1;
     }
 }
 
@@ -93,7 +103,7 @@ message CreateExperimentRun {
     repeated common.KeyValue metrics = 25;
     repeated Observation observations = 26;
     repeated Feature features = 27;
-    common.VersioningEntry versioned_inputs = 28;
+    VersioningEntry versioned_inputs = 28;
 
     message Response {
         ExperimentRun experiment_run = 1;
