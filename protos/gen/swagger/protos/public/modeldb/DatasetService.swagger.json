@@ -1152,7 +1152,7 @@
           "type": "string"
         },
         "versioned_inputs": {
-          "$ref": "#/definitions/vertamodeldbVersioningEntry"
+          "$ref": "#/definitions/modeldbVersioningEntry"
         },
         "code_version_from_blob": {
           "type": "object",
@@ -1377,6 +1377,24 @@
         }
       }
     },
+    "modeldbVersioningEntry": {
+      "type": "object",
+      "properties": {
+        "repository_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "commit": {
+          "type": "string"
+        },
+        "key_location_map": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/vertamodeldbLocation"
+          }
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -1566,24 +1584,6 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
-        }
-      }
-    },
-    "vertamodeldbVersioningEntry": {
-      "type": "object",
-      "properties": {
-        "repository_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "commit": {
-          "type": "string"
-        },
-        "key_location_map": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/vertamodeldbLocation"
           }
         }
       }

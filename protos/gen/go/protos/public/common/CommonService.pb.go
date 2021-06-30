@@ -1464,116 +1464,6 @@ func (x *GitSnapshot) GetIsDirty() TernaryEnum_Ternary {
 	return TernaryEnum_UNKNOWN
 }
 
-type VersioningEntry struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	RepositoryId   uint64               `protobuf:"varint,1,opt,name=repository_id,json=repositoryId,proto3" json:"repository_id,omitempty"`
-	Commit         string               `protobuf:"bytes,2,opt,name=commit,proto3" json:"commit,omitempty"`
-	KeyLocationMap map[string]*Location `protobuf:"bytes,3,rep,name=key_location_map,json=keyLocationMap,proto3" json:"key_location_map,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-}
-
-func (x *VersioningEntry) Reset() {
-	*x = VersioningEntry{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_common_CommonService_proto_msgTypes[17]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *VersioningEntry) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*VersioningEntry) ProtoMessage() {}
-
-func (x *VersioningEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_common_CommonService_proto_msgTypes[17]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use VersioningEntry.ProtoReflect.Descriptor instead.
-func (*VersioningEntry) Descriptor() ([]byte, []int) {
-	return file_common_CommonService_proto_rawDescGZIP(), []int{17}
-}
-
-func (x *VersioningEntry) GetRepositoryId() uint64 {
-	if x != nil {
-		return x.RepositoryId
-	}
-	return 0
-}
-
-func (x *VersioningEntry) GetCommit() string {
-	if x != nil {
-		return x.Commit
-	}
-	return ""
-}
-
-func (x *VersioningEntry) GetKeyLocationMap() map[string]*Location {
-	if x != nil {
-		return x.KeyLocationMap
-	}
-	return nil
-}
-
-type Location struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Location []string `protobuf:"bytes,1,rep,name=location,proto3" json:"location,omitempty"`
-}
-
-func (x *Location) Reset() {
-	*x = Location{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_common_CommonService_proto_msgTypes[18]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Location) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Location) ProtoMessage() {}
-
-func (x *Location) ProtoReflect() protoreflect.Message {
-	mi := &file_common_CommonService_proto_msgTypes[18]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Location.ProtoReflect.Descriptor instead.
-func (*Location) Descriptor() ([]byte, []int) {
-	return file_common_CommonService_proto_rawDescGZIP(), []int{18}
-}
-
-func (x *Location) GetLocation() []string {
-	if x != nil {
-		return x.Location
-	}
-	return nil
-}
-
 var File_common_CommonService_proto protoreflect.FileDescriptor
 
 var file_common_CommonService_proto_rawDesc = []byte{
@@ -1722,31 +1612,11 @@ var file_common_CommonService_proto_rawDesc = []byte{
 	0x0e, 0x32, 0x24, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d,
 	0x6d, 0x6f, 0x6e, 0x2e, 0x54, 0x65, 0x72, 0x6e, 0x61, 0x72, 0x79, 0x45, 0x6e, 0x75, 0x6d, 0x2e,
 	0x54, 0x65, 0x72, 0x6e, 0x61, 0x72, 0x79, 0x52, 0x07, 0x69, 0x73, 0x44, 0x69, 0x72, 0x74, 0x79,
-	0x22, 0x8c, 0x02, 0x0a, 0x0f, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x69, 0x6e, 0x67, 0x45,
-	0x6e, 0x74, 0x72, 0x79, 0x12, 0x23, 0x0a, 0x0d, 0x72, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f,
-	0x72, 0x79, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0c, 0x72, 0x65, 0x70,
-	0x6f, 0x73, 0x69, 0x74, 0x6f, 0x72, 0x79, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x63, 0x6f, 0x6d,
-	0x6d, 0x69, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x63, 0x6f, 0x6d, 0x6d, 0x69,
-	0x74, 0x12, 0x5e, 0x0a, 0x10, 0x6b, 0x65, 0x79, 0x5f, 0x6c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x5f, 0x6d, 0x61, 0x70, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x34, 0x2e, 0x61, 0x69,
-	0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x56, 0x65,
-	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x69, 0x6e, 0x67, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x2e, 0x4b, 0x65,
-	0x79, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x61, 0x70, 0x45, 0x6e, 0x74, 0x72,
-	0x79, 0x52, 0x0e, 0x6b, 0x65, 0x79, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4d, 0x61,
-	0x70, 0x1a, 0x5c, 0x0a, 0x13, 0x4b, 0x65, 0x79, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x4d, 0x61, 0x70, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x2f, 0x0a, 0x05, 0x76, 0x61,
-	0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x61, 0x69, 0x2e, 0x76,
-	0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x4c, 0x6f, 0x63, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22,
-	0x26, 0x0a, 0x08, 0x4c, 0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1a, 0x0a, 0x08, 0x6c,
-	0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x08, 0x6c,
-	0x6f, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x42, 0x41, 0x50, 0x01, 0x5a, 0x3d, 0x67, 0x69, 0x74,
-	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f,
-	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67,
-	0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62,
-	0x6c, 0x69, 0x63, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74,
-	0x6f, 0x33,
+	0x42, 0x41, 0x50, 0x01, 0x5a, 0x3d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62,
+	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x2f, 0x63, 0x6f, 0x6d,
+	0x6d, 0x6f, 0x6e, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1762,7 +1632,7 @@ func file_common_CommonService_proto_rawDescGZIP() []byte {
 }
 
 var file_common_CommonService_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
-var file_common_CommonService_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_common_CommonService_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_common_CommonService_proto_goTypes = []interface{}{
 	(TernaryEnum_Ternary)(0),                                                 // 0: ai.verta.common.TernaryEnum.Ternary
 	(ValueTypeEnum_ValueType)(0),                                             // 1: ai.verta.common.ValueTypeEnum.ValueType
@@ -1791,28 +1661,23 @@ var file_common_CommonService_proto_goTypes = []interface{}{
 	(*VisibilityEnum)(nil),                                                   // 24: ai.verta.common.VisibilityEnum
 	(*CodeVersion)(nil),                                                      // 25: ai.verta.common.CodeVersion
 	(*GitSnapshot)(nil),                                                      // 26: ai.verta.common.GitSnapshot
-	(*VersioningEntry)(nil),                                                  // 27: ai.verta.common.VersioningEntry
-	(*Location)(nil),                                                         // 28: ai.verta.common.Location
-	nil,                                                                      // 29: ai.verta.common.VersioningEntry.KeyLocationMapEntry
-	(*_struct.Value)(nil),                                                    // 30: google.protobuf.Value
+	(*_struct.Value)(nil),                                                    // 27: google.protobuf.Value
 }
 var file_common_CommonService_proto_depIdxs = []int32{
-	30, // 0: ai.verta.common.KeyValue.value:type_name -> google.protobuf.Value
+	27, // 0: ai.verta.common.KeyValue.value:type_name -> google.protobuf.Value
 	1,  // 1: ai.verta.common.KeyValue.value_type:type_name -> ai.verta.common.ValueTypeEnum.ValueType
 	7,  // 2: ai.verta.common.Artifact.artifact_type:type_name -> ai.verta.common.ArtifactTypeEnum.ArtifactType
-	30, // 3: ai.verta.common.KeyValueQuery.value:type_name -> google.protobuf.Value
+	27, // 3: ai.verta.common.KeyValueQuery.value:type_name -> google.protobuf.Value
 	1,  // 4: ai.verta.common.KeyValueQuery.value_type:type_name -> ai.verta.common.ValueTypeEnum.ValueType
 	8,  // 5: ai.verta.common.KeyValueQuery.operator:type_name -> ai.verta.common.OperatorEnum.Operator
 	26, // 6: ai.verta.common.CodeVersion.git_snapshot:type_name -> ai.verta.common.GitSnapshot
 	20, // 7: ai.verta.common.CodeVersion.code_archive:type_name -> ai.verta.common.Artifact
 	0,  // 8: ai.verta.common.GitSnapshot.is_dirty:type_name -> ai.verta.common.TernaryEnum.Ternary
-	29, // 9: ai.verta.common.VersioningEntry.key_location_map:type_name -> ai.verta.common.VersioningEntry.KeyLocationMapEntry
-	28, // 10: ai.verta.common.VersioningEntry.KeyLocationMapEntry.value:type_name -> ai.verta.common.Location
-	11, // [11:11] is the sub-list for method output_type
-	11, // [11:11] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	9,  // [9:9] is the sub-list for method output_type
+	9,  // [9:9] is the sub-list for method input_type
+	9,  // [9:9] is the sub-list for extension type_name
+	9,  // [9:9] is the sub-list for extension extendee
+	0,  // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_common_CommonService_proto_init() }
@@ -2025,30 +1890,6 @@ func file_common_CommonService_proto_init() {
 				return nil
 			}
 		}
-		file_common_CommonService_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*VersioningEntry); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_common_CommonService_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Location); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
 	}
 	file_common_CommonService_proto_msgTypes[15].OneofWrappers = []interface{}{
 		(*CodeVersion_GitSnapshot)(nil),
@@ -2060,7 +1901,7 @@ func file_common_CommonService_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_common_CommonService_proto_rawDesc,
 			NumEnums:      10,
-			NumMessages:   20,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
