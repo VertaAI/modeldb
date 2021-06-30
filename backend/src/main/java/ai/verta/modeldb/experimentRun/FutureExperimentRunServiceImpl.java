@@ -1,5 +1,6 @@
 package ai.verta.modeldb.experimentRun;
 
+import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;

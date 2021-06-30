@@ -1,7 +1,7 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
-import ai.verta.modeldb.CodeVersion;
-import ai.verta.modeldb.GitSnapshot;
+import ai.verta.common.CodeVersion;
+import ai.verta.common.GitSnapshot;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;

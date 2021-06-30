@@ -1,6 +1,7 @@
 package ai.verta.modeldb.experimentRun;
 
 import ai.verta.common.Artifact;
+import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.CommitArtifactPart.Response;
