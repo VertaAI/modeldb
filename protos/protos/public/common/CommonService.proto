@@ -173,13 +173,3 @@ message GitSnapshot {
     string hash = 3; // commit hash
     common.TernaryEnum.Ternary is_dirty = 4;
 }
-
-message VersioningEntry {
-    uint64 repository_id = 1;
-    string commit = 2;
-    map<string, Location> key_location_map = 3;
-}
-
-message Location {
-    repeated string location = 1;
-}
