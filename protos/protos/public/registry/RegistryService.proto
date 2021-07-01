@@ -312,20 +312,14 @@ message CommitMultipartArtifact {
 
 message LogDatasetsInModelVersion {
     uint64 model_version_id = 1;
-
-    // Optional, If experiment_run_id defined here then backend will populate datasets from ER and ignore below one.
-    string experiment_run_id = 2;
-    repeated common.Artifact datasets = 3;
+    repeated common.Artifact datasets = 2;
 
     message Response { }
 }
 
 message LogCodeVersionFromBlobInModelVersion {
     uint64 model_version_id = 1;
-
-    // Optional, If experiment_run_id defined here then backend will populate code_version_from_blob from ER and ignore below one.
-    string experiment_run_id = 2;
-    map<string, common.CodeVersion> code_version_from_blob = 3;
+    map<string, common.CodeVersion> code_version_from_blob = 2;
 
     message Response { }
 }
