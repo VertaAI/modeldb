@@ -18,10 +18,36 @@ class VertaModel(VertaModelBase):
         return self.artifact
 
 
+class VertaModelNoImpl(VertaModelBase):
+    pass
+
+
+class VertaModelOnlyInit(VertaModelBase):
+    def __init__(self, artifacts):
+        pass
+
+
+class VertaModelOnlyPredict(VertaModelBase):
+    def predict(self, input):
+        pass
+
+
 def verta_models():
     models = []
 
     models.append(VertaModel)
+
+    return models
+
+
+def incomplete_verta_models():
+    models = []
+
+    models.extend([
+        VertaModelNoImpl,
+        VertaModelOnlyInit,
+        VertaModelOnlyPredict,
+    ])
 
     return models
 

@@ -1,34 +1,28 @@
 # -*- coding: utf-8 -*-
 
+import os
+import pickle
+import tempfile
+
 import pytest
 
-from verta.registry import VertaModelBase
+from ..models.standard_models import verta_models, incomplete_verta_models
 
 
 def test_abstract_methods():
     """Abstract methods must be implemented."""
     ERROR_MSG_REGEX = "^Can't instantiate abstract class .* with abstract method"
 
-    class NoImpl(VertaModelBase):
-        pass
+    # create artifact file for model init
+    with tempfile.NamedTemporaryFile(delete=False) as tempf:
+        pickle.dump("foo", tempf)
 
-    class OnlyInit(VertaModelBase):
-        def __init__(self, artifacts):
-            pass
+    try:
+        for model_cls in verta_models():
+            assert model_cls({model_cls.ARTIFACT_KEY: tempf.name})
 
-    class OnlyPredict(VertaModelBase):
-        def predict(self, input):
-            pass
-
-    class Both(VertaModelBase):
-        def __init__(self, artifacts):
-            pass
-
-        def predict(self, input):
-            pass
-
-    for model_cls in [NoImpl, OnlyInit, OnlyPredict]:
-        with pytest.raises(TypeError, match=ERROR_MSG_REGEX):
-            model_cls(None)
-
-    assert Both(None)
+        for model_cls in incomplete_verta_models():
+            with pytest.raises(TypeError, match=ERROR_MSG_REGEX):
+                model_cls({})
+    finally:
+        os.remove(tempf.name)
