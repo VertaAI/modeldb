@@ -1,6 +1,6 @@
 package ai.verta.modeldb.entities;
 
-import ai.verta.modeldb.GitSnapshot;
+import ai.verta.common.GitSnapshot;
 import java.util.Collections;
 import java.util.List;
 import javax.persistence.CollectionTable;

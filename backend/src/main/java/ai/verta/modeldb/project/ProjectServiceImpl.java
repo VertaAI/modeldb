@@ -2,12 +2,12 @@ package ai.verta.modeldb.project;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
+import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddProjectAttributes;
 import ai.verta.modeldb.AddProjectTag;
 import ai.verta.modeldb.AddProjectTags;
-import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CreateProject;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.DeepCopyProject;

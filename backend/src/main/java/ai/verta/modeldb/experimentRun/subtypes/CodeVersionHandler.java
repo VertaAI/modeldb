@@ -1,6 +1,6 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
-import ai.verta.modeldb.CodeVersion;
+import ai.verta.common.CodeVersion;
 import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.futures.FutureJdbi;

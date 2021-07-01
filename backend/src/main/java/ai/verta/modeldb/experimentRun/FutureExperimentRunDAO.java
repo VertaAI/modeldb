@@ -1,6 +1,7 @@
 package ai.verta.modeldb.experimentRun;
 
 import ai.verta.common.Artifact;
+import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
@@ -8,7 +9,6 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.CloneExperimentRun;
-import ai.verta.modeldb.CodeVersion;
 import ai.verta.modeldb.CommitArtifactPart;
 import ai.verta.modeldb.CommitMultipartArtifact;
 import ai.verta.modeldb.CreateExperimentRun;
