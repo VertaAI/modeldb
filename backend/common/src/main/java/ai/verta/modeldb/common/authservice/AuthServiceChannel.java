@@ -20,12 +20,14 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   private static final Logger LOGGER = LogManager.getLogger(AuthServiceChannel.class);
   private final ManagedChannel authServiceChannel;
   private RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub;
+  private RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStubForServiceUser;
   private AuthzServiceGrpc.AuthzServiceBlockingStub authzServiceBlockingStub;
   private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStub;
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
   private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStub;
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
+  private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStubForServiceUser;
   private final String serviceUserEmail;
   private final String serviceUserDevKey;
   private final Config config;
@@ -109,7 +111,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   private void initRoleServiceStubChannelForServiceUser() {
-    roleServiceBlockingStub =
+    roleServiceBlockingStubForServiceUser =
             attachInterceptorsForServiceUser(RoleServiceGrpc.newBlockingStub(authServiceChannel));
   }
 
@@ -188,7 +190,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   private void initCollaboratorServiceStubChannelForServiceUser() {
-    collaboratorServiceBlockingStub =
+    collaboratorServiceBlockingStubForServiceUser =
             attachInterceptorsForServiceUser(CollaboratorServiceGrpc.newBlockingStub(authServiceChannel));
   }
 
