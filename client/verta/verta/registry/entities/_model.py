@@ -223,6 +223,8 @@ class RegisteredModel(_entity._ModelDBEntity):
     ):
         """Create a Standard Verta Model version from a Verta Model Specification.
 
+        .. versionadded:: 0.18.2
+
         Parameters
         ----------
         model_cls : subclass of :class:`~verta.registry.VertaModelBase`
@@ -308,6 +310,8 @@ class RegisteredModel(_entity._ModelDBEntity):
     ):
         """Create a Standard Verta Model version from a TensorFlow-backend Keras model.
 
+        .. versionadded:: 0.18.2
+
         Parameters
         ----------
         obj : `tf.keras.Sequential <https://keras.io/guides/sequential_model/>`__ or `functional API keras.Model <https://keras.io/guides/functional_api/>`__
@@ -379,6 +383,8 @@ class RegisteredModel(_entity._ModelDBEntity):
     ):
         """Create a Standard Verta Model version from a scikit-learn model.
 
+        .. versionadded:: 0.18.2
+
         Parameters
         ----------
         obj : `sklearn.base.BaseEstimator <https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html>`__
@@ -446,6 +452,8 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level=None,
     ):
         """Create a Standard Verta Model version from a PyTorch model.
+
+        .. versionadded:: 0.18.2
 
         Parameters
         ----------
@@ -524,6 +532,8 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level=None,
     ):
         """Create a Standard Verta Model version from an XGBoost model.
+
+        .. versionadded:: 0.18.2
 
         Parameters
         ----------
