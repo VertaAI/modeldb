@@ -116,10 +116,10 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   public RoleServiceGrpc.RoleServiceBlockingStub getRoleServiceBlockingStubForServiceUser() {
-    if (roleServiceBlockingStub == null) {
+    if (roleServiceBlockingStubForServiceUser == null) {
       initRoleServiceStubChannelForServiceUser();
     }
-    return roleServiceBlockingStub;
+    return roleServiceBlockingStubForServiceUser;
   }
 
   private void initAuthzServiceStubChannel(Metadata requestHeaders) {
@@ -204,10 +204,10 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
   getCollaboratorServiceBlockingStubForServiceUser() {
-    if (collaboratorServiceBlockingStub == null) {
+    if (collaboratorServiceBlockingStubForServiceUser == null) {
       initCollaboratorServiceStubChannelForServiceUser();
     }
-    return collaboratorServiceBlockingStub;
+    return collaboratorServiceBlockingStubForServiceUser;
   }
 
   @Override
