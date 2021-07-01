@@ -349,6 +349,84 @@
         ]
       }
     },
+    "/registry/model_versions/{model_version_id}/logCodeVersionFromBlob": {
+      "post": {
+        "operationId": "RegistryService_logCodeVersionFromBlobInModelVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryLogCodeVersionFromBlobInModelVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryLogCodeVersionFromBlobInModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/model_versions/{model_version_id}/logDatasets": {
+      "post": {
+        "operationId": "RegistryService_logDatasetsInModelVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryLogDatasetsInModelVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryLogDatasetsInModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
     "/registry/registered_models/count": {
       "get": {
         "operationId": "RegistryService_GetRegisteredModelCount",
@@ -1719,6 +1797,42 @@
         }
       }
     },
+    "commonCodeVersion": {
+      "type": "object",
+      "properties": {
+        "git_snapshot": {
+          "$ref": "#/definitions/commonGitSnapshot"
+        },
+        "code_archive": {
+          "$ref": "#/definitions/commonArtifact"
+        },
+        "date_logged": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "code version"
+    },
+    "commonGitSnapshot": {
+      "type": "object",
+      "properties": {
+        "filepaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -1995,6 +2109,42 @@
         }
       }
     },
+    "registryLogCodeVersionFromBlobInModelVersion": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "code_version_from_blob": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/commonCodeVersion"
+          }
+        }
+      }
+    },
+    "registryLogCodeVersionFromBlobInModelVersionResponse": {
+      "type": "object"
+    },
+    "registryLogDatasetsInModelVersion": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "datasets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifact"
+          }
+        }
+      }
+    },
+    "registryLogDatasetsInModelVersionResponse": {
+      "type": "object"
+    },
     "registryModelVersion": {
       "type": "object",
       "properties": {
@@ -2084,6 +2234,18 @@
         "lock_level": {
           "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel",
           "title": "Current lock level for this model version"
+        },
+        "datasets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifact"
+          }
+        },
+        "code_version_from_blob": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/commonCodeVersion"
+          }
         }
       }
     },
