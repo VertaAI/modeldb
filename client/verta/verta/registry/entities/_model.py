@@ -3,14 +3,15 @@
 from __future__ import print_function
 import requests
 
-from ..._internal_utils._utils import check_unnecessary_params_warning
-from ...tracking import _Context
-from ...tracking.entities import _entity
-from ..._internal_utils import _utils
+from verta._internal_utils._utils import check_unnecessary_params_warning
+from verta.tracking import _Context
+from verta.tracking.entities import _entity
+from verta._internal_utils import _utils, model_validator
 
-from ..._protos.public.common import CommonService_pb2 as _CommonCommonService
-from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
 
+from .. import VertaModelBase
 from ._modelversion import RegisteredModelVersion
 from ._modelversions import RegisteredModelVersions
 
@@ -164,10 +165,433 @@ class RegisteredModel(_entity._ModelDBEntity):
             date_created=time_created, lock_level=lock_level,
         )
 
+    def _create_standard_model_from_spec(
+        self,
+        model,
+        environment,
+        code_dependencies=None,
+        model_api=None,
+        artifacts=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        artifacts = artifacts or {}
+        attrs = attrs or {}
+        attrs.update({
+            "__verta_reserved__model_language": "Python",
+            "__verta_reserved__model_type": "StandardVertaModel",
+        })
+
+        model_ver = self.create_version(
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+        try:
+            for key, artifact in artifacts.items():
+                model_ver.log_artifact(key, artifact)
+            model_ver.log_model(
+                model=model,
+                custom_modules=code_dependencies,
+                model_api=model_api,
+                artifacts=list(artifacts.keys()),
+            )
+            model_ver.log_environment(environment)
+        except Exception as e:
+            model_ver.delete()
+            raise e
+
+        return model_ver
+
+    def create_standard_model(
+        self,
+        model_cls,
+        environment,
+        code_dependencies=None,
+        model_api=None,
+        artifacts=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        """Create a Standard Verta Model version from a Verta Model Specification.
+
+        .. versionadded:: 0.18.2
+
+        Parameters
+        ----------
+        model_cls : subclass of :class:`~verta.registry.VertaModelBase`
+            Model class that implements ``VertaModelBase``.
+        environment : :class:`~verta.environment.Python`
+            pip and apt dependencies.
+        code_dependencies : list of str, optional
+            Paths to local Python code files that `model_cls` depends on.
+        model_api : :class:`~verta.utils.ModelAPI`
+            Model API specifying the model's expected input and output
+        artifacts : dict of str to obj
+            A mapping from artifact keys to artifacts. These will be logged
+            and uploaded, then provided to the model when deployed.
+        name : str, optional
+            Name of the model version. If no name is provided, one will be
+            generated.
+        desc : str, optional
+            Description of the model version.
+        labels : list of str, optional
+            Labels of the model version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the model version.
+        lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
+            Lock level to set when creating this model version.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.environment import Python
+            from verta.registry import VertaModelBase
+
+            class VertaModel(VertaModelBase):
+                def __init__(self, artifacts):
+                    import pickle
+
+                    with open(artifacts["weights"], "rb") as f:
+                        self.weights = pickle.load(f)
+
+                def predict(self, input):
+                    import numpy as np
+
+                    return np.matmul(self.weights, input)
+
+            model_ver = reg_model.create_standard_model(
+                VertaModel,
+                Python(["numpy"]),
+                artifacts={"weights": np.array(weights)},
+            )
+            endpoint.update(model_ver, wait=True)
+            endpoint.get_deployed_model().predict(input)
+
+        """
+        model_validator.must_verta(model_cls)
+
+        return self._create_standard_model_from_spec(
+            model=model_cls,
+            environment=environment,
+            code_dependencies=code_dependencies,
+            model_api=model_api,
+            artifacts=artifacts,
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+
+    def create_standard_model_from_keras(
+        self,
+        obj,
+        environment,
+        model_api=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        """Create a Standard Verta Model version from a TensorFlow-backend Keras model.
+
+        .. versionadded:: 0.18.2
+
+        Parameters
+        ----------
+        obj : `tf.keras.Sequential <https://keras.io/guides/sequential_model/>`__ or `functional API keras.Model <https://keras.io/guides/functional_api/>`__
+            Keras model.
+        environment : :class:`~verta.environment.Python`
+            pip and apt dependencies.
+        model_api : :class:`~verta.utils.ModelAPI`
+            Model API specifying the model's expected input and output
+        name : str, optional
+            Name of the model version. If no name is provided, one will be
+            generated.
+        desc : str, optional
+            Description of the model version.
+        labels : list of str, optional
+            Labels of the model version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the model version.
+        lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
+            Lock level to set when creating this model version.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from tensorflow import keras
+            from verta.environment import Python
+
+            inputs = keras.Input(shape=(3,))
+            x = keras.layers.Dense(2, activation="relu")(inputs)
+            outputs = keras.layers.Dense(1, activation="sigmoid")(x)
+            model = keras.Model(inputs=inputs, outputs=outputs)
+            train(model, data)
+
+            model_ver = reg_model.create_standard_model_from_keras(
+                model,
+                Python(["tensorflow"]),
+            )
+            endpoint.update(model_ver, wait=True)
+            endpoint.get_deployed_model().predict(input)
+
+        """
+        model_validator.must_keras(obj)
+
+        return self._create_standard_model_from_spec(
+            model=obj,
+            environment=environment,
+            model_api=model_api,
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+
+    def create_standard_model_from_sklearn(
+        self,
+        obj,
+        environment,
+        model_api=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        """Create a Standard Verta Model version from a scikit-learn model.
+
+        .. versionadded:: 0.18.2
+
+        Parameters
+        ----------
+        obj : `sklearn.base.BaseEstimator <https://scikit-learn.org/stable/modules/generated/sklearn.base.BaseEstimator.html>`__
+            scikit-learn model.
+        environment : :class:`~verta.environment.Python`
+            pip and apt dependencies.
+        model_api : :class:`~verta.utils.ModelAPI`
+            Model API specifying the model's expected input and output
+        name : str, optional
+            Name of the model version. If no name is provided, one will be
+            generated.
+        desc : str, optional
+            Description of the model version.
+        labels : list of str, optional
+            Labels of the model version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the model version.
+        lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
+            Lock level to set when creating this model version.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from sklearn.svm import LinearSVC
+            from verta.environment import Python
+
+            model = LinearSVC(**hyperparams)
+            model.fit(X_train, y_train)
+
+            model_ver = reg_model.create_standard_model_from_sklearn(
+                model,
+                Python(["scikit-learn"]),
+            )
+            endpoint.update(model_ver, wait=True)
+            endpoint.get_deployed_model().predict(input)
+
+        """
+        model_validator.must_sklearn(obj)
+
+        return self._create_standard_model_from_spec(
+            model=obj,
+            environment=environment,
+            model_api=model_api,
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+
+    def create_standard_model_from_torch(
+        self,
+        obj,
+        environment,
+        model_api=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        """Create a Standard Verta Model version from a PyTorch model.
+
+        .. versionadded:: 0.18.2
+
+        Parameters
+        ----------
+        obj : `torch.nn.Module <https://pytorch.org/docs/stable/generated/torch.nn.Module.html>`__
+            PyTorch model.
+        environment : :class:`~verta.environment.Python`
+            pip and apt dependencies.
+        model_api : :class:`~verta.utils.ModelAPI`
+            Model API specifying the model's expected input and output
+        name : str, optional
+            Name of the model version. If no name is provided, one will be
+            generated.
+        desc : str, optional
+            Description of the model version.
+        labels : list of str, optional
+            Labels of the model version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the model version.
+        lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
+            Lock level to set when creating this model version.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        Examples
+        --------
+        .. code-block:: python
+
+            import torch
+            from verta.environment import Python
+
+            class Model(torch.nn.Module):
+                def __init__(self):
+                    super(Model, self).__init__()
+                    self.layer1 = torch.nn.Linear(3, 2)
+                    self.layer2 = torch.nn.Linear(2, 1)
+
+                def forward(self, x):
+                    x = torch.nn.functional.relu(self.layer1(x))
+                    return torch.sigmoid(self.layer2(x))
+
+            model = Model()
+            train(model, data)
+
+            model_ver = reg_model.create_standard_model_from_torch(
+                model,
+                Python(["torch"]),
+            )
+            endpoint.update(model_ver, wait=True)
+            endpoint.get_deployed_model().predict(input)
+
+        """
+        model_validator.must_torch(obj)
+
+        return self._create_standard_model_from_spec(
+            model=obj,
+            environment=environment,
+            model_api=model_api,
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+
+    def create_standard_model_from_xgboost(
+        self,
+        obj,
+        environment,
+        model_api=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        """Create a Standard Verta Model version from an XGBoost model.
+
+        .. versionadded:: 0.18.2
+
+        Parameters
+        ----------
+        obj : `xgboost.sklearn.XGBModel <https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn>`__
+            XGBoost model using their scikit-learn wrapper interface.
+        environment : :class:`~verta.environment.Python`
+            pip and apt dependencies.
+        model_api : :class:`~verta.utils.ModelAPI`
+            Model API specifying the model's expected input and output
+        name : str, optional
+            Name of the model version. If no name is provided, one will be
+            generated.
+        desc : str, optional
+            Description of the model version.
+        labels : list of str, optional
+            Labels of the model version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the model version.
+        lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
+            Lock level to set when creating this model version.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        Examples
+        --------
+        .. code-block:: python
+
+            import xgboost as xgb
+            from verta.environment import Python
+
+            model = xgb.XGBClassifier(**hyperparams)
+            model.fit(X_train, y_train)
+
+            model_ver = reg_model.create_standard_model_from_xgboost(
+                model,
+                Python(["scikit-learn", "xgboost"]),
+            )
+            endpoint.update(model_ver, wait=True)
+            endpoint.get_deployed_model().predict(input)
+
+        """
+        model_validator.must_xgboost_sklearn(obj)
+
+        return self._create_standard_model_from_spec(
+            model=obj,
+            environment=environment,
+            model_api=model_api,
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
 
     def create_version_from_run(self, run_id, name=None, lock_level=None):
-        """
-        Creates a model registry entry based on an Experiment Run.
+        """Create a model version copied from an experiment run.
 
         Parameters
         ----------

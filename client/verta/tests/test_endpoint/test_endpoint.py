@@ -204,6 +204,22 @@ class TestEndpoint:
         excinfo_value = str(excinfo.value).strip()
         assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in excinfo_value
 
+    def test_update_runtime_error(self, client, model_version, endpoint):
+        """Propagate errors from model being initialized at container runtime."""
+        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+
+        model_version.log_model(LogisticRegression(), custom_modules=[])
+        model_version.log_environment(Python([]))  # missing scikit-learn
+
+        with pytest.raises(RuntimeError) as excinfo:
+            endpoint.update(model_version, wait=True)
+
+        e_msg = str(excinfo.value).strip()
+        assert e_msg.startswith("endpoint update failed;")
+        assert "Serving Flask app" in e_msg
+        assert "No module named" in e_msg
+        assert "sklearn" in e_msg
+
     def test_canary_update(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
         experiment_run.log_environment(Python(['scikit-learn']))

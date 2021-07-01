@@ -245,7 +245,11 @@ class Endpoint(object):
 
             print()
             if status_dict["status"] == "error":
-                failure_msg = status_dict['components'][0].get('message', "no error message available")
+                # TODO: switch back to component "message" when VR-7740 is done
+                # failure_msg = status_dict['components'][0].get('message', "no error message available")
+                # NOTE: we might consider truncating the length of the logs here,
+                #     e.g. first and last 25 lines, if too unwieldy
+                failure_msg = "\n".join(self.get_logs())
                 raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
 
         return self.get_status()
@@ -402,6 +406,35 @@ class Endpoint(object):
         response_json["stage_id"] = response_json.pop("id")
 
         return response_json
+
+    def get_logs(self):
+        """Get runtime logs of this endpoint.
+
+        Returns
+        -------
+        list of str
+            Lines of this endpoint's runtime logs.
+
+        """
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/logs".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+            self._get_or_create_stage()
+        )
+        response = _utils.make_request("GET", url, self._conn)
+        self._conn.must_response(response)
+
+        logs = response.json().get("entries", [])
+        # remove duplicate lines
+        logs = {
+            log["id"]: log["message"]
+            for log in logs
+        }
+        # sort by line number
+        logs = sorted(logs.items(), key=lambda item: item[0])
+        return [item[1] for item in logs]
 
     def get_access_token(self):
         """Gets an arbitrary access token of the endpoint.
