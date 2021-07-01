@@ -417,6 +417,7 @@ class TestModels:
         for key, weight in net.state_dict().items():
             assert torch.allclose(weight, state_dict[key])
 
+    @pytest.mark.tensorflow
     def test_keras(self, seed, experiment_run, strs):
         np = pytest.importorskip("numpy")
         tf = pytest.importorskip("tensorflow")
