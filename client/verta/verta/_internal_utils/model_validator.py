@@ -70,7 +70,7 @@ def must_verta(model):
             "model must be a subclass of verta.registry.VertaModelBase,"
             " not {}".format(model)
         )
-    remaining_abstract_methods = list(getattr(model, "__abstractmethods__", []))
+    remaining_abstract_methods = list(sorted(getattr(model, "__abstractmethods__", [])))
     if remaining_abstract_methods:
         raise TypeError(
             "model must finish implementing the following methods of"
