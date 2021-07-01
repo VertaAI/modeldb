@@ -141,6 +141,7 @@ class TestStandardModels:
                 Python([]),
             )
 
+    @pytest.mark.tensorflow
     @pytest.mark.parametrize(
         "model",
         keras_models,
@@ -157,6 +158,7 @@ class TestStandardModels:
         deployed_model = endpoint.get_deployed_model()
         assert deployed_model.predict(np.random.random(size=(3, 3)))
 
+    @pytest.mark.tensorflow
     @pytest.mark.parametrize(
         "model",
         verta_models

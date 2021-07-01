@@ -10,6 +10,7 @@ import time
 from verta._internal_utils.importer import get_tensorflow_major_version
 
 
+@pytest.mark.tensorflow
 class TestKeras:
     def test_sequential_api(self, experiment_run):
         verta_integrations_keras = pytest.importorskip("verta.integrations.keras")
@@ -183,6 +184,7 @@ class TestScikitLearn:
             assert run.get_hyperparameters()
 
 
+@pytest.mark.tensorflow
 class TestTensorFlow:
     def test_estimator_hook(self, experiment_run):
         verta_integrations_tensorflow = pytest.importorskip("verta.integrations.tensorflow")
