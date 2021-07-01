@@ -2116,10 +2116,6 @@
           "type": "string",
           "format": "uint64"
         },
-        "experiment_run_id": {
-          "type": "string",
-          "description": "Optional, If experiment_run_id defined here then backend will populate code_version_from_blob from ER and ignore below one."
-        },
         "code_version_from_blob": {
           "type": "object",
           "additionalProperties": {
@@ -2137,10 +2133,6 @@
         "model_version_id": {
           "type": "string",
           "format": "uint64"
-        },
-        "experiment_run_id": {
-          "type": "string",
-          "description": "Optional, If experiment_run_id defined here then backend will populate datasets from ER and ignore below one."
         },
         "datasets": {
           "type": "array",
