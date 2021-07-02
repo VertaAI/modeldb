@@ -8,7 +8,11 @@ import sys
 import requests
 from verta import Client
 
-from . import constants
+# TODO: structure files better so we don't have to do this
+if __name__ == "__main__":
+    import constants  # pylint: disable=relative-import
+else:
+    from . import constants
 
 
 logger = logging.getLogger(__name__)
