@@ -5,6 +5,7 @@ import pickle
 import pytest
 
 from verta.registry import VertaModelBase
+from verta._internal_utils.importer import get_tensorflow_major_version
 
 
 class VertaModel(VertaModelBase):
@@ -31,7 +32,7 @@ def keras_models():
 
     models = []
 
-    # TODO: re-enable with VR-11962
+    # TODO: re-enable with VR-11964
     # # sequential API
     # model = keras.Sequential(
     #     [
@@ -44,10 +45,12 @@ def keras_models():
     # models.append(model)
 
     # functional API
-    inputs = keras.Input(shape=(3,))
-    x = keras.layers.Dense(2, activation="relu")(inputs)
-    outputs = keras.layers.Dense(1, activation="sigmoid")(x)
-    models.append(keras.Model(inputs=inputs, outputs=outputs))
+    # TODO: re-enable for TF 1.X with VR-12011
+    if get_tensorflow_major_version() != 1:
+        inputs = keras.Input(shape=(3,))
+        x = keras.layers.Dense(2, activation="relu")(inputs)
+        outputs = keras.layers.Dense(1, activation="sigmoid")(x)
+        models.append(keras.Model(inputs=inputs, outputs=outputs))
 
     return models
 
@@ -141,7 +144,7 @@ def torch_models():
 
 
 def xgboost_models():
-    # TODO: re-enable with VR-11962
+    # TODO: re-enable with VR-11963
     # np = pytest.importorskip("numpy")
     # xgb = pytest.importorskip("xgboost")
 
@@ -158,7 +161,7 @@ def xgboost_models():
 
 
 def unsupported_xgboost_models():
-    # TODO: re-enable with VR-11962
+    # TODO: re-enable with VR-11963
     # datasets = pytest.importorskip("sklearn.datasets")
     # xgb = pytest.importorskip("xgboost")
 
