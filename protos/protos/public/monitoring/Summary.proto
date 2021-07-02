@@ -121,6 +121,7 @@ message CreateSummarySample {
     uint64 created_at_millis = 7;
     uint64 time_window_start_at_millis = 8;
     uint64 time_window_end_at_millis = 9;
+    bool is_aggregate = 10;
 }
 
 // Request to create a batch of summary samples
