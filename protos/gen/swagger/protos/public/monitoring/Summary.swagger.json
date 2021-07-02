@@ -356,6 +356,10 @@
         "time_window_end_at_millis": {
           "type": "string",
           "format": "uint64"
+        },
+        "is_aggregate": {
+          "type": "boolean",
+          "format": "boolean"
         }
       },
       "title": "Request to create a summary sample"
