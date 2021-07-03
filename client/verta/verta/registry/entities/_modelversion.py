@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import json
 import logging
+from multiprocessing.pool import ThreadPool
 import os
 import pathlib2
 import pickle
@@ -1160,6 +1161,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         sample = profiler_cls(columns=[col]).profile(df)
         histogram = list(sample.values())[0]
+        content = data_type_cls(
+            buckets=histogram._buckets,
+            data=histogram._data,
+        )._as_dict()
         feature_data = FeatureDataInModelVersion(
             feature_name=col,
             profiler_name=profiler_cls.__name__,
@@ -1167,14 +1172,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "columns": [col],
             }),
             summary_name=col + "--" + "MissingValues",
-            summary_type_name=data_type_cls.__name__,
+            summary_type_name=content["type"],
             labels=labels,
-            content=json.dumps(
-                data_type_cls(
-                    buckets=histogram._buckets,
-                    data=histogram._data,
-                )._as_dict()
-            ),
+            content=json.dumps(content),
         )
         cls._add_time_attributes_to_feature_data(feature_data)
 
@@ -1203,6 +1203,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         sample = profiler_cls(columns=[col]).profile(df)
         histogram = list(sample.values())[0]
+        content = data_type_cls(
+            bucket_limits=histogram._bucket_limits,
+            data=histogram._data,
+        )._as_dict()
         feature_data = FeatureDataInModelVersion(
             feature_name=col,
             profiler_name=profiler_cls.__name__,
@@ -1211,14 +1215,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "bins": histogram._bucket_limits,
             }),
             summary_name=col + "--" + "Distribution",
-            summary_type_name=data_type_cls.__name__,
+            summary_type_name=content["type"],
             labels=labels,
-            content=json.dumps(
-                data_type_cls(
-                    bucket_limits=histogram._bucket_limits,
-                    data=histogram._data,
-                )._as_dict()
-            ),
+            content=json.dumps(content),
         )
         cls._add_time_attributes_to_feature_data(feature_data)
 
@@ -1247,6 +1246,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         sample = profiler_cls(columns=[col]).profile(df)
         histogram = list(sample.values())[0]
+        content = data_type_cls(
+            buckets=histogram._buckets,
+            data=histogram._data,
+        )._as_dict()
         feature_data = FeatureDataInModelVersion(
             feature_name=col,
             profiler_name=profiler_cls.__name__,
@@ -1254,14 +1257,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "columns": [col],
             }),
             summary_name=col + "--" + "Distribution",
-            summary_type_name=data_type_cls.__name__,
+            summary_type_name=content["type"],
             labels=labels,
-            content=json.dumps(
-                data_type_cls(
-                    buckets=histogram._buckets,
-                    data=histogram._data,
-                )._as_dict()
-            ),
+            content=json.dumps(content),
         )
         cls._add_time_attributes_to_feature_data(feature_data)
 
@@ -1332,7 +1330,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         feature_data_list : list of DeploymentIntegration_pb2.FeatureDataInModelVersion
 
         """
-        for i, feature_data in enumerate(feature_data_list):
+        def log_attribute(i, feature_data):
             logger.info("logging feature %s", feature_data.feature_name)
             self.add_attribute(
                 _deployable_entity._FEATURE_DATA_ATTR_PREFIX + str(i),
@@ -1342,6 +1340,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 self._normalize_attribute_key(feature_data.summary_name),
                 json.loads(feature_data.content),
             )
+
+        with ThreadPool(1) as p:
+            p.map(lambda args: log_attribute(*args), enumerate(feature_data_list))
 
     def log_training_data_profile(self, in_df, out_df):
         """Capture the profiles of training input and output data.
