@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
+import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import com.google.protobuf.ListValue;
