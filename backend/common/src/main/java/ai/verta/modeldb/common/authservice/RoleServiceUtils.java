@@ -21,19 +21,38 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class RoleServiceUtils implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
-  protected final UAC uac;
+  private final UAC uac;
   protected AuthService authService;
-  private final Integer timeout;
+  private final String host;
+  private final Integer port;
+  private final String serviceUserEmail;
+  private final String serviceUserDevKey;
+  private final Context.Key<Metadata> metadataInfo;
+  private Integer timeout;
+  private final Config config;
 
   public RoleServiceUtils(
+      Config config,
       AuthService authService,
+      String host,
+      Integer port,
+      String serviceUserEmail,
+      String serviceUserDevKey,
       Integer timeout,
+      Context.Key<Metadata> metadataInfo,
       UAC uac) {
+    this.config = config;
     this.authService = authService;
+    this.host = host;
+    this.port = port;
+    this.serviceUserEmail = serviceUserEmail;
+    this.serviceUserDevKey = serviceUserDevKey;
     this.timeout = timeout;
+    this.metadataInfo = metadataInfo;
     this.uac = uac;
   }
 
@@ -59,7 +78,7 @@ public class RoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
       ResourceVisibility resourceVisibility) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.trace("Calling CollaboratorService to create resources");
       ResourceType modeldbServiceResourceType =
           ResourceType.newBuilder().setModeldbServiceResourceType(resourceType).build();
@@ -101,13 +120,22 @@ public class RoleServiceUtils implements RoleService {
     return false;
   }
 
+  private AuthServiceChannel getAuthServiceChannel() {
+    return new AuthServiceChannel(
+        config, host, port, serviceUserEmail, serviceUserDevKey, metadataInfo);
+  }
+
+  private AuthServiceChannel getAuthServiceChannelWithServiceUser() {
+    return new AuthServiceChannel(config, host, port, serviceUserEmail, serviceUserDevKey, null);
+  }
+
   public boolean deleteResourcesWithServiceUser(Resources resources) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannelWithServiceUser()) {
       LOGGER.trace("Calling CollaboratorService to delete resources");
       DeleteResources deleteResources =
           DeleteResources.newBuilder().setResources(resources).build();
       DeleteResources.Response response =
-          authServiceChannel.getCollaboratorServiceBlockingStubForServiceUser().deleteResources(deleteResources);
+          authServiceChannel.getCollaboratorServiceBlockingStub().deleteResources(deleteResources);
       LOGGER.trace("DeleteResources message sent.  Response: " + response);
       return true;
     } catch (StatusRuntimeException ex) {
@@ -138,7 +166,7 @@ public class RoleServiceUtils implements RoleService {
       Optional<String> entityId,
       Optional<String> workspaceName,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       List<GetResourcesResponseItem> responseItems =
           getGetResourcesResponseItems(
               entityId,
@@ -177,8 +205,9 @@ public class RoleServiceUtils implements RoleService {
   public List<GetResourcesResponseItem> getEntityResourcesByName(
       Optional<String> entityName,
       Optional<String> workspaceName,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes)
+      throws ExecutionException, InterruptedException {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       if (!entityName.isPresent()) {
         return Collections.emptyList();
       }
@@ -239,7 +268,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   public GeneratedMessageV3 getTeamById(boolean retry, String teamId) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       GetTeamById getTeamById = GetTeamById.newBuilder().setTeamId(teamId).build();
       GetTeamById.Response getTeamByIdResponse =
           authServiceChannel.getTeamServiceBlockingStub().getTeamById(getTeamById);
@@ -260,7 +289,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private GeneratedMessageV3 getOrgById(boolean retry, String orgId) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       GetOrganizationById getOrgById = GetOrganizationById.newBuilder().setOrgId(orgId).build();
       GetOrganizationById.Response getOrgByIdResponse =
           authServiceChannel.getOrganizationServiceBlockingStub().getOrganizationById(getOrgById);
@@ -290,7 +319,7 @@ public class RoleServiceUtils implements RoleService {
       Workspace workspace,
       Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       ResourceType resourceType =
           ResourceType.newBuilder()
               .setModeldbServiceResourceType(modelDBServiceResourceTypes)
@@ -472,11 +501,12 @@ public class RoleServiceUtils implements RoleService {
                     .setModeldbServiceResourceType(modelDBServiceResourceTypes))
             .setService(Service.MODELDB_SERVICE)
             .build();
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       GetAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
-              .getAuthzServiceBlockingStub()
+              .getAuthzServiceBlockingStub(requestHeaders)
               .getAllowedResources(getAllowedResourcesRequest);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
@@ -530,11 +560,12 @@ public class RoleServiceUtils implements RoleService {
                     .setModeldbServiceResourceType(modelDBServiceResourceTypes))
             .setService(Service.MODELDB_SERVICE)
             .build();
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
-              .getAuthzServiceBlockingStub()
+              .getAuthzServiceBlockingStub(requestHeaders)
               .getSelfAllowedResources(getAllowedResourcesRequest);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
@@ -586,11 +617,12 @@ public class RoleServiceUtils implements RoleService {
                     .setModeldbServiceResourceType(modelDBServiceResourceTypes))
             .setService(Service.MODELDB_SERVICE)
             .build();
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
+      Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       GetSelfAllowedResources.Response getAllowedResourcesResponse =
           authServiceChannel
-              .getAuthzServiceBlockingStub()
+              .getAuthzServiceBlockingStub(requestHeaders)
               .getSelfDirectlyAllowedResources(getAllowedResourcesRequest);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
@@ -630,7 +662,7 @@ public class RoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
       String resourceId) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       Resources.Builder resourceBuilder =
           Resources.newBuilder()
@@ -651,9 +683,10 @@ public class RoleServiceUtils implements RoleService {
                       .build())
               .build();
 
+      Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       IsSelfAllowed.Response isSelfAllowedResponse =
           authServiceChannel
-              .getAuthzServiceBlockingStub()
+              .getAuthzServiceBlockingStub(requestHeaders)
               .isSelfAllowed(isSelfAllowedRequest);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, isSelfAllowedResponse);
@@ -700,7 +733,7 @@ public class RoleServiceUtils implements RoleService {
 
   private Map<String, Actions> getSelfAllowedActionsBatch(
       boolean retry, List<String> resourceIds, ModelDBServiceResourceTypes type) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       GetSelfAllowedActionsBatch getSelfAllowedActionsBatch =
           GetSelfAllowedActionsBatch.newBuilder()
@@ -713,9 +746,10 @@ public class RoleServiceUtils implements RoleService {
                       .build())
               .build();
 
+      Metadata requestHeaders = authServiceChannel.metadataInfo.get();
       GetSelfAllowedActionsBatch.Response getSelfAllowedActionsBatchResponse =
           authServiceChannel
-              .getAuthzServiceBlockingStub()
+              .getAuthzServiceBlockingStub(requestHeaders)
               .getSelfAllowedActionsBatch(getSelfAllowedActionsBatch);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(
@@ -763,11 +797,11 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private void setRoleBindingOnAuthService(boolean retry, RoleBinding roleBinding) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannelWithServiceUser()) {
       LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
       SetRoleBinding.Response setRoleBindingResponse =
           authServiceChannel
-              .getRoleServiceBlockingStubForServiceUser()
+              .getRoleServiceBlockingStub()
               .setRoleBinding(SetRoleBinding.newBuilder().setRoleBinding(roleBinding).build());
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, setRoleBindingResponse);
@@ -792,7 +826,7 @@ public class RoleServiceUtils implements RoleService {
   private boolean deleteRoleBindings(boolean retry, List<String> roleBindingNames) {
     DeleteRoleBindings deleteRoleBindingRequest =
         DeleteRoleBindings.newBuilder().addAllRoleBindingNames(roleBindingNames).build();
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
 
       // TODO: try using futur stub than blocking stub
@@ -821,7 +855,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private GeneratedMessageV3 getTeamByName(boolean retry, String orgId, String teamName) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       GetTeamByName getTeamByName =
           GetTeamByName.newBuilder().setTeamName(teamName).setOrgId(orgId).build();
       GetTeamByName.Response getTeamByNameResponse =
@@ -844,7 +878,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private GeneratedMessageV3 getOrgByName(boolean retry, String name) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       GetOrganizationByName getOrgByName =
           GetOrganizationByName.newBuilder().setOrgName(name).build();
       GetOrganizationByName.Response getOrgByNameResponse =
@@ -869,7 +903,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private List<Organization> listMyOrganizations(boolean retry) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = getAuthServiceChannel()) {
       ListMyOrganizations listMyOrganizations = ListMyOrganizations.newBuilder().build();
       ListMyOrganizations.Response listMyOrganizationsResponse =
           authServiceChannel

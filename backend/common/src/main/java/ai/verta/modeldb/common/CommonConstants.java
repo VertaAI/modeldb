@@ -4,6 +4,7 @@ public interface CommonConstants {
 
   // String Constants
   String STRING_COLON = ":";
+  String BACKGROUND_UTILS_COUNT = "backgroundUtilsCount";
   String UNSIGNED_USER = "unsigned_user";
   Integer MIN_CONNECTION_SIZE_DEFAULT = 5;
   Integer MAX_CONNECTION_SIZE_DEFAULT = 20;

@@ -7,6 +7,7 @@ import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
 import ai.verta.modeldb.common.CommonHibernateUtil;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
@@ -254,6 +255,7 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
             PopulateVersionMigration.execute(migrationConfig.record_update_limit);
             break;
           case ModelDBConstants.DATASET_VERSIONING_MIGRATION:
+            CommonUtils.registeredBackgroundUtilsCount();
             boolean isLocked = checkMigrationLockedStatus(migrationConfig.name, rdb);
             if (!isLocked) {
               LOGGER.debug("Obtaining migration lock");
