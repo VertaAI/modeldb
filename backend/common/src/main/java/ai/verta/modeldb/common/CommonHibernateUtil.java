@@ -67,9 +67,6 @@ public abstract class CommonHibernateUtil {
       LOGGER.info("Fetching sessionFactory");
       try {
 
-        // Initialize background utils count
-        CommonUtils.initializeBackgroundUtilsCount();
-
         final var rdb = config.RdbConfiguration;
         final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
         final var idleTimeoutMillis = Integer.parseInt(config.connectionTimeout) * 1000;
