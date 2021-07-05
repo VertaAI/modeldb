@@ -31,6 +31,63 @@ public class CommonUtils {
     return filePath;
   }
 
+  public static Integer getRegisteredBackgroundUtilsCount() {
+    try {
+      Integer backgroundUtilsCount =
+          Integer.parseInt(System.getProperty(CommonConstants.BACKGROUND_UTILS_COUNT));
+      LOGGER.trace("get runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+      return backgroundUtilsCount;
+    } catch (NullPointerException ex) {
+      LOGGER.trace("NullPointerException while get runningBackgroundUtilsCount");
+      System.setProperty(CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(0));
+      return 0;
+    }
+  }
+
+  public static void initializeBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    try {
+      if (System.getProperty(CommonConstants.BACKGROUND_UTILS_COUNT) == null) {
+        LOGGER.trace("Initialize runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+        System.setProperty(
+            CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+      }
+      LOGGER.trace(
+          "Found runningBackgroundUtilsCount while initialization: {}",
+          getRegisteredBackgroundUtilsCount());
+    } catch (NullPointerException ex) {
+      LOGGER.trace("NullPointerException while initialize runningBackgroundUtilsCount");
+      System.setProperty(
+          CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+    }
+  }
+
+  /**
+   * If service want to call other verta service internally then should to registered those service
+   * here with count
+   */
+  public static void registeredBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    if (System.getProperty(CommonConstants.BACKGROUND_UTILS_COUNT) != null) {
+      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
+    }
+    backgroundUtilsCount = backgroundUtilsCount + 1;
+    LOGGER.trace("After registered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+    System.setProperty(
+        CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+  }
+
+  public static void unregisteredBackgroundUtilsCount() {
+    int backgroundUtilsCount = 0;
+    if (System.getProperty(CommonConstants.BACKGROUND_UTILS_COUNT) != null) {
+      backgroundUtilsCount = getRegisteredBackgroundUtilsCount();
+      backgroundUtilsCount = backgroundUtilsCount - 1;
+    }
+    LOGGER.trace("After unregistered runningBackgroundUtilsCount : {}", backgroundUtilsCount);
+    System.setProperty(
+        CommonConstants.BACKGROUND_UTILS_COUNT, Integer.toString(backgroundUtilsCount));
+  }
+
   public static Message.Builder getProtoObjectFromString(String jsonString, Message.Builder builder)
       throws InvalidProtocolBufferException {
     JsonFormat.parser().merge(jsonString, builder);

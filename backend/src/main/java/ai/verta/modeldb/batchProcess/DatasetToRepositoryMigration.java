@@ -69,8 +69,8 @@ public class DatasetToRepositoryMigration {
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
     Config config = App.getInstance().config;
+    authService = AuthServiceUtils.FromConfig(config);
     uac = UAC.FromConfig(config);
-    authService = AuthServiceUtils.FromConfig(config, uac);
     roleService = RoleServiceUtils.FromConfig(config, authService, uac);
 
     commitDAO = new CommitDAORdbImpl(authService, roleService);

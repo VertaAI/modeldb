@@ -10,6 +10,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.Config;
@@ -53,8 +54,8 @@ public class CollaboratorResourceMigration {
     Config config = App.getInstance().config;
     CollaboratorResourceMigration.paginationSize = 100;
     if (config.hasAuth()) {
+      authService = AuthServiceUtils.FromConfig(config);
       uac = UAC.FromConfig(config);
-      authService = AuthServiceUtils.FromConfig(config, uac);
       roleService = RoleServiceUtils.FromConfig(config, authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found, OSS setup found");
@@ -62,10 +63,15 @@ public class CollaboratorResourceMigration {
     }
 
     LOGGER.info("Migration start");
-    migrateProjects();
-    LOGGER.info("Projects done migration");
-    migrateRepositories();
-    LOGGER.info("Repositories done migration");
+    CommonUtils.registeredBackgroundUtilsCount();
+    try {
+      migrateProjects();
+      LOGGER.info("Projects done migration");
+      migrateRepositories();
+      LOGGER.info("Repositories done migration");
+    } finally {
+      CommonUtils.unregisteredBackgroundUtilsCount();
+    }
 
     LOGGER.info("Migration End");
   }

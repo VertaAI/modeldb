@@ -40,11 +40,13 @@ public abstract class Reconciler<T> {
   private void startResync() {
     Runnable runnable =
         () -> {
+          CommonUtils.registeredBackgroundUtilsCount();
           try {
             this.resync();
           } catch (Exception ex) {
             logger.error("Resync: ", ex);
           }
+          CommonUtils.unregisteredBackgroundUtilsCount();
         };
 
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
@@ -57,11 +59,13 @@ public abstract class Reconciler<T> {
       Runnable runnable =
           () -> {
             while (true) {
+              CommonUtils.registeredBackgroundUtilsCount();
               try {
                 reconcile(pop());
               } catch (Exception ex) {
                 logger.error("Worker reconcile: ", ex);
               }
+              CommonUtils.unregisteredBackgroundUtilsCount();
             }
           };
       executor.execute(runnable);

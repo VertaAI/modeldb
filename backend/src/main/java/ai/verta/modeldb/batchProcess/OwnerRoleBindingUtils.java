@@ -44,8 +44,8 @@ public class OwnerRoleBindingUtils {
   public static void execute() {
     Config config = App.getInstance().config;
     if (config.hasAuth()) {
+      authService = AuthServiceUtils.FromConfig(config);
       uac = UAC.FromConfig(config);
-      authService = AuthServiceUtils.FromConfig(config, uac);
       roleService = RoleServiceUtils.FromConfig(config, authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
