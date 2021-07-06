@@ -35,7 +35,6 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
-import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
@@ -120,11 +119,6 @@ public class App implements ApplicationContextAware {
       new JmxCollector(rules).register();
     }
     return new ServletRegistrationBean<>(new MetricsServlet(), "/metrics");
-  }
-
-  @Bean
-  public CollectorRegistry collectorRegistry() {
-    return CollectorRegistry.defaultRegistry;
   }
 
   @Bean
