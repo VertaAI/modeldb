@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common;
 
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
@@ -8,6 +9,7 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import io.grpc.health.v1.HealthCheckResponse;
+import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.hibernate.HibernateStatisticsCollector;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
@@ -53,6 +55,7 @@ public abstract class CommonHibernateUtil {
   protected static DatabaseConfig databaseConfig;
   protected static Class<?>[] entities;
   protected static String liquibaseRootFilePath;
+  private HibernateStatisticsCollector hibernateStatisticsCollector;
 
   public Connection getConnection() throws SQLException {
     return sessionFactory
@@ -123,7 +126,12 @@ public abstract class CommonHibernateUtil {
         // Create session factory and validate entity
         sessionFactory = metaDataSrc.buildMetadata().buildSessionFactory();
         // Enable JMX metrics collection from hibernate
-        new HibernateStatisticsCollector(sessionFactory, "hibernate").register();
+        if (hibernateStatisticsCollector != null) {
+          hibernateStatisticsCollector.add(sessionFactory, "hibernate");
+        } else {
+          hibernateStatisticsCollector = new HibernateStatisticsCollector(sessionFactory, "hibernate").register();
+        }
+
         // Export schema
         if (CommonConstants.EXPORT_SCHEMA) {
           exportSchema(metaDataSrc.buildMetadata());
@@ -137,6 +145,8 @@ public abstract class CommonHibernateUtil {
             "CommonHibernateUtil getSessionFactory() getting error : {}", e.getMessage(), e);
         if (registry != null) {
           StandardServiceRegistryBuilder.destroy(registry);
+          // If registry will destroy then session factory also useless and have stale reference of registry so need to clean it as well.
+          sessionFactory = null;
         }
         throw new ModelDBException(e.getMessage());
       }
