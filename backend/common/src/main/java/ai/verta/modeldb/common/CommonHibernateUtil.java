@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common;
 
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
@@ -9,7 +8,6 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import io.grpc.health.v1.HealthCheckResponse;
-import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.hibernate.HibernateStatisticsCollector;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
