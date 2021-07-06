@@ -73,11 +73,22 @@ public abstract class Reconciler<T> {
                           .filter(id -> !processingIdSet.contains(id))
                           .collect(Collectors.toSet());
                   if (!processingIds.isEmpty()) {
+                    lock.lock();
                     try {
                       processingIdSet.addAll(processingIds);
+                    } finally{
+                      lock.unlock();
+                    }
+
+                    try {
                       reconcile(processingIds);
                     } finally {
-                      processingIdSet.removeAll(processingIds);
+                      lock.lock();
+                      try {
+                        processingIdSet.removeAll(processingIds);
+                      } finally{
+                        lock.unlock();
+                      }
                     }
                   }
                 } else {
