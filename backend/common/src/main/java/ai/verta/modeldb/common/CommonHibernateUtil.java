@@ -65,7 +65,7 @@ public abstract class CommonHibernateUtil {
         .getConnection();
   }
 
-  public synchronized SessionFactory createOrGetSessionFactory(DatabaseConfig config) throws ModelDBException {
+  public SessionFactory createOrGetSessionFactory(DatabaseConfig config) throws ModelDBException {
     if (sessionFactory == null) {
       LOGGER.info("Fetching sessionFactory");
       try {
@@ -123,12 +123,11 @@ public abstract class CommonHibernateUtil {
         // Create session factory and validate entity
         sessionFactory = metaDataSrc.buildMetadata().buildSessionFactory();
         // Enable JMX metrics collection from hibernate
-        // TODO: Need to find some good way to re-registered HibernateStatisticsCollector,
-        // TODO: below logic might be fluctuate
         if (hibernateStatisticsCollector != null) {
-          App.getInstance().collectorRegistry().unregister(hibernateStatisticsCollector);
+          hibernateStatisticsCollector.add(sessionFactory, "hibernate");
+        } else {
+          hibernateStatisticsCollector = new HibernateStatisticsCollector(sessionFactory, "hibernate").register();
         }
-        hibernateStatisticsCollector = new HibernateStatisticsCollector(sessionFactory, "hibernate").register();
 
         // Export schema
         if (CommonConstants.EXPORT_SCHEMA) {
@@ -200,7 +199,7 @@ public abstract class CommonHibernateUtil {
     }
   }
 
-  public synchronized SessionFactory resetSessionFactory() {
+  public SessionFactory resetSessionFactory() {
     isReady = false;
     sessionFactory = null;
     return getSessionFactory();
