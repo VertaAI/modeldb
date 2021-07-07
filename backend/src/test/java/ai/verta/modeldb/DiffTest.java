@@ -3,7 +3,7 @@ package ai.verta.modeldb;
 import static ai.verta.modeldb.CommitTest.getDatasetBlobFromPath;
 import static org.junit.Assert.*;
 
-import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDiff;

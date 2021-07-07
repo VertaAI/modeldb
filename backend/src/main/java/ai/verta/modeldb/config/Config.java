@@ -1,6 +1,7 @@
 package ai.verta.modeldb.config;
 
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -10,9 +11,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
 
   private static Config config = null;
   public String starterProject;
-  public ArtifactStoreConfig artifactStoreConfig;
   public TelemetryConfig telemetry;
-  public TrialConfig trial;
   public List<MigrationConfig> migrations;
   protected FutureJdbi jdbi;
 
@@ -27,20 +26,12 @@ public class Config extends ai.verta.modeldb.common.config.Config {
   public void Validate() throws InvalidConfigException {
     super.Validate();
 
-    if (artifactStoreConfig == null)
-      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
-    artifactStoreConfig.Validate("artifactStoreConfig");
-
     if (service_user != null) {
       service_user.Validate("service_user");
     }
 
     if (telemetry == null) telemetry = new TelemetryConfig();
     telemetry.Validate("telemetry");
-
-    if (trial != null) {
-      trial.Validate("trial");
-    }
 
     if (migrations != null) {
       for (MigrationConfig migrationConfig : migrations) {

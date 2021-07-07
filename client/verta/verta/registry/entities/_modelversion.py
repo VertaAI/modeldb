@@ -14,6 +14,7 @@ from google.protobuf.struct_pb2 import Value
 import requests
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.modeldb import CommonService_pb2 as _CommonService
 from verta._protos.public.monitoring.DeploymentIntegration_pb2 import FeatureDataInModelVersion
 from verta._protos.public.registry import (
     RegistryService_pb2 as _RegistryService,
@@ -628,9 +629,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
-        Message = _RegistryService.GetUrlForArtifact
+        Message = _CommonService.GetUrlForArtifact
         msg = Message(
-            model_version_id=self.id,
+            id=str(self.id),
             key=key,
             method=method,
             artifact_type=artifact_type,
@@ -683,8 +684,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 url = "{}://{}/api/v1/registry/model_versions/{}/commitArtifactPart".format(
                     self._conn.scheme, self._conn.socket, self.id
                 )
-                msg = _RegistryService.CommitArtifactPart(
-                    model_version_id=self.id, key=key
+                msg = _CommonService.CommitArtifactPart(
+                    id=str(self.id), key=key
                 )
                 msg.artifact_part.part_number = part_num
                 msg.artifact_part.etag = response.headers["ETag"]
@@ -697,8 +698,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             url = "{}://{}/api/v1/registry/model_versions/{}/commitMultipartArtifact".format(
                 self._conn.scheme, self._conn.socket, self.id
             )
-            msg = _RegistryService.CommitMultipartArtifact(
-                model_version_id=self.id, key=key
+            msg = _CommonService.CommitMultipartArtifact(
+                id=str(self.id), key=key
             )
             data = _utils.proto_to_json(msg)
             response = _utils.make_request("POST", url, self._conn, json=data)

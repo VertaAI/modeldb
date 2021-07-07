@@ -2,7 +2,7 @@ package ai.verta.modeldb.comment;
 
 import ai.verta.modeldb.Comment;
 import ai.verta.modeldb.EntityComment;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.entities.CommentEntity;

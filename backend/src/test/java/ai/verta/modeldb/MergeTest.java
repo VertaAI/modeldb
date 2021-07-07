@@ -1,6 +1,6 @@
 package ai.verta.modeldb;
 
-import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CodeBlob;

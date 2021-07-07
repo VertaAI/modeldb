@@ -1,6 +1,4 @@
-package ai.verta.modeldb.config;
-
-import ai.verta.modeldb.common.config.InvalidConfigException;
+package ai.verta.modeldb.common.config;
 
 public class TrialConfig {
   public TrialRestrictionsConfig restrictions;

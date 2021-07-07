@@ -1,4 +1,4 @@
-package ai.verta.modeldb.artifactStore.storageservice.nfs;
+package ai.verta.modeldb.common.artifactStore.storageservice.nfs;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

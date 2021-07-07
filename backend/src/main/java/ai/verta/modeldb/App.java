@@ -1,8 +1,9 @@
 package ai.verta.modeldb;
 
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
-import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
+import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
+import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.GracefulShutdown;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
@@ -140,7 +141,8 @@ public class App implements ApplicationContextAware {
   public S3Service getS3Service() throws ModelDBException, IOException {
     String bucketName = System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME);
     if (bucketName != null && !bucketName.isEmpty()) {
-      return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
+      return new S3Service(
+          System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME), Config.getInstance());
     }
     return null;
   }
