@@ -7,7 +7,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;

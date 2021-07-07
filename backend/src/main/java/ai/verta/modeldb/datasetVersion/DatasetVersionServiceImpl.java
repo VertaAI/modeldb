@@ -38,7 +38,7 @@ import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.Commit;

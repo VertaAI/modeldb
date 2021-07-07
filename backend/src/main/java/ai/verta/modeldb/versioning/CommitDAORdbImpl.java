@@ -18,7 +18,7 @@ import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.metadata.MetadataPropertyMappingEntity;
 import ai.verta.modeldb.entities.versioning.*;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataDAO;

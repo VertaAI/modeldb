@@ -12,7 +12,7 @@ import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.config.TrialConfig;
+import ai.verta.modeldb.common.config.TrialConfig;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;

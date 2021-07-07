@@ -7,7 +7,7 @@ import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.config.TrialConfig;
+import ai.verta.modeldb.common.config.TrialConfig;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;

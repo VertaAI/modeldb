@@ -24,6 +24,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -475,11 +476,6 @@ public class ModelDBUtils {
     return String.join("#", location);
   }
 
-  public static boolean isEnvSet(String envVar) {
-    String envVarVal = System.getenv(envVar);
-    return envVarVal != null && !envVarVal.isEmpty();
-  }
-
   public static void validateEntityNameWithColonAndSlash(String name) throws ModelDBException {
     if (name != null
         && !name.isEmpty()
@@ -500,13 +496,6 @@ public class ModelDBUtils {
           "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     }
     throw ex;
-  }
-
-  public static void logAmazonServiceExceptionErrorCodes(Logger LOGGER, AmazonServiceException e) {
-    LOGGER.info("Amazon Service Status Code: " + e.getStatusCode());
-    LOGGER.info("Amazon Service Error Code: " + e.getErrorCode());
-    LOGGER.info("Amazon Service Error Type: " + e.getErrorType());
-    LOGGER.info("Amazon Service Error Message: " + e.getErrorMessage());
   }
 
   public static ResourceVisibility getResourceVisibility(

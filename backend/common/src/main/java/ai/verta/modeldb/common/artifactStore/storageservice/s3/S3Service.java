@@ -1,16 +1,15 @@
 package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.HttpCodeToGRPCCode;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.utils.TrialUtils;
+import ai.verta.modeldb.common.config.Config;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.utils.Utils;
+import ai.verta.modeldb.common.utils.TrialUtils;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
@@ -39,11 +38,11 @@ public class S3Service implements ArtifactStoreService {
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
   private S3Client s3Client;
   private String bucketName;
-  private final App app = App.getInstance();
-  private final Config config = app.config;
+  private final Config config;
 
-  public S3Service(String cloudBucketName) throws ModelDBException, IOException {
-    s3Client = new S3Client(cloudBucketName);
+  public S3Service(String cloudBucketName, Config config) throws ModelDBException, IOException {
+    s3Client = new S3Client(cloudBucketName, config.artifactStoreConfig.S3);
+    this.config = config;
     this.bucketName = cloudBucketName;
   }
 
@@ -51,7 +50,7 @@ public class S3Service implements ArtifactStoreService {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       return client.getClient().doesBucketExistV2(bucketName);
     } catch (AmazonServiceException e) {
-      ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
+      Utils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
       throw new UnavailableException(
           "AWS S3 could not be checked for bucket existence for artifact store : "
               + e.getErrorMessage());
@@ -67,7 +66,7 @@ public class S3Service implements ArtifactStoreService {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       return client.getClient().doesObjectExist(bucketName, path);
     } catch (AmazonServiceException e) {
-      ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
+      Utils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
       throw new UnavailableException(
           "AWS S3 could not be checked for bucket existance for artifact store : "
               + e.getErrorMessage());

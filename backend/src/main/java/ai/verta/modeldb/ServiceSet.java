@@ -38,7 +38,7 @@ public class ServiceSet {
     set.app.config = config;
 
     if (artifactStoreConfig.enabled) {
-      set.artifactStoreService = initializeArtifactStore(artifactStoreConfig);
+      set.artifactStoreService = initializeArtifactStore(artifactStoreConfig, config);
     } else {
       System.getProperties().put("scan.packages", "dummyPackageName");
       SpringApplication.run(App.class);
@@ -48,7 +48,7 @@ public class ServiceSet {
   }
 
   private static ArtifactStoreService initializeArtifactStore(
-      ArtifactStoreConfig artifactStoreConfig) throws ModelDBException, IOException {
+      ArtifactStoreConfig artifactStoreConfig, Config config) throws ModelDBException, IOException {
     // ------------- Start Initialize Cloud storage base on configuration ------------------
     ArtifactStoreService artifactStoreService;
 
@@ -80,7 +80,7 @@ public class ServiceSet {
           SpringApplication.run(App.class);
           artifactStoreService = App.getInstance().applicationContext.getBean(S3Service.class);
         } else {
-          artifactStoreService = new S3Service(artifactStoreConfig.S3.cloudBucketName);
+          artifactStoreService = new S3Service(artifactStoreConfig.S3.cloudBucketName, config);
           System.getProperties().put("scan.packages", "dummyPackageName");
           SpringApplication.run(App.class);
         }
