@@ -8,7 +8,7 @@ import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.DeleteComment;
 import ai.verta.modeldb.GetComments;
 import ai.verta.modeldb.GetComments.Response;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateComment;
 import ai.verta.modeldb.authservice.RoleService;

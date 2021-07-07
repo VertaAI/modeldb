@@ -1,6 +1,6 @@
 package ai.verta.modeldb.config;
 
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;

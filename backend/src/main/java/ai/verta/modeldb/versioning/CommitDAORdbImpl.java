@@ -5,7 +5,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
 import ai.verta.modeldb.authservice.RoleService;

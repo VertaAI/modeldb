@@ -36,7 +36,7 @@ import ai.verta.modeldb.LogProjectArtifacts;
 import ai.verta.modeldb.LogProjectCodeVersion;
 import ai.verta.modeldb.LogProjectCodeVersion.Response;
 import ai.verta.modeldb.MetricsSummary;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
 import ai.verta.modeldb.ServiceSet;

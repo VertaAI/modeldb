@@ -1,7 +1,7 @@
 package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.ProjectEntity;

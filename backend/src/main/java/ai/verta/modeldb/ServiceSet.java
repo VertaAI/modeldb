@@ -1,5 +1,6 @@
 package ai.verta.modeldb;
 
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSService;
 import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;

@@ -4,7 +4,7 @@ import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.CreateExperimentRun;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.LogExperimentRunCodeVersion;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;

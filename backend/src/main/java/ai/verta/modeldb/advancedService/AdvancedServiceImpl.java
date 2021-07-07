@@ -11,6 +11,7 @@ import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;

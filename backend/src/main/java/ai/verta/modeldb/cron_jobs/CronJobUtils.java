@@ -1,6 +1,6 @@
 package ai.verta.modeldb.cron_jobs;
 
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.common.config.CronJobConfig;

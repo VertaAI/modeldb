@@ -1,6 +1,6 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.OrderTable;

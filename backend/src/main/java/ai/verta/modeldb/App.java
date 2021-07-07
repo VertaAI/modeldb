@@ -1,6 +1,7 @@
 package ai.verta.modeldb;
 
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;

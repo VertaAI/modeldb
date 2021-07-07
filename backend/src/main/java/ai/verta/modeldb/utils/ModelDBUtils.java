@@ -11,7 +11,7 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonConstants;

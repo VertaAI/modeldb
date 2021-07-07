@@ -3,7 +3,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
 import ai.verta.modeldb.Location;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;

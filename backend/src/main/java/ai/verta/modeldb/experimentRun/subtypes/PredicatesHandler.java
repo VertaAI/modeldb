@@ -2,7 +2,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;

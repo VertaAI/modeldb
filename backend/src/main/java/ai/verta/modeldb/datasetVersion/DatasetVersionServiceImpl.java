@@ -22,7 +22,7 @@ import ai.verta.modeldb.GetDatasetVersionAttributes;
 import ai.verta.modeldb.GetDatasetVersionById;
 import ai.verta.modeldb.GetLatestDatasetVersionByDatasetId;
 import ai.verta.modeldb.GetUrlForDatasetBlobVersioned;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.ServiceSet;

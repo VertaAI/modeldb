@@ -44,7 +44,7 @@ import ai.verta.modeldb.LogHyperparameters;
 import ai.verta.modeldb.LogMetrics;
 import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.LogVersionedInput;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.UpdateExperimentRunDescription;
 import ai.verta.modeldb.VersioningEntry;

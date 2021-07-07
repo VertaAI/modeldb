@@ -4,7 +4,7 @@ import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.entities.AttributeEntity;

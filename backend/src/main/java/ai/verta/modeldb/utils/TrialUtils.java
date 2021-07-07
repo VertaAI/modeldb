@@ -3,7 +3,7 @@ package ai.verta.modeldb.utils;
 import static java.time.format.DateTimeFormatter.ofPattern;
 
 import ai.verta.modeldb.FindExperimentRuns;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3SignatureUtil;
 import ai.verta.modeldb.authservice.RoleService;
