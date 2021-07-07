@@ -230,13 +230,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       deletedEntitiesQuery.setParameter("projectName", project.getName());
       List<String> deletedEntityIds = deletedEntitiesQuery.list();
       if (!deletedEntityIds.isEmpty()) {
-        try {
-          CommonUtils.registeredBackgroundUtilsCount();
-          roleService.deleteEntityResourcesWithServiceUser(
-              deletedEntityIds, ModelDBServiceResourceTypes.PROJECT);
-        } finally {
-          CommonUtils.unregisteredBackgroundUtilsCount();
-        }
+        roleService.deleteEntityResourcesWithServiceUser(
+            deletedEntityIds, ModelDBServiceResourceTypes.PROJECT);
       }
 
       Transaction transaction = session.beginTransaction();

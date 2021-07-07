@@ -461,16 +461,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       deletedEntitiesQuery.setParameter("name", name);
       List<Long> deletedEntityIds = deletedEntitiesQuery.list();
       if (!deletedEntityIds.isEmpty()) {
-        try {
-          CommonUtils.registeredBackgroundUtilsCount();
-          roleService.deleteEntityResourcesWithServiceUser(
-              deletedEntityIds.stream().map(String::valueOf).collect(Collectors.toList()),
-              repositoryType.equals(RepositoryTypeEnum.DATASET)
-                  ? ModelDBServiceResourceTypes.DATASET
-                  : ModelDBServiceResourceTypes.REPOSITORY);
-        } finally {
-          CommonUtils.unregisteredBackgroundUtilsCount();
-        }
+        roleService.deleteEntityResourcesWithServiceUser(
+            deletedEntityIds.stream().map(String::valueOf).collect(Collectors.toList()),
+            repositoryType.equals(RepositoryTypeEnum.DATASET)
+                ? ModelDBServiceResourceTypes.DATASET
+                : ModelDBServiceResourceTypes.REPOSITORY);
       }
 
       repositoryEntity = new RepositoryEntity(repository, repositoryType);
@@ -532,7 +527,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             modelDBServiceResourceTypes,
             repository.getCustomPermission(),
             resourceVisibility);
-        LOGGER.debug("Project role bindings created successfully");
+        LOGGER.debug("Repository role bindings created successfully");
         Transaction transaction = session.beginTransaction();
         repositoryEntity.setCreated(true);
         repositoryEntity.setVisibility_migration(true);

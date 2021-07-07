@@ -43,7 +43,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
       boolean isDataset,
       FutureJdbi futureJdbi,
       Executor executor) {
-    super(config, LOGGER, futureJdbi, executor);
+    super(config, LOGGER, futureJdbi, executor, true);
     this.roleService = roleService;
     this.isDataset = isDataset;
   }
@@ -193,12 +193,13 @@ public class SoftDeleteRepositories extends Reconciler<String> {
           session.delete(repository);
           transaction.commit();
         } catch (OptimisticLockException ex) {
-          LOGGER.error("DeleteEntitiesCron : deleteRepositories : Exception: {}", ex.getMessage());
+          LOGGER.error(
+              "SoftDeleteRepositories : deleteRepositories : Exception: {}", ex.getMessage());
           if (transaction != null && transaction.getStatus().canRollback()) {
             transaction.rollback();
           }
         } catch (Exception ex) {
-          LOGGER.error("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
+          LOGGER.error("SoftDeleteRepositories : deleteRepositories : Exception: ", ex);
           if (transaction != null && transaction.getStatus().canRollback()) {
             transaction.rollback();
           }
