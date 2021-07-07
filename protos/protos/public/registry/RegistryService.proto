@@ -443,27 +443,27 @@ service RegistryService {
 
     rpc getUrlForArtifact(modeldb.GetUrlForArtifact) returns (modeldb.GetUrlForArtifact.Response) {
         option (google.api.http) = {
-            post: "/v1/registry/model_versions/{model_version_id}/getUrlForArtifact"
+            post: "/v1/registry/model_versions/{id}/getUrlForArtifact"
             body: "*"
         };
     };
 
     rpc commitArtifactPart(modeldb.CommitArtifactPart) returns (modeldb.CommitArtifactPart.Response) {
         option (google.api.http) = {
-            post: "/v1/registry/model_versions/{model_version_id}/commitArtifactPart"
+            post: "/v1/registry/model_versions/{id}/commitArtifactPart"
             body: "*"
         };
     };
 
     rpc getCommittedArtifactParts(modeldb.GetCommittedArtifactParts) returns (modeldb.GetCommittedArtifactParts.Response) {
         option (google.api.http) = {
-            get: "/v1/registry/model_versions/{model_version_id}/getCommittedArtifactParts"
+            get: "/v1/registry/model_versions/{id}/getCommittedArtifactParts"
         };
     };
 
     rpc commitMultipartArtifact(modeldb.CommitMultipartArtifact) returns (modeldb.CommitMultipartArtifact.Response) {
         option (google.api.http) = {
-            post: "/v1/registry/model_versions/{model_version_id}/commitMultipartArtifact"
+            post: "/v1/registry/model_versions/{id}/commitMultipartArtifact"
             body: "*"
         };
     };
