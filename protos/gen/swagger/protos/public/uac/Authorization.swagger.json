@@ -311,8 +311,7 @@
         "CREATE",
         "READ",
         "UPDATE",
-        "DELETE",
-        "READ_SECRETS"
+        "DELETE"
       ],
       "default": "UNKNOWN"
     },

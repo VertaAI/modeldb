@@ -1304,166 +1304,6 @@ func (*VisibilityEnum) Descriptor() ([]byte, []int) {
 	return file_common_CommonService_proto_rawDescGZIP(), []int{14}
 }
 
-// code version
-type CodeVersion struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Types that are assignable to Code:
-	//	*CodeVersion_GitSnapshot
-	//	*CodeVersion_CodeArchive
-	Code       isCodeVersion_Code `protobuf_oneof:"code"`
-	DateLogged uint64             `protobuf:"varint,3,opt,name=date_logged,json=dateLogged,proto3" json:"date_logged,omitempty"`
-}
-
-func (x *CodeVersion) Reset() {
-	*x = CodeVersion{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_common_CommonService_proto_msgTypes[15]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *CodeVersion) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*CodeVersion) ProtoMessage() {}
-
-func (x *CodeVersion) ProtoReflect() protoreflect.Message {
-	mi := &file_common_CommonService_proto_msgTypes[15]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use CodeVersion.ProtoReflect.Descriptor instead.
-func (*CodeVersion) Descriptor() ([]byte, []int) {
-	return file_common_CommonService_proto_rawDescGZIP(), []int{15}
-}
-
-func (m *CodeVersion) GetCode() isCodeVersion_Code {
-	if m != nil {
-		return m.Code
-	}
-	return nil
-}
-
-func (x *CodeVersion) GetGitSnapshot() *GitSnapshot {
-	if x, ok := x.GetCode().(*CodeVersion_GitSnapshot); ok {
-		return x.GitSnapshot
-	}
-	return nil
-}
-
-func (x *CodeVersion) GetCodeArchive() *Artifact {
-	if x, ok := x.GetCode().(*CodeVersion_CodeArchive); ok {
-		return x.CodeArchive
-	}
-	return nil
-}
-
-func (x *CodeVersion) GetDateLogged() uint64 {
-	if x != nil {
-		return x.DateLogged
-	}
-	return 0
-}
-
-type isCodeVersion_Code interface {
-	isCodeVersion_Code()
-}
-
-type CodeVersion_GitSnapshot struct {
-	GitSnapshot *GitSnapshot `protobuf:"bytes,1,opt,name=git_snapshot,json=gitSnapshot,proto3,oneof"`
-}
-
-type CodeVersion_CodeArchive struct {
-	CodeArchive *Artifact `protobuf:"bytes,2,opt,name=code_archive,json=codeArchive,proto3,oneof"` // ZIP archive of source code
-}
-
-func (*CodeVersion_GitSnapshot) isCodeVersion_Code() {}
-
-func (*CodeVersion_CodeArchive) isCodeVersion_Code() {}
-
-type GitSnapshot struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Filepaths []string            `protobuf:"bytes,1,rep,name=filepaths,proto3" json:"filepaths,omitempty"` // paths to relevant source code
-	Repo      string              `protobuf:"bytes,2,opt,name=repo,proto3" json:"repo,omitempty"`           // URL to remote repository
-	Hash      string              `protobuf:"bytes,3,opt,name=hash,proto3" json:"hash,omitempty"`           // commit hash
-	IsDirty   TernaryEnum_Ternary `protobuf:"varint,4,opt,name=is_dirty,json=isDirty,proto3,enum=ai.verta.common.TernaryEnum_Ternary" json:"is_dirty,omitempty"`
-}
-
-func (x *GitSnapshot) Reset() {
-	*x = GitSnapshot{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_common_CommonService_proto_msgTypes[16]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GitSnapshot) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GitSnapshot) ProtoMessage() {}
-
-func (x *GitSnapshot) ProtoReflect() protoreflect.Message {
-	mi := &file_common_CommonService_proto_msgTypes[16]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GitSnapshot.ProtoReflect.Descriptor instead.
-func (*GitSnapshot) Descriptor() ([]byte, []int) {
-	return file_common_CommonService_proto_rawDescGZIP(), []int{16}
-}
-
-func (x *GitSnapshot) GetFilepaths() []string {
-	if x != nil {
-		return x.Filepaths
-	}
-	return nil
-}
-
-func (x *GitSnapshot) GetRepo() string {
-	if x != nil {
-		return x.Repo
-	}
-	return ""
-}
-
-func (x *GitSnapshot) GetHash() string {
-	if x != nil {
-		return x.Hash
-	}
-	return ""
-}
-
-func (x *GitSnapshot) GetIsDirty() TernaryEnum_Ternary {
-	if x != nil {
-		return x.IsDirty
-	}
-	return TernaryEnum_UNKNOWN
-}
-
 var File_common_CommonService_proto protoreflect.FileDescriptor
 
 var file_common_CommonService_proto_rawDesc = []byte{
@@ -1590,33 +1430,12 @@ var file_common_CommonService_proto_rawDesc = []byte{
 	0x50, 0x52, 0x49, 0x56, 0x41, 0x54, 0x45, 0x10, 0x00, 0x12, 0x0a, 0x0a, 0x06, 0x50, 0x55, 0x42,
 	0x4c, 0x49, 0x43, 0x10, 0x01, 0x12, 0x15, 0x0a, 0x11, 0x4f, 0x52, 0x47, 0x5f, 0x53, 0x43, 0x4f,
 	0x50, 0x45, 0x44, 0x5f, 0x50, 0x55, 0x42, 0x4c, 0x49, 0x43, 0x10, 0x02, 0x12, 0x0f, 0x0a, 0x0b,
-	0x4f, 0x52, 0x47, 0x5f, 0x44, 0x45, 0x46, 0x41, 0x55, 0x4c, 0x54, 0x10, 0x03, 0x22, 0xb9, 0x01,
-	0x0a, 0x0b, 0x43, 0x6f, 0x64, 0x65, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x41, 0x0a,
-	0x0c, 0x67, 0x69, 0x74, 0x5f, 0x73, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x1c, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63,
-	0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x47, 0x69, 0x74, 0x53, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f,
-	0x74, 0x48, 0x00, 0x52, 0x0b, 0x67, 0x69, 0x74, 0x53, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74,
-	0x12, 0x3e, 0x0a, 0x0c, 0x63, 0x6f, 0x64, 0x65, 0x5f, 0x61, 0x72, 0x63, 0x68, 0x69, 0x76, 0x65,
-	0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74,
-	0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63,
-	0x74, 0x48, 0x00, 0x52, 0x0b, 0x63, 0x6f, 0x64, 0x65, 0x41, 0x72, 0x63, 0x68, 0x69, 0x76, 0x65,
-	0x12, 0x1f, 0x0a, 0x0b, 0x64, 0x61, 0x74, 0x65, 0x5f, 0x6c, 0x6f, 0x67, 0x67, 0x65, 0x64, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x64, 0x61, 0x74, 0x65, 0x4c, 0x6f, 0x67, 0x67, 0x65,
-	0x64, 0x42, 0x06, 0x0a, 0x04, 0x63, 0x6f, 0x64, 0x65, 0x22, 0x94, 0x01, 0x0a, 0x0b, 0x47, 0x69,
-	0x74, 0x53, 0x6e, 0x61, 0x70, 0x73, 0x68, 0x6f, 0x74, 0x12, 0x1c, 0x0a, 0x09, 0x66, 0x69, 0x6c,
-	0x65, 0x70, 0x61, 0x74, 0x68, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x09, 0x52, 0x09, 0x66, 0x69,
-	0x6c, 0x65, 0x70, 0x61, 0x74, 0x68, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x72, 0x65, 0x70, 0x6f, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x72, 0x65, 0x70, 0x6f, 0x12, 0x12, 0x0a, 0x04, 0x68,
-	0x61, 0x73, 0x68, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x68, 0x61, 0x73, 0x68, 0x12,
-	0x3f, 0x0a, 0x08, 0x69, 0x73, 0x5f, 0x64, 0x69, 0x72, 0x74, 0x79, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x0e, 0x32, 0x24, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d,
-	0x6d, 0x6f, 0x6e, 0x2e, 0x54, 0x65, 0x72, 0x6e, 0x61, 0x72, 0x79, 0x45, 0x6e, 0x75, 0x6d, 0x2e,
-	0x54, 0x65, 0x72, 0x6e, 0x61, 0x72, 0x79, 0x52, 0x07, 0x69, 0x73, 0x44, 0x69, 0x72, 0x74, 0x79,
-	0x42, 0x41, 0x50, 0x01, 0x5a, 0x3d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
-	0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62,
-	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x2f, 0x63, 0x6f, 0x6d,
-	0x6d, 0x6f, 0x6e, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x4f, 0x52, 0x47, 0x5f, 0x44, 0x45, 0x46, 0x41, 0x55, 0x4c, 0x54, 0x10, 0x03, 0x42, 0x41, 0x50,
+	0x01, 0x5a, 0x3d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65,
+	0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2f, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x2f, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e,
+	0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -1632,7 +1451,7 @@ func file_common_CommonService_proto_rawDescGZIP() []byte {
 }
 
 var file_common_CommonService_proto_enumTypes = make([]protoimpl.EnumInfo, 10)
-var file_common_CommonService_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_common_CommonService_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_common_CommonService_proto_goTypes = []interface{}{
 	(TernaryEnum_Ternary)(0),                                                 // 0: ai.verta.common.TernaryEnum.Ternary
 	(ValueTypeEnum_ValueType)(0),                                             // 1: ai.verta.common.ValueTypeEnum.ValueType
@@ -1659,25 +1478,20 @@ var file_common_CommonService_proto_goTypes = []interface{}{
 	(*ArtifactPart)(nil),                                                     // 22: ai.verta.common.ArtifactPart
 	(*OperatorEnum)(nil),                                                     // 23: ai.verta.common.OperatorEnum
 	(*VisibilityEnum)(nil),                                                   // 24: ai.verta.common.VisibilityEnum
-	(*CodeVersion)(nil),                                                      // 25: ai.verta.common.CodeVersion
-	(*GitSnapshot)(nil),                                                      // 26: ai.verta.common.GitSnapshot
-	(*_struct.Value)(nil),                                                    // 27: google.protobuf.Value
+	(*_struct.Value)(nil),                                                    // 25: google.protobuf.Value
 }
 var file_common_CommonService_proto_depIdxs = []int32{
-	27, // 0: ai.verta.common.KeyValue.value:type_name -> google.protobuf.Value
+	25, // 0: ai.verta.common.KeyValue.value:type_name -> google.protobuf.Value
 	1,  // 1: ai.verta.common.KeyValue.value_type:type_name -> ai.verta.common.ValueTypeEnum.ValueType
 	7,  // 2: ai.verta.common.Artifact.artifact_type:type_name -> ai.verta.common.ArtifactTypeEnum.ArtifactType
-	27, // 3: ai.verta.common.KeyValueQuery.value:type_name -> google.protobuf.Value
+	25, // 3: ai.verta.common.KeyValueQuery.value:type_name -> google.protobuf.Value
 	1,  // 4: ai.verta.common.KeyValueQuery.value_type:type_name -> ai.verta.common.ValueTypeEnum.ValueType
 	8,  // 5: ai.verta.common.KeyValueQuery.operator:type_name -> ai.verta.common.OperatorEnum.Operator
-	26, // 6: ai.verta.common.CodeVersion.git_snapshot:type_name -> ai.verta.common.GitSnapshot
-	20, // 7: ai.verta.common.CodeVersion.code_archive:type_name -> ai.verta.common.Artifact
-	0,  // 8: ai.verta.common.GitSnapshot.is_dirty:type_name -> ai.verta.common.TernaryEnum.Ternary
-	9,  // [9:9] is the sub-list for method output_type
-	9,  // [9:9] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	6,  // [6:6] is the sub-list for method output_type
+	6,  // [6:6] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_common_CommonService_proto_init() }
@@ -1866,34 +1680,6 @@ func file_common_CommonService_proto_init() {
 				return nil
 			}
 		}
-		file_common_CommonService_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CodeVersion); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_common_CommonService_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GitSnapshot); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-	}
-	file_common_CommonService_proto_msgTypes[15].OneofWrappers = []interface{}{
-		(*CodeVersion_GitSnapshot)(nil),
-		(*CodeVersion_CodeArchive)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1901,7 +1687,7 @@ func file_common_CommonService_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_common_CommonService_proto_rawDesc,
 			NumEnums:      10,
-			NumMessages:   17,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

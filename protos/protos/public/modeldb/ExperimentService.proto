@@ -24,7 +24,7 @@ message Experiment {
     repeated common.KeyValue attributes = 20;
     repeated string tags = 21;
     string owner = 22;
-    common.CodeVersion code_version_snapshot = 23;
+    CodeVersion code_version_snapshot = 23;
     repeated common.Artifact artifacts = 24;
 }
 
@@ -168,7 +168,7 @@ message DeleteExperimentAttributes {
 // code version
 message LogExperimentCodeVersion {
     string id = 1;
-    common.CodeVersion code_version = 2;
+    CodeVersion code_version = 2;
 
     message Response {
         Experiment experiment = 1;
@@ -179,7 +179,7 @@ message GetExperimentCodeVersion {
     string id = 1;
 
     message Response {
-        common.CodeVersion code_version = 1;
+        CodeVersion code_version = 1;
     }
 }
 

@@ -1154,42 +1154,6 @@
         }
       }
     },
-    "commonCodeVersion": {
-      "type": "object",
-      "properties": {
-        "git_snapshot": {
-          "$ref": "#/definitions/commonGitSnapshot"
-        },
-        "code_archive": {
-          "$ref": "#/definitions/commonArtifact"
-        },
-        "date_logged": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "title": "code version"
-    },
-    "commonGitSnapshot": {
-      "type": "object",
-      "properties": {
-        "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "repo": {
-          "type": "string"
-        },
-        "hash": {
-          "type": "string"
-        },
-        "is_dirty": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        }
-      }
-    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -1284,6 +1248,22 @@
           "$ref": "#/definitions/modeldbProject"
         }
       }
+    },
+    "modeldbCodeVersion": {
+      "type": "object",
+      "properties": {
+        "git_snapshot": {
+          "$ref": "#/definitions/modeldbGitSnapshot"
+        },
+        "code_archive": {
+          "$ref": "#/definitions/commonArtifact"
+        },
+        "date_logged": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "code version"
     },
     "modeldbCreateProject": {
       "type": "object",
@@ -1588,7 +1568,7 @@
       "type": "object",
       "properties": {
         "code_version": {
-          "$ref": "#/definitions/commonCodeVersion"
+          "$ref": "#/definitions/modeldbCodeVersion"
         }
       }
     },
@@ -1711,6 +1691,26 @@
         }
       }
     },
+    "modeldbGitSnapshot": {
+      "type": "object",
+      "properties": {
+        "filepaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
     "modeldbLastModifiedExperimentRunSummary": {
       "type": "object",
       "properties": {
@@ -1753,7 +1753,7 @@
           "type": "string"
         },
         "code_version": {
-          "$ref": "#/definitions/commonCodeVersion"
+          "$ref": "#/definitions/modeldbCodeVersion"
         }
       },
       "title": "code version"
@@ -1844,7 +1844,7 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/commonCodeVersion"
+          "$ref": "#/definitions/modeldbCodeVersion"
         },
         "artifacts": {
           "type": "array",

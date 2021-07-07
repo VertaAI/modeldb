@@ -36,7 +36,7 @@ message Project {
     repeated common.KeyValue attributes = 20;
     repeated string tags = 21;
     string owner = 22;
-    common.CodeVersion code_version_snapshot = 23;
+    CodeVersion code_version_snapshot = 23;
     repeated common.Artifact artifacts = 24;
 }
 
@@ -168,7 +168,7 @@ message DeleteProjectAttributes {
 // code version
 message LogProjectCodeVersion {
     string id = 1;
-    common.CodeVersion code_version = 2;
+    CodeVersion code_version = 2;
 
     message Response {
         Project project = 1;
@@ -179,7 +179,7 @@ message GetProjectCodeVersion {
     string id = 1;
 
     message Response {
-        common.CodeVersion code_version = 1;
+        CodeVersion code_version = 1;
     }
 }
 

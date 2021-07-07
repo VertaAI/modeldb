@@ -8,6 +8,7 @@ option java_multiple_files = true;
 import "google/api/annotations.proto";
 import "google/protobuf/field_mask.proto";
 import "common/CommonService.proto";
+import "modeldb/CommonService.proto";
 import "modeldb/versioning/Environment.proto";
 import "registry/StageService.proto";
 import "uac/Collaborator.proto";
@@ -189,9 +190,6 @@ message ModelVersion {
 
     // Current lock level for this model version
     ModelVersionLockLevelEnum.ModelVersionLockLevel lock_level = 19;
-
-    repeated common.Artifact datasets = 20;
-    map<string, common.CodeVersion> code_version_from_blob = 21;
 }
 
 message SetLockModelVersionRequest {
@@ -256,77 +254,6 @@ message SetModelVersion {
 
 message DeleteModelVersionRequest {
     ModelVersionIdentification id = 1;
-
-    message Response { }
-}
-
-message GetUrlForArtifact {
-    // id of model version
-    uint64 model_version_id = 1;
-    //artifact key
-    string key = 2;
-    //GET or PUT
-    string method = 3;
-    //type of artifact
-    common.ArtifactTypeEnum.ArtifactType artifact_type = 4;
-    // 0 if the url is not required to be multi part
-    uint64 part_number = 5;
-
-    message Response {
-        // URL based on action
-        string url = 1;
-        bool multipart_upload_ok = 2;
-        map<string, string> fields = 3;
-    }
-}
-
-message CommitArtifactPart {
-    // id of model version
-    uint64 model_version_id = 1;
-    //artifact key
-    string key = 2;
-    common.ArtifactPart artifact_part = 3;
-
-    message Response{ }
-}
-
-message GetCommittedArtifactParts {
-    // id of model version
-    uint64 model_version_id = 1;
-    //artifact key
-    string key = 2;
-
-    message Response {
-        repeated common.ArtifactPart artifact_parts = 1;
-    }
-}
-
-message CommitMultipartArtifact {
-    // id of model version
-    uint64 model_version_id = 1;
-    //artifact key
-    string key = 2;
-
-    message Response { }
-}
-
-message LogDatasetsInModelVersion {
-    uint64 model_version_id = 1;
-    repeated common.Artifact datasets = 2;
-
-    message Response { }
-}
-
-message LogCodeVersionFromBlobInModelVersion {
-    uint64 model_version_id = 1;
-    map<string, common.CodeVersion> code_version_from_blob = 2;
-
-    message Response { }
-}
-
-message LogAttributesInModelVersion {
-    uint64 model_version_id = 1;
-    repeated common.KeyValue attributes = 2;
 
     message Response { }
 }
@@ -513,27 +440,6 @@ service RegistryService {
     rpc commitMultipartArtifact(CommitMultipartArtifact) returns (CommitMultipartArtifact.Response) {
         option (google.api.http) = {
             post: "/v1/registry/model_versions/{model_version_id}/commitMultipartArtifact"
-            body: "*"
-        };
-    };
-
-    rpc logDatasetsInModelVersion(LogDatasetsInModelVersion) returns (LogDatasetsInModelVersion.Response) {
-        option (google.api.http) = {
-            post: "/v1/registry/model_versions/{model_version_id}/logDatasets"
-            body: "*"
-        };
-    };
-
-    rpc logCodeVersionFromBlobInModelVersion(LogCodeVersionFromBlobInModelVersion) returns (LogCodeVersionFromBlobInModelVersion.Response) {
-        option (google.api.http) = {
-            post: "/v1/registry/model_versions/{model_version_id}/logCodeVersionFromBlob"
-            body: "*"
-        };
-    };
-
-    rpc logAttributesInModelVersion(LogAttributesInModelVersion) returns (LogAttributesInModelVersion.Response) {
-        option (google.api.http) = {
-            post: "/v1/registry/model_versions/{model_version_id}/logAttributes"
             body: "*"
         };
     };

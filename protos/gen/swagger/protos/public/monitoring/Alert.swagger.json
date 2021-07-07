@@ -437,7 +437,7 @@
         },
         "sample_find_base": {
           "$ref": "#/definitions/monitoringFindSummarySampleRequest",
-          "description": "Base for finding samples to be evaluated. The time will be the only field changing here\nIf the base defines an aggregation, the alert is an aggregate alert."
+          "title": "Base for finding samples to be evaluated. The time will be the only field changing here"
         },
         "status": {
           "$ref": "#/definitions/AlertStatusEnumAlertStatus",
@@ -633,20 +633,6 @@
           }
         },
         "monitored_entity_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "summary_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "samples_ids": {
           "type": "array",
           "items": {
             "type": "string",
@@ -849,16 +835,6 @@
         "page_limit": {
           "type": "integer",
           "format": "int32"
-        },
-        "store_aggregate": {
-          "type": "boolean",
-          "format": "boolean",
-          "title": "If there is an aggregation defined and this value is true, the aggregation will be stored to the database"
-        },
-        "allow_aggregate_samples": {
-          "type": "boolean",
-          "format": "boolean",
-          "description": "If true aggregate samples will be included in the results.  If false, only raw samples are returned."
         }
       },
       "description": "Request to fetch multiple summary samples, potentially with aggregation."
