@@ -684,8 +684,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 url = "{}://{}/api/v1/registry/model_versions/{}/commitArtifactPart".format(
                     self._conn.scheme, self._conn.socket, self.id
                 )
-                msg = _RegistryService.CommitArtifactPart(
-                    model_version_id=self.id, key=key
+                msg = _CommonService.CommitArtifactPart(
+                    id=str(self.id), key=key
                 )
                 msg.artifact_part.part_number = part_num
                 msg.artifact_part.etag = response.headers["ETag"]
@@ -698,8 +698,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             url = "{}://{}/api/v1/registry/model_versions/{}/commitMultipartArtifact".format(
                 self._conn.scheme, self._conn.socket, self.id
             )
-            msg = _RegistryService.CommitMultipartArtifact(
-                model_version_id=self.id, key=key
+            msg = _CommonService.CommitMultipartArtifact(
+                id=str(self.id), key=key
             )
             data = _utils.proto_to_json(msg)
             response = _utils.make_request("POST", url, self._conn, json=data)
