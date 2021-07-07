@@ -1,4 +1,4 @@
-package ai.verta.modeldb.artifactStore.storageservice.nfs;
+package ai.verta.modeldb.common.artifactStore.storageservice.nfs;
 
 public class UploadFileResponse {
   private String fileName;

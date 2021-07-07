@@ -48,7 +48,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.UpdateExperimentRunDescription;
 import ai.verta.modeldb.VersioningEntry;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.config.Config;

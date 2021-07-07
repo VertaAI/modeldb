@@ -1,15 +1,15 @@
 package ai.verta.modeldb;
 
-import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
-import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSService;
+import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.ArtifactStoreConfig;
 import ai.verta.modeldb.config.Config;
 import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
@@ -75,7 +75,7 @@ public class ServiceSet {
           System.setProperty(
               ModelDBConstants.CLOUD_BUCKET_NAME, artifactStoreConfig.S3.cloudBucketName);
           System.getProperties()
-              .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
+              .put("scan.packages", "ai.verta.modeldb.common.artifactStore.storageservice.s3");
           SpringApplication.run(App.class);
           artifactStoreService = App.getInstance().applicationContext.getBean(S3Service.class);
         } else {
@@ -90,7 +90,7 @@ public class ServiceSet {
 
         System.getProperties().put("file.upload-dir", rootDir);
         System.getProperties()
-            .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
+            .put("scan.packages", "ai.verta.modeldb.common.artifactStore.storageservice.nfs");
         SpringApplication.run(App.class, new String[0]);
 
         artifactStoreService = App.getInstance().applicationContext.getBean(NFSService.class);

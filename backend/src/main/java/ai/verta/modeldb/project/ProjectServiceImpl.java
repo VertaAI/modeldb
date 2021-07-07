@@ -45,7 +45,7 @@ import ai.verta.modeldb.SetProjectShortName;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.VerifyConnectionResponse;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
@@ -62,7 +62,7 @@ import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.stub.StreamObserver;
-import java.util.*;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

@@ -28,7 +28,7 @@ import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateDatasetVersionAttributes;
 import ai.verta.modeldb.UpdateDatasetVersionDescription;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;

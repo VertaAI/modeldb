@@ -5,7 +5,7 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
-import ai.verta.modeldb.artifactStore.storageservice.s3.S3SignatureUtil;
+import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3SignatureUtil;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.InternalFuture;

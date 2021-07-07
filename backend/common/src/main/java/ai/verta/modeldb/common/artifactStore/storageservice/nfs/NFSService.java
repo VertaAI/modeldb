@@ -1,9 +1,9 @@
-package ai.verta.modeldb.artifactStore.storageservice.nfs;
+package ai.verta.modeldb.common.artifactStore.storageservice.nfs;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;

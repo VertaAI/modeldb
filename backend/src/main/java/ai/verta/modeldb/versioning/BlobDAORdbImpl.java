@@ -6,7 +6,7 @@ import static java.util.stream.Collectors.toMap;
 import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.*;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;

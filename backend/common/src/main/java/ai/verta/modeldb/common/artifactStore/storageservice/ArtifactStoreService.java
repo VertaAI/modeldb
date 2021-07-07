@@ -1,4 +1,4 @@
-package ai.verta.modeldb.artifactStore.storageservice;
+package ai.verta.modeldb.common.artifactStore.storageservice;
 
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBConstants;

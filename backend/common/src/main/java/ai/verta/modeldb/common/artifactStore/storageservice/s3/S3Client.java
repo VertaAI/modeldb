@@ -1,10 +1,10 @@
-package ai.verta.modeldb.artifactStore.storageservice.s3;
+package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.config.S3Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.S3Config;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;

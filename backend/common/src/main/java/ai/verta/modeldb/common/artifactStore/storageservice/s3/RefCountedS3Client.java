@@ -1,4 +1,4 @@
-package ai.verta.modeldb.artifactStore.storageservice.s3;
+package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import com.amazonaws.auth.AWSCredentials;

@@ -1,9 +1,9 @@
-package ai.verta.modeldb.artifactStore.storageservice.s3;
+package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.HttpCodeToGRPCCode;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;

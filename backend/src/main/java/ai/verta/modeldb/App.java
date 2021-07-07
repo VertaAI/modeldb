@@ -1,8 +1,8 @@
 package ai.verta.modeldb;
 
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
-import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
+import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.GracefulShutdown;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;

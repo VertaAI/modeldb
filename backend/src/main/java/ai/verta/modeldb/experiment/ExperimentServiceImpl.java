@@ -8,7 +8,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.DeleteExperimentAttributes.Response;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceImplBase;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
