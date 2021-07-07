@@ -14,6 +14,7 @@ import io.opentracing.contrib.grpc.ActiveSpanSource;
 import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import io.opentracing.contrib.grpc.TracingServerInterceptor;
 import io.opentracing.contrib.jdbc.TracingDriver;
+import io.opentracing.contrib.jdbi3.OpentracingJdbi3Plugin;
 import io.opentracing.util.GlobalTracer;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -82,6 +83,7 @@ public abstract class Config {
 
   public abstract boolean hasServiceAccount();
 
+  private Tracer tracer = null;
   private TracingServerInterceptor tracingServerInterceptor = null;
   private TracingClientInterceptor tracingClientInterceptor = null;
 
@@ -89,7 +91,7 @@ public abstract class Config {
     if (!enableTrace) return;
 
     if (tracingServerInterceptor == null) {
-      Tracer tracer = Configuration.fromEnv().getTracer();
+      tracer = Configuration.fromEnv().getTracer();
       tracingServerInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
       GlobalTracer.register(tracer);
       TracingDriver.load();
@@ -134,8 +136,11 @@ public abstract class Config {
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);
 
-    initializeTracing();
-    final Jdbi jdbi = Jdbi.create(hikariDataSource).installPlugins();
+    Jdbi jdbi = Jdbi.create(hikariDataSource);
+    if (enableTrace) {
+      initializeTracing();
+      jdbi = jdbi.installPlugin(new OpentracingJdbi3Plugin(tracer));
+    }
     return jdbi;
   }
 
