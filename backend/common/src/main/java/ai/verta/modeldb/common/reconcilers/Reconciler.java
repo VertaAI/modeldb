@@ -68,16 +68,30 @@ public abstract class Reconciler<T> {
               CommonUtils.registeredBackgroundUtilsCount();
               try {
                 if (deduplicate) {
-                  Set<T> processingIds =
-                      pop().stream()
-                          .filter(id -> !processingIdSet.contains(id))
-                          .collect(Collectors.toSet());
-                  if (!processingIds.isEmpty()) {
+                  Set<T> idsToProcess;
+                  // Fetch ids to process while avoiding race conditions
+                  try {
+                    lock.lock();
+                    idsToProcess = pop().stream()
+                            .filter(id -> !processingIdSet.contains(id))
+                            .collect(Collectors.toSet());
+                    if (!idsToProcess.isEmpty()) {
+                      processingIdSet.addAll(idsToProcess);
+                    }
+                  } finally {
+                    lock.unlock();
+                  }
+
+                  if (!idsToProcess.isEmpty()) {
                     try {
-                      processingIdSet.addAll(processingIds);
-                      reconcile(processingIds);
+                      reconcile(idsToProcess);
                     } finally {
-                      processingIdSet.removeAll(processingIds);
+                      lock.lock();
+                      try {
+                        processingIdSet.removeAll(idsToProcess);
+                      } finally {
+                        lock.unlock();
+                      }
                     }
                   }
                 } else {
