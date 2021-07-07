@@ -18,7 +18,7 @@ import java.util.function.Supplier;
 public abstract class Connection {
   private final Optional<TracingClientInterceptor> tracingClientInterceptor;
 
-  Connection(Config config) {
+  public Connection(Config config) {
     tracingClientInterceptor = config.getTracingClientInterceptor();
   }
 

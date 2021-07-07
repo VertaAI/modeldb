@@ -20,7 +20,7 @@ public class UpdateRepositoryTimestampReconcile
 
   public UpdateRepositoryTimestampReconcile(
       ReconcilerConfig config, FutureJdbi futureJdbi, Executor executor) {
-    super(config, LOGGER, futureJdbi, executor);
+    super(config, LOGGER, futureJdbi, executor, false);
   }
 
   @Override
