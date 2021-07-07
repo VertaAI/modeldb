@@ -157,3 +157,19 @@ message VisibilityEnum {
         ORG_DEFAULT = 3;
     }
 }
+
+// code version
+message CodeVersion {
+    oneof code {
+        GitSnapshot git_snapshot = 1;
+        common.Artifact code_archive = 2; // ZIP archive of source code
+    }
+    uint64 date_logged = 3;
+}
+
+message GitSnapshot {
+    repeated string filepaths = 1; // paths to relevant source code
+    string repo = 2; // URL to remote repository
+    string hash = 3; // commit hash
+    common.TernaryEnum.Ternary is_dirty = 4;
+}

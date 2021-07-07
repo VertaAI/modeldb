@@ -131,6 +131,7 @@ message Alert {
     map<uint64,bool> notification_channels = 7;
 
     // Base for finding samples to be evaluated. The time will be the only field changing here
+    // If the base defines an aggregation, the alert is an aggregate alert.
     FindSummarySampleRequest sample_find_base = 8;
 
     // Current status of this alert
@@ -181,6 +182,8 @@ message FindAlertRequest {
     repeated uint64 ids = 1;
     repeated string names = 2;
     repeated uint64 monitored_entity_ids = 3;
+    repeated uint64 summary_ids = 9;
+    repeated uint64 samples_ids = 10;
 
     // Find alerts based on when they were last evaluated
     uint64 last_evaluated_at_millis_after = 4;

@@ -40,22 +40,6 @@ message GetTags {
     }
 }
 
-// code version
-message CodeVersion {
-    oneof code {
-        GitSnapshot git_snapshot = 1;
-        common.Artifact code_archive = 2; // ZIP archive of source code
-    }
-    uint64 date_logged = 3;
-}
-
-message GitSnapshot {
-    repeated string filepaths = 1; // paths to relevant source code
-    string repo = 2; // URL to remote repository
-    string hash = 3; // commit hash
-    common.TernaryEnum.Ternary is_dirty = 4;
-}
-
 message GetUrlForArtifact {
     string id = 1; // can be Proj, Expt, or Run depending on handling service
     string key = 2;

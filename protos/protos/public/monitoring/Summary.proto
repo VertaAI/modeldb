@@ -103,6 +103,7 @@ message SummarySample {
     uint64 created_at_millis = 6;
     uint64 time_window_start_at_millis = 7;
     uint64 time_window_end_at_millis = 8;
+    bool is_aggregate = 9;
 }
 
 // Request to create a summary sample
@@ -135,6 +136,12 @@ message FindSummarySampleRequest {
     // Pagination
     int32 page_number = 3;
     int32 page_limit = 4;
+
+    // If there is an aggregation defined and this value is true, the aggregation will be stored to the database
+    bool store_aggregate = 5;
+
+    // If true aggregate samples will be included in the results.  If false, only raw samples are returned.
+    bool allow_aggregate_samples = 6;
 
     message Response {
         repeated SummarySample samples = 1;
