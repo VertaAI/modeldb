@@ -28,7 +28,7 @@ public class SoftDeleteExperiments extends Reconciler<String> {
 
   public SoftDeleteExperiments(
       ReconcilerConfig config, RoleService roleService, FutureJdbi futureJdbi, Executor executor) {
-    super(config, LOGGER, futureJdbi, executor);
+    super(config, LOGGER, futureJdbi, executor, false);
     this.roleService = roleService;
   }
 

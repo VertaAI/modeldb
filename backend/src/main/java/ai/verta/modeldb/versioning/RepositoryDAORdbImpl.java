@@ -531,7 +531,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             modelDBServiceResourceTypes,
             repository.getCustomPermission(),
             resourceVisibility);
-        LOGGER.debug("Project role bindings created successfully");
+        LOGGER.debug("Repository role bindings created successfully");
         Transaction transaction = session.beginTransaction();
         repositoryEntity.setCreated(true);
         repositoryEntity.setVisibility_migration(true);
