@@ -1,7 +1,7 @@
 package ai.verta.modeldb.common.artifactStore.storageservice;
 
 import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.amazonaws.services.s3.model.PartETag;

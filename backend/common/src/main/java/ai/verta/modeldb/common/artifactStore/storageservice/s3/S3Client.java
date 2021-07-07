@@ -1,7 +1,7 @@
 package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.S3Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;

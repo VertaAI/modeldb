@@ -1,6 +1,6 @@
 package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.artifactStore.storageservice.nfs.UploadFileResponse;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.rpc.Code;
