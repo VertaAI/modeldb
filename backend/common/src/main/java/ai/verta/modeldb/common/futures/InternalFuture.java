@@ -106,6 +106,11 @@ public class InternalFuture<T> {
     return from(stage.whenCompleteAsync(action, executor));
   }
 
+  public InternalFuture<T> exceptionally(
+      Function<Throwable, ? extends T> action) {
+    return from(stage.exceptionally(action));
+  }
+
   public T get() throws ExecutionException, InterruptedException {
     return stage.toCompletableFuture().get();
   }
