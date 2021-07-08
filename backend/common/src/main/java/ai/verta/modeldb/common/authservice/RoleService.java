@@ -56,6 +56,10 @@ public interface RoleService {
       Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
+  List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
+      Workspace workspace, Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
   List<String> getWorkspaceRoleBindings(
       String workspace_id,
       WorkspaceTypeEnum.WorkspaceType workspaceType,
