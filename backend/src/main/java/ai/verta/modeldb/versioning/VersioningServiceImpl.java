@@ -2,9 +2,9 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.DAOSet;
-import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
-import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;

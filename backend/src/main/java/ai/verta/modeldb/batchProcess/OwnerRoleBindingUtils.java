@@ -2,7 +2,7 @@ package ai.verta.modeldb.batchProcess;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;

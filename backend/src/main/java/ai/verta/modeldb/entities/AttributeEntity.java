@@ -1,7 +1,7 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.common.KeyValue;
-import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBUtils;

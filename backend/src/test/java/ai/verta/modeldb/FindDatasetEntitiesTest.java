@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.GetUser;
