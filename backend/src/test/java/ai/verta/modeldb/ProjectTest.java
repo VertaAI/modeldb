@@ -8,7 +8,6 @@ import ai.verta.common.CodeVersion;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import com.google.protobuf.ListValue;

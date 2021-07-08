@@ -1,12 +1,13 @@
-package ai.verta.modeldb.common.artifactStore.storageservice.nfs;
+package ai.verta.modeldb.artifactStore.storageservice.nfs;
 
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.common.ModelDBConstants;
-import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.config.Config;
-import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.utils.TrialUtils;
+import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.api.client.util.IOUtils;
 import com.google.rpc.Code;
@@ -33,7 +34,8 @@ public class NFSService implements ArtifactStoreService {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSService.class);
   private final Path fileStorageLocation;
-  private final Config config;
+  private final App app = App.getInstance();
+  private final Config config = app.config;
 
   /**
    * Create NFS service bean by springBoot and create root folder if not exists
@@ -42,8 +44,7 @@ public class NFSService implements ArtifactStoreService {
    * @throws ModelDBException ModelDBException
    */
   @Autowired
-  public NFSService(FileStorageProperties fileStorageProperties, Config config) throws ModelDBException {
-    this.config = config;
+  public NFSService(FileStorageProperties fileStorageProperties) throws ModelDBException {
     LOGGER.trace("NFSService constructor called");
     this.fileStorageLocation =
         Paths.get(fileStorageProperties.getUploadDir()).toAbsolutePath().normalize();

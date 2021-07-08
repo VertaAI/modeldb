@@ -7,7 +7,6 @@ import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.common.ModelDBConstants;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.Status;

@@ -1,6 +1,6 @@
 package ai.verta.modeldb.utils;
 
-import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import java.util.List;
 import java.util.Map;

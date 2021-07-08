@@ -1,4 +1,4 @@
-package ai.verta.modeldb.common.config;
+package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.common.config.InvalidConfigException;
 

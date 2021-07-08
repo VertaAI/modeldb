@@ -2,7 +2,7 @@ package ai.verta.modeldb.versioning.blob.container;
 
 import static ai.verta.modeldb.versioning.blob.factory.BlobFactory.*;
 
-import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.AttributeEntity;

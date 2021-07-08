@@ -2,8 +2,9 @@ package ai.verta.modeldb.metadata;
 
 import static org.junit.Assert.*;
 
-import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.TestsInit;
+import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import java.util.ArrayList;
 import java.util.List;

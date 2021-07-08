@@ -1,4 +1,4 @@
-package ai.verta.modeldb.common;
+package ai.verta.modeldb;
 
 public interface ModelDBConstants {
 
