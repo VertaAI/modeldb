@@ -534,7 +534,10 @@ public class FutureExperimentRunDAO {
                                 .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                         .build()),
             executor)
-        .thenApply(GetSelfAllowedResources.Response::getResourcesList, executor);
+        .thenApply(response -> {
+          LOGGER.debug("GetSelfAllowedResources for actioin {} : {}", action.name(), response.getResourcesCount());
+          return response.getResourcesList();
+        }, executor);
   }
 
   private InternalFuture<List<GetResourcesResponseItem>> getAllowedResourceItems(
@@ -797,6 +800,7 @@ public class FutureExperimentRunDAO {
             accessibleProjectIdsQueryContext -> {
               // accessibleProjectIdsQueryContext == null means not allowed anything
               if (accessibleProjectIdsQueryContext == null) {
+                LOGGER.debug("Accessible projectIds not found so return empty response");
                 return InternalFuture.completedInternalFuture(new ArrayList<ExperimentRun>());
               } else {
                 final var futureProjectIdsContext =
@@ -1295,6 +1299,7 @@ public class FutureExperimentRunDAO {
 
   private InternalFuture<QueryFilterContext> getAccessibleProjectIdsQueryFilterContext(
       String workspaceName, String requestedProjectId) {
+    LOGGER.debug("Workspace name exists: {}", workspaceName.isEmpty());
     if (workspaceName.isEmpty()) {
       return getAllowedEntitiesByResourceType(
               ModelDBActionEnum.ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT)
@@ -1302,12 +1307,14 @@ public class FutureExperimentRunDAO {
               resources -> {
                 boolean allowedAllResources = checkAllResourceAllowed(resources);
                 if (allowedAllResources) {
+                  LOGGER.debug("allowedAllResources in FindExperimentRun: {}", true);
                   return new QueryFilterContext();
                 } else {
                   List<String> accessibleProjectIds =
                       resources.stream()
                           .flatMap(x -> x.getResourceIdsList().stream())
                           .collect(Collectors.toList());
+                  LOGGER.debug("SelfAllowed accessible projectIds in FindExperimentRun: {}", accessibleProjectIds.size());
                   if (accessibleProjectIds.isEmpty()) {
                     return null;
                   } else {
@@ -1323,6 +1330,7 @@ public class FutureExperimentRunDAO {
       return getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.of(requestedProjectId))
           .thenApply(
               accessibleProjectIds -> {
+                LOGGER.debug("Workspace accessible projectIds in FindExperimentRun: {}", accessibleProjectIds.size());
                 if (accessibleProjectIds.isEmpty()) {
                   return new QueryFilterContext();
                 } else {
