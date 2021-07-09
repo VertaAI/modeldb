@@ -537,7 +537,7 @@ public class FutureExperimentRunDAO {
         .thenCompose(
             response -> {
               LOGGER.debug(
-                  "GetSelfAllowedResources for actioin {} : {}",
+                  "GetSelfAllowedResources for action {} : {}",
                   action.name(),
                   response.getResourcesCount());
               return InternalFuture.completedInternalFuture(response.getResourcesList());
@@ -1308,12 +1308,12 @@ public class FutureExperimentRunDAO {
     if (workspaceName.isEmpty()) {
       return getAllowedEntitiesByResourceType(
               ModelDBActionEnum.ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT)
-          .thenApply(
+          .thenCompose(
               resources -> {
                 boolean allowedAllResources = checkAllResourceAllowed(resources);
                 if (allowedAllResources) {
                   LOGGER.debug("allowedAllResources in FindExperimentRun: {}", true);
-                  return new QueryFilterContext();
+                  return InternalFuture.completedInternalFuture(new QueryFilterContext());
                 } else {
                   List<String> accessibleProjectIds =
                       resources.stream()
@@ -1323,11 +1323,11 @@ public class FutureExperimentRunDAO {
                       "SelfAllowed accessible projectIds in FindExperimentRun: {}",
                       accessibleProjectIds.size());
                   if (accessibleProjectIds.isEmpty()) {
-                    return null;
+                    return InternalFuture.completedInternalFuture(null);
                   } else {
-                    return new QueryFilterContext()
+                    return InternalFuture.completedInternalFuture(new QueryFilterContext()
                         .addCondition("experiment_run.project_id in (<authz_project_ids>)")
-                        .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
+                        .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds)));
                   }
                 }
               },
