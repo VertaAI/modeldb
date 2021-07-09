@@ -534,10 +534,15 @@ public class FutureExperimentRunDAO {
                                 .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                         .build()),
             executor)
-        .thenApply(response -> {
-          LOGGER.debug("GetSelfAllowedResources for actioin {} : {}", action.name(), response.getResourcesCount());
-          return response.getResourcesList();
-        }, executor);
+        .thenApply(
+            response -> {
+              LOGGER.debug(
+                  "GetSelfAllowedResources for actioin {} : {}",
+                  action.name(),
+                  response.getResourcesCount());
+              return response.getResourcesList();
+            },
+            executor);
   }
 
   private InternalFuture<List<GetResourcesResponseItem>> getAllowedResourceItems(
@@ -1314,7 +1319,9 @@ public class FutureExperimentRunDAO {
                       resources.stream()
                           .flatMap(x -> x.getResourceIdsList().stream())
                           .collect(Collectors.toList());
-                  LOGGER.debug("SelfAllowed accessible projectIds in FindExperimentRun: {}", accessibleProjectIds.size());
+                  LOGGER.debug(
+                      "SelfAllowed accessible projectIds in FindExperimentRun: {}",
+                      accessibleProjectIds.size());
                   if (accessibleProjectIds.isEmpty()) {
                     return null;
                   } else {
@@ -1330,7 +1337,9 @@ public class FutureExperimentRunDAO {
       return getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.of(requestedProjectId))
           .thenApply(
               accessibleProjectIds -> {
-                LOGGER.debug("Workspace accessible projectIds in FindExperimentRun: {}", accessibleProjectIds.size());
+                LOGGER.debug(
+                    "Workspace accessible projectIds in FindExperimentRun: {}",
+                    accessibleProjectIds.size());
                 if (accessibleProjectIds.isEmpty()) {
                   return new QueryFilterContext();
                 } else {
