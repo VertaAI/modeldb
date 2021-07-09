@@ -1325,9 +1325,10 @@ public class FutureExperimentRunDAO {
                   if (accessibleProjectIds.isEmpty()) {
                     return InternalFuture.completedInternalFuture(null);
                   } else {
-                    return InternalFuture.completedInternalFuture(new QueryFilterContext()
-                        .addCondition("experiment_run.project_id in (<authz_project_ids>)")
-                        .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds)));
+                    return InternalFuture.completedInternalFuture(
+                        new QueryFilterContext()
+                            .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                            .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds)));
                   }
                 }
               },
