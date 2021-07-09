@@ -39,12 +39,15 @@ public class AuthInterceptor implements ServerInterceptor {
               Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> dev_key =
               Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key<String> bearerAccessToken =
+          Metadata.Key.of("bearer_access_token", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
       if (requestHeaders == null
-              || !requestHeaders.containsKey(email_key)
-              || !(requestHeaders.containsKey(dev_key_underscore) || requestHeaders.containsKey(dev_key))
-              || !requestHeaders.containsKey(source_key)) {
+              || (!requestHeaders.containsKey(email_key)
+              || !(requestHeaders.containsKey(dev_key_underscore) || requestHeaders.containsKey(dev_key))) &&
+          !requestHeaders.containsKey(bearerAccessToken)
+          || !requestHeaders.containsKey(source_key)) {
         var message = "Required parameter is missing in metadata in request: " + methodName;
         call.close(Status.PERMISSION_DENIED
                 .withDescription(message), requestHeaders);
