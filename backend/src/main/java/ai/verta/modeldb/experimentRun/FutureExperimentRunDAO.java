@@ -534,13 +534,13 @@ public class FutureExperimentRunDAO {
                                 .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                         .build()),
             executor)
-        .thenApply(
+        .thenCompose(
             response -> {
               LOGGER.debug(
                   "GetSelfAllowedResources for actioin {} : {}",
                   action.name(),
                   response.getResourcesCount());
-              return response.getResourcesList();
+              return InternalFuture.completedInternalFuture(response.getResourcesList());
             },
             executor);
   }
