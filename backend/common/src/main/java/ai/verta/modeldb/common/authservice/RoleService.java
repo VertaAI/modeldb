@@ -113,7 +113,7 @@ public interface RoleService {
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  boolean deleteRoleBindings(List<String> roleBindingNames);
+  boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames);
 
   GeneratedMessageV3 getTeamByName(String orgId, String teamName);
 

@@ -105,7 +105,7 @@ public class SoftDeleteExperiments extends Reconciler<String> {
         }
       }
       if (!roleBindingNames.isEmpty()) {
-        roleService.deleteRoleBindings(roleBindingNames);
+        roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
       }
     }
   }

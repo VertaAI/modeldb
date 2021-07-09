@@ -89,7 +89,7 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean deleteRoleBindings(List<String> roleBindingNames) {
+  public boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames) {
     return true;
   }
 
