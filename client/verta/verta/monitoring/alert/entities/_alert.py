@@ -189,11 +189,6 @@ class Alert(_entity._ModelDBEntity):
         # so as to not re-alert on previously-seen samples
         sample_query_msg.filter.created_at_after_millis = last_evaluated_at
 
-        # if user did not set `starting_from` during alert creation,
-        # only fetch samples pertaining to present, not backfilled samples
-        if not sample_query_msg.filter.time_window_start_at_millis:
-            sample_query_msg.filter.time_window_start_at_millis = last_evaluated_at
-
         return SummarySampleQuery._from_proto_request(sample_query_msg)
 
     @property
