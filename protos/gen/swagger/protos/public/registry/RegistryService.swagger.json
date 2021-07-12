@@ -190,14 +190,14 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/commitArtifactPart": {
+    "/registry/model_versions/{id}/commitArtifactPart": {
       "post": {
         "operationId": "RegistryService_commitArtifactPart",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryCommitArtifactPartResponse"
+              "$ref": "#/definitions/modeldbCommitArtifactPartResponse"
             }
           },
           "default": {
@@ -209,19 +209,17 @@
         },
         "parameters": [
           {
-            "name": "model_version_id",
-            "description": "id of model version",
+            "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           },
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryCommitArtifactPart"
+              "$ref": "#/definitions/modeldbCommitArtifactPart"
             }
           }
         ],
@@ -230,14 +228,14 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/commitMultipartArtifact": {
+    "/registry/model_versions/{id}/commitMultipartArtifact": {
       "post": {
         "operationId": "RegistryService_commitMultipartArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryCommitMultipartArtifactResponse"
+              "$ref": "#/definitions/modeldbCommitMultipartArtifactResponse"
             }
           },
           "default": {
@@ -249,19 +247,17 @@
         },
         "parameters": [
           {
-            "name": "model_version_id",
-            "description": "id of model version",
+            "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           },
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryCommitMultipartArtifact"
+              "$ref": "#/definitions/modeldbCommitMultipartArtifact"
             }
           }
         ],
@@ -270,14 +266,14 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/getCommittedArtifactParts": {
+    "/registry/model_versions/{id}/getCommittedArtifactParts": {
       "get": {
         "operationId": "RegistryService_getCommittedArtifactParts",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryGetCommittedArtifactPartsResponse"
+              "$ref": "#/definitions/modeldbGetCommittedArtifactPartsResponse"
             }
           },
           "default": {
@@ -289,16 +285,13 @@
         },
         "parameters": [
           {
-            "name": "model_version_id",
-            "description": "id of model version",
+            "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           },
           {
             "name": "key",
-            "description": "artifact key.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -309,14 +302,14 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/getUrlForArtifact": {
+    "/registry/model_versions/{id}/getUrlForArtifact": {
       "post": {
         "operationId": "RegistryService_getUrlForArtifact",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryGetUrlForArtifactResponse"
+              "$ref": "#/definitions/modeldbGetUrlForArtifactResponse"
             }
           },
           "default": {
@@ -328,19 +321,17 @@
         },
         "parameters": [
           {
-            "name": "model_version_id",
-            "description": "id of model version",
+            "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
+            "type": "string"
           },
           {
             "name": "body",
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryGetUrlForArtifact"
+              "$ref": "#/definitions/modeldbGetUrlForArtifact"
             }
           }
         ],
@@ -1905,6 +1896,87 @@
         }
       }
     },
+    "modeldbCommitArtifactPart": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "artifact_part": {
+          "$ref": "#/definitions/commonArtifactPart"
+        }
+      }
+    },
+    "modeldbCommitArtifactPartResponse": {
+      "type": "object"
+    },
+    "modeldbCommitMultipartArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbCommitMultipartArtifactResponse": {
+      "type": "object"
+    },
+    "modeldbGetCommittedArtifactPartsResponse": {
+      "type": "object",
+      "properties": {
+        "artifact_parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifactPart"
+          }
+        }
+      }
+    },
+    "modeldbGetUrlForArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "modeldbGetUrlForArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -1938,43 +2010,6 @@
       ],
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
-    },
-    "registryCommitArtifactPart": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of model version"
-        },
-        "key": {
-          "type": "string",
-          "title": "artifact key"
-        },
-        "artifact_part": {
-          "$ref": "#/definitions/commonArtifactPart"
-        }
-      }
-    },
-    "registryCommitArtifactPartResponse": {
-      "type": "object"
-    },
-    "registryCommitMultipartArtifact": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of model version"
-        },
-        "key": {
-          "type": "string",
-          "title": "artifact key"
-        }
-      }
-    },
-    "registryCommitMultipartArtifactResponse": {
-      "type": "object"
     },
     "registryDeleteModelVersionRequestResponse": {
       "type": "object"
@@ -2067,17 +2102,6 @@
         }
       }
     },
-    "registryGetCommittedArtifactPartsResponse": {
-      "type": "object",
-      "properties": {
-        "artifact_parts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonArtifactPart"
-          }
-        }
-      }
-    },
     "registryGetModelVersionRequestResponse": {
       "type": "object",
       "properties": {
@@ -2100,52 +2124,6 @@
       "properties": {
         "registered_model": {
           "$ref": "#/definitions/registryRegisteredModel"
-        }
-      }
-    },
-    "registryGetUrlForArtifact": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of model version"
-        },
-        "key": {
-          "type": "string",
-          "title": "artifact key"
-        },
-        "method": {
-          "type": "string",
-          "title": "GET or PUT"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType",
-          "title": "type of artifact"
-        },
-        "part_number": {
-          "type": "string",
-          "format": "uint64",
-          "title": "0 if the url is not required to be multi part"
-        }
-      }
-    },
-    "registryGetUrlForArtifactResponse": {
-      "type": "object",
-      "properties": {
-        "url": {
-          "type": "string",
-          "title": "URL based on action"
-        },
-        "multipart_upload_ok": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "fields": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
         }
       }
     },
