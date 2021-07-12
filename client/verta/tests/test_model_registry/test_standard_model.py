@@ -2,6 +2,8 @@
 
 """ModelVersion.create_version_from_*() methods"""
 
+import re
+
 import pytest
 
 from verta.environment import Python
@@ -12,6 +14,7 @@ from ..models import standard_models
 
 
 verta_models = standard_models.verta_models()
+incomplete_verta_models = standard_models.incomplete_verta_models()
 keras_models = standard_models.keras_models()
 unsupported_keras_models = standard_models.unsupported_keras_models()
 sklearn_models = standard_models.sklearn_models()
@@ -30,6 +33,16 @@ class TestModelValidator:
     )
     def test_verta(self, model):
         assert model_validator.must_verta(model)
+
+    @pytest.mark.parametrize(
+        "model",
+        incomplete_verta_models,
+    )
+    def test_incomplete_verta(self, model):
+        msg_match = r"^model must finish implementing the following methods of VertaModelBase: "
+        msg_match += re.escape(str(list(sorted(model.__abstractmethods__))))
+        with pytest.raises(TypeError, match=msg_match):
+            model_validator.must_verta(model)
 
     @pytest.mark.parametrize(
         "model",
@@ -130,6 +143,17 @@ class TestStandardModels:
         endpoint.update(model_ver, wait=True)
         deployed_model = endpoint.get_deployed_model()
         assert deployed_model.predict(artifact_value) == artifact_value
+
+    @pytest.mark.parametrize(
+        "model",
+        incomplete_verta_models,
+    )
+    def test_incomplete_verta(self, registered_model, model):
+        with pytest.raises(TypeError):
+            registered_model.create_standard_model(
+                model,
+                Python([]),
+            )
 
     @pytest.mark.parametrize(
         "model",

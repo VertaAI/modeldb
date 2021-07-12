@@ -67,9 +67,14 @@ def must_xgboost_sklearn(model):
 def must_verta(model):
     if not (isinstance(model, type) and issubclass(model, VertaModelBase)):
         raise TypeError(
-            "model must be a subclass of"
-            " verta.registry.VertaModelBase, not"
-            " {}".format(model)
+            "model must be a subclass of verta.registry.VertaModelBase,"
+            " not {}".format(model)
+        )
+    remaining_abstract_methods = list(sorted(getattr(model, "__abstractmethods__", [])))
+    if remaining_abstract_methods:
+        raise TypeError(
+            "model must finish implementing the following methods of"
+            " VertaModelBase: {}".format(remaining_abstract_methods)
         )
 
     return True
