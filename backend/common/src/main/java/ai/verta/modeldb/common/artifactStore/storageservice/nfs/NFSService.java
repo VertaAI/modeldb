@@ -28,7 +28,6 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-@Service
 public class NFSService implements ArtifactStoreService {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSService.class);
@@ -41,7 +40,6 @@ public class NFSService implements ArtifactStoreService {
    * @param fileStorageProperties : file root path properties
    * @throws ModelDBException ModelDBException
    */
-  @Autowired
   public NFSService(FileStorageProperties fileStorageProperties, Config config) throws ModelDBException {
     this.config = config;
     LOGGER.trace("NFSService constructor called");
