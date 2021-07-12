@@ -429,7 +429,7 @@ class Endpoint(object):
         logs = response.json().get("entries", [])
         # remove duplicate lines
         logs = {
-            log["id"]: log["message"]
+            log.get("id", ""): log.get("message", "")
             for log in logs
         }
         # sort by line number
