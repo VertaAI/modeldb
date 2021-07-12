@@ -105,6 +105,7 @@ def delete_builds(clients):
     clients : list of :class:`~verta.Client`
 
     """
+    logger.info("deleting builds")
     for client in clients:
         workspaces = (
             client._conn._get_visible_orgs()
@@ -144,6 +145,7 @@ def delete_endpoints(clients):
     clients : list of :class:`~verta.Client`
 
     """
+    logger.info("deleting endpoints")
     for client in clients:
         workspaces = (
             client._conn._get_visible_orgs()
@@ -179,6 +181,7 @@ def delete_orgs(clients):
     clients : list of :class:`~verta.Client`
 
     """
+    logger.info("deleting orgs")
     for client in clients:
         for org_name in client._conn._get_visible_orgs():
             try:
