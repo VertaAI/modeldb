@@ -74,7 +74,7 @@ public class ServiceSet {
       case "S3":
         if (!artifactStoreConfig.S3.s3presignedURLEnabled) {
           System.setProperty(
-                  ModelDBConstants.CLOUD_BUCKET_NAME, artifactStoreConfig.S3.cloudBucketName);
+              ModelDBConstants.CLOUD_BUCKET_NAME, artifactStoreConfig.S3.cloudBucketName);
           System.getProperties()
               .put("scan.packages", "ai.verta.modeldb.common.artifactStore.storageservice.s3");
           SpringApplication.run(App.class);
