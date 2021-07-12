@@ -1121,7 +1121,13 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         """
         get_col_metadata = lambda col: {"num_unique": col.value_counts().size, "type": str(col.dtypes)}
-        return df.apply(get_col_metadata).to_dict()
+        s = df.apply(get_col_metadata)
+        # pandas v1.1.* has a bug where the resulting index is just ints
+        # rather than the original column names, so we set manually
+        # https://github.com/pandas-dev/pandas/issues/37544
+        s.index = df.columns
+
+        return s.to_dict()
 
     @staticmethod
     def _add_time_attributes_to_feature_data(feature_data):
