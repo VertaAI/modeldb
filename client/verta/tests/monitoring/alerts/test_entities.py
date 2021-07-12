@@ -117,7 +117,6 @@ class TestAlert:
         )
         expected_sample_query = SummarySampleQuery(
             summary_query=summary.alerts._build_summary_query(),
-            time_window_start=alert.created_at,
             created_after=alert.created_at,
         )
         assert alert.summary_sample_query == expected_sample_query
@@ -133,7 +132,6 @@ class TestAlert:
         expected_sample_query = SummarySampleQuery(
             summary_query=summary.alerts._build_summary_query(),
             labels=labels,
-            time_window_start=alert.created_at,
             created_after=alert.created_at,
         )
         assert alert.summary_sample_query == expected_sample_query
