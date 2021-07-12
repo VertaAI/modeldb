@@ -419,7 +419,7 @@ public class CollaboratorResourceMigration {
 
     // Remove all role bindings
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
+      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 
@@ -484,7 +484,7 @@ public class CollaboratorResourceMigration {
 
     // Remove all role bindings
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
+      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 }

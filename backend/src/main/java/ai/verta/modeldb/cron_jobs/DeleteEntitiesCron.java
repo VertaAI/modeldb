@@ -241,7 +241,7 @@ public class DeleteEntitiesCron extends TimerTask {
       }
     }
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
+      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 
@@ -323,7 +323,7 @@ public class DeleteEntitiesCron extends TimerTask {
       }
     }
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
+      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 

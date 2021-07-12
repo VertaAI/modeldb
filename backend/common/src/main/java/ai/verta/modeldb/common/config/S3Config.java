@@ -4,6 +4,7 @@ public class S3Config {
   public String cloudBucketName;
   public String cloudAccessKey;
   public String cloudSecretKey;
+  public String minioEndpoint;
   public String awsRegion = "us-east-1";
   public Boolean s3presignedURLEnabled = true;
   public String minioEndpoint;
