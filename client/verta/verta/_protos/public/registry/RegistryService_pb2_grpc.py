@@ -104,6 +104,11 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.LogCodeVersionFromBlobInModelVersion.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.LogCodeVersionFromBlobInModelVersion.Response.FromString,
         )
+    self.logAttributesInModelVersion = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/logAttributesInModelVersion',
+        request_serializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.Response.FromString,
+        )
 
 
 class RegistryServiceServicer(object):
@@ -236,6 +241,13 @@ class RegistryServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def logAttributesInModelVersion(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_RegistryServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -328,6 +340,11 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           servicer.logCodeVersionFromBlobInModelVersion,
           request_deserializer=registry_dot_RegistryService__pb2.LogCodeVersionFromBlobInModelVersion.FromString,
           response_serializer=registry_dot_RegistryService__pb2.LogCodeVersionFromBlobInModelVersion.Response.SerializeToString,
+      ),
+      'logAttributesInModelVersion': grpc.unary_unary_rpc_method_handler(
+          servicer.logAttributesInModelVersion,
+          request_deserializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

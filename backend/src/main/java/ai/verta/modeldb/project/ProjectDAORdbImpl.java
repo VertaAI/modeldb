@@ -4,7 +4,6 @@ import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
@@ -229,13 +228,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       deletedEntitiesQuery.setParameter("projectName", project.getName());
       List<String> deletedEntityIds = deletedEntitiesQuery.list();
       if (!deletedEntityIds.isEmpty()) {
-        try {
-          CommonUtils.registeredBackgroundUtilsCount();
-          roleService.deleteEntityResourcesWithServiceUser(
-              deletedEntityIds, ModelDBServiceResourceTypes.PROJECT);
-        } finally {
-          CommonUtils.unregisteredBackgroundUtilsCount();
-        }
+        roleService.deleteEntityResourcesWithServiceUser(
+            deletedEntityIds, ModelDBServiceResourceTypes.PROJECT);
       }
 
       Transaction transaction = session.beginTransaction();

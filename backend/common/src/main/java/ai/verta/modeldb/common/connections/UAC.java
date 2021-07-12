@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.connections;
 
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
+import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.uac.*;
@@ -13,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 public class UAC extends Connection {
   private static final Logger LOGGER = LogManager.getLogger(UAC.class);
 
+  private final Config config;
   private final ManagedChannel authServiceChannel;
 
   private final CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorServiceFutureStub;
@@ -38,6 +40,7 @@ public class UAC extends Connection {
   public UAC(
       String host, Integer port, Config config) {
     super(config);
+    this.config = config;
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
     if (host != null && port != null) { // AuthService not available.
       authServiceChannel =
@@ -57,6 +60,10 @@ public class UAC extends Connection {
     serviceAccountRoleServiceFutureStub = RoleServiceGrpc.newFutureStub(authServiceChannel)
             .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
     organizationServiceFutureStub = OrganizationServiceGrpc.newFutureStub(authServiceChannel);
+  }
+
+  public AuthServiceChannel getBlockingAuthServiceChannel() {
+    return new AuthServiceChannel(config);
   }
 
   private Metadata getServiceUserMetadata(Config config) {

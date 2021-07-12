@@ -9,8 +9,8 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
-import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
@@ -42,16 +42,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   }
 
   private RoleServiceUtils(Config config, AuthService authService, UAC uac) {
-    super(
-        config,
-        authService,
-        config.authService.host,
-        config.authService.port,
-        config.service_user.email,
-        config.service_user.devKey,
-        config.grpcServer.requestTimeout,
-        AuthInterceptor.METADATA_INFO,
-        uac);
+    super(authService, config.grpcServer.requestTimeout, uac);
   }
 
   @Override
@@ -75,7 +66,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       String resourceId,
       String resourceOwnerId,
       Metadata requestHeaders) {
-    try (AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.debug("getting Resource collaborator with authChannel {}", authServiceChannel);
       return getCollaborators(
           authServiceChannel,
@@ -327,7 +318,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
     if (legacyWorkspaceId == null || legacyWorkspaceId.isEmpty()) {
       return Optional.empty();
     }
-    try (final AuthServiceChannel authServiceChannel = new AuthServiceChannel()) {
+    try (final AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.trace("Fetching workspace " + legacyWorkspaceId);
       final Workspace workspace =
           authServiceChannel

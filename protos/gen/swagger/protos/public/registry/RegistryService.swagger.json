@@ -349,6 +349,45 @@
         ]
       }
     },
+    "/registry/model_versions/{model_version_id}/logAttributes": {
+      "post": {
+        "operationId": "RegistryService_logAttributesInModelVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryLogAttributesInModelVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryLogAttributesInModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
     "/registry/model_versions/{model_version_id}/logCodeVersionFromBlob": {
       "post": {
         "operationId": "RegistryService_logCodeVersionFromBlobInModelVersion",
@@ -1727,7 +1766,8 @@
         "DEVELOPMENT",
         "STAGING",
         "PRODUCTION",
-        "ARCHIVED"
+        "ARCHIVED",
+        "UNASSIGNED"
       ],
       "default": "UNKNOWN"
     },
@@ -2108,6 +2148,24 @@
           }
         }
       }
+    },
+    "registryLogAttributesInModelVersion": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
+        }
+      }
+    },
+    "registryLogAttributesInModelVersionResponse": {
+      "type": "object"
     },
     "registryLogCodeVersionFromBlobInModelVersion": {
       "type": "object",

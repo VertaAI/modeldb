@@ -28,7 +28,7 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
 
   public SoftDeleteExperimentRuns(
       ReconcilerConfig config, RoleService roleService, FutureJdbi futureJdbi, Executor executor) {
-    super(config, LOGGER, futureJdbi, executor);
+    super(config, LOGGER, futureJdbi, executor, false);
     this.roleService = roleService;
   }
 
@@ -105,7 +105,7 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
         }
       }
       if (!roleBindingNames.isEmpty()) {
-        roleService.deleteRoleBindings(roleBindingNames);
+        roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
       }
     }
   }

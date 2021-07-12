@@ -2,6 +2,7 @@ package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.InvalidConfigException;
+import ai.verta.modeldb.common.config.S3Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.rpc.Code;
 

@@ -56,6 +56,10 @@ public interface RoleService {
       Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
+  List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
+      Workspace workspace, Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
   List<String> getWorkspaceRoleBindings(
       String workspace_id,
       WorkspaceTypeEnum.WorkspaceType workspaceType,
@@ -109,7 +113,7 @@ public interface RoleService {
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  boolean deleteRoleBindings(List<String> roleBindingNames);
+  boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames);
 
   GeneratedMessageV3 getTeamByName(String orgId, String teamName);
 

@@ -89,7 +89,7 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean deleteRoleBindings(List<String> roleBindingNames) {
+  public boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames) {
     return true;
   }
 
@@ -259,6 +259,14 @@ public class PublicRoleServiceUtils implements RoleService {
 
   @Override
   public List<GetResourcesResponseItem> getResourceItems(
+      Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
       Workspace workspace,
       Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
