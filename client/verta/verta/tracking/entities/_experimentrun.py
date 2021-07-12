@@ -81,6 +81,10 @@ class ExperimentRun(_DeployableEntity):
                 _utils.timestamp_to_str(int(run_msg.date_created))),
             "date updated: {}".format(
                 _utils.timestamp_to_str(int(run_msg.date_updated))),
+            "start time: {}".format(
+                _utils.timestamp_to_str(int(run_msg.start_time))),
+            "end time: {}".format(
+                _utils.timestamp_to_str(int(run_msg.end_time))),
             "description: {}".format(run_msg.description),
             "tags: {}".format(run_msg.tags),
             "attributes: {}".format(
@@ -156,11 +160,12 @@ class ExperimentRun(_DeployableEntity):
         return conn.maybe_proto_response(response, Message.Response).experiment_run
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, start_time=None, end_time=None):
         Message = _ExperimentRunService.CreateExperimentRun
         msg = Message(project_id=ctx.proj.id, experiment_id=ctx.expt.id, name=name,
                       description=desc, tags=tags, attributes=attrs,
-                      date_created=date_created, date_updated=date_created)
+                      date_created=date_created, date_updated=date_created,
+                      start_time=start_time, end_time=end_time)
         response = conn.make_proto_request("POST",
                                            "/api/v1/modeldb/experiment-run/createExperimentRun",
                                            body=msg)
