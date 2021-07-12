@@ -1766,7 +1766,8 @@
         "DEVELOPMENT",
         "STAGING",
         "PRODUCTION",
-        "ARCHIVED"
+        "ARCHIVED",
+        "UNASSIGNED"
       ],
       "default": "UNKNOWN"
     },
