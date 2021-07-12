@@ -3,7 +3,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
 import ai.verta.modeldb.Location;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
@@ -12,7 +12,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;

@@ -1,6 +1,6 @@
 package ai.verta.modeldb.config;
 
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -42,7 +42,7 @@ public class TestConfig extends Config {
     artifactStoreConfig.Validate("artifactStoreConfig");
 
     if (trial != null) {
-      trial.Validate("trial");
+      trial.Validate();
     }
 
     if (migrations != null) {

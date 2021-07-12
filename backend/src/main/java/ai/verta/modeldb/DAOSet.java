@@ -1,13 +1,13 @@
 package ai.verta.modeldb;
 
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAODisabled;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.config.TrialConfig;
+import ai.verta.modeldb.common.config.TrialConfig;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;

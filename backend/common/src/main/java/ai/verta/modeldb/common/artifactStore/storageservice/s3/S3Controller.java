@@ -1,7 +1,7 @@
-package ai.verta.modeldb.artifactStore.storageservice.s3;
+package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.UploadFileResponse;
+import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.UploadFileResponse;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,11 +22,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@ConditionalOnProperty(name = "artifactStoreConfig.artifactStoreType", havingValue = "S3", matchIfMissing = true)
 public class S3Controller {
 
   private static final Logger LOGGER = LogManager.getLogger(S3Controller.class);
 
-  @Autowired private S3Service s3Service;
+  private final S3Service s3Service;
+
+  @Autowired
+  public S3Controller(S3Service s3Service) {
+    this.s3Service = s3Service;
+  }
 
   @PutMapping(value = {"${artifactEndpoint.storeArtifact}"})
   public ResponseEntity<UploadFileResponse> storeArtifact(

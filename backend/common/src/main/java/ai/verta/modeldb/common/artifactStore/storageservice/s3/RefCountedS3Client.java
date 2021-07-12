@@ -1,4 +1,4 @@
-package ai.verta.modeldb.artifactStore.storageservice.s3;
+package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import com.amazonaws.auth.AWSCredentials;
@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class RefCountedS3Client implements AutoCloseable {
-  private static final Logger LOGGER = LogManager.getLogger(CronJobUtils.class);
+  private static final Logger LOGGER = LogManager.getLogger(RefCountedS3Client.class);
   private AWSCredentials credentials;
   private AmazonS3 s3Client;
   private AtomicInteger referenceCounter;

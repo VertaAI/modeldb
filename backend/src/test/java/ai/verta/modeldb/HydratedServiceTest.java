@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 
 import ai.verta.common.*;
 import ai.verta.common.OperatorEnum.Operator;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.uac.*;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;

@@ -1,4 +1,4 @@
-package ai.verta.modeldb.artifactStore;
+package ai.verta.modeldb.common.artifactStore;
 
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetUrlForArtifact.Response;

@@ -11,7 +11,7 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.common.CommonConstants;
@@ -24,6 +24,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -473,11 +474,6 @@ public class ModelDBUtils {
 
   public static String getJoinedLocation(List<String> location) {
     return String.join("#", location);
-  }
-
-  public static boolean isEnvSet(String envVar) {
-    String envVarVal = System.getenv(envVar);
-    return envVarVal != null && !envVarVal.isEmpty();
   }
 
   public static void validateEntityNameWithColonAndSlash(String name) throws ModelDBException {

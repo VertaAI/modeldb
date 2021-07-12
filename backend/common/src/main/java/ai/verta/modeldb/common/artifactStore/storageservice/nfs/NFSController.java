@@ -1,6 +1,6 @@
-package ai.verta.modeldb.artifactStore.storageservice.nfs;
+package ai.verta.modeldb.common.artifactStore.storageservice.nfs;
 
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -24,11 +25,17 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
+@ConditionalOnProperty(name = "artifactStoreConfig.artifactStoreType", havingValue = "NFS")
 public class NFSController {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSController.class);
 
-  @Autowired private NFSService nfsService;
+  private final NFSService nfsService;
+
+  @Autowired
+  public NFSController(NFSService nfsService) {
+    this.nfsService = nfsService;
+  }
 
   @PutMapping(value = {"${artifactEndpoint.storeArtifact}"})
   public UploadFileResponse storeArtifact(

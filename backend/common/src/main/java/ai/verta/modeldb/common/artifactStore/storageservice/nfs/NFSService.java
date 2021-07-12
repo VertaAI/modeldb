@@ -1,13 +1,12 @@
-package ai.verta.modeldb.artifactStore.storageservice.nfs;
+package ai.verta.modeldb.common.artifactStore.storageservice.nfs;
 
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.utils.TrialUtils;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.utils.TrialUtils;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.api.client.util.IOUtils;
 import com.google.rpc.Code;
@@ -23,19 +22,15 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-@Service
 public class NFSService implements ArtifactStoreService {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSService.class);
   private final Path fileStorageLocation;
-  private final App app = App.getInstance();
-  private final Config config = app.config;
+  private final Config config;
 
   /**
    * Create NFS service bean by springBoot and create root folder if not exists
@@ -43,8 +38,8 @@ public class NFSService implements ArtifactStoreService {
    * @param fileStorageProperties : file root path properties
    * @throws ModelDBException ModelDBException
    */
-  @Autowired
-  public NFSService(FileStorageProperties fileStorageProperties) throws ModelDBException {
+  public NFSService(FileStorageProperties fileStorageProperties, Config config) throws ModelDBException {
+    this.config = config;
     LOGGER.trace("NFSService constructor called");
     this.fileStorageLocation =
         Paths.get(fileStorageProperties.getUploadDir()).toAbsolutePath().normalize();

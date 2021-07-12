@@ -1,4 +1,4 @@
-package ai.verta.modeldb.artifactStore.storageservice.s3;
+package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.format.DateTimeFormatter.ofPattern;
