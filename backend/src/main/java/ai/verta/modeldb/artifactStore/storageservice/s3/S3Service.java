@@ -263,7 +263,7 @@ public class S3Service implements ArtifactStoreService {
           errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
     } catch (InterruptedException e) {
       LOGGER.warn(e.getMessage(), e);
-      throw new ModelDBException(e.getMessage(), Code.INTERNAL);
+      throw new ModelDBException(e.getMessage(), Code.INTERNAL, e);
     }
   }
 

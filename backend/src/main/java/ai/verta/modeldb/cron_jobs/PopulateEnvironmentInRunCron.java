@@ -185,7 +185,7 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
       }
     } catch (IOException e) {
       LOGGER.warn(e.getMessage());
-      throw new ModelDBException(e.getMessage(), Code.INTERNAL);
+      throw new ModelDBException(e.getMessage(), Code.INTERNAL, e);
     }
   }
 

@@ -228,7 +228,7 @@ public class NFSService implements ArtifactStoreService {
         return fileInputStream;
       }
     } catch (IOException e) {
-      throw new ModelDBException(e.getMessage(), Code.INTERNAL);
+      throw new ModelDBException(e.getMessage(), Code.INTERNAL, e);
     }
 
     String errorMessage = "artifact file not found in NFS storage for given key : " + artifactPath;

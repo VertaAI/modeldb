@@ -143,7 +143,7 @@ public abstract class CommonHibernateUtil {
           // If registry will destroy then session factory also useless and have stale reference of registry so need to clean it as well.
           sessionFactory = null;
         }
-        throw new ModelDBException(e.getMessage());
+        throw new ModelDBException(e.getMessage(), e);
       }
     } else {
       return loopBack(sessionFactory);
