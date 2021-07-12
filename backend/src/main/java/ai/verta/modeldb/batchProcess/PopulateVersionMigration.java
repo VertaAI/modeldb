@@ -1,6 +1,6 @@
 package ai.verta.modeldb.batchProcess;
 
-import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.metadata.IDTypeEnum;

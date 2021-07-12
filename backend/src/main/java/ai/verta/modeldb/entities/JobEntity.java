@@ -1,7 +1,7 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.modeldb.Job;
-import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;

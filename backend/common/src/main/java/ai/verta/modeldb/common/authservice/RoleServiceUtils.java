@@ -7,15 +7,12 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
 import ai.verta.uac.*;
 import ai.verta.uac.ServiceEnum.Service;
 import com.google.protobuf.GeneratedMessageV3;
-import io.grpc.Context;
-import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -316,6 +313,38 @@ public class RoleServiceUtils implements RoleService {
       throw ex;
     }
   }
+
+  @Override
+  public List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
+      Workspace workspace, Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+      ResourceType resourceType =
+          ResourceType.newBuilder()
+              .setModeldbServiceResourceType(modelDBServiceResourceTypes)
+              .build();
+      Resources.Builder resources =
+          Resources.newBuilder()
+              .setResourceType(resourceType)
+              .setService(ServiceEnum.Service.MODELDB_SERVICE);
+
+      if (resourceIds != null && !resourceIds.isEmpty()) {
+        resources.addAllResourceIds(resourceIds);
+      }
+
+      GetResources.Builder builder = GetResources.newBuilder().setResources(resources.build());
+      if (workspace != null) {
+        builder.setWorkspaceId(workspace.getId());
+      }
+      final GetResources.Response response =
+          authServiceChannel.getCollaboratorServiceBlockingStub().getResourcesSpecialPersonalWorkspace(builder.build());
+      return response.getItemList();
+    } catch (StatusRuntimeException ex) {
+      LOGGER.trace(ex);
+      throw ex;
+    }
+  }
+
 
   @Override
   public List<String> getWorkspaceRoleBindings(
@@ -785,11 +814,11 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public boolean deleteRoleBindings(List<String> roleBindingNames) {
-    return deleteRoleBindings(true, roleBindingNames);
+  public boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames) {
+    return deleteRoleBindingsUsingServiceUser(true, roleBindingNames);
   }
 
-  private boolean deleteRoleBindings(boolean retry, List<String> roleBindingNames) {
+  private boolean deleteRoleBindingsUsingServiceUser(boolean retry, List<String> roleBindingNames) {
     DeleteRoleBindings deleteRoleBindingRequest =
         DeleteRoleBindings.newBuilder().addAllRoleBindingNames(roleBindingNames).build();
     try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
@@ -798,7 +827,7 @@ public class RoleServiceUtils implements RoleService {
       // TODO: try using futur stub than blocking stub
       DeleteRoleBindings.Response deleteRoleBindingResponse =
           authServiceChannel
-              .getRoleServiceBlockingStub()
+              .getRoleServiceBlockingStubForServiceUser()
               .deleteRoleBindings(deleteRoleBindingRequest);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, deleteRoleBindingResponse);
@@ -810,7 +839,7 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<Boolean>)
-                  (retry1) -> deleteRoleBindings(retry1, roleBindingNames),
+                  (retry1) -> deleteRoleBindingsUsingServiceUser(retry1, roleBindingNames),
               timeout);
     }
   }

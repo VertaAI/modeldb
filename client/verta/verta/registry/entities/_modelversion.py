@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import json
 import logging
+from multiprocessing.pool import ThreadPool
 import os
 import pathlib2
 import pickle
@@ -14,7 +15,6 @@ from google.protobuf.struct_pb2 import Value
 import requests
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
-from verta._protos.public.modeldb import CommonService_pb2 as _CommonService
 from verta._protos.public.monitoring.DeploymentIntegration_pb2 import FeatureDataInModelVersion
 from verta._protos.public.registry import (
     RegistryService_pb2 as _RegistryService,
@@ -629,9 +629,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")
 
-        Message = _CommonService.GetUrlForArtifact
+        Message = _RegistryService.GetUrlForArtifact
         msg = Message(
-            id=str(self.id),
+            model_version_id=self.id,
             key=key,
             method=method,
             artifact_type=artifact_type,
@@ -684,8 +684,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 url = "{}://{}/api/v1/registry/model_versions/{}/commitArtifactPart".format(
                     self._conn.scheme, self._conn.socket, self.id
                 )
-                msg = _CommonService.CommitArtifactPart(
-                    id=str(self.id), key=key
+                msg = _RegistryService.CommitArtifactPart(
+                    model_version_id=self.id, key=key
                 )
                 msg.artifact_part.part_number = part_num
                 msg.artifact_part.etag = response.headers["ETag"]
@@ -698,8 +698,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             url = "{}://{}/api/v1/registry/model_versions/{}/commitMultipartArtifact".format(
                 self._conn.scheme, self._conn.socket, self.id
             )
-            msg = _CommonService.CommitMultipartArtifact(
-                id=str(self.id), key=key
+            msg = _RegistryService.CommitMultipartArtifact(
+                model_version_id=self.id, key=key
             )
             data = _utils.proto_to_json(msg)
             response = _utils.make_request("POST", url, self._conn, json=data)
@@ -1161,6 +1161,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         sample = profiler_cls(columns=[col]).profile(df)
         histogram = list(sample.values())[0]
+        content = data_type_cls(
+            buckets=histogram._buckets,
+            data=histogram._data,
+        )._as_dict()
         feature_data = FeatureDataInModelVersion(
             feature_name=col,
             profiler_name=profiler_cls.__name__,
@@ -1168,14 +1172,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "columns": [col],
             }),
             summary_name=col + "--" + "MissingValues",
-            summary_type_name=data_type_cls.__name__,
+            summary_type_name=content["type"],
             labels=labels,
-            content=json.dumps(
-                data_type_cls(
-                    buckets=histogram._buckets,
-                    data=histogram._data,
-                )._as_dict()
-            ),
+            content=json.dumps(content),
         )
         cls._add_time_attributes_to_feature_data(feature_data)
 
@@ -1204,6 +1203,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         sample = profiler_cls(columns=[col]).profile(df)
         histogram = list(sample.values())[0]
+        content = data_type_cls(
+            bucket_limits=histogram._bucket_limits,
+            data=histogram._data,
+        )._as_dict()
         feature_data = FeatureDataInModelVersion(
             feature_name=col,
             profiler_name=profiler_cls.__name__,
@@ -1212,14 +1215,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "bins": histogram._bucket_limits,
             }),
             summary_name=col + "--" + "Distribution",
-            summary_type_name=data_type_cls.__name__,
+            summary_type_name=content["type"],
             labels=labels,
-            content=json.dumps(
-                data_type_cls(
-                    bucket_limits=histogram._bucket_limits,
-                    data=histogram._data,
-                )._as_dict()
-            ),
+            content=json.dumps(content),
         )
         cls._add_time_attributes_to_feature_data(feature_data)
 
@@ -1248,6 +1246,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         sample = profiler_cls(columns=[col]).profile(df)
         histogram = list(sample.values())[0]
+        content = data_type_cls(
+            buckets=histogram._buckets,
+            data=histogram._data,
+        )._as_dict()
         feature_data = FeatureDataInModelVersion(
             feature_name=col,
             profiler_name=profiler_cls.__name__,
@@ -1255,14 +1257,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "columns": [col],
             }),
             summary_name=col + "--" + "Distribution",
-            summary_type_name=data_type_cls.__name__,
+            summary_type_name=content["type"],
             labels=labels,
-            content=json.dumps(
-                data_type_cls(
-                    buckets=histogram._buckets,
-                    data=histogram._data,
-                )._as_dict()
-            ),
+            content=json.dumps(content),
         )
         cls._add_time_attributes_to_feature_data(feature_data)
 
@@ -1333,7 +1330,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         feature_data_list : list of DeploymentIntegration_pb2.FeatureDataInModelVersion
 
         """
-        for i, feature_data in enumerate(feature_data_list):
+        def log_attribute(i, feature_data):
             logger.info("logging feature %s", feature_data.feature_name)
             self.add_attribute(
                 _deployable_entity._FEATURE_DATA_ATTR_PREFIX + str(i),
@@ -1343,6 +1340,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 self._normalize_attribute_key(feature_data.summary_name),
                 json.loads(feature_data.content),
             )
+
+        with ThreadPool(1) as p:
+            p.map(lambda args: log_attribute(*args), enumerate(feature_data_list))
 
     def log_training_data_profile(self, in_df, out_df):
         """Capture the profiles of training input and output data.

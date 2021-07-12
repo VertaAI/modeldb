@@ -1,12 +1,13 @@
-package ai.verta.modeldb.common.artifactStore;
+package ai.verta.modeldb.artifactStore;
 
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetUrlForArtifact.Response;
-import ai.verta.modeldb.common.ModelDBConstants;
-import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.HttpCodeToGRPCCode;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.config.Config;
+import ai.verta.modeldb.config.Config;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.model.PartETag;
@@ -21,10 +22,12 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(ArtifactStoreDAORdbImpl.class);
   private ArtifactStoreService artifactStoreService;
+  private final App app;
   private final Config config;
 
   public ArtifactStoreDAORdbImpl(ArtifactStoreService artifactStoreService, Config config) {
     this.artifactStoreService = artifactStoreService;
+    this.app = App.getInstance();
     this.config = config;
   }
 

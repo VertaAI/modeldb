@@ -39,12 +39,28 @@ public class AuthInterceptor implements ServerInterceptor {
               Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> dev_key =
               Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+      Metadata.Key<String> bearerAccessToken =
+          Metadata.Key.of("bearer_access_token", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-      if (requestHeaders == null
-              || !requestHeaders.containsKey(email_key)
-              || !(requestHeaders.containsKey(dev_key_underscore) || requestHeaders.containsKey(dev_key))
-              || !requestHeaders.containsKey(source_key)) {
+      boolean parameterMissing = false;
+      if (!requestHeaders.containsKey(source_key)) {
+        parameterMissing = true;
+      } else {
+        String sourceValue = requestHeaders.get(source_key);
+        assert sourceValue != null;
+        boolean isDevKeyUsed = sourceValue.equals("PythonClient");
+        if (isDevKeyUsed) {
+          if (!requestHeaders.containsKey(email_key)
+              || !(requestHeaders.containsKey(dev_key_underscore) || requestHeaders
+              .containsKey(dev_key))) {
+            parameterMissing = true;
+          }
+        } else if (!requestHeaders.containsKey(bearerAccessToken)) {
+          parameterMissing = true;
+        }
+      }
+      if (parameterMissing) {
         var message = "Required parameter is missing in metadata in request: " + methodName;
         call.close(Status.PERMISSION_DENIED
                 .withDescription(message), requestHeaders);

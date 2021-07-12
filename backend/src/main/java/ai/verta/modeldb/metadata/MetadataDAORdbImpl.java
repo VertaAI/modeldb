@@ -1,7 +1,7 @@
 package ai.verta.modeldb.metadata;
 
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.entities.metadata.KeyValuePropertyMappingEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;

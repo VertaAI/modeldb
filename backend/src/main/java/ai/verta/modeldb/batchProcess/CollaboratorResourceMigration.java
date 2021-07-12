@@ -6,7 +6,7 @@ import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.DatasetVisibilityEnum;
-import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
@@ -419,7 +419,7 @@ public class CollaboratorResourceMigration {
 
     // Remove all role bindings
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
+      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 
@@ -484,7 +484,7 @@ public class CollaboratorResourceMigration {
 
     // Remove all role bindings
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
+      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 }

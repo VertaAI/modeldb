@@ -1,10 +1,11 @@
-package ai.verta.modeldb.common.artifactStore.storageservice.s3;
+package ai.verta.modeldb.artifactStore.storageservice.s3;
 
-import ai.verta.modeldb.common.ModelDBConstants;
+import ai.verta.modeldb.App;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.S3Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.utils.Utils;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -43,10 +44,12 @@ public class S3Client {
   private AmazonS3 s3Client;
   private AtomicInteger referenceCounter;
   private AWSCredentials awsCredentials;
+  private App app;
   private S3Config config;
 
-  public S3Client(String cloudBucketName, S3Config config) throws IOException, ModelDBException {
-    config = config;
+  public S3Client(String cloudBucketName) throws IOException, ModelDBException {
+    app = App.getInstance();
+    config = app.config.artifactStoreConfig.S3;
     String cloudAccessKey = config.cloudAccessKey;
     String cloudSecretKey = config.cloudSecretKey;
     String minioEndpoint = config.minioEndpoint;
@@ -64,8 +67,8 @@ public class S3Client {
         LOGGER.debug("minio client");
         initializeMinioClient(cloudAccessKey, cloudSecretKey, awsRegion, minioEndpoint);
       }
-    } else if (Utils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
-        && Utils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
+    } else if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
+        && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
       LOGGER.debug("temporary token based s3 client");
       initializeWithTemporaryCredentials(awsRegion);
     } else {
