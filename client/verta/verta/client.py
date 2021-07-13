@@ -1074,7 +1074,7 @@ class Client(object):
         return self._ctx.expt
 
 
-    def create_experiment_run(self, name=None, desc=None, tags=None, attrs=None, date_created=None):
+    def create_experiment_run(self, name=None, desc=None, tags=None, attrs=None, date_created=None, start_time=None, end_time=None):
         """
         Creates a new Experiment Run under the currently active Experiment.
 
@@ -1107,7 +1107,7 @@ class Client(object):
         if self._ctx.expt is None:
             self.set_experiment()
 
-        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created)
+        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created, start_time=start_time, end_time=end_time)
 
         return self._ctx.expt_run
 
