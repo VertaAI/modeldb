@@ -585,7 +585,7 @@ class Client(object):
             raise ValueError("ExperimentRun not Found")
         return self._ctx.expt_run
 
-    def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None):
+    def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None, start_time=None, end_time=None):
         """
         Attaches an Experiment Run under the currently active Experiment to this Client.
 
@@ -637,7 +637,7 @@ class Client(object):
 
             self._ctx.expt_run = ExperimentRun._get_or_create_by_name(self._conn, name,
                                                                     lambda name: ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id),
-                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created),
+                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created, start_time=start_time, end_time=end_time),
                                                                     lambda: check_unnecessary_params_warning(
                                                                           resource_name,
                                                                           "name {}".format(name),
@@ -1074,7 +1074,7 @@ class Client(object):
         return self._ctx.expt
 
 
-    def create_experiment_run(self, name=None, desc=None, tags=None, attrs=None, date_created=None):
+    def create_experiment_run(self, name=None, desc=None, tags=None, attrs=None, date_created=None, start_time=None, end_time=None):
         """
         Creates a new Experiment Run under the currently active Experiment.
 
@@ -1107,7 +1107,7 @@ class Client(object):
         if self._ctx.expt is None:
             self.set_experiment()
 
-        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created)
+        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created, start_time=start_time, end_time=end_time)
 
         return self._ctx.expt_run
 
