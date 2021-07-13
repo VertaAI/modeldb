@@ -67,6 +67,12 @@ class _DeployableEntity(_ModelDBEntity):
     ):
         r"""Logs a model and associated code dependencies.
 
+        .. note::
+
+            If using an XGBoost model from their scikit-learn API,
+            ``"scikit-learn"`` must also be specified in :meth:`log_environment`
+            (in addition to ``"xgboost"``).
+
         Parameters
         ----------
         model : str or object

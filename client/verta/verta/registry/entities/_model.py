@@ -225,6 +225,12 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         .. versionadded:: 0.18.2
 
+        .. note::
+
+            If using an XGBoost model from their scikit-learn API,
+            ``"scikit-learn"`` must also be specified in `environment`
+            (in addition to ``"xgboost"``).
+
         Parameters
         ----------
         model_cls : subclass of :class:`~verta.registry.VertaModelBase`
@@ -534,6 +540,12 @@ class RegisteredModel(_entity._ModelDBEntity):
         """Create a Standard Verta Model version from an XGBoost model.
 
         .. versionadded:: 0.18.2
+
+        .. note::
+
+            If using an XGBoost model from their scikit-learn API,
+            ``"scikit-learn"`` must also be specified in `environment`
+            (in addition to ``"xgboost"``).
 
         Parameters
         ----------
