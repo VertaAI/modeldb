@@ -1,16 +1,16 @@
 package ai.verta.modeldb;
 
+import ai.verta.modeldb.authservice.AuthServiceUtils;
+import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSService;
 import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.config.Config;
 import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
@@ -74,7 +74,7 @@ public class ServiceSet {
       case "S3":
         if (!artifactStoreConfig.S3.s3presignedURLEnabled) {
           System.setProperty(
-                  ModelDBConstants.CLOUD_BUCKET_NAME, artifactStoreConfig.S3.cloudBucketName);
+              ModelDBConstants.CLOUD_BUCKET_NAME, artifactStoreConfig.S3.cloudBucketName);
           System.getProperties()
               .put("scan.packages", "ai.verta.modeldb.common.artifactStore.storageservice.s3");
           SpringApplication.run(App.class);

@@ -1,7 +1,7 @@
 package ai.verta.modeldb.entities;
 
-import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.PathDatasetVersionInfo;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import java.util.List;
 import javax.persistence.CascadeType;

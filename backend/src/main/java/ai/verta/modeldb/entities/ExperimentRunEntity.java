@@ -2,9 +2,9 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.common.CodeVersion;
 import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.utils.ModelDBUtils;

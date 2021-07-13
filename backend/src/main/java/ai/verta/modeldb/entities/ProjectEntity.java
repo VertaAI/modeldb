@@ -2,10 +2,10 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum;
-import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;

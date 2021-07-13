@@ -1,12 +1,12 @@
 package ai.verta.modeldb.utils;
 
-import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.batchProcess.CollaboratorResourceMigration;
 import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
 import ai.verta.modeldb.common.CommonHibernateUtil;
+import ai.verta.modeldb.common.ModelDBConstants;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
