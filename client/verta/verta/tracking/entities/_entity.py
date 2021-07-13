@@ -106,7 +106,7 @@ class _ModelDBEntity(object):
             Sanitized `key`
 
         """
-        return "".join([x for x in key if (str.isalnum(x) or x == '_')])
+        return "".join([x for x in key if (x.isalnum() or x == '_')])
 
     @classmethod
     def _get_by_id(cls, conn, conf, id):

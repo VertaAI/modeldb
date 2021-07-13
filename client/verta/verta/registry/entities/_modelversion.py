@@ -1347,8 +1347,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 json.loads(feature_data.content),
             )
 
-        with ThreadPool(1) as p:
-            p.map(lambda args: log_attribute(*args), enumerate(feature_data_list))
+        p = ThreadPool(1)
+        p.map(lambda args: log_attribute(*args), enumerate(feature_data_list))
+        p.close()
 
     def log_training_data_profile(self, in_df, out_df):
         """Capture the profiles of training input and output data.
