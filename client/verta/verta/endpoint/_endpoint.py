@@ -363,15 +363,32 @@ class Endpoint(object):
         return response.json()["id"]
 
     def _set_kafka_settings(self, stage_id, kafka_settings):
+        if not isinstance(stage_id, six.integer_types):
+            raise TypeError("`stage_id` must be int, not {}".format(type(stage_id)))
+        if not isinstance(kafka_settings, KafkaSettings):
+            raise TypeError(
+                "`kafka_settings` must be of type verta.endpoint.KafkaSettings,"
+                " not {}".format(type(kafka_settings))
+            )
+
         url = "{}://{}/api/v1/deployment/stages/{}/kafka".format(
-            self._conn.scheme, self._conn.socket, stage_id,
+            self._conn.scheme,
+            self._conn.socket,
+            stage_id,
         )
-        response = _utils.make_request("PUT", url, self._conn, json=kafka_settings._as_dict())
+        response = _utils.make_request(
+            "PUT", url, self._conn, json=kafka_settings._as_dict()
+        )
         _utils.raise_for_http_error(response)
 
     def _get_kafka_settings(self, stage_id):
+        if not isinstance(stage_id, six.integer_types):
+            raise TypeError("`stage_id` must be int, not {}".format(type(stage_id)))
+
         url = "{}://{}/api/v1/deployment/stages/{}/kafka".format(
-            self._conn.scheme, self._conn.socket, stage_id,
+            self._conn.scheme,
+            self._conn.socket,
+            stage_id,
         )
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
