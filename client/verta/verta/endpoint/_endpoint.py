@@ -59,7 +59,6 @@ class Endpoint(object):
         self._conf = conf
         self.id = id
 
-    # TODO: Add stored kafka_settings to this repr
     def __repr__(self):
         status = self.get_status()
         data = Endpoint._get_json_by_id(self._conn, self.workspace, self.id)
@@ -78,6 +77,7 @@ class Endpoint(object):
                 "id: {}".format(self.id),
                 "curl: {}".format(curl),
                 "status: {}".format(status["status"]),
+                "Kafka settings: {}".format(self.kafka_settings),
                 "date created: {}".format(data["date_created"]),
                 "date updated: {}".format(data["date_updated"]),
                 "stage's date created: {}".format(status["date_created"]),
