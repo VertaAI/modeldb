@@ -424,6 +424,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
+        _artifact_utils.validate_key(key)
         if key == _artifact_utils.REGISTRY_MODEL_KEY:
             raise ValueError(
                 'the key "{}" is reserved for model;'
