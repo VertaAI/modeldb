@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Utilities for defining and interacting with deployable models."""
+# NOTE: This submodule is to be merged into verta.endpoint (VR-5882), and
+#       should not be expanded further.
 
 from verta._internal_utils import documentation
 
@@ -9,12 +11,9 @@ from ._deployedmodel import (
     prediction_io_cleanup,
 )
 
-from ._kafka_settings import KafkaSettings
-
 documentation.reassign_module(
     [
         DeployedModel,
-        KafkaSettings,
         prediction_input_unpack,
         prediction_io_cleanup,
     ],

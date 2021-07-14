@@ -19,7 +19,7 @@ class KafkaSettings(object):
     Examples
     --------
     .. code-block:: python
-        from verta.deployment import KafkaSettings
+        from verta.endpoint import KafkaSettings
 
         kafka_settings = KafkaSettings("my_input_data", "my_predictions", "my_endpoint_errors")
     """
