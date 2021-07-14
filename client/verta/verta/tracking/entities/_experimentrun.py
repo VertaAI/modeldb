@@ -1480,6 +1480,12 @@ class ExperimentRun(_DeployableEntity):
         The ``VERTA_ARTIFACT_DIR`` environment variable can be used to specify a locally-accessible
         directory to store artifacts.
 
+        .. note::
+
+            Certain artifact keys are reserved for internal use within the
+            Verta system. The full list of reserved keys may be viewed
+            `here <https://github.com/VertaAI/modeldb/blob/ca8907d/client/verta/verta/_internal_utils/_artifact_utils.py#L32-L45>`__.
+
         Parameters
         ----------
         key : str
