@@ -88,7 +88,7 @@ class Endpoint(object):
 
     @property
     def kafka_settings(self):
-        # NOTE: assumes "production" is the only stage (true at time of writing)
+        # NOTE: assumes endpoints only have one stage (true at time of writing)
         return self._get_kafka_settings(self._get_or_create_stage())
 
     @property
