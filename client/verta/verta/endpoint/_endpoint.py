@@ -234,6 +234,7 @@ class Endpoint(object):
         resources=None,
         autoscaling=None,
         env_vars=None,
+        kafka_settings=None,
     ):
         """
         Updates the endpoint with a model logged in an Experiment Run or a Model Version.
@@ -252,6 +253,9 @@ class Endpoint(object):
             Autoscaling condition for the updated endpoint.
         env_vars : dict of str to str, optional
             Environment variables.
+        kafka_settings : :class:`verta.endpoint.KafkaSettings` or False, optional
+            Kafka settings. If ``False``, clears this endpoint's existing Kafka
+            settings.
 
         Returns
         -------
@@ -269,6 +273,12 @@ class Endpoint(object):
         update_body = self._create_update_body(
             strategy, resources, autoscaling, env_vars
         )
+
+        # update Kafka settings
+        if kafka_settings is False:
+            self._del_kafka_settings(self._get_or_create_stage())
+        elif kafka_settings:
+            self._set_kafka_settings(self._get_or_create_stage(), kafka_settings)
 
         # create new build
         update_body["build_id"] = self._create_build(model_reference)
@@ -407,9 +417,23 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
 
         kafka_settings_dict = response.json().get("update_request", {})
-        if not kafka_settings_dict:
+        if not kafka_settings_dict or kafka_settings_dict == {"disabled": True}:
             return None
         return KafkaSettings._from_dict(kafka_settings_dict)
+
+    def _del_kafka_settings(self, stage_id):
+        if not isinstance(stage_id, six.integer_types):
+            raise TypeError("`stage_id` must be int, not {}".format(type(stage_id)))
+
+        url = "{}://{}/api/v1/deployment/stages/{}/kafka".format(
+            self._conn.scheme,
+            self._conn.socket,
+            stage_id,
+        )
+        response = _utils.make_request(
+            "PUT", url, self._conn, json={"disabled": True},
+        )
+        _utils.raise_for_http_error(response)
 
     # TODO: add support for KafkaSettings to _update_from_dict below or de-scope
     def update_from_config(self, filepath, wait=False):
