@@ -8,7 +8,7 @@ import pytest
 
 from verta.environment import Python
 from verta.external import six
-from verta._internal_utils import model_validator
+from verta._internal_utils import _artifact_utils, model_validator
 
 from ..models import standard_models
 
@@ -133,6 +133,15 @@ class TestStandardModels:
     )
     def test_verta(self, registered_model, endpoint, model):
         artifact_value = [{"a": 1}]
+
+        # blocklisted artifact keys raise error
+        for key in _artifact_utils.BLOCKLISTED_KEYS:
+            with pytest.raises(ValueError, match="please use a different key$"):
+                registered_model.create_standard_model(
+                    model,
+                    Python([]),
+                    artifacts={key: artifact_value},
+                )
 
         model_ver = registered_model.create_standard_model(
             model,
