@@ -11,6 +11,7 @@ from ._deployedmodel import (
     prediction_io_cleanup,
 )
 
+
 documentation.reassign_module(
     [
         DeployedModel,
