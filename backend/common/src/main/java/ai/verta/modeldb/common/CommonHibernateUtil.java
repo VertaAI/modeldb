@@ -121,11 +121,12 @@ public abstract class CommonHibernateUtil {
         // Create session factory and validate entity
         sessionFactory = metaDataSrc.buildMetadata().buildSessionFactory();
         // Enable JMX metrics collection from hibernate
-        if (hibernateStatisticsCollector != null) {
+        // FIXME: Identify right way for how to re-initialize hibernateStatisticsCollector
+        /*if (hibernateStatisticsCollector != null) {
           hibernateStatisticsCollector.add(sessionFactory, "hibernate");
         } else {
           hibernateStatisticsCollector = new HibernateStatisticsCollector(sessionFactory, "hibernate").register();
-        }
+        }*/
 
         // Export schema
         if (CommonConstants.EXPORT_SCHEMA) {
