@@ -8,22 +8,24 @@ import yaml
 
 import requests
 
-from ..external import six
+from verta.external import six
 
-from ..endpoint.autoscaling import Autoscaling
-from ..endpoint.autoscaling.metrics import _AutoscalingMetric
-from ..endpoint.resources import Resources
-from ..endpoint.update.rules import _UpdateRule
-from ..deployment import DeployedModel
-from ..endpoint.update._strategies import (
+from verta.deployment import DeployedModel
+from verta._internal_utils import _utils
+from verta.tracking.entities import ExperimentRun
+from verta.registry.entities import RegisteredModelVersion
+from verta.visibility import _visibility
+
+from . import KafkaSettings
+from .autoscaling import Autoscaling
+from .autoscaling.metrics import _AutoscalingMetric
+from .resources import Resources
+from .update.rules import _UpdateRule
+from .update._strategies import (
     _UpdateStrategy,
     DirectUpdateStrategy,
     CanaryUpdateStrategy,
 )
-from .._internal_utils import _utils
-from verta.tracking.entities import ExperimentRun
-from ..registry.entities import RegisteredModelVersion
-from ..visibility import _visibility
 
 
 def merge_dicts(a, b):
@@ -359,6 +361,23 @@ class Endpoint(object):
         response = _utils.make_request("POST", url, self._conn, json={"name": name})
         _utils.raise_for_http_error(response)
         return response.json()["id"]
+
+    def _set_kafka_settings(self, stage_id, kafka_settings):
+        url = "{}://{}/api/v1/deployment/stages/{}/kafka".format(
+            self._conn.scheme, self._conn.socket, stage_id,
+        )
+        response = _utils.make_request("PUT", url, self._conn, json=kafka_settings._as_dict())
+        _utils.raise_for_http_error(response)
+
+    def _get_kafka_settings(self, stage_id):
+        url = "{}://{}/api/v1/deployment/stages/{}/kafka".format(
+            self._conn.scheme, self._conn.socket, stage_id,
+        )
+        response = _utils.make_request("GET", url, self._conn)
+        _utils.raise_for_http_error(response)
+
+        kafka_settings_dict = response.json().get("update_request", {})
+        return KafkaSettings._from_dict(kafka_settings_dict)
 
     # TODO: add support for KafkaSettings to _update_from_dict below or de-scope
     def update_from_config(self, filepath, wait=False):

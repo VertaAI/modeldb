@@ -59,3 +59,23 @@ class KafkaSettings(object):
         if not value:
             raise ValueError("`value` must be a non-empty string")
         return value
+
+    def _as_dict(self):
+        return {
+            "input_topic": self.input_topic,
+            "output_topic": self.output_topic,
+            "error_topic": self.error_topic,
+        }
+
+    @classmethod
+    def _from_dict(cls, d):
+        # NOTE: ignores extraneous keys in `d`
+        try:
+            input_topic = d["input_topic"]
+            output_topic = d["output_topic"]
+            error_topic = d["error_topic"]
+        except KeyError as e:
+            msg = 'expected but did not find key "{}"'.format(e.args[0])
+            six.raise_from(RuntimeError(msg), None)
+
+        return cls(input_topic, output_topic, error_topic)
