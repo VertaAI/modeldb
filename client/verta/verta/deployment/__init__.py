@@ -9,10 +9,12 @@ from ._deployedmodel import (
     prediction_io_cleanup,
 )
 
+from ._kafka_settings import KafkaSettings
 
 documentation.reassign_module(
     [
         DeployedModel,
+        KafkaSettings,
         prediction_input_unpack,
         prediction_io_cleanup,
     ],
