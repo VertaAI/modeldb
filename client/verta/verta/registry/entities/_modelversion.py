@@ -410,6 +410,20 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         """
         Logs an artifact to this Model Version.
 
+        .. note::
+
+            The following artifact keys are reserved for internal use within the
+            Verta system:
+
+            - ``"custom_modules"``
+            - ``"model"``
+            - ``"model.pkl"``
+            - ``"model_api.json"``
+            - ``"requirements.txt"``
+            - ``"train_data"``
+            - ``"tf_saved_model"``
+            - ``"setup_script"``
+
         Parameters
         ----------
         key : str
@@ -424,6 +438,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             Whether to allow overwriting an existing artifact with key `key`.
 
         """
+        # TODO: should validate keys, but can't here because this public
+        #       method is also used to log internal artifacts
+        # _artifact_utils.validate_key(key)
         if key == _artifact_utils.REGISTRY_MODEL_KEY:
             raise ValueError(
                 'the key "{}" is reserved for model;'

@@ -497,6 +497,14 @@ class TestArtifacts:
         model_version = registered_model.get_version(id=model_version.id)
         assert (not model_version.has_model)
 
+    @pytest.mark.skip(reason="not implemented (see TODO in log_artifact())")
+    def test_blocklisted_key_error(self, model_version):
+        value = "foo"
+
+        for key in _artifact_utils.BLOCKLISTED_KEYS:
+            with pytest.raises(ValueError, match="please use a different key$"):
+                model_version.log_artifact(key, value)
+
 
 class TestDeployability:
     """Deployment-related functionality"""

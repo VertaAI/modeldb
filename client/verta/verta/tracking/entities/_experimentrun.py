@@ -1480,6 +1480,20 @@ class ExperimentRun(_DeployableEntity):
         The ``VERTA_ARTIFACT_DIR`` environment variable can be used to specify a locally-accessible
         directory to store artifacts.
 
+        .. note::
+
+            The following artifact keys are reserved for internal use within the
+            Verta system:
+
+            - ``"custom_modules"``
+            - ``"model"``
+            - ``"model.pkl"``
+            - ``"model_api.json"``
+            - ``"requirements.txt"``
+            - ``"train_data"``
+            - ``"tf_saved_model"``
+            - ``"setup_script"``
+
         Parameters
         ----------
         key : str
