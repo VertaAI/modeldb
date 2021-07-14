@@ -229,9 +229,17 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         .. note::
 
-            Certain artifact keys are reserved for internal use within the
-            Verta system. The full list of reserved keys may be viewed
-            `here <https://github.com/VertaAI/modeldb/blob/ca8907d/client/verta/verta/_internal_utils/_artifact_utils.py#L32-L45>`__.
+            The following artifact keys are reserved for internal use within the
+            Verta system:
+
+            - ``"custom_modules"``
+            - ``"model"``
+            - ``"model.pkl"``
+            - ``"model_api.json"``
+            - ``"requirements.txt"``
+            - ``"train_data"``
+            - ``"tf_saved_model"``
+            - ``"setup_script"``
 
         .. note::
 

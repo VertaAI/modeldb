@@ -34,6 +34,10 @@ REGISTRY_MODEL_KEY = "model"
 MODEL_KEY = "model.pkl"  # currently used by experiment run
 MODEL_API_KEY = "model_api.json"
 # TODO: maybe bind constants for other keys used throughout client
+# NOTE: if blocklisting more keys, update the docstrings of
+#       - RegisteredModel.create_standard_model()
+#       - RegisteredModelVersion.log_artifact()
+#       - ExperimentRun.log_artifact()
 BLOCKLISTED_KEYS = {
     CUSTOM_MODULES_KEY,
     MODEL_KEY,
