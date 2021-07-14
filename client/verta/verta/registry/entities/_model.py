@@ -6,7 +6,7 @@ import requests
 from verta._internal_utils._utils import check_unnecessary_params_warning
 from verta.tracking import _Context
 from verta.tracking.entities import _entity
-from verta._internal_utils import _utils, model_validator
+from verta._internal_utils import _artifact_utils, _utils, model_validator
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
@@ -179,6 +179,8 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level=None,
     ):
         artifacts = artifacts or {}
+        for key in artifacts.keys():
+            _artifact_utils.validate_key(key)
         attrs = attrs or {}
         attrs.update({
             "__verta_reserved__model_language": "Python",
