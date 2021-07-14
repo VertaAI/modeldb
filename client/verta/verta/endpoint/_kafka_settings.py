@@ -62,6 +62,7 @@ class KafkaSettings(object):
 
     def _as_dict(self):
         return {
+            "disabled": False,
             "input_topic": self.input_topic,
             "output_topic": self.output_topic,
             "error_topic": self.error_topic,

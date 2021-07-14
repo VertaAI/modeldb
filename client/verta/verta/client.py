@@ -1166,7 +1166,15 @@ class Client(object):
         )
 
 
-    def create_endpoint(self, path, description=None, workspace=None, public_within_org=None, visibility=None):
+    def create_endpoint(
+        self,
+        path,
+        description=None,
+        workspace=None,
+        public_within_org=None,
+        visibility=None,
+        kafka_settings=None,
+    ):
         """
         Attaches an endpoint to this Client.
 
@@ -1189,6 +1197,8 @@ class Client(object):
             Visibility to set when creating this endpoint. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
+        kafka_settings : :class:`verta.endpoint.KafkaSettings`, optional
+            Kafka settings.
 
         Returns
         -------
@@ -1206,7 +1216,16 @@ class Client(object):
 
         if workspace is None:
             workspace = self.get_workspace()
-        return Endpoint._create(self._conn, self._conf, workspace, path, description, public_within_org, visibility)
+        return Endpoint._create(
+            self._conn,
+            self._conf,
+            workspace,
+            path,
+            description,
+            public_within_org,
+            visibility,
+            kafka_settings,
+        )
 
     @property
     def endpoints(self):
