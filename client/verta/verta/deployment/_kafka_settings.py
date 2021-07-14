@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from verta.external import six
+
 
 class KafkaSettings(object):
     """
@@ -28,9 +30,14 @@ class KafkaSettings(object):
                 "input_topic must not be equal to either the output or error topics"
             )
 
-        self._input_topic = input_topic
-        self._output_topic = output_topic
-        self._error_topic = error_topic
+        self._input_topic = self._check_non_empty_str("input_topic", input_topic)
+        self._output_topic = self._check_non_empty_str("output_topic", output_topic)
+        self._error_topic = self._check_non_empty_str("error_topic", error_topic)
+
+    def __repr__(self):
+        return "KafkaSettings({}, {}, {})".format(
+            repr(self.input_topic), repr(self.output_topic), repr(self.error_topic)
+        )
 
     @property
     def input_topic(self):
@@ -43,3 +50,11 @@ class KafkaSettings(object):
     @property
     def error_topic(self):
         return self._error_topic
+
+    @staticmethod
+    def _check_non_empty_str(name, value):
+        if not isinstance(value, six.string_types):
+            raise TypeError("`value` must be a string, not {}".format(type(value)))
+        if not value:
+            raise ValueError("`name` must be a non-empty string".format(name))
+        return value
