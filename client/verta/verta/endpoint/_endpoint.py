@@ -46,6 +46,8 @@ class Endpoint(object):
     ----------
     id : int
         ID of this endpoint.
+    kafka_settings : :class:`verta.endpoint.KafkaSettings` or None
+        Kafka settings on this endpoint.
     path : str
         Path of this endpoint.
 
@@ -83,6 +85,11 @@ class Endpoint(object):
                 "components: {}".format(json.dumps(status["components"], indent=4)),
             )
         )
+
+    @property
+    def kafka_settings(self):
+        # NOTE: assumes "production" is the only stage (true at time of writing)
+        return self._get_kafka_settings(self._get_or_create_stage())
 
     @property
     def path(self):
@@ -394,6 +401,8 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
 
         kafka_settings_dict = response.json().get("update_request", {})
+        if not kafka_settings_dict:
+            return None
         return KafkaSettings._from_dict(kafka_settings_dict)
 
     # TODO: add support for KafkaSettings to _update_from_dict below or de-scope
