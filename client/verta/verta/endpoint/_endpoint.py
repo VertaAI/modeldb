@@ -225,7 +225,6 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    # TODO: Add kafka_settings param here
     def update(
         self,
         model_reference,
