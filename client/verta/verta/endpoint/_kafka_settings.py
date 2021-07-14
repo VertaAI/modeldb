@@ -57,5 +57,5 @@ class KafkaSettings(object):
         if not isinstance(value, six.string_types):
             raise TypeError("`value` must be a string, not {}".format(type(value)))
         if not value:
-            raise ValueError("`name` must be a non-empty string".format(name))
+            raise ValueError("`value` must be a non-empty string")
         return value
