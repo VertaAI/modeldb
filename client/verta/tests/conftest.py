@@ -424,6 +424,14 @@ def model_for_deployment(strs):
 
 
 @pytest.fixture
+def dataset(client, created_entities):
+    dataset = client.create_dataset()
+    created_entities.append(dataset)
+
+    return dataset
+
+
+@pytest.fixture
 def registered_model(client, created_entities):
     model = client.get_or_create_registered_model()
     created_entities.append(model)
