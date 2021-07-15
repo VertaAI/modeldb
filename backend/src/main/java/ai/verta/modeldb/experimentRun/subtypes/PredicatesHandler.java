@@ -65,10 +65,8 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                 .addCondition("experiment_run.experiment_id " + operator + " :" + bindingName)
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
       case "name":
-        return InternalFuture.completedInternalFuture(
-            new QueryFilterContext()
-                .addCondition("experiment_run.name = :" + bindingName)
-                .addBind(q -> q.bind(bindingName, value.getStringValue())));
+        return processStringPredicate(
+            index, "experiment_run.name", value.getStringValue(), predicate.getOperator());
       case "owner":
         // case time created/updated:
         // case visibility:
@@ -184,6 +182,22 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       default:
         return InternalFuture.failedStage(new InvalidArgumentException(errorMessage));
     }
+  }
+
+  private InternalFuture<QueryFilterContext> processStringPredicate(
+      long index, String colName, String value, OperatorEnum.Operator operator) {
+    final var bindingName = String.format("v_p_%d", index);
+    final var sql = applyOperator(operator, colName, ":" + bindingName);
+
+    var queryContext = new QueryFilterContext().addBind(q -> q.bind(bindingName, value));
+    if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)
+        || operator.equals(OperatorEnum.Operator.NE)) {
+      queryContext = queryContext.addCondition(String.format("experiment_run.id NOT IN (%s)", sql));
+    } else {
+      queryContext = queryContext.addCondition(String.format("experiment_run.id IN (%s)", sql));
+    }
+
+    return InternalFuture.completedInternalFuture(queryContext);
   }
 
   private InternalFuture<QueryFilterContext> processKeyValuePredicate(
