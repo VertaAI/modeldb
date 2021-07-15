@@ -30,7 +30,6 @@ Verta
         integrations
         monitoring
         registry
-        repository
         tracking
         utils
         visibility
