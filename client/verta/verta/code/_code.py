@@ -2,9 +2,9 @@
 
 from __future__ import print_function
 
-from .._protos.public.modeldb.versioning import Code_pb2 as _CodeService
+from verta import _blob
 
-from ..repository import _blob
+from .._protos.public.modeldb.versioning import Code_pb2 as _CodeService
 
 
 class _Code(_blob.Blob):

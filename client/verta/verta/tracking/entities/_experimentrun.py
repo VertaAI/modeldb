@@ -29,10 +29,6 @@ from verta._internal_utils import (
     importer,
 )
 
-from verta import repository
-from verta.repository import _commit
-# unless _repository.blob is disentangled out of _repository, importing from
-# dataset must occur after importing from _repository
 from verta.dataset.entities import (
     _dataset,
     _dataset_version,
@@ -2291,87 +2287,6 @@ class ExperimentRun(_DeployableEntity):
             downloaded_to_path = _request_utils.download_file(
                 response, download_to_path, overwrite_ok=True)
             return os.path.abspath(downloaded_to_path)
-
-    def log_commit(self, commit, key_paths=None):
-        """
-        Associate a Commit with this Experiment Run.
-
-        .. versionadded:: 0.14.1
-
-        Parameters
-        ----------
-        commit : :class:`verta.repository.Commit`
-            Verta Commit.
-        key_paths : dict of `key` to `path`, optional
-            A mapping between descriptive keys and paths of particular interest within `commit`.
-            This can be useful for, say, highlighting a particular file as *the* training dataset
-            used for this Experiment Run.
-
-        """
-        if commit.id is None:
-            raise RuntimeError(
-                "Commit must be saved before it can be logged to an Experiment Run")
-
-        msg = _ExperimentRunService.LogVersionedInput()
-        msg.id = self.id
-        msg.versioned_inputs.repository_id = commit._repo.id
-        msg.versioned_inputs.commit = commit.id
-        for key, path in six.viewitems(key_paths or {}):
-            location = _commit.path_to_location(path)
-            location_msg = msg.versioned_inputs.key_location_map.get_or_create(
-                key)
-            location_msg.location.extend(location)
-
-        data = _utils.proto_to_json(msg)
-        endpoint = "{}://{}/api/v1/modeldb/experiment-run/logVersionedInput".format(
-            self._conn.scheme,
-            self._conn.socket,
-        )
-        response = _utils.make_request("POST", endpoint, self._conn, json=data)
-        _utils.raise_for_http_error(response)
-
-        self._clear_cache()
-
-    def get_commit(self):
-        """
-        Gets the Commit associated with this Experiment Run.
-
-        .. versionadded:: 0.14.1
-
-        Returns
-        -------
-        commit : :class:`verta.repository.Commit`
-            Verta Commit.
-        key_paths : dict of `key` to `path`
-            A mapping between descriptive keys and paths of particular interest within `commit`.
-
-        """
-        msg = _ExperimentRunService.GetVersionedInput()
-        msg.id = self.id
-
-        data = _utils.proto_to_json(msg)
-        endpoint = "{}://{}/api/v1/modeldb/experiment-run/getVersionedInput".format(
-            self._conn.scheme,
-            self._conn.socket,
-        )
-        response = _utils.make_request(
-            "GET", endpoint, self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(
-            _utils.body_to_json(response), msg.Response)
-        repo = repository.Repository(
-            self._conn, response_msg.versioned_inputs.repository_id)
-        commit_id = response_msg.versioned_inputs.commit
-        commit = _commit.Commit._from_id(self._conn, repo, commit_id)
-
-        key_paths = {
-            key: '/'.join(location_msg.location)
-            for key, location_msg
-            in response_msg.versioned_inputs.key_location_map.items()
-        }
-
-        return commit, key_paths
 
     def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         """
