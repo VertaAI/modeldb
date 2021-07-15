@@ -35,6 +35,16 @@ class KafkaSettings(object):
         self._output_topic = self._check_non_empty_str("output_topic", output_topic)
         self._error_topic = self._check_non_empty_str("error_topic", error_topic)
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return (
+            self._input_topic == other._input_topic
+            and self._output_topic == other._output_topic
+            and self._error_topic == other._error_topic
+        )
+
     def __repr__(self):
         return "KafkaSettings({}, {}, {})".format(
             repr(self.input_topic), repr(self.output_topic), repr(self.error_topic)
