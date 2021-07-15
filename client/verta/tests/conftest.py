@@ -424,22 +424,6 @@ def model_for_deployment(strs):
 
 
 @pytest.fixture
-def repository(client, created_entities):
-    name = _utils.generate_default_name()
-    repo = client.get_or_create_repository(name)
-    created_entities.append(repo)
-
-    return repo
-
-
-@pytest.fixture
-def commit(repository):
-    commit = repository.get_commit()
-
-    return commit
-
-
-@pytest.fixture
 def registered_model(client, created_entities):
     model = client.get_or_create_registered_model()
     created_entities.append(model)
