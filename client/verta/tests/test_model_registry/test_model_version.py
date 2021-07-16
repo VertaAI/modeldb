@@ -960,7 +960,7 @@ class TestAutoMonitoring:
             assert feature_data.feature_name == col
             assert feature_data.profiler_name == "MissingValuesProfiler"
             assert json.loads(feature_data.profiler_parameters) == {"columns": [col]}
-            assert feature_data.summary_type_name == _histogram._type_string()
+            assert feature_data.summary_type_name == "verta.discreteHistogram.v1"
             assert feature_data.labels == labels
             assert json.loads(feature_data.content) == _histogram._as_dict()
 
@@ -976,7 +976,7 @@ class TestAutoMonitoring:
             "columns": ["continuous"],
             "bins": _histogram._bucket_limits,
         }
-        assert feature_data.summary_type_name == _histogram._type_string()
+        assert feature_data.summary_type_name == "verta.floatHistogram.v1"
         assert feature_data.labels == labels
         assert json.loads(feature_data.content) == _histogram._as_dict()
 
@@ -989,7 +989,7 @@ class TestAutoMonitoring:
         assert feature_data.feature_name == "discrete"
         assert feature_data.profiler_name == "BinaryHistogramProfiler"
         assert json.loads(feature_data.profiler_parameters) == {"columns": ["discrete"]}
-        assert feature_data.summary_type_name == _histogram._type_string()
+        assert feature_data.summary_type_name == "verta.discreteHistogram.v1"
         assert feature_data.labels == labels
         assert json.loads(feature_data.content) == _histogram._as_dict()
 
