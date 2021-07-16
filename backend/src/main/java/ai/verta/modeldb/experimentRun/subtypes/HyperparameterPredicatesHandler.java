@@ -5,6 +5,8 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.exceptions.UnimplementedException;
+import ai.verta.modeldb.utils.ModelDBUtils;
+import java.util.Date;
 
 public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
 
@@ -30,20 +32,31 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
             .addBind(q -> q.bind("entityName", "ExperimentRunEntity"))
             .addBind(q -> q.bind(fieldTypeName, fieldType));
 
-    switch (value.getKindCase()) {
-      case NUMBER_VALUE:
-        sql += applyOperator(operator, colValue, ":" + valueBindingName);
-        queryContext = queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
-        break;
-      case STRING_VALUE:
-        sql += applyOperator(operator, colValue, ":" + valueBindingName);
-        queryContext =
-            queryContext.addBind(
-                q -> q.bind(valueBindingName, wrapValue(operator, value.getStringValue())));
-        break;
-      default:
-        return InternalFuture.failedStage(
-            new UnimplementedException("Unknown 'Value' type recognized"));
+    try {
+      switch (value.getKindCase()) {
+        case NUMBER_VALUE:
+          sql += applyOperator(operator, colValue, ":" + valueBindingName);
+          queryContext =
+              queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
+          break;
+        case STRING_VALUE:
+          sql += applyOperator(operator, colValue, ":" + valueBindingName);
+          var valueStr = ModelDBUtils.getStringFromProtoObject(value);
+          if (operator.equals(OperatorEnum.Operator.CONTAIN)
+              || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+            valueStr = value.getStringValue();
+          }
+          final var finalValueStr = valueStr;
+          queryContext =
+              queryContext.addBind(
+                  q -> q.bind(valueBindingName, wrapValue(operator, finalValueStr)));
+          break;
+        default:
+          return InternalFuture.failedStage(
+              new UnimplementedException("Unknown 'Value' type recognized"));
+      }
+    } catch (Exception ex) {
+      return InternalFuture.failedStage(ex);
     }
 
     String finalHyperparametersFromERSql;
@@ -54,6 +67,8 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
       finalHyperparametersFromERSql = String.format("experiment_run.id IN (%s)", sql);
     }
 
+    final var valueBindingNameForHyperBlob =
+        String.format("v_p_%d_%d", index, new Date().getTime());
     var hyperparameterFromBlobMappingSql =
         "select distinct experiment_run_id from hyperparameter_element_mapping where entity_type=:entity_type and experiment_run_id IS NOT NULL ";
     hyperparameterFromBlobMappingSql += String.format(" and name=:%s ", valueBindingKey);
@@ -63,19 +78,24 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
 
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
-        String intColumnSQL = applyOperator(operator, "int_value", ":" + valueBindingName);
-        String floatColumnSQL = applyOperator(operator, "float_value", ":" + valueBindingName);
+        String intColumnSQL =
+            applyOperator(operator, "int_value", ":" + valueBindingNameForHyperBlob);
+        String floatColumnSQL =
+            applyOperator(operator, "float_value", ":" + valueBindingNameForHyperBlob);
 
         hyperparameterFromBlobMappingSql +=
             " (" + String.join(" OR ", intColumnSQL, floatColumnSQL) + ") ";
-        queryContext = queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
+        queryContext =
+            queryContext.addBind(q -> q.bind(valueBindingNameForHyperBlob, value.getNumberValue()));
         break;
       case STRING_VALUE:
         hyperparameterFromBlobMappingSql +=
-            applyOperator(operator, "string_value", ":" + valueBindingName);
+            applyOperator(operator, "string_value", ":" + valueBindingNameForHyperBlob);
         queryContext =
             queryContext.addBind(
-                q -> q.bind(valueBindingName, wrapValue(operator, value.getStringValue())));
+                q ->
+                    q.bind(
+                        valueBindingNameForHyperBlob, wrapValue(operator, value.getStringValue())));
         break;
       default:
         return InternalFuture.failedStage(
