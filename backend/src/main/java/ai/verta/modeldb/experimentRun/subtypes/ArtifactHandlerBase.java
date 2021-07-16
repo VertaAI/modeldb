@@ -282,7 +282,7 @@ public class ArtifactHandlerBase {
                           + entityIdReferenceColumn
                           + "=:entity_id";
 
-                  if (maybeKeys.isPresent()) {
+                  if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
                     sql += " and ar_key in (<keys>)";
                   }
 
@@ -293,7 +293,7 @@ public class ArtifactHandlerBase {
                           .bind("field_type", fieldType)
                           .bind("entity_name", entityName);
 
-                  if (maybeKeys.isPresent()) {
+                  if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
                     query = query.bindList("keys", maybeKeys.get());
                   }
 

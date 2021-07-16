@@ -237,13 +237,13 @@ public class ObservationHandler {
               handle1 -> {
                 // Delete from keyvalue
                 var fetchQueryString = "select o.id, o.keyvaluemapping_id from observation as o ";
-                if (maybeKeys.isPresent()) {
+                if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
                   fetchQueryString += " INNER JOIN keyvalue as kv ON o.keyvaluemapping_id = kv.id ";
                 }
                 fetchQueryString +=
                     " WHERE o.experiment_run_id = :run_id " + " AND o.entity_name = :entityName";
 
-                if (maybeKeys.isPresent()) {
+                if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
                   fetchQueryString += " AND kv.kv_key IN (<keys>)";
                 }
                 var query =
@@ -252,7 +252,7 @@ public class ObservationHandler {
                         .bind("run_id", runId)
                         .bind("entityName", "ExperimentRunEntity");
 
-                if (maybeKeys.isPresent()) {
+                if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
                   query = query.bindList("keys", maybeKeys.get());
                 }
                 var observationKVMappingList =
