@@ -349,11 +349,11 @@ class TestFind:
 
     def test_find_stage(self, registered_model):
         # TODO: expand with other stages once client impls version transition
-        assert len(registered_model.versions.find("stage == development")) == 0
+        assert len(registered_model.versions.find("stage == unassigned")) == 0
 
         registered_model.create_version()
-        assert len(registered_model.versions.find("stage == development")) == 1
-        assert len(registered_model.versions.find("stage == staging")) == 0
+        assert len(registered_model.versions.find("stage == unassigned")) == 1
+        assert len(registered_model.versions.find("stage == development")) == 0
 
 
 class TestArtifacts:
