@@ -94,6 +94,29 @@ public class PredicatesHandler extends PredicateHandlerUtils {
             new QueryFilterContext()
                 .addCondition("experiment_run.end_time = :" + bindingName)
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
+      case "experiment.name":
+        var expSql = "select distinct id from experiment where ";
+        expSql += applyOperator(predicate.getOperator(), "name", ":" + bindingName);
+
+        var expQueryContext =
+            new QueryFilterContext()
+                .addBind(
+                    q ->
+                        q.bind(
+                            bindingName,
+                            wrapValue(predicate.getOperator(), value.getStringValue())));
+        if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+            || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+          expQueryContext =
+              expQueryContext.addCondition(
+                  String.format("experiment_run.experiment_id NOT IN (%s)", expSql));
+        } else {
+          expQueryContext =
+              expQueryContext.addCondition(
+                  String.format("experiment_run.experiment_id IN (%s)", expSql));
+        }
+
+        return InternalFuture.completedInternalFuture(expQueryContext);
     }
 
     String[] names = key.split("\\.");
