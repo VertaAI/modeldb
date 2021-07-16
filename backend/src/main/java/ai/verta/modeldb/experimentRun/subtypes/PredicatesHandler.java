@@ -65,10 +65,25 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                 .addCondition("experiment_run.experiment_id " + operator + " :" + bindingName)
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
       case "name":
-        return InternalFuture.completedInternalFuture(
+        var sql = "select distinct id from experiment_run where ";
+        sql += applyOperator(predicate.getOperator(), "name", ":" + bindingName);
+
+        var queryContext =
             new QueryFilterContext()
-                .addCondition("experiment_run.name = :" + bindingName)
-                .addBind(q -> q.bind(bindingName, value.getStringValue())));
+                .addBind(
+                    q ->
+                        q.bind(
+                            bindingName,
+                            wrapValue(predicate.getOperator(), value.getStringValue())));
+        if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+            || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+          queryContext =
+              queryContext.addCondition(String.format("experiment_run.id NOT IN (%s)", sql));
+        } else {
+          queryContext = queryContext.addCondition(String.format("experiment_run.id IN (%s)", sql));
+        }
+
+        return InternalFuture.completedInternalFuture(queryContext);
       case "owner":
         // case time created/updated:
         // case visibility:

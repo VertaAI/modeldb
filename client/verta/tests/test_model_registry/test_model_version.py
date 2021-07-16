@@ -349,11 +349,11 @@ class TestFind:
 
     def test_find_stage(self, registered_model):
         # TODO: expand with other stages once client impls version transition
-        assert len(registered_model.versions.find("stage == development")) == 0
+        assert len(registered_model.versions.find("stage == unassigned")) == 0
 
         registered_model.create_version()
-        assert len(registered_model.versions.find("stage == development")) == 1
-        assert len(registered_model.versions.find("stage == staging")) == 0
+        assert len(registered_model.versions.find("stage == unassigned")) == 1
+        assert len(registered_model.versions.find("stage == development")) == 0
 
 
 class TestArtifacts:
@@ -960,7 +960,7 @@ class TestAutoMonitoring:
             assert feature_data.feature_name == col
             assert feature_data.profiler_name == "MissingValuesProfiler"
             assert json.loads(feature_data.profiler_parameters) == {"columns": [col]}
-            assert feature_data.summary_type_name == "DiscreteHistogram"
+            assert feature_data.summary_type_name == "verta.discreteHistogram.v1"
             assert feature_data.labels == labels
             assert json.loads(feature_data.content) == _histogram._as_dict()
 
@@ -976,7 +976,7 @@ class TestAutoMonitoring:
             "columns": ["continuous"],
             "bins": _histogram._bucket_limits,
         }
-        assert feature_data.summary_type_name == "FloatHistogram"
+        assert feature_data.summary_type_name == "verta.floatHistogram.v1"
         assert feature_data.labels == labels
         assert json.loads(feature_data.content) == _histogram._as_dict()
 
@@ -989,7 +989,7 @@ class TestAutoMonitoring:
         assert feature_data.feature_name == "discrete"
         assert feature_data.profiler_name == "BinaryHistogramProfiler"
         assert json.loads(feature_data.profiler_parameters) == {"columns": ["discrete"]}
-        assert feature_data.summary_type_name == "DiscreteHistogram"
+        assert feature_data.summary_type_name == "verta.discreteHistogram.v1"
         assert feature_data.labels == labels
         assert json.loads(feature_data.content) == _histogram._as_dict()
 
@@ -1048,11 +1048,11 @@ class TestAutoMonitoring:
         # missing value, distribution summary for each supported column +
         # equal number of attributes for visualization
         assert(len(attributes.keys()) == len(supported_col_names) * 2 * 2)
-        assert(discrete_col_distribution_summary.summary_type_name == "DiscreteHistogram")
+        assert(discrete_col_distribution_summary.summary_type_name == "verta.discreteHistogram.v1")
         assert(discrete_col_distribution_summary.profiler_name == "BinaryHistogramProfiler")
         assert(len(json.loads(discrete_col_distribution_summary.content)["discreteHistogram"]["buckets"]) <= 5)
 
-        assert(discrete_col_missing_summary.summary_type_name == "DiscreteHistogram")
+        assert(discrete_col_missing_summary.summary_type_name == "verta.discreteHistogram.v1")
         assert(discrete_col_missing_summary.profiler_name == "MissingValuesProfiler")
         assert(len(json.loads(discrete_col_missing_summary.content)["discreteHistogram"]["buckets"]) == 2)
 
@@ -1105,4 +1105,4 @@ class TestAutoMonitoring:
                         )
                     )
                 point_profile = feature_profiler.profile_point(point, reference)
-                assert point_profile.__class__.__name__ == feature_data["summary_type_name"]
+                assert point_profile._type_string() == feature_data["summary_type_name"]
