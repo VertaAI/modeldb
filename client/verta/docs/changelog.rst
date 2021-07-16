@@ -73,7 +73,6 @@ Bug Fixes
   <https://github.com/VertaAI/modeldb/pull/2440>`__
 - `allow alerts to properly handle samples of past time windows
   <https://github.com/VertaAI/modeldb/pull/2478>`__
-- `accommodate pandas v1.1.* in
 
 Internal Changes
 ^^^^^^^^^^^^^^^^
