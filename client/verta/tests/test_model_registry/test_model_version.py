@@ -354,7 +354,6 @@ class TestFind:
         registered_model.create_version()
         assert len(registered_model.versions.find("stage == unassigned")) == 1
         assert len(registered_model.versions.find("stage == development")) == 0
-        assert len(registered_model.versions.find("stage == staging")) == 0
 
 
 class TestArtifacts:
