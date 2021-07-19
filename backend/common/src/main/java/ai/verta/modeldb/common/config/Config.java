@@ -134,10 +134,6 @@ public abstract class Config {
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);
 
-    if (enableTrace) {
-      final var tracer = Configuration.fromEnv().getTracer();
-      GlobalTracer.registerIfAbsent(tracer);
-    }
     final Jdbi jdbi = Jdbi.create(hikariDataSource).installPlugins();
     return jdbi;
   }
