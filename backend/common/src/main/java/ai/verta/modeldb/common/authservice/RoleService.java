@@ -4,9 +4,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.uac.*;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.GeneratedMessageV3;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,12 +32,10 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   default GetResourcesResponseItem getEntityResource(
-      String entityId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes)
+      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes)
       throws ExecutionException, InterruptedException {
     return getEntityResource(Optional.of(entityId), Optional.empty(), modelDBServiceResourceTypes);
   }
-
 
   List<GetResourcesResponseItem> getEntityResourcesByName(
       Optional<String> entityName,
@@ -57,7 +53,8 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
-      Workspace workspace, Set<String> resourceIds,
+      Workspace workspace,
+      Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   List<String> getWorkspaceRoleBindings(

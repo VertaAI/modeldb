@@ -8,7 +8,10 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import com.mysql.cj.jdbc.MysqlDataSource;
 import io.grpc.health.v1.HealthCheckResponse;
-import io.prometheus.client.hibernate.HibernateStatisticsCollector;
+import java.sql.*;
+import java.util.Calendar;
+import java.util.EnumSet;
+import java.util.Properties;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -37,11 +40,6 @@ import org.hibernate.exception.JDBCConnectionException;
 import org.hibernate.hikaricp.internal.HikariCPConnectionProvider;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
-
-import java.sql.*;
-import java.util.Calendar;
-import java.util.EnumSet;
-import java.util.Properties;
 import org.postgresql.ds.PGSimpleDataSource;
 
 public abstract class CommonHibernateUtil {
@@ -53,7 +51,7 @@ public abstract class CommonHibernateUtil {
   protected static DatabaseConfig databaseConfig;
   protected static Class<?>[] entities;
   protected static String liquibaseRootFilePath;
-  private HibernateStatisticsCollector hibernateStatisticsCollector;
+  // private HibernateStatisticsCollector hibernateStatisticsCollector;
 
   public Connection getConnection() throws SQLException {
     return sessionFactory
@@ -78,7 +76,8 @@ public abstract class CommonHibernateUtil {
         final var datasourceClass = getDatasourceClass(rdb);
 
         // Hibernate settings equivalent to hibernate.cfg.xml's properties
-        final var configuration = new Configuration()
+        final var configuration =
+            new Configuration()
                 .setProperty("hibernate.hbm2ddl.auto", "validate")
                 .setProperty("hibernate.dialect", rdb.RdbDialect)
                 .setProperty("hibernate.connection.provider_class", connectionProviderClass)
@@ -141,7 +140,8 @@ public abstract class CommonHibernateUtil {
             "CommonHibernateUtil getSessionFactory() getting error : {}", e.getMessage(), e);
         if (registry != null) {
           StandardServiceRegistryBuilder.destroy(registry);
-          // If registry will destroy then session factory also useless and have stale reference of registry so need to clean it as well.
+          // If registry will destroy then session factory also useless and have stale reference of
+          // registry so need to clean it as well.
           sessionFactory = null;
         }
         throw new ModelDBException(e.getMessage(), e);

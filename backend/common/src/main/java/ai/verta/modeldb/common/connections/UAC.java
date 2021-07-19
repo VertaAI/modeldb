@@ -31,14 +31,10 @@ public class UAC extends Connection {
   }
 
   private UAC(Config config) {
-    this(
-        config.authService.host,
-        config.authService.port,
-        config);
+    this(config.authService.host, config.authService.port, config);
   }
 
-  public UAC(
-      String host, Integer port, Config config) {
+  public UAC(String host, Integer port, Config config) {
     super(config);
     this.config = config;
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
@@ -57,8 +53,10 @@ public class UAC extends Connection {
     workspaceServiceFutureStub = WorkspaceServiceGrpc.newFutureStub(authServiceChannel);
     authzServiceFutureStub = AuthzServiceGrpc.newFutureStub(authServiceChannel);
     roleServiceFutureStub = RoleServiceGrpc.newFutureStub(authServiceChannel);
-    serviceAccountRoleServiceFutureStub = RoleServiceGrpc.newFutureStub(authServiceChannel)
-            .withInterceptors(MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
+    serviceAccountRoleServiceFutureStub =
+        RoleServiceGrpc.newFutureStub(authServiceChannel)
+            .withInterceptors(
+                MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
     organizationServiceFutureStub = OrganizationServiceGrpc.newFutureStub(authServiceChannel);
   }
 
@@ -70,9 +68,9 @@ public class UAC extends Connection {
     Metadata requestHeaders = new Metadata();
     Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> dev_key =
-            Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+        Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> dev_key_hyphen =
-            Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+        Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
     Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
     requestHeaders.put(email_key, config.service_user.email);
@@ -98,7 +96,7 @@ public class UAC extends Connection {
     return attachInterceptors(authzServiceFutureStub);
   }
 
-  public OrganizationServiceGrpc.OrganizationServiceFutureStub getOrganizationService( ) {
+  public OrganizationServiceGrpc.OrganizationServiceFutureStub getOrganizationService() {
     return attachInterceptors(organizationServiceFutureStub);
   }
 

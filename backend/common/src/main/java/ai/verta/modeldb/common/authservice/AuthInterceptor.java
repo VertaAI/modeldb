@@ -31,14 +31,14 @@ public class AuthInterceptor implements ServerInterceptor {
     String methodName = call.getMethodDescriptor().getFullMethodName();
 
     if (!(methodName.equals("ai.verta.modeldb.ProjectService/verifyConnection")
-            || methodName.equals("grpc.health.v1.Health/Check")
-            || methodName.equals("grpc.health.v1.Health/Watch"))){
+        || methodName.equals("grpc.health.v1.Health/Check")
+        || methodName.equals("grpc.health.v1.Health/Watch"))) {
       // validate empty headers from user request
       Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> dev_key_underscore =
-              Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+          Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> dev_key =
-              Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+          Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> bearerAccessToken =
           Metadata.Key.of("bearer_access_token", Metadata.ASCII_STRING_MARSHALLER);
       Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
@@ -52,8 +52,8 @@ public class AuthInterceptor implements ServerInterceptor {
         boolean isDevKeyUsed = sourceValue.equals("PythonClient");
         if (isDevKeyUsed) {
           if (!requestHeaders.containsKey(email_key)
-              || !(requestHeaders.containsKey(dev_key_underscore) || requestHeaders
-              .containsKey(dev_key))) {
+              || !(requestHeaders.containsKey(dev_key_underscore)
+                  || requestHeaders.containsKey(dev_key))) {
             parameterMissing = true;
           }
         } else if (!requestHeaders.containsKey(bearerAccessToken)) {
@@ -62,10 +62,9 @@ public class AuthInterceptor implements ServerInterceptor {
       }
       if (parameterMissing) {
         var message = "Required parameter is missing in metadata in request: " + methodName;
-        call.close(Status.PERMISSION_DENIED
-                .withDescription(message), requestHeaders);
+        call.close(Status.PERMISSION_DENIED.withDescription(message), requestHeaders);
         LOGGER.debug(message);
-        return new ServerCall.Listener<>(){};
+        return new ServerCall.Listener<>() {};
       }
     }
 

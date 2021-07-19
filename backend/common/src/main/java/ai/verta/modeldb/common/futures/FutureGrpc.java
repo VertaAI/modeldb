@@ -6,11 +6,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
 public class FutureGrpc {
   // Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom

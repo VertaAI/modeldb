@@ -52,18 +52,17 @@ public class RdbConfig {
 
   public static String buildDatabaseConnectionString(RdbConfig rdb) {
     if (rdb.isMssql()) {
-      return rdb.RdbUrl
-          + ";databaseName="
-          + rdb.RdbDatabaseName;
+      return rdb.RdbUrl + ";databaseName=" + rdb.RdbDatabaseName;
     }
-    final var url = rdb.RdbUrl
-        + "/"
-        + rdb.RdbDatabaseName
-        + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
-        + "&sslEnabled="
-        + rdb.sslEnabled
-        + "&sslMode="
-        + rdb.sslMode;
+    final var url =
+        rdb.RdbUrl
+            + "/"
+            + rdb.RdbDatabaseName
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+            + "&sslEnabled="
+            + rdb.sslEnabled
+            + "&sslMode="
+            + rdb.sslMode;
     LOGGER.trace("Using db URL " + url);
     return url;
   }
@@ -72,12 +71,13 @@ public class RdbConfig {
     if (rdb.isMssql()) {
       return rdb.RdbUrl;
     }
-    final var url = rdb.RdbUrl
-        + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
-        + "&sslEnabled="
-        + rdb.sslEnabled
-        + "&sslMode="
-        + rdb.sslMode;
+    final var url =
+        rdb.RdbUrl
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+            + "&sslEnabled="
+            + rdb.sslEnabled
+            + "&sslMode="
+            + rdb.sslMode;
     LOGGER.info("Using db URL " + url);
     return url;
   }

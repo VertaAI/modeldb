@@ -1,11 +1,10 @@
 package ai.verta.modeldb.common.futures;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 
 public class FutureJdbi {
   private final Executor executor;

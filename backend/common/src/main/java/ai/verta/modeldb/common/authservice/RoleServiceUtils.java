@@ -14,10 +14,9 @@ import ai.verta.uac.*;
 import ai.verta.uac.ServiceEnum.Service;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.StatusRuntimeException;
+import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.*;
 
 public class RoleServiceUtils implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
@@ -25,10 +24,7 @@ public class RoleServiceUtils implements RoleService {
   protected AuthService authService;
   private final Integer timeout;
 
-  public RoleServiceUtils(
-      AuthService authService,
-      Integer timeout,
-      UAC uac) {
+  public RoleServiceUtils(AuthService authService, Integer timeout, UAC uac) {
     this.authService = authService;
     this.timeout = timeout;
     this.uac = uac;
@@ -104,7 +100,9 @@ public class RoleServiceUtils implements RoleService {
       DeleteResources deleteResources =
           DeleteResources.newBuilder().setResources(resources).build();
       DeleteResources.Response response =
-          authServiceChannel.getCollaboratorServiceBlockingStubForServiceUser().deleteResources(deleteResources);
+          authServiceChannel
+              .getCollaboratorServiceBlockingStubForServiceUser()
+              .deleteResources(deleteResources);
       LOGGER.trace("DeleteResources message sent.  Response: " + response);
       return true;
     } catch (StatusRuntimeException ex) {
@@ -316,7 +314,8 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
-      Workspace workspace, Set<String> resourceIds,
+      Workspace workspace,
+      Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       ResourceType resourceType =
@@ -337,14 +336,15 @@ public class RoleServiceUtils implements RoleService {
         builder.setWorkspaceId(workspace.getId());
       }
       final GetResources.Response response =
-          authServiceChannel.getCollaboratorServiceBlockingStub().getResourcesSpecialPersonalWorkspace(builder.build());
+          authServiceChannel
+              .getCollaboratorServiceBlockingStub()
+              .getResourcesSpecialPersonalWorkspace(builder.build());
       return response.getItemList();
     } catch (StatusRuntimeException ex) {
       LOGGER.trace(ex);
       throw ex;
     }
   }
-
 
   @Override
   public List<String> getWorkspaceRoleBindings(
@@ -681,9 +681,7 @@ public class RoleServiceUtils implements RoleService {
               .build();
 
       IsSelfAllowed.Response isSelfAllowedResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub()
-              .isSelfAllowed(isSelfAllowedRequest);
+          authServiceChannel.getAuthzServiceBlockingStub().isSelfAllowed(isSelfAllowedRequest);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, isSelfAllowedResponse);
 

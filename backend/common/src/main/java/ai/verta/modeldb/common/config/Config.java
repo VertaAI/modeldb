@@ -38,7 +38,8 @@ public abstract class Config {
   public ServiceUserConfig service_user;
   public int jdbi_retry_time = 100; // Time in ms
 
-  public static <T> T getInstance(Class<T> configType, String configFile) throws InternalErrorException {
+  public static <T> T getInstance(Class<T> configType, String configFile)
+      throws InternalErrorException {
     try {
       Yaml yaml = new Yaml(new Constructor(configType));
       String filePath = System.getenv(configFile);
@@ -141,5 +142,4 @@ public abstract class Config {
     final Jdbi jdbi = Jdbi.create(hikariDataSource).installPlugins();
     return jdbi;
   }
-
 }

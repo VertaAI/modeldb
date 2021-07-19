@@ -8,5 +8,6 @@ public interface OrderItem {
   String getTable();
 
   String getColumn();
+
   List<OrderColumn> getColumns();
 }
