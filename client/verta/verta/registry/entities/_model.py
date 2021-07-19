@@ -6,7 +6,7 @@ import requests
 from verta._internal_utils._utils import check_unnecessary_params_warning
 from verta.tracking import _Context
 from verta.tracking.entities import _entity
-from verta._internal_utils import _artifact_utils, _utils, model_validator
+from verta._internal_utils import _artifact_utils, _utils, arg_handler, model_validator
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
@@ -635,6 +635,8 @@ class RegisteredModel(_entity._ModelDBEntity):
         :class:`~verta.registry.entities.RegisteredModelVersion`
 
         """
+        run_id = arg_handler.extract_id(run_id)
+
         ctx = _Context(self._conn, self._conf)
         ctx.registered_model = self
         return RegisteredModelVersion._create(
