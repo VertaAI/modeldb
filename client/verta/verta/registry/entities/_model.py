@@ -623,8 +623,8 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         Parameters
         ----------
-        run_id : str
-            ID of the run from which to create the model version.
+        run_id : str or :class:`~verta.tracking.entities.ExperimentRun`
+            Run from which to create the model version.
         name : str, optional
             Name of the model version. If no name is provided, one will be generated.
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
