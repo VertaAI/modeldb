@@ -136,7 +136,7 @@ public abstract class Config {
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);
 
-    final Jdbi jdbi = Jdbi.create(hikariDataSource).installPlugin(new OpentracingJdbi3Plugin(GlobalTracer.get()));
+    final Jdbi jdbi = Jdbi.create(hikariDataSource).installPlugins();
     return jdbi;
   }
 
