@@ -216,7 +216,7 @@ public class KeyValueHandler {
                   + entityIdReferenceColumn
                   + "=:entity_id";
 
-          if (maybeKeys.isPresent()) {
+          if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
             sql += " and kv_key in (<keys>)";
           }
 
@@ -227,7 +227,7 @@ public class KeyValueHandler {
                   .bind("field_type", fieldType)
                   .bind("entity_name", entityName);
 
-          if (maybeKeys.isPresent()) {
+          if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
             query = query.bindList("keys", maybeKeys.get());
           }
 

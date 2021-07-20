@@ -37,6 +37,49 @@ Changelog
      <>`__
 
 
+v0.18.2 (2021-07-14)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add convenience functions to create ready-to-deploy standard Verta model
+  versions
+  (`#2397 <https://github.com/VertaAI/modeldb/pull/2397>`__,
+  `#2450 <https://github.com/VertaAI/modeldb/pull/2450>`__,
+  `#2486 <https://github.com/VertaAI/modeldb/pull/2486>`__)
+- add model_version.log_training_data_profile() for deployment monitoring
+  (`#2434 <https://github.com/VertaAI/modeldb/pull/2434>`__,
+  `#2446 <https://github.com/VertaAI/modeldb/pull/2446>`__,
+  `#2457 <https://github.com/VertaAI/modeldb/pull/2457>`__,
+  `#2484 <https://github.com/VertaAI/modeldb/pull/2484>`__)
+- `add profile_point() to profilers
+  <https://github.com/VertaAI/modeldb/pull/2433>`__
+- `support specifying start_time and end_time on experiment runs
+  <https://github.com/VertaAI/modeldb/pull/2479>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `propagate model logs when a deployment fails during initialization
+  <https://github.com/VertaAI/modeldb/pull/2444>`__
+- `hide internal attributes from histogram __repr__()s
+  <https://github.com/VertaAI/modeldb/pull/2442>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix bug where NumericValues were deserialized inconsistently when "unit" is
+  empty
+  <https://github.com/VertaAI/modeldb/pull/2428>`__
+- `fix bug where ContinuousHistogramProfiler was unable to handle missing data
+  <https://github.com/VertaAI/modeldb/pull/2440>`__
+- `allow alerts to properly handle samples of past time windows
+  <https://github.com/VertaAI/modeldb/pull/2478>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `deprecate verta._internal_utils._histogram_utils
+  <https://github.com/VertaAI/modeldb/pull/2436>`__
+
+
 v0.18.1 (2021-06-17)
 --------------------
 
