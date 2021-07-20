@@ -92,7 +92,7 @@ public abstract class Config {
     if (tracingServerInterceptor == null) {
       Tracer tracer = Configuration.fromEnv().getTracer();
       tracingServerInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
-      GlobalTracer.register(tracer);
+      GlobalTracer.registerIfAbsent(tracer);
       TracingDriver.load();
       TracingDriver.setInterceptorMode(true);
       TracingDriver.setInterceptorProperty(true);
@@ -124,6 +124,7 @@ public abstract class Config {
   }
 
   public Jdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
+    initializeTracing();
     final var hikariDataSource = new HikariDataSource();
     final var dbUrl = RdbConfig.buildDatabaseConnectionString(databaseConfig.RdbConfiguration);
     hikariDataSource.setJdbcUrl(dbUrl);
