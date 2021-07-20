@@ -31,8 +31,8 @@ def publish(branch="master"):
     token = os.environ[TOKEN_ENV_VAR]
 
     response = requests.post(url, json={"token": token, "branches": branch})
+    logger.info(response.text)
     response.raise_for_status()
-    logger.info(response.json())
 
 
 if __name__ == "__main__":
