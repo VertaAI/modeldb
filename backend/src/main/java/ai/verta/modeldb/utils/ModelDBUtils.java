@@ -377,15 +377,6 @@ public class ModelDBUtils {
       LOGGER.warn(
           "Detected communication exception of type {}",
           communicationsException.getCause().getClass());
-      ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-      if (modelDBHibernateUtil.checkDBConnection()) {
-        LOGGER.info("Resetting session Factory");
-
-        modelDBHibernateUtil.resetSessionFactory();
-        LOGGER.info("Resetted session Factory");
-      } else {
-        LOGGER.warn("DB could not be reached");
-      }
       return true;
     } else if ((communicationsException.getCause() instanceof LockAcquisitionException)) {
       LOGGER.warn(communicationsException.getMessage());
