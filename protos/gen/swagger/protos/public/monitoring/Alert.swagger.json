@@ -714,6 +714,13 @@
             "type": "string"
           }
         },
+        "fuzzy_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Add names to find with a fuzzy (non-exact) search"
+        },
         "workspace_id": {
           "type": "string",
           "format": "uint64"
