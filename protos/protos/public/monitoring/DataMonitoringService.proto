@@ -186,6 +186,9 @@ message UpdateMonitoredEntityRequest {
 message FindMonitoredEntityRequest {
   repeated uint64 ids = 1;
   repeated string names = 2;
+  // Add names to find with a fuzzy (non-exact) search
+  repeated string fuzzy_names = 7;
+
   oneof workspace_identifier {
     uint64 workspace_id = 3;
     string workspace_name = 6;
