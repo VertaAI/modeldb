@@ -147,7 +147,7 @@ public abstract class CommonHibernateUtil {
         throw new ModelDBException(e.getMessage(), e);
       }
     } else {
-      return loopBack(sessionFactory);
+      return validateConnectionAndFetchExistingSessionFactory(sessionFactory);
     }
   }
 
@@ -179,29 +179,26 @@ public abstract class CommonHibernateUtil {
     return createOrGetSessionFactory(config.database);
   }
 
-  private SessionFactory loopBack(SessionFactory sessionFactory) {
+  private SessionFactory validateConnectionAndFetchExistingSessionFactory(SessionFactory sessionFactory) {
     try {
       LOGGER.trace("CommonHibernateUtil checking DB connection");
       boolean dbConnectionLive =
-          checkDBConnection(databaseConfig.RdbConfiguration, databaseConfig.timeout);
-      if (dbConnectionLive) {
-        return sessionFactory;
+              checkDBConnection(databaseConfig.RdbConfiguration, databaseConfig.timeout);
+      if (!dbConnectionLive) {
+        LOGGER.warn("CommonHibernateUtil validateConnectionAndFetchExistingSessionFactory() DB connection isValid: {}", false);
+        // If DB is not live then backend is not ready yet
+        isReady = false;
+        // Check DB connection based on the periodic time logic
+        checkDBConnectionInLoop(false);
       }
-      // Check DB connection based on the periodic time logic
-      checkDBConnectionInLoop(false);
-      sessionFactory = resetSessionFactory();
-      LOGGER.trace("CommonHibernateUtil getSessionFactory() DB connection got successfully");
+      // If DB is live then backend is not ready yet
+      isReady = true;
+      LOGGER.trace("CommonHibernateUtil validateConnectionAndFetchExistingSessionFactory() DB connection got successfully");
       return sessionFactory;
     } catch (Exception ex) {
-      LOGGER.warn("CommonHibernateUtil loopBack() getting error ", ex);
+      LOGGER.warn("CommonHibernateUtil validateConnectionAndFetchExistingSessionFactory() getting error ", ex);
       throw new UnavailableException(ex.getMessage());
     }
-  }
-
-  public SessionFactory resetSessionFactory() {
-    isReady = false;
-    sessionFactory = null;
-    return getSessionFactory();
   }
 
   public void checkDBConnectionInLoop(boolean isStartUpTime) throws InterruptedException {
@@ -212,17 +209,20 @@ public abstract class CommonHibernateUtil {
       if (loopIndex < 10 || isStartUpTime) {
         Thread.sleep(loopBackTime);
         LOGGER.debug(
-            "CommonHibernateUtil getSessionFactory() retrying for DB connection after {} millisecond ",
+            "CommonHibernateUtil checkDBConnectionInLoop() retrying for DB connection after {} millisecond ",
             loopBackTime);
         loopBackTime = loopBackTime * 2;
         loopIndex = loopIndex + 1;
         dbConnectionLive =
             checkDBConnection(databaseConfig.RdbConfiguration, databaseConfig.timeout);
+        // While backend will start up and DB connection is still not accessible then backend will retry continuously for DB connection
+        // And if it is from the user call then it will retry continuously till 2560 millisecond and then return UnavailableException.
         if (isStartUpTime && loopBackTime >= 2560) {
           loopBackTime = 2560;
         }
       } else {
-        throw new UnavailableException("DB connection not found after 2560 millisecond");
+        LOGGER.error("DB connection not found after 2560 millisecond");
+        throw new UnavailableException("Backend is unable to access database");
       }
     }
   }
