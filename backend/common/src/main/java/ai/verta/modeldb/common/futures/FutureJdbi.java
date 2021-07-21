@@ -1,5 +1,7 @@
 package ai.verta.modeldb.common.futures;
 
+import io.opentracing.util.GlobalTracer;
+import java.util.Map;
 import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
@@ -28,7 +30,11 @@ public class FutureJdbi {
           }
         });
 
-    return InternalFuture.from(promise);
+    return InternalFuture.trace(() -> InternalFuture.from(promise),
+        "withHandle",
+        Map.of(),
+        GlobalTracer.get(),
+        executor);
   }
 
   public <R, T extends Exception> InternalFuture<R> withHandleCompose(
@@ -49,6 +55,10 @@ public class FutureJdbi {
           }
         });
 
-    return InternalFuture.from(promise);
+    return InternalFuture.trace(() -> InternalFuture.from(promise),
+        "useHandle",
+        Map.of(),
+        GlobalTracer.get(),
+        executor);
   }
 }
