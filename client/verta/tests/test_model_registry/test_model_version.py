@@ -55,17 +55,18 @@ class TestMDBIntegration:
         artifact = np.random.random((36, 12))
         experiment_run.log_artifact("some-artifact", artifact)
 
-        model_version = registered_model.create_version_from_run(
-            run_id=experiment_run.id,
-            name="From Run {}".format(experiment_run.id),
-        )
+        for i, run_id_arg in enumerate([experiment_run.id, experiment_run]):  # also accept run obj
+            model_version = registered_model.create_version_from_run(
+                run_id=run_id_arg,
+                name="From Run {} {}".format(experiment_run.id, i),
+            )
 
-        env_str = str(model_version.get_environment())
-        assert 'scikit-learn' in env_str
-        assert 'Python' in env_str
+            env_str = str(model_version.get_environment())
+            assert 'scikit-learn' in env_str
+            assert 'Python' in env_str
 
-        assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
-        assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
+            assert model_for_deployment['model'].get_params() == model_version.get_model().get_params()
+            assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
 
     def test_from_run_diff_workspaces(self, client, experiment_run, organization, created_entities):
         registered_model = client.create_registered_model(workspace=organization.name)
