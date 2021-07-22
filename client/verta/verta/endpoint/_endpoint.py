@@ -448,7 +448,7 @@ class Endpoint(object):
         return tokens[0] if tokens else None
 
     def get_access_tokens(self):
-        """Returns all existing tokens of the endpoint.
+        """Returns all existing tokens of the endpoint.foo
 
         Returns
         -------
