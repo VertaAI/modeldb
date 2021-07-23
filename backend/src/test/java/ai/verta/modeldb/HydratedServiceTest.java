@@ -520,10 +520,12 @@ public class HydratedServiceTest extends TestsInit {
     GetHydratedProjects.Response getHydratedProjectsResponse =
         hydratedServiceBlockingStub.getHydratedProjects(GetHydratedProjects.newBuilder().build());
 
-    assertEquals(
-        "HydratedProjects count does not match with project count",
-        projectsMap.size(),
-        getHydratedProjectsResponse.getHydratedProjectsCount());
+    for (String projectId : projectsMap.keySet()) {
+      assertTrue(
+          "HydratedProjects does not have expected project",
+          getHydratedProjectsResponse.getHydratedProjectsList().stream()
+              .anyMatch(hydratedProject -> hydratedProject.getProject().getId().equals(projectId)));
+    }
 
     Map<String, HydratedProject> hydratedProjectMap = new HashMap<>();
     for (HydratedProject hydratedProject : getHydratedProjectsResponse.getHydratedProjectsList()) {
@@ -2366,15 +2368,12 @@ public class HydratedServiceTest extends TestsInit {
         hydratedServiceBlockingStub.findHydratedProjects(findProjects);
     List<Project> projectList = new ArrayList<>();
     for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
-      projectList.add(hydratedProject.getProject());
+      if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+        projectList.add(hydratedProject.getProject());
+      }
     }
     LOGGER.info("FindProjects Response : " + projectList.size());
     assertEquals("Project count not match with expected project count", 3, projectList.size());
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
 
     for (Project fetchedProject : projectList) {
       boolean doesAttributeExist = false;
@@ -2422,7 +2421,9 @@ public class HydratedServiceTest extends TestsInit {
     response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
     projectList = new ArrayList<>();
     for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
-      projectList.add(hydratedProject.getProject());
+      if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+        projectList.add(hydratedProject.getProject());
+      }
     }
     LOGGER.info("FindProjects Response : " + projectList.size());
     assertEquals("Project count not match with expected project count", 1, projectList.size());
@@ -2463,16 +2464,14 @@ public class HydratedServiceTest extends TestsInit {
     response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
     projectList = new ArrayList<>();
     for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
-      projectList.add(hydratedProject.getProject());
+      if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+        projectList.add(hydratedProject.getProject());
+      }
     }
     LOGGER.info("FindProjects Response : " + projectList.size());
     assertEquals("Project count not match with expected project count", 1, projectList.size());
     assertEquals(
         "Project not match with expected project", project4.getId(), projectList.get(0).getId());
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        response.getTotalRecords());
 
     // get project with value of endTime
     stringValue =
@@ -2493,7 +2492,9 @@ public class HydratedServiceTest extends TestsInit {
     response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
     projectList = new ArrayList<>();
     for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
-      projectList.add(hydratedProject.getProject());
+      if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+        projectList.add(hydratedProject.getProject());
+      }
     }
     LOGGER.info("FindProjects Response : " + projectList.size());
     assertEquals("Project count not match with expected project count", 1, projectList.size());
@@ -2501,10 +2502,6 @@ public class HydratedServiceTest extends TestsInit {
         "ProjectRun not match with expected projectRun",
         project4.getId(),
         projectList.get(0).getId());
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        response.getTotalRecords());
 
     numValue = Value.newBuilder().setNumberValue(0.6543210).build();
     keyValueQuery2 =
@@ -2531,7 +2528,9 @@ public class HydratedServiceTest extends TestsInit {
       response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
       projectList = new ArrayList<>();
       for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
-        projectList.add(hydratedProject.getProject());
+        if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+          projectList.add(hydratedProject.getProject());
+        }
       }
 
       assertEquals(
@@ -2621,16 +2620,14 @@ public class HydratedServiceTest extends TestsInit {
     response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
     projectList = new ArrayList<>();
     for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
-      projectList.add(hydratedProject.getProject());
+      if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+        projectList.add(hydratedProject.getProject());
+      }
     }
     LOGGER.info("FindProjects Response : " + projectList.size());
     assertEquals("Project count not match with expected project count", 1, projectList.size());
     assertEquals(
         "Project not match with expected project", project3.getId(), projectList.get(0).getId());
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        response.getTotalRecords());
 
     Value numValueLoss = Value.newBuilder().setNumberValue(0.6543210).build();
     KeyValueQuery keyValueQueryAttribute_1 =
@@ -2651,12 +2648,10 @@ public class HydratedServiceTest extends TestsInit {
     response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
     projectList = new ArrayList<>();
     for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
-      projectList.add(hydratedProject.getProject());
+      if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+        projectList.add(hydratedProject.getProject());
+      }
     }
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
     assertEquals("Project count not match with expected project count", 3, projectList.size());
 
     KeyValueQuery keyValueQueryAccuracy =
@@ -2676,12 +2671,10 @@ public class HydratedServiceTest extends TestsInit {
     response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
     projectList = new ArrayList<>();
     for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
-      projectList.add(hydratedProject.getProject());
+      if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+        projectList.add(hydratedProject.getProject());
+      }
     }
-    assertEquals(
-        "Total records count not matched with expected records count",
-        2,
-        response.getTotalRecords());
     assertEquals("Project count not match with expected project count", 2, projectList.size());
 
     numValueLoss = Value.newBuilder().setNumberValue(0.6543210).build();
@@ -2704,12 +2697,10 @@ public class HydratedServiceTest extends TestsInit {
     response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
     projectList = new ArrayList<>();
     for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
-      projectList.add(hydratedProject.getProject());
+      if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+        projectList.add(hydratedProject.getProject());
+      }
     }
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
     assertEquals("Project count not match with expected project count", 3, projectList.size());
 
     for (int index = 0; index < projectList.size(); index++) {
@@ -2744,18 +2735,20 @@ public class HydratedServiceTest extends TestsInit {
             .build();
 
     response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        response.getTotalRecords());
+    projectList = new ArrayList<>();
+    for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
+      if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+        projectList.add(hydratedProject.getProject());
+      }
+    }
     assertEquals(
         "HydratedProject count not match with expected HydratedProject count",
         1,
-        response.getHydratedProjectsCount());
+        projectList.size());
     assertEquals(
         "HydratedProject Id not match with expected HydratedProject Id",
         project4.getId(),
-        response.getHydratedProjects(0).getProject().getId());
+        projectList.get(0).getId());
 
     KeyValueQuery keyValueQuery1 =
         KeyValueQuery.newBuilder()
@@ -2779,18 +2772,20 @@ public class HydratedServiceTest extends TestsInit {
             .build();
 
     response = hydratedServiceBlockingStub.findHydratedProjects(findProjects);
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
+    projectList = new ArrayList<>();
+    for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
+      if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+        projectList.add(hydratedProject.getProject());
+      }
+    }
     assertEquals(
         "HydratedProject count not match with expected HydratedProject count",
         3,
-        response.getHydratedProjectsCount());
+        projectList.size());
     assertEquals(
         "HydratedProject Id not match with expected HydratedProject Id",
         project3.getId(),
-        response.getHydratedProjects(0).getProject().getId());
+        projectList.get(0).getId());
 
     keyValueQuery =
         KeyValueQuery.newBuilder()
