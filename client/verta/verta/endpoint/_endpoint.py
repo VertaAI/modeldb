@@ -434,7 +434,7 @@ class Endpoint(object):
         )
         _utils.raise_for_http_error(response)
 
-    # TODO: add support for KafkaSettings to _update_from_dict below or de-scope
+    # TODO: add support for KafkaSettings to _update_from_dict (VR-12264)
     def update_from_config(self, filepath, wait=False):
         """
         Updates the endpoint via a YAML or JSON config file.
