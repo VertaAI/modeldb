@@ -88,9 +88,7 @@ class _DeployableEntity(_ModelDBEntity):
                 - ``str`` path to a file or directory
                 - arbitrary ``pickle``\ able object
         custom_modules : list of str, optional
-            Paths to local Python modules and other files that the deployed
-            model depends on. Modules from the standard library should not be
-            included here.
+            Paths to local Python modules and other files that the deployed model depends on.
                 - If directories are provided, all files within—excluding virtual environments—will
                   be included.
                 - If module names are provided, all files within the corresponding module inside a
