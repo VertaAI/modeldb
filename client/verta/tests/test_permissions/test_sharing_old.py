@@ -118,35 +118,6 @@ class TestRegisteredModel:
             client_2.get_registered_model(id=registered_model.id)
 
 
-class TestRepository:
-    def test_org_public_repository(self, client, organization, client_2, email_2, created_entities):
-        """
-        User 2 tries to access a org-public repository created by a user in the same organization.
-        """
-        repository_name = _utils.generate_default_name()
-        repository = client.set_repository(repository_name, workspace=organization.name, public_within_org=True)
-        created_entities.append(repository)
-
-        organization.add_member(email_2)
-
-        assert client_2.get_or_create_repository(id=repository.id)
-        assert client_2.get_or_create_repository(name=repository.name, workspace=organization.name).id == repository.id
-
-    def test_non_org_public_repository_access_error(self, client, organization, client_2, email_2, created_entities):
-        """
-        User 2 tries to access a non-org-public repository created by a user in the same organization.
-        """
-        repository_name = _utils.generate_default_name()
-        repository = client.set_repository(repository_name, workspace=organization.name, public_within_org=False)
-        created_entities.append(repository)
-
-        organization.add_member(email_2)
-
-        # Shouldn't be able to access:
-        with pytest.raises(ValueError, match="no Repository found"):
-            client_2.get_or_create_repository(id=repository.id)
-
-
 class TestEndpoint:
     def test_org_endpoint(self, client, organization, client_2, email_2, created_entities):
         """

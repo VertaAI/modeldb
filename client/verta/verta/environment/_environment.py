@@ -5,11 +5,10 @@ from __future__ import print_function
 import os
 import sys
 
-from ..external import six
+from verta.external import six
+from verta import _blob
 
 from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
-
-from ..repository import _blob
 
 
 class _Environment(_blob.Blob):

@@ -41,16 +41,6 @@ def assert_endpoint_visibility(endpoint, visibility):
     assert endpoint_json['creator_request']['resource_visibility'] == visibility._visibility_str
 
 
-def assert_repository_visibility(repo, visibility):
-    repo_msg = repo._get_proto_by_id(repo._conn, repo.id)
-
-    if not repo_msg.HasField('custom_permission'):
-        pytest.skip("backend does not support new visibility")
-
-    assert repo_msg.custom_permission == visibility._custom_permission
-    assert repo_msg.visibility == visibility._visibility
-
-
 class TestCreate:
     @pytest.mark.parametrize(
         ("entity_name", "visibility"),
@@ -79,10 +69,6 @@ class TestCreate:
         )
         created_entities.append(endpoint)
         assert_endpoint_visibility(endpoint, visibility)
-
-    @pytest.mark.skip(reason="client.create_repository() does not yet exist")
-    def test_repository(self, client, organization):
-        raise NotImplementedError
 
 
 class TestSet:
@@ -124,21 +110,6 @@ class TestSet:
         with pytest.warns(UserWarning, match="cannot set"):
             endpoint = client.set_endpoint(path=endpoint.path, workspace=organization.name, visibility=Private())
         assert_endpoint_visibility(endpoint, visibility)
-
-    def test_repository(self, client, organization, created_entities):
-        visibility = OrgCustom(write=True)
-
-        repo = client.set_repository(
-            name=_utils.generate_default_name(),
-            workspace=organization.name, visibility=visibility,
-        )
-        created_entities.append(repo)
-
-        assert_repository_visibility(repo, visibility)
-
-        # second set ignores visibility
-        repo = client.set_repository(name=repo.name, workspace=organization.name, visibility=Private())
-        assert_repository_visibility(repo, visibility)
 
 
 class TestPublicWithinOrg:
@@ -192,17 +163,3 @@ class TestPublicWithinOrg:
             assert entity._msg.visibility == _CommonCommonService.VisibilityEnum.ORG_SCOPED_PUBLIC
         else:
             assert entity._msg.visibility == _CommonCommonService.VisibilityEnum.PRIVATE
-
-    def test_repository(self, client, organization, created_entities):
-        visibility = OrgCustom(write=True)
-        repo = client.set_repository(
-            name=_utils.generate_default_name(),
-            workspace=organization.name, visibility=visibility,
-        )
-        created_entities.append(repo)
-
-        retrieved_visibility = repo._get_proto_by_id(repo._conn, repo.id).repository_visibility
-        if visibility._to_public_within_org():
-            assert retrieved_visibility == _VersioningService.RepositoryVisibilityEnum.ORG_SCOPED_PUBLIC
-        else:
-            assert retrieved_visibility == _VersioningService.RepositoryVisibilityEnum.PRIVATE

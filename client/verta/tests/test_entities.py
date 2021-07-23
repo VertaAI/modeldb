@@ -294,10 +294,6 @@ class TestEntities:
         proj = client.create_project()
         assert_new_run_in_proj()
 
-        client.get_or_create_repository(next(strs)).delete()
-        # client.create_repository(next(strs)).delete()  # method DNE
-        assert_new_run_in_proj()
-
         client.get_or_create_registered_model().delete()
         client.create_registered_model().delete()
         assert_new_run_in_proj()

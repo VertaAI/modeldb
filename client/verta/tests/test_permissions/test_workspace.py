@@ -15,7 +15,7 @@ class TestAttr:
     """`workspace` attribute of entity objects."""
     @pytest.mark.parametrize(
         "entity_name",
-        ["dataset", "project", "repository", "registered_model"],
+        ["dataset", "project", "registered_model"],
     )
     def test_top_level_entities(self, client, organization, created_entities, entity_name):
         set_entity = getattr(client, "set_{}".format(entity_name))

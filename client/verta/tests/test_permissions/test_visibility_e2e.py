@@ -95,63 +95,8 @@ class TestAccess:
         except:
             created_entities.append(entity)
 
-    def test_repository(self, client, client_2, organization, created_entities):
-        """
-        The above, but for repository.
-
-        Because there is no client.create_repository() or client.get_repository().
-        """
-        organization.add_member(client_2._conn.email)
-        client.set_workspace(organization.name)
-        client_2.set_workspace(organization.name)
-
-        # private
-        private_repo = client.set_repository(_utils.generate_default_name(), visibility=Private())
-        created_entities.append(private_repo)
-        with pytest.raises(Exception, match="unable to get Repository"):
-            client_2.set_repository(private_repo.name)
-
-        # read-only
-        read_repo = client.set_repository(_utils.generate_default_name(), visibility=OrgCustom(write=False))
-        created_entities.append(read_repo)
-        retrieved_repo = client_2.set_repository(read_repo.name)
-        assert retrieved_repo.id == read_repo.id
-        with pytest.raises(requests.HTTPError, match="^403"):
-            retrieved_repo.delete()
-
-        # read-write
-        write_repo = client.set_repository(_utils.generate_default_name(), visibility=OrgCustom(write=True))
-        try:
-            retrieved_repo = client_2.set_repository(write_repo.name)
-            retrieved_repo.delete()
-        except:
-            created_entities.append(write_repo)
-
 
 class TestLink:
-    def test_run_log_commit(self, client_2, client_3, organization, created_entities):
-        """Log someone else's commit to my run."""
-        organization.add_member(client_2._conn.email)
-        organization.add_member(client_3._conn.email)
-        client_2.set_workspace(organization.name)
-        client_3.set_workspace(organization.name)
-
-        created_entities.append(client_2.create_project())
-        run = client_2.create_experiment_run()
-
-        # private commit
-        repo = client_3.set_repository(_utils.generate_default_name(), visibility=Private())
-        created_entities.append(repo)
-        commit = repo.get_commit()
-        with pytest.raises(requests.HTTPError, match="^403"):
-            run.log_commit(commit)
-
-        # org commit
-        repo = client_3.set_repository(_utils.generate_default_name())
-        created_entities.append(repo)
-        commit = repo.get_commit()
-        run.log_commit(commit)
-        assert run.get_commit()[0].id == commit.id
 
     def test_run_log_dataset_version(self, client_2, client_3, organization, created_entities):
         """Log someone else's dataset version to my run."""

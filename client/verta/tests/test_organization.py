@@ -44,7 +44,6 @@ class TestOrganization:
         exp_name = _utils.generate_default_name()
         run_name = _utils.generate_default_name()
         dataset_name = _utils.generate_default_name()
-        repository_name = _utils.generate_default_name()
         model_name = _utils.generate_default_name()
         version_name = _utils.generate_default_name()
         endpoint_path = _utils.generate_default_name()
@@ -53,8 +52,6 @@ class TestOrganization:
         created_entities.append(project)
         exp = client.create_experiment(exp_name)
         run = client.create_experiment_run(run_name)
-        repository = client.get_or_create_repository(name=repository_name)
-        created_entities.append(repository)
 
         dataset = client.create_dataset(dataset_name)
         created_entities.append(dataset)
@@ -80,8 +77,6 @@ class TestOrganization:
         created_entities.append(new_project)
         new_exp = client.create_experiment(exp_name)
         new_run = client.create_experiment_run(run_name)
-        new_repository = client.get_or_create_repository(name=repository_name, workspace=organization.name)
-        created_entities.append(new_repository)
 
         new_dataset = client.create_dataset(dataset_name, workspace=organization.name)
         created_entities.append(new_dataset)
@@ -94,4 +89,3 @@ class TestOrganization:
         assert exp.id != new_exp.id
         assert run.id != new_run.id
         assert dataset.id != new_dataset.id
-        assert repository.id != new_repository.id

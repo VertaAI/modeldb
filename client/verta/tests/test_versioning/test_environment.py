@@ -135,13 +135,6 @@ class TestPython:
 
         assert env._msg.environment_variables
 
-    def test_commit(self, commit):
-        env = Python(requirements=[])
-
-        commit.update("env", env)
-        commit.save(message="banana")
-        assert commit.get("env")
-
     def test_reqs_from_env(self):
         reqs = Python.read_pip_environment()
         env = Python(requirements=reqs)
