@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """Utilities for defining and interacting with deployable models."""
+# NOTE: This submodule is to be merged into verta.endpoint (VR-5882), and
+#       should not be expanded further.
 
 from verta._internal_utils import documentation
 
