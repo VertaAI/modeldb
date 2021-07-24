@@ -944,11 +944,11 @@ class TestAutoMonitoring:
 
     @hypothesis.settings(deadline=None)  # building DataFrames can be slow
     @hypothesis.given(
-        df=strategies.dataframes(),  # pylint: disable=no-value-for-parameter
+        df=strategies.simple_dataframes(),  # pylint: disable=no-value-for-parameter
         labels=st.dictionaries(st.text(), st.text()),
     )
     def test_create_summaries(self, df, labels):
-        """Unit test for the profiling helper functions."""
+        """Unit test for the exact expected output of discrete & continuous columns."""
         pytest.importorskip("numpy")
 
         # missing
