@@ -140,7 +140,8 @@ class Client(object):
 
         if host is None:
             raise ValueError("`host` must be provided")
-        auth = {**extra_auth_headers, _utils._GRPC_PREFIX+'source': "PythonClient"}
+        auth = extra_auth_headers.copy()
+        auth.update({_utils._GRPC_PREFIX+'source': "PythonClient"})
         if email is None and dev_key is None:
             if debug:
                 print("[DEBUG] email and developer key not found; auth disabled")
