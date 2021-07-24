@@ -1414,6 +1414,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                     "`in_df` and `out_df` must be of type pd.DataFrame,"
                     " not {}".format(type(df))
                 )
+            if not (len(in_df) and len(out_df)):
+                raise ValueError(
+                    "`in_df` and `out_df` must both have at least one row"
+                )
             if not all(isinstance(col, six.string_types) for col in df.columns):
                 # helper fns run into type errors handling non-str column names
                 # TODO: try to resolve this restriction
