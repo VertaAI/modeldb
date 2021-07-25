@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import string
+
 import hypothesis
 import hypothesis.strategies as st
 import pytest
+
 from verta._protos.public.monitoring.Summary_pb2 import AggregationQuerySummary
 from verta.monitoring.summaries.aggregation import Aggregation
+from verta.registry.entities import RegisteredModelVersion
+
 from ..time_strategies import millis_timedelta_strategy, millis_uint64_strategy
 
 ProtoOperations = AggregationQuerySummary.AggregationOperation
@@ -149,7 +154,7 @@ def dataframes(draw, min_rows=0, max_rows=2 ** 8, min_cols=0, max_cols=2 ** 8):
             st.text(),
             min_size=len(col_types),
             max_size=len(col_types),
-            unique=True,
+            unique_by=RegisteredModelVersion._normalize_attribute_key,
         )
     )
 

@@ -1030,6 +1030,33 @@ class TestAutoMonitoring:
         for feature_data in feature_data_list:
             self.assert_feature_data_correctness(feature_data, in_df, out_df)
 
+    @hypothesis.settings(deadline=None)  # building DataFrames can be slow
+    @hypothesis.given(
+        df=strategies.dataframes(min_rows=1, min_cols=2),  # pylint: disable=no-value-for-parameter
+    )
+    def test_collect_feature_data_and_vis_attributes(self, df):
+        """Unit test that attributes pre-logging are the correct format."""
+        in_df, out_df = df.iloc[:, :-1], df.iloc[:, [-1]]
+
+        feature_data_list = RegisteredModelVersion._compute_training_data_profile(
+            in_df, out_df,
+        )
+        feature_data_attrs = RegisteredModelVersion._collect_feature_data_and_vis_attributes(
+            feature_data_list,
+        )
+
+        for key, val in feature_data_attrs.items():
+            if key.startswith(_deployable_entity._FEATURE_DATA_ATTR_PREFIX):
+                feature_data = _utils.json_to_proto(val, FeatureDataInModelVersion)
+                self.assert_feature_data_correctness(feature_data, in_df, out_df)
+
+                if feature_data.profiler_name == "MissingValuesProfiler":
+                    sample_key = feature_data.feature_name + "MissingValues"
+                else:
+                    sample_key = feature_data.feature_name + "Distribution"
+                sample_key = RegisteredModelVersion._normalize_attribute_key(sample_key)
+                assert feature_data_attrs[sample_key] == json.loads(feature_data.content)
+
     def test_profile_training_data(self, model_version):
         """Integration test for logging attributes with correct structure."""
         pd = pytest.importorskip("pandas")
