@@ -4,6 +4,7 @@ import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -33,7 +34,7 @@ public class FutureJdbi {
           return InternalFuture.from(promise);
         },
         "jdbi.withHandle",
-        null,
+        Map.of("caller", String.format("%s:%d", Thread.currentThread().getStackTrace()[1].getFileName(), Thread.currentThread().getStackTrace()[1].getLineNumber())),
         executor);
   }
 
@@ -60,7 +61,7 @@ public class FutureJdbi {
           return InternalFuture.from(promise);
         },
         "jdbi.useHandle",
-        null,
+            Map.of("caller", String.format("%s:%d", Thread.currentThread().getStackTrace()[1].getFileName(), Thread.currentThread().getStackTrace()[1].getLineNumber())),
         executor);
   }
 }
