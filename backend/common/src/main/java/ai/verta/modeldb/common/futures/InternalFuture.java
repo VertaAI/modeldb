@@ -6,6 +6,7 @@ import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
 import io.opentracing.contrib.grpc.ActiveSpanSource;
 import io.opentracing.tag.Tags;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.logging.log4j.util.TriConsumer;
 
 import java.util.ArrayList;
@@ -128,6 +129,10 @@ public class InternalFuture<T> {
 
     public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, Executor executor) {
         return from(stage.thenApplyAsync(fn, executor));
+    }
+
+    public <U> InternalFuture<U> handle(BiFunction<? super T, Throwable, ? extends U> fn, Executor executor) {
+        return from(stage.handleAsync(fn, executor));
     }
 
     public <U, V> InternalFuture<V> thenCombine(
