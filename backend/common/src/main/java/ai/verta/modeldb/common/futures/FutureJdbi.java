@@ -17,18 +17,24 @@ public class FutureJdbi {
   }
 
   public <R, T extends Exception> InternalFuture<R> withHandle(HandleCallback<R, T> callback) {
-    CompletableFuture<R> promise = new CompletableFuture<R>();
-
-    executor.execute(
+    return InternalFuture.trace(
         () -> {
-          try {
-            promise.complete(jdbi.withHandle(callback));
-          } catch (Throwable e) {
-            promise.completeExceptionally(e);
-          }
-        });
+          CompletableFuture<R> promise = new CompletableFuture<R>();
 
-    return InternalFuture.from(promise);
+          executor.execute(
+              () -> {
+                try {
+                  promise.complete(jdbi.withHandle(callback));
+                } catch (Throwable e) {
+                  promise.completeExceptionally(e);
+                }
+              });
+
+          return InternalFuture.from(promise);
+        },
+        "jdbi.withHandle",
+        null,
+        executor);
   }
 
   public <R, T extends Exception> InternalFuture<R> withHandleCompose(
@@ -37,18 +43,24 @@ public class FutureJdbi {
   }
 
   public <T extends Exception> InternalFuture<Void> useHandle(final HandleConsumer<T> consumer) {
-    CompletableFuture<Void> promise = new CompletableFuture<Void>();
-
-    executor.execute(
+    return InternalFuture.trace(
         () -> {
-          try {
-            jdbi.useHandle(consumer);
-            promise.complete(null);
-          } catch (Throwable e) {
-            promise.completeExceptionally(e);
-          }
-        });
+          CompletableFuture<Void> promise = new CompletableFuture<Void>();
 
-    return InternalFuture.from(promise);
+          executor.execute(
+              () -> {
+                try {
+                  jdbi.useHandle(consumer);
+                  promise.complete(null);
+                } catch (Throwable e) {
+                  promise.completeExceptionally(e);
+                }
+              });
+
+          return InternalFuture.from(promise);
+        },
+        "jdbi.useHandle",
+        null,
+        executor);
   }
 }

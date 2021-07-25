@@ -6,6 +6,7 @@ import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
 import io.opentracing.contrib.grpc.ActiveSpanSource;
 import io.opentracing.tag.Tags;
+import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.logging.log4j.util.TriConsumer;
 
@@ -48,26 +49,33 @@ public class InternalFuture<T> {
             spanBuilder = tracer.buildSpan(operationName).asChildOf(parentSpanContext);
         }
 
-        for (var entry : tags.entrySet()) {
-            spanBuilder = spanBuilder.withTag(entry.getKey(), entry.getValue());
+    if (tags != null) {
+      for (var entry : tags.entrySet()) {
+        spanBuilder = spanBuilder.withTag(entry.getKey(), entry.getValue());
+      }
         }
 
         return spanBuilder.start();
     }
 
-    public static <T> InternalFuture<T> trace(Supplier<InternalFuture<T>> supplier, String operationName, Map<String,String> tags, Tracer tracer, Executor executor) {
+    public static <T> InternalFuture<T> trace(Supplier<InternalFuture<T>> supplier, String operationName, Map<String,String> tags, Executor executor) {
+        if (!GlobalTracer.isRegistered())
+            return supplier.get();
+
+        final var tracer = GlobalTracer.get();
+
         final var spanContext = getActiveSpanContext(tracer);
         final var span = createSpanFromParent(tracer, spanContext, operationName, tags);
 
         final var promise = new CompletableFuture<T>();
-        supplier.get().stage.whenComplete((v, t) -> {
+        supplier.get().stage.whenCompleteAsync((v, t) -> {
             span.finish();
             if (t != null) {
                 promise.completeExceptionally(t);
             } else {
                 promise.complete(v);
             }
-        });
+        }, executor);
 
         return InternalFuture.from(promise);
     }
