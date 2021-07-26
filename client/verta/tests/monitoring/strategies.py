@@ -154,6 +154,9 @@ def dataframes(draw, min_rows=0, max_rows=2 ** 8, min_cols=0, max_cols=2 ** 8):
             st.text(),
             min_size=len(col_types),
             max_size=len(col_types),
+            # the following line is required otherwise log_training_data_proflie()
+            # tests in TestAutoMonitoring fail with columns that get normalized
+            # to the same attribute key (VR-12274 to resolve)
             unique_by=RegisteredModelVersion._normalize_attribute_key,
         )
     )
