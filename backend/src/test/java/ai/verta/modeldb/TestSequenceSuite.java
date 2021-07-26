@@ -16,7 +16,6 @@ import org.junit.runners.Suite;
   ProjectTest.class,
   ExperimentTest.class,
   ExperimentRunTest.class,
-  CollaboratorTest.class,
   CommentTest.class,
   HydratedServiceTest.class,
   DatasetTest.class,
