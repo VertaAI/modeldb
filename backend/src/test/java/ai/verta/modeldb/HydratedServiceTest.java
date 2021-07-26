@@ -2196,16 +2196,14 @@ public class HydratedServiceTest extends TestsInit {
     LOGGER.info("GetHydratedProjects Count : " + response.getTotalRecords());
     List<Project> projectList = new ArrayList<>();
     for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
-      projectList.add(hydratedProject.getProject());
+      if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+        projectList.add(hydratedProject.getProject());
+      }
     }
     assertEquals(
         "HydratedProjects count not match with expected HydratedProjects count",
         projectsMap.size(),
         projectList.size());
-    assertEquals(
-        "Projects count not match with expected projects count",
-        projectsMap.size(),
-        response.getTotalRecords());
 
     for (Project project : projectList) {
       if (projectsMap.get(project.getId()) == null) {
@@ -2227,14 +2225,11 @@ public class HydratedServiceTest extends TestsInit {
       GetHydratedProjects.Response hydratedProjectsResponse =
           hydratedServiceBlockingStub.getHydratedProjects(getHydratedProjects);
 
-      assertEquals(
-          "Total records count not matched with expected records count",
-          experimentMap.size(),
-          hydratedProjectsResponse.getTotalRecords());
-
       projectList = new ArrayList<>();
       for (HydratedProject hydratedProject : hydratedProjectsResponse.getHydratedProjectsList()) {
-        projectList.add(hydratedProject.getProject());
+        if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+          projectList.add(hydratedProject.getProject());
+        }
       }
 
       if (!projectList.isEmpty()) {

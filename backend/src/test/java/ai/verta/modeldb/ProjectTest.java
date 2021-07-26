@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -1883,7 +1884,7 @@ public class ProjectTest extends TestsInit {
         assertEquals(Status.INTERNAL.getCode(), status.getCode());
       }
 
-      String shortName = "project-sprt_app";
+      String shortName = ModelDBUtils.convertToProjectShortName(UUID.randomUUID().toString());
       SetProjectShortName setProjectShortName =
           SetProjectShortName.newBuilder().setShortName(shortName).setId(project.getId()).build();
       SetProjectShortName.Response response =
@@ -1915,8 +1916,8 @@ public class ProjectTest extends TestsInit {
       }
     } catch (StatusRuntimeException e) {
       Status status2 = Status.fromThrowable(e);
-      fail();
       LOGGER.error("Error Code : " + status2.getCode() + " Error : " + status2.getDescription());
+      fail(e.getMessage());
     }
 
     LOGGER.info("Set Project short name test stop................................");
