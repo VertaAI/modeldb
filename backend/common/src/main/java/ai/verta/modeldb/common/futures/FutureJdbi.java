@@ -1,5 +1,7 @@
 package ai.verta.modeldb.common.futures;
 
+import io.opentracing.util.GlobalTracer;
+import org.apache.tomcat.jni.Global;
 import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
@@ -24,10 +26,15 @@ public class FutureJdbi {
 
           executor.execute(
               () -> {
+                final var tracer = GlobalTracer.get();
+                final var span = tracer.buildSpan("jdbi.withHandle.executor").asChildOf(tracer.activeSpan()).start();
                 try {
                   promise.complete(jdbi.withHandle(callback));
                 } catch (Throwable e) {
                   promise.completeExceptionally(e);
+                }
+                finally {
+                  span.finish();
                 }
               });
 
