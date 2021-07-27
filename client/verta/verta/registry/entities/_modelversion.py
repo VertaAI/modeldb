@@ -1365,7 +1365,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             logger.info("collecting feature %s", feature_data.feature_name)
             feature_data_key = _deployable_entity._FEATURE_DATA_ATTR_PREFIX + str(i)
             feature_data_val = _utils.proto_to_json(feature_data, False)
-            sample_key = cls._normalize_attribute_key(feature_data.summary_name)
+            sample_key = (
+                _deployable_entity._TRAINING_DATA_ATTR_PREFIX
+                + cls._normalize_attribute_key(feature_data.summary_name)
+            )
             sample_val = json.loads(feature_data.content)
 
             attributes.update(
