@@ -1054,7 +1054,10 @@ class TestAutoMonitoring:
                     sample_key = feature_data.feature_name + "MissingValues"
                 else:
                     sample_key = feature_data.feature_name + "Distribution"
-                sample_key = RegisteredModelVersion._normalize_attribute_key(sample_key)
+                sample_key = (
+                    _deployable_entity._TRAINING_DATA_ATTR_PREFIX
+                    + RegisteredModelVersion._normalize_attribute_key(sample_key)
+                )
                 assert feature_data_attrs[sample_key] == json.loads(feature_data.content)
 
     def test_profile_training_data(self, model_version):
@@ -1122,7 +1125,11 @@ class TestAutoMonitoring:
 
         # reference distribution attributes can be fetched back as histograms
         for col in supported_col_names:
-            key = col + "Distribution"
+            key = (
+                _deployable_entity._TRAINING_DATA_ATTR_PREFIX
+                + col
+                + "Distribution"
+            )
             histogram = model_version.get_attribute(key)
             assert isinstance(histogram, _verta_data_type._VertaDataType)
 
