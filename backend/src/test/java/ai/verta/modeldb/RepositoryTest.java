@@ -841,16 +841,17 @@ public class RepositoryTest extends TestsInit {
         FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
     FindRepositories.Response findRepositoriesResponse =
         versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
-    LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
+    List<Repository> repositoryList = new ArrayList<>();
+    for (Repository repository : findRepositoriesResponse.getRepositoriesList()) {
+      if (repositoryMap.containsKey(repository.getId())) {
+        repositoryList.add(repository);
+      }
+    }
+    LOGGER.info("FindProjects Response : " + repositoryList.size());
     assertEquals(
         "Project count not match with expected project count",
         repositoryMap.size(),
-        findRepositoriesResponse.getRepositoriesCount());
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        repositoryMap.size(),
-        findRepositoriesResponse.getTotalRecords());
+        repositoryList.size());
 
     keyValueQuery =
         KeyValueQuery.newBuilder()
@@ -861,15 +862,14 @@ public class RepositoryTest extends TestsInit {
     findRepositoriesRequest = FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
     findRepositoriesResponse =
         versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
-    LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
-    assertEquals(
-        "Project count not match with expected project count",
-        0,
-        findRepositoriesResponse.getRepositoriesCount());
-    assertEquals(
-        "Total records count not matched with expected records count",
-        0,
-        findRepositoriesResponse.getTotalRecords());
+    repositoryList = new ArrayList<>();
+    for (Repository repository : findRepositoriesResponse.getRepositoriesList()) {
+      if (repositoryMap.containsKey(repository.getId())) {
+        repositoryList.add(repository);
+      }
+    }
+    LOGGER.info("FindProjects Response : " + repositoryList.size());
+    assertEquals("Project count not match with expected project count", 0, repositoryList.size());
 
     stringValue = Value.newBuilder().setStringValue("asdasdasd").build();
     keyValueQuery =
@@ -882,15 +882,14 @@ public class RepositoryTest extends TestsInit {
     findRepositoriesRequest = FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
     findRepositoriesResponse =
         versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
-    LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
-    assertEquals(
-        "Project count not match with expected project count",
-        0,
-        findRepositoriesResponse.getRepositoriesCount());
-    assertEquals(
-        "Total records count not matched with expected records count",
-        0,
-        findRepositoriesResponse.getTotalRecords());
+    repositoryList = new ArrayList<>();
+    for (Repository repository : findRepositoriesResponse.getRepositoriesList()) {
+      if (repositoryMap.containsKey(repository.getId())) {
+        repositoryList.add(repository);
+      }
+    }
+    LOGGER.info("FindProjects Response : " + repositoryList.size());
+    assertEquals("Project count not match with expected project count", 0, repositoryList.size());
 
     LOGGER.info("FindRepositories by owner fuzzy search test stop ...");
   }
@@ -926,16 +925,15 @@ public class RepositoryTest extends TestsInit {
         FindRepositories.newBuilder().addPredicates(keyValueQuery).build();
     FindRepositories.Response findRepositoriesResponse =
         versioningServiceBlockingStub.findRepositories(findRepositoriesRequest);
-    LOGGER.info("FindRepositories Response : " + findRepositoriesResponse.getRepositoriesList());
+    List<Repository> repositoryList = new ArrayList<>();
+    for (Repository repository : findRepositoriesResponse.getRepositoriesList()) {
+      if (repositoryMap.containsKey(repository.getId())) {
+        repositoryList.add(repository);
+      }
+    }
+    LOGGER.info("FindRepositories Response : " + repositoryList.size());
     assertEquals(
-        "Repositories count not match with expected Repositories count",
-        3,
-        findRepositoriesResponse.getRepositoriesCount());
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        findRepositoriesResponse.getTotalRecords());
+        "Repositories count not match with expected Repositories count", 3, repositoryList.size());
 
     LOGGER.info("FindRepositories by owner fuzzy search test stop ...");
   }
