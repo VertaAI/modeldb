@@ -7,6 +7,7 @@ public class S3Config {
   public String minioEndpoint;
   public String awsRegion = "us-east-1";
   public Boolean s3presignedURLEnabled = true;
+  public String s3Host;
 
   public void Validate(String base) throws InvalidConfigException {
     if (cloudBucketName == null || cloudBucketName.isEmpty())
