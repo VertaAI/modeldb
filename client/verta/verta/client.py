@@ -80,6 +80,8 @@ class Client(object):
         Whether to use a local Git repository for certain operations such as Code Versioning.
     debug : bool, default False
         Whether to print extra verbose information to aid in debugging.
+    extra_auth_headers : dict, default {}
+        Extra headers to include on requests, like to permit traffic through a restrictive application load balancer
     _connect : str, default True
         Whether to connect to server (``False`` for unit tests).
 
@@ -117,7 +119,7 @@ class Client(object):
 
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
-                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, _connect=True):
+                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, extra_auth_headers={}, _connect=True):
         self._load_config()
 
         if host is None and 'VERTA_HOST' in os.environ:
@@ -138,7 +140,8 @@ class Client(object):
 
         if host is None:
             raise ValueError("`host` must be provided")
-        auth = {_utils._GRPC_PREFIX+'source': "PythonClient"}
+        auth = extra_auth_headers.copy()
+        auth.update({_utils._GRPC_PREFIX+'source': "PythonClient"})
         if email is None and dev_key is None:
             if debug:
                 print("[DEBUG] email and developer key not found; auth disabled")
