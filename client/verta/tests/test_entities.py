@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import six
 
 import itertools
@@ -6,6 +8,8 @@ import shutil
 
 import requests
 
+import hypothesis
+import hypothesis.strategies as st
 import pytest
 
 from verta.registry.entities import RegisteredModels
@@ -13,7 +17,7 @@ from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from . import utils
 
 import verta
-import verta._internal_utils._utils
+from verta._internal_utils import _utils
 import json
 
 from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
@@ -36,7 +40,7 @@ TAG = "my-tag"
 
 
 class TestLazyList:
-    class LL(verta._internal_utils._utils.LazyList):
+    class LL(_utils.LazyList):
         def __init__(self, size):
             super(TestLazyList.LL, self).__init__(None, None, _ExperimentRunService.FindExperimentRuns())
             self._size = size
@@ -97,6 +101,31 @@ class TestClient:
             verta.Client("www.google.com")
         request = exc_info.value.request
         assert_contains_expected_headers(request.headers)
+
+    @hypothesis.given(
+        headers=st.dictionaries(
+            keys=st.text(min_size=1),
+            values=st.text(min_size=1),
+            min_size=1,
+        )
+    )
+    def test_extra_auth_headers_in_conn(self, headers):
+        client = verta.Client(extra_auth_headers=headers, _connect=False)
+
+        for key, val in headers.items():
+            assert key in client._conn.auth
+            assert val == client._conn.auth[key]
+
+    def test_extra_auth_headers_in_request(self, strs):
+        headers = dict(zip(strs[:len(strs)//2], strs[len(strs)//2:]))
+        client = verta.Client(extra_auth_headers=headers)
+
+        url = "http://httpbin.org/anything"
+        response = _utils.make_request("GET", url, client._conn)
+
+        for key, val in headers.items():
+            assert key in response.request.headers
+            assert val == response.request.headers[key]
 
     @pytest.mark.oss
     def test_no_auth(self, host):
@@ -180,9 +209,9 @@ class TestClient:
         self.config_file_with_type_util(connect = True)
 
     def config_file_with_type_util(self, connect):
-        PROJECT_NAME = verta._internal_utils._utils.generate_default_name()
-        DATASET_NAME = verta._internal_utils._utils.generate_default_name()
-        EXPERIMENT_NAME = verta._internal_utils._utils.generate_default_name()
+        PROJECT_NAME = _utils.generate_default_name()
+        DATASET_NAME = _utils.generate_default_name()
+        EXPERIMENT_NAME = _utils.generate_default_name()
         CONFIG_FILENAME = "verta_config.json"
 
         HOST_KEY, EMAIL_KEY, DEV_KEY_KEY = "VERTA_HOST", "VERTA_EMAIL", "VERTA_DEV_KEY"
@@ -311,7 +340,7 @@ class TestProject:
     def test_create(self, client):
         assert client.set_project()
         assert client.proj is not None
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
         assert client.create_project(name)
         assert client.proj is not None
         with pytest.raises(requests.HTTPError) as excinfo:
@@ -323,7 +352,7 @@ class TestProject:
             client.get_or_create_project(name=name, tags=["tag1", "tag2"])
 
     def test_get(self, client):
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
 
         with pytest.raises(ValueError):
             client.get_project(name)
@@ -359,8 +388,8 @@ class TestProject:
             client._conn.scheme,
             client._conn.socket,
         )
-        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': proj.id})
-        verta._internal_utils._utils.raise_for_http_error(response)
+        response = _utils.make_request("GET", endpoint, client._conn, params={'id': proj.id})
+        _utils.raise_for_http_error(response)
         assert response.json().get('tags', []) == [TAG]
 
 
@@ -370,7 +399,7 @@ class TestExperiment:
         assert client.set_experiment()
         assert client.expt is not None
 
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
         assert client.create_experiment(name)
         assert client.expt is not None
         with pytest.raises(requests.HTTPError) as excinfo:
@@ -383,7 +412,7 @@ class TestExperiment:
 
     def test_get(self, client):
         proj = client.set_project()
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
 
         with pytest.raises(ValueError):
             client.get_experiment(name)
@@ -429,8 +458,8 @@ class TestExperiment:
             client._conn.scheme,
             client._conn.socket,
         )
-        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': expt.id})
-        verta._internal_utils._utils.raise_for_http_error(response)
+        response = _utils.make_request("GET", endpoint, client._conn, params={'id': expt.id})
+        _utils.raise_for_http_error(response)
         assert response.json().get('tags', []) == [TAG]
 
 
@@ -441,7 +470,7 @@ class TestExperimentRun:
 
         assert client.set_experiment_run()
 
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
         assert client.create_experiment_run(name)
         with pytest.raises(requests.HTTPError) as excinfo:
             assert client.create_experiment_run(name)
@@ -454,7 +483,7 @@ class TestExperimentRun:
     def test_get(self, client):
         proj = client.set_project()
         expt = client.set_experiment()
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
 
         with pytest.raises(ValueError):
             client.get_experiment_run(name)
@@ -508,8 +537,8 @@ class TestExperimentRun:
             client._conn.scheme,
             client._conn.socket,
         )
-        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': run.id})
-        verta._internal_utils._utils.raise_for_http_error(response)
+        response = _utils.make_request("GET", endpoint, client._conn, params={'id': run.id})
+        _utils.raise_for_http_error(response)
         assert response.json().get('tags', []) == [TAG]
 
     def test_clone(self, experiment_run):
