@@ -19,7 +19,7 @@ from . import strategies
 class TestProfilers:
     @hypothesis.settings(deadline=None)  # building DataFrames can be slow
     @hypothesis.given(
-        df=strategies.dataframes(),  # pylint: disable=no-value-for-parameter
+        df=strategies.simple_dataframes(),  # pylint: disable=no-value-for-parameter
     )
     def test_continuous(self, df):
         np = pytest.importorskip("numpy")
@@ -42,7 +42,7 @@ class TestProfilers:
 
     @hypothesis.settings(deadline=None)  # building DataFrames can be slow
     @hypothesis.given(
-        df=strategies.dataframes(),  # pylint: disable=no-value-for-parameter
+        df=strategies.simple_dataframes(),  # pylint: disable=no-value-for-parameter
     )
     def test_discrete(self, df):
         cols = ["discrete"]
@@ -63,7 +63,7 @@ class TestProfilers:
 
     @hypothesis.settings(deadline=None)  # building DataFrames can be slow
     @hypothesis.given(
-        df=strategies.dataframes(),  # pylint: disable=no-value-for-parameter
+        df=strategies.simple_dataframes(),  # pylint: disable=no-value-for-parameter
     )
     def test_missing(self, df):
         cols = ["continuous", "discrete"]

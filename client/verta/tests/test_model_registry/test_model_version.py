@@ -924,6 +924,28 @@ class TestComplexAttributes:
 
 
 class TestAutoMonitoring:
+    @staticmethod
+    def assert_feature_data_correctness(feature_data, in_df, out_df):
+        """Verifies that profiler type and reference are correct for column."""
+        col_type = feature_data.labels["col_type"]
+        source_df = in_df if col_type == "input" else out_df
+        assert feature_data.feature_name in source_df
+
+        # reconstruct reference distribution
+        reference_content = json.loads(feature_data.content)
+        reference = _verta_data_type._VertaDataType._from_dict(reference_content)
+
+        # reconstruct profiler
+        profiler_name = feature_data.profiler_name
+        profiler_args = json.loads(feature_data.profiler_parameters)
+        feature_profiler = getattr(profiler, profiler_name)(**profiler_args)
+
+        # verify re-profiling column yields reference distribution
+        _, profile = feature_profiler.profile_column(
+            source_df, feature_data.feature_name,
+        )
+        assert profile == reference
+
     def test_non_df(self, model_version):
         pd = pytest.importorskip("pandas")
 
@@ -944,11 +966,11 @@ class TestAutoMonitoring:
 
     @hypothesis.settings(deadline=None)  # building DataFrames can be slow
     @hypothesis.given(
-        df=strategies.dataframes(),  # pylint: disable=no-value-for-parameter
+        df=strategies.simple_dataframes(),  # pylint: disable=no-value-for-parameter
         labels=st.dictionaries(st.text(), st.text()),
     )
     def test_create_summaries(self, df, labels):
-        """Unit test for the profiling helper functions."""
+        """Unit test for the exact expected output of discrete & continuous columns."""
         pytest.importorskip("numpy")
 
         # missing
@@ -993,6 +1015,50 @@ class TestAutoMonitoring:
         assert feature_data.summary_type_name == "verta.discreteHistogram.v1"
         assert feature_data.labels == labels
         assert json.loads(feature_data.content) == _histogram._as_dict()
+
+    @hypothesis.settings(deadline=None)  # building DataFrames can be slow
+    @hypothesis.given(
+        df=strategies.dataframes(min_rows=1, min_cols=2),  # pylint: disable=no-value-for-parameter
+    )
+    def test_compute_training_data_profile(self, df):
+        """Unit test for helper functions handling DFs of various sizes."""
+        in_df, out_df = df.iloc[:, :-1], df.iloc[:, [-1]]
+
+        feature_data_list = RegisteredModelVersion._compute_training_data_profile(
+            in_df, out_df,
+        )
+        for feature_data in feature_data_list:
+            self.assert_feature_data_correctness(feature_data, in_df, out_df)
+
+    @hypothesis.settings(deadline=None)  # building DataFrames can be slow
+    @hypothesis.given(
+        df=strategies.dataframes(min_rows=1, min_cols=2),  # pylint: disable=no-value-for-parameter
+    )
+    def test_collect_feature_data_and_vis_attributes(self, df):
+        """Unit test that attributes pre-logging are the correct format."""
+        in_df, out_df = df.iloc[:, :-1], df.iloc[:, [-1]]
+
+        feature_data_list = RegisteredModelVersion._compute_training_data_profile(
+            in_df, out_df,
+        )
+        feature_data_attrs = RegisteredModelVersion._collect_feature_data_and_vis_attributes(
+            feature_data_list,
+        )
+
+        for key, val in feature_data_attrs.items():
+            if key.startswith(_deployable_entity._FEATURE_DATA_ATTR_PREFIX):
+                feature_data = _utils.json_to_proto(val, FeatureDataInModelVersion)
+                self.assert_feature_data_correctness(feature_data, in_df, out_df)
+
+                if feature_data.profiler_name == "MissingValuesProfiler":
+                    sample_key = feature_data.feature_name + "MissingValues"
+                else:
+                    sample_key = feature_data.feature_name + "Distribution"
+                sample_key = (
+                    _deployable_entity._TRAINING_DATA_ATTR_PREFIX
+                    + RegisteredModelVersion._normalize_attribute_key(sample_key)
+                )
+                assert feature_data_attrs[sample_key] == json.loads(feature_data.content)
 
     def test_profile_training_data(self, model_version):
         """Integration test for logging attributes with correct structure."""
@@ -1059,7 +1125,11 @@ class TestAutoMonitoring:
 
         # reference distribution attributes can be fetched back as histograms
         for col in supported_col_names:
-            key = col + "Distribution"
+            key = (
+                _deployable_entity._TRAINING_DATA_ATTR_PREFIX
+                + col
+                + "Distribution"
+            )
             histogram = model_version.get_attribute(key)
             assert isinstance(histogram, _verta_data_type._VertaDataType)
 

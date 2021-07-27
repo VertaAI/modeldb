@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import string
+
 import hypothesis
 import hypothesis.strategies as st
 import pytest
+
 from verta._protos.public.monitoring.Summary_pb2 import AggregationQuerySummary
 from verta.monitoring.summaries.aggregation import Aggregation
+from verta.registry.entities import RegisteredModelVersion
+
 from ..time_strategies import millis_timedelta_strategy, millis_uint64_strategy
 
 ProtoOperations = AggregationQuerySummary.AggregationOperation
@@ -88,7 +93,7 @@ def series(draw, num_rows, data_type, name=None, has_missing=True):
 
 
 @st.composite
-def dataframes(draw):
+def simple_dataframes(draw):
     """Generate DataFrames with a "continuous" and "discrete" column.
 
     Returns
@@ -115,4 +120,51 @@ def dataframes(draw):
             continuous_col: continuous_series,
             discrete_col: discrete_series,
         }
+    )
+
+
+@st.composite
+def dataframes(draw, min_rows=0, max_rows=2 ** 8, min_cols=0, max_cols=2 ** 8):
+    """Generate DataFrames containing discrete and continuous columns.
+
+    Parameters
+    ----------
+    min_rows : int, default 0
+    max_rows : int, default 2^8
+    min_cols : int, default 0
+    max_cols : int, default 2^8
+
+    Returns
+    -------
+    pd.DataFrame
+
+    """
+    pd = pytest.importorskip("pandas")
+
+    num_rows = draw(st.integers(min_value=min_rows, max_value=max_rows))
+    col_types = draw(
+        st.lists(
+            st.sampled_from(["continuous", "discrete"]),
+            min_size=min_cols,
+            max_size=max_cols,
+        )
+    )
+    col_names = draw(
+        st.lists(
+            st.text(),
+            min_size=len(col_types),
+            max_size=len(col_types),
+            # the following line is required otherwise log_training_data_proflie()
+            # tests in TestAutoMonitoring fail with columns that get normalized
+            # to the same attribute key (VR-12274 to resolve)
+            unique_by=RegisteredModelVersion._normalize_attribute_key,
+        )
+    )
+
+    return pd.concat(
+        [
+            draw(series(num_rows, col_type, col_name))
+            for col_type, col_name in zip(col_types, col_names)
+        ],
+        axis="columns",
     )

@@ -1301,7 +1301,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         Returns
         -------
-        list of DeploymentIntegration_pb2.FeatureDataInModelVersion
+        feature_data_list : list of DeploymentIntegration_pb2.FeatureDataInModelVersion
             DataFrame feature data.
 
         """
@@ -1345,28 +1345,40 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         return feature_data_list
 
-    def _log_feature_data_and_vis_attributes(self, feature_data_list):
-        """Log DataFrame feature data as attributes.
+    @classmethod
+    def _collect_feature_data_and_vis_attributes(cls, feature_data_list):
+        """Convert DataFrame feature data into serialized representations.
 
         Parameters
         ----------
         feature_data_list : list of DeploymentIntegration_pb2.FeatureDataInModelVersion
 
+        Returns
+        -------
+        feature_data_attrs : dict
+            Feature data, ready to add as attributes.
+
         """
-        def log_attribute(i, feature_data):
-            logger.info("logging feature %s", feature_data.feature_name)
-            self.add_attribute(
-                _deployable_entity._FEATURE_DATA_ATTR_PREFIX + str(i),
-                _utils.proto_to_json(feature_data, False),
+        attributes = dict()
+
+        for i, feature_data in enumerate(feature_data_list):
+            logger.info("collecting feature %s", feature_data.feature_name)
+            feature_data_key = _deployable_entity._FEATURE_DATA_ATTR_PREFIX + str(i)
+            feature_data_val = _utils.proto_to_json(feature_data, False)
+            sample_key = (
+                _deployable_entity._TRAINING_DATA_ATTR_PREFIX
+                + cls._normalize_attribute_key(feature_data.summary_name)
             )
-            self.add_attribute(
-                self._normalize_attribute_key(feature_data.summary_name),
-                json.loads(feature_data.content),
+            sample_val = json.loads(feature_data.content)
+
+            attributes.update(
+                {
+                    feature_data_key: feature_data_val,
+                    sample_key: sample_val,
+                }
             )
 
-        p = ThreadPool(1)
-        p.map(lambda args: log_attribute(*args), enumerate(feature_data_list))
-        p.close()
+        return attributes
 
     def log_training_data_profile(self, in_df, out_df):
         """Capture the profiles of training input and output data.
@@ -1405,6 +1417,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                     "`in_df` and `out_df` must be of type pd.DataFrame,"
                     " not {}".format(type(df))
                 )
+            if not (len(in_df) and len(out_df)):
+                raise ValueError(
+                    "`in_df` and `out_df` must both have at least one row"
+                )
             if not all(isinstance(col, six.string_types) for col in df.columns):
                 # helper fns run into type errors handling non-str column names
                 # TODO: try to resolve this restriction
@@ -1416,4 +1432,5 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         feature_data_list = self._compute_training_data_profile(
             in_df, out_df,
         )
-        self._log_feature_data_and_vis_attributes(feature_data_list)
+        attrs = self._collect_feature_data_and_vis_attributes(feature_data_list)
+        self.add_attributes(attrs)
