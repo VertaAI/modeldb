@@ -196,7 +196,7 @@ message FindAlertRequest {
 
     // Allow filtering to filter alerts based on their
     // samples' last evaluated timestamps in millis
-    uint64 samples_last_evaluated_after = 11;
+    uint64 samples_last_evaluated_after_millis = 11;
 
     // Pagination
     int32 page_number = 7;
