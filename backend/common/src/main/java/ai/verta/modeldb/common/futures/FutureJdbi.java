@@ -34,13 +34,11 @@ public class FutureJdbi {
           if (parent != null) {
             LOGGER.debug("Parent span trace ID " + parent.context().toTraceId() + " and span ID " + parent.context().toSpanId());
           }
-          else {
-            LOGGER.debug("Parent span is null.");
-          }
-
           executor.execute(
               () -> {
                 final var span = tracer.buildSpan("jdbi.withHandle.executor").asChildOf(parent).start();
+                final var scope = tracer.scopeManager().activate(span);
+                LOGGER.debug("Child span trace ID " + span.context().toTraceId() + " and span ID " + span.context().toSpanId());
                 try {
                   promise.complete(jdbi.withHandle(callback));
                 } catch (Throwable e) {
