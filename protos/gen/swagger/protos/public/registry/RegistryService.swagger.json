@@ -2387,6 +2387,13 @@
         },
         "resource_visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifact"
+          },
+          "title": "Other artifacts"
         }
       }
     },
