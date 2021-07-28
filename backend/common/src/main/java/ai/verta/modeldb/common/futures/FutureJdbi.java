@@ -31,7 +31,12 @@ public class FutureJdbi {
 
           final var tracer = GlobalTracer.get();
           final var parent = tracer.activeSpan();
-          LOGGER.debug("Parent span trace ID " + parent.context().toTraceId() + " and span ID " + parent.context().toSpanId());
+          if (parent != null) {
+            LOGGER.debug("Parent span trace ID " + parent.context().toTraceId() + " and span ID " + parent.context().toSpanId());
+          }
+          else {
+            LOGGER.debug("Parent span is null.");
+          }
 
           executor.execute(
               () -> {
