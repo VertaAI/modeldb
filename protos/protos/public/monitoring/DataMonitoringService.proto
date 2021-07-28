@@ -153,6 +153,8 @@ message MonitoredEntity {
   uint64 created_at_timestamp_millis = 6;
   uint64 updated_at_timestamp_millis = 7;
   map<string, string> attributes = 8;
+  //owner's verta_id
+  string owner = 9;
 }
 
 message CreateMonitoredEntityRequest {
