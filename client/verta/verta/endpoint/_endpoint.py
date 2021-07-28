@@ -42,6 +42,9 @@ class Endpoint(object):
     :meth:`Client.get_or_create_endpoint()
     <verta.Client.get_or_create_endpoint>`.
 
+    .. versionadded:: 0.19.0
+        The `kafka_settings` attribute.
+
     Attributes
     ----------
     id : int
@@ -237,6 +240,9 @@ class Endpoint(object):
     ):
         """
         Updates the endpoint with a model logged in an Experiment Run or a Model Version.
+
+        .. versionadded:: 0.19.0
+            The `kafka_settings` parameter.
 
         Parameters
         ----------

@@ -7,6 +7,8 @@ class KafkaSettings(object):
     """
     A set of topics to be used with deployed endpoints.
 
+    .. versionadded:: 0.19.0
+
     Attributes
     ----------
     input_topic : str
