@@ -1,6 +1,9 @@
 package ai.verta.modeldb.common.futures;
 
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.jni.Global;
 import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
@@ -11,6 +14,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 public class FutureJdbi {
+  public static final Logger LOGGER = LogManager.getLogger(FutureJdbi.class);
+
   private final Executor executor;
   private final Jdbi jdbi;
 
@@ -24,10 +29,13 @@ public class FutureJdbi {
         () -> {
           CompletableFuture<R> promise = new CompletableFuture<R>();
 
+          final var tracer = GlobalTracer.get();
+          final var parent = tracer.activeSpan();
+          LOGGER.debug("Parent span trace ID " + parent.context().toTraceId() + " and span ID " + parent.context().toSpanId());
+
           executor.execute(
               () -> {
-                final var tracer = GlobalTracer.get();
-                final var span = tracer.buildSpan("jdbi.withHandle.executor").asChildOf(tracer.activeSpan()).start();
+                final var span = tracer.buildSpan("jdbi.withHandle.executor").asChildOf(parent).start();
                 try {
                   promise.complete(jdbi.withHandle(callback));
                 } catch (Throwable e) {
