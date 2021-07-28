@@ -195,8 +195,8 @@ message FindAlertRequest {
     repeated AlertStatusEnum.AlertStatus status = 6;
 
     // Allow filtering to filter alerts based on their
-    // samples' last evaluated timestamps
-    uint64 samples_last_evaluated_at_millis_after = 11;
+    // samples' last evaluated timestamps in millis
+    uint64 samples_last_evaluated_after = 11;
 
     // Pagination
     int32 page_number = 7;
