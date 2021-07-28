@@ -697,6 +697,10 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "owner": {
+          "type": "string",
+          "title": "owner's verta_id"
         }
       }
     },
