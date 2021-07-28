@@ -210,15 +210,20 @@ class SummarySampleQuery(object):
         if summary_query is None:
             summary_query = SummaryQuery()
 
-        self._summary_query = summary_query
-        self._sample_ids = arg_handler.extract_ids(ids) if ids else None
-        self._labels = arg_handler.maybe(_labels_proto, labels)
-        self._time_window_start = time_window_start
-        self._time_window_end = time_window_end
+        self._msg = FindSummarySampleRequest(
+            filter=FilterQuerySummarySample(
+                sample_ids=arg_handler.extract_ids(ids) if ids else None,
+                labels=arg_handler.maybe(_labels_proto, labels),
+                time_window_start_at_millis=time_utils.epoch_millis(time_window_start),
+                time_window_end_at_millis=time_utils.epoch_millis(time_window_end),
+                created_at_after_millis=time_utils.epoch_millis(created_after),
+            ),
+            page_number=page_number,
+            page_limit=pagination_utils.page_limit_to_proto(page_limit),
+        )
+
+        self.summary_query = summary_query
         self.aggregation = aggregation
-        self._created_after = created_after
-        self._page_number = page_number
-        self._page_limit = page_limit
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
@@ -228,33 +233,24 @@ class SummarySampleQuery(object):
 
     @property
     def summary_query(self):
-        return self._summary_query
+        return SummaryQuery._from_proto_request(self._msg.filter.find_summaries)
 
     @summary_query.setter
     def summary_query(self, query):
-        self._summary_query = query
-
-    @property
-    def _find_summaries(self):
-        return self.summary_query._to_proto_request()
-
-    @_find_summaries.setter
-    def _find_summaries(self, proto_summary_query):
-        summary_query = SummaryQuery._from_proto_request(proto_summary_query)
-        self._summary_query = summary_query
+        self._msg.filter.find_summaries.CopyFrom(query._to_proto_request())
 
     @property
     def aggregation(self):
-        return self._aggregation
+        return Aggregation._from_proto(self._msg.aggregation)
 
     @aggregation.setter
     def aggregation(self, value):
         if value is None:
-            self._aggregation = None
+            self._msg.ClearField("aggregation")
         elif isinstance(value, AggregationQuerySummary):
-            self._aggregation = Aggregation._from_proto(value)
+            self._msg.aggregation.CopyFrom(value)
         elif isinstance(value, Aggregation):
-            self._aggregation = value
+            self._msg.aggregation.CopyFrom(value._to_proto())
         else:
             raise ValueError(
                 "value must be Aggregation object or proto, not {}".format(type(value))
@@ -262,45 +258,13 @@ class SummarySampleQuery(object):
 
     @classmethod
     def _from_proto_request(cls, msg):
-        # set attrs after creation to bypass conversion logic in __init__()
         obj = cls()
-        obj._find_summaries = msg.filter.find_summaries
-        obj._sample_ids = msg.filter.sample_ids
-        obj._labels = msg.filter.labels
-        obj._time_window_start = time_utils.datetime_from_millis(
-            msg.filter.time_window_start_at_millis
-        )
-        obj._time_window_end = time_utils.datetime_from_millis(
-            msg.filter.time_window_end_at_millis
-        )
-        obj._created_after = time_utils.datetime_from_millis(
-            msg.filter.created_at_after_millis
-        )
-        obj.aggregation = msg.aggregation
-        obj._page_number = msg.page_number
-        obj._page_limit = pagination_utils.page_limit_from_proto(msg.page_limit)
+        obj._msg.CopyFrom(msg)
 
         return obj
 
     def _to_proto_request(self):
-        aggregation_proto = arg_handler.maybe(lambda agg: agg._to_proto(), self.aggregation)
-        return FindSummarySampleRequest(
-            filter=FilterQuerySummarySample(
-                find_summaries=self._find_summaries,
-                sample_ids=self._sample_ids,
-                labels=self._labels,
-                time_window_start_at_millis=time_utils.epoch_millis(
-                    self._time_window_start
-                ),
-                time_window_end_at_millis=time_utils.epoch_millis(
-                    self._time_window_end
-                ),
-                created_at_after_millis=time_utils.epoch_millis(self._created_after),
-            ),
-            aggregation=aggregation_proto,
-            page_number=self._page_number,
-            page_limit=pagination_utils.page_limit_to_proto(self._page_limit),
-        )
+        return self._msg
 
     def __repr__(self):
         return "SummarySampleQuery({})".format(self._to_proto_request())
