@@ -672,7 +672,7 @@
           },
           "title": "Allow filtering to see only failing alerts"
         },
-        "samples_last_evaluated_after": {
+        "samples_last_evaluated_after_millis": {
           "type": "string",
           "format": "uint64",
           "title": "Allow filtering to filter alerts based on their\nsamples' last evaluated timestamps in millis"
