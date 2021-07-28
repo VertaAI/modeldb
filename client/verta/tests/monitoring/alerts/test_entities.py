@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import datetime
 from collections import namedtuple
+import datetime
+
 import pytest
+import requests
+
+from verta._protos.public.monitoring import Alert_pb2 as _AlertService
+from verta._protos.public.monitoring import Summary_pb2 as _SummaryService
 
 from verta._internal_utils import (
     _utils,
@@ -206,6 +211,49 @@ class TestAlert:
         assert summary.id in query._ids
         assert summary.name in query._names
         assert summary.monitored_entity_id in query._monitored_entity_ids
+
+    def test_sample_find_base_preserves_aggregation_flags(self, summary):
+        """alert.summary_sample_query fully represents sample_find_base.
+
+        The client used to drop `store_aggregate` and `allow_aggregate_samples`
+        because of how :class:`SummarySampleQuery` was written.
+        """
+        # define sample_find_base
+        sample_find_base = _SummaryService.FindSummarySampleRequest(
+            filter=_SummaryService.FilterQuerySummarySample(
+                find_summaries=summary.alerts._build_summary_query()._to_proto_request(),
+            ),
+            page_number=1,
+            page_limit=-1,
+            # following two fields are not exposed through client
+            store_aggregate=True,
+            allow_aggregate_samples=True,
+        )
+
+        # create alert directly via REST API
+        alerter = FixedAlerter(comparison.GreaterThan(0.7))
+        msg = _AlertService.CreateAlertRequest(
+            alert=_AlertService.Alert(
+                name=_utils.generate_default_name(),
+                monitored_entity_id=summary._monitored_entity_id,
+                sample_find_base=sample_find_base,
+                alerter_type=alerter._TYPE,
+                alerter_fixed=alerter._as_proto(),
+            ),
+        )
+        endpoint = "/api/v1/alerts/createAlert"
+        response = summary.alerts._conn.make_proto_request("POST", endpoint, body=msg)
+        alert_id = summary.alerts._conn.must_proto_response(response, _AlertService.Alert).id
+
+        # retrieve alert via client and verify that fields are preserved
+        alert = summary.alerts.get(id=alert_id)
+        retrieved_sample_find_base = alert.summary_sample_query._to_proto_request()
+        assert retrieved_sample_find_base.store_aggregate
+        assert retrieved_sample_find_base.allow_aggregate_samples
+
+        # verify full equality, minus time field added by alert
+        retrieved_sample_find_base.filter.ClearField("created_at_after_millis")
+        assert retrieved_sample_find_base == sample_find_base
 
 
 class TestNonReferenceAlerters:
