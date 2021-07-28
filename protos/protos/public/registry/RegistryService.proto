@@ -52,6 +52,8 @@ message RegisteredModel {
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 13;
     uac.ResourceVisibility resource_visibility = 14;
+    // Other artifacts
+    repeated common.Artifact artifacts = 15;
 }
 
 //CRUD for Registred Models
