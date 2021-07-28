@@ -419,6 +419,8 @@ class Endpoint(object):
             stage_id,
         )
         response = _utils.make_request("GET", url, self._conn)
+        if response.status_code == 403:  # Kafka not available in platform
+            return None
         _utils.raise_for_http_error(response)
 
         kafka_settings_dict = response.json().get("update_request", {})
