@@ -24,7 +24,15 @@ class KafkaSettings(object):
 
         from verta.endpoint import KafkaSettings
 
-        kafka_settings = KafkaSettings("my_input_data", "my_predictions", "my_endpoint_errors")
+        kafka_settings = KafkaSettings(
+            input_topic="my_input_data",
+            output_topic="my_predictions",
+            error_topic="my_endpoint_errors",
+        )
+
+        endpoint = client.create_endpoint(path="/my-endpoint", kafka_settings=kafka_settings)
+        print(endpoint.kafka_settings)
+
     """
 
     def __init__(self, input_topic, output_topic, error_topic):
