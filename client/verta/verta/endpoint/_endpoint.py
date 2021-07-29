@@ -42,6 +42,9 @@ class Endpoint(object):
     :meth:`Client.get_or_create_endpoint()
     <verta.Client.get_or_create_endpoint>`.
 
+    .. versionadded:: 0.19.0
+        The `kafka_settings` attribute.
+
     Attributes
     ----------
     id : int
@@ -238,6 +241,9 @@ class Endpoint(object):
         """
         Updates the endpoint with a model logged in an Experiment Run or a Model Version.
 
+        .. versionadded:: 0.19.0
+            The `kafka_settings` parameter.
+
         Parameters
         ----------
         model_reference : :class:`~verta.tracking.entities.ExperimentRun` or :class:`~verta.registry.entities.RegisteredModelVersion`
@@ -413,6 +419,8 @@ class Endpoint(object):
             stage_id,
         )
         response = _utils.make_request("GET", url, self._conn)
+        if response.status_code == 403:  # Kafka not available in platform
+            return None
         _utils.raise_for_http_error(response)
 
         kafka_settings_dict = response.json().get("update_request", {})

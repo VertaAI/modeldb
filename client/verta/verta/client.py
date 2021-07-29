@@ -1110,6 +1110,9 @@ class Client(object):
 
         An accessible endpoint with name `name` will be created and initialized with specified metadata parameters.
 
+        .. versionadded:: 0.19.0
+            The `kafka_settings` parameter.
+
         Parameters
         ----------
         path : str
