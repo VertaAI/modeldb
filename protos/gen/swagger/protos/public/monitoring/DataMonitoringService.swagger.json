@@ -465,6 +465,9 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "resource_visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },
@@ -756,6 +759,9 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "resource_visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },

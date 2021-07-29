@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.monitoring',
   syntax='proto3',
   serialized_options=b'P\001ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring',
-  serialized_pb=b'\n&monitoring/DataMonitoringService.proto\x12\x13\x61i.verta.monitoring\x1a\x16uac/Collaborator.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"@\n\x08Profiler\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x1a\n\x12profiler_reference\x18\x03 \x01(\t\"~\n\x15\x43reateProfilerRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1a\n\x12profiler_reference\x18\x02 \x01(\t\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"]\n\x12GetProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"\x8a\x01\n\x15UpdateProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x1a\n\x12profiler_reference\x18\x03 \x01(\t\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"T\n\x14ListProfilersRequest\x1a<\n\x08Response\x12\x30\n\tprofilers\x18\x01 \x03(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"/\n\x15\x44\x65leteProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a\n\n\x08Response\"d\n\x0f\x42uildStatusEnum\"Q\n\x0b\x42uildStatus\x12\r\n\tUNDEFINED\x10\x00\x12\x0c\n\x08\x42UILDING\x10\x01\x12\x0c\n\x08\x44\x45LETING\x10\x02\x12\t\n\x05\x45RROR\x10\x03\x12\x0c\n\x08\x46INISHED\x10\x04\"r\n\x10\x44\x65ployStatusEnum\"^\n\x0c\x44\x65ployStatus\x12\r\n\tUNDEFINED\x10\x00\x12\x0c\n\x08INACTIVE\x10\x01\x12\n\n\x06\x41\x43TIVE\x10\x02\x12\x0c\n\x08UPDATING\x10\x03\x12\x0c\n\x08\x43REATING\x10\x04\x12\t\n\x05\x45RROR\x10\x05\"\xd5\x01\n\x0eProfilerStatus\x12\x13\n\x0bprofiler_id\x18\x01 \x01(\r\x12\x1b\n\x13monitored_entity_id\x18\x02 \x01(\r\x12\x46\n\x0c\x62uild_status\x18\x03 \x01(\x0e\x32\x30.ai.verta.monitoring.BuildStatusEnum.BuildStatus\x12I\n\rdeploy_status\x18\x04 \x01(\x0e\x32\x32.ai.verta.monitoring.DeployStatusEnum.DeployStatus\"\x8d\x01\n\x18GetProfilerStatusRequest\x12\x13\n\x0bprofiler_id\x18\x01 \x01(\r\x12\x1b\n\x13monitored_entity_id\x18\x02 \x01(\r\x1a?\n\x08Response\x12\x33\n\x06status\x18\x01 \x01(\x0b\x32#.ai.verta.monitoring.ProfilerStatus\"\x88\x01\n&FindProfilersForMonitoredEntityRequest\x12\x1b\n\x13monitored_entity_id\x18\x01 \x01(\r\x1a\x41\n\x08Response\x12\x35\n\x08statuses\x18\x01 \x03(\x0b\x32#.ai.verta.monitoring.ProfilerStatus\"\x80\x01\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12@\n\nvalue_type\x18\x03 \x01(\x0e\x32,.ai.verta.monitoring.ValueTypeEnum.ValueType\"H\n\rValueTypeEnum\"7\n\tValueType\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x08\n\x04LIST\x10\x02\x12\x08\n\x04\x42LOB\x10\x03\"\xbe\x01\n\x15\x45nableProfilerRequest\x12\x13\n\x0bprofiler_id\x18\x01 \x01(\r\x12\x1b\n\x13monitored_entity_id\x18\x02 \x01(\r\x12\x32\n\x0b\x65nvironment\x18\x03 \x03(\x0b\x32\x1d.ai.verta.monitoring.KeyValue\x1a?\n\x08Response\x12\x33\n\x06status\x18\x01 \x01(\x0b\x32#.ai.verta.monitoring.ProfilerStatus\"\x8b\x01\n\x16\x44isableProfilerRequest\x12\x13\n\x0bprofiler_id\x18\x01 \x01(\r\x12\x1b\n\x13monitored_entity_id\x18\x02 \x01(\r\x1a?\n\x08Response\x12\x33\n\x06status\x18\x01 \x01(\x0b\x32#.ai.verta.monitoring.ProfilerStatus\"\xe2\x02\n\x0fMonitoredEntity\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x14\n\x0cworkspace_id\x18\x05 \x01(\x04\x12#\n\x1b\x63reated_at_timestamp_millis\x18\x06 \x01(\x04\x12#\n\x1bupdated_at_timestamp_millis\x18\x07 \x01(\x04\x12H\n\nattributes\x18\x08 \x03(\x0b\x32\x34.ai.verta.monitoring.MonitoredEntity.AttributesEntry\x12\r\n\x05owner\x18\t \x01(\t\x12=\n\x13resource_visibility\x18\n \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01J\x04\x08\x03\x10\x04J\x04\x08\x04\x10\x05\"\xd8\x02\n\x1c\x43reateMonitoredEntityRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0cworkspace_id\x18\x04 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x05 \x01(\tH\x00\x12U\n\nattributes\x18\x06 \x03(\x0b\x32\x41.ai.verta.monitoring.CreateMonitoredEntityRequest.AttributesEntry\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1aJ\n\x08Response\x12>\n\x10monitored_entity\x18\x01 \x01(\x0b\x32$.ai.verta.monitoring.MonitoredEntityB\x16\n\x14workspace_identifierJ\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04\"\x94\x02\n\x1cUpdateMonitoredEntityRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12U\n\nattributes\x18\x07 \x03(\x0b\x32\x41.ai.verta.monitoring.UpdateMonitoredEntityRequest.AttributesEntry\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1aJ\n\x08Response\x12>\n\x10monitored_entity\x18\x01 \x01(\x0b\x32$.ai.verta.monitoring.MonitoredEntityJ\x04\x08\x04\x10\x07\"\xa5\x02\n\x1a\x46indMonitoredEntityRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12\x13\n\x0b\x66uzzy_names\x18\x07 \x03(\t\x12\x16\n\x0cworkspace_id\x18\x03 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x06 \x01(\tH\x00\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x1a\x63\n\x08Response\x12@\n\x12monitored_entities\x18\x01 \x03(\x0b\x32$.ai.verta.monitoring.MonitoredEntity\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\x42\x16\n\x14workspace_identifier\"6\n\x1c\x44\x65leteMonitoredEntityRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a\n\n\x08Response2\xd0\x13\n\x15\x44\x61taMonitoringService\x12\xcc\x01\n\x15\x63reateMonitoredEntity\x12\x31.ai.verta.monitoring.CreateMonitoredEntityRequest\x1a:.ai.verta.monitoring.CreateMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>\"9/api/v1/monitoring/monitored_entity/createMonitoredEntity:\x01*\x12\xcc\x01\n\x15updateMonitoredEntity\x12\x31.ai.verta.monitoring.UpdateMonitoredEntityRequest\x1a:.ai.verta.monitoring.UpdateMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>29/api/v1/monitoring/monitored_entity/updateMonitoredEntity:\x01*\x12\xc4\x01\n\x13\x66indMonitoredEntity\x12/.ai.verta.monitoring.FindMonitoredEntityRequest\x1a\x38.ai.verta.monitoring.FindMonitoredEntityRequest.Response\"B\x82\xd3\xe4\x93\x02<\"7/api/v1/monitoring/monitored_entity/findMonitoredEntity:\x01*\x12\xcc\x01\n\x15\x64\x65leteMonitoredEntity\x12\x31.ai.verta.monitoring.DeleteMonitoredEntityRequest\x1a:.ai.verta.monitoring.DeleteMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>*9/api/v1/monitoring/monitored_entity/deleteMonitoredEntity:\x01*\x12\xa1\x01\n\x0bgetProfiler\x12\'.ai.verta.monitoring.GetProfilerRequest\x1a\x30.ai.verta.monitoring.GetProfilerRequest.Response\"7\x82\xd3\xe4\x93\x02\x31\x12//api/v1/monitoring/monitored_entity/getProfiler\x12\xb0\x01\n\x0e\x63reateProfiler\x12*.ai.verta.monitoring.CreateProfilerRequest\x1a\x33.ai.verta.monitoring.CreateProfilerRequest.Response\"=\x82\xd3\xe4\x93\x02\x37\"2/api/v1/monitoring/monitored_entity/createProfiler:\x01*\x12\xb0\x01\n\x0eupdateProfiler\x12*.ai.verta.monitoring.UpdateProfilerRequest\x1a\x33.ai.verta.monitoring.UpdateProfilerRequest.Response\"=\x82\xd3\xe4\x93\x02\x37\x32\x32/api/v1/monitoring/monitored_entity/updateProfiler:\x01*\x12\xa9\x01\n\rlistProfilers\x12).ai.verta.monitoring.ListProfilersRequest\x1a\x32.ai.verta.monitoring.ListProfilersRequest.Response\"9\x82\xd3\xe4\x93\x02\x33\x12\x31/api/v1/monitoring/monitored_entity/listProfilers\x12\xaf\x01\n\x0e\x64\x65leteProfiler\x12*.ai.verta.monitoring.DeleteProfilerRequest\x1a\x33.ai.verta.monitoring.DeleteProfilerRequest.Response\"<\x82\xd3\xe4\x93\x02\x36*1/api/v1/monitoring/monitored_entity/deleteProfile:\x01*\x12\xb9\x01\n\x11getProfilerStatus\x12-.ai.verta.monitoring.GetProfilerStatusRequest\x1a\x36.ai.verta.monitoring.GetProfilerStatusRequest.Response\"=\x82\xd3\xe4\x93\x02\x37\x12\x35/api/v1/monitoring/monitored_entity/getProfilerStatus\x12\xf4\x01\n\x1f\x66indProfilersForMonitoredEntity\x12;.ai.verta.monitoring.FindProfilersForMonitoredEntityRequest\x1a\x44.ai.verta.monitoring.FindProfilersForMonitoredEntityRequest.Response\"N\x82\xd3\xe4\x93\x02H\"C/api/v1/monitoring/monitored_entity/findProfilersForMonitoredEntity:\x01*\x12\xb0\x01\n\x0e\x65nableProfiler\x12*.ai.verta.monitoring.EnableProfilerRequest\x1a\x33.ai.verta.monitoring.EnableProfilerRequest.Response\"=\x82\xd3\xe4\x93\x02\x37\"2/api/v1/monitoring/monitored_entity/enableProfiler:\x01*\x12\xb4\x01\n\x0f\x64isableProfiler\x12+.ai.verta.monitoring.DisableProfilerRequest\x1a\x34.ai.verta.monitoring.DisableProfilerRequest.Response\">\x82\xd3\xe4\x93\x02\x38\"3/api/v1/monitoring/monitored_entity/disableProfiler:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
+  serialized_pb=b'\n&monitoring/DataMonitoringService.proto\x12\x13\x61i.verta.monitoring\x1a\x16uac/Collaborator.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"@\n\x08Profiler\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x1a\n\x12profiler_reference\x18\x03 \x01(\t\"~\n\x15\x43reateProfilerRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1a\n\x12profiler_reference\x18\x02 \x01(\t\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"]\n\x12GetProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"\x8a\x01\n\x15UpdateProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x1a\n\x12profiler_reference\x18\x03 \x01(\t\x1a;\n\x08Response\x12/\n\x08profiler\x18\x01 \x01(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"T\n\x14ListProfilersRequest\x1a<\n\x08Response\x12\x30\n\tprofilers\x18\x01 \x03(\x0b\x32\x1d.ai.verta.monitoring.Profiler\"/\n\x15\x44\x65leteProfilerRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a\n\n\x08Response\"d\n\x0f\x42uildStatusEnum\"Q\n\x0b\x42uildStatus\x12\r\n\tUNDEFINED\x10\x00\x12\x0c\n\x08\x42UILDING\x10\x01\x12\x0c\n\x08\x44\x45LETING\x10\x02\x12\t\n\x05\x45RROR\x10\x03\x12\x0c\n\x08\x46INISHED\x10\x04\"r\n\x10\x44\x65ployStatusEnum\"^\n\x0c\x44\x65ployStatus\x12\r\n\tUNDEFINED\x10\x00\x12\x0c\n\x08INACTIVE\x10\x01\x12\n\n\x06\x41\x43TIVE\x10\x02\x12\x0c\n\x08UPDATING\x10\x03\x12\x0c\n\x08\x43REATING\x10\x04\x12\t\n\x05\x45RROR\x10\x05\"\xd5\x01\n\x0eProfilerStatus\x12\x13\n\x0bprofiler_id\x18\x01 \x01(\r\x12\x1b\n\x13monitored_entity_id\x18\x02 \x01(\r\x12\x46\n\x0c\x62uild_status\x18\x03 \x01(\x0e\x32\x30.ai.verta.monitoring.BuildStatusEnum.BuildStatus\x12I\n\rdeploy_status\x18\x04 \x01(\x0e\x32\x32.ai.verta.monitoring.DeployStatusEnum.DeployStatus\"\x8d\x01\n\x18GetProfilerStatusRequest\x12\x13\n\x0bprofiler_id\x18\x01 \x01(\r\x12\x1b\n\x13monitored_entity_id\x18\x02 \x01(\r\x1a?\n\x08Response\x12\x33\n\x06status\x18\x01 \x01(\x0b\x32#.ai.verta.monitoring.ProfilerStatus\"\x88\x01\n&FindProfilersForMonitoredEntityRequest\x12\x1b\n\x13monitored_entity_id\x18\x01 \x01(\r\x1a\x41\n\x08Response\x12\x35\n\x08statuses\x18\x01 \x03(\x0b\x32#.ai.verta.monitoring.ProfilerStatus\"\x80\x01\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12@\n\nvalue_type\x18\x03 \x01(\x0e\x32,.ai.verta.monitoring.ValueTypeEnum.ValueType\"H\n\rValueTypeEnum\"7\n\tValueType\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x08\n\x04LIST\x10\x02\x12\x08\n\x04\x42LOB\x10\x03\"\xbe\x01\n\x15\x45nableProfilerRequest\x12\x13\n\x0bprofiler_id\x18\x01 \x01(\r\x12\x1b\n\x13monitored_entity_id\x18\x02 \x01(\r\x12\x32\n\x0b\x65nvironment\x18\x03 \x03(\x0b\x32\x1d.ai.verta.monitoring.KeyValue\x1a?\n\x08Response\x12\x33\n\x06status\x18\x01 \x01(\x0b\x32#.ai.verta.monitoring.ProfilerStatus\"\x8b\x01\n\x16\x44isableProfilerRequest\x12\x13\n\x0bprofiler_id\x18\x01 \x01(\r\x12\x1b\n\x13monitored_entity_id\x18\x02 \x01(\r\x1a?\n\x08Response\x12\x33\n\x06status\x18\x01 \x01(\x0b\x32#.ai.verta.monitoring.ProfilerStatus\"\xe2\x02\n\x0fMonitoredEntity\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x14\n\x0cworkspace_id\x18\x05 \x01(\x04\x12#\n\x1b\x63reated_at_timestamp_millis\x18\x06 \x01(\x04\x12#\n\x1bupdated_at_timestamp_millis\x18\x07 \x01(\x04\x12H\n\nattributes\x18\x08 \x03(\x0b\x32\x34.ai.verta.monitoring.MonitoredEntity.AttributesEntry\x12\r\n\x05owner\x18\t \x01(\t\x12=\n\x13resource_visibility\x18\n \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01J\x04\x08\x03\x10\x04J\x04\x08\x04\x10\x05\"\x97\x03\n\x1c\x43reateMonitoredEntityRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0cworkspace_id\x18\x04 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x05 \x01(\tH\x00\x12U\n\nattributes\x18\x06 \x03(\x0b\x32\x41.ai.verta.monitoring.CreateMonitoredEntityRequest.AttributesEntry\x12=\n\x13resource_visibility\x18\x07 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1aJ\n\x08Response\x12>\n\x10monitored_entity\x18\x01 \x01(\x0b\x32$.ai.verta.monitoring.MonitoredEntityB\x16\n\x14workspace_identifierJ\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04\"\xd3\x02\n\x1cUpdateMonitoredEntityRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12U\n\nattributes\x18\x07 \x03(\x0b\x32\x41.ai.verta.monitoring.UpdateMonitoredEntityRequest.AttributesEntry\x12=\n\x13resource_visibility\x18\x08 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1aJ\n\x08Response\x12>\n\x10monitored_entity\x18\x01 \x01(\x0b\x32$.ai.verta.monitoring.MonitoredEntityJ\x04\x08\x04\x10\x07\"\xa5\x02\n\x1a\x46indMonitoredEntityRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12\x13\n\x0b\x66uzzy_names\x18\x07 \x03(\t\x12\x16\n\x0cworkspace_id\x18\x03 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x06 \x01(\tH\x00\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x1a\x63\n\x08Response\x12@\n\x12monitored_entities\x18\x01 \x03(\x0b\x32$.ai.verta.monitoring.MonitoredEntity\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\x42\x16\n\x14workspace_identifier\"6\n\x1c\x44\x65leteMonitoredEntityRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a\n\n\x08Response2\xd0\x13\n\x15\x44\x61taMonitoringService\x12\xcc\x01\n\x15\x63reateMonitoredEntity\x12\x31.ai.verta.monitoring.CreateMonitoredEntityRequest\x1a:.ai.verta.monitoring.CreateMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>\"9/api/v1/monitoring/monitored_entity/createMonitoredEntity:\x01*\x12\xcc\x01\n\x15updateMonitoredEntity\x12\x31.ai.verta.monitoring.UpdateMonitoredEntityRequest\x1a:.ai.verta.monitoring.UpdateMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>29/api/v1/monitoring/monitored_entity/updateMonitoredEntity:\x01*\x12\xc4\x01\n\x13\x66indMonitoredEntity\x12/.ai.verta.monitoring.FindMonitoredEntityRequest\x1a\x38.ai.verta.monitoring.FindMonitoredEntityRequest.Response\"B\x82\xd3\xe4\x93\x02<\"7/api/v1/monitoring/monitored_entity/findMonitoredEntity:\x01*\x12\xcc\x01\n\x15\x64\x65leteMonitoredEntity\x12\x31.ai.verta.monitoring.DeleteMonitoredEntityRequest\x1a:.ai.verta.monitoring.DeleteMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>*9/api/v1/monitoring/monitored_entity/deleteMonitoredEntity:\x01*\x12\xa1\x01\n\x0bgetProfiler\x12\'.ai.verta.monitoring.GetProfilerRequest\x1a\x30.ai.verta.monitoring.GetProfilerRequest.Response\"7\x82\xd3\xe4\x93\x02\x31\x12//api/v1/monitoring/monitored_entity/getProfiler\x12\xb0\x01\n\x0e\x63reateProfiler\x12*.ai.verta.monitoring.CreateProfilerRequest\x1a\x33.ai.verta.monitoring.CreateProfilerRequest.Response\"=\x82\xd3\xe4\x93\x02\x37\"2/api/v1/monitoring/monitored_entity/createProfiler:\x01*\x12\xb0\x01\n\x0eupdateProfiler\x12*.ai.verta.monitoring.UpdateProfilerRequest\x1a\x33.ai.verta.monitoring.UpdateProfilerRequest.Response\"=\x82\xd3\xe4\x93\x02\x37\x32\x32/api/v1/monitoring/monitored_entity/updateProfiler:\x01*\x12\xa9\x01\n\rlistProfilers\x12).ai.verta.monitoring.ListProfilersRequest\x1a\x32.ai.verta.monitoring.ListProfilersRequest.Response\"9\x82\xd3\xe4\x93\x02\x33\x12\x31/api/v1/monitoring/monitored_entity/listProfilers\x12\xaf\x01\n\x0e\x64\x65leteProfiler\x12*.ai.verta.monitoring.DeleteProfilerRequest\x1a\x33.ai.verta.monitoring.DeleteProfilerRequest.Response\"<\x82\xd3\xe4\x93\x02\x36*1/api/v1/monitoring/monitored_entity/deleteProfile:\x01*\x12\xb9\x01\n\x11getProfilerStatus\x12-.ai.verta.monitoring.GetProfilerStatusRequest\x1a\x36.ai.verta.monitoring.GetProfilerStatusRequest.Response\"=\x82\xd3\xe4\x93\x02\x37\x12\x35/api/v1/monitoring/monitored_entity/getProfilerStatus\x12\xf4\x01\n\x1f\x66indProfilersForMonitoredEntity\x12;.ai.verta.monitoring.FindProfilersForMonitoredEntityRequest\x1a\x44.ai.verta.monitoring.FindProfilersForMonitoredEntityRequest.Response\"N\x82\xd3\xe4\x93\x02H\"C/api/v1/monitoring/monitored_entity/findProfilersForMonitoredEntity:\x01*\x12\xb0\x01\n\x0e\x65nableProfiler\x12*.ai.verta.monitoring.EnableProfilerRequest\x1a\x33.ai.verta.monitoring.EnableProfilerRequest.Response\"=\x82\xd3\xe4\x93\x02\x37\"2/api/v1/monitoring/monitored_entity/enableProfiler:\x01*\x12\xb4\x01\n\x0f\x64isableProfiler\x12+.ai.verta.monitoring.DisableProfilerRequest\x1a\x34.ai.verta.monitoring.DisableProfilerRequest.Response\">\x82\xd3\xe4\x93\x02\x38\"3/api/v1/monitoring/monitored_entity/disableProfiler:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
   ,
   dependencies=[uac_dot_Collaborator__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
 
@@ -1111,8 +1111,8 @@ _CREATEMONITOREDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2561,
-  serialized_end=2635,
+  serialized_start=2624,
+  serialized_end=2698,
 )
 
 _CREATEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
@@ -1150,6 +1150,13 @@ _CREATEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='resource_visibility', full_name='ai.verta.monitoring.CreateMonitoredEntityRequest.resource_visibility', index=4,
+      number=7, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -1166,7 +1173,7 @@ _CREATEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=2327,
-  serialized_end=2671,
+  serialized_end=2734,
 )
 
 
@@ -1233,8 +1240,8 @@ _UPDATEMONITOREDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2561,
-  serialized_end=2635,
+  serialized_start=2624,
+  serialized_end=2698,
 )
 
 _UPDATEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
@@ -1265,6 +1272,13 @@ _UPDATEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='resource_visibility', full_name='ai.verta.monitoring.UpdateMonitoredEntityRequest.resource_visibility', index=3,
+      number=8, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -1277,8 +1291,8 @@ _UPDATEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2674,
-  serialized_end=2950,
+  serialized_start=2737,
+  serialized_end=3076,
 )
 
 
@@ -1315,8 +1329,8 @@ _FINDMONITOREDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3123,
-  serialized_end=3222,
+  serialized_start=3249,
+  serialized_end=3348,
 )
 
 _FINDMONITOREDENTITYREQUEST = _descriptor.Descriptor(
@@ -1390,8 +1404,8 @@ _FINDMONITOREDENTITYREQUEST = _descriptor.Descriptor(
       name='workspace_identifier', full_name='ai.verta.monitoring.FindMonitoredEntityRequest.workspace_identifier',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=2953,
-  serialized_end=3246,
+  serialized_start=3079,
+  serialized_end=3372,
 )
 
 
@@ -1444,8 +1458,8 @@ _DELETEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3248,
-  serialized_end=3302,
+  serialized_start=3374,
+  serialized_end=3428,
 )
 
 _CREATEPROFILERREQUEST_RESPONSE.fields_by_name['profiler'].message_type = _PROFILER
@@ -1480,6 +1494,7 @@ _CREATEMONITOREDENTITYREQUEST_ATTRIBUTESENTRY.containing_type = _CREATEMONITORED
 _CREATEMONITOREDENTITYREQUEST_RESPONSE.fields_by_name['monitored_entity'].message_type = _MONITOREDENTITY
 _CREATEMONITOREDENTITYREQUEST_RESPONSE.containing_type = _CREATEMONITOREDENTITYREQUEST
 _CREATEMONITOREDENTITYREQUEST.fields_by_name['attributes'].message_type = _CREATEMONITOREDENTITYREQUEST_ATTRIBUTESENTRY
+_CREATEMONITOREDENTITYREQUEST.fields_by_name['resource_visibility'].enum_type = uac_dot_Collaborator__pb2._RESOURCEVISIBILITY
 _CREATEMONITOREDENTITYREQUEST.oneofs_by_name['workspace_identifier'].fields.append(
   _CREATEMONITOREDENTITYREQUEST.fields_by_name['workspace_id'])
 _CREATEMONITOREDENTITYREQUEST.fields_by_name['workspace_id'].containing_oneof = _CREATEMONITOREDENTITYREQUEST.oneofs_by_name['workspace_identifier']
@@ -1490,6 +1505,7 @@ _UPDATEMONITOREDENTITYREQUEST_ATTRIBUTESENTRY.containing_type = _UPDATEMONITORED
 _UPDATEMONITOREDENTITYREQUEST_RESPONSE.fields_by_name['monitored_entity'].message_type = _MONITOREDENTITY
 _UPDATEMONITOREDENTITYREQUEST_RESPONSE.containing_type = _UPDATEMONITOREDENTITYREQUEST
 _UPDATEMONITOREDENTITYREQUEST.fields_by_name['attributes'].message_type = _UPDATEMONITOREDENTITYREQUEST_ATTRIBUTESENTRY
+_UPDATEMONITOREDENTITYREQUEST.fields_by_name['resource_visibility'].enum_type = uac_dot_Collaborator__pb2._RESOURCEVISIBILITY
 _FINDMONITOREDENTITYREQUEST_RESPONSE.fields_by_name['monitored_entities'].message_type = _MONITOREDENTITY
 _FINDMONITOREDENTITYREQUEST_RESPONSE.containing_type = _FINDMONITOREDENTITYREQUEST
 _FINDMONITOREDENTITYREQUEST.oneofs_by_name['workspace_identifier'].fields.append(
@@ -1801,8 +1817,8 @@ _DATAMONITORINGSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=3305,
-  serialized_end=5817,
+  serialized_start=3431,
+  serialized_end=5943,
   methods=[
   _descriptor.MethodDescriptor(
     name='createMonitoredEntity',
