@@ -1452,7 +1452,21 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         --------
         .. code-block:: python
 
-            pass
+            from verta.code import Git
+
+            training_code = Git(
+                repo_url="git@github.com:VertaAI/models.git",
+                commit_hash="52f3d22",
+                autocapture=False,
+            )
+            inference_code = Git(
+                repo_url="git@github.com:VertaAI/data-processing.git",
+                commit_hash="26f9787",
+                autocapture=False,
+            )
+
+            model_ver.log_code("training", training_code)
+            model_ver.log_code("inference_code", inference_code)
 
         """
         if not isinstance(key, six.string_types):
@@ -1487,7 +1501,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         --------
         .. code-block:: python
 
-            pass
+            print(model_ver.get_code("training"))
+            # Git Version
+            #     commit 52f3d22
+            #     in repo git@github.com:VertaAI/models.git
 
         """
         self._refresh_cache()
