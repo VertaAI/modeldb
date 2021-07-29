@@ -4,7 +4,6 @@ from __future__ import print_function
 
 import json
 import logging
-from multiprocessing.pool import ThreadPool
 import os
 import pathlib2
 import pickle
