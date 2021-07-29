@@ -32,8 +32,7 @@ from verta._internal_utils import (
 )
 from verta import utils
 
-from verta import data_types
-from verta import _blob, code
+from verta import _blob, code, data_types
 from verta.environment import _Environment, Python
 from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
