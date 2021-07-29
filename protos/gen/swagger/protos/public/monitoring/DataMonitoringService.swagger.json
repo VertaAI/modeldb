@@ -701,6 +701,9 @@
         "owner": {
           "type": "string",
           "title": "owner's verta_id"
+        },
+        "resource_visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },
@@ -827,6 +830,17 @@
           }
         }
       }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ORG_DEFAULT",
+        "ORG_CUSTOM",
+        "PRIVATE",
+        "WORKSPACE_DEFAULT"
+      ],
+      "default": "UNKNOWN"
     },
     "vertamonitoringKeyValue": {
       "type": "object",
