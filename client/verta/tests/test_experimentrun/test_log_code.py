@@ -7,7 +7,7 @@ import verta
 from verta._internal_utils import _git_utils
 
 import pytest
-from . import utils
+from .. import utils
 
 
 # check if in git repo
