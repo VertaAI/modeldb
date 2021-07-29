@@ -15,6 +15,7 @@ from google.protobuf.struct_pb2 import Value
 import requests
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 from verta._protos.public.monitoring.DeploymentIntegration_pb2 import FeatureDataInModelVersion
 from verta._protos.public.registry import (
     RegistryService_pb2 as _RegistryService,
@@ -33,7 +34,7 @@ from verta._internal_utils import (
 from verta import utils
 
 from verta import data_types
-from verta.code import _Code
+from verta import _blob, code
 from verta.environment import _Environment, Python
 from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
@@ -1457,13 +1458,21 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         """
         if not isinstance(key, six.string_types):
             raise TypeError("`key` must be str, not {}".format(type(key)))
-        if not isinstance(code_version, _Code):
+        if not isinstance(code_version, code._Code):
             raise TypeError(
                 "`code_version` must be an object from verta.code,"
                 " not {}".format(type(code_version))
             )
 
-        raise NotImplementedError
+        msg = _RegistryService.LogCodeVersionFromBlobInModelVersion(
+            model_version_id=self.id,
+            code_version_from_blob={key: code_version._as_proto.code},
+        )
+        endpoint = "/api/v1/registry/model_versions/{}/logCodeVersionFromBlob".format(
+            self.id,
+        )
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        self._conn.must_response(response)
 
     def get_code(self, key):
         """Get a code version snapshot.
@@ -1482,4 +1491,19 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             pass
 
         """
-        raise NotImplementedError
+        self._refresh_cache()
+
+        try:
+            code_blob = self._msg.code_version_from_blob[key]
+        except KeyError:
+            six.raise_from(
+                KeyError("no code version found with key {}".format(key)),
+                None,
+            )
+
+        # create wrapper blob msg so we can reuse the blob system's proto-to-obj
+        blob = _VersioningService.Blob()
+        blob.code.CopyFrom(code_blob)
+        content = _blob.Blob.blob_msg_to_object(blob)
+
+        return content
