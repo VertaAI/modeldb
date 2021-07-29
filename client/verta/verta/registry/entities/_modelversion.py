@@ -33,6 +33,7 @@ from verta._internal_utils import (
 from verta import utils
 
 from verta import data_types
+from verta.code import _Code
 from verta.environment import _Environment, Python
 from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
@@ -1434,3 +1435,51 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         )
         attrs = self._collect_feature_data_and_vis_attributes(feature_data_list)
         self.add_attributes(attrs)
+
+    def log_code(self, key, code_version):
+        """Log a code version snapshot.
+
+        .. versionadded:: 0.19.0
+
+        Parameters
+        ----------
+        key : str
+            Name for the code version.
+        code_version : `code <verta.code.html>`__
+            Code version.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            pass
+
+        """
+        if not isinstance(key, six.string_types):
+            raise TypeError("`key` must be str, not {}".format(type(key)))
+        if not isinstance(code_version, _Code):
+            raise TypeError(
+                "`code_version` must be an object from verta.code,"
+                " not {}".format(type(code_version))
+            )
+
+        raise NotImplementedError
+
+    def get_code(self, key):
+        """Get a code version snapshot.
+
+        .. versionadded:: 0.19.0
+
+        Parameters
+        ----------
+        key : str
+            Name of the code version.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            pass
+
+        """
+        raise NotImplementedError
