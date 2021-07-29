@@ -27,7 +27,8 @@ class Notebook(_code._Code):
     notebook_path : str, optional
         Filepath of the Jupyter Notebook. If not provided, it will automatically be determined.
     _autocapture : bool, default True
-        Whether to enable the automatic capturing behavior of parameters above.
+        Whether to automatically capture the above parameters by reading the
+        local environment where this code is being executed.
 
     Raises
     ------

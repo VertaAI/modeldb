@@ -26,7 +26,8 @@ class Git(_code._Code):
         Whether git status is dirty relative to `commit_hash`. If not provided,
         it will automatically be determined.
     autocapture : bool, default True
-        Whether to enable the automatic capturing behavior of parameters above.
+        Whether to automatically capture the above parameters by reading the
+        local git repository where this code is being executed.
 
     Raises
     ------
