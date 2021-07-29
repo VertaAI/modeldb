@@ -5,6 +5,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/moni
 
 option java_multiple_files = true;
 
+import "uac/Collaborator.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 
@@ -155,6 +156,7 @@ message MonitoredEntity {
   map<string, string> attributes = 8;
   //owner's verta_id
   string owner = 9;
+  uac.ResourceVisibility resource_visibility = 10;
 }
 
 message CreateMonitoredEntityRequest {
