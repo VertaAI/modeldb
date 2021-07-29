@@ -38,8 +38,8 @@ from verta._internal_utils import (
 )
 from verta._protos.public.monitoring.DeploymentIntegration_pb2 import FeatureDataInModelVersion
 
-from .. import utils
-from ..monitoring import strategies
+from ... import utils
+from ...monitoring import strategies
 
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
