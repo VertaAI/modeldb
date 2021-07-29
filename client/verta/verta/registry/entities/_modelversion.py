@@ -1435,7 +1435,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         attrs = self._collect_feature_data_and_vis_attributes(feature_data_list)
         self.add_attributes(attrs)
 
-    def log_code(self, key, code_version):
+    def log_code_version(self, key, code_version):
         """Log a code version snapshot.
 
         .. versionadded:: 0.19.0
@@ -1464,29 +1464,69 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 autocapture=False,
             )
 
-            model_ver.log_code("training", training_code)
-            model_ver.log_code("inference_code", inference_code)
+            model_ver.log_code_version("training", training_code)
+            model_ver.log_code_version("inference_code", inference_code)
 
         """
-        if not isinstance(key, six.string_types):
-            raise TypeError("`key` must be str, not {}".format(type(key)))
-        if not isinstance(code_version, code._Code):
-            raise TypeError(
-                "`code_version` must be an object from verta.code,"
-                " not {}".format(type(code_version))
-            )
+        self.log_code_versions({key: code_version})
+
+    def log_code_versions(self, code_versions):
+        """Log multiple code version snapshots in a batched request.
+
+        .. versionadded:: 0.19.0
+
+        Parameters
+        ----------
+        code_versions : dict of str to `code <verta.code.html>`__
+            Code versions mapped to names.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.code import Git
+
+            code_versions = {
+                "training": Git(
+                    repo_url="git@github.com:VertaAI/models.git",
+                    commit_hash="52f3d22",
+                    autocapture=False,
+                ),
+                "inference_code": Git(
+                    repo_url="git@github.com:VertaAI/data-processing.git",
+                    commit_hash="26f9787",
+                    autocapture=False,
+                ),
+            }
+
+            model_ver.log_code_versions(code_versions)
+
+        """
+        for key, code_version in code_versions.items():
+            if not isinstance(key, six.string_types):
+                raise TypeError("key must be str, not {}".format(type(key)))
+            if not isinstance(code_version, code._Code):
+                raise TypeError(
+                    "code version must be an object from verta.code,"
+                    " not {}".format(type(code_version))
+                )
 
         msg = _RegistryService.LogCodeVersionFromBlobInModelVersion(
             model_version_id=self.id,
-            code_version_from_blob={key: code_version._as_proto.code},
+            code_version_from_blob={
+                key: code_version._as_proto.code
+                for key, code_version
+                in code_versions.items()
+            },
         )
         endpoint = "/api/v1/registry/model_versions/{}/logCodeVersionFromBlob".format(
             self.id,
         )
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         self._conn.must_response(response)
+        self._clear_cache()
 
-    def get_code(self, key):
+    def get_code_version(self, key):
         """Get a code version snapshot.
 
         .. versionadded:: 0.19.0
@@ -1496,29 +1536,63 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         key : str
             Name of the code version.
 
+        Returns
+        -------
+        `code <verta.code.html>`__
+            Code version.
+
         Examples
         --------
         .. code-block:: python
 
-            print(model_ver.get_code("training"))
+            model_ver.get_code_version("training")
             # Git Version
             #     commit 52f3d22
             #     in repo git@github.com:VertaAI/models.git
 
         """
-        self._refresh_cache()
+        code_versions = self.get_code_versions()
 
         try:
-            code_blob = self._msg.code_version_from_blob[key]
+            return code_versions[key]
         except KeyError:
             six.raise_from(
                 KeyError("no code version found with key {}".format(key)),
                 None,
             )
 
-        # create wrapper blob msg so we can reuse the blob system's proto-to-obj
-        blob = _VersioningService.Blob()
-        blob.code.CopyFrom(code_blob)
-        content = _blob.Blob.blob_msg_to_object(blob)
+    def get_code_versions(self):
+        """Get all code version snapshots.
 
-        return content
+        .. versionadded:: 0.19.0
+
+        Returns
+        -------
+        dict of str to `code <verta.code.html>`__
+            Code versions mapped to names.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            model_ver.get_code_versions()
+            # {'training': Git Version
+            #      commit 52f3d22
+            #      in repo git@github.com:VertaAI/models.git,
+            #  'inference_code': Git Version
+            #      commit 26f9787
+            #      in repo git@github.com:VertaAI/data-processing.git}
+
+        """
+        self._refresh_cache()
+
+        code_versions = dict()
+        for key, code_blob in self._msg.code_version_from_blob.items():
+            # create wrapper blob msg so we can reuse the blob system's proto-to-obj
+            blob = _VersioningService.Blob()
+            blob.code.CopyFrom(code_blob)
+            content = _blob.Blob.blob_msg_to_object(blob)
+
+            code_versions[key] = content
+
+        return code_versions

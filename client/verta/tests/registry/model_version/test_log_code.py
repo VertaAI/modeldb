@@ -26,10 +26,19 @@ class TestLogCode:
             _autocapture=False,
         )
 
-        model_version.log_code(key1, version1)
-        model_version.log_code(key2, version2)
-        model_version.log_code(key3, version3)
+        model_version.log_code_version(key1, version1)
+        model_version.log_code_versions(
+            {
+                key2: version2,
+                key3: version3,
+            },
+        )
 
-        assert model_version.get_code(key1) == version1
-        assert model_version.get_code(key2) == version2
-        assert model_version.get_code(key3) == version3
+        assert model_version.get_code_version(key1) == version1
+        assert model_version.get_code_version(key2) == version2
+        assert model_version.get_code_version(key3) == version3
+        assert model_version.get_code_versions() == {
+            key1: version1,
+            key2: version2,
+            key3: version3,
+        }
