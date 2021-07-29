@@ -113,7 +113,9 @@ class TestAlert:
         name = _utils.generate_default_name()
         alerter = FixedAlerter(comparison.GreaterThan(0.7))
         labels = {"datasource": ["census2010", "census2020"]}
-        starting_from = datetime.datetime(year=2021, month=5, day=10, tzinfo=time_utils.utc)
+        starting_from = datetime.datetime(
+            year=2021, month=5, day=10, tzinfo=time_utils.utc,
+        )
 
         # none passed
         alert = summary.alerts.create(
@@ -243,7 +245,9 @@ class TestAlert:
         )
         endpoint = "/api/v1/alerts/createAlert"
         response = summary.alerts._conn.make_proto_request("POST", endpoint, body=msg)
-        alert_id = summary.alerts._conn.must_proto_response(response, _AlertService.Alert).id
+        alert_id = summary.alerts._conn.must_proto_response(
+            response, _AlertService.Alert,
+        ).id
 
         # retrieve alert via client and verify that fields are preserved
         alert = summary.alerts.get(id=alert_id)
