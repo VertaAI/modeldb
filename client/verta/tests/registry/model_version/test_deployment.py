@@ -19,7 +19,9 @@ import hypothesis.strategies as st
 import pytest
 import six
 
-from verta._protos.public.monitoring.DeploymentIntegration_pb2 import FeatureDataInModelVersion
+from verta._protos.public.monitoring.DeploymentIntegration_pb2 import (
+    FeatureDataInModelVersion,
+)
 from verta._internal_utils import _artifact_utils, _utils
 from verta.data_types import _verta_data_type
 from verta.endpoint.update import DirectUpdateStrategy
@@ -37,6 +39,7 @@ pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire 
 
 class TestDeployability:
     """Deployment-related functionality"""
+
     def test_log_environment(self, registered_model):
         model_version = registered_model.get_or_create_version(name="my version")
 
@@ -113,31 +116,39 @@ class TestDeployability:
 
             for parent_dir, dirnames, filenames in os.walk(path):
                 # only Python files
-                filenames[:] = [filename for filename in filenames if filename.endswith(('.py', '.pyc', '.pyo'))]
+                filenames[:] = [
+                    filename
+                    for filename in filenames
+                    if filename.endswith((".py", ".pyc", ".pyo"))
+                ]
 
                 if not _utils.is_in_venv(path) and _utils.is_in_venv(parent_dir):
                     continue
                 custom_module_filenames.update(map(os.path.basename, filenames))
 
         custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
-        with zipfile.ZipFile(custom_modules, 'r') as zipf:
-            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+        with zipfile.ZipFile(custom_modules, "r") as zipf:
+            assert custom_module_filenames == set(
+                map(os.path.basename, zipf.namelist())
+            )
 
     def test_download_sklearn(self, model_version, in_tempdir):
-        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+        LogisticRegression = pytest.importorskip(
+            "sklearn.linear_model"
+        ).LogisticRegression
 
         upload_path = "model.pkl"
         download_path = "retrieved_model.pkl"
 
         model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
-        with open(upload_path, 'wb') as f:
+        with open(upload_path, "wb") as f:
             pickle.dump(model, f)
 
         model_version.log_model(model, custom_modules=[])
         returned_path = model_version.download_model(download_path)
         assert returned_path == os.path.abspath(download_path)
 
-        with open(download_path, 'rb') as f:
+        with open(download_path, "rb") as f:
             downloaded_model = pickle.load(f)
 
         assert downloaded_model.get_params() == model.get_params()
@@ -146,7 +157,7 @@ class TestDeployability:
         custom_modules_dir = "."
 
         model_version.log_model(
-            model_for_deployment['model'],
+            model_for_deployment["model"],
             custom_modules=["."],
         )
 
@@ -155,20 +166,27 @@ class TestDeployability:
             # skip venvs
             #     This logic is from _utils.find_filepaths().
             exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-            dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+            dirnames[:] = [
+                dirname
+                for dirname in dirnames
+                if not glob.glob(exec_path_glob.format(dirname))
+            ]
 
             custom_module_filenames.update(map(os.path.basename, filenames))
 
         custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
-        with zipfile.ZipFile(custom_modules, 'r') as zipf:
-            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+        with zipfile.ZipFile(custom_modules, "r") as zipf:
+            assert custom_module_filenames == set(
+                map(os.path.basename, zipf.namelist())
+            )
 
-    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir,
-                                     registered_model):
+    def test_download_docker_context(
+        self, experiment_run, model_for_deployment, in_tempdir, registered_model
+    ):
         download_to_path = "context.tgz"
 
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
+        experiment_run.log_model(model_for_deployment["model"], custom_modules=[])
+        experiment_run.log_environment(Python(["scikit-learn"]))
         model_version = registered_model.create_version_from_run(
             run_id=experiment_run.id,
             name="From Run {}".format(experiment_run.id),
@@ -178,7 +196,7 @@ class TestDeployability:
         assert filepath == os.path.abspath(download_to_path)
 
         # can be loaded as tgz
-        with tarfile.open(filepath, 'r:gz') as f:
+        with tarfile.open(filepath, "r:gz") as f:
             filepaths = set(f.getnames())
 
         assert "Dockerfile" in filepaths
@@ -192,12 +210,14 @@ class TestDeployability:
             artifacts = model_version.fetch_artifacts(strs)
 
             assert set(six.viewkeys(artifacts)) == set(strs)
-            assert all(filepath.startswith(_deployable_entity._CACHE_DIR)
-                       for filepath in six.viewvalues(artifacts))
+            assert all(
+                filepath.startswith(_deployable_entity._CACHE_DIR)
+                for filepath in six.viewvalues(artifacts)
+            )
 
             for key, filepath in six.viewitems(artifacts):
                 artifact_contents = model_version._get_artifact(key)
-                with open(filepath, 'rb') as f:
+                with open(filepath, "rb") as f:
                     file_contents = f.read()
 
                 assert file_contents == artifact_contents
@@ -206,11 +226,11 @@ class TestDeployability:
 
     def test_model_artifacts(self, model_version, endpoint, in_tempdir):
         key = "foo"
-        val = {'a': 1}
+        val = {"a": 1}
 
         class ModelWithDependency(object):
             def __init__(self, artifacts):
-                with open(artifacts[key], 'rb') as f:  # should not KeyError
+                with open(artifacts[key], "rb") as f:  # should not KeyError
                     if cloudpickle.load(f) != val:
                         raise ValueError  # should not ValueError
 
@@ -219,13 +239,17 @@ class TestDeployability:
 
         # first log junk artifact, to test `overwrite`
         bad_key = "bar"
-        bad_val = {'b': 2}
+        bad_val = {"b": 2}
         model_version.log_artifact(bad_key, bad_val)
-        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=[bad_key])
+        model_version.log_model(
+            ModelWithDependency, custom_modules=[], artifacts=[bad_key]
+        )
 
         # log real artifact using `overwrite`
         model_version.log_artifact(key, val)
-        model_version.log_model(ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True)
+        model_version.log_model(
+            ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True
+        )
         model_version.log_environment(Python([]))
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
@@ -234,6 +258,7 @@ class TestDeployability:
 
 class TestArbitraryModels:
     """Analogous to test_artifacts.TestArbitraryModels."""
+
     @staticmethod
     def _assert_no_deployment_artifacts(model_version):
         artifact_keys = model_version.get_artifact_keys()
@@ -256,13 +281,13 @@ class TestArbitraryModels:
 
         model_version.log_model(dirpath)
 
-        with zipfile.ZipFile(model_version.get_model(), 'r') as zipf:
+        with zipfile.ZipFile(model_version.get_model(), "r") as zipf:
             assert set(zipf.namelist()) == filepaths
 
         self._assert_no_deployment_artifacts(model_version)
 
     def test_arbitrary_object(self, model_version):
-        model = {'a': 1}
+        model = {"a": 1}
 
         model_version.log_model(model)
 
@@ -270,7 +295,9 @@ class TestArbitraryModels:
 
         self._assert_no_deployment_artifacts(model_version)
 
-    def test_download_arbitrary_directory(self, model_version, dir_and_files, strs, in_tempdir):
+    def test_download_arbitrary_directory(
+        self, model_version, dir_and_files, strs, in_tempdir
+    ):
         """Model that was originally a dir is unpacked on download."""
         dirpath, _ = dir_and_files
         download_path = strs[0]
@@ -304,13 +331,15 @@ class TestArbitraryModels:
 
         utils.assert_dirs_match(dirpath, download_path)
 
-    def test_download_arbitrary_zip(self, model_version, dir_and_files, strs, in_tempdir):
+    def test_download_arbitrary_zip(
+        self, model_version, dir_and_files, strs, in_tempdir
+    ):
         """Model that was originally a ZIP is not unpacked on download."""
         model_dir, _ = dir_and_files
         upload_path, download_path = strs[:2]
 
         # zip `model_dir` into `upload_path`
-        with open(upload_path, 'wb') as f:
+        with open(upload_path, "wb") as f:
             shutil.copyfileobj(
                 _artifact_utils.zip_dir(model_dir),
                 f,
@@ -343,7 +372,8 @@ class TestAutoMonitoring:
 
         # verify re-profiling column yields reference distribution
         _, profile = feature_profiler.profile_column(
-            source_df, feature_data.feature_name,
+            source_df,
+            feature_data.feature_name,
         )
         assert profile == reference
 
@@ -352,11 +382,13 @@ class TestAutoMonitoring:
 
         with pytest.raises(TypeError):
             model_version.log_training_data_profile(
-                "abc", pd.DataFrame([1, 2, 3]),
+                "abc",
+                pd.DataFrame([1, 2, 3]),
             )
         with pytest.raises(TypeError):
             model_version.log_training_data_profile(
-                pd.DataFrame([1, 2, 3]), 2,
+                pd.DataFrame([1, 2, 3]),
+                2,
             )
 
         # coerce out_df if Series
@@ -377,7 +409,9 @@ class TestAutoMonitoring:
         # missing
         for col in ["continuous", "discrete"]:
             feature_data = RegisteredModelVersion._create_missing_value_summary(
-                df, col, labels,
+                df,
+                col,
+                labels,
             )
             _sample = profiler.MissingValuesProfiler([col]).profile(df)
             _histogram = list(_sample.values())[0]
@@ -390,7 +424,9 @@ class TestAutoMonitoring:
 
         # continuous distribution
         feature_data = RegisteredModelVersion._create_continuous_histogram_summary(
-            df, "continuous", labels,
+            df,
+            "continuous",
+            labels,
         )
         _sample = profiler.ContinuousHistogramProfiler(["continuous"]).profile(df)
         _histogram = list(_sample.values())[0]
@@ -406,7 +442,9 @@ class TestAutoMonitoring:
 
         # discrete distribution
         feature_data = RegisteredModelVersion._create_discrete_histogram_summary(
-            df, "discrete", labels,
+            df,
+            "discrete",
+            labels,
         )
         _sample = profiler.BinaryHistogramProfiler(["discrete"]).profile(df)
         _histogram = list(_sample.values())[0]
@@ -419,31 +457,39 @@ class TestAutoMonitoring:
 
     @hypothesis.settings(deadline=None)  # building DataFrames can be slow
     @hypothesis.given(
-        df=strategies.dataframes(min_rows=1, min_cols=2),  # pylint: disable=no-value-for-parameter
+        df=strategies.dataframes(
+            min_rows=1, min_cols=2
+        ),  # pylint: disable=no-value-for-parameter
     )
     def test_compute_training_data_profile(self, df):
         """Unit test for helper functions handling DFs of various sizes."""
         in_df, out_df = df.iloc[:, :-1], df.iloc[:, [-1]]
 
         feature_data_list = RegisteredModelVersion._compute_training_data_profile(
-            in_df, out_df,
+            in_df,
+            out_df,
         )
         for feature_data in feature_data_list:
             self.assert_feature_data_correctness(feature_data, in_df, out_df)
 
     @hypothesis.settings(deadline=None)  # building DataFrames can be slow
     @hypothesis.given(
-        df=strategies.dataframes(min_rows=1, min_cols=2),  # pylint: disable=no-value-for-parameter
+        df=strategies.dataframes(
+            min_rows=1, min_cols=2
+        ),  # pylint: disable=no-value-for-parameter
     )
     def test_collect_feature_data_and_vis_attributes(self, df):
         """Unit test that attributes pre-logging are the correct format."""
         in_df, out_df = df.iloc[:, :-1], df.iloc[:, [-1]]
 
         feature_data_list = RegisteredModelVersion._compute_training_data_profile(
-            in_df, out_df,
+            in_df,
+            out_df,
         )
-        feature_data_attrs = RegisteredModelVersion._collect_feature_data_and_vis_attributes(
-            feature_data_list,
+        feature_data_attrs = (
+            RegisteredModelVersion._collect_feature_data_and_vis_attributes(
+                feature_data_list,
+            )
         )
 
         for key, val in feature_data_attrs.items():
@@ -459,7 +505,9 @@ class TestAutoMonitoring:
                     _deployable_entity._TRAINING_DATA_ATTR_PREFIX
                     + RegisteredModelVersion._normalize_attribute_key(sample_key)
                 )
-                assert feature_data_attrs[sample_key] == json.loads(feature_data.content)
+                assert feature_data_attrs[sample_key] == json.loads(
+                    feature_data.content
+                )
 
     def test_profile_training_data(self, model_version):
         """Integration test for logging attributes with correct structure."""
@@ -468,7 +516,7 @@ class TestAutoMonitoring:
 
         cont_col = np.random.random(100)
         discrete_col = np.random.choice(5, 100)
-        string_discrete_col = np.random.choice(['a', 'b', 'c', 'd', 'e'], size=100)
+        string_discrete_col = np.random.choice(["a", "b", "c", "d", "e"], size=100)
         string_freeform_col = [uuid.uuid4().hex.upper()[0:10] for _ in range(100)]
         other_col = [datetime.datetime.now() for x in range(100)]
         output_col = np.random.choice(2, 100)
@@ -485,20 +533,23 @@ class TestAutoMonitoring:
 
         # create dataframes
         df = pd.DataFrame(
-            list(zip(
-                cont_col,
-                discrete_col,
-                string_discrete_col,
-                string_freeform_col,
-                other_col,
-                output_col,
-            )),
+            list(
+                zip(
+                    cont_col,
+                    discrete_col,
+                    string_discrete_col,
+                    string_freeform_col,
+                    other_col,
+                    output_col,
+                )
+            ),
             columns=col_names,
         )
 
         # log to model version with new method
         model_version.log_training_data_profile(
-            df.loc[:, df.columns != "Output_Col"], pd.DataFrame(df["Output_Col"]),
+            df.loc[:, df.columns != "Output_Col"],
+            pd.DataFrame(df["Output_Col"]),
         )
 
         # get back attributes to validate
@@ -515,22 +566,40 @@ class TestAutoMonitoring:
 
         # missing value, distribution summary for each supported column +
         # equal number of attributes for visualization
-        assert(len(attributes.keys()) == len(supported_col_names) * 2 * 2)
-        assert(discrete_col_distribution_summary.summary_type_name == "verta.discreteHistogram.v1")
-        assert(discrete_col_distribution_summary.profiler_name == "BinaryHistogramProfiler")
-        assert(len(json.loads(discrete_col_distribution_summary.content)["discreteHistogram"]["buckets"]) <= 5)
+        assert len(attributes.keys()) == len(supported_col_names) * 2 * 2
+        assert (
+            discrete_col_distribution_summary.summary_type_name
+            == "verta.discreteHistogram.v1"
+        )
+        assert (
+            discrete_col_distribution_summary.profiler_name == "BinaryHistogramProfiler"
+        )
+        assert (
+            len(
+                json.loads(discrete_col_distribution_summary.content)[
+                    "discreteHistogram"
+                ]["buckets"]
+            )
+            <= 5
+        )
 
-        assert(discrete_col_missing_summary.summary_type_name == "verta.discreteHistogram.v1")
-        assert(discrete_col_missing_summary.profiler_name == "MissingValuesProfiler")
-        assert(len(json.loads(discrete_col_missing_summary.content)["discreteHistogram"]["buckets"]) == 2)
+        assert (
+            discrete_col_missing_summary.summary_type_name
+            == "verta.discreteHistogram.v1"
+        )
+        assert discrete_col_missing_summary.profiler_name == "MissingValuesProfiler"
+        assert (
+            len(
+                json.loads(discrete_col_missing_summary.content)["discreteHistogram"][
+                    "buckets"
+                ]
+            )
+            == 2
+        )
 
         # reference distribution attributes can be fetched back as histograms
         for col in supported_col_names:
-            key = (
-                _deployable_entity._TRAINING_DATA_ATTR_PREFIX
-                + col
-                + "Distribution"
-            )
+            key = _deployable_entity._TRAINING_DATA_ATTR_PREFIX + col + "Distribution"
             histogram = model_version.get_attribute(key)
             assert isinstance(histogram, _verta_data_type._VertaDataType)
 
@@ -544,7 +613,7 @@ class TestAutoMonitoring:
         num_rows = 24
         df = pd.DataFrame(
             {
-                in_col: np.random.random(size=num_rows)*10,
+                in_col: np.random.random(size=num_rows) * 10,
                 out_col: range(num_rows),
             },
         )
@@ -558,7 +627,9 @@ class TestAutoMonitoring:
                 feature_data = val
 
                 reference_content = json.loads(feature_data["content"])
-                reference = _verta_data_type._VertaDataType._from_dict(reference_content)
+                reference = _verta_data_type._VertaDataType._from_dict(
+                    reference_content
+                )
 
                 profiler_name = feature_data["profiler_name"]
                 profiler_args = json.loads(feature_data["profiler_parameters"])
@@ -569,7 +640,7 @@ class TestAutoMonitoring:
                 elif isinstance(feature_profiler, profiler.BinaryHistogramProfiler):
                     point = np.random.randint(num_rows)
                 elif isinstance(feature_profiler, profiler.ContinuousHistogramProfiler):
-                    point = np.random.random()*10
+                    point = np.random.random() * 10
                 else:
                     raise TypeError(
                         "this test doesn't support profiler type {}".format(

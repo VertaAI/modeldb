@@ -39,7 +39,9 @@ class TestModelValidator:
         incomplete_verta_models,
     )
     def test_incomplete_verta(self, model):
-        msg_match = r"^model must finish implementing the following methods of VertaModelBase: "
+        msg_match = (
+            r"^model must finish implementing the following methods of VertaModelBase: "
+        )
         msg_match += re.escape(str(list(sorted(model.__abstractmethods__))))
         with pytest.raises(TypeError, match=msg_match):
             model_validator.must_verta(model)

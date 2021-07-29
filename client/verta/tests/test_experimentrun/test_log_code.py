@@ -32,13 +32,15 @@ class TestLogGit:
             code_version = mdb_entity.get_code()
 
             assert isinstance(code_version, dict)
-            assert 'filepaths' in code_version
-            assert len(code_version['filepaths']) == 1
-            assert __file__.endswith(code_version['filepaths'][0])
+            assert "filepaths" in code_version
+            assert len(code_version["filepaths"]) == 1
+            assert __file__.endswith(code_version["filepaths"][0])
 
-            assert code_version['repo_url'] == _git_utils.get_git_remote_url()
-            assert code_version['commit_hash'] == _git_utils.get_git_commit_hash("HEAD")
-            assert code_version['is_dirty'] == _git_utils.get_git_commit_dirtiness("HEAD")
+            assert code_version["repo_url"] == _git_utils.get_git_remote_url()
+            assert code_version["commit_hash"] == _git_utils.get_git_commit_hash("HEAD")
+            assert code_version["is_dirty"] == _git_utils.get_git_commit_dirtiness(
+                "HEAD"
+            )
 
     def test_log_git_failure(self, client):
         """git mode fails outside git repo"""
@@ -47,7 +49,7 @@ class TestLogGit:
         for mdb_entity in (client.set_experiment_run(),):
             mdb_entity._conf.use_git = True
 
-            with utils.chdir('/'):  # assuming the tester's root isn't a git repo
+            with utils.chdir("/"):  # assuming the tester's root isn't a git repo
                 mdb_entity.log_code()
 
             with pytest.raises(RuntimeError):
@@ -64,13 +66,15 @@ class TestLogGit:
             code_version = mdb_entity.get_code()
 
             assert isinstance(code_version, dict)
-            assert 'filepaths' in code_version
-            assert len(code_version['filepaths']) == 1
-            assert os.path.abspath("conftest.py").endswith(code_version['filepaths'][0])
+            assert "filepaths" in code_version
+            assert len(code_version["filepaths"]) == 1
+            assert os.path.abspath("conftest.py").endswith(code_version["filepaths"][0])
 
-            assert code_version['repo_url'] == _git_utils.get_git_remote_url()
-            assert code_version['commit_hash'] == _git_utils.get_git_commit_hash("HEAD")
-            assert code_version['is_dirty'] == _git_utils.get_git_commit_dirtiness("HEAD")
+            assert code_version["repo_url"] == _git_utils.get_git_remote_url()
+            assert code_version["commit_hash"] == _git_utils.get_git_commit_hash("HEAD")
+            assert code_version["is_dirty"] == _git_utils.get_git_commit_dirtiness(
+                "HEAD"
+            )
 
     @pytest.mark.parametrize(
         ("exec_path", "repo_url", "commit_hash", "is_dirty"),
@@ -83,25 +87,29 @@ class TestLogGit:
             (None, None, None, False),
         ],
     )
-    def test_no_autocapture(self, experiment_run, exec_path, repo_url, commit_hash, is_dirty):
+    def test_no_autocapture(
+        self, experiment_run, exec_path, repo_url, commit_hash, is_dirty
+    ):
         experiment_run._conf.use_git = True
 
         experiment_run.log_code(
             exec_path=exec_path,
-            repo_url=repo_url, commit_hash=commit_hash, is_dirty=is_dirty,
+            repo_url=repo_url,
+            commit_hash=commit_hash,
+            is_dirty=is_dirty,
             autocapture=False,
         )
         code_version = experiment_run.get_code()
 
         assert isinstance(code_version, dict)
         if exec_path:
-            assert len(code_version['filepaths']) == 1
-            assert code_version['filepaths'][0] == exec_path
+            assert len(code_version["filepaths"]) == 1
+            assert code_version["filepaths"][0] == exec_path
         else:
-            assert not code_version.get('filepaths')
-        assert code_version.get('repo_url') == repo_url
-        assert code_version.get('commit_hash') == commit_hash
-        assert code_version.get('is_dirty') == is_dirty
+            assert not code_version.get("filepaths")
+        assert code_version.get("repo_url") == repo_url
+        assert code_version.get("commit_hash") == commit_hash
+        assert code_version.get("is_dirty") == is_dirty
 
 
 class TestLogSource:
@@ -118,7 +126,7 @@ class TestLogSource:
             assert isinstance(zipf, zipfile.ZipFile)
             assert len(zipf.namelist()) == 1
             assert __file__.endswith(zipf.namelist()[0])
-            assert open(__file__, 'rb').read() == zipf.open(zipf.infolist()[0]).read()
+            assert open(__file__, "rb").read() == zipf.open(zipf.infolist()[0]).read()
 
     def test_log_script_provide_path(self, client):
         client.set_project()
@@ -132,7 +140,9 @@ class TestLogSource:
             assert isinstance(zipf, zipfile.ZipFile)
             assert len(zipf.namelist()) == 1
             assert os.path.abspath("conftest.py").endswith(zipf.namelist()[0])
-            assert open("conftest.py", 'rb').read() == zipf.open(zipf.infolist()[0]).read()
+            assert (
+                open("conftest.py", "rb").read() == zipf.open(zipf.infolist()[0]).read()
+            )
 
     def test_no_autocapture_error(self, experiment_run):
         experiment_run._conf.use_git = False
@@ -210,7 +220,7 @@ class TestOverwrite:
         assert isinstance(zipf, zipfile.ZipFile)
         assert len(zipf.namelist()) == 1
         assert __file__.endswith(zipf.namelist()[0])
-        assert open(__file__, 'rb').read() == zipf.open(zipf.infolist()[0]).read()
+        assert open(__file__, "rb").read() == zipf.open(zipf.infolist()[0]).read()
 
     @pytest.mark.skipif(not IN_GIT_REPO, reason="not in git repo")
     def test_log_git_then_source(self, experiment_run):
@@ -224,7 +234,7 @@ class TestOverwrite:
         assert isinstance(zipf, zipfile.ZipFile)
         assert len(zipf.namelist()) == 1
         assert __file__.endswith(zipf.namelist()[0])
-        assert open(__file__, 'rb').read() == zipf.open(zipf.infolist()[0]).read()
+        assert open(__file__, "rb").read() == zipf.open(zipf.infolist()[0]).read()
 
     @pytest.mark.skipif(not IN_GIT_REPO, reason="not in git repo")
     def test_log_source_then_git(self, experiment_run):
@@ -236,9 +246,9 @@ class TestOverwrite:
         code_version = experiment_run.get_code()
 
         assert isinstance(code_version, dict)
-        assert 'filepaths' in code_version
-        assert len(code_version['filepaths']) == 1
-        assert __file__.endswith(code_version['filepaths'][0])
+        assert "filepaths" in code_version
+        assert len(code_version["filepaths"]) == 1
+        assert __file__.endswith(code_version["filepaths"][0])
 
     def test_proj_error(self, client):
         client._conf.use_git = False

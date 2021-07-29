@@ -18,6 +18,7 @@ class TestArtifacts:
         np = pytest.importorskip("numpy")
         pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
+
         key = "coef"
 
         classifier = LogisticRegression()
@@ -48,7 +49,7 @@ class TestArtifacts:
     def test_add_artifact_file(self, model_version, in_tempdir, random_data):
         filename = "tiny1.bin"
         FILE_CONTENTS = random_data
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             f.write(FILE_CONTENTS)
         model_version.log_artifact("file", filename)
 
@@ -63,7 +64,7 @@ class TestArtifacts:
         FILE_CONTENTS = random_data
 
         # create file and upload as artifact
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             f.write(FILE_CONTENTS)
         model_version.log_artifact(key, filename)
         os.remove(filename)
@@ -71,14 +72,14 @@ class TestArtifacts:
         # download artifact and verify contents
         new_filepath = model_version.download_artifact(key, new_filename)
         assert new_filepath == os.path.abspath(new_filename)
-        with open(new_filepath, 'rb') as f:
+        with open(new_filepath, "rb") as f:
             assert f.read() == FILE_CONTENTS
 
         # object as well
-        obj = {'some': ["arbitrary", "object"]}
+        obj = {"some": ["arbitrary", "object"]}
         model_version.log_artifact(key, obj, overwrite=True)
         new_filepath = model_version.download_artifact(key, new_filename)
-        with open(new_filepath, 'rb') as f:
+        with open(new_filepath, "rb") as f:
             assert pickle.load(f) == obj
 
     def test_download_directory(self, model_version, strs, dir_and_files, in_tempdir):
@@ -106,12 +107,18 @@ class TestArtifacts:
         with pytest.raises(ValueError) as excinfo:
             model_version.log_artifact("model", np.random.random((36, 12)))
 
-        assert "the key \"model\" is reserved for model; consider using log_model() instead" in str(excinfo.value)
+        assert (
+            'the key "model" is reserved for model; consider using log_model() instead'
+            in str(excinfo.value)
+        )
 
         with pytest.raises(ValueError) as excinfo:
             model_version.del_artifact("model")
 
-        assert "model can't be deleted through del_artifact(); consider using del_model() instead" in str(excinfo.value)
+        assert (
+            "model can't be deleted through del_artifact(); consider using del_model() instead"
+            in str(excinfo.value)
+        )
 
     def test_del_artifact(self, registered_model):
         np = pytest.importorskip("numpy")
@@ -148,10 +155,10 @@ class TestArtifacts:
         model_version = registered_model.get_version(id=model_version.id)
         assert model_version.has_model
         model_version.del_model()
-        assert (not model_version.has_model)
+        assert not model_version.has_model
 
         model_version = registered_model.get_version(id=model_version.id)
-        assert (not model_version.has_model)
+        assert not model_version.has_model
 
     @pytest.mark.skip(reason="not implemented (see TODO in log_artifact())")
     def test_blocklisted_key_error(self, model_version):

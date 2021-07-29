@@ -30,8 +30,10 @@ class TestFind:
             assert item._msg == model_version._msg
 
         tag_name = name + "_tag"
-        versions = {name + "1": registered_model.get_or_create_version(name + "1"),
-                    name + "2": registered_model.get_or_create_version(name + "2")}
+        versions = {
+            name + "1": registered_model.get_or_create_version(name + "1"),
+            name + "2": registered_model.get_or_create_version(name + "2"),
+        }
         versions[name + "1"].add_label(tag_name)
         versions[name + "2"].add_label(tag_name)
         versions[name + "2"].add_label("label2")
@@ -39,7 +41,9 @@ class TestFind:
         for version in versions:
             versions[version] = registered_model.get_version(version)
 
-        find_result = registered_model.versions.find(["labels == \"{}\"".format(tag_name)])
+        find_result = registered_model.versions.find(
+            ['labels == "{}"'.format(tag_name)]
+        )
         assert len(find_result) == 2
         for item in find_result:
             assert versions[item._msg.version]

@@ -38,8 +38,10 @@ class TestCRUD:
         model_version = registered_model.get_or_create_version()
         retrieved_model_version = registered_model.get_version(id=model_version.id)
         assert model_version.id == retrieved_model_version.id
-        with pytest.warns(UserWarning, match='.*already exists.*'):
-            registered_model.get_or_create_version(id=model_version.id, desc="new description")
+        with pytest.warns(UserWarning, match=".*already exists.*"):
+            registered_model.get_or_create_version(
+                id=model_version.id, desc="new description"
+            )
 
     def test_repr(self, model_version):
         model_version.add_labels(["tag1", "tag2"])
@@ -68,7 +70,9 @@ class TestCRUD:
         created_entities.append(registered_model)
         model_version = registered_model.get_or_create_version(name="my version")
 
-        retrieved_model_version_by_id = client.get_registered_model_version(model_version.id)
+        retrieved_model_version_by_id = client.get_registered_model_version(
+            model_version.id
+        )
 
         assert retrieved_model_version_by_id.id == model_version.id
 
@@ -99,7 +103,7 @@ class TestCRUD:
 
     @pytest.mark.skip(reason="functionality postponed in Client")
     def test_archive(self, model_version):
-        assert (not model_version.is_archived)
+        assert not model_version.is_archived
 
         model_version.archive()
         assert model_version.is_archived
@@ -112,7 +116,9 @@ class TestCRUD:
     def test_clear_cache(self, registered_model):
         # Multiple log_artifacts calls, which would potentially fail without clear_cache
         model_version = registered_model.get_or_create_version(name="my version")
-        model_version_2 = registered_model.get_version(id=model_version.id) # same version object
+        model_version_2 = registered_model.get_version(
+            id=model_version.id
+        )  # same version object
 
         np = pytest.importorskip("numpy")
         artifact = np.random.random((36, 12))
@@ -121,7 +127,9 @@ class TestCRUD:
             model_version.log_artifact("artifact_{}".format(2 * i), artifact)
             model_version_2.log_artifact("artifact_{}".format(2 * i + 1), artifact)
 
-        model_version = registered_model.get_version(id=model_version.id) # re-retrieve the version
+        model_version = registered_model.get_version(
+            id=model_version.id
+        )  # re-retrieve the version
         assert len(model_version._msg.artifacts) == 4
 
     def test_attributes(self, client, registered_model):
@@ -137,12 +145,13 @@ class TestCRUD:
         model_version.add_attribute("int-attr", 15)
         assert model_version.get_attribute("int-attr") == 15
 
-        model_version.add_attributes({"int-attr": 16, "float-attr": 123.}, overwrite=True)
-        assert model_version.get_attributes() == {"int-attr": 16, "float-attr": 123.}
+        model_version.add_attributes(
+            {"int-attr": 16, "float-attr": 123.0}, overwrite=True
+        )
+        assert model_version.get_attributes() == {"int-attr": 16, "float-attr": 123.0}
         # Test deleting:
-        model_version.del_attribute('int-attr')
-        assert model_version.get_attributes() == {"float-attr": 123.}
-
+        model_version.del_attribute("int-attr")
+        assert model_version.get_attributes() == {"float-attr": 123.0}
 
         # Deleting non-existing key:
         model_version.del_attribute("non-existing")
@@ -172,8 +181,8 @@ class TestCRUD:
     def test_patch(self, registered_model):
         NAME = "name"
         DESCRIPTION = "description"
-        LABELS = ['label']
-        ATTRIBUTES = {'attribute': 3}
+        LABELS = ["label"]
+        ATTRIBUTES = {"attribute": 3}
 
         version = registered_model.create_version(NAME)
 
@@ -198,7 +207,9 @@ class TestLockLevels:
 
     @pytest.mark.parametrize("lock_level", (lock.Open(), lock.Redact(), lock.Closed()))
     def test_creation_from_run(self, registered_model, experiment_run, lock_level):
-        model_ver = registered_model.create_version_from_run(experiment_run.id, lock_level=lock_level)
+        model_ver = registered_model.create_version_from_run(
+            experiment_run.id, lock_level=lock_level
+        )
         assert model_ver._msg.lock_level == lock_level._as_proto()
         assert isinstance(model_ver.get_lock_level(), lock_level.__class__)
 
