@@ -9,6 +9,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/field_mask.proto";
 import "common/CommonService.proto";
 import "modeldb/versioning/Environment.proto";
+import "modeldb/versioning/Code.proto";
 import "registry/StageService.proto";
 import "uac/Collaborator.proto";
 
@@ -193,7 +194,7 @@ message ModelVersion {
     ModelVersionLockLevelEnum.ModelVersionLockLevel lock_level = 19;
 
     repeated common.Artifact datasets = 20;
-    map<string, common.CodeVersion> code_version_from_blob = 21;
+    map<string, modeldb.versioning.CodeBlob> code_blob_map = 21;
 }
 
 message SetLockModelVersionRequest {
@@ -319,9 +320,9 @@ message LogDatasetsInModelVersion {
     message Response { }
 }
 
-message LogCodeVersionFromBlobInModelVersion {
+message LogCodeBlobInModelVersion {
     uint64 model_version_id = 1;
-    map<string, common.CodeVersion> code_version_from_blob = 2;
+    map<string, modeldb.versioning.CodeBlob> code_blob_map = 2;
 
     message Response { }
 }
@@ -526,9 +527,9 @@ service RegistryService {
         };
     };
 
-    rpc logCodeVersionFromBlobInModelVersion(LogCodeVersionFromBlobInModelVersion) returns (LogCodeVersionFromBlobInModelVersion.Response) {
-        option (google.api.http) = {
-            post: "/v1/registry/model_versions/{model_version_id}/logCodeVersionFromBlob"
+    rpc logCodeBlobInModelVersion(LogCodeBlobInModelVersion) returns (LogCodeBlobInModelVersion.Response) {
+       option (google.api.http) = {
+            post: "/v1/registry/model_versions/{model_version_id}/logCodeBlobInModelVersion"
             body: "*"
         };
     };
