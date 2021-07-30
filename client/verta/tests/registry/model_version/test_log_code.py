@@ -22,7 +22,7 @@ class TestLogCode:
             autocapture=False,
         )
         version3 = Notebook(
-            "Spam-Detection.ipynb",
+            "conftest.py",  # not a notebook, but fine for testing
             _autocapture=False,
         )
 
