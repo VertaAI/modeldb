@@ -1511,15 +1511,15 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                     " not {}".format(type(code_version))
                 )
 
-        msg = _RegistryService.LogCodeVersionFromBlobInModelVersion(
+        msg = _RegistryService.LogCodeBlobInModelVersion(
             model_version_id=self.id,
-            code_version_from_blob={
+            code_blob_map={
                 key: code_version._as_proto.code
                 for key, code_version
                 in code_versions.items()
             },
         )
-        endpoint = "/api/v1/registry/model_versions/{}/logCodeVersionFromBlob".format(
+        endpoint = "/api/v1/registry/model_versions/{}/logCodeBlobInModelVersion".format(
             self.id,
         )
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
@@ -1587,7 +1587,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._refresh_cache()
 
         code_versions = dict()
-        for key, code_blob in self._msg.code_version_from_blob.items():
+        for key, code_blob in self._msg.code_blob_map.items():
             # create wrapper blob msg so we can reuse the blob system's proto-to-obj
             blob = _VersioningService.Blob()
             blob.code.CopyFrom(code_blob)
