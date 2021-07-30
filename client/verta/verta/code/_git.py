@@ -52,14 +52,29 @@ class Git(_code._Code):
     .. code-block:: python
 
         from verta.code import Git
-        code1 = Git()
-        code2 = Git(
+
+        Git()
+        # Git Version
+        #     commit d08cdf77efa4ba99199fabdc8dad8fc638f7d6f3
+        #     on branch main
+        #     with tag client-v0.18.2
+        #     in repo git@github.com:VertaAI/modeldb.git
+
+        Git(
             repo_url="git@github.com:VertaAI/modeldb.git",
-            tag="client-v0.14.0",
+            tag="client-v0.18.0",
         )
-        code3 = Git(
-            commit_hash="e4e0675",
+        # Git Version
+        #     dirty commit 26f9787d6df1fb68c26bb8d5f6d7e23a79db1aa2
+        #     with tag client-v0.18.0
+        #     in repo git@github.com:VertaAI/modeldb.git
+
+        Git(
+            commit_hash="46e8f49",
         )
+        # Git Version
+        #     dirty commit 46e8f49946a7a97a7413e9fc3d31907980f70474
+        #     in repo git@github.com:VertaAI/modeldb.git
 
     """
     def __init__(self, repo_url=None, branch=None, tag=None, commit_hash=None, is_dirty=None, autocapture=True, _autocapture=True):
