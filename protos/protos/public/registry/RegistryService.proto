@@ -320,9 +320,9 @@ message LogDatasetsInModelVersion {
     message Response { }
 }
 
-message LogCodeVersionFromBlobInModelVersion {
+message LogCodeBlobInModelVersion {
     uint64 model_version_id = 1;
-    map<string, common.CodeVersion> code_version_from_blob = 2;
+    map<string, modeldb.versioning.CodeBlob> code_blob_map = 2;
 
     message Response { }
 }
@@ -527,9 +527,9 @@ service RegistryService {
         };
     };
 
-    rpc logCodeVersionFromBlobInModelVersion(LogCodeVersionFromBlobInModelVersion) returns (LogCodeVersionFromBlobInModelVersion.Response) {
-        option (google.api.http) = {
-            post: "/v1/registry/model_versions/{model_version_id}/logCodeVersionFromBlob"
+    rpc logCodeBlobInModelVersion(LogCodeBlobInModelVersion) returns (LogCodeBlobInModelVersion.Response) {
+       option (google.api.http) = {
+            post: "/v1/registry/model_versions/{model_version_id}/logCodeBlobInModelVersion"
             body: "*"
         };
     };
