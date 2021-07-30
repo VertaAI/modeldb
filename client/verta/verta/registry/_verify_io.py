@@ -15,6 +15,7 @@ _ALLOWED_INPUT_TYPES = {
 } | set(six.string_types) | set(six.integer_types)
 _ALLOWED_OUTPUT_TYPES = _ALLOWED_INPUT_TYPES | {tuple}
 
+# for use like: `if getattr(model.predict, _DECORATEE_ATTR, False)`
 _DECORATEE_ATTR = "_verta_verify_io"
 
 
