@@ -1514,7 +1514,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         msg = _RegistryService.LogCodeBlobInModelVersion(
             model_version_id=self.id,
             code_blob_map={
-                key: code_version._as_proto.code
+                key: code_version._as_proto().code
                 for key, code_version
                 in code_versions.items()
             },
@@ -1556,10 +1556,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         try:
             return code_versions[key]
         except KeyError:
-            six.raise_from(
-                KeyError("no code version found with key {}".format(key)),
-                None,
-            )
+            raise KeyError("no code version found with key {}".format(key))
 
     def get_code_versions(self):
         """Get all code version snapshots.
