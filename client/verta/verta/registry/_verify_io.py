@@ -15,6 +15,8 @@ _ALLOWED_INPUT_TYPES = {
 } | set(six.string_types) | set(six.integer_types)
 _ALLOWED_OUTPUT_TYPES = _ALLOWED_INPUT_TYPES | {tuple}
 
+_DECORATEE_ATTR = "_verta_verify_io"
+
 
 def verify_io(f):
     """Decorator to typecheck I/O serializability within the Verta platform.
@@ -40,6 +42,8 @@ def verify_io(f):
         output = f(input)
         _check_compatible_output(output)
         return output
+
+    setattr(f, _DECORATEE_ATTR, True)
     return wrapper
 
 
