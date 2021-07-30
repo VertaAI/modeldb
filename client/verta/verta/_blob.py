@@ -9,6 +9,18 @@ from verta.external import six
 
 @six.add_metaclass(abc.ABCMeta)
 class Blob(object):
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self._as_proto() == other._as_proto()
+
+    def __ne__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return not self.__eq__(other)
+
     @classmethod
     @abc.abstractmethod
     def _from_proto(cls, blob_msg):

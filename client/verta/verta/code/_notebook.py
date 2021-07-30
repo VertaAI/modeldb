@@ -27,7 +27,8 @@ class Notebook(_code._Code):
     notebook_path : str, optional
         Filepath of the Jupyter Notebook. If not provided, it will automatically be determined.
     _autocapture : bool, default True
-        Whether to enable the automatic capturing behavior of parameters above.
+        Whether to automatically capture the above parameters by reading the
+        local environment where this code is being executed.
 
     Raises
     ------
@@ -39,8 +40,28 @@ class Notebook(_code._Code):
     .. code-block:: python
 
         from verta.code import Notebook
-        code1 = Notebook()
-        code2 = Notebook("Spam-Detection.ipynb")
+
+        Notebook()
+        # Notebook Version
+        #     deployment/sklearn/sklearn-census-end-to-end.ipynb
+        #         11513 bytes
+        #         last modified: 2021-07-30 09:50:17.344000
+        #         MD5 checksum: 0cc9939f0625e430917950256a768f17
+        #     Git Version
+        #         commit 87084c33d12d281420db7769a9fc2cff28051fba
+        #         on branch main
+        #         in repo git@github.com:VertaAI/examples.git
+
+        Notebook("../spacy/text-classification-spacy.ipynb")
+        # Notebook Version
+        #     deployment/spacy/text-classification-spacy.ipynb
+        #         15273 bytes
+        #         last modified: 2021-07-30 09:45:26.768000
+        #         MD5 checksum: 491b0367a178c394d3a276865757b29a
+        #     Git Version
+        #         commit 87084c33d12d281420db7769a9fc2cff28051fba
+        #         on branch main
+        #         in repo git@github.com:VertaAI/examples.git
 
     """
     def __init__(self, notebook_path=None, _autocapture=True):
