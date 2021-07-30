@@ -1511,20 +1511,15 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                     " not {}".format(type(code_version))
                 )
 
-        msg = _RegistryService.LogCodeBlobInModelVersion(
-            model_version_id=self.id,
-            code_blob_map={
-                key: code_version._as_proto().code
-                for key, code_version
-                in code_versions.items()
-            },
+        self._update(
+            self.ModelVersionMessage(
+                code_blob_map={
+                    key: code_version._as_proto().code
+                    for key, code_version
+                    in code_versions.items()
+                },
+            )
         )
-        endpoint = "/api/v1/registry/model_versions/{}/logCodeBlobInModelVersion".format(
-            self.id,
-        )
-        response = self._conn.make_proto_request("POST", endpoint, body=msg)
-        self._conn.must_response(response)
-        self._clear_cache()
 
     def get_code_version(self, key):
         """Get a code version snapshot.
