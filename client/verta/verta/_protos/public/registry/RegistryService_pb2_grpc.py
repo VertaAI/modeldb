@@ -99,10 +99,10 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.Response.FromString,
         )
-    self.logCodeVersionFromBlobInModelVersion = channel.unary_unary(
-        '/ai.verta.registry.RegistryService/logCodeVersionFromBlobInModelVersion',
-        request_serializer=registry_dot_RegistryService__pb2.LogCodeVersionFromBlobInModelVersion.SerializeToString,
-        response_deserializer=registry_dot_RegistryService__pb2.LogCodeVersionFromBlobInModelVersion.Response.FromString,
+    self.logCodeBlobInModelVersion = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/logCodeBlobInModelVersion',
+        request_serializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.Response.FromString,
         )
     self.logAttributesInModelVersion = channel.unary_unary(
         '/ai.verta.registry.RegistryService/logAttributesInModelVersion',
@@ -234,7 +234,7 @@ class RegistryServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def logCodeVersionFromBlobInModelVersion(self, request, context):
+  def logCodeBlobInModelVersion(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -336,10 +336,10 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           request_deserializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.FromString,
           response_serializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.Response.SerializeToString,
       ),
-      'logCodeVersionFromBlobInModelVersion': grpc.unary_unary_rpc_method_handler(
-          servicer.logCodeVersionFromBlobInModelVersion,
-          request_deserializer=registry_dot_RegistryService__pb2.LogCodeVersionFromBlobInModelVersion.FromString,
-          response_serializer=registry_dot_RegistryService__pb2.LogCodeVersionFromBlobInModelVersion.Response.SerializeToString,
+      'logCodeBlobInModelVersion': grpc.unary_unary_rpc_method_handler(
+          servicer.logCodeBlobInModelVersion,
+          request_deserializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.Response.SerializeToString,
       ),
       'logAttributesInModelVersion': grpc.unary_unary_rpc_method_handler(
           servicer.logAttributesInModelVersion,

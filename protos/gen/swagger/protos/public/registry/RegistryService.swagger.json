@@ -388,14 +388,14 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/logCodeVersionFromBlob": {
+    "/registry/model_versions/{model_version_id}/logCodeBlobInModelVersion": {
       "post": {
-        "operationId": "RegistryService_logCodeVersionFromBlobInModelVersion",
+        "operationId": "RegistryService_logCodeBlobInModelVersion",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryLogCodeVersionFromBlobInModelVersionResponse"
+              "$ref": "#/definitions/registryLogCodeBlobInModelVersionResponse"
             }
           },
           "default": {
@@ -418,7 +418,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryLogCodeVersionFromBlobInModelVersion"
+              "$ref": "#/definitions/registryLogCodeBlobInModelVersion"
             }
           }
         ],
@@ -1837,42 +1837,6 @@
         }
       }
     },
-    "commonCodeVersion": {
-      "type": "object",
-      "properties": {
-        "git_snapshot": {
-          "$ref": "#/definitions/commonGitSnapshot"
-        },
-        "code_archive": {
-          "$ref": "#/definitions/commonArtifact"
-        },
-        "date_logged": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "title": "code version"
-    },
-    "commonGitSnapshot": {
-      "type": "object",
-      "properties": {
-        "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "repo": {
-          "type": "string"
-        },
-        "hash": {
-          "type": "string"
-        },
-        "is_dirty": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        }
-      }
-    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -2167,22 +2131,22 @@
     "registryLogAttributesInModelVersionResponse": {
       "type": "object"
     },
-    "registryLogCodeVersionFromBlobInModelVersion": {
+    "registryLogCodeBlobInModelVersion": {
       "type": "object",
       "properties": {
         "model_version_id": {
           "type": "string",
           "format": "uint64"
         },
-        "code_version_from_blob": {
+        "code_blob_map": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/commonCodeVersion"
+            "$ref": "#/definitions/versioningCodeBlob"
           }
         }
       }
     },
-    "registryLogCodeVersionFromBlobInModelVersionResponse": {
+    "registryLogCodeBlobInModelVersionResponse": {
       "type": "object"
     },
     "registryLogDatasetsInModelVersion": {
