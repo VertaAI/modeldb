@@ -44,26 +44,35 @@ def verify_io(f):
 
 
 def _check_compatible_input(input):
-    input_type = type(input)
-    if input_type == dict:
-        for key, val in six.iteritems(input):
-            _check_compatible_input(key)
-            _check_compatible_input(val)
-    elif input_type == list:
-        for el in input:
-            _check_compatible_input(el)
-    elif input_type not in _ALLOWED_INPUT_TYPES:
-        raise TypeError("input must be one of types {}, not {}".format(_ALLOWED_INPUT_TYPES, input_type))
+    _check_compatible_value_helper(
+        value=input,
+        value_name="input",
+        allowed_types=_ALLOWED_INPUT_TYPES,
+    )
 
 
 def _check_compatible_output(output):
-    input_type = type(output)
+    _check_compatible_value_helper(
+        value=output,
+        value_name="output",
+        allowed_types=_ALLOWED_OUTPUT_TYPES,
+    )
+
+
+def _check_compatible_value_helper(value, value_name, allowed_types):
+    input_type = type(value)
     if input_type == dict:
-        for key, val in six.iteritems(output):
-            _check_compatible_output(key)
-            _check_compatible_output(val)
+        for key, val in six.iteritems(value):
+            _check_compatible_value_helper(key, value_name, allowed_types)
+            _check_compatible_value_helper(val, value_name, allowed_types)
     elif input_type == list:
-        for el in output:
-            _check_compatible_output(el)
-    elif input_type not in _ALLOWED_OUTPUT_TYPES:
-        raise TypeError("output must be one of types {}, not {}".format(_ALLOWED_OUTPUT_TYPES, input_type))
+        for el in value:
+            _check_compatible_value_helper(el, value_name, allowed_types)
+    elif input_type not in allowed_types:
+        raise TypeError(
+            "{} must be one of types {}, but found {}".format(
+                value_name,
+                allowed_types,
+                input_type,
+            )
+        )
