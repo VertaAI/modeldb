@@ -179,6 +179,7 @@ message UpdateAlertRequest {
 }
 
 message FindAlertRequest {
+    reserved 11; // Field removed
     repeated uint64 ids = 1;
     repeated string names = 2;
     repeated uint64 monitored_entity_ids = 3;
