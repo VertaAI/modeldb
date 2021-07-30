@@ -64,6 +64,7 @@ def _check_compatible_output(output):
     )
 
 
+# TODO: determine whether simply trying ``json.dumps()`` would work
 def _check_compatible_value_helper(value, value_name, allowed_types):
     input_type = type(value)
     if input_type == dict:
