@@ -39,6 +39,8 @@ class _PaginatedIterable(object):
     # number of items to fetch per back end call in __iter__()
     _ITER_PAGE_LIMIT = 100
 
+    # TODO: set _msg in an abstract class property, so subclasses don't have
+    #       to awkwardly override __init__() with different params
     def __init__(self, conn, conf, msg):
         self._conn = conn
         self._conf = conf
