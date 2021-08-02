@@ -10,22 +10,24 @@ from verta._internal_utils import _utils
 
 
 @six.add_metaclass(abc.ABCMeta)
-class _LazyList(object):
+class _PaginatedIterable(object):
+    """
+    Iterable base class for Verta entites.
+
+    Supports:
+    - indexing
+    - paginated iteration.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        pass
+
+    """
+
     # number of items to fetch per back end call in __iter__()
     _ITER_PAGE_LIMIT = 100
-
-    _OP_MAP = {'~=': _CommonCommonService.OperatorEnum.CONTAIN,
-               '==': _CommonCommonService.OperatorEnum.EQ,
-               '!=': _CommonCommonService.OperatorEnum.NE,
-               '>':  _CommonCommonService.OperatorEnum.GT,
-               '>=': _CommonCommonService.OperatorEnum.GTE,
-               '<':  _CommonCommonService.OperatorEnum.LT,
-               '<=': _CommonCommonService.OperatorEnum.LTE}
-    _OP_PATTERN = re.compile(r" ({}) ".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=len, reverse=True))))
-
-    # keys that yield predictable, sensible results
-    # TODO: make this attr an abstract property
-    _VALID_QUERY_KEYS = None  # NOTE: must be overridden by subclasses
 
     def __init__(self, conn, conf, msg):
         self._conn = conn
@@ -101,6 +103,63 @@ class _LazyList(object):
     def _create_element(self, msg):
         """Instantiate element to return to user."""
         raise NotImplementedError
+
+    def set_page_limit(self, limit):
+        """
+        Sets the number of entities to fetch per backend call during iteration.
+
+        By default, each call fetches a batch of 100 entities, but lowering
+        this value may be useful for substantially larger responses.
+
+        Parameters
+        ----------
+        limit : int
+            Number of entities to fetch per call.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            runs = proj.expt_runs
+            runs.set_page_limit(10)
+            for run in runs:  # fetches 10 runs per backend call
+                print(run.get_metric("accuracy"))
+
+        """
+        if not isinstance(limit, six.integer_types):
+            raise TypeError("`limit` must be int, not {}".format(type(limit)))
+
+        self.limit = limit
+
+    def _set_page_limit(self, msg, param):
+        msg.page_limit = param
+        return msg
+
+    def _set_page_number(self, msg, param):
+        msg.page_number = param
+        return msg
+
+    def _page_limit(self, msg):
+        return msg.page_limit
+
+    def _page_number(self, msg):
+        return msg.page_number
+
+
+@six.add_metaclass(abc.ABCMeta)
+class _LazyList(_PaginatedIterable):
+    _OP_MAP = {'~=': _CommonCommonService.OperatorEnum.CONTAIN,
+               '==': _CommonCommonService.OperatorEnum.EQ,
+               '!=': _CommonCommonService.OperatorEnum.NE,
+               '>':  _CommonCommonService.OperatorEnum.GT,
+               '>=': _CommonCommonService.OperatorEnum.GTE,
+               '<':  _CommonCommonService.OperatorEnum.LT,
+               '<=': _CommonCommonService.OperatorEnum.LTE}
+    _OP_PATTERN = re.compile(r" ({}) ".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=len, reverse=True))))
+
+    # keys that yield predictable, sensible results
+    # TODO: make this attr an abstract static method
+    _VALID_QUERY_KEYS = dict()  # NOTE: must be overridden by subclasses
 
     def find(self, *args):
         """
@@ -209,44 +268,3 @@ class _LazyList(object):
         new_list._msg.ascending = not descending
 
         return new_list
-
-    def set_page_limit(self, limit):
-        """
-        Sets the number of entities to fetch per backend call during iteration.
-
-        By default, each call fetches a batch of 100 entities, but lowering
-        this value may be useful for substantially larger responses.
-
-        Parameters
-        ----------
-        limit : int
-            Number of entities to fetch per call.
-
-        Examples
-        --------
-        .. code-block:: python
-
-            runs = proj.expt_runs
-            runs.set_page_limit(10)
-            for run in runs:  # fetches 10 runs per backend call
-                print(run.get_metric("accuracy"))
-
-        """
-        if not isinstance(limit, six.integer_types):
-            raise TypeError("`limit` must be int, not {}".format(type(limit)))
-
-        self.limit = limit
-
-    def _set_page_limit(self, msg, param):
-        msg.page_limit = param
-        return msg
-
-    def _set_page_number(self, msg, param):
-        msg.page_number = param
-        return msg
-
-    def _page_limit(self, msg):
-        return msg.page_limit
-
-    def _page_number(self, msg):
-        return msg.page_number

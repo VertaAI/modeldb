@@ -4,10 +4,10 @@
 
 from verta._internal_utils import documentation
 
-from ._lazy_list import _LazyList
+from ._lazy_list import _PaginatedIterable, _LazyList
 
 
 documentation.reassign_module(
-    [_LazyList],
+    [_PaginatedIterable, _LazyList],
     module_name=__name__,
 )
