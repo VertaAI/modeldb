@@ -3,6 +3,8 @@
 import warnings
 
 from verta._protos.public.monitoring import Alert_pb2 as _AlertService
+
+from verta._bases import _PaginatedIterable
 from verta._internal_utils import arg_handler, time_utils
 from verta.tracking import _Context
 from verta.tracking.entities import _entity
@@ -576,20 +578,11 @@ class Alerts(object):
 
         Returns
         -------
-        list of :class:`Alert`
+        iterable of :class:`Alert`
             Alerts.
 
         """
-        msg = _AlertService.FindAlertRequest(
-            page_number=1,
-            page_limit=-1,
-        )
-        if self._monitored_entity_id is not None:
-            msg.monitored_entity_ids.append(self._monitored_entity_id)
-        endpoint = "/api/v1/alerts/findAlert"
-        response = self._conn.make_proto_request("POST", endpoint, body=msg)
-        alerts = self._conn.must_proto_response(response, msg.Response).alerts
-        return [Alert(self._conn, self._conf, alert) for alert in alerts]
+        return AlertPaginatedIterable(self._conn, self._conf)
 
     def delete(self, alerts):
         """
@@ -617,6 +610,28 @@ class Alerts(object):
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
         self._conn.must_response(response)
         return True
+
+
+class AlertPaginatedIterable(_PaginatedIterable):
+
+    def __init__(self, conn, conf):
+        super(AlertPaginatedIterable, self).__init__(
+            conn,
+            conf,
+            _AlertService.FindAlertRequest(),
+        )
+
+    def __repr__(self):
+        return "<{} alerts>".format(len(self))
+
+    def _call_back_end(self, msg):
+        endpoint = "/api/v1/alerts/findAlert"
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        response = self._conn.must_proto_response(response, msg.Response)
+        return response.alerts, response.total_records
+
+    def _create_element(self, msg):
+        return Alert(self._conn, self._conf, msg)
 
 
 class AlertHistoryItem(object):
