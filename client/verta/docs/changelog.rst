@@ -224,12 +224,12 @@ New Features
   <https://github.com/VertaAI/modeldb/pull/2057>`__
 - `support getting back structured data type attributes
   <https://github.com/VertaAI/modeldb/pull/2062>`__
-- `enable manually specifying page limit for LazyList iteration
+- `enable manually specifying page limit for _LazyList iteration
   <https://github.com/VertaAI/modeldb/pull/2064>`__
 
 Bug Fixes
 ^^^^^^^^^
-- `properly paginate LazyList requests
+- `properly paginate _LazyList requests
   <https://github.com/VertaAI/modeldb/pull/2063>`__
 
 
@@ -642,7 +642,7 @@ v0.14.13 (2020-07-24)
 
 Enhancements
 ^^^^^^^^^^^^
-- `add more possible keys for LazyList.find()
+- `add more possible keys for _LazyList.find()
   <https://github.com/VertaAI/modeldb/pull/1038>`__
 - `print full response body for HTTP errors
   <https://github.com/VertaAI/modeldb/pull/1083>`__
@@ -653,7 +653,7 @@ Bug Fixes
   <https://github.com/VertaAI/modeldb/pull/1130>`__
 - `clear cache after every ExperimentRun logs
   <https://github.com/VertaAI/modeldb/pull/1101>`__
-- `fix TypeError in LazyList.with_workspace(None)
+- `fix TypeError in _LazyList.with_workspace(None)
   <https://github.com/VertaAI/modeldb/pull/1098>`__
 
 Internal Changes

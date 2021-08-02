@@ -17,6 +17,7 @@ from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from . import utils
 
 import verta
+from verta._bases import _LazyList
 from verta._internal_utils import _utils
 import json
 
@@ -40,7 +41,7 @@ TAG = "my-tag"
 
 
 class TestLazyList:
-    class LL(_utils.LazyList):
+    class LL(_LazyList):
         def __init__(self, size):
             super(TestLazyList.LL, self).__init__(None, None, _ExperimentRunService.FindExperimentRuns())
             self._size = size
