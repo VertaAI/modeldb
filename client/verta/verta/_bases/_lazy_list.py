@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import abc
 import copy
 import re
 
@@ -8,6 +9,7 @@ from verta._protos.public.common import CommonService_pb2 as _CommonCommonServic
 from verta._internal_utils import _utils
 
 
+@six.add_metaclass(abc.ABCMeta)
 class _LazyList(object):
     # number of items to fetch per back end call in __iter__()
     _ITER_PAGE_LIMIT = 100
@@ -22,7 +24,7 @@ class _LazyList(object):
     _OP_PATTERN = re.compile(r" ({}) ".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=len, reverse=True))))
 
     # keys that yield predictable, sensible results
-    # TODO: make _LazyList an abstract base class; make this attr an abstract property
+    # TODO: make this attr an abstract property
     _VALID_QUERY_KEYS = None  # NOTE: must be overridden by subclasses
 
     def __init__(self, conn, conf, msg):
@@ -89,6 +91,16 @@ class _LazyList(object):
         _, total_records = self._call_back_end(msg)
 
         return total_records
+
+    @abc.abstractmethod
+    def _call_back_end(self, msg):
+        """Find the request in the backend and returns (elements, total count)."""
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _create_element(self, msg):
+        """Instantiate element to return to user."""
+        raise NotImplementedError
 
     def find(self, *args):
         """
@@ -197,14 +209,6 @@ class _LazyList(object):
         new_list._msg.ascending = not descending
 
         return new_list
-
-    def _call_back_end(self, msg):
-        """Find the request in the backend and returns (elements, total count)."""
-        raise NotImplementedError
-
-    def _create_element(self, msg):
-        """Instantiate element to return to user."""
-        raise NotImplementedError
 
     def set_page_limit(self, limit):
         """
