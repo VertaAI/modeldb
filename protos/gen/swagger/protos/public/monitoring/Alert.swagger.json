@@ -82,7 +82,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/monitoringEmpty"
+              "$ref": "#/definitions/vertamonitoringEmpty"
             }
           },
           "default": {
@@ -114,7 +114,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/monitoringEmpty"
+              "$ref": "#/definitions/vertamonitoringEmpty"
             }
           },
           "default": {
@@ -274,7 +274,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/monitoringEmpty"
+              "$ref": "#/definitions/vertamonitoringEmpty"
             }
           },
           "default": {
@@ -578,9 +578,6 @@
         }
       },
       "title": "Delete notification channels"
-    },
-    "monitoringEmpty": {
-      "type": "object"
     },
     "monitoringFilterQuerySummarySample": {
       "type": "object",
@@ -1059,6 +1056,9 @@
           }
         }
       }
+    },
+    "vertamonitoringEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"
