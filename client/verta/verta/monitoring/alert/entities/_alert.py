@@ -570,8 +570,7 @@ class Alerts(object):
         else:
             raise ValueError("must specify either `name` or `id`")
 
-    # TODO: use lazy list and pagination
-    # TODO: a proper find
+    # TODO: a proper find()
     def list(self):
         """
         Return all accesible alerts.
@@ -580,6 +579,13 @@ class Alerts(object):
         -------
         iterable of :class:`Alert`
             Alerts.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            for alert in client.monitoring.alerts.list():
+                print(alert.id, alert.status)
 
         """
         return AlertPaginatedIterable(self._conn, self._conf)
@@ -613,6 +619,18 @@ class Alerts(object):
 
 
 class AlertPaginatedIterable(_PaginatedIterable):
+    """An iterable of alerts.
+
+    Instances of this class should be obtained from :meth:`Alert.list`.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        for alert in client.monitoring.alerts.list():
+            print(alert.id, alert.status)
+
+    """
 
     def __init__(self, conn, conf):
         super(AlertPaginatedIterable, self).__init__(
@@ -635,8 +653,10 @@ class AlertPaginatedIterable(_PaginatedIterable):
 
 
 class AlertHistoryItem(object):
-    """
-    The history of an alert's status changes.
+    """The history of an alert's status changes.
+
+    Instances of this class should be obtained from the ``history`` property
+    of :class:`Alert`.
 
     Examples
     --------
