@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Base classes used across the client."""
+"""Base classes used across multiple client modules."""
 
 from verta._internal_utils import documentation
 

@@ -15,14 +15,24 @@ class _PaginatedIterable(object):
     Iterable base class for Verta entites.
 
     Supports:
-    - indexing
-    - paginated iteration.
+
+    * indexing
+    * paginated iteration.
 
     Examples
     --------
     .. code-block:: python
 
-        pass
+        expt.expt_runs
+        # <ExperimentRuns containing 3 runs>
+
+        expt.expt_runs[0]
+        # name: Run 186381627658178606302
+        # url: https://app.verta.ai/...
+        # ...
+
+        for run in expt.expt_runs:
+            do_something(run)
 
     """
 
