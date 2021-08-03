@@ -353,6 +353,7 @@ def clean_reqs_file_lines(requirements):
     requirements = [req for req in requirements if not req.startswith('#')]  # comment line
 
     # remove unsupported options
+    # TODO: add support in VR-12389
     supported_requirements = []
     for req in requirements:
         # https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format
