@@ -570,7 +570,7 @@ class Alerts(object):
         else:
             raise ValueError("must specify either `name` or `id`")
 
-    # TODO: a proper find()
+    # TODO: a proper find
     def list(self):
         """
         Return all accesible alerts.
