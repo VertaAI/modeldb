@@ -10,7 +10,7 @@ from verta._protos.public.monitoring.Summary_pb2 import AggregationQuerySummary
 from verta.monitoring.summaries.aggregation import Aggregation
 from verta.registry.entities import RegisteredModelVersion
 
-from ..time_strategies import millis_timedelta_strategy, millis_uint64_strategy
+from ..strategies import millis_timedelta_strategy, millis_uint64_strategy
 
 ProtoOperations = AggregationQuerySummary.AggregationOperation
 
