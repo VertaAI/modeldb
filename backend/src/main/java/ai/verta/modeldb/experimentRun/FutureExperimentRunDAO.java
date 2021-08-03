@@ -1324,7 +1324,7 @@ public class FutureExperimentRunDAO {
           .thenApply(
               accessibleProjectIds -> {
                 if (accessibleProjectIds.isEmpty()) {
-                  return new QueryFilterContext();
+                  return null;
                 } else {
                   return new QueryFilterContext()
                       .addCondition("experiment_run.project_id in (<authz_project_ids>)")
@@ -1338,7 +1338,9 @@ public class FutureExperimentRunDAO {
   private InternalFuture<List<String>> getAccessibleProjectIdsBasedOnWorkspace(
       String workspaceName, Optional<String> projectId) {
     var requestProjectIds = new ArrayList<String>();
-    projectId.ifPresent(requestProjectIds::add);
+    if (projectId.isPresent() && !projectId.get().isEmpty()) {
+      requestProjectIds.add(projectId.get());
+    }
     return FutureGrpc.ClientRequest(
             uac.getWorkspaceService()
                 .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
