@@ -62,8 +62,7 @@ class _PaginatedIterable(object):
                 msg = self._set_page_number(msg, abs(index))
 
             records, total_records = self._call_back_end(msg)
-            if (not records
-                    and self._page_number(msg) > total_records):  # pylint: disable=no-member
+            if not records and self._page_number(msg) > total_records:
                 raise IndexError("index out of range")
 
             return self._create_element(records[0])
@@ -75,13 +74,14 @@ class _PaginatedIterable(object):
         msg = self._msg.__class__()
         msg.CopyFrom(self._msg)
         self._set_page_limit(msg, self.limit)
-        self._set_page_number(msg, 0) # this will be incremented as soon as we enter the loop
+        # page number will be incremented as soon as we enter the loop
+        self._set_page_number(msg, 0)
 
         seen_ids = set()
-        total_records = float('inf')
+        total_records = float("inf")
         page_number = self._page_number(msg)
-        while self._page_limit(msg) * page_number < total_records:  # pylint: disable=no-member
-            page_number += 1  # pylint: disable=no-member
+        while self._page_limit(msg) * page_number < total_records:
+            page_number += 1
             self._set_page_number(msg, page_number)
 
             records, total_records = self._call_back_end(msg)
@@ -160,14 +160,18 @@ class _PaginatedIterable(object):
 
 @six.add_metaclass(abc.ABCMeta)
 class _LazyList(_PaginatedIterable):
-    _OP_MAP = {'~=': _CommonCommonService.OperatorEnum.CONTAIN,
-               '==': _CommonCommonService.OperatorEnum.EQ,
-               '!=': _CommonCommonService.OperatorEnum.NE,
-               '>':  _CommonCommonService.OperatorEnum.GT,
-               '>=': _CommonCommonService.OperatorEnum.GTE,
-               '<':  _CommonCommonService.OperatorEnum.LT,
-               '<=': _CommonCommonService.OperatorEnum.LTE}
-    _OP_PATTERN = re.compile(r" ({}) ".format('|'.join(sorted(six.viewkeys(_OP_MAP), key=len, reverse=True))))
+    _OP_MAP = {
+        "~=": _CommonCommonService.OperatorEnum.CONTAIN,
+        "==": _CommonCommonService.OperatorEnum.EQ,
+        "!=": _CommonCommonService.OperatorEnum.NE,
+        ">": _CommonCommonService.OperatorEnum.GT,
+        ">=": _CommonCommonService.OperatorEnum.GTE,
+        "<": _CommonCommonService.OperatorEnum.LT,
+        "<=": _CommonCommonService.OperatorEnum.LTE,
+    }
+    _OP_PATTERN = re.compile(
+        r" ({}) ".format("|".join(sorted(six.viewkeys(_OP_MAP), key=len, reverse=True)))
+    )
 
     # keys that yield predictable, sensible results
     # TODO: make this attr an abstract static method
@@ -215,14 +219,27 @@ class _LazyList(_PaginatedIterable):
         for predicate in args:
             # split predicate
             try:
-                key, operator, value = map(lambda token: token.strip(), self._OP_PATTERN.split(predicate, maxsplit=1))
+                key, operator, value = map(
+                    lambda token: token.strip(),
+                    self._OP_PATTERN.split(predicate, maxsplit=1),
+                )
             except ValueError:
-                six.raise_from(ValueError("predicate `{}` must be a two-operand comparison".format(predicate)),
-                               None)
+                six.raise_from(
+                    ValueError(
+                        "predicate `{}` must be a two-operand comparison".format(
+                            predicate
+                        )
+                    ),
+                    None,
+                )
 
-            if key.split('.')[0] not in self._VALID_QUERY_KEYS:
-                raise ValueError("key `{}` is not a valid key for querying;"
-                                 " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
+            if key.split(".")[0] not in self._VALID_QUERY_KEYS:
+                raise ValueError(
+                    "key `{}` is not a valid key for querying;"
+                    " currently supported keys are: {}".format(
+                        key, self._VALID_QUERY_KEYS
+                    )
+                )
 
             # cast operator into protobuf enum variant
             operator = self._OP_MAP[operator]
@@ -231,13 +248,15 @@ class _LazyList(_PaginatedIterable):
                 value = float(value)
             except ValueError:  # not a number, so process as string
                 # maintain old behavior where input would be wrapped in quotes
-                if ((value.startswith('\'') and value.endswith('\''))
-                        or (value.startswith('"') and value.endswith('"'))):
+                if (value.startswith("'") and value.endswith("'")) or (
+                    value.startswith('"') and value.endswith('"')
+                ):
                     value = value[1:-1]
 
             new_list._msg.predicates.append(  # pylint: disable=no-member
                 _CommonCommonService.KeyValueQuery(
-                    key=key, value=_utils.python_to_val_proto(value),
+                    key=key,
+                    value=_utils.python_to_val_proto(value),
                     operator=operator,
                 )
             )
@@ -270,9 +289,11 @@ class _LazyList(_PaginatedIterable):
             # <ExperimentRuns containing 3 runs>
 
         """
-        if key.split('.')[0] not in self._VALID_QUERY_KEYS:
-            raise ValueError("key `{}` is not a valid key for querying;"
-                             " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
+        if key.split(".")[0] not in self._VALID_QUERY_KEYS:
+            raise ValueError(
+                "key `{}` is not a valid key for querying;"
+                " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS)
+            )
 
         new_list = copy.deepcopy(self)
 
