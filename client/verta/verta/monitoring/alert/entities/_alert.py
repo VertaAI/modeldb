@@ -588,7 +588,7 @@ class Alerts(object):
                 print(alert.id, alert.status)
 
         """
-        return AlertPaginatedIterable(self._conn, self._conf)
+        return AlertsPaginatedIterable(self._conn, self._conf)
 
     def delete(self, alerts):
         """
@@ -618,7 +618,7 @@ class Alerts(object):
         return True
 
 
-class AlertPaginatedIterable(_PaginatedIterable):
+class AlertsPaginatedIterable(_PaginatedIterable):
     """An iterable of alerts.
 
     Instances of this class should be obtained from :meth:`Alert.list`.
@@ -633,7 +633,7 @@ class AlertPaginatedIterable(_PaginatedIterable):
     """
 
     def __init__(self, conn, conf):
-        super(AlertPaginatedIterable, self).__init__(
+        super(AlertsPaginatedIterable, self).__init__(
             conn,
             conf,
             _AlertService.FindAlertRequest(),
