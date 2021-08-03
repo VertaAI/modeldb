@@ -1,0 +1,43 @@
+package ai.verta.modeldb.common.futures;
+
+import io.opentracing.Span;
+import io.opentracing.SpanContext;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.grpc.ActiveSpanContextSource;
+import io.opentracing.contrib.grpc.ActiveSpanSource;
+import java.util.Map;
+
+public class TraceSupport {
+
+  static public SpanContext getActiveSpanContext(Tracer tracer) {
+    Span activeSpan = ActiveSpanSource.GRPC_CONTEXT.getActiveSpan();
+    if (activeSpan != null) {
+      return activeSpan.context();
+    }
+
+    SpanContext spanContext = ActiveSpanContextSource.GRPC_CONTEXT.getActiveSpanContext();
+    if (spanContext != null) {
+      return spanContext;
+    }
+
+    return tracer.activeSpan() != null ? tracer.activeSpan().context() : null;
+  }
+
+  static public Span createSpanFromParent(Tracer tracer, SpanContext parentSpanContext, String operationName, Map<String,String> tags) {
+    Tracer.SpanBuilder spanBuilder;
+    if (parentSpanContext == null) {
+      spanBuilder = tracer.buildSpan(operationName);
+    } else {
+      spanBuilder = tracer.buildSpan(operationName).asChildOf(parentSpanContext);
+    }
+
+    if (tags != null) {
+      for (var entry : tags.entrySet()) {
+        spanBuilder = spanBuilder.withTag(entry.getKey(), entry.getValue());
+      }
+    }
+
+    return spanBuilder.start();
+  }
+
+}
