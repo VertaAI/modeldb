@@ -15,8 +15,8 @@ _ALLOWED_INPUT_TYPES = {
 } | set(six.string_types) | set(six.integer_types)
 _ALLOWED_OUTPUT_TYPES = _ALLOWED_INPUT_TYPES | {tuple}
 
-# for use like: `if getattr(model.predict, _DECORATEE_ATTR, False)`
-_DECORATEE_ATTR = "_verta_verify_io"
+# for use like: `if getattr(model.predict, _DECORATED_FLAG, False)`
+_DECORATED_FLAG = "_verta_verify_io"
 
 
 def verify_io(f):
@@ -44,7 +44,7 @@ def verify_io(f):
         _check_compatible_output(output)
         return output
 
-    setattr(f, _DECORATEE_ATTR, True)
+    setattr(f, _DECORATED_FLAG, True)
     return wrapper
 
 
