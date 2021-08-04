@@ -49,6 +49,22 @@ public class InternalFuture<T> {
         return InternalFuture.from(promise);
     }
 
+    public static <T> T traceNonFuture(Supplier<T> supplier, String operationName, Map<String,String> tags) {
+        if (!GlobalTracer.isRegistered())
+            return supplier.get();
+
+        final var tracer = GlobalTracer.get();
+
+        final var spanContext = TraceSupport.getActiveSpanContext(tracer);
+        final var span = TraceSupport.createSpanFromParent(tracer, spanContext, operationName, tags);
+
+        try {
+            return supplier.get();
+        } finally{
+            span.finish();
+        }
+    }
+
     // Convert a list of futures to a future of a list
     public static <T> InternalFuture<List<T>> sequence(
             final List<InternalFuture<T>> futures, Executor executor) {
