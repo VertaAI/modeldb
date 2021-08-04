@@ -4,7 +4,8 @@
 
 from verta._internal_utils import documentation
 
-from ._lazy_list import _PaginatedIterable, _LazyList
+from ._lazy_list import _LazyList
+from ._paginated_iterable import _PaginatedIterable
 
 
 documentation.reassign_module(
