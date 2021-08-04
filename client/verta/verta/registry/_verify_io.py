@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import functools
+import itertools
 
 from verta.external import six
 
@@ -38,9 +39,11 @@ def verify_io(f):
 
     """
     @functools.wraps(f)
-    def wrapper(input):
-        _check_compatible_input(input)
-        output = f(input)
+    def wrapper(self, *args, **kwargs):
+        for arg in itertools.chain(args, kwargs.values()):
+            _check_compatible_input(arg)
+
+        output = f(self, *args, **kwargs)
         _check_compatible_output(output)
         return output
 
