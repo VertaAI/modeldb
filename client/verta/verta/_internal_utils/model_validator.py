@@ -2,6 +2,12 @@
 
 import warnings
 
+from verta.external import six
+if six.PY2:
+    from inspect import getargspec
+else:
+    from inspect import getfullargspec as getargspec  # pylint: disable-all
+
 from verta.registry import VertaModelBase
 from verta.registry._verify_io import _DECORATED_FLAG
 
@@ -67,19 +73,27 @@ def must_xgboost_sklearn(model):
     return True
 
 
-def must_verta(model):
-    if not (isinstance(model, type) and issubclass(model, VertaModelBase)):
+def must_verta(model_cls):
+    if not (isinstance(model_cls, type) and issubclass(model_cls, VertaModelBase)):
         raise TypeError(
             "model must be a subclass of verta.registry.VertaModelBase,"
-            " not {}".format(model)
+            " not {}".format(model_cls)
         )
-    remaining_abstract_methods = list(sorted(getattr(model, "__abstractmethods__", [])))
+    remaining_abstract_methods = list(sorted(getattr(model_cls, "__abstractmethods__", [])))
     if remaining_abstract_methods:
         raise TypeError(
             "model must finish implementing the following methods of"
             " VertaModelBase: {}".format(remaining_abstract_methods)
         )
-    if not getattr(model.predict, _DECORATED_FLAG, False):
+    expected_init_params = tuple(getargspec(VertaModelBase.__init__).args)
+    init_params = tuple(getargspec(model_cls.__init__).args)
+    if init_params != expected_init_params:
+        # model service passes __init__(artifacts) by keyword
+        raise TypeError(
+            "model __init__() parameters must be named {},"
+            " not {}".format(expected_init_params, init_params)
+        )
+    if not getattr(model_cls.predict, _DECORATED_FLAG, False):
         warnings.warn(
             "model predict() is not decorated with verta.registry.verify_io;"
             " argument and return types may change unintuitively when deployed"
