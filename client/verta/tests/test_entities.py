@@ -17,6 +17,7 @@ from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from . import utils
 
 import verta
+from verta._bases import _PaginatedIterable
 from verta._internal_utils import _utils
 import json
 
@@ -39,10 +40,10 @@ KWARGS_COMBOS = [dict(zip(KWARGS.keys(), values))
 TAG = "my-tag"
 
 
-class TestLazyList:
-    class LL(_utils.LazyList):
+class TestPaginatedIterable:
+    class LL(_PaginatedIterable):
         def __init__(self, size):
-            super(TestLazyList.LL, self).__init__(None, None, _ExperimentRunService.FindExperimentRuns())
+            super(TestPaginatedIterable.LL, self).__init__(None, None, _ExperimentRunService.FindExperimentRuns())
             self._size = size
             self._calls = 0
 
@@ -62,7 +63,7 @@ class TestLazyList:
 
     def test_ll(self):
         size = 1000
-        ll = TestLazyList.LL(size)
+        ll = TestPaginatedIterable.LL(size)
 
         for i, obj in enumerate(ll):
             assert str(i) == obj.id
@@ -70,7 +71,7 @@ class TestLazyList:
     def test_limit(self):
         size = 1000
         limit = 10
-        ll = TestLazyList.LL(size)
+        ll = TestPaginatedIterable.LL(size)
         ll.set_page_limit(limit)
 
         for i, obj in enumerate(ll):

@@ -6,12 +6,12 @@ import copy
 
 from verta._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
 
-from verta._internal_utils import _utils
+from verta._bases import _LazyList
 
 from ._experiment import Experiment
 
 
-class Experiments(_utils.LazyList):
+class Experiments(_LazyList):
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
         'id',
