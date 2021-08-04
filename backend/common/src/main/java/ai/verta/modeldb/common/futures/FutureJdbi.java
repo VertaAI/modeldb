@@ -30,16 +30,16 @@ public class FutureJdbi {
                   tracer, spanContext, "withHandle.execute", Map.of());
           executor.execute(
               () -> {
-                final var span2 =
-                    TraceSupport.createSpanFromParent(
-                        tracer, spanContext, "withHandle.execute2", Map.of());
+//                final var span2 =
+//                    TraceSupport.createSpanFromParent(
+//                        tracer, spanContext, "withHandle.execute2", Map.of());
                 try {
                   promise.complete(jdbi.withHandle(callback));
                 } catch (Throwable e) {
                   promise.completeExceptionally(e);
                 } finally {
                   span.finish();
-                  span2.finish();
+//                  span2.finish();
                 }
               });
 

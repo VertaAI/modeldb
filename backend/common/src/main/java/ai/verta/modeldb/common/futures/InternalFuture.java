@@ -41,12 +41,12 @@ public class InternalFuture<T> {
 
         final var promise = new CompletableFuture<T>();
         executor.execute(() -> {
+            Context current = Context.current();
             try (Scope ignored = tracer.scopeManager().activate(span)) {
-                Context ctxWithSpan =
-                        Context.current()
-                                .withValue(OpenTracingContextKey.getKey(), span)
-                                .withValue(OpenTracingContextKey.getSpanContextKey(), span.context());
-                ctxWithSpan.attach();
+                Context.current()
+                        .withValue(OpenTracingContextKey.getKey(), span)
+                        .withValue(OpenTracingContextKey.getSpanContextKey(), span.context())
+                        .attach();
 
                 supplier.get().stage.whenCompleteAsync((v, t) -> {
                     span.finish();
@@ -56,6 +56,8 @@ public class InternalFuture<T> {
                         promise.complete(v);
                     }
                 }, executor);
+            } finally{
+                current.attach();
             }
         });
 
