@@ -23,13 +23,13 @@ import java.util.stream.Collectors;
 
 public class InternalFuture<T> {
     private CompletionStage<T> stage;
-    private static final Context.Key<Optional<Supplier<Span>>> spanKey = Context.key("InternalFutureSpanKey");
+    private static final Context.Key<Supplier<Span>> spanKey = Context.key("InternalFutureSpanKey");
     private static final Context.Key<Function<Span,Scope>> scopeKey = Context.key("InternalFutureScopeKey");
 
     private InternalFuture() {
     }
 
-    public static Context.Key<Optional<Supplier<Span>>> getSpanKey() {
+    public static Context.Key<Supplier<Span>> getSpanKey() {
       return spanKey;
     }
 
@@ -56,7 +56,7 @@ public class InternalFuture<T> {
         Context.current()
                 .withValue(OpenTracingContextKey.getKey(), spanCreator)
                 .withValue(OpenTracingContextKey.getSpanContextKey(), spanCreator.context())
-                .withValue(spanKey, Optional.of(() -> TraceSupport.createSpanFromParent(tracer, spanCreator.context(), operationName, tagsInternal)))
+                .withValue(spanKey, () -> TraceSupport.createSpanFromParent(tracer, spanCreator.context(), operationName, tagsInternal))
                 .withValue(scopeKey, span -> tracer.scopeManager().activate(span))
                 .attach();
 

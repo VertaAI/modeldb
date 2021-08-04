@@ -80,16 +80,17 @@ public class FutureGrpc {
               .wrap(
                   () -> {
                     final var spanCreator = InternalFuture.getSpanKey().get();
-                    if (spanCreator != null && spanCreator.isPresent()) {
-                      final var span = spanCreator.get().get();
+                    final var scopeCreator = InternalFuture.getScopeKey().get();
+                    if (spanCreator != null && scopeCreator != null) {
+                      final var span = spanCreator.get();
                       Context current = Context.current();
                       Context.current()
                               .withValue(OpenTracingContextKey.getKey(), span)
                               .withValue(OpenTracingContextKey.getSpanContextKey(), span.context())
-                              .withValue(InternalFuture.getSpanKey(), Optional.empty())
+                              .withValue(InternalFuture.getSpanKey(), null)
                               .withValue(InternalFuture.getScopeKey(), null)
                               .attach();
-                      try (final var scope = InternalFuture.getScopeKey().get().apply(span)) {
+                      try (final var scope = scopeCreator.apply(span)) {
                         r.run();
                       } finally {
                         current.attach();
