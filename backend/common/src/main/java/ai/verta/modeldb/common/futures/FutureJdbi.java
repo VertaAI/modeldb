@@ -23,23 +23,12 @@ public class FutureJdbi {
         () -> {
           CompletableFuture<R> promise = new CompletableFuture<R>();
 
-          final var tracer = GlobalTracer.get();
-          final var spanContext = TraceSupport.getActiveSpanContext(tracer);
-          final var span =
-              TraceSupport.createSpanFromParent(
-                  tracer, spanContext, "withHandle.execute", Map.of());
           executor.execute(
               () -> {
-//                final var span2 =
-//                    TraceSupport.createSpanFromParent(
-//                        tracer, spanContext, "withHandle.execute2", Map.of());
                 try {
                   promise.complete(jdbi.withHandle(callback));
                 } catch (Throwable e) {
                   promise.completeExceptionally(e);
-                } finally {
-                  span.finish();
-//                  span2.finish();
                 }
               });
 

@@ -6,8 +6,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
+import io.opentracing.contrib.grpc.OpenTracingContextKey;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -38,7 +40,7 @@ public class FutureGrpc {
 
   // Wraps an Executor and make it compatible with grpc's context
   private static Executor makeCompatibleExecutor(Executor ex) {
-    return Context.currentContextExecutor(ex);
+    return new ExecutorWrapper(ex);
   }
 
   public static Executor initializeExecutor(Integer threadCount) {
@@ -63,5 +65,40 @@ public class FutureGrpc {
     public void onFailure(Throwable t) {
       promise.completeExceptionally(t);
     }
+  }
+
+    private static class ExecutorWrapper implements Executor {
+    final Executor other;
+    ExecutorWrapper(Executor other) {
+      this.other = other;
+      }
+
+      @Override
+      public void execute(Runnable r) {
+      other.execute(
+          Context.current()
+              .wrap(
+                  () -> {
+                    final var spanCreator = InternalFuture.getSpanKey().get();
+                    if (spanCreator.isPresent()) {
+                      final var span = spanCreator.get().get();
+                      Context current = Context.current();
+                      Context.current()
+                              .withValue(OpenTracingContextKey.getKey(), span)
+                              .withValue(OpenTracingContextKey.getSpanContextKey(), span.context())
+                              .withValue(InternalFuture.getSpanKey(), Optional.empty())
+                              .withValue(InternalFuture.getScopeKey(), null)
+                              .attach();
+                      try (final var scope = InternalFuture.getScopeKey().get().apply(span)) {
+                        r.run();
+                      } finally {
+                        current.attach();
+                        span.finish();
+                      }
+                    } else {
+                      r.run();
+                    }
+                  }));
+      }
   }
 }

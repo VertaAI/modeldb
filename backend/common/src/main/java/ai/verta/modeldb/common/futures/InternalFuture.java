@@ -13,10 +13,7 @@ import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.logging.log4j.util.TriConsumer;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -26,58 +23,61 @@ import java.util.stream.Collectors;
 
 public class InternalFuture<T> {
     private CompletionStage<T> stage;
+    private static final Context.Key<Optional<Supplier<Span>>> spanKey = Context.key("InternalFutureSpanKey");
+    private static final Context.Key<Function<Span,Scope>> scopeKey = Context.key("InternalFutureScopeKey");
 
     private InternalFuture() {
+    }
+
+    public static Context.Key<Optional<Supplier<Span>>> getSpanKey() {
+      return spanKey;
+    }
+
+    public static Context.Key<Function<Span,Scope>> getScopeKey() {
+      return scopeKey;
     }
 
     public static <T> InternalFuture<T> trace(Supplier<InternalFuture<T>> supplier, String operationName, Map<String,String> tags, Executor executor) {
         if (!GlobalTracer.isRegistered())
             return supplier.get();
 
+        final var tagsCreator = new HashMap<String,String>(tags);
+        final var tagsInternal = new HashMap<String,String>(tags);
+        tagsCreator.put("future-stage", "creator");
+        tagsInternal.put("future-stage", "runner");
+
         final var tracer = GlobalTracer.get();
 
         final var spanContext = TraceSupport.getActiveSpanContext(tracer);
-        final var span = TraceSupport.createSpanFromParent(tracer, spanContext, operationName, tags);
+        final var spanCreator = TraceSupport.createSpanFromParent(tracer, spanContext, operationName, tagsCreator);
+        final var scopeCreator = tracer.scopeManager().activate(spanCreator);
+
+        Context current = Context.current();
+        Context.current()
+                .withValue(OpenTracingContextKey.getKey(), spanCreator)
+                .withValue(OpenTracingContextKey.getSpanContextKey(), spanCreator.context())
+                .withValue(spanKey, Optional.of(() -> TraceSupport.createSpanFromParent(tracer, spanCreator.context(), operationName, tagsInternal)))
+                .withValue(scopeKey, span -> tracer.scopeManager().activate(span))
+                .attach();
 
         final var promise = new CompletableFuture<T>();
-        executor.execute(() -> {
-            Context current = Context.current();
-            try (Scope ignored = tracer.scopeManager().activate(span)) {
-                Context.current()
-                        .withValue(OpenTracingContextKey.getKey(), span)
-                        .withValue(OpenTracingContextKey.getSpanContextKey(), span.context())
-                        .attach();
-
-                supplier.get().stage.whenCompleteAsync((v, t) -> {
-                    span.finish();
-                    if (t != null) {
-                        promise.completeExceptionally(t);
-                    } else {
-                        promise.complete(v);
-                    }
-                }, executor);
-            } finally{
-                current.attach();
-            }
-        });
+        try {
+            supplier.get().stage.whenCompleteAsync(
+                (v, t) -> {
+                  scopeCreator.close();
+                  spanCreator.finish();
+                  if (t != null) {
+                    promise.completeExceptionally(t);
+                  } else {
+                    promise.complete(v);
+                  }
+                },
+                executor);
+        } finally{
+            current.attach();
+        }
 
         return InternalFuture.from(promise);
-    }
-
-    public static <T> T traceNonFuture(Supplier<T> supplier, String operationName, Map<String,String> tags) {
-        if (!GlobalTracer.isRegistered())
-            return supplier.get();
-
-        final var tracer = GlobalTracer.get();
-
-        final var spanContext = TraceSupport.getActiveSpanContext(tracer);
-        final var span = TraceSupport.createSpanFromParent(tracer, spanContext, operationName, tags);
-
-        try {
-            return supplier.get();
-        } finally{
-            span.finish();
-        }
     }
 
     // Convert a list of futures to a future of a list
