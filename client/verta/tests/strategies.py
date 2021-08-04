@@ -21,6 +21,6 @@ millis_uint64_strategy = millis_timedelta_strategy.map(duration_millis_ignore_wa
 # from https://hypothesis.readthedocs.io/en/latest/data.html#recursive-data
 json_strategy = st.recursive(
     st.none() | st.booleans() | st.floats() | st.text(printable),
-    lambda children: st.lists(children, 1)
-    | st.dictionaries(st.text(printable), children, min_size=1),
+    lambda children: st.lists(children) | st.dictionaries(st.text(printable), children),
+    max_leaves=500,
 )

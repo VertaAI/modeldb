@@ -2,15 +2,21 @@
 
 """ModelVersion.create_version_from_*() methods"""
 
+from datetime import timedelta
+import json
+import math
 import re
 
+import hypothesis
 import pytest
 
+from verta._internal_utils import _artifact_utils, model_validator
 from verta.environment import Python
 from verta.external import six
-from verta._internal_utils import _artifact_utils, model_validator
+from verta.registry import verify_io, VertaModelBase
 
 from ..models import standard_models
+from ..strategies import json_strategy
 
 
 verta_models = standard_models.verta_models()
@@ -22,6 +28,46 @@ unsupported_sklearn_models = standard_models.unsupported_sklearn_models()
 torch_models = standard_models.torch_models()
 xgboost_models = standard_models.xgboost_models()
 unsupported_xgboost_models = standard_models.unsupported_xgboost_models()
+
+
+class TestVerifyIO:
+    @hypothesis.settings(deadline=timedelta(milliseconds=50))
+    @hypothesis.given(value=json_strategy)
+    def test_verify_io_allow(self, value):
+        @verify_io
+        def predict(self, input):
+            return input
+
+        predict(None, value)
+
+    def test_verify_io_reject(self):
+        array = pytest.importorskip("numpy").array([1, 2, 3])
+        df = pytest.importorskip("pandas").DataFrame([1, 2, 3])
+        tensor = pytest.importorskip("torch").tensor([1, 2, 3])
+
+        @verify_io
+        def predict1(self, input):
+            return array
+        with pytest.raises(TypeError, match="^input must be one of types"):
+            predict1(None, array)
+        with pytest.raises(TypeError, match="^output must be one of types"):
+            predict1(None, None)
+
+        @verify_io
+        def predict2(self, input):
+            return df
+        with pytest.raises(TypeError, match="^input must be one of types"):
+            predict2(None, df)
+        with pytest.raises(TypeError, match="^output must be one of types"):
+            predict2(None, None)
+
+        @verify_io
+        def predict3(self, input):
+            return tensor
+        with pytest.raises(TypeError, match="^input must be one of types"):
+            predict3(None, tensor)
+        with pytest.raises(TypeError, match="^output must be one of types"):
+            predict3(None, None)
 
 
 class TestModelValidator:
