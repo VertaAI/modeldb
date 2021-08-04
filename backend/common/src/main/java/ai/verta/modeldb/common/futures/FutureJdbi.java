@@ -25,22 +25,33 @@ public class FutureJdbi {
 
           final var tracer = GlobalTracer.get();
           final var spanContext = TraceSupport.getActiveSpanContext(tracer);
-          final var span = TraceSupport.createSpanFromParent(tracer, spanContext, "withHandle.execute", Map.of());
+          final var span =
+              TraceSupport.createSpanFromParent(
+                  tracer, spanContext, "withHandle.execute", Map.of());
           executor.execute(
               () -> {
+                final var span2 =
+                    TraceSupport.createSpanFromParent(
+                        tracer, spanContext, "withHandle.execute2", Map.of());
                 try {
                   promise.complete(jdbi.withHandle(callback));
                 } catch (Throwable e) {
                   promise.completeExceptionally(e);
                 } finally {
                   span.finish();
+                  span2.finish();
                 }
               });
 
           return InternalFuture.from(promise);
         },
         "jdbi.withHandle",
-        Map.of("caller", String.format("%s:%d", Thread.currentThread().getStackTrace()[2].getFileName(), Thread.currentThread().getStackTrace()[2].getLineNumber())),
+        Map.of(
+            "caller",
+            String.format(
+                "%s:%d",
+                Thread.currentThread().getStackTrace()[2].getFileName(),
+                Thread.currentThread().getStackTrace()[2].getLineNumber())),
         executor);
   }
 
@@ -67,7 +78,12 @@ public class FutureJdbi {
           return InternalFuture.from(promise);
         },
         "jdbi.useHandle",
-            Map.of("caller", String.format("%s:%d", Thread.currentThread().getStackTrace()[2].getFileName(), Thread.currentThread().getStackTrace()[2].getLineNumber())),
+        Map.of(
+            "caller",
+            String.format(
+                "%s:%d",
+                Thread.currentThread().getStackTrace()[2].getFileName(),
+                Thread.currentThread().getStackTrace()[2].getLineNumber())),
         executor);
   }
 }
