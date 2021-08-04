@@ -8,33 +8,69 @@ Changelog
 
    Backwards Incompatibilities
    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
 
    Deprecations
    ^^^^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
 
    New Features
    ^^^^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
 
    Enhancements
    ^^^^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
 
    Bug Fixes
    ^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
 
    Internal Changes
    ^^^^^^^^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
+
+
+v0.19.0 (2021-08-03)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- remove Repository
+  (`#2498 <https://github.com/VertaAI/modeldb/pull/2498>`__)
+
+New Features
+^^^^^^^^^^^^
+- enable extra headers to be passed on requests
+  (`#2510 <https://github.com/VertaAI/modeldb/pull/2510>`__)
+- add ``RegisteredModelVersion.log_code_version()``
+  (`#2523 <https://github.com/VertaAI/modeldb/pull/2523>`__)
+- enable Kafka configuration on endpoints (if supported by Verta backend)
+  (`#2488 <https://github.com/VertaAI/modeldb/pull/2488>`__,
+  `#2520 <https://github.com/VertaAI/modeldb/pull/2520>`__)
+
+Enhancements
+^^^^^^^^^^^^
+- batch requests in ``log_training_data_profile()`` for a drastic speedup
+  (`#2511 <https://github.com/VertaAI/modeldb/pull/2511>`__)
+- allow ``RegisteredModel.create_version_from_run()`` to take a run object
+  (`#2500 <https://github.com/VertaAI/modeldb/pull/2500>`__)
+
+Bug Fixes
+^^^^^^^^^
+- properly promote naïve datetimes in Python 2
+  (`#2506 <https://github.com/VertaAI/modeldb/pull/2506>`__)
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- include non-public fields in ``Alert.summary_sample_base``
+  (`#2519 <https://github.com/VertaAI/modeldb/pull/2519>`__)
 
 
 v0.18.2 (2021-07-14)
