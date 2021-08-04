@@ -80,7 +80,7 @@ public class FutureGrpc {
               .wrap(
                   () -> {
                     final var spanCreator = InternalFuture.getSpanKey().get();
-                    if (spanCreator.isPresent()) {
+                    if (spanCreator != null && spanCreator.isPresent()) {
                       final var span = spanCreator.get().get();
                       Context current = Context.current();
                       Context.current()
