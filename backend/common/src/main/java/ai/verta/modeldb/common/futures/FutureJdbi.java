@@ -28,7 +28,7 @@ public class FutureJdbi {
           final var span = TraceSupport.createSpanFromParent(tracer, spanContext, "withHandle.execute", Map.of());
           executor.execute(
               () -> {
-                try(final var scope = tracer.scopeManager().activate(span)) {
+                try {
                   promise.complete(jdbi.withHandle(callback));
                 } catch (Throwable e) {
                   promise.completeExceptionally(e);
