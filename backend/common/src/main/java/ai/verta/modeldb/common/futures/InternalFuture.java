@@ -1,10 +1,13 @@
 package ai.verta.modeldb.common.futures;
 
+import io.grpc.Context;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
 import io.opentracing.contrib.grpc.ActiveSpanSource;
+import io.opentracing.contrib.grpc.OpenTracingContextKey;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.implementation.bytecode.Throw;
@@ -37,14 +40,24 @@ public class InternalFuture<T> {
         final var span = TraceSupport.createSpanFromParent(tracer, spanContext, operationName, tags);
 
         final var promise = new CompletableFuture<T>();
-        supplier.get().stage.whenCompleteAsync((v, t) -> {
-            span.finish();
-            if (t != null) {
-                promise.completeExceptionally(t);
-            } else {
-                promise.complete(v);
+        executor.execute(() -> {
+            try (Scope ignored = tracer.scopeManager().activate(span)) {
+                Context ctxWithSpan =
+                        Context.current()
+                                .withValue(OpenTracingContextKey.getKey(), span)
+                                .withValue(OpenTracingContextKey.getSpanContextKey(), span.context());
+                ctxWithSpan.attach();
+
+                supplier.get().stage.whenCompleteAsync((v, t) -> {
+                    span.finish();
+                    if (t != null) {
+                        promise.completeExceptionally(t);
+                    } else {
+                        promise.complete(v);
+                    }
+                }, executor);
             }
-        }, executor);
+        });
 
         return InternalFuture.from(promise);
     }
