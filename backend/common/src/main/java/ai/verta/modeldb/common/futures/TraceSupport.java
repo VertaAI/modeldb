@@ -5,9 +5,27 @@ import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
 import io.opentracing.contrib.grpc.ActiveSpanSource;
+import io.opentracing.util.GlobalTracer;
+
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class TraceSupport {
+  public static <T> T traceNonFuture(Supplier<T> supplier, String operationName, Map<String,String> tags) {
+    if (!GlobalTracer.isRegistered())
+      return supplier.get();
+
+    final var tracer = GlobalTracer.get();
+
+    final var spanContext = TraceSupport.getActiveSpanContext(tracer);
+    final var span = TraceSupport.createSpanFromParent(tracer, spanContext, operationName, tags);
+
+    try (final var scope = tracer.scopeManager().activate(span)){
+      return supplier.get();
+    } finally{
+      span.finish();
+    }
+  }
 
   static public SpanContext getActiveSpanContext(Tracer tracer) {
     Span activeSpan = ActiveSpanSource.GRPC_CONTEXT.getActiveSpan();

@@ -9,15 +9,13 @@ from verta._protos.public.modeldb import ExperimentRunService_pb2 as _Experiment
 
 from verta.external import six
 
-from verta._internal_utils import (
-    _utils,
-    importer,
-)
+from verta._bases import _LazyList
+from verta._internal_utils import importer
 
 from ._experimentrun import ExperimentRun
 
 
-class ExperimentRuns(_utils.LazyList):
+class ExperimentRuns(_LazyList):
     r"""
     ``list``-like object representing a collection of machine learning Experiment Runs.
 

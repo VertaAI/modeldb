@@ -6,12 +6,12 @@ import copy
 
 from verta._protos.public.modeldb import ProjectService_pb2 as _ProjectService
 
-from verta._internal_utils import _utils
+from verta._bases import _LazyList
 
 from ._project import Project
 
 
-class Projects(_utils.LazyList):
+class Projects(_LazyList):
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
         'id',
