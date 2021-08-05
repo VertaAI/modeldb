@@ -33,6 +33,7 @@ public class InternalFuture<T> {
 
         final var tracer = GlobalTracer.get();
 
+        final var activeSpan = tracer.scopeManager().activeSpan();
         final var spanContext = TraceSupport.getActiveSpanContext(tracer);
         final var spanCreator = TraceSupport.createSpanFromParent(tracer, spanContext, operationName, tags);
         final var scopeCreator = tracer.scopeManager().activate(spanCreator);
@@ -50,6 +51,7 @@ public class InternalFuture<T> {
                 (v, t) -> {
                   scopeCreator.close();
                   spanCreator.finish();
+                  tracer.scopeManager().activate(activeSpan);
                   if (t != null) {
                     promise.completeExceptionally(t);
                   } else {
