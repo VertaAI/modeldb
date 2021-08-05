@@ -67,39 +67,16 @@ public class FutureGrpc {
     }
   }
 
-    private static class ExecutorWrapper implements Executor {
+  private static class ExecutorWrapper implements Executor {
     final Executor other;
+
     ExecutorWrapper(Executor other) {
       this.other = other;
-      }
+    }
 
-      @Override
-      public void execute(Runnable r) {
-      other.execute(
-          Context.current()
-              .wrap(
-                  () -> {
-                    final var spanCreator = InternalFuture.getSpanKey().get();
-                    final var scopeCreator = InternalFuture.getScopeKey().get();
-                    if (spanCreator != null && scopeCreator != null) {
-                      final var span = spanCreator.get();
-                      Context current = Context.current();
-                      Context.current()
-                              .withValue(OpenTracingContextKey.getKey(), span)
-                              .withValue(OpenTracingContextKey.getSpanContextKey(), span.context())
-                              .withValue(InternalFuture.getSpanKey(), null)
-                              .withValue(InternalFuture.getScopeKey(), null)
-                              .attach();
-                      try (final var scope = scopeCreator.apply(span)) {
-                        r.run();
-                      } finally {
-                        current.attach();
-                        span.finish();
-                      }
-                    } else {
-                      r.run();
-                    }
-                  }));
-      }
+    @Override
+    public void execute(Runnable r) {
+      other.execute(Context.current().wrap(r));
+    }
   }
 }
