@@ -485,6 +485,11 @@ def is_in_venv(path):
     if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
         return True
 
+    lib64_python_str = os.path.join(os.sep, "lib64", "python")
+    i = path.find(lib64_python_str)
+    if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+        return True
+
     pycache_str = os.path.join(os.sep, "bin", "__pycache__")
     i = path.find(pycache_str)
     if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
