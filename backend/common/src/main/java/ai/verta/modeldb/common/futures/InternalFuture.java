@@ -33,7 +33,6 @@ public class InternalFuture<T> {
 
         final var tracer = GlobalTracer.get();
 
-        final var activeSpan = tracer.scopeManager().activeSpan();
         final var spanContext = TraceSupport.getActiveSpanContext(tracer);
         final var spanCreator = TraceSupport.createSpanFromParent(tracer, spanContext, operationName, tags);
         final var scopeCreator = tracer.scopeManager().activate(spanCreator);
@@ -41,17 +40,14 @@ public class InternalFuture<T> {
         final var promise = new CompletableFuture<T>();
 
         executor.execute(() -> {
-            Context current = Context.current();
             Context.current()
                     .withValue(OpenTracingContextKey.getKey(), spanCreator)
                     .withValue(OpenTracingContextKey.getSpanContextKey(), spanCreator.context())
                     .attach();
-        try {
             supplier.get().stage.whenCompleteAsync(
                 (v, t) -> {
                   scopeCreator.close();
                   spanCreator.finish();
-                  tracer.scopeManager().activate(activeSpan);
                   if (t != null) {
                     promise.completeExceptionally(t);
                   } else {
@@ -59,9 +55,7 @@ public class InternalFuture<T> {
                   }
                 },
                 executor);
-        } finally{
-            current.attach();
-        }
+
         });
 
         return InternalFuture.from(promise);
