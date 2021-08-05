@@ -96,6 +96,10 @@ class _DeployableEntity(_ModelDBEntity):
                   folder in ``sys.path`` will be included.
                 - If not provided, all Python files located within ``sys.path``—excluding virtual
                   environments—will be included.
+                - If an empty list is provided, no local files will be included
+                  at all. This can be useful for decreasing upload times or
+                  resolving certain types of package conflicts when a model has
+                  no local dependencies.
         model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying details about the model and its deployment.
         artifacts : list of str, optional
