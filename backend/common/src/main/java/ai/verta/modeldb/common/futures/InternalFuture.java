@@ -51,7 +51,7 @@ public class InternalFuture<T> {
                 (v, t) -> {
                   scopeCreator.close();
                   spanCreator.finish();
-//                  tracer.scopeManager().activate(activeSpan);
+                  tracer.scopeManager().activate(activeSpan);
                   if (t != null) {
                     promise.completeExceptionally(t);
                   } else {
