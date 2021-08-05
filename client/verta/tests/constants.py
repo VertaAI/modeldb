@@ -33,5 +33,6 @@ PYTHON_VERSION_SEGMENT = "python{}.{}".format(
     sys.version_info.minor,
 )
 LIB_SITE_PACKAGES = os.path.join("lib", PYTHON_VERSION_SEGMENT, "site-packages")
+LIB32_SITE_PACKAGES = os.path.join("lib32", PYTHON_VERSION_SEGMENT, "site-packages")
 LIB64_SITE_PACKAGES = os.path.join("lib64", PYTHON_VERSION_SEGMENT, "site-packages")
 BIN_PYCACHE = os.path.join("bin", "__pycache__")

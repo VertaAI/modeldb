@@ -482,6 +482,7 @@ def is_in_venv(path):
     #         |_ python*  <- Python executable
     for py_lib_dir in [
         os.path.join(os.sep, "lib", "python"),
+        os.path.join(os.sep, "lib32", "python"),
         os.path.join(os.sep, "lib64", "python"),  # https://stackoverflow.com/q/11370877
         os.path.join(os.sep, "bin", "__pycache__"),
     ]:

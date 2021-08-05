@@ -16,6 +16,7 @@ class TestVenv:
         prefix=st.sampled_from(
             [
                 constants.LIB_SITE_PACKAGES,
+                constants.LIB32_SITE_PACKAGES,
                 constants.LIB64_SITE_PACKAGES,
                 constants.BIN_PYCACHE,
             ],

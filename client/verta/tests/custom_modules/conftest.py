@@ -17,6 +17,7 @@ def in_fake_venv(tempdir_root):
 
     # empty site-packages/
     os.makedirs(os.path.join(dirpath, constants.LIB_SITE_PACKAGES))
+    os.makedirs(os.path.join(dirpath, constants.LIB32_SITE_PACKAGES))
     os.makedirs(os.path.join(dirpath, constants.LIB64_SITE_PACKAGES))
 
     # empty __pycache__/
