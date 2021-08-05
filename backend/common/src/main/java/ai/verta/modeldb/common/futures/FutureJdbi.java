@@ -23,24 +23,24 @@ public class FutureJdbi {
         () -> {
           CompletableFuture<R> promise = new CompletableFuture<R>();
 
-          final var tracer = GlobalTracer.get();
-          final var spanContext = TraceSupport.getActiveSpanContext(tracer);
-          final var span = TraceSupport.createSpanFromParent(tracer, spanContext, "withHandle.execute", Map.of());
           executor.execute(
               () -> {
-                try(final var scope = tracer.scopeManager().activate(span)) {
+                try {
                   promise.complete(jdbi.withHandle(callback));
                 } catch (Throwable e) {
                   promise.completeExceptionally(e);
-                } finally {
-                  span.finish();
                 }
               });
 
           return InternalFuture.from(promise);
         },
         "jdbi.withHandle",
-        Map.of("caller", String.format("%s:%d", Thread.currentThread().getStackTrace()[2].getFileName(), Thread.currentThread().getStackTrace()[2].getLineNumber())),
+        Map.of(
+            "caller",
+            String.format(
+                "%s:%d",
+                Thread.currentThread().getStackTrace()[2].getFileName(),
+                Thread.currentThread().getStackTrace()[2].getLineNumber())),
         executor);
   }
 
@@ -67,7 +67,12 @@ public class FutureJdbi {
           return InternalFuture.from(promise);
         },
         "jdbi.useHandle",
-            Map.of("caller", String.format("%s:%d", Thread.currentThread().getStackTrace()[2].getFileName(), Thread.currentThread().getStackTrace()[2].getLineNumber())),
+        Map.of(
+            "caller",
+            String.format(
+                "%s:%d",
+                Thread.currentThread().getStackTrace()[2].getFileName(),
+                Thread.currentThread().getStackTrace()[2].getLineNumber())),
         executor);
   }
 }
