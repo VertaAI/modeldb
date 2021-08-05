@@ -27,6 +27,7 @@ class TestVenv:
         assert _utils.is_in_venv(abs_filepath)
 
     def test_is_not_in_venv(self):
+        # NOTE: assumes there isn't a venv in the client test dir
         for root, _, files in os.walk("."):
             for filename in files:
                 abs_filepath = os.path.abspath(os.path.join(root, filename))
