@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 
 
 HOST_ENV_VAR = "VERTA_HOST"
@@ -25,3 +26,12 @@ EMAIL_2 = os.environ.get(EMAIL_2_ENV_VAR)
 DEV_KEY_2 = os.environ.get(DEV_KEY_2_ENV_VAR)
 EMAIL_3 = os.environ.get(EMAIL_3_ENV_VAR)
 DEV_KEY_3 = os.environ.get(DEV_KEY_3_ENV_VAR)
+
+# for virtualenv tests
+PYTHON_VERSION_SEGMENT = "python{}.{}".format(
+    sys.version_info.major,
+    sys.version_info.minor,
+)
+LIB_SITE_PACKAGES = os.path.join("lib", PYTHON_VERSION_SEGMENT, "site-packages")
+LIB64_SITE_PACKAGES = os.path.join("lib64", PYTHON_VERSION_SEGMENT, "site-packages")
+BIN_PYCACHE = os.path.join("bin", "__pycache__")

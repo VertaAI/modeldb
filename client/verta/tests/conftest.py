@@ -326,7 +326,7 @@ def random_data():
             return data
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def tempdir_root():
     return os.environ.get("TEMPDIR_ROOT")
 
