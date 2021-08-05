@@ -4,7 +4,7 @@ from hypothesis import given
 import hypothesis.strategies as st
 import pytest
 from verta._internal_utils import time_utils
-from ..time_strategies import millis_uint64_strategy, millis_timedelta_strategy
+from ..strategies import millis_uint64_strategy, millis_timedelta_strategy
 
 
 def _check_positive_millis(millis):
