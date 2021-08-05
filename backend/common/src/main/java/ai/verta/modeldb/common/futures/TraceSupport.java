@@ -20,7 +20,7 @@ public class TraceSupport {
     final var spanContext = TraceSupport.getActiveSpanContext(tracer);
     final var span = TraceSupport.createSpanFromParent(tracer, spanContext, operationName, tags);
 
-    try {
+    try (final var scope = tracer.scopeManager().activate(span)){
       return supplier.get();
     } finally{
       span.finish();
