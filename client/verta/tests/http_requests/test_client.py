@@ -153,11 +153,11 @@ class TestClient:
             os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = old_email, old_dev_key
 
     @pytest.mark.not_oss
-    def test_ca_bundle_env_var(self, client):
-        """"Verify make_request() honors REQUESTS_CA_BUNDLE env var."""
+    def test_ca_bundle_env_var(self, https_client):
+        """Verify make_request() honors REQUESTS_CA_BUNDLE env var."""
         REQUESTS_CA_BUNDLE_ENV_VAR = "REQUESTS_CA_BUNDLE"
         good_ca_bundle_path = os.environ.get(REQUESTS_CA_BUNDLE_ENV_VAR)
-        conn = client._conn
+        conn = https_client._conn
 
         url = "{}://{}/".format(conn.scheme, conn.socket)
 
@@ -175,7 +175,7 @@ class TestClient:
             os.environ[REQUESTS_CA_BUNDLE_ENV_VAR] = bad_ca_bundle_path
 
             with pytest.raises(error_type, match=msg_match):
-                _utils.make_request("GET", url, client._conn)
+                _utils.make_request("GET", url, https_client._conn)
         finally:
             if good_ca_bundle_path:
                 os.environ[REQUESTS_CA_BUNDLE_ENV_VAR] = good_ca_bundle_path
