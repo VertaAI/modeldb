@@ -31,9 +31,11 @@ json_strategy = st.recursive(
 @st.composite
 def filepath(draw):
     """A valid filepath. Does **not** create the file.
+
     Returns
     -------
     str
+
     """
     # https://stackoverflow.com/q/4814040#comment38006480_4814088
     # TODO: add more characters; macOS and Windows allow swaths of Unicode
