@@ -623,6 +623,13 @@ class AlertsPaginatedIterable(_PaginatedIterable):
 
     Instances of this class should be obtained from :meth:`Alert.list`.
 
+    Examples
+    --------
+    .. code-block:: python
+
+        for alert in client.monitoring.alerts.list():
+            print(alert.id, alert.status)
+
     """
 
     def __init__(self, conn, conf):
