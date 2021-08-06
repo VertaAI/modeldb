@@ -347,6 +347,22 @@ def _make_request(session, request, ignore_conn_err=False, **kwargs):
     :class:`requests.Response`
 
     """
+    # Our use of Session.send() with a PreparedRequest inadvertently bypasses
+    # requests's mechanisms for merging env vars, Session attrs, and params.
+    # They recommend calling Session.merge_environment_settings() manually
+    # to pick up values such as the `REQUESTS_CA_BUNDLE` env var.
+    # https://2.python-requests.org/en/master/user/advanced/#prepared-requests
+    # TODO: switch over to Session.request() (VR-12458)
+    kwargs.update(
+        session.merge_environment_settings(
+            url=request.url,
+            proxies=kwargs.get("proxies", {}),
+            stream=kwargs.get("stream"),
+            verify=kwargs.get("verify"),
+            cert=kwargs.get("cert"),
+        )
+    )
+
     response = session.send(request, allow_redirects=False, **kwargs)
 
     # manually inspect initial response and subsequent redirects to stop on 302s
