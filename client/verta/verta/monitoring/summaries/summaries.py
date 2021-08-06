@@ -4,7 +4,7 @@
 from __future__ import print_function
 import warnings
 
-
+from verta._bases import _PaginatedIterable
 from verta._protos.public.monitoring.Summary_pb2 import (
     CreateSummaryRequest,
     DeleteSummaryRequest,
@@ -144,8 +144,16 @@ class Summaries:
 
         Returns
         -------
-        list of :class:`~verta.monitoring.summaries.summary_sample.SummarySample`
-            A list of summary samples matching the query.
+        iterable of :class:`~verta.monitoring.summaries.summary_sample.SummarySample`
+            An iterable of summary samples matching the query.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            for summary in client.monitoring.summaries.find():
+                print(summary.name)
+
         """
         if query is None:
             query = SummaryQuery()
@@ -154,15 +162,7 @@ class Summaries:
                 "`query` must be a SummaryQuery, not {}".format(type(query))
             )
         msg = query._to_proto_request()
-        endpoint = "/api/v1/summaries/findSummary"
-        response = self._conn.make_proto_request("POST", endpoint, body=msg)
-        maybe_summaries = self._conn.maybe_proto_response(
-            response, FindSummaryRequest.Response
-        )
-        maybe_summaries = [
-            Summary(self._conn, self._conf, msg) for msg in maybe_summaries.summaries
-        ]
-        return maybe_summaries
+        return SummariesPaginatedIterable(self._conn, self._conf, msg)
 
     def delete(self, summaries):
         """Delete the specified summaries.
@@ -183,3 +183,30 @@ class Summaries:
         response = self._conn.make_proto_request("DELETE", endpoint, body=msg)
         self._conn.must_proto_response(response, EmptyProto)
         return True
+
+
+class SummariesPaginatedIterable(_PaginatedIterable):
+    """An iterable of summary samples.
+
+    Instances of this class should be obtained from :meth:`SummarySamples.find`.
+
+    """
+
+    def __init__(self, conn, conf, msg):
+        super(SummariesPaginatedIterable, self).__init__(
+            conn,
+            conf,
+            msg,
+        )
+
+    def __repr__(self):
+        return "<{} summaries>".format(len(self))
+
+    def _call_back_end(self, msg):
+        endpoint = "/api/v1/summaries/findSummary"
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        response = self._conn.must_proto_response(response, msg.Response)
+        return response.summaries, response.total_records
+
+    def _create_element(self, msg):
+        return Summary(self._conn, self._conf, msg)
