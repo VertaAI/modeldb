@@ -496,15 +496,15 @@ def is_in_venv(path):
     #     |
     #     |_ bin/
     #         |_ python*  <- Python executable
-    lib_python_str = os.path.join(os.sep, "lib", "python")
-    i = path.find(lib_python_str)
-    if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
-        return True
-
-    pycache_str = os.path.join(os.sep, "bin", "__pycache__")
-    i = path.find(pycache_str)
-    if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
-        return True
+    for py_lib_dir in [
+        os.path.join(os.sep, "lib", "python"),
+        os.path.join(os.sep, "lib32", "python"),
+        os.path.join(os.sep, "lib64", "python"),  # https://stackoverflow.com/q/11370877
+        os.path.join(os.sep, "bin", "__pycache__"),
+    ]:
+        i = path.find(py_lib_dir)
+        if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+            return True
 
     # Debian's system-level packages from apt
     #     https://wiki.debian.org/Python#Deviations_from_upstream

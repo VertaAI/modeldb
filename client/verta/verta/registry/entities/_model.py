@@ -253,7 +253,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
         code_dependencies : list of str, optional
-            Paths to local Python code files that `model_cls` depends on.
+            Paths to local Python code files that `model_cls` depends on. This
+            parameter has the same behavior as ``custom_modules`` in
+            :meth:`RegisteredModelVersion.log_model`.
         model_api : :class:`~verta.utils.ModelAPI`
             Model API specifying the model's expected input and output
         artifacts : dict of str to obj
