@@ -46,7 +46,7 @@ public class FutureGrpc {
 
   public static Executor initializeExecutor(Integer threadCount) {
     return FutureGrpc.makeCompatibleExecutor(
-        Executors.newWorkStealingPool(threadCount);
+        Executors.newWorkStealingPool(threadCount));
   }
 
   // Callback for a ListenableFuture to satisfy a promise
