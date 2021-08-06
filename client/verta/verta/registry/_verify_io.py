@@ -65,7 +65,7 @@ def verify_io(f):
         _check_compatible_output(output)
         return output
 
-    setattr(f, _DECORATED_FLAG, True)
+    setattr(wrapper, _DECORATED_FLAG, True)
     return wrapper
 
 
