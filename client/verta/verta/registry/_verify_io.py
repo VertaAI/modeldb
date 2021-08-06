@@ -2,11 +2,12 @@
 
 import functools
 import itertools
+import json
 
 from verta.external import six
 
 
-# TODO: check what the deal is with bytes and unicode
+# TODO: check what the deal is with bytes vs unicode
 _ALLOWED_INPUT_TYPES = {
     dict,
     list,
@@ -23,14 +24,31 @@ _DECORATED_FLAG = "_verta_verify_io"
 def verify_io(f):
     """Decorator to typecheck I/O serializability within the Verta platform.
 
-    Allowed input [1]_ and output [2]_ types are based on the documentation for
-    Python's standard ``json`` library.
+    Allowed input [1]_ and output [2]_ types are validated by Python's
+    standard ``json`` library.
 
     Examples
     --------
     .. code-block:: python
 
-        raise NotImplementedError
+        import numpy as np
+        from verta.registry import verify_io, VertaModelBase
+
+        class MyModel(VertaModelBase):
+            def __init__(self, artifacts=None):
+                pass
+
+            @verify_io
+            def predict(self, input):
+                return [x**2 for x in input]
+
+        model = MyModel()
+
+        # succeeds; a list will be given to the deployed model as-is
+        model.predict([1, 2, 3])
+
+        # fails; deployed model won't be able to receieve a NumPy array
+        model.predict(np.array([1, 2, 3]))
 
     References
     ----------
@@ -67,21 +85,13 @@ def _check_compatible_output(output):
     )
 
 
-# TODO: determine whether simply trying ``json.dumps()`` would work
 def _check_compatible_value_helper(value, value_name, allowed_types):
-    input_type = type(value)
-    if input_type == dict:
-        for key, val in six.iteritems(value):
-            _check_compatible_value_helper(key, value_name, allowed_types)
-            _check_compatible_value_helper(val, value_name, allowed_types)
-    elif input_type == list:
-        for el in value:
-            _check_compatible_value_helper(el, value_name, allowed_types)
-    elif input_type not in allowed_types:
-        raise TypeError(
-            "{} must be one of types {}, but found {}".format(
-                value_name,
-                allowed_types,
-                input_type,
-            )
+    try:
+        json.dumps(value)
+    except TypeError as e:
+        err_msg = "{}; {} must must only contain types {}".format(
+            str(e),
+            value_name,
+            sorted(map(lambda cls: cls.__name__, allowed_types)),
         )
+        six.raise_from(TypeError(err_msg), None)
