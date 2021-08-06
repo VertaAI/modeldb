@@ -89,7 +89,7 @@ def _check_compatible_value_helper(value, value_name, allowed_types):
     try:
         json.dumps(value)
     except TypeError as e:
-        err_msg = "{}; {} must must only contain types {}".format(
+        err_msg = "{}; {} must only contain types {}".format(
             str(e),
             value_name,
             sorted(map(lambda cls: cls.__name__, allowed_types)),

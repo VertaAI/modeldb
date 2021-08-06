@@ -20,6 +20,7 @@ from ..strategies import json_strategy
 
 
 verta_models = standard_models.verta_models()
+decorated_verta_models = standard_models.decorated_verta_models()
 incomplete_verta_models = standard_models.incomplete_verta_models()
 keras_models = standard_models.keras_models()
 unsupported_keras_models = standard_models.unsupported_keras_models()
@@ -48,25 +49,28 @@ class TestVerifyIO:
         @verify_io
         def predict1(self, input):
             return array
-        with pytest.raises(TypeError, match="^input must be one of types"):
+        msg_match = "not JSON serializable.*{} must only contain types"
+        with pytest.raises(TypeError, match=msg_match.format("input")):
             predict1(None, array)
-        with pytest.raises(TypeError, match="^output must be one of types"):
+        with pytest.raises(TypeError, match=msg_match.format("output")):
             predict1(None, None)
 
         @verify_io
         def predict2(self, input):
             return df
-        with pytest.raises(TypeError, match="^input must be one of types"):
+        msg_match = "not JSON serializable.*{} must only contain types"
+        with pytest.raises(TypeError, match=msg_match.format("input")):
             predict2(None, df)
-        with pytest.raises(TypeError, match="^output must be one of types"):
+        with pytest.raises(TypeError, match=msg_match.format("output")):
             predict2(None, None)
 
         @verify_io
         def predict3(self, input):
             return tensor
-        with pytest.raises(TypeError, match="^input must be one of types"):
+        msg_match = "not JSON serializable.*{} must only contain types"
+        with pytest.raises(TypeError, match=msg_match.format("input")):
             predict3(None, tensor)
-        with pytest.raises(TypeError, match="^output must be one of types"):
+        with pytest.raises(TypeError, match=msg_match.format("output")):
             predict3(None, None)
 
 
@@ -78,7 +82,20 @@ class TestModelValidator:
         verta_models,
     )
     def test_verta(self, model):
-        assert model_validator.must_verta(model)
+        msg_match = "^" + re.escape(
+            "model predict() is not decorated with verta.registry.verify_io;"
+        )
+        with pytest.warns(UserWarning, match=msg_match):
+            assert model_validator.must_verta(model)
+
+    @pytest.mark.parametrize(
+        "model",
+        decorated_verta_models,
+    )
+    def test_decorated_verta(self, model):
+        with pytest.warns(None) as record:
+            model_validator.must_verta(model)
+        assert not record  # no warning of missing decorator on predict()
 
     @pytest.mark.parametrize(
         "model",
@@ -191,15 +208,37 @@ class TestStandardModels:
                     artifacts={key: artifact_value},
                 )
 
-        model_ver = registered_model.create_standard_model(
-            model,
-            Python(["pytest"]),  # source module imports pytest
-            artifacts={model.ARTIFACT_KEY: artifact_value},
+        msg_match = "^" + re.escape(
+            "model predict() is not decorated with verta.registry.verify_io;"
         )
+        with pytest.warns(UserWarning, match=msg_match):
+            model_ver = registered_model.create_standard_model(
+                model,
+                Python(["pytest"]),  # source module imports pytest
+                artifacts={model.ARTIFACT_KEY: artifact_value},
+            )
 
         endpoint.update(model_ver, wait=True)
         deployed_model = endpoint.get_deployed_model()
         assert deployed_model.predict(artifact_value) == artifact_value
+
+    @pytest.mark.parametrize(
+        "model",
+        decorated_verta_models,
+    )
+    def test_decorated_verta(self, registered_model, endpoint, model):
+        np = pytest.importorskip("numpy")
+
+        with pytest.warns(None) as record:
+            model_ver = registered_model.create_standard_model(
+                model,
+                Python(["pytest"]),  # source module imports pytest
+            )
+        assert not record  # no warning of missing decorator on predict()
+
+        endpoint.update(model_ver, wait=True)
+        deployed_model = endpoint.get_deployed_model()
+        assert deployed_model.predict(np.random.random(size=(3, 3)).tolist())
 
     @pytest.mark.parametrize(
         "model",
