@@ -15,6 +15,7 @@ import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import io.opentracing.contrib.grpc.TracingServerInterceptor;
 import io.opentracing.contrib.jdbc.TracingDriver;
 import io.opentracing.contrib.jdbi3.OpentracingJdbi3Plugin;
+import io.opentracing.contrib.jdbi3.OpentracingSqlLogger;
 import io.opentracing.util.GlobalTracer;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -136,7 +137,8 @@ public abstract class Config {
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);
 
-    final Jdbi jdbi = Jdbi.create(hikariDataSource).installPlugins();
+    final Jdbi jdbi = Jdbi.create(hikariDataSource).setSqlLogger(new OpentracingSqlLogger(GlobalTracer.get()));
+
     return jdbi;
   }
 

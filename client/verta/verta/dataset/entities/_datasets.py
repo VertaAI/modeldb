@@ -4,11 +4,11 @@ import copy
 
 from verta._protos.public.modeldb import DatasetService_pb2 as _DatasetService
 
-from verta._internal_utils import _utils
+from verta._bases import _LazyList
 from . import _dataset
 
 
-class Datasets(_utils.LazyList):
+class Datasets(_LazyList):
     r"""
     ``list``-like object containing :class:`~verta.dataset.entities.Dataset`\ s.
 

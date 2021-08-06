@@ -89,15 +89,17 @@ class _DeployableEntity(_ModelDBEntity):
                 - ``str`` path to a file or directory
                 - arbitrary ``pickle``\ able object
         custom_modules : list of str, optional
-            Paths to local Python modules and other files that the deployed
-            model depends on. Modules from the standard library should not be
-            included here.
+            Paths to local Python modules and other files that the deployed model depends on. Modules from the standard library should not be included here.
                 - If directories are provided, all files within—excluding virtual environments—will
                   be included.
                 - If module names are provided, all files within the corresponding module inside a
                   folder in ``sys.path`` will be included.
                 - If not provided, all Python files located within ``sys.path``—excluding virtual
                   environments—will be included.
+                - If an empty list is provided, no local files will be included
+                  at all. This can be useful for decreasing upload times or
+                  resolving certain types of package conflicts when a model has
+                  no local dependencies.
         model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying details about the model and its deployment.
         artifacts : list of str, optional

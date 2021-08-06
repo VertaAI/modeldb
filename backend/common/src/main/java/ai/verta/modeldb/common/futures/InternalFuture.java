@@ -1,19 +1,19 @@
 package ai.verta.modeldb.common.futures;
 
+import io.grpc.Context;
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.SpanContext;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
 import io.opentracing.contrib.grpc.ActiveSpanSource;
+import io.opentracing.contrib.grpc.OpenTracingContextKey;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.logging.log4j.util.TriConsumer;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -27,57 +27,43 @@ public class InternalFuture<T> {
     private InternalFuture() {
     }
 
-    static private SpanContext getActiveSpanContext(Tracer tracer) {
-        Span activeSpan = ActiveSpanSource.GRPC_CONTEXT.getActiveSpan();
-        if (activeSpan != null) {
-            return activeSpan.context();
-        }
-
-        SpanContext spanContext = ActiveSpanContextSource.GRPC_CONTEXT.getActiveSpanContext();
-        if (spanContext != null) {
-            return spanContext;
-        }
-
-        return tracer.activeSpan() != null ? tracer.activeSpan().context() : null;
-    }
-
-    static private Span createSpanFromParent(Tracer tracer, SpanContext parentSpanContext, String operationName, Map<String,String> tags) {
-        Tracer.SpanBuilder spanBuilder;
-        if (parentSpanContext == null) {
-            spanBuilder = tracer.buildSpan(operationName);
-        } else {
-            spanBuilder = tracer.buildSpan(operationName).asChildOf(parentSpanContext);
-        }
-
-    if (tags != null) {
-      for (var entry : tags.entrySet()) {
-        spanBuilder = spanBuilder.withTag(entry.getKey(), entry.getValue());
-      }
-        }
-
-        return spanBuilder.start();
-    }
-
     public static <T> InternalFuture<T> trace(Supplier<InternalFuture<T>> supplier, String operationName, Map<String,String> tags, Executor executor) {
-        if (!GlobalTracer.isRegistered())
-            return supplier.get();
-
-        final var tracer = GlobalTracer.get();
-
-        final var spanContext = getActiveSpanContext(tracer);
-        final var span = createSpanFromParent(tracer, spanContext, operationName, tags);
-
-        final var promise = new CompletableFuture<T>();
-        supplier.get().stage.whenCompleteAsync((v, t) -> {
-            span.finish();
-            if (t != null) {
-                promise.completeExceptionally(t);
-            } else {
-                promise.complete(v);
-            }
-        }, executor);
-
-        return InternalFuture.from(promise);
+        return supplier.get();
+//
+//        if (!GlobalTracer.isRegistered())
+//            return supplier.get();
+//
+//        final var tracer = GlobalTracer.get();
+//
+//        final var currentSpan = tracer.scopeManager().activeSpan();
+//        final var spanContext = TraceSupport.getActiveSpanContext(tracer);
+//        final var spanCreator = TraceSupport.createSpanFromParent(tracer, spanContext, operationName, tags);
+//        final var scopeCreator = tracer.scopeManager().activate(spanCreator);
+//
+//        final var promise = new CompletableFuture<T>();
+//
+//        executor.execute(() -> {
+//            Context.current()
+//                    .withValue(OpenTracingContextKey.getKey(), spanCreator)
+//                    .withValue(OpenTracingContextKey.getSpanContextKey(), spanCreator.context())
+//                    .attach();
+//            supplier.get().stage.whenCompleteAsync(
+//                (v, t) -> {
+//                  scopeCreator.close();
+//                  spanCreator.finish();
+//                  if (t != null) {
+//                    promise.completeExceptionally(t);
+//                  } else {
+//                    promise.complete(v);
+//                  }
+//                },
+//                executor);
+//
+//        });
+//
+//        tracer.scopeManager().activate(currentSpan);
+//
+//        return InternalFuture.from(promise);
     }
 
     // Convert a list of futures to a future of a list

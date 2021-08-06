@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.futures;
 
+import io.opentracing.util.GlobalTracer;
 import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
@@ -34,7 +35,12 @@ public class FutureJdbi {
           return InternalFuture.from(promise);
         },
         "jdbi.withHandle",
-        Map.of("caller", String.format("%s:%d", Thread.currentThread().getStackTrace()[2].getFileName(), Thread.currentThread().getStackTrace()[2].getLineNumber())),
+        Map.of(
+            "caller",
+            String.format(
+                "%s:%d",
+                Thread.currentThread().getStackTrace()[2].getFileName(),
+                Thread.currentThread().getStackTrace()[2].getLineNumber())),
         executor);
   }
 
@@ -61,7 +67,12 @@ public class FutureJdbi {
           return InternalFuture.from(promise);
         },
         "jdbi.useHandle",
-            Map.of("caller", String.format("%s:%d", Thread.currentThread().getStackTrace()[2].getFileName(), Thread.currentThread().getStackTrace()[2].getLineNumber())),
+        Map.of(
+            "caller",
+            String.format(
+                "%s:%d",
+                Thread.currentThread().getStackTrace()[2].getFileName(),
+                Thread.currentThread().getStackTrace()[2].getLineNumber())),
         executor);
   }
 }
