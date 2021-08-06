@@ -19,6 +19,7 @@ from verta import data_types
 from verta.monitoring.alert.entities import Alerts
 from .queries import SummarySampleQuery
 from .summary_sample import SummarySample
+from .summary_samples import SummarySamplesPaginatedIterable
 
 
 class Summary(_entity._ModelDBEntity):
@@ -136,6 +137,14 @@ class Summary(_entity._ModelDBEntity):
         list of :class:`~verta.monitoring.summaries.summary_sample.SummarySample`
             A list of summary samples belonging to this summary and matching the
             query.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            for sample in summary.find_samples():
+                print(sample.content)
+
         """
         if query is None:
             query = SummarySampleQuery()
@@ -143,15 +152,7 @@ class Summary(_entity._ModelDBEntity):
         if self.id not in msg.filter.find_summaries.ids:
             msg.filter.find_summaries.ids.append(self.id)
 
-        endpoint = "/api/v1/summaries/findSample"
-        response = self._conn.make_proto_request("POST", endpoint, body=msg)
-        success = self._conn.must_proto_response(
-            response, FindSummarySampleRequest.Response
-        )
-        samples = [
-            SummarySample(self._conn, self._conf, record) for record in success.samples
-        ]
-        return samples
+        return SummarySamplesPaginatedIterable(self._conn, self._conf, msg)
 
     def has_type(self, data_type_cls):  # TODO: hideme
         return self.type == data_type_cls._type_string()
