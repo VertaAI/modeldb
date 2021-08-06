@@ -62,23 +62,19 @@ class VertaModelBase(object):
 
         .. note::
 
-            To ensure interoperability with Verta deployment, this method
-            should expect the parameter `input` to be one of the following types:
+            **It is recommended** to use the :func:`~verta.registry.verify_io`
+            decorator to help ensure that your model's input and output types
+            will be fully compatible with the Verta platform as you iterate
+            locally.
 
-            - ``int``
-            - ``float``
-            - ``bool``
-            - ``str``
-            - ``NoneType``
-            - ``list``
-            - ``dict``
-            - nested ``dict``/``list`` of the above
+            Specifically, this method should be written in a way that expects
+            the parameter `input` to be a type returned from ``json.loads()``,
+            i.e. a basic Python type. `input` would then need to be manually
+            cast to a NumPy array, pandas DataFrame, etc. in order to be used
+            as such.
 
-            `input` should be manually cast to a NumPy array, pandas DataFrame,
-            etc. in order to be used as such.
-
-            The value returned by this method should also be converted to one
-            of the above types.
+            Similarly, the return value should also be a type that can be
+            passed to ``json.dumps()``
 
         Parameters
         ----------

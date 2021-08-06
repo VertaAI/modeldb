@@ -7,7 +7,7 @@ import json
 from verta.external import six
 
 
-# TODO: check what the deal is with bytes vs unicode
+# TODO: possibly mention bytes and unicode separately
 _ALLOWED_INPUT_TYPES = {
     dict,
     list,
@@ -22,7 +22,7 @@ _DECORATED_FLAG = "_verta_verify_io"
 
 
 def verify_io(f):
-    """Decorator to typecheck I/O serializability within the Verta platform.
+    """Decorator to typecheck I/O to ensure platform compatibility when deployed.
 
     Allowed input [1]_ and output [2]_ types are validated by Python's
     standard ``json`` library.
@@ -54,6 +54,14 @@ def verify_io(f):
     ----------
     .. [1] https://docs.python.org/3/library/json.html#json-to-py-table
     .. [2] https://docs.python.org/3/library/json.html#py-to-json-table
+
+    Notes
+    -----
+    ``json.dumps()`` is used for its significantly faster performance compared
+    to a manual recursive type-check, but there are a couple of edge cases
+    where it will permit false negatives: most notably it will allow tuples
+    which are actually passed as lists, though their interfaces are similar
+    enough that misuse is unlikely.
 
     """
     @functools.wraps(f)
