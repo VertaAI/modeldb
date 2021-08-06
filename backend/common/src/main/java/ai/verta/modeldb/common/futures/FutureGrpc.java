@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 
 public class FutureGrpc {
   // Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom
@@ -46,7 +47,11 @@ public class FutureGrpc {
 
   public static Executor initializeExecutor(Integer threadCount) {
     return FutureGrpc.makeCompatibleExecutor(
-        Executors.newFixedThreadPool(threadCount, Executors.defaultThreadFactory()));
+        new ForkJoinPool(
+            threadCount,
+            ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+            Thread.getDefaultUncaughtExceptionHandler(),
+            true));
   }
 
   // Callback for a ListenableFuture to satisfy a promise
@@ -80,10 +85,13 @@ public class FutureGrpc {
       if (GlobalTracer.isRegistered()) {
         final var tracer = GlobalTracer.get();
         final var span = tracer.scopeManager().activeSpan();
-        other.execute(Context.current().wrap(() -> {
-          tracer.scopeManager().activate(span);
-          r.run();
-        }));
+        other.execute(
+            Context.current()
+                .wrap(
+                    () -> {
+                      tracer.scopeManager().activate(span);
+                      r.run();
+                    }));
       } else {
         other.execute(Context.current().wrap(r));
       }
