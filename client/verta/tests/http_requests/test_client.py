@@ -6,6 +6,7 @@ import hypothesis
 import hypothesis.strategies as st
 import pytest
 import requests
+import six
 
 import verta
 from verta._internal_utils import _utils
@@ -150,3 +151,33 @@ class TestClient:
             assert "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`" in excinfo_value
         finally:
             os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = old_email, old_dev_key
+
+    @pytest.mark.not_oss
+    def test_ca_bundle_env_var(self, client):
+        """"Verify make_request() honors REQUESTS_CA_BUNDLE env var."""
+        REQUESTS_CA_BUNDLE_ENV_VAR = "REQUESTS_CA_BUNDLE"
+        good_ca_bundle_path = os.environ.get(REQUESTS_CA_BUNDLE_ENV_VAR)
+        conn = client._conn
+
+        url = "{}://{}/".format(conn.scheme, conn.socket)
+
+        # as a control, make sure request works
+        response = _utils.make_request("GET", url, conn)
+        conn.must_response(response)
+
+        bad_ca_bundle_path = "foo"
+        msg_match = (
+            "^Could not find a suitable TLS CA certificate bundle,"
+            " invalid path: {}$".format(bad_ca_bundle_path)
+        )
+        error_type = IOError if six.PY2 else OSError
+        try:
+            os.environ[REQUESTS_CA_BUNDLE_ENV_VAR] = bad_ca_bundle_path
+
+            with pytest.raises(error_type, match=msg_match):
+                _utils.make_request("GET", url, client._conn)
+        finally:
+            if good_ca_bundle_path:
+                os.environ[REQUESTS_CA_BUNDLE_ENV_VAR] = good_ca_bundle_path
+            else:
+                del os.environ[REQUESTS_CA_BUNDLE_ENV_VAR]
