@@ -6,9 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
-import io.opentracing.contrib.grpc.OpenTracingContextKey;
 import io.opentracing.util.GlobalTracer;
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -58,7 +56,7 @@ public class FutureGrpc {
     }
 
     @Override
-    public void onSuccess(@NullableDecl T t) {
+    public void onSuccess(T t) {
       promise.complete(t);
     }
 
