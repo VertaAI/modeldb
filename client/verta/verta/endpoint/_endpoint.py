@@ -6,8 +6,6 @@ import time
 import json
 import yaml
 
-import requests
-
 from verta.external import six
 
 from verta.deployment import DeployedModel
@@ -757,5 +755,5 @@ class Endpoint(object):
         request_url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}".format(
             self._conn.scheme, self._conn.socket, self.workspace, self.id
         )
-        response = requests.delete(request_url, headers=self._conn.auth)
+        response = _utils.make_request("DELETE", request_url, self._conn)
         _utils.raise_for_http_error(response)

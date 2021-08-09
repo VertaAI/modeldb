@@ -4,7 +4,7 @@ import pickle
 
 import pytest
 
-from verta.registry import VertaModelBase
+from verta.registry import verify_io, VertaModelBase
 from verta._internal_utils.importer import get_tensorflow_major_version
 
 
@@ -17,6 +17,15 @@ class VertaModel(VertaModelBase):
 
     def predict(self, input):
         return self.artifact
+
+
+class VertaModelDecorated(VertaModelBase):
+    def __init__(self, artifacts):
+        pass
+
+    @verify_io
+    def predict(self, input):
+        return input
 
 
 class VertaModelNoImpl(VertaModelBase):
@@ -37,6 +46,14 @@ def verta_models():
     models = []
 
     models.append(VertaModel)
+
+    return models
+
+
+def decorated_verta_models():
+    models = []
+
+    models.append(VertaModelDecorated)
 
     return models
 

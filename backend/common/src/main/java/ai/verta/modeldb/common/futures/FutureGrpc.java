@@ -6,11 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
-import io.opentracing.contrib.grpc.OpenTracingContextKey;
 import io.opentracing.util.GlobalTracer;
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
-
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -58,7 +54,7 @@ public class FutureGrpc {
     }
 
     @Override
-    public void onSuccess(@NullableDecl T t) {
+    public void onSuccess(T t) {
       promise.complete(t);
     }
 
@@ -80,10 +76,13 @@ public class FutureGrpc {
       if (GlobalTracer.isRegistered()) {
         final var tracer = GlobalTracer.get();
         final var span = tracer.scopeManager().activeSpan();
-        other.execute(Context.current().wrap(() -> {
-          tracer.scopeManager().activate(span);
-          r.run();
-        }));
+        other.execute(
+            Context.current()
+                .wrap(
+                    () -> {
+                      tracer.scopeManager().activate(span);
+                      r.run();
+                    }));
       } else {
         other.execute(Context.current().wrap(r));
       }

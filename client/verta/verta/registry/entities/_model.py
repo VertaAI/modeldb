@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-import requests
 
 from verta._internal_utils._utils import check_unnecessary_params_warning
 from verta.tracking import _Context
@@ -807,5 +806,5 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         """
         request_url = "{}://{}/api/v1/registry/registered_models/{}".format(self._conn.scheme, self._conn.socket, self.id)
-        response = requests.delete(request_url, headers=self._conn.auth)
+        response = _utils.make_request("DELETE", request_url, self._conn)
         _utils.raise_for_http_error(response)

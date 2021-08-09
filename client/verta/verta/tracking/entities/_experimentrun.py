@@ -2349,6 +2349,7 @@ class ExperimentRun(_DeployableEntity):
         """
         request_url = "{}://{}/api/v1/modeldb/experiment-run/deleteExperimentRun".format(
             self._conn.scheme, self._conn.socket)
-        response = requests.delete(
-            request_url, json={'id': self.id}, headers=self._conn.auth)
+        response = _utils.make_request(
+            "DELETE", request_url, self._conn, json={'id': self.id},
+        )
         _utils.raise_for_http_error(response)

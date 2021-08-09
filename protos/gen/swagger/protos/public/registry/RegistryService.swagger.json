@@ -2358,6 +2358,11 @@
             "$ref": "#/definitions/commonArtifact"
           },
           "title": "Other artifacts"
+        },
+        "readme_text_updated": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Is true if the readme text has been updated at least once"
         }
       }
     },

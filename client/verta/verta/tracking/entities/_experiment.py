@@ -2,8 +2,6 @@
 
 from __future__ import print_function
 
-import requests
-
 from verta._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
 
 from verta._internal_utils import _utils
@@ -90,5 +88,5 @@ class Experiment(_ModelDBEntity):
 
         """
         request_url = "{}://{}/api/v1/modeldb/experiment/deleteExperiment".format(self._conn.scheme, self._conn.socket)
-        response = requests.delete(request_url, json={'id': self.id}, headers=self._conn.auth)
+        response = _utils.make_request("DELETE", request_url, self._conn, json={'id': self.id})
         _utils.raise_for_http_error(response)

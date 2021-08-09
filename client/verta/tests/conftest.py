@@ -353,6 +353,28 @@ def client(host, port, email, dev_key, created_entities):
         proj.delete()
 
 
+@pytest.fixture
+def https_client(host, email, dev_key, created_entities):
+    """A Client that is guaranteed to be using HTTPS for its connection.
+
+    Our test suite uses HTTP by default to make faster intra-cluster requests.
+
+    """
+    https_verta_url = os.environ.get(constants.HTTPS_VERTA_URL_ENV_VAR)
+    if not https_verta_url and ".verta.ai" in host and not host.startswith("http://"):
+        https_verta_url = host
+    if not https_verta_url:
+        pytest.skip("no HTTPS Verta URL available")
+
+    client = Client(https_verta_url, email=email, dev_key=dev_key, debug=True)
+
+    yield client
+
+    proj = client._ctx.proj
+    if proj is not None and proj.id not in {entity.id for entity in created_entities}:
+        proj.delete()
+
+
 @pytest.fixture(scope="class")
 def class_client(host, port, email, dev_key, class_created_entities):
     client = Client(host, port, email, dev_key, debug=True)

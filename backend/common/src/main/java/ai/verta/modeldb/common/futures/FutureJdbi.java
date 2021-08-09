@@ -1,13 +1,11 @@
 package ai.verta.modeldb.common.futures;
 
-import io.opentracing.util.GlobalTracer;
-import org.jdbi.v3.core.HandleCallback;
-import org.jdbi.v3.core.HandleConsumer;
-import org.jdbi.v3.core.Jdbi;
-
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import org.jdbi.v3.core.HandleCallback;
+import org.jdbi.v3.core.HandleConsumer;
+import org.jdbi.v3.core.Jdbi;
 
 public class FutureJdbi {
   private final Executor executor;

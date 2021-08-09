@@ -1,18 +1,13 @@
 package ai.verta.modeldb.common.connections;
 
-import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.stub.AbstractStub;
 import io.opentracing.contrib.grpc.TracingClientInterceptor;
-
 import java.util.Optional;
-import java.util.concurrent.Executor;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class Connection {

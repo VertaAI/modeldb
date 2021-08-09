@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import warnings
+
 from verta.registry import VertaModelBase
+from verta.registry._verify_io import _DECORATED_FLAG
 
 from . import importer
 
@@ -75,6 +78,11 @@ def must_verta(model):
         raise TypeError(
             "model must finish implementing the following methods of"
             " VertaModelBase: {}".format(remaining_abstract_methods)
+        )
+    if not getattr(model.predict, _DECORATED_FLAG, False):
+        warnings.warn(
+            "model predict() is not decorated with verta.registry.verify_io;"
+            " argument and return types may change unintuitively when deployed"
         )
 
     return True

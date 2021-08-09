@@ -4,7 +4,6 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

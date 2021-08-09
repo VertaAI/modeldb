@@ -1,9 +1,6 @@
 package ai.verta.modeldb.common.reconcilers;
 
-import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import org.apache.logging.log4j.Logger;
-
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -17,6 +14,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.Logger;
 
 public abstract class Reconciler<T> {
   final Logger logger;
@@ -32,7 +30,12 @@ public abstract class Reconciler<T> {
   protected final FutureJdbi futureJdbi;
   protected final Executor executor;
 
-  protected Reconciler(ReconcilerConfig config, Logger logger, FutureJdbi futureJdbi, Executor executor, boolean deduplicate) {
+  protected Reconciler(
+      ReconcilerConfig config,
+      Logger logger,
+      FutureJdbi futureJdbi,
+      Executor executor,
+      boolean deduplicate) {
     this.logger = logger;
     this.config = config;
     this.futureJdbi = futureJdbi;
@@ -69,7 +72,8 @@ public abstract class Reconciler<T> {
                   // Fetch ids to process while avoiding race conditions
                   try {
                     lock.lock();
-                    idsToProcess = pop().stream()
+                    idsToProcess =
+                        pop().stream()
                             .filter(id -> !processingIdSet.contains(id))
                             .collect(Collectors.toSet());
                     if (!idsToProcess.isEmpty()) {
