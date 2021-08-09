@@ -7,7 +7,6 @@ import json
 from verta.external import six
 
 
-# TODO: possibly mention bytes and unicode separately
 _ALLOWED_INPUT_TYPES = {
     dict,
     list,
@@ -101,5 +100,13 @@ def _check_compatible_value_helper(value, value_name, allowed_types):
             str(e),
             value_name,
             sorted(map(lambda cls: cls.__name__, allowed_types)),
+        )
+        six.raise_from(TypeError(err_msg), None)
+    except UnicodeDecodeError as e:
+        # in Python 2, json.dumps() attempts to decode binary (unlike Python 3
+        # which rejects it outright), so here we clarify the potential error
+        err_msg = "{}; {} cannot contain binary; consider encoding to base64 instead".format(
+            str(e),
+            value_name,
         )
         six.raise_from(TypeError(err_msg), None)

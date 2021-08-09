@@ -3,17 +3,16 @@
 """ModelVersion.create_version_from_*() methods"""
 
 from datetime import timedelta
-import json
-import math
 import re
 
 import hypothesis
+import hypothesis.strategies as st
 import pytest
 
 from verta._internal_utils import _artifact_utils, model_validator
 from verta.environment import Python
 from verta.external import six
-from verta.registry import verify_io, VertaModelBase
+from verta.registry import verify_io
 
 from ..models import standard_models
 from ..strategies import json_strategy
@@ -50,12 +49,29 @@ class TestVerifyIO:
         for value in [array, df, tensor]:
 
             @verify_io
-            def predict(self, input):
+            def predict(self, _):
                 return value
             with pytest.raises(TypeError, match=msg_match.format("input")):
                 predict(None, value)
             with pytest.raises(TypeError, match=msg_match.format("output")):
                 predict(None, None)
+
+    def test_verify_io_reject_bytes(self):
+        # TODO: create Hypothesis strategy for non-decodable binary
+        value = b"\x80abc"
+
+        if six.PY2:
+            msg_match = "'utf8' codec can't decode byte.*{} cannot contain binary"
+        else:
+            msg_match = "not JSON serializable.*{} must only contain types"
+
+        @verify_io
+        def predict(self, _):
+            return value
+        with pytest.raises(TypeError, match=msg_match.format("input")):
+            predict(None, value)
+        with pytest.raises(TypeError, match=msg_match.format("output")):
+            predict(None, None)
 
 
 class TestModelValidator:
