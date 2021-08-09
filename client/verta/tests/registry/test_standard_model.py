@@ -46,32 +46,16 @@ class TestVerifyIO:
         df = pytest.importorskip("pandas").DataFrame([1, 2, 3])
         tensor = pytest.importorskip("torch").tensor([1, 2, 3])
 
-        @verify_io
-        def predict1(self, input):
-            return array
         msg_match = "not JSON serializable.*{} must only contain types"
-        with pytest.raises(TypeError, match=msg_match.format("input")):
-            predict1(None, array)
-        with pytest.raises(TypeError, match=msg_match.format("output")):
-            predict1(None, None)
+        for value in [array, df, tensor]:
 
-        @verify_io
-        def predict2(self, input):
-            return df
-        msg_match = "not JSON serializable.*{} must only contain types"
-        with pytest.raises(TypeError, match=msg_match.format("input")):
-            predict2(None, df)
-        with pytest.raises(TypeError, match=msg_match.format("output")):
-            predict2(None, None)
-
-        @verify_io
-        def predict3(self, input):
-            return tensor
-        msg_match = "not JSON serializable.*{} must only contain types"
-        with pytest.raises(TypeError, match=msg_match.format("input")):
-            predict3(None, tensor)
-        with pytest.raises(TypeError, match=msg_match.format("output")):
-            predict3(None, None)
+            @verify_io
+            def predict(self, input):
+                return value
+            with pytest.raises(TypeError, match=msg_match.format("input")):
+                predict(None, value)
+            with pytest.raises(TypeError, match=msg_match.format("output")):
+                predict(None, None)
 
 
 class TestModelValidator:
