@@ -6,7 +6,7 @@ import requests
 from verta._internal_utils._utils import check_unnecessary_params_warning
 from verta.tracking import _Context
 from verta.tracking.entities import _entity
-from verta._internal_utils import _artifact_utils, _utils, model_validator
+from verta._internal_utils import _artifact_utils, _utils, arg_handler, model_validator
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
@@ -254,7 +254,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
         code_dependencies : list of str, optional
-            Paths to local Python code files that `model_cls` depends on.
+            Paths to local Python code files that `model_cls` depends on. This
+            parameter has the same behavior as ``custom_modules`` in
+            :meth:`RegisteredModelVersion.log_model`.
         model_api : :class:`~verta.utils.ModelAPI`
             Model API specifying the model's expected input and output
         artifacts : dict of str to obj
@@ -623,8 +625,8 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         Parameters
         ----------
-        run_id : str
-            ID of the run from which to create the model version.
+        run_id : str or :class:`~verta.tracking.entities.ExperimentRun`
+            Run from which to create the model version.
         name : str, optional
             Name of the model version. If no name is provided, one will be generated.
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
@@ -635,6 +637,8 @@ class RegisteredModel(_entity._ModelDBEntity):
         :class:`~verta.registry.entities.RegisteredModelVersion`
 
         """
+        run_id = arg_handler.extract_id(run_id)
+
         ctx = _Context(self._conn, self._conf)
         ctx.registered_model = self
         return RegisteredModelVersion._create(

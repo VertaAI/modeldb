@@ -21,8 +21,6 @@ from ._internal_utils import (
     _utils,
 )
 
-from . import repository
-
 from .tracking import _Context
 from .tracking.entities import (
     Project,
@@ -82,6 +80,8 @@ class Client(object):
         Whether to use a local Git repository for certain operations such as Code Versioning.
     debug : bool, default False
         Whether to print extra verbose information to aid in debugging.
+    extra_auth_headers : dict, default {}
+        Extra headers to include on requests, like to permit traffic through a restrictive application load balancer
     _connect : str, default True
         Whether to connect to server (``False`` for unit tests).
 
@@ -119,7 +119,7 @@ class Client(object):
 
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
-                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, _connect=True):
+                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, extra_auth_headers={}, _connect=True):
         self._load_config()
 
         if host is None and 'VERTA_HOST' in os.environ:
@@ -140,7 +140,8 @@ class Client(object):
 
         if host is None:
             raise ValueError("`host` must be provided")
-        auth = {_utils._GRPC_PREFIX+'source': "PythonClient"}
+        auth = extra_auth_headers.copy()
+        auth.update({_utils._GRPC_PREFIX+'source': "PythonClient"})
         if email is None and dev_key is None:
             if debug:
                 print("[DEBUG] email and developer key not found; auth disabled")
@@ -645,69 +646,6 @@ class Client(object):
 
         return self._ctx.expt_run
 
-    def get_or_create_repository(self, name=None, workspace=None, id=None, public_within_org=None, visibility=None):
-        """
-        Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
-
-        Parameters
-        ----------
-        name : str
-            Name of the Repository. This parameter cannot be provided alongside `id`.
-        workspace : str, optional
-            Workspace under which the Repository with name `name` exists. If not provided, the
-            current user's personal workspace will be used.
-        id : str, optional
-            ID of the Repository, to be provided instead of `name`.
-        public_within_org : bool, optional
-            If creating a Repository in an organization's workspace: ``True``
-            for public, ``False`` for private. In older backends, default is
-            private; in newer backends, uses the org's settings by default.
-        visibility : :mod:`~verta.visibility`, optional
-            Visibility to set when creating this repository. If not provided,
-            an appropriate default will be used. This parameter should be
-            preferred over `public_within_org`.
-
-        Returns
-        -------
-        :class:`~verta.repository.Repository`
-            Specified Repository.
-
-        """
-        self._validate_visibility(visibility)
-
-        if name is not None and id is not None:
-            raise ValueError("cannot specify both `name` and `id`")
-        elif id is not None:
-            repo = repository.Repository._get(self._conn, id_=id)
-            if repo is None:
-                raise ValueError("no Repository found with ID {}".format(id))
-            print("set existing Repository: {}".format(repo.name))
-            return repo
-        elif name is not None:
-            if workspace is None:
-                workspace = self.get_workspace()
-            workspace_str = "workspace {}".format(workspace)
-
-            repo = repository.Repository._get(self._conn, name=name, workspace=workspace)
-
-            if not repo:  # not found
-                try:
-                    repo = repository.Repository._create(self._conn, name=name, workspace=workspace,
-                                                          public_within_org=public_within_org, visibility=visibility)
-                except requests.HTTPError as e:
-                    if e.response.status_code == 409:  # already exists
-                        raise RuntimeError("unable to get Repository from ModelDB;"
-                                           " please notify the Verta development team")
-                    else:
-                        six.raise_from(e, None)
-                print("created new Repository: {} in {}".format(name, workspace_str))
-            else:
-                print("set existing Repository: {} from {}".format(name, workspace_str))
-
-            return repo
-        else:
-            raise ValueError("must specify either `name` or `id`")
-
     # set aliases for get-or-create functions for API compatibility
     def get_or_create_project(self, *args, **kwargs):
         """
@@ -729,14 +667,6 @@ class Client(object):
 
         """
         return self.set_experiment_run(*args, **kwargs)
-
-    def set_repository(self, *args, **kwargs):
-        """
-        Alias for :meth:`Client.get_or_create_repository()`.
-
-        """
-        return self.get_or_create_repository(*args, **kwargs)
-    # set aliases for get-or-create functions for API compatibility
 
     def get_or_create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None, id=None):
         """
@@ -1166,11 +1096,22 @@ class Client(object):
         )
 
 
-    def create_endpoint(self, path, description=None, workspace=None, public_within_org=None, visibility=None):
+    def create_endpoint(
+        self,
+        path,
+        description=None,
+        workspace=None,
+        public_within_org=None,
+        visibility=None,
+        kafka_settings=None,
+    ):
         """
         Attaches an endpoint to this Client.
 
         An accessible endpoint with name `name` will be created and initialized with specified metadata parameters.
+
+        .. versionadded:: 0.19.0
+            The `kafka_settings` parameter.
 
         Parameters
         ----------
@@ -1189,6 +1130,8 @@ class Client(object):
             Visibility to set when creating this endpoint. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
+        kafka_settings : :class:`verta.endpoint.KafkaSettings`, optional
+            Kafka settings.
 
         Returns
         -------
@@ -1206,7 +1149,16 @@ class Client(object):
 
         if workspace is None:
             workspace = self.get_workspace()
-        return Endpoint._create(self._conn, self._conf, workspace, path, description, public_within_org, visibility)
+        return Endpoint._create(
+            self._conn,
+            self._conf,
+            workspace,
+            path,
+            description,
+            public_within_org,
+            visibility,
+            kafka_settings,
+        )
 
     @property
     def endpoints(self):

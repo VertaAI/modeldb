@@ -326,7 +326,7 @@ def random_data():
             return data
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def tempdir_root():
     return os.environ.get("TEMPDIR_ROOT")
 
@@ -424,19 +424,11 @@ def model_for_deployment(strs):
 
 
 @pytest.fixture
-def repository(client, created_entities):
-    name = _utils.generate_default_name()
-    repo = client.get_or_create_repository(name)
-    created_entities.append(repo)
+def dataset(client, created_entities):
+    dataset = client.create_dataset()
+    created_entities.append(dataset)
 
-    return repo
-
-
-@pytest.fixture
-def commit(repository):
-    commit = repository.get_commit()
-
-    return commit
+    return dataset
 
 
 @pytest.fixture

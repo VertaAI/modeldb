@@ -435,6 +435,14 @@
       ],
       "default": "UNDEFINED"
     },
+    "CollaboratorTypeEnumCollaboratorType": {
+      "type": "string",
+      "enum": [
+        "READ_ONLY",
+        "READ_WRITE"
+      ],
+      "default": "READ_ONLY"
+    },
     "DeployStatusEnumDeployStatus": {
       "type": "string",
       "enum": [
@@ -446,6 +454,15 @@
         "ERROR"
       ],
       "default": "UNDEFINED"
+    },
+    "TernaryEnumTernary": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "TRUE",
+        "FALSE"
+      ],
+      "default": "UNKNOWN"
     },
     "monitoringCreateMonitoredEntityRequest": {
       "type": "object",
@@ -465,6 +482,13 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "resource_visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         }
       }
     },
@@ -583,6 +607,13 @@
             "type": "string"
           }
         },
+        "fuzzy_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Add names to find with a fuzzy (non-exact) search"
+        },
         "workspace_id": {
           "type": "string",
           "format": "uint64"
@@ -690,6 +721,17 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "owner": {
+          "type": "string",
+          "title": "owner's verta_id"
+        },
+        "resource_visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         }
       }
     },
@@ -742,6 +784,13 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "resource_visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         }
       }
     },
@@ -816,6 +865,31 @@
           }
         }
       }
+    },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ORG_DEFAULT",
+        "ORG_CUSTOM",
+        "PRIVATE",
+        "WORKSPACE_DEFAULT"
+      ],
+      "default": "UNKNOWN"
     },
     "vertamonitoringKeyValue": {
       "type": "object",

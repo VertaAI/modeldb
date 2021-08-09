@@ -6,10 +6,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
+import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 
 public class FutureGrpc {
   // Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom
@@ -37,7 +37,7 @@ public class FutureGrpc {
 
   // Wraps an Executor and make it compatible with grpc's context
   private static Executor makeCompatibleExecutor(Executor ex) {
-    return Context.currentContextExecutor(ex);
+    return new ExecutorWrapper(ex);
   }
 
   public static Executor initializeExecutor(Integer threadCount) {
@@ -54,13 +54,38 @@ public class FutureGrpc {
     }
 
     @Override
-    public void onSuccess(@NullableDecl T t) {
+    public void onSuccess(T t) {
       promise.complete(t);
     }
 
     @Override
     public void onFailure(Throwable t) {
       promise.completeExceptionally(t);
+    }
+  }
+
+  private static class ExecutorWrapper implements Executor {
+    final Executor other;
+
+    ExecutorWrapper(Executor other) {
+      this.other = other;
+    }
+
+    @Override
+    public void execute(Runnable r) {
+      if (GlobalTracer.isRegistered()) {
+        final var tracer = GlobalTracer.get();
+        final var span = tracer.scopeManager().activeSpan();
+        other.execute(
+            Context.current()
+                .wrap(
+                    () -> {
+                      tracer.scopeManager().activate(span);
+                      r.run();
+                    }));
+      } else {
+        other.execute(Context.current().wrap(r));
+      }
     }
   }
 }

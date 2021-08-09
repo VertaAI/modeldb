@@ -5,6 +5,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/moni
 
 option java_multiple_files = true;
 
+import "uac/Collaborator.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
 
@@ -153,6 +154,12 @@ message MonitoredEntity {
   uint64 created_at_timestamp_millis = 6;
   uint64 updated_at_timestamp_millis = 7;
   map<string, string> attributes = 8;
+  //owner's verta_id
+  string owner = 9;
+  uac.ResourceVisibility resource_visibility = 10;
+  // The next field only makes sense when visibility == ORG_CUSTOM
+  // They will be empty otherwise
+  uac.CollaboratorPermissions custom_permission = 11;
 }
 
 message CreateMonitoredEntityRequest {
@@ -165,6 +172,10 @@ message CreateMonitoredEntityRequest {
   }
 
   map<string, string> attributes = 6;
+  uac.ResourceVisibility resource_visibility = 7;
+  // The next field only makes sense when visibility == ORG_CUSTOM
+  // They will be empty otherwise
+  uac.CollaboratorPermissions custom_permission = 8;
 
   message Response {
     MonitoredEntity monitored_entity = 1;
@@ -177,6 +188,10 @@ message UpdateMonitoredEntityRequest {
   string name = 2;
 
   map<string, string> attributes = 7;
+  uac.ResourceVisibility resource_visibility = 8;
+  // The next field only makes sense when visibility == ORG_CUSTOM
+  // They will be empty otherwise
+  uac.CollaboratorPermissions custom_permission = 9;
 
   message Response {
     MonitoredEntity monitored_entity = 1;
@@ -186,6 +201,9 @@ message UpdateMonitoredEntityRequest {
 message FindMonitoredEntityRequest {
   repeated uint64 ids = 1;
   repeated string names = 2;
+  // Add names to find with a fuzzy (non-exact) search
+  repeated string fuzzy_names = 7;
+
   oneof workspace_identifier {
     uint64 workspace_id = 3;
     string workspace_name = 6;

@@ -2517,16 +2517,14 @@ public class FindProjectEntitiesTest extends TestsInit {
     FindProjects findProjects = FindProjects.newBuilder().addPredicates(keyValueQuery).build();
 
     FindProjects.Response response = projectServiceStub.findProjects(findProjects);
-    LOGGER.info("FindProjects Response : " + response.getProjectsList());
-    assertEquals(
-        "Project count not match with expected project count",
-        4,
-        response.getProjectsList().size());
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        4,
-        response.getTotalRecords());
+    List<Project> projectList = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectMap.containsKey(project.getId())) {
+        projectList.add(project);
+      }
+    }
+    LOGGER.info("FindProjects Response : " + projectList.size());
+    assertEquals("Project count not match with expected project count", 4, projectList.size());
 
     keyValueQuery =
         KeyValueQuery.newBuilder()
@@ -2537,12 +2535,14 @@ public class FindProjectEntitiesTest extends TestsInit {
     findProjects = FindProjects.newBuilder().addPredicates(keyValueQuery).build();
 
     response = projectServiceStub.findProjects(findProjects);
+    projectList = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectMap.containsKey(project.getId())) {
+        projectList.add(project);
+      }
+    }
     assertEquals(
-        "Total records count not matched with expected records count",
-        0,
-        response.getTotalRecords());
-    assertEquals(
-        "Project count not match with expected project count", 0, response.getProjectsCount());
+        "Total records count not matched with expected records count", 0, projectList.size());
 
     stringValue = Value.newBuilder().setStringValue("asdasdasd").build();
     keyValueQuery =
@@ -2555,11 +2555,14 @@ public class FindProjectEntitiesTest extends TestsInit {
     findProjects = FindProjects.newBuilder().addPredicates(keyValueQuery).build();
 
     response = projectServiceStub.findProjects(findProjects);
-    LOGGER.info("FindProjects Response : " + response.getProjectsList());
-    assertEquals(
-        "Project count not match with expected project count",
-        0,
-        response.getProjectsList().size());
+    projectList = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectMap.containsKey(project.getId())) {
+        projectList.add(project);
+      }
+    }
+    LOGGER.info("FindProjects Response : " + projectList.size());
+    assertEquals("Project count not match with expected project count", 0, projectList.size());
 
     LOGGER.info("FindProjects by owner fuzzy search test stop ................................");
   }

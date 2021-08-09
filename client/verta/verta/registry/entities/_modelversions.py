@@ -4,13 +4,13 @@ from __future__ import print_function
 
 import copy
 
-from ..._protos.public.registry import RegistryService_pb2 as _RegistryService
-from ..._internal_utils import _utils
+from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
+from verta._bases import _LazyList
 
 from ._modelversion import RegisteredModelVersion
 
 
-class RegisteredModelVersions(_utils.LazyList):
+class RegisteredModelVersions(_LazyList):
     """Collection object for finding registered model versions.
 
     There should not be a need to instantiate this class directly; please use

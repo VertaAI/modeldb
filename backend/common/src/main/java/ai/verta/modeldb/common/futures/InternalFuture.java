@@ -1,8 +1,6 @@
 package ai.verta.modeldb.common.futures;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -14,6 +12,51 @@ public class InternalFuture<T> {
   private CompletionStage<T> stage;
 
   private InternalFuture() {}
+
+  public static <T> InternalFuture<T> trace(
+      Supplier<InternalFuture<T>> supplier,
+      String operationName,
+      Map<String, String> tags,
+      Executor executor) {
+    return supplier.get();
+    //
+    //        if (!GlobalTracer.isRegistered())
+    //            return supplier.get();
+    //
+    //        final var tracer = GlobalTracer.get();
+    //
+    //        final var currentSpan = tracer.scopeManager().activeSpan();
+    //        final var spanContext = TraceSupport.getActiveSpanContext(tracer);
+    //        final var spanCreator = TraceSupport.createSpanFromParent(tracer, spanContext,
+    // operationName, tags);
+    //        final var scopeCreator = tracer.scopeManager().activate(spanCreator);
+    //
+    //        final var promise = new CompletableFuture<T>();
+    //
+    //        executor.execute(() -> {
+    //            Context.current()
+    //                    .withValue(OpenTracingContextKey.getKey(), spanCreator)
+    //                    .withValue(OpenTracingContextKey.getSpanContextKey(),
+    // spanCreator.context())
+    //                    .attach();
+    //            supplier.get().stage.whenCompleteAsync(
+    //                (v, t) -> {
+    //                  scopeCreator.close();
+    //                  spanCreator.finish();
+    //                  if (t != null) {
+    //                    promise.completeExceptionally(t);
+    //                  } else {
+    //                    promise.complete(v);
+    //                  }
+    //                },
+    //                executor);
+    //
+    //        });
+    //
+    //        tracer.scopeManager().activate(currentSpan);
+    //
+    //        return InternalFuture.from(promise);
+  }
 
   // Convert a list of futures to a future of a list
   public static <T> InternalFuture<List<T>> sequence(
@@ -72,6 +115,11 @@ public class InternalFuture<T> {
 
   public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, Executor executor) {
     return from(stage.thenApplyAsync(fn, executor));
+  }
+
+  public <U> InternalFuture<U> handle(
+      BiFunction<? super T, Throwable, ? extends U> fn, Executor executor) {
+    return from(stage.handleAsync(fn, executor));
   }
 
   public <U, V> InternalFuture<V> thenCombine(

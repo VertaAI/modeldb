@@ -10,8 +10,8 @@ from verta._protos.public.common import CommonService_pb2 as _CommonCommonServic
 from verta._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
 from verta._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
+from verta import _blob
 from verta.tracking.entities import _entity
-from verta.repository import _commit
 from verta._internal_utils import (
     _artifact_utils,
     _utils,
@@ -154,10 +154,10 @@ class DatasetVersion(_entity._ModelDBEntity):
         """
         self._refresh_cache()
 
-        # create wrapper blob msg so we can reuse the repository system's proto-to-obj
+        # create wrapper blob msg so we can reuse the blob system's proto-to-obj
         blob = _VersioningService.Blob()
         blob.dataset.CopyFrom(self._msg.dataset_blob)
-        content = _commit.blob_msg_to_object(blob)
+        content = _blob.Blob.blob_msg_to_object(blob)
 
         # for _Dataset.download()
         content._set_dataset_version(self)

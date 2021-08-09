@@ -7,7 +7,7 @@ import copy
 from ._endpoint import Endpoint
 
 
-# a rough copy of LazyList's API, because Endpoints don't use protos, find, or pagination
+# a rough copy of _LazyList's API, because Endpoints don't use protos, find, or pagination
 class Endpoints(object):
     """Collection object for finding endpoints.
 

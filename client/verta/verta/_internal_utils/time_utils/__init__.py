@@ -39,7 +39,7 @@ def epoch_millis(dt):
 def _promote_naive_to_utc(dt):
     if dt.tzinfo is None:
         warnings.warn("Time zone naive datetime found, assuming UTC time zone")
-        return dt.astimezone(utc)
+        return dt.replace(tzinfo=utc)
     else:
         return dt
 
