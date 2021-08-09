@@ -31,7 +31,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.21</version>
+            <version>1.26</version>
         </dependency>
 
         <!-- The main transport implementation based on Netty, for both the client
