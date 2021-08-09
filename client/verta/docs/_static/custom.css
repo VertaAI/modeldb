@@ -399,6 +399,12 @@ p.rubric {
   text-decoration: none;
 }
 
+.footnote-reference.brackets {
+  position: relative;
+  vertical-align: super;
+  font-size: 80%;
+}
+
 a {
   color: rgb(164, 78, 237);
 }

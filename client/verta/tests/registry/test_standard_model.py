@@ -2,18 +2,24 @@
 
 """ModelVersion.create_version_from_*() methods"""
 
+from datetime import timedelta
 import re
 
+import hypothesis
+import hypothesis.strategies as st
 import pytest
 
+from verta._internal_utils import _artifact_utils, model_validator
 from verta.environment import Python
 from verta.external import six
-from verta._internal_utils import _artifact_utils, model_validator
+from verta.registry import verify_io
 
 from ..models import standard_models
+from ..strategies import json_strategy
 
 
 verta_models = standard_models.verta_models()
+decorated_verta_models = standard_models.decorated_verta_models()
 incomplete_verta_models = standard_models.incomplete_verta_models()
 keras_models = standard_models.keras_models()
 unsupported_keras_models = standard_models.unsupported_keras_models()
@@ -24,6 +30,50 @@ xgboost_models = standard_models.xgboost_models()
 unsupported_xgboost_models = standard_models.unsupported_xgboost_models()
 
 
+class TestVerifyIO:
+    @hypothesis.settings(deadline=timedelta(milliseconds=50))
+    @hypothesis.given(value=json_strategy)
+    def test_verify_io_allow(self, value):
+        @verify_io
+        def predict(self, input):
+            return input
+
+        predict(None, value)
+
+    def test_verify_io_reject(self):
+        array = pytest.importorskip("numpy").array([1, 2, 3])
+        df = pytest.importorskip("pandas").DataFrame([1, 2, 3])
+        tensor = pytest.importorskip("torch").tensor([1, 2, 3])
+
+        msg_match = "not JSON serializable.*{} must only contain types"
+        for value in [array, df, tensor]:
+
+            @verify_io
+            def predict(self, _):
+                return value
+            with pytest.raises(TypeError, match=msg_match.format("input")):
+                predict(None, value)
+            with pytest.raises(TypeError, match=msg_match.format("output")):
+                predict(None, None)
+
+    def test_verify_io_reject_bytes(self):
+        # TODO: create Hypothesis strategy for non-decodable binary
+        value = b"\x80abc"
+
+        if six.PY2:
+            msg_match = "'utf8' codec can't decode byte.*{} cannot contain binary"
+        else:
+            msg_match = "not JSON serializable.*{} must only contain types"
+
+        @verify_io
+        def predict(self, _):
+            return value
+        with pytest.raises(TypeError, match=msg_match.format("input")):
+            predict(None, value)
+        with pytest.raises(TypeError, match=msg_match.format("output")):
+            predict(None, None)
+
+
 class TestModelValidator:
     """verta._internal_utils.model_validator"""
 
@@ -32,7 +82,20 @@ class TestModelValidator:
         verta_models,
     )
     def test_verta(self, model):
-        assert model_validator.must_verta(model)
+        msg_match = "^" + re.escape(
+            "model predict() is not decorated with verta.registry.verify_io;"
+        )
+        with pytest.warns(UserWarning, match=msg_match):
+            assert model_validator.must_verta(model)
+
+    @pytest.mark.parametrize(
+        "model",
+        decorated_verta_models,
+    )
+    def test_decorated_verta(self, model):
+        with pytest.warns(None) as record:
+            model_validator.must_verta(model)
+        assert not record  # no warning of missing decorator on predict()
 
     @pytest.mark.parametrize(
         "model",
@@ -145,15 +208,37 @@ class TestStandardModels:
                     artifacts={key: artifact_value},
                 )
 
-        model_ver = registered_model.create_standard_model(
-            model,
-            Python(["pytest"]),  # source module imports pytest
-            artifacts={model.ARTIFACT_KEY: artifact_value},
+        msg_match = "^" + re.escape(
+            "model predict() is not decorated with verta.registry.verify_io;"
         )
+        with pytest.warns(UserWarning, match=msg_match):
+            model_ver = registered_model.create_standard_model(
+                model,
+                Python(["pytest"]),  # source module imports pytest
+                artifacts={model.ARTIFACT_KEY: artifact_value},
+            )
 
         endpoint.update(model_ver, wait=True)
         deployed_model = endpoint.get_deployed_model()
         assert deployed_model.predict(artifact_value) == artifact_value
+
+    @pytest.mark.parametrize(
+        "model",
+        decorated_verta_models,
+    )
+    def test_decorated_verta(self, registered_model, endpoint, model):
+        np = pytest.importorskip("numpy")
+
+        with pytest.warns(None) as record:
+            model_ver = registered_model.create_standard_model(
+                model,
+                Python(["pytest"]),  # source module imports pytest
+            )
+        assert not record  # no warning of missing decorator on predict()
+
+        endpoint.update(model_ver, wait=True)
+        deployed_model = endpoint.get_deployed_model()
+        assert deployed_model.predict(np.random.random(size=(3, 3)).tolist())
 
     @pytest.mark.parametrize(
         "model",
