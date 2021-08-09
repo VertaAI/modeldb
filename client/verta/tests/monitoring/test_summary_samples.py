@@ -40,13 +40,17 @@ class TestNumericSummarySamples:
         return created
 
     def test_find_summary_samples(self, class_client, numeric_summary, numeric_samples):
-        found_samples = numeric_summary.find_samples()
-        assert len(found_samples) == len(self.values)
+        query = SummarySampleQuery(SummaryQuery([numeric_summary]))
+        for found_samples in [
+            numeric_summary.find_samples(),
+            class_client.monitoring.summary_samples.find(query),
+        ]:
+            assert len(found_samples) == len(self.values)
 
-        created_ids = list(map(lambda sample: sample.id, numeric_samples))
-        found_ids = list(map(lambda sample: sample.id, found_samples))
-        for id in found_ids:
-            assert id in created_ids
+            created_ids = list(map(lambda sample: sample.id, numeric_samples))
+            found_ids = list(map(lambda sample: sample.id, found_samples))
+            for id in found_ids:
+                assert id in created_ids
 
     def test_aggregate_summary_samples(
         self, class_client, numeric_summary, numeric_samples
