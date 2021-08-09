@@ -13,6 +13,11 @@ from ..external.six.moves.urllib.parse import urljoin, urlparse  # pylint: disab
 
 from .._internal_utils import _utils
 
+# NOTE: DeployedModel's mechanism for making requests is independent from the
+# rest of the client; Client's Connection deliberately instantiates a new
+# Session for each request it makes otherwise it encounters de/serialization
+# issues during parallelism, whereas DeployedModel persists a Session for its
+# lifetime to use HTTP keep-alive and speed up consecutive predictions.
 
 class DeployedModel:
     """
