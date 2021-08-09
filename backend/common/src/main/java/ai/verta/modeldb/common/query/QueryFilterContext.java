@@ -1,11 +1,10 @@
 package ai.verta.modeldb.common.query;
 
-import org.jdbi.v3.core.statement.Query;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
+import org.jdbi.v3.core.statement.Query;
 
 public class QueryFilterContext {
   private final List<String> conditions;
@@ -95,14 +94,20 @@ public class QueryFilterContext {
   }
 
   public String getLimitString() {
-    return pageSize.map(
-        size -> {
-          var ret = " LIMIT " + size;
-          return ret + pageNumber.map(number -> {
-            final var pageIndex = calculatePageIndex(number);
-            final var offset = calculateOffset(pageIndex, size);
-            return " OFFSET " + offset;
-          }).orElse("");
-        }).orElse("");
+    return pageSize
+        .map(
+            size -> {
+              var ret = " LIMIT " + size;
+              return ret
+                  + pageNumber
+                      .map(
+                          number -> {
+                            final var pageIndex = calculatePageIndex(number);
+                            final var offset = calculateOffset(pageIndex, size);
+                            return " OFFSET " + offset;
+                          })
+                      .orElse("");
+            })
+        .orElse("");
   }
 }

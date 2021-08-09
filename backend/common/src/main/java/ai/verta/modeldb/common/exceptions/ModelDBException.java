@@ -34,7 +34,6 @@ public class ModelDBException extends RuntimeException {
     this.code = Code.valueOf(code.name());
   }
 
-
   public ModelDBException(String message, com.google.rpc.Code code) {
     super(message);
     this.code = Code.valueOf(code.name());

@@ -10,10 +10,9 @@ import ai.verta.uac.*;
 import io.grpc.*;
 import io.grpc.stub.AbstractStub;
 import io.grpc.stub.MetadataUtils;
+import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.concurrent.TimeUnit;
 
 public class AuthServiceChannel extends Connection implements AutoCloseable {
 
@@ -27,13 +26,13 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
   private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStub;
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
-  private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStubForServiceUser;
+  private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
+      collaboratorServiceBlockingStubForServiceUser;
   private final String serviceUserEmail;
   private final String serviceUserDevKey;
   private final Config config;
 
-  public AuthServiceChannel(
-      Config config) {
+  public AuthServiceChannel(Config config) {
     super(config);
     String host = config.authService.host;
     int port = config.authService.port;
@@ -54,23 +53,23 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   private Metadata getServiceUserMetadataHeaders() {
-      Metadata requestHeaders = new Metadata();
-      Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-      Metadata.Key<String> dev_key =
-              Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
-      Metadata.Key<String> dev_key_hyphen =
-              Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
-      Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+    Metadata requestHeaders = new Metadata();
+    Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
+    Metadata.Key<String> dev_key =
+        Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+    Metadata.Key<String> dev_key_hyphen =
+        Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+    Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-      requestHeaders.put(email_key, this.serviceUserEmail);
-      requestHeaders.put(dev_key, this.serviceUserDevKey);
-      requestHeaders.put(dev_key_hyphen, this.serviceUserDevKey);
-      requestHeaders.put(source_key, "PythonClient");
+    requestHeaders.put(email_key, this.serviceUserEmail);
+    requestHeaders.put(dev_key, this.serviceUserDevKey);
+    requestHeaders.put(dev_key_hyphen, this.serviceUserDevKey);
+    requestHeaders.put(source_key, "PythonClient");
     return requestHeaders;
   }
 
   private <T extends AbstractStub<T>> T attachInterceptorsWithRequestHeaders(
-          io.grpc.stub.AbstractStub<T> stub, Metadata requestHeaders) {
+      io.grpc.stub.AbstractStub<T> stub, Metadata requestHeaders) {
     ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
     stub = config.getTracingClientInterceptor().map(stub::withInterceptors).orElse((T) stub);
     stub = stub.withInterceptors(clientInterceptor);
@@ -78,17 +77,17 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   private <T extends AbstractStub<T>> T attachInterceptorsForServiceUser(
-          io.grpc.stub.AbstractStub<T> stub) {
+      io.grpc.stub.AbstractStub<T> stub) {
 
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadataHeaders());
+    ClientInterceptor clientInterceptor =
+        MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadataHeaders());
     stub = config.getTracingClientInterceptor().map(stub::withInterceptors).orElse((T) stub);
     stub = stub.withInterceptors(clientInterceptor);
     return (T) stub;
   }
 
   private void initUACServiceStubChannel() {
-    uacServiceBlockingStub =
-        attachInterceptors(UACServiceGrpc.newBlockingStub(authServiceChannel));
+    uacServiceBlockingStub = attachInterceptors(UACServiceGrpc.newBlockingStub(authServiceChannel));
   }
 
   public UACServiceGrpc.UACServiceBlockingStub getUacServiceBlockingStub() {
@@ -112,7 +111,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private void initRoleServiceStubChannelForServiceUser() {
     roleServiceBlockingStubForServiceUser =
-            attachInterceptorsForServiceUser(RoleServiceGrpc.newBlockingStub(authServiceChannel));
+        attachInterceptorsForServiceUser(RoleServiceGrpc.newBlockingStub(authServiceChannel));
   }
 
   public RoleServiceGrpc.RoleServiceBlockingStub getRoleServiceBlockingStubForServiceUser() {
@@ -124,7 +123,8 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private void initAuthzServiceStubChannel(Metadata requestHeaders) {
     authzServiceBlockingStub =
-        attachInterceptorsWithRequestHeaders(AuthzServiceGrpc.newBlockingStub(authServiceChannel), requestHeaders);
+        attachInterceptorsWithRequestHeaders(
+            AuthzServiceGrpc.newBlockingStub(authServiceChannel), requestHeaders);
   }
 
   public AuthzServiceGrpc.AuthzServiceBlockingStub getAuthzServiceBlockingStub(
@@ -137,7 +137,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private void initAuthzServiceStubChannel() {
     authzServiceBlockingStub =
-            attachInterceptors(AuthzServiceGrpc.newBlockingStub(authServiceChannel));
+        attachInterceptors(AuthzServiceGrpc.newBlockingStub(authServiceChannel));
   }
 
   public AuthzServiceGrpc.AuthzServiceBlockingStub getAuthzServiceBlockingStub() {
@@ -191,7 +191,8 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private void initCollaboratorServiceStubChannelForServiceUser() {
     collaboratorServiceBlockingStubForServiceUser =
-            attachInterceptorsForServiceUser(CollaboratorServiceGrpc.newBlockingStub(authServiceChannel));
+        attachInterceptorsForServiceUser(
+            CollaboratorServiceGrpc.newBlockingStub(authServiceChannel));
   }
 
   public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
@@ -203,7 +204,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
-  getCollaboratorServiceBlockingStubForServiceUser() {
+      getCollaboratorServiceBlockingStubForServiceUser() {
     if (collaboratorServiceBlockingStubForServiceUser == null) {
       initCollaboratorServiceStubChannelForServiceUser();
     }

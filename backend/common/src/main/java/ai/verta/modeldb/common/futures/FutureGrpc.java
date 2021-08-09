@@ -7,8 +7,6 @@ import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 import io.opentracing.util.GlobalTracer;
-
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -78,10 +76,13 @@ public class FutureGrpc {
       if (GlobalTracer.isRegistered()) {
         final var tracer = GlobalTracer.get();
         final var span = tracer.scopeManager().activeSpan();
-        other.execute(Context.current().wrap(() -> {
-          tracer.scopeManager().activate(span);
-          r.run();
-        }));
+        other.execute(
+            Context.current()
+                .wrap(
+                    () -> {
+                      tracer.scopeManager().activate(span);
+                      r.run();
+                    }));
       } else {
         other.execute(Context.current().wrap(r));
       }

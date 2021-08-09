@@ -6,28 +6,27 @@ import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
 import io.opentracing.contrib.grpc.ActiveSpanSource;
 import io.opentracing.util.GlobalTracer;
-
 import java.util.Map;
 import java.util.function.Supplier;
 
 public class TraceSupport {
-  public static <T> T traceNonFuture(Supplier<T> supplier, String operationName, Map<String,String> tags) {
-    if (!GlobalTracer.isRegistered())
-      return supplier.get();
+  public static <T> T traceNonFuture(
+      Supplier<T> supplier, String operationName, Map<String, String> tags) {
+    if (!GlobalTracer.isRegistered()) return supplier.get();
 
     final var tracer = GlobalTracer.get();
 
     final var spanContext = TraceSupport.getActiveSpanContext(tracer);
     final var span = TraceSupport.createSpanFromParent(tracer, spanContext, operationName, tags);
 
-    try (final var scope = tracer.scopeManager().activate(span)){
+    try (final var scope = tracer.scopeManager().activate(span)) {
       return supplier.get();
-    } finally{
+    } finally {
       span.finish();
     }
   }
 
-  static public SpanContext getActiveSpanContext(Tracer tracer) {
+  public static SpanContext getActiveSpanContext(Tracer tracer) {
     Span activeSpan = ActiveSpanSource.GRPC_CONTEXT.getActiveSpan();
     if (activeSpan != null) {
       return activeSpan.context();
@@ -41,7 +40,11 @@ public class TraceSupport {
     return tracer.activeSpan() != null ? tracer.activeSpan().context() : null;
   }
 
-  static public Span createSpanFromParent(Tracer tracer, SpanContext parentSpanContext, String operationName, Map<String,String> tags) {
+  public static Span createSpanFromParent(
+      Tracer tracer,
+      SpanContext parentSpanContext,
+      String operationName,
+      Map<String, String> tags) {
     Tracer.SpanBuilder spanBuilder;
     if (parentSpanContext == null) {
       spanBuilder = tracer.buildSpan(operationName);
@@ -57,5 +60,4 @@ public class TraceSupport {
 
     return spanBuilder.start();
   }
-
 }

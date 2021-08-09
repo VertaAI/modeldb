@@ -14,7 +14,6 @@ import io.opentracing.contrib.grpc.ActiveSpanSource;
 import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import io.opentracing.contrib.grpc.TracingServerInterceptor;
 import io.opentracing.contrib.jdbc.TracingDriver;
-import io.opentracing.contrib.jdbi3.OpentracingJdbi3Plugin;
 import io.opentracing.contrib.jdbi3.OpentracingSqlLogger;
 import io.opentracing.util.GlobalTracer;
 import java.io.FileInputStream;
@@ -40,7 +39,8 @@ public abstract class Config {
   public ServiceUserConfig service_user;
   public int jdbi_retry_time = 100; // Time in ms
 
-  public static <T> T getInstance(Class<T> configType, String configFile) throws InternalErrorException {
+  public static <T> T getInstance(Class<T> configType, String configFile)
+      throws InternalErrorException {
     try {
       Yaml yaml = new Yaml(new Constructor(configType));
       String filePath = System.getenv(configFile);
@@ -137,9 +137,9 @@ public abstract class Config {
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);
 
-    final Jdbi jdbi = Jdbi.create(hikariDataSource).setSqlLogger(new OpentracingSqlLogger(GlobalTracer.get()));
+    final Jdbi jdbi =
+        Jdbi.create(hikariDataSource).setSqlLogger(new OpentracingSqlLogger(GlobalTracer.get()));
 
     return jdbi;
   }
-
 }

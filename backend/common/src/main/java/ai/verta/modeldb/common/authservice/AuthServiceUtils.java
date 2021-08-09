@@ -9,17 +9,15 @@ import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.uac.*;
 import io.grpc.StatusRuntimeException;
+import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.*;
 
 public class AuthServiceUtils implements AuthService {
   private final UAC uac;
   private final Integer timeout;
 
-  public AuthServiceUtils(UAC uac,
-                          Integer timeout) {
+  public AuthServiceUtils(UAC uac, Integer timeout) {
     this.uac = uac;
     this.timeout = timeout;
   }
