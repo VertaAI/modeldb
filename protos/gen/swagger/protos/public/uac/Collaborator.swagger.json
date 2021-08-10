@@ -1646,12 +1646,17 @@
         "resource_type": {
           "$ref": "#/definitions/uacResourceType"
         },
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "team_ids": {
           "type": "array",
           "items": {
             "type": "string"
-          },
-          "title": "repeated string user_ids = 4; // Not currently supported"
+          }
         }
       }
     },

@@ -173,7 +173,7 @@ message ModifyResourceAdmins {
     string resource_id = 2;
     ResourceType resource_type = 3;
 
-    // repeated string user_ids = 4; // Not currently supported
+    repeated string user_ids = 4;
     repeated string team_ids = 5;
 }
 

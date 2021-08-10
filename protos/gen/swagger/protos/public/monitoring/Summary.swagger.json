@@ -50,7 +50,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/monitoringEmpty"
+              "$ref": "#/definitions/vertamonitoringEmpty"
             }
           },
           "default": {
@@ -146,7 +146,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/monitoringEmpty"
+              "$ref": "#/definitions/vertamonitoringEmpty"
             }
           },
           "default": {
@@ -178,7 +178,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/monitoringEmpty"
+              "$ref": "#/definitions/vertamonitoringEmpty"
             }
           },
           "default": {
@@ -453,9 +453,6 @@
       },
       "title": "Request to delete summary samples"
     },
-    "monitoringEmpty": {
-      "type": "object"
-    },
     "monitoringFilterQuerySummarySample": {
       "type": "object",
       "properties": {
@@ -505,6 +502,13 @@
           "items": {
             "type": "string"
           }
+        },
+        "fuzzy_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Add names to find with a fuzzy (non-exact) search"
         },
         "workspace_id": {
           "type": "string",
@@ -789,6 +793,9 @@
           }
         }
       }
+    },
+    "vertamonitoringEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"
