@@ -37,6 +37,28 @@ Changelog
      (`# <>`__)
 
 
+v0.19.1 (2021-08-09)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add ``@verify_io`` decorator for use with ``VertaModelBase.predict()``
+  (`#2540 <https://github.com/VertaAI/modeldb/pull/2540>`__)
+
+Enhancements
+^^^^^^^^^^^^
+- paginate ``alerts.list()``
+  (`#2525 <https://github.com/VertaAI/modeldb/pull/2525>`__)
+
+Bug Fixes
+^^^^^^^^^
+- filter out ``lib32/`` and ``lib64/`` when collecting custom modules
+  (`#2534 <https://github.com/VertaAI/modeldb/pull/2534>`__)
+- pick up environment variables (such as ``REQUESTS_CA_BUNDLE``) for HTTP
+  requests
+  (`#2535 <https://github.com/VertaAI/modeldb/pull/2535>`__)
+
+
 v0.19.0 (2021-08-03)
 --------------------
 
@@ -102,6 +124,8 @@ Enhancements
 
 Bug Fixes
 ^^^^^^^^^
+- `resolve a ParseError for the "UNASSIGNED" model_version stage
+  <https://github.com/VertaAI/modeldb/commit/2e5a67d#diff-948fe60>`__
 - `fix bug where NumericValues were deserialized inconsistently when "unit" is
   empty
   <https://github.com/VertaAI/modeldb/pull/2428>`__
