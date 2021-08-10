@@ -67,7 +67,14 @@ class SummarySamples:
                 "`query` must be a SummarySampleQuery, not {}".format(type(query))
             )
         msg = query._to_proto_request()
-        return SummarySamplesPaginatedIterable(self._conn, self._conf, msg)
+
+        samples = SummarySamplesPaginatedIterable(self._conn, self._conf, msg)
+        if query.aggregation is not None:
+            # collect into list because pagination wouldn't work with
+            # aggregation anyway
+            samples.set_page_limit(-1)
+            return list(samples)
+        return samples
 
     def delete(self, summary_samples):
         """Delete the specified summary samples.

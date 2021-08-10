@@ -90,6 +90,10 @@ class _PaginatedIterable(object):
 
                 yield self._create_element(rec)
 
+            if self._page_limit(msg) == -1:
+                # pagination disabled; all records fetched
+                break
+
     def __len__(self):
         # copy msg to avoid mutating `self`'s state
         msg = self._msg.__class__()
