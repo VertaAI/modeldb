@@ -19,7 +19,7 @@ from verta import data_types
 from verta.monitoring.alert.entities import Alerts
 from .queries import SummarySampleQuery
 from .summary_sample import SummarySample
-from .summary_samples import SummarySamplesPaginatedIterable
+from .summary_samples import SummarySamples
 
 
 class Summary(_entity._ModelDBEntity):
@@ -148,11 +148,11 @@ class Summary(_entity._ModelDBEntity):
         """
         if query is None:
             query = SummarySampleQuery()
-        msg = query._to_proto_request()
-        if self.id not in msg.filter.find_summaries.ids:
-            msg.filter.find_summaries.ids.append(self.id)
 
-        return SummarySamplesPaginatedIterable(self._conn, self._conf, msg)
+        if self.id not in query._msg.filter.find_summaries.ids:
+            query._msg.filter.find_summaries.ids.append(self.id)
+
+        return SummarySamples(self._conn, self._conf).find(query)
 
     def has_type(self, data_type_cls):  # TODO: hideme
         return self.type == data_type_cls._type_string()
