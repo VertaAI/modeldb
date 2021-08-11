@@ -31,6 +31,12 @@ public class PythonEnvironmentBlobEntity {
   @Column(name = "suffix", columnDefinition = "varchar", length = 50)
   private String suffix;
 
+  @Column(name = "raw_requirements", columnDefinition = "TEXT")
+  private String raw_requirements;
+
+  @Column(name = "raw_constraints", columnDefinition = "TEXT")
+  private String raw_constraints;
+
   public String getBlob_hash() {
     return blob_hash;
   }
@@ -61,6 +67,22 @@ public class PythonEnvironmentBlobEntity {
 
   public void setPatch(Integer patch) {
     this.patch = patch;
+  }
+
+  public String getRaw_requirements() {
+    return raw_requirements;
+  }
+
+  public void setRaw_requirements(String raw_requirements) {
+    this.raw_requirements = raw_requirements;
+  }
+
+  public String getRaw_constraints() {
+    return raw_constraints;
+  }
+
+  public void setRaw_constraints(String raw_constraints) {
+    this.raw_constraints = raw_constraints;
   }
 
   @OneToMany(mappedBy = "pythonEnvironmentBlobEntity")
