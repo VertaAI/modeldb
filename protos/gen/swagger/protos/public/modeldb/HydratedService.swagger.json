@@ -2668,6 +2668,13 @@
           "items": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
+        },
+        "raw_requirements": {
+          "type": "string",
+          "description": "These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example."
+        },
+        "raw_constraints": {
+          "type": "string"
         }
       }
     },
