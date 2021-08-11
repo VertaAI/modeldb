@@ -312,7 +312,8 @@
         "READ",
         "UPDATE",
         "DELETE",
-        "READ_SECRETS"
+        "READ_SECRETS",
+        "CREATE_SERVICE_ACCOUNT"
       ],
       "default": "UNKNOWN"
     },
