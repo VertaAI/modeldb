@@ -30,9 +30,14 @@ ZIP_EXTENSION = "dir.zip"
 
 # NOTE: keep up-to-date with Deployment API
 CUSTOM_MODULES_KEY = "custom_modules"
-MODEL_KEY = "model.pkl"
+REGISTRY_MODEL_KEY = "model"
+MODEL_KEY = "model.pkl"  # currently used by experiment run
 MODEL_API_KEY = "model_api.json"
 # TODO: maybe bind constants for other keys used throughout client
+# NOTE: if blocklisting more keys, update the docstrings of
+#       - RegisteredModel.create_standard_model()
+#       - RegisteredModelVersion.log_artifact()
+#       - ExperimentRun.log_artifact()
 BLOCKLISTED_KEYS = {
     CUSTOM_MODULES_KEY,
     MODEL_KEY,
@@ -74,6 +79,8 @@ def get_file_ext(file):
     """
     Obtain the filename extension of `file`.
 
+    This method assumes `file` is accessible on the user's filesystem.
+
     Parameters
     ----------
     file : str or file handle
@@ -92,7 +99,7 @@ def get_file_ext(file):
         If the filepath lacks an extension.
 
     """
-    if isinstance(file, six.string_types):
+    if isinstance(file, six.string_types) and not os.path.isdir(file):
         filepath = file
     elif hasattr(file, 'read') and hasattr(file, 'name'):  # `open()` object
         filepath = file.name
@@ -130,6 +137,8 @@ def ext_from_method(method):
         return 'pkl'
     elif method == "zip":
         return "zip"
+    elif method == ZIP_EXTENSION:  # zipped by client
+        return ZIP_EXTENSION
     elif method is None:
         return None
     else:
@@ -263,7 +272,7 @@ def serialize_model(model):
     # if `model` is filesystem path
     if isinstance(model, six.string_types):
         if os.path.isdir(model):
-            return zip_dir(model), "zip", None
+            return zip_dir(model), ZIP_EXTENSION, None
         else:  # filepath
             # open and continue
             model = open(model, 'rb')

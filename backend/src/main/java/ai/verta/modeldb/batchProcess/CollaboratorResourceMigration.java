@@ -4,12 +4,12 @@ import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.VisibilityEnum;
 import ai.verta.common.WorkspaceTypeEnum;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
 import ai.verta.modeldb.authservice.RoleServiceUtils;
-import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.Config;
@@ -50,26 +50,22 @@ public class CollaboratorResourceMigration {
   public CollaboratorResourceMigration() {}
 
   public static void execute() {
+    Config config = App.getInstance().config;
     CollaboratorResourceMigration.paginationSize = 100;
-    if (Config.getInstance().hasAuth()) {
-      authService = AuthServiceUtils.FromConfig(Config.getInstance());
-      uac = UAC.FromConfig(Config.getInstance());
-      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
+    if (config.hasAuth()) {
+      uac = UAC.FromConfig(config);
+      authService = AuthServiceUtils.FromConfig(config, uac);
+      roleService = RoleServiceUtils.FromConfig(config, authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found, OSS setup found");
       return;
     }
 
     LOGGER.info("Migration start");
-    CommonUtils.registeredBackgroundUtilsCount();
-    try {
-      migrateProjects();
-      LOGGER.info("Projects done migration");
-      migrateRepositories();
-      LOGGER.info("Repositories done migration");
-    } finally {
-      CommonUtils.unregisteredBackgroundUtilsCount();
-    }
+    migrateProjects();
+    LOGGER.info("Projects done migration");
+    migrateRepositories();
+    LOGGER.info("Repositories done migration");
 
     LOGGER.info("Migration End");
   }
@@ -423,7 +419,7 @@ public class CollaboratorResourceMigration {
 
     // Remove all role bindings
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
+      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 
@@ -488,7 +484,7 @@ public class CollaboratorResourceMigration {
 
     // Remove all role bindings
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
+      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 }

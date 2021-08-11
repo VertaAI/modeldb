@@ -39,8 +39,8 @@ public class S3Service implements ArtifactStoreService {
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
   private S3Client s3Client;
   private String bucketName;
-  private App app = App.getInstance();
-  private Config config = Config.getInstance();
+  private final App app = App.getInstance();
+  private final Config config = app.config;
 
   public S3Service(String cloudBucketName) throws ModelDBException, IOException {
     s3Client = new S3Client(cloudBucketName);
@@ -263,7 +263,7 @@ public class S3Service implements ArtifactStoreService {
           errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
     } catch (InterruptedException e) {
       LOGGER.warn(e.getMessage(), e);
-      throw new ModelDBException(e.getMessage(), Code.INTERNAL);
+      throw new ModelDBException(e.getMessage(), Code.INTERNAL, e);
     }
   }
 
@@ -310,30 +310,37 @@ public class S3Service implements ArtifactStoreService {
 
   public String getPresignedUrlViaMDB(
       String artifactPath, String method, long partNumber, String uploadId) {
-    LOGGER.trace("S3Service - generatePresignedUrl called");
+    LOGGER.debug("S3Service - generatePresignedUrl called");
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("artifact_path", artifactPath);
 
     if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
-      LOGGER.trace("S3Service - generatePresignedUrl - put url returned");
+      LOGGER.debug("S3Service - generatePresignedUrl - returning " + method + " url");
+      LOGGER.debug("part number: " + partNumber);
       parameters.put("part_number", partNumber);
       parameters.put("upload_id", uploadId);
-      return getUploadUrl(
-          parameters,
-          config.artifactStoreConfig.protocol,
-          config.artifactStoreConfig.artifactEndpoint.getArtifact,
-          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
-          config.artifactStoreConfig.host);
+      final var url =
+          getUploadUrl(
+              parameters,
+              config.artifactStoreConfig.protocol,
+              config.artifactStoreConfig.artifactEndpoint.storeArtifact,
+              config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+              config.artifactStoreConfig.host);
+      LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
+      return url;
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
-      LOGGER.trace("S3Service - generatePresignedUrl - get url returned");
+      LOGGER.debug("S3Service - generatePresignedUrl - returning " + method + " url");
       String filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
       parameters.put(ModelDBConstants.FILENAME, filename);
-      return getDownloadUrl(
-          parameters,
-          config.artifactStoreConfig.protocol,
-          config.artifactStoreConfig.artifactEndpoint.getArtifact,
-          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
-          config.artifactStoreConfig.host);
+      final var url =
+          getDownloadUrl(
+              parameters,
+              config.artifactStoreConfig.protocol,
+              config.artifactStoreConfig.artifactEndpoint.getArtifact,
+              config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+              config.artifactStoreConfig.host);
+      LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
+      return url;
     } else {
       String errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
       throw new InvalidArgumentException(errorMessage);

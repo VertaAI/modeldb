@@ -818,7 +818,8 @@
         "CREATE",
         "READ",
         "UPDATE",
-        "DELETE"
+        "DELETE",
+        "READ_SECRETS"
       ],
       "default": "UNKNOWN"
     },
@@ -829,6 +830,15 @@
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
+    },
+    "CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "READ_WRITE",
+        "READ_ONLY"
+      ],
+      "default": "UNKNOWN"
     },
     "DatasetTypeEnumDatasetType": {
       "type": "string",
@@ -857,7 +867,9 @@
         "READ",
         "UPDATE",
         "DELETE",
-        "UPDATE_PERMISSIONS"
+        "UPDATE_PERMISSIONS",
+        "PREDICT",
+        "CONTROL"
       ],
       "default": "UNKNOWN"
     },
@@ -879,7 +891,9 @@
         "BITBUCKET",
         "GOOGLE",
         "VERTA",
-        "SAML"
+        "SAML",
+        "AD_OAUTH2",
+        "LDAP"
       ],
       "default": "UNKNOWN"
     },
@@ -897,7 +911,8 @@
         "UPDATE_PERMISSIONS",
         "LOCK",
         "UNLOCK",
-        "UPDATE_REDACT"
+        "UPDATE_REDACT",
+        "ALERTER"
       ],
       "default": "UNKNOWN"
     },
@@ -915,6 +930,17 @@
         "IN"
       ],
       "default": "EQ"
+    },
+    "OrganizationBaselinePermissionsBaselinePermissions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "PRIVATE",
+        "READ",
+        "WRITE",
+        "ADMIN"
+      ],
+      "default": "UNKNOWN"
     },
     "PathLocationTypeEnumPathLocationType": {
       "type": "string",
@@ -1001,6 +1027,42 @@
         },
         "filename_extension": {
           "type": "string"
+        }
+      }
+    },
+    "commonCodeVersion": {
+      "type": "object",
+      "properties": {
+        "git_snapshot": {
+          "$ref": "#/definitions/commonGitSnapshot"
+        },
+        "code_archive": {
+          "$ref": "#/definitions/commonArtifact"
+        },
+        "date_logged": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "code version"
+    },
+    "commonGitSnapshot": {
+      "type": "object",
+      "properties": {
+        "filepaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -1110,22 +1172,6 @@
           "format": "int64"
         }
       }
-    },
-    "modeldbCodeVersion": {
-      "type": "object",
-      "properties": {
-        "git_snapshot": {
-          "$ref": "#/definitions/modeldbGitSnapshot"
-        },
-        "code_archive": {
-          "$ref": "#/definitions/commonArtifact"
-        },
-        "date_logged": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "title": "code version"
     },
     "modeldbCollaboratorUserInfo": {
       "type": "object",
@@ -1351,7 +1397,7 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "artifacts": {
           "type": "array",
@@ -1399,7 +1445,7 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "parent_id": {
           "type": "string"
@@ -1468,7 +1514,7 @@
         "code_version_from_blob": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/modeldbCodeVersion"
+            "$ref": "#/definitions/commonCodeVersion"
           }
         }
       },
@@ -1863,26 +1909,6 @@
         }
       }
     },
-    "modeldbGitSnapshot": {
-      "type": "object",
-      "properties": {
-        "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "repo": {
-          "type": "string"
-        },
-        "hash": {
-          "type": "string"
-        },
-        "is_dirty": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        }
-      }
-    },
     "modeldbHydratedDataset": {
       "type": "object",
       "properties": {
@@ -2091,7 +2117,7 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "artifacts": {
           "type": "array",
@@ -2265,6 +2291,9 @@
         },
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -2315,6 +2344,9 @@
         "default_endpoint_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
+        "endpoint_can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
         "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
@@ -2325,6 +2357,52 @@
           "type": "string"
         },
         "registered_model_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "default_monitored_entity_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
+        },
+        "default_notification_channel_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
+        },
+        "admins": {
+          "$ref": "#/definitions/uacOrganizationAdmins"
+        },
+        "baseline_permissions": {
+          "$ref": "#/definitions/uacOrganizationBaselinePermissions"
+        }
+      }
+    },
+    "uacOrganizationAdmins": {
+      "type": "object",
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uacOrganizationBaselinePermissions": {
+      "type": "object",
+      "properties": {
+        "minimum_resources_permission": {
+          "$ref": "#/definitions/OrganizationBaselinePermissionsBaselinePermissions"
+        },
+        "project_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "registry_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "endpoint_can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
@@ -2458,6 +2536,17 @@
         }
       }
     },
+    "versioningAptEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "versioningDatasetBlob": {
       "type": "object",
       "properties": {
@@ -2506,6 +2595,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "apt": {
+          "$ref": "#/definitions/versioningAptEnvironmentBlob"
         }
       }
     },

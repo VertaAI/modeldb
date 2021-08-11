@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import pytest
 
 import six
@@ -6,6 +8,7 @@ import filecmp
 import hashlib
 import os
 import pickle
+import shutil
 import tempfile
 import zipfile
 
@@ -17,6 +20,7 @@ from verta._internal_utils import (
     _request_utils,
     _utils,
 )
+from . import utils
 
 
 class TestUtils:
@@ -79,10 +83,7 @@ class TestUtils:
         # different names
         assert dirpath != downloaded_dirpath
         # contents match
-        dircmp = filecmp.dircmp(dirpath, downloaded_dirpath)
-        assert not dircmp.diff_files
-        assert not dircmp.left_only
-        assert not dircmp.right_only
+        utils.assert_dirs_match(dirpath, downloaded_dirpath)
 
 
 class TestArtifacts:
@@ -205,9 +206,9 @@ class TestArtifacts:
                       for value in all_values if not isinstance(value, str))
 
         for key, artifact in zip(_artifact_utils.BLOCKLISTED_KEYS, all_values):
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match="please use a different key$"):
                 experiment_run.log_artifact(key, artifact)
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match="please use a different key$"):
                 experiment_run.log_artifact_path(key, artifact)
 
     def test_clientside_storage(self, experiment_run, strs, in_tempdir, random_data):
@@ -281,12 +282,10 @@ class TestArtifacts:
         dirpath, _ = dir_and_files
 
         experiment_run.log_artifact(key, dirpath)
-        experiment_run.download_artifact(key, download_path)
+        retrieved_path = experiment_run.download_artifact(key, download_path)
 
-        dircmp = filecmp.dircmp(dirpath, download_path)
-        assert not dircmp.diff_files
-        assert not dircmp.left_only
-        assert not dircmp.right_only
+        # contents match
+        utils.assert_dirs_match(dirpath, retrieved_path)
 
     def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
         key = strs[0]
@@ -418,6 +417,7 @@ class TestModels:
         for key, weight in net.state_dict().items():
             assert torch.allclose(weight, state_dict[key])
 
+    @pytest.mark.tensorflow
     def test_keras(self, seed, experiment_run, strs):
         np = pytest.importorskip("numpy")
         tf = pytest.importorskip("tensorflow")
@@ -517,6 +517,26 @@ class TestModels:
             zipf.extractall(spark_model_dir)
         assert LogisticRegressionModel.load(spark_model_dir).params == model.params
 
+    def test_download_sklearn(self, experiment_run, in_tempdir):
+        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+
+        upload_path = "model.pkl"
+        download_path = "retrieved_model.pkl"
+
+        model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
+        with open(upload_path, 'wb') as f:
+            pickle.dump(model, f)
+
+        experiment_run.log_model(model, custom_modules=[])
+        returned_path = experiment_run.download_model(download_path)
+        assert returned_path == os.path.abspath(download_path)
+
+        with open(download_path, 'rb') as f:
+            downloaded_model = pickle.load(f)
+
+        assert downloaded_model.get_params() == model.get_params()
+
+
 class TestArbitraryModels:
     @staticmethod
     def _assert_no_deployment_artifacts(experiment_run):
@@ -554,25 +574,36 @@ class TestArbitraryModels:
 
         self._assert_no_deployment_artifacts(experiment_run)
 
+    def test_download_arbitrary_directory(self, experiment_run, dir_and_files, strs, in_tempdir):
+        """Model that was originally a dir is unpacked on download."""
+        dirpath, _ = dir_and_files
+        download_path = strs[0]
 
-class TestDownloadModels:
-    def test_download_sklearn(self, experiment_run, in_tempdir):
-        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+        experiment_run.log_model(dirpath)
+        returned_path = experiment_run.download_model(download_path)
+        assert returned_path == os.path.abspath(download_path)
 
-        upload_filepath = "model.pkl"
-        download_filepath = "retrieved_model.pkl"
+        # contents match
+        utils.assert_dirs_match(dirpath, download_path)
 
-        model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
-        with open(upload_filepath, 'wb') as f:
-            pickle.dump(model, f)
+    def test_download_arbitrary_zip(self, experiment_run, dir_and_files, strs, in_tempdir):
+        """Model that was originally a ZIP is not unpacked on download."""
+        model_dir, _ = dir_and_files
+        upload_path, download_path = strs[:2]
 
-        experiment_run.log_model(model, custom_modules=[])
-        experiment_run.download_model(download_filepath)
+        # zip `model_dir` into `upload_path`
+        with open(upload_path, 'wb') as f:
+            shutil.copyfileobj(
+                _artifact_utils.zip_dir(model_dir),
+                f,
+            )
 
-        with open(download_filepath, 'rb') as f:
-            downloaded_model = pickle.load(f)
+        experiment_run.log_model(upload_path)
+        returned_path = experiment_run.download_model(download_path)
+        assert returned_path == os.path.abspath(download_path)
 
-        assert downloaded_model.get_params() == model.get_params()
+        assert zipfile.is_zipfile(download_path)
+        assert filecmp.cmp(upload_path, download_path)
 
 
 class TestImages:
@@ -667,9 +698,9 @@ class TestImages:
                       for value in all_values if not isinstance(value, str))
 
         for key, artifact in zip(_artifact_utils.BLOCKLISTED_KEYS, all_values):
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match="please use a different key$"):
                 experiment_run.log_image(key, artifact)
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match="please use a different key$"):
                 experiment_run.log_image_path(key, artifact)
 
 
@@ -691,15 +722,6 @@ class TestOverwrite:
         experiment_run.log_model(new_model, overwrite=True)
 
         assert experiment_run.get_artifact(_artifact_utils.MODEL_KEY) == new_model
-
-    def test_requirements(self, experiment_run):
-        requirements = ["banana==1"]
-        new_requirements = ["coconut==1"]
-
-        experiment_run.log_requirements(requirements)
-        experiment_run.log_requirements(new_requirements, overwrite=True)
-
-        assert six.ensure_binary('\n'.join(new_requirements)) in experiment_run.get_artifact("requirements.txt").read()
 
     def test_setup_script(self, experiment_run):
         setup_script = "import verta"

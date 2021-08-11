@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package ai.verta.monitoring;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring";
+
+option java_multiple_files = true;
+
+message FeatureDataInModelVersion {
+    // Feature information
+    string feature_name = 1;
+
+    // Profiler info
+    // Name of the python class that should be used for this profiler
+    string profiler_name = 2;
+    // String serialization to the json that should be passed to the profiler constructor.
+    // For example, if it's called like Profiler(foo="bar", baz=1), then this field has
+    // {"foo": "bar", "baz"=1} in it.
+    string profiler_parameters = 3;
+
+    // Summary information
+    string summary_name = 4; // Must be unique for all FeatureDataInModelVersion in a given model version
+    string summary_type_name = 5;
+
+    // Summary sample information. These fields are the same used during sample creation
+    map<string, string> labels = 6;
+    string content = 7;
+    uint64 created_at_millis = 8;
+    uint64 time_window_start_at_millis = 9;
+    uint64 time_window_end_at_millis = 10;
+}
+
+message FeatureDataInProfiler {
+    // Feature information
+    string feature_name = 1;
+
+    // From FeatureDataInModelVersion
+    string profiler_name = 2;
+    string profiler_parameters = 3;
+
+    // From a summary created during deployment
+    uint64 summary_id = 4;
+
+    // From FeatureDataInModelVersion plus changes from deployment
+    map<string, string> labels = 5;
+    string reference_content = 6;
+}

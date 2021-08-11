@@ -9,6 +9,7 @@ public class DatabaseConfig {
   public String maxLifetime = "300000";
   public String minConnectionPoolSize = "0";
   public String maxConnectionPoolSize = "20";
+  public int threadCount = 8;
   public String connectionTimeout = "300";
 
   public RdbConfig RdbConfiguration;

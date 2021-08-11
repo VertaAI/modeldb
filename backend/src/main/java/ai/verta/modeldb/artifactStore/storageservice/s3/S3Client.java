@@ -3,15 +3,11 @@ package ai.verta.modeldb.artifactStore.storageservice.s3;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.config.S3Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.Config;
-import ai.verta.modeldb.config.S3Config;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.BasicSessionCredentials;
+import com.amazonaws.auth.*;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -50,7 +46,7 @@ public class S3Client {
 
   public S3Client(String cloudBucketName) throws IOException, ModelDBException {
     app = App.getInstance();
-    config = Config.getInstance().artifactStoreConfig.S3;
+    config = app.config.artifactStoreConfig.S3;
     String cloudAccessKey = config.cloudAccessKey;
     String cloudSecretKey = config.cloudSecretKey;
     String minioEndpoint = config.minioEndpoint;
@@ -87,7 +83,8 @@ public class S3Client {
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion, String minioEndpoint) {
     awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
     ClientConfiguration clientConfiguration = new ClientConfiguration();
-    clientConfiguration.setSignerOverride("AWSS3V4SignerType");
+    clientConfiguration.setSignerOverride("VertaSignOverrideS3Signer");
+    SignerFactory.registerSigner("VertaSignOverrideS3Signer", SignOverrideS3Signer.class);
 
     this.s3Client =
         AmazonS3ClientBuilder.standard()

@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.authservice.*;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
@@ -23,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -494,7 +494,7 @@ public class FindProjectEntitiesTest extends TestsInit {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -1697,13 +1697,9 @@ public class FindProjectEntitiesTest extends TestsInit {
             .addAllPredicates(predicates)
             // .setIdsOnly(true)
             .build();
-    try {
-      experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
-      fail();
-    } catch (StatusRuntimeException exc) {
-      Status status = Status.fromThrowable(exc);
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
+    AdvancedQueryExperimentRunsResponse response =
+        hydratedServiceBlockingStub.findHydratedExperimentRuns(findExperimentRuns);
+    assertEquals("Expected response not found", 0, response.getHydratedExperimentRunsCount());
 
     // If key is not set in predicate
     findExperimentRuns =
@@ -1862,7 +1858,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "ExperimentRun not match with expected experimentRun",
         experimentRun12.getId(),
         response.getExperimentRunsList().get(0).getId());
-    assertNotEquals(
+    assertEquals(
         "ExperimentRun not match with expected experimentRun",
         experimentRun12,
         response.getExperimentRunsList().get(0));
@@ -1974,6 +1970,7 @@ public class FindProjectEntitiesTest extends TestsInit {
 
   /** Find experimentRun by metrics and sort by code_version with pagination */
   @Test
+  @Ignore("sort by code_version not supported")
   public void findExperimentRunsByMetricsWithPaginationTest() {
     LOGGER.info(
         "FindExperimentRuns by metrics sort by code_version with pagination test start..................");
@@ -2296,21 +2293,21 @@ public class FindProjectEntitiesTest extends TestsInit {
     for (int index = 0; index < response.getExperimentRunsCount(); index++) {
       ExperimentRun experimentRun = response.getExperimentRunsList().get(index);
       if (index == 0) {
-        assertNotEquals(
+        assertEquals(
             "ExperimentRun not match with expected experimentRun", experimentRun21, experimentRun);
         assertEquals(
             "ExperimentRun Id not match with expected experimentRun Id",
             experimentRun21.getId(),
             experimentRun.getId());
       } else if (index == 1) {
-        assertNotEquals(
+        assertEquals(
             "ExperimentRun not match with expected experimentRun", experimentRun12, experimentRun);
         assertEquals(
             "ExperimentRun Id not match with expected experimentRun Id",
             experimentRun12.getId(),
             experimentRun.getId());
       } else if (index == 2) {
-        assertNotEquals(
+        assertEquals(
             "ExperimentRun not match with expected experimentRun", experimentRun11, experimentRun);
         assertEquals(
             "ExperimentRun Id not match with expected experimentRun Id",
@@ -2326,29 +2323,19 @@ public class FindProjectEntitiesTest extends TestsInit {
   public void findExperimentRunsNegativeTest() {
     LOGGER.info("FindExperimentRuns Negative test start................................");
 
-    FindExperimentRuns findExperimentRuns;
+    FindExperimentRuns findExperimentRuns =
+        FindExperimentRuns.newBuilder().setProjectId("12321").build();
+    FindExperimentRuns.Response response =
+        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+    assertEquals("Expected response not found", 0, response.getExperimentRunsCount());
 
-    try {
-      findExperimentRuns = FindExperimentRuns.newBuilder().setProjectId("12321").build();
-      experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
-      fail();
-    } catch (StatusRuntimeException ex) {
-      checkEqualsAssert(ex);
-    }
-
-    try {
-      List<String> experimentRunIds = new ArrayList<>();
-      experimentRunIds.add("abc");
-      experimentRunIds.add("xyz");
-      findExperimentRuns =
-          FindExperimentRuns.newBuilder().addAllExperimentRunIds(experimentRunIds).build();
-      experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
-      fail();
-    } catch (StatusRuntimeException exc) {
-      Status status = Status.fromThrowable(exc);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
-    }
+    List<String> experimentRunIds = new ArrayList<>();
+    experimentRunIds.add("abc");
+    experimentRunIds.add("xyz");
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder().addAllExperimentRunIds(experimentRunIds).build();
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+    assertEquals("Expected response not found", 0, response.getExperimentRunsCount());
 
     LOGGER.info("FindExperimentRuns Negative test stop................................");
   }
@@ -2507,7 +2494,7 @@ public class FindProjectEntitiesTest extends TestsInit {
   @Test
   public void findProjectsByFuzzyOwnerTest() {
     LOGGER.info("FindProjects by owner fuzzy search test start................................");
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -2530,16 +2517,14 @@ public class FindProjectEntitiesTest extends TestsInit {
     FindProjects findProjects = FindProjects.newBuilder().addPredicates(keyValueQuery).build();
 
     FindProjects.Response response = projectServiceStub.findProjects(findProjects);
-    LOGGER.info("FindProjects Response : " + response.getProjectsList());
-    assertEquals(
-        "Project count not match with expected project count",
-        4,
-        response.getProjectsList().size());
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        4,
-        response.getTotalRecords());
+    List<Project> projectList = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectMap.containsKey(project.getId())) {
+        projectList.add(project);
+      }
+    }
+    LOGGER.info("FindProjects Response : " + projectList.size());
+    assertEquals("Project count not match with expected project count", 4, projectList.size());
 
     keyValueQuery =
         KeyValueQuery.newBuilder()
@@ -2550,12 +2535,14 @@ public class FindProjectEntitiesTest extends TestsInit {
     findProjects = FindProjects.newBuilder().addPredicates(keyValueQuery).build();
 
     response = projectServiceStub.findProjects(findProjects);
+    projectList = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectMap.containsKey(project.getId())) {
+        projectList.add(project);
+      }
+    }
     assertEquals(
-        "Total records count not matched with expected records count",
-        0,
-        response.getTotalRecords());
-    assertEquals(
-        "Project count not match with expected project count", 0, response.getProjectsCount());
+        "Total records count not matched with expected records count", 0, projectList.size());
 
     stringValue = Value.newBuilder().setStringValue("asdasdasd").build();
     keyValueQuery =
@@ -2568,11 +2555,14 @@ public class FindProjectEntitiesTest extends TestsInit {
     findProjects = FindProjects.newBuilder().addPredicates(keyValueQuery).build();
 
     response = projectServiceStub.findProjects(findProjects);
-    LOGGER.info("FindProjects Response : " + response.getProjectsList());
-    assertEquals(
-        "Project count not match with expected project count",
-        0,
-        response.getProjectsList().size());
+    projectList = new ArrayList<>();
+    for (Project project : response.getProjectsList()) {
+      if (projectMap.containsKey(project.getId())) {
+        projectList.add(project);
+      }
+    }
+    LOGGER.info("FindProjects Response : " + projectList.size());
+    assertEquals("Project count not match with expected project count", 0, projectList.size());
 
     LOGGER.info("FindProjects by owner fuzzy search test stop ................................");
   }

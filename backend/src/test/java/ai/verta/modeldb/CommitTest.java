@@ -81,6 +81,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -592,7 +593,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -778,7 +779,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -832,7 +833,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -909,7 +910,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -1036,7 +1037,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -1243,7 +1244,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -1435,7 +1436,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 
@@ -1891,9 +1892,11 @@ public class CommitTest extends TestsInit {
   public void FindRepositoryBlobsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Find repository blobs test start................................");
 
+    List<BlobExpanded> blobsList = new ArrayList<>();
     List<IdentificationType> labelIds = new ArrayList<>();
     CreateCommitRequest createCommitRequest =
         getCreateCommitRequest(repository.getId(), 111, initialCommit, Blob.ContentCase.CONFIG);
+    blobsList.add(createCommitRequest.getBlobs(0));
     CreateCommitRequest.Response commitResponse =
         versioningServiceBlockingStub.createCommit(createCommitRequest);
     Commit configCommit = commitResponse.getCommit();
@@ -1938,6 +1941,7 @@ public class CommitTest extends TestsInit {
                       .addAllLocation(location.getLocationList())
                       .build())
               .build();
+      blobsList.add(createCommitRequest.getBlobs(0));
 
       commitResponse = versioningServiceBlockingStub.createCommit(createCommitRequest);
       Commit datasetCommit = commitResponse.getCommit();
@@ -2032,7 +2036,7 @@ public class CommitTest extends TestsInit {
           datasetBlob.toBuilder().build(),
           listCommitBlobsResponse.getBlobsList().get(0).getBlob());
 
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         findRepositoriesBlobs =
             FindRepositoriesBlobs.newBuilder()
                 .addPredicates(
@@ -2045,12 +2049,16 @@ public class CommitTest extends TestsInit {
 
         listCommitBlobsResponse =
             versioningServiceBlockingStub.findRepositoriesBlobs(findRepositoriesBlobs);
-        Assert.assertEquals(
-            "blob count not match with expected blob count",
-            2,
-            listCommitBlobsResponse.getBlobsCount());
-        boolean match = false;
+        Set<BlobExpanded> blobSet = new HashSet<>();
         for (BlobExpanded blobExpanded : listCommitBlobsResponse.getBlobsList()) {
+          if (blobsList.contains(blobExpanded)) {
+            blobSet.add(blobExpanded);
+          }
+        }
+        Assert.assertEquals(
+            "blob count not match with expected blob count", blobsList.size(), blobSet.size());
+        boolean match = false;
+        for (BlobExpanded blobExpanded : blobSet) {
           if (datasetBlob.equals(blobExpanded.getBlob())) {
             match = true;
           }
@@ -2116,7 +2124,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -2294,7 +2302,7 @@ public class CommitTest extends TestsInit {
             .setMessage("this is the test commit message")
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -2444,7 +2452,7 @@ public class CommitTest extends TestsInit {
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
     CreateCommitRequest createCommitRequest =
@@ -2528,7 +2536,7 @@ public class CommitTest extends TestsInit {
             .setDateCreated(Calendar.getInstance().getTimeInMillis())
             .addParentShas(initialCommit.getCommitSha());
 
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       commitBuilder.setAuthor(authClientInterceptor.getClient1Email());
     }
 

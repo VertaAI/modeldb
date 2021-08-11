@@ -239,12 +239,10 @@ public class DatasetEntity {
             .setWorkspaceTypeValue(getWorkspace_type());
 
     GetResourcesResponseItem repositoryResource =
-        roleService
-            .getEntityResource(
-                Optional.ofNullable(String.valueOf(this.id)),
-                Optional.empty(),
-                ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET)
-            .get();
+        roleService.getEntityResource(
+            Optional.ofNullable(String.valueOf(this.id)),
+            Optional.empty(),
+            ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
     datasetBuilder.setVisibility(repositoryResource.getVisibility());
     datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));

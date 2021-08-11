@@ -27,16 +27,20 @@ class TestEndpoint:
     def test_create(self, client, created_entities):
         name = _utils.generate_default_name()
         endpoint = client.set_endpoint(name)
-        assert endpoint
         created_entities.append(endpoint)
+        assert endpoint
+
         name = verta._internal_utils._utils.generate_default_name()
         endpoint = client.create_endpoint(name)
+        created_entities.append(endpoint)
         assert endpoint
+
         with pytest.raises(requests.HTTPError) as excinfo:
             assert client.create_endpoint(name)
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already in use" in excinfo_value
+
         with pytest.warns(UserWarning, match='.*already exists.*'):
             client.set_endpoint(path=endpoint.path, description="new description")
 
@@ -101,7 +105,7 @@ class TestEndpoint:
 
     def test_repr(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -111,7 +115,7 @@ class TestEndpoint:
         assert "path: {}".format(endpoint.path) in str_repr
         assert "url" in str_repr
         assert "id: {}".format(endpoint.id) in str_repr
-        assert "curl: <Endpoint not deployed>" in str_repr
+        assert "curl: <endpoint not deployed>" in str_repr
 
         # these fields might have changed:
         assert "status" in str_repr
@@ -164,7 +168,7 @@ class TestEndpoint:
 
     def test_direct_update(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -181,7 +185,7 @@ class TestEndpoint:
     def test_update_wait(self, client, created_entities, experiment_run, model_version, model_for_deployment):
         """This tests endpoint.update(..., wait=True), including the case of build error"""
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -200,9 +204,25 @@ class TestEndpoint:
         excinfo_value = str(excinfo.value).strip()
         assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in excinfo_value
 
+    def test_update_runtime_error(self, client, model_version, endpoint):
+        """Propagate errors from model being initialized at container runtime."""
+        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+
+        model_version.log_model(LogisticRegression(), custom_modules=[])
+        model_version.log_environment(Python([]))  # missing scikit-learn
+
+        with pytest.raises(RuntimeError) as excinfo:
+            endpoint.update(model_version, wait=True)
+
+        e_msg = str(excinfo.value).strip()
+        assert e_msg.startswith("endpoint update failed;")
+        assert "Serving Flask app" in e_msg
+        assert "No module named" in e_msg
+        assert "sklearn" in e_msg
+
     def test_canary_update(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -228,7 +248,7 @@ class TestEndpoint:
     def test_update_from_json_config(self, client, in_tempdir, created_entities, experiment_run, model_for_deployment):
         json = pytest.importorskip("json")
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -270,7 +290,7 @@ class TestEndpoint:
     def test_update_from_yaml_config(self, client, in_tempdir, created_entities, experiment_run, model_for_deployment):
         yaml = pytest.importorskip("yaml")
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -311,7 +331,7 @@ class TestEndpoint:
 
     def test_update_with_parameters(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -334,13 +354,17 @@ class TestEndpoint:
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_entities.append(endpoint)
-        token = endpoint.get_access_token()
 
-        assert token is None
+        tokens = set()
+        tokens.add(endpoint.get_access_token())
+        assert tokens
 
-        token = verta._internal_utils._utils.generate_default_name()
-        endpoint.create_access_token(token)
-        assert endpoint.get_access_token() == token
+        for _ in range(2):
+            token = verta._internal_utils._utils.generate_default_name()
+            endpoint.create_access_token(token)
+            tokens.add(token)
+
+        assert set(endpoint.get_access_tokens()) == tokens
 
     def test_create_update_body(self):
         endpoint = Endpoint(None, None, None, None)
@@ -371,21 +395,20 @@ class TestEndpoint:
             model_for_deployment['train_targets'],
         )
         experiment_run.log_model(model, custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
         created_entities.append(endpoint)
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
-        token = verta._internal_utils._utils.generate_default_name()
-        endpoint.create_access_token(token)
         x = model_for_deployment['train_features'].iloc[1].values
         deployed_model = endpoint.get_deployed_model()
 
         assert np.allclose(deployed_model.predict([x]), model.predict([x]))
         deployed_model_curl = deployed_model.get_curl()
         assert endpoint.path in deployed_model_curl
+        token = endpoint.get_access_token()
         assert "-H \"Access-token: {}\"".format(token) in deployed_model_curl
 
         new_model = model_for_deployment['model'].fit(
@@ -472,7 +495,7 @@ class TestEndpoint:
 
     def test_update_autoscaling(self, client, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.set_endpoint(path)
@@ -529,7 +552,7 @@ class TestEndpoint:
     def test_update_from_json_config_with_params(self, client, in_tempdir, created_entities, experiment_run, model_for_deployment):
         yaml = pytest.importorskip("yaml")
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
 
         path = verta._internal_utils._utils.generate_default_name()
@@ -612,11 +635,12 @@ class TestEndpoint:
 
         # updating endpoint
         endpoint.update(new_model_version, DirectUpdateStrategy(), wait=True)
+        time.sleep(60)  # add a delay for API routing to finish transitioning
         assert endpoint.get_deployed_model().predict("foo") == "B"
 
     def test_update_from_run_diff_workspace(self, client, organization, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client.create_endpoint(path, workspace=organization.name)
@@ -646,7 +670,7 @@ class TestEndpoint:
 
     def test_update_from_run_diff_workspace_no_access_error(self, client_2, created_entities, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         path = verta._internal_utils._utils.generate_default_name()
         endpoint = client_2.create_endpoint(path)
@@ -655,9 +679,9 @@ class TestEndpoint:
         with pytest.raises(requests.HTTPError) as excinfo:
             endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
 
-        excinfo_value = str(excinfo.value).strip()
-        assert "403" in excinfo_value
-        assert "Access Denied" in excinfo_value
+        exc_msg = str(excinfo.value).strip()
+        assert exc_msg.startswith("404")
+        assert "not found" in exc_msg
 
     def test_update_from_version_diff_workspace_no_access_error(self, client_2, model_version, created_entities):
         np = pytest.importorskip("numpy")
@@ -680,4 +704,3 @@ class TestEndpoint:
 
         excinfo_value = str(excinfo.value).strip()
         assert "403" in excinfo_value
-        assert "Access Denied" in excinfo_value

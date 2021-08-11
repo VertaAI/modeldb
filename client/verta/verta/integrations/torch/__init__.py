@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""PyTorch module hook for automatic experiment run logging."""
 
 from ...external import six
 
@@ -21,7 +22,7 @@ def verta_hook(run):
 
     Parameters
     ----------
-    run : :class:`~verta._tracking.experimentrun.ExperimentRun`
+    run : :class:`~verta.tracking.entities.ExperimentRun`
         Experiment Run tracking this model.
 
     Examples

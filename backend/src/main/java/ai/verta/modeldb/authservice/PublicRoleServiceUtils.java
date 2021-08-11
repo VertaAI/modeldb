@@ -2,6 +2,7 @@ package ai.verta.modeldb.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
@@ -23,8 +24,6 @@ import ai.verta.modeldb.versioning.CommitDAORdbImpl;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Metadata;
@@ -42,6 +41,7 @@ public class PublicRoleServiceUtils implements RoleService {
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, this);
     ExperimentRunDAO experimentRunDAO =
         new ExperimentRunDAORdbImpl(
+            App.getInstance().config,
             authService,
             this,
             new RepositoryDAORdbImpl(authService, this, commitDAO, metadataDAO),
@@ -71,15 +71,7 @@ public class PublicRoleServiceUtils implements RoleService {
 
   @Override
   public void createRoleBinding(
-      Role role,
-      CollaboratorBase collaborator,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
-
-  @Override
-  public void createRoleBinding(
       String roleName,
-      RoleScope roleBindingScope,
       CollaboratorBase collaborator,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
@@ -97,12 +89,7 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public Role getRoleByName(String roleName, RoleScope roleScope) {
-    return null;
-  }
-
-  @Override
-  public boolean deleteRoleBindings(List<String> roleBindingNames) {
+  public boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames) {
     return true;
   }
 
@@ -236,12 +223,11 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public ListenableFuture<GetResourcesResponseItem> getEntityResource(
+  public GetResourcesResponseItem getEntityResource(
       Optional<String> entityId,
       Optional<String> workspaceName,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return Futures.immediateFuture(
-        GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build());
+    return GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build();
   }
 
   @Override
@@ -273,6 +259,14 @@ public class PublicRoleServiceUtils implements RoleService {
 
   @Override
   public List<GetResourcesResponseItem> getResourceItems(
+      Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
       Workspace workspace,
       Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {

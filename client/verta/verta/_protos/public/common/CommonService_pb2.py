@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.common',
   syntax='proto3',
   serialized_options=b'P\001Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/common',
-  serialized_pb=b'\n\x1a\x63ommon/CommonService.proto\x12\x0f\x61i.verta.common\x1a\x1cgoogle/protobuf/struct.proto\":\n\x0bTernaryEnum\"+\n\x07Ternary\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04TRUE\x10\x01\x12\t\n\x05\x46\x41LSE\x10\x02\"|\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\"H\n\rValueTypeEnum\"7\n\tValueType\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x08\n\x04LIST\x10\x02\x12\x08\n\x04\x42LOB\x10\x03\"I\n\x14\x43ollaboratorTypeEnum\"1\n\x10\x43ollaboratorType\x12\r\n\tREAD_ONLY\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\"R\n\x0c\x45ntitiesEnum\"B\n\rEntitiesTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04TEAM\x10\x02\x12\x08\n\x04USER\x10\x03\"\x87\x02\n\x13ModelDBResourceEnum\"\xef\x01\n\x1bModelDBServiceResourceTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x0b\n\x07PROJECT\x10\x02\x12\x0e\n\nEXPERIMENT\x10\x03\x12\x12\n\x0e\x45XPERIMENT_RUN\x10\x04\x12\x0b\n\x07\x44\x41TASET\x10\x05\x12\x13\n\x0f\x44\x41TASET_VERSION\x10\x06\x12\r\n\tDASHBOARD\x10\x07\x12\x0e\n\nREPOSITORY\x10\x08\x12\x14\n\x10REGISTERED_MODEL\x10\t\x12\x1c\n\x18REGISTERED_MODEL_VERSION\x10\n\x12\x14\n\x10MONITORED_ENTITY\x10\x0b\"5\n\nPagination\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\"M\n\x11WorkspaceTypeEnum\"8\n\rWorkspaceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04USER\x10\x02\"\x82\x01\n\x10\x41rtifactTypeEnum\"n\n\x0c\x41rtifactType\x12\t\n\x05IMAGE\x10\x00\x12\t\n\x05MODEL\x10\x01\x12\x0f\n\x0bTENSORBOARD\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\x08\n\x04\x42LOB\x10\x04\x12\n\n\x06STRING\x10\x05\x12\x08\n\x04\x43ODE\x10\x06\x12\r\n\tCONTAINER\x10\x07\"\xb7\x01\n\x08\x41rtifact\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x11\n\tpath_only\x18\x03 \x01(\x08\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x1a\n\x12linked_artifact_id\x18\x05 \x01(\t\x12\x1a\n\x12\x66ilename_extension\x18\x06 \x01(\t\"\xbb\x01\n\rKeyValueQuery\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12\x38\n\x08operator\x18\x04 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"1\n\x0c\x41rtifactPart\x12\x13\n\x0bpart_number\x18\x01 \x01(\x04\x12\x0c\n\x04\x65tag\x18\x02 \x01(\t\"r\n\x0cOperatorEnum\"b\n\x08Operator\x12\x06\n\x02\x45Q\x10\x00\x12\x06\n\x02NE\x10\x01\x12\x06\n\x02GT\x10\x02\x12\x07\n\x03GTE\x10\x03\x12\x06\n\x02LT\x10\x04\x12\x07\n\x03LTE\x10\x05\x12\x0b\n\x07\x43ONTAIN\x10\x06\x12\x0f\n\x0bNOT_CONTAIN\x10\x07\x12\x06\n\x02IN\x10\x08\"_\n\x0eVisibilityEnum\"M\n\nVisibility\x12\x0b\n\x07PRIVATE\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x15\n\x11ORG_SCOPED_PUBLIC\x10\x02\x12\x0f\n\x0bORG_DEFAULT\x10\x03\x42\x41P\x01Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/commonb\x06proto3'
+  serialized_pb=b'\n\x1a\x63ommon/CommonService.proto\x12\x0f\x61i.verta.common\x1a\x1cgoogle/protobuf/struct.proto\":\n\x0bTernaryEnum\"+\n\x07Ternary\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04TRUE\x10\x01\x12\t\n\x05\x46\x41LSE\x10\x02\"|\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\"H\n\rValueTypeEnum\"7\n\tValueType\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x08\n\x04LIST\x10\x02\x12\x08\n\x04\x42LOB\x10\x03\"I\n\x14\x43ollaboratorTypeEnum\"1\n\x10\x43ollaboratorType\x12\r\n\tREAD_ONLY\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\"t\n#CollaboratorTypeEnumWithDefaultEnum\"M\n\x1f\x43ollaboratorTypeEnumWithDefault\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\x12\r\n\tREAD_ONLY\x10\x02\"R\n\x0c\x45ntitiesEnum\"B\n\rEntitiesTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04TEAM\x10\x02\x12\x08\n\x04USER\x10\x03\"\xa1\x02\n\x13ModelDBResourceEnum\"\x89\x02\n\x1bModelDBServiceResourceTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x0b\n\x07PROJECT\x10\x02\x12\x0e\n\nEXPERIMENT\x10\x03\x12\x12\n\x0e\x45XPERIMENT_RUN\x10\x04\x12\x0b\n\x07\x44\x41TASET\x10\x05\x12\x13\n\x0f\x44\x41TASET_VERSION\x10\x06\x12\r\n\tDASHBOARD\x10\x07\x12\x0e\n\nREPOSITORY\x10\x08\x12\x14\n\x10REGISTERED_MODEL\x10\t\x12\x1c\n\x18REGISTERED_MODEL_VERSION\x10\n\x12\x14\n\x10MONITORED_ENTITY\x10\x0b\x12\x18\n\x14NOTIFICATION_CHANNEL\x10\x0c\"5\n\nPagination\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\"M\n\x11WorkspaceTypeEnum\"8\n\rWorkspaceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04USER\x10\x02\"\x82\x01\n\x10\x41rtifactTypeEnum\"n\n\x0c\x41rtifactType\x12\t\n\x05IMAGE\x10\x00\x12\t\n\x05MODEL\x10\x01\x12\x0f\n\x0bTENSORBOARD\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\x08\n\x04\x42LOB\x10\x04\x12\n\n\x06STRING\x10\x05\x12\x08\n\x04\x43ODE\x10\x06\x12\r\n\tCONTAINER\x10\x07\"\xb7\x01\n\x08\x41rtifact\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x11\n\tpath_only\x18\x03 \x01(\x08\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x1a\n\x12linked_artifact_id\x18\x05 \x01(\t\x12\x1a\n\x12\x66ilename_extension\x18\x06 \x01(\t\"\xbb\x01\n\rKeyValueQuery\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12\x38\n\x08operator\x18\x04 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"1\n\x0c\x41rtifactPart\x12\x13\n\x0bpart_number\x18\x01 \x01(\x04\x12\x0c\n\x04\x65tag\x18\x02 \x01(\t\"r\n\x0cOperatorEnum\"b\n\x08Operator\x12\x06\n\x02\x45Q\x10\x00\x12\x06\n\x02NE\x10\x01\x12\x06\n\x02GT\x10\x02\x12\x07\n\x03GTE\x10\x03\x12\x06\n\x02LT\x10\x04\x12\x07\n\x03LTE\x10\x05\x12\x0b\n\x07\x43ONTAIN\x10\x06\x12\x0f\n\x0bNOT_CONTAIN\x10\x07\x12\x06\n\x02IN\x10\x08\"_\n\x0eVisibilityEnum\"M\n\nVisibility\x12\x0b\n\x07PRIVATE\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x15\n\x11ORG_SCOPED_PUBLIC\x10\x02\x12\x0f\n\x0bORG_DEFAULT\x10\x03\"\x93\x01\n\x0b\x43odeVersion\x12\x34\n\x0cgit_snapshot\x18\x01 \x01(\x0b\x32\x1c.ai.verta.common.GitSnapshotH\x00\x12\x31\n\x0c\x63ode_archive\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.ArtifactH\x00\x12\x13\n\x0b\x64\x61te_logged\x18\x03 \x01(\x04\x42\x06\n\x04\x63ode\"t\n\x0bGitSnapshot\x12\x11\n\tfilepaths\x18\x01 \x03(\t\x12\x0c\n\x04repo\x18\x02 \x01(\t\x12\x0c\n\x04hash\x18\x03 \x01(\t\x12\x36\n\x08is_dirty\x18\x04 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.TernaryBAP\x01Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/commonb\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
 
@@ -103,6 +103,32 @@ _COLLABORATORTYPEENUM_COLLABORATORTYPE = _descriptor.EnumDescriptor(
 )
 _sym_db.RegisterEnumDescriptor(_COLLABORATORTYPEENUM_COLLABORATORTYPE)
 
+_COLLABORATORTYPEENUMWITHDEFAULTENUM_COLLABORATORTYPEENUMWITHDEFAULT = _descriptor.EnumDescriptor(
+  name='CollaboratorTypeEnumWithDefault',
+  full_name='ai.verta.common.CollaboratorTypeEnumWithDefaultEnum.CollaboratorTypeEnumWithDefault',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='READ_WRITE', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='READ_ONLY', index=2, number=2,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=451,
+  serialized_end=528,
+)
+_sym_db.RegisterEnumDescriptor(_COLLABORATORTYPEENUMWITHDEFAULTENUM_COLLABORATORTYPEENUMWITHDEFAULT)
+
 _ENTITIESENUM_ENTITIESTYPES = _descriptor.EnumDescriptor(
   name='EntitiesTypes',
   full_name='ai.verta.common.EntitiesEnum.EntitiesTypes',
@@ -128,8 +154,8 @@ _ENTITIESENUM_ENTITIESTYPES = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=428,
-  serialized_end=494,
+  serialized_start=546,
+  serialized_end=612,
 )
 _sym_db.RegisterEnumDescriptor(_ENTITIESENUM_ENTITIESTYPES)
 
@@ -187,11 +213,15 @@ _MODELDBRESOURCEENUM_MODELDBSERVICERESOURCETYPES = _descriptor.EnumDescriptor(
       name='MONITORED_ENTITY', index=11, number=11,
       serialized_options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='NOTIFICATION_CHANNEL', index=12, number=12,
+      serialized_options=None,
+      type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=521,
-  serialized_end=760,
+  serialized_start=639,
+  serialized_end=904,
 )
 _sym_db.RegisterEnumDescriptor(_MODELDBRESOURCEENUM_MODELDBSERVICERESOURCETYPES)
 
@@ -216,8 +246,8 @@ _WORKSPACETYPEENUM_WORKSPACETYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=838,
-  serialized_end=894,
+  serialized_start=982,
+  serialized_end=1038,
 )
 _sym_db.RegisterEnumDescriptor(_WORKSPACETYPEENUM_WORKSPACETYPE)
 
@@ -262,8 +292,8 @@ _ARTIFACTTYPEENUM_ARTIFACTTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=917,
-  serialized_end=1027,
+  serialized_start=1061,
+  serialized_end=1171,
 )
 _sym_db.RegisterEnumDescriptor(_ARTIFACTTYPEENUM_ARTIFACTTYPE)
 
@@ -312,8 +342,8 @@ _OPERATORENUM_OPERATOR = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1472,
-  serialized_end=1570,
+  serialized_start=1616,
+  serialized_end=1714,
 )
 _sym_db.RegisterEnumDescriptor(_OPERATORENUM_OPERATOR)
 
@@ -342,8 +372,8 @@ _VISIBILITYENUM_VISIBILITY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1590,
-  serialized_end=1667,
+  serialized_start=1734,
+  serialized_end=1811,
 )
 _sym_db.RegisterEnumDescriptor(_VISIBILITYENUM_VISIBILITY)
 
@@ -468,6 +498,31 @@ _COLLABORATORTYPEENUM = _descriptor.Descriptor(
 )
 
 
+_COLLABORATORTYPEENUMWITHDEFAULTENUM = _descriptor.Descriptor(
+  name='CollaboratorTypeEnumWithDefaultEnum',
+  full_name='ai.verta.common.CollaboratorTypeEnumWithDefaultEnum',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _COLLABORATORTYPEENUMWITHDEFAULTENUM_COLLABORATORTYPEENUMWITHDEFAULT,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=412,
+  serialized_end=528,
+)
+
+
 _ENTITIESENUM = _descriptor.Descriptor(
   name='EntitiesEnum',
   full_name='ai.verta.common.EntitiesEnum',
@@ -488,8 +543,8 @@ _ENTITIESENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=412,
-  serialized_end=494,
+  serialized_start=530,
+  serialized_end=612,
 )
 
 
@@ -513,8 +568,8 @@ _MODELDBRESOURCEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=497,
-  serialized_end=760,
+  serialized_start=615,
+  serialized_end=904,
 )
 
 
@@ -551,8 +606,8 @@ _PAGINATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=762,
-  serialized_end=815,
+  serialized_start=906,
+  serialized_end=959,
 )
 
 
@@ -576,8 +631,8 @@ _WORKSPACETYPEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=817,
-  serialized_end=894,
+  serialized_start=961,
+  serialized_end=1038,
 )
 
 
@@ -601,8 +656,8 @@ _ARTIFACTTYPEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=897,
-  serialized_end=1027,
+  serialized_start=1041,
+  serialized_end=1171,
 )
 
 
@@ -667,8 +722,8 @@ _ARTIFACT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1030,
-  serialized_end=1213,
+  serialized_start=1174,
+  serialized_end=1357,
 )
 
 
@@ -719,8 +774,8 @@ _KEYVALUEQUERY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1216,
-  serialized_end=1403,
+  serialized_start=1360,
+  serialized_end=1547,
 )
 
 
@@ -757,8 +812,8 @@ _ARTIFACTPART = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1405,
-  serialized_end=1454,
+  serialized_start=1549,
+  serialized_end=1598,
 )
 
 
@@ -782,8 +837,8 @@ _OPERATORENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1456,
-  serialized_end=1570,
+  serialized_start=1600,
+  serialized_end=1714,
 )
 
 
@@ -807,8 +862,108 @@ _VISIBILITYENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1572,
-  serialized_end=1667,
+  serialized_start=1716,
+  serialized_end=1811,
+)
+
+
+_CODEVERSION = _descriptor.Descriptor(
+  name='CodeVersion',
+  full_name='ai.verta.common.CodeVersion',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='git_snapshot', full_name='ai.verta.common.CodeVersion.git_snapshot', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='code_archive', full_name='ai.verta.common.CodeVersion.code_archive', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='date_logged', full_name='ai.verta.common.CodeVersion.date_logged', index=2,
+      number=3, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+    _descriptor.OneofDescriptor(
+      name='code', full_name='ai.verta.common.CodeVersion.code',
+      index=0, containing_type=None, fields=[]),
+  ],
+  serialized_start=1814,
+  serialized_end=1961,
+)
+
+
+_GITSNAPSHOT = _descriptor.Descriptor(
+  name='GitSnapshot',
+  full_name='ai.verta.common.GitSnapshot',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='filepaths', full_name='ai.verta.common.GitSnapshot.filepaths', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='repo', full_name='ai.verta.common.GitSnapshot.repo', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='hash', full_name='ai.verta.common.GitSnapshot.hash', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='is_dirty', full_name='ai.verta.common.GitSnapshot.is_dirty', index=3,
+      number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1963,
+  serialized_end=2079,
 )
 
 _TERNARYENUM_TERNARY.containing_type = _TERNARYENUM
@@ -816,6 +971,7 @@ _KEYVALUE.fields_by_name['value'].message_type = google_dot_protobuf_dot_struct_
 _KEYVALUE.fields_by_name['value_type'].enum_type = _VALUETYPEENUM_VALUETYPE
 _VALUETYPEENUM_VALUETYPE.containing_type = _VALUETYPEENUM
 _COLLABORATORTYPEENUM_COLLABORATORTYPE.containing_type = _COLLABORATORTYPEENUM
+_COLLABORATORTYPEENUMWITHDEFAULTENUM_COLLABORATORTYPEENUMWITHDEFAULT.containing_type = _COLLABORATORTYPEENUMWITHDEFAULTENUM
 _ENTITIESENUM_ENTITIESTYPES.containing_type = _ENTITIESENUM
 _MODELDBRESOURCEENUM_MODELDBSERVICERESOURCETYPES.containing_type = _MODELDBRESOURCEENUM
 _WORKSPACETYPEENUM_WORKSPACETYPE.containing_type = _WORKSPACETYPEENUM
@@ -826,10 +982,20 @@ _KEYVALUEQUERY.fields_by_name['value_type'].enum_type = _VALUETYPEENUM_VALUETYPE
 _KEYVALUEQUERY.fields_by_name['operator'].enum_type = _OPERATORENUM_OPERATOR
 _OPERATORENUM_OPERATOR.containing_type = _OPERATORENUM
 _VISIBILITYENUM_VISIBILITY.containing_type = _VISIBILITYENUM
+_CODEVERSION.fields_by_name['git_snapshot'].message_type = _GITSNAPSHOT
+_CODEVERSION.fields_by_name['code_archive'].message_type = _ARTIFACT
+_CODEVERSION.oneofs_by_name['code'].fields.append(
+  _CODEVERSION.fields_by_name['git_snapshot'])
+_CODEVERSION.fields_by_name['git_snapshot'].containing_oneof = _CODEVERSION.oneofs_by_name['code']
+_CODEVERSION.oneofs_by_name['code'].fields.append(
+  _CODEVERSION.fields_by_name['code_archive'])
+_CODEVERSION.fields_by_name['code_archive'].containing_oneof = _CODEVERSION.oneofs_by_name['code']
+_GITSNAPSHOT.fields_by_name['is_dirty'].enum_type = _TERNARYENUM_TERNARY
 DESCRIPTOR.message_types_by_name['TernaryEnum'] = _TERNARYENUM
 DESCRIPTOR.message_types_by_name['KeyValue'] = _KEYVALUE
 DESCRIPTOR.message_types_by_name['ValueTypeEnum'] = _VALUETYPEENUM
 DESCRIPTOR.message_types_by_name['CollaboratorTypeEnum'] = _COLLABORATORTYPEENUM
+DESCRIPTOR.message_types_by_name['CollaboratorTypeEnumWithDefaultEnum'] = _COLLABORATORTYPEENUMWITHDEFAULTENUM
 DESCRIPTOR.message_types_by_name['EntitiesEnum'] = _ENTITIESENUM
 DESCRIPTOR.message_types_by_name['ModelDBResourceEnum'] = _MODELDBRESOURCEENUM
 DESCRIPTOR.message_types_by_name['Pagination'] = _PAGINATION
@@ -840,6 +1006,8 @@ DESCRIPTOR.message_types_by_name['KeyValueQuery'] = _KEYVALUEQUERY
 DESCRIPTOR.message_types_by_name['ArtifactPart'] = _ARTIFACTPART
 DESCRIPTOR.message_types_by_name['OperatorEnum'] = _OPERATORENUM
 DESCRIPTOR.message_types_by_name['VisibilityEnum'] = _VISIBILITYENUM
+DESCRIPTOR.message_types_by_name['CodeVersion'] = _CODEVERSION
+DESCRIPTOR.message_types_by_name['GitSnapshot'] = _GITSNAPSHOT
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 TernaryEnum = _reflection.GeneratedProtocolMessageType('TernaryEnum', (_message.Message,), {
@@ -869,6 +1037,13 @@ CollaboratorTypeEnum = _reflection.GeneratedProtocolMessageType('CollaboratorTyp
   # @@protoc_insertion_point(class_scope:ai.verta.common.CollaboratorTypeEnum)
   })
 _sym_db.RegisterMessage(CollaboratorTypeEnum)
+
+CollaboratorTypeEnumWithDefaultEnum = _reflection.GeneratedProtocolMessageType('CollaboratorTypeEnumWithDefaultEnum', (_message.Message,), {
+  'DESCRIPTOR' : _COLLABORATORTYPEENUMWITHDEFAULTENUM,
+  '__module__' : 'common.CommonService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.common.CollaboratorTypeEnumWithDefaultEnum)
+  })
+_sym_db.RegisterMessage(CollaboratorTypeEnumWithDefaultEnum)
 
 EntitiesEnum = _reflection.GeneratedProtocolMessageType('EntitiesEnum', (_message.Message,), {
   'DESCRIPTOR' : _ENTITIESENUM,
@@ -939,6 +1114,20 @@ VisibilityEnum = _reflection.GeneratedProtocolMessageType('VisibilityEnum', (_me
   # @@protoc_insertion_point(class_scope:ai.verta.common.VisibilityEnum)
   })
 _sym_db.RegisterMessage(VisibilityEnum)
+
+CodeVersion = _reflection.GeneratedProtocolMessageType('CodeVersion', (_message.Message,), {
+  'DESCRIPTOR' : _CODEVERSION,
+  '__module__' : 'common.CommonService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.common.CodeVersion)
+  })
+_sym_db.RegisterMessage(CodeVersion)
+
+GitSnapshot = _reflection.GeneratedProtocolMessageType('GitSnapshot', (_message.Message,), {
+  'DESCRIPTOR' : _GITSNAPSHOT,
+  '__module__' : 'common.CommonService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.common.GitSnapshot)
+  })
+_sym_db.RegisterMessage(GitSnapshot)
 
 
 DESCRIPTOR._options = None

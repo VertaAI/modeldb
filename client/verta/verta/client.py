@@ -2,54 +2,27 @@
 
 from __future__ import print_function
 
-import ast
-import copy
-import glob
-import importlib
 import os
-import pathlib2
-import pprint
 import re
-import shutil
-import sys
-import tarfile
-import tempfile
-import time
 import warnings
-import zipfile
 
 import requests
-from verta._tracking.organization import Organization
+from verta.tracking._organization import Organization
 from ._internal_utils._utils import check_unnecessary_params_warning
 
-from ._protos.public.common import CommonService_pb2 as _CommonCommonService
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
-from ._protos.public.modeldb import ProjectService_pb2 as _ProjectService
-from ._protos.public.modeldb import ExperimentService_pb2 as _ExperimentService
-from ._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
 
 from .external import six
-from .external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
 from .external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from ._internal_utils import (
-    _artifact_utils,
     _config_utils,
-    _git_utils,
-    _histogram_utils,
-    _pip_requirements_utils,
     _request_utils,
     _utils,
 )
 
-from . import _repository
-from ._repository import commit as commit_module
-from . import deployment
-from . import utils
-
-from ._tracking import entity
-from ._tracking import (
-    _Context,
+from .tracking import _Context
+from .tracking.entities import (
     Project,
     Projects,
     Experiment,
@@ -58,30 +31,32 @@ from ._tracking import (
     ExperimentRuns,
 )
 
-from .registry._entities import (
+from .registry.entities import (
     RegisteredModel,
     RegisteredModels,
     RegisteredModelVersion,
     RegisteredModelVersions,
 )
-from ._dataset_versioning.dataset import Dataset
-from ._dataset_versioning.datasets import Datasets
-from ._dataset_versioning.dataset_version import DatasetVersion
-from .endpoint._endpoint import Endpoint
-from .endpoint._endpoints import Endpoints
+from .dataset.entities import (
+    Dataset,
+    Datasets,
+    DatasetVersion,
+)
+from .endpoint import Endpoint
+from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
-
+from .monitoring.client import Client as MonitoringClient
 
 class Client(object):
     """
-    Object for interfacing with the ModelDB backend.
+    Object for interfacing with the Verta backend.
 
     .. deprecated:: 0.12.0
-       The `port` parameter will removed in v0.17.0; please combine `port` with the first parameter,
+       The `port` parameter will be removed in an upcoming version; please combine `port` with the first parameter,
        e.g. `Client("localhost:8080")`.
     .. deprecated:: 0.13.3
-       The `expt_runs` attribute will removed in v0.17.0; consider using `proj.expt_runs` and
+       The `expt_runs` attribute will be removed in an upcoming version; consider using `proj.expt_runs` and
        `expt.expt_runs` instead.
 
     This class provides functionality for starting/resuming Projects, Experiments, and Experiment Runs.
@@ -105,6 +80,8 @@ class Client(object):
         Whether to use a local Git repository for certain operations such as Code Versioning.
     debug : bool, default False
         Whether to print extra verbose information to aid in debugging.
+    extra_auth_headers : dict, default {}
+        Extra headers to include on requests, like to permit traffic through a restrictive application load balancer
     _connect : str, default True
         Whether to connect to server (``False`` for unit tests).
 
@@ -112,21 +89,37 @@ class Client(object):
     ----------
     max_retries : int
         Maximum number of times to retry a request on a connection failure. Changes to this value
-        propagate to any objects that are/were created from this Client.
+        propagate to any objects that are/were created from this client.
     ignore_conn_err : bool
         Whether to ignore connection errors and instead return successes with empty contents. Changes
-        to this value propagate to any objects that are/were created from this Client.
+        to this value propagate to any objects that are/were created from this client.
     debug : bool
         Whether to print extra verbose information to aid in debugging. Changes to this value propagate
-        to any objects that are/were created from this Client.
-    proj : :class:`~verta._tracking.project.Project` or None
-        Currently active Project.
-    expt : :class:`~verta._tracking.experiment.Experiment` or None
-        Currently active Experiment.
+        to any objects that are/were created from this client.
+    monitoring : :class:`verta.monitoring.client.Client`
+        Monitoring sub-client
+    proj : :class:`~verta.tracking.entities.Project` or None
+        Currently active project.
+    projects : :class:`~verta.tracking.entities.Projects`
+        Projects in the current default workspace.
+    expt : :class:`~verta.tracking.entities.Experiment` or None
+        Currently active experiment.
+    experiments : :class:`~verta.tracking.entities.Experiments`
+        Experiments in the current default workspace.
+    expt_runs : :class:`~verta.tracking.entities.ExperimentRuns`
+        Experiment runs in the current default workspace.
+    registered_models : :class:`~verta.registry.entities.RegisteredModels`
+        Registered models in the current default workspace.
+    registered_model_versions : :class:`~verta.registry.entities.RegisteredModelVersions`
+        Registered model versions in the current default workspace.
+    endpoints : :class:`~verta.endpoint.Endpoints`
+        Endpoints in the current default workspace.
+    datasets : :class:`~verta.dataset.entities.Datasets`
+        Datasets in the current default workspace.
 
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
-                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, _connect=True):
+                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, extra_auth_headers={}, _connect=True):
         self._load_config()
 
         if host is None and 'VERTA_HOST' in os.environ:
@@ -141,10 +134,14 @@ class Client(object):
             dev_key = os.environ['VERTA_DEV_KEY']
             print("set developer key from environment")
         dev_key = self._set_from_config_if_none(dev_key, "dev_key")
+        self._workspace = os.environ.get('VERTA_WORKSPACE')
+        if self._workspace is not None:
+            print("set workspace from environment")
 
         if host is None:
             raise ValueError("`host` must be provided")
-        auth = {_utils._GRPC_PREFIX+'source': "PythonClient"}
+        auth = extra_auth_headers.copy()
+        auth.update({_utils._GRPC_PREFIX+'source': "PythonClient"})
         if email is None and dev_key is None:
             if debug:
                 print("[DEBUG] email and developer key not found; auth disabled")
@@ -168,7 +165,7 @@ class Client(object):
         back_end_url = urlparse(host)
         socket = back_end_url.netloc + back_end_url.path.rstrip('/')
         if port is not None:
-            warnings.warn("`port` (the second parameter) will removed in a later version;"
+            warnings.warn("`port` (the second parameter) will be removed in a later version;"
                           " please combine it with the first parameter, e.g. \"localhost:8080\"",
                           category=FutureWarning)
             socket = "{}:{}".format(socket, port)
@@ -205,7 +202,6 @@ class Client(object):
         self._conf = _utils.Configuration(use_git, debug)
 
         self._ctx = _Context(self._conn, self._conf)
-        self._workspace = None
 
     @property
     def proj(self):
@@ -249,6 +245,10 @@ class Client(object):
         self._conf.debug = value
 
     @property
+    def monitoring(self):
+        return MonitoringClient(self)
+
+    @property
     def projects(self):
         return Projects(self._conn, self._conf).with_workspace(self.get_workspace())
 
@@ -278,7 +278,7 @@ class Client(object):
 
         Parameters
         ----------
-        visibility : :ref:`visibility <visibility-api>` or None
+        visibility : :mod:`~verta.visibility` or None
 
         """
         # TODO: consider a decorator for create_*()s that validates common params
@@ -300,8 +300,8 @@ class Client(object):
         The active workspace is determined by this order of precedence:
 
         1) value set in :meth:`~Client.set_workspace`
-        2) value set in :ref:`client config file <client-config-file>`
-        3) default workspace set in web app.
+        2) value set in client config file
+        3) default workspace set in web app
 
         Returns
         -------
@@ -354,7 +354,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.project.Project`
+        :class:`~verta.tracking.entities.Project`
 
         """
         if name is not None and id is not None:
@@ -406,7 +406,7 @@ class Client(object):
             If creating a Project in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this project. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
@@ -416,7 +416,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.project.Project`
+        :class:`~verta.tracking.entities.Project`
 
         Raises
         ------
@@ -466,7 +466,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experiment.Experiment`
+        :class:`~verta.tracking.entities.Experiment`
 
         """
         if name is not None and id is not None:
@@ -514,7 +514,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experiment.Experiment`
+        :class:`~verta.tracking.entities.Experiment`
 
         Raises
         ------
@@ -564,7 +564,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experimentrun.ExperimentRun`
+        :class:`~verta.tracking.entities.ExperimentRun`
 
         """
         if name is not None and id is not None:
@@ -586,7 +586,7 @@ class Client(object):
             raise ValueError("ExperimentRun not Found")
         return self._ctx.expt_run
 
-    def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None):
+    def set_experiment_run(self, name=None, desc=None, tags=None, attrs=None, id=None, date_created=None, start_time=None, end_time=None):
         """
         Attaches an Experiment Run under the currently active Experiment to this Client.
 
@@ -611,7 +611,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experimentrun.ExperimentRun`
+        :class:`~verta.tracking.entities.ExperimentRun`
 
         Raises
         ------
@@ -638,76 +638,13 @@ class Client(object):
 
             self._ctx.expt_run = ExperimentRun._get_or_create_by_name(self._conn, name,
                                                                     lambda name: ExperimentRun._get_by_name(self._conn, self._conf, name, self._ctx.expt.id),
-                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created),
+                                                                    lambda name: ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created, start_time=start_time, end_time=end_time),
                                                                     lambda: check_unnecessary_params_warning(
                                                                           resource_name,
                                                                           "name {}".format(name),
                                                                           param_names, params))
 
         return self._ctx.expt_run
-
-    def get_or_create_repository(self, name=None, workspace=None, id=None, public_within_org=None, visibility=None):
-        """
-        Gets or creates a Repository by `name` and `workspace`, or gets a Repository by `id`.
-
-        Parameters
-        ----------
-        name : str
-            Name of the Repository. This parameter cannot be provided alongside `id`.
-        workspace : str, optional
-            Workspace under which the Repository with name `name` exists. If not provided, the
-            current user's personal workspace will be used.
-        id : str, optional
-            ID of the Repository, to be provided instead of `name`.
-        public_within_org : bool, optional
-            If creating a Repository in an organization's workspace: ``True``
-            for public, ``False`` for private. In older backends, default is
-            private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
-            Visibility to set when creating this repository. If not provided,
-            an appropriate default will be used. This parameter should be
-            preferred over `public_within_org`.
-
-        Returns
-        -------
-        :class:`~verta._repository.Repository`
-            Specified Repository.
-
-        """
-        self._validate_visibility(visibility)
-
-        if name is not None and id is not None:
-            raise ValueError("cannot specify both `name` and `id`")
-        elif id is not None:
-            repo = _repository.Repository._get(self._conn, id_=id)
-            if repo is None:
-                raise ValueError("no Repository found with ID {}".format(id))
-            print("set existing Repository: {}".format(repo.name))
-            return repo
-        elif name is not None:
-            if workspace is None:
-                workspace = self.get_workspace()
-            workspace_str = "workspace {}".format(workspace)
-
-            repo = _repository.Repository._get(self._conn, name=name, workspace=workspace)
-
-            if not repo:  # not found
-                try:
-                    repo = _repository.Repository._create(self._conn, name=name, workspace=workspace,
-                                                          public_within_org=public_within_org, visibility=visibility)
-                except requests.HTTPError as e:
-                    if e.response.status_code == 409:  # already exists
-                        raise RuntimeError("unable to get Repository from ModelDB;"
-                                           " please notify the Verta development team")
-                    else:
-                        six.raise_from(e, None)
-                print("created new Repository: {} in {}".format(name, workspace_str))
-            else:
-                print("set existing Repository: {} from {}".format(name, workspace_str))
-
-            return repo
-        else:
-            raise ValueError("must specify either `name` or `id`")
 
     # set aliases for get-or-create functions for API compatibility
     def get_or_create_project(self, *args, **kwargs):
@@ -730,14 +667,6 @@ class Client(object):
 
         """
         return self.set_experiment_run(*args, **kwargs)
-
-    def set_repository(self, *args, **kwargs):
-        """
-        Alias for :meth:`Client.get_or_create_repository()`.
-
-        """
-        return self.get_or_create_repository(*args, **kwargs)
-    # set aliases for get-or-create functions for API compatibility
 
     def get_or_create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None, id=None):
         """
@@ -763,7 +692,7 @@ class Client(object):
             ``True`` for public, ``False`` for private. In older backends,
             default is private; in newer backends, uses the org's settings by
             default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this registered model. If not
             provided, an appropriate default will be used. This parameter
             should be preferred over `public_within_org`.
@@ -773,7 +702,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.registry._entities.model.RegisteredModel`
+        :class:`~verta.registry.entities.RegisteredModel`
 
         Raises
         ------
@@ -823,7 +752,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.registry._entities.model.RegisteredModel`
+        :class:`~verta.registry.entities.RegisteredModel`
         """
         if name is not None and id is not None:
             raise ValueError("cannot specify both `name` and `id`")
@@ -862,7 +791,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.registry._entities.modelversion.RegisteredModelVersion`
+        :class:`~verta.registry.entities.RegisteredModelVersion`
         """
         return RegisteredModelVersion._get_by_id(self._conn, self._conf, id)
 
@@ -895,7 +824,7 @@ class Client(object):
             If creating an endpoint in an organization's workspace: ``True``
             for public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this endpoint. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
@@ -905,7 +834,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.endpoint._endpoint.Endpoint`
+        :class:`~verta.endpoint.Endpoint`
 
         Raises
         ------
@@ -954,7 +883,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.endpoint._endpoint.Endpoint`
+        :class:`~verta.endpoint.Endpoint`
 
         """
         if path is not None and id is not None:
@@ -1006,14 +935,14 @@ class Client(object):
             If creating a Project in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this project. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
 
         Returns
         -------
-        :class:`~verta._tracking.project.Project`
+        :class:`~verta.tracking.entities.Project`
 
         Raises
         ------
@@ -1055,7 +984,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experiment.Experiment`
+        :class:`~verta.tracking.entities.Experiment`
 
         Raises
         ------
@@ -1075,7 +1004,7 @@ class Client(object):
         return self._ctx.expt
 
 
-    def create_experiment_run(self, name=None, desc=None, tags=None, attrs=None, date_created=None):
+    def create_experiment_run(self, name=None, desc=None, tags=None, attrs=None, date_created=None, start_time=None, end_time=None):
         """
         Creates a new Experiment Run under the currently active Experiment.
 
@@ -1095,7 +1024,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._tracking.experimentrun.ExperimentRun`
+        :class:`~verta.tracking.entities.ExperimentRun`
 
         Raises
         ------
@@ -1108,7 +1037,7 @@ class Client(object):
         if self._ctx.expt is None:
             self.set_experiment()
 
-        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created)
+        self._ctx.expt_run = ExperimentRun._create(self._conn, self._conf, self._ctx, name=name, desc=desc, tags=tags, attrs=attrs, date_created=date_created, start_time=start_time, end_time=end_time)
 
         return self._ctx.expt_run
 
@@ -1135,14 +1064,14 @@ class Client(object):
             ``True`` for public, ``False`` for private. In older backends,
             default is private; in newer backends, uses the org's settings by
             default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this registered model. If not
             provided, an appropriate default will be used. This parameter
             should be preferred over `public_within_org`.
 
         Returns
         -------
-        :class:`~verta.registry._entities.model.RegisteredModel`
+        :class:`~verta.registry.entities.RegisteredModel`
 
         Raises
         ------
@@ -1167,11 +1096,22 @@ class Client(object):
         )
 
 
-    def create_endpoint(self, path, description=None, workspace=None, public_within_org=None, visibility=None):
+    def create_endpoint(
+        self,
+        path,
+        description=None,
+        workspace=None,
+        public_within_org=None,
+        visibility=None,
+        kafka_settings=None,
+    ):
         """
         Attaches an endpoint to this Client.
 
         An accessible endpoint with name `name` will be created and initialized with specified metadata parameters.
+
+        .. versionadded:: 0.19.0
+            The `kafka_settings` parameter.
 
         Parameters
         ----------
@@ -1186,14 +1126,16 @@ class Client(object):
             If creating an endpoint in an organization's workspace: ``True``
             for public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this endpoint. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
+        kafka_settings : :class:`verta.endpoint.KafkaSettings`, optional
+            Kafka settings.
 
         Returns
         -------
-        :class:`~verta.registry._entities.model.RegisteredModel`
+        :class:`~verta.registry.entities.RegisteredModel`
 
         Raises
         ------
@@ -1207,7 +1149,16 @@ class Client(object):
 
         if workspace is None:
             workspace = self.get_workspace()
-        return Endpoint._create(self._conn, self._conf, workspace, path, description, public_within_org, visibility)
+        return Endpoint._create(
+            self._conn,
+            self._conf,
+            workspace,
+            path,
+            description,
+            public_within_org,
+            visibility,
+            kafka_settings,
+        )
 
     @property
     def endpoints(self):
@@ -1228,11 +1179,11 @@ class Client(object):
             Path of the endpoint.
         name : str
             Name of the endpoint.
-        strategy : :ref:`update strategy <update-stategies>`, default DirectUpdateStrategy()
+        strategy : :mod:`~verta.endpoint.update`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the endpoint.
         resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated endpoint.
-        autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
+        autoscaling : :class:`~verta.endpoint.autoscaling.Autoscaling`, optional
             Autoscaling condition for the updated endpoint.
         env_vars : dict of str to str, optional
             Environment variables.
@@ -1300,7 +1251,7 @@ class Client(object):
             If creating a dataset in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this dataset. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
@@ -1310,7 +1261,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset.Dataset`
+        :class:`~verta.dataset.entities.Dataset`
 
         Raises
         ------
@@ -1381,14 +1332,14 @@ class Client(object):
             If creating a dataset in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
             private; in newer backends, uses the org's settings by default.
-        visibility : :ref:`visibility <visibility-api>`, optional
+        visibility : :mod:`~verta.visibility`, optional
             Visibility to set when creating this dataset. If not provided, an
             appropriate default will be used. This parameter should be
             preferred over `public_within_org`.
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset.Dataset`
+        :class:`~verta.dataset.entities.Dataset`
 
         Raises
         ------
@@ -1429,7 +1380,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset.Dataset`
+        :class:`~verta.dataset.entities.Dataset`
 
         """
         if name is not None and id is not None:
@@ -1468,7 +1419,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+        :class:`~verta.dataset.entities.DatasetVersion`
 
         """
         dataset_version = DatasetVersion._get_by_id(self._conn, self._conf, id)
@@ -1484,7 +1435,7 @@ class Client(object):
                       sort_key=None, ascending=False,
                       workspace=None):
         warnings.warn(
-            "this method is deprecated and will removed in an upcoming version;"
+            "this method is deprecated and will be removed in an upcoming version;"
             " consider using `client.datasets.find()` instead",
             category=FutureWarning,
         )

@@ -23,7 +23,7 @@ class _UpdateStrategy(object):
 
 
 class DirectUpdateStrategy(_UpdateStrategy):
-    """
+    """A direct endpoint update strategy.
 
     The JSON equivalent for this is:
 
@@ -52,12 +52,12 @@ class DirectUpdateStrategy(_UpdateStrategy):
 
 
 class CanaryUpdateStrategy(_UpdateStrategy):
-    """
+    """A rule-based canary endpoint update strategy.
 
     The JSON equivalent for this is:
 
     .. code-block:: json
-    
+
         {
             "strategy": "canary",
             "canary_strategy": {

@@ -2,6 +2,7 @@
 grpcServer:
   port: 8085
   requestTimeout: 30 #time in second
+  maxInboundMessageSize: 4000000
   metrics_port:
 
 springServer:
@@ -54,6 +55,8 @@ database:
     RdbUrl: "jdbc:postgresql://localhost:5432"
     RdbUsername:
     RdbPassword:
+    sslMode: DISABLED
+    sslEnabled: false
 
 # Test Database settings (type mongodb, couchbasedb, relational etc..)
 test:
@@ -72,6 +75,7 @@ test:
       RdbUrl: "jdbc:postgresql://localhost:5432"
       RdbUsername:
       RdbPassword:
+      sslMode: DISABLED
   testUsers:
     primaryUser:
       email:
@@ -108,10 +112,6 @@ telemetry:
   consumer: https://xyz.com/api/v1/xyz
 
 cron_job:
-  update_parent_timestamp:
-    initial_delay: 300 #delay timestamp in second, default 300second = 5min
-    frequency: 60 #frequency to update parent timestamp in second, default 60
-    record_update_limit: 100
   delete_entities:
     initial_delay: 300 #delay timestamp in second, default 300second = 5min
     frequency: 60 #frequency to delete entities in second, default 60
@@ -130,6 +130,8 @@ cron_job:
     record_update_limit: 100
 
 populateConnectionsBasedOnPrivileges: false
+disabled_audits: true
+jdbi_retry_time: 100 # Time in ms
 
 trial:
   enable: true

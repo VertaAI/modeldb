@@ -14,6 +14,7 @@ RUN yarn install
 WORKDIR /usr/src/app/client
 COPY client /usr/src/app/client
 ENV REACT_APP_OSS 1
+ENV REACT_APP_PUBLIC_URL /
 RUN yarn build
 
 FROM node:12.16.2-alpine

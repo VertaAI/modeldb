@@ -50,7 +50,7 @@ public class VersioningModeldbEntityMapping implements Serializable {
   private Long repository_id;
 
   @Id
-  @Column(name = "commit", columnDefinition = "varchar", length = 64)
+  @Column(name = "\"commit\"", columnDefinition = "varchar", length = 64)
   private String commit;
 
   @Id

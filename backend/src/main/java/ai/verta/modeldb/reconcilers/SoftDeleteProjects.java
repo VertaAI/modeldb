@@ -2,6 +2,7 @@ package ai.verta.modeldb.reconcilers;
 
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
@@ -9,8 +10,10 @@ import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -23,8 +26,9 @@ public class SoftDeleteProjects extends Reconciler<String> {
       ModelDBHibernateUtil.getInstance();
   private final RoleService roleService;
 
-  public SoftDeleteProjects(ReconcilerConfig config, RoleService roleService) {
-    super(config, LOGGER);
+  public SoftDeleteProjects(
+      ReconcilerConfig config, RoleService roleService, FutureJdbi futureJdbi, Executor executor) {
+    super(config, LOGGER, futureJdbi, executor, false);
     this.roleService = roleService;
   }
 
@@ -32,11 +36,14 @@ public class SoftDeleteProjects extends Reconciler<String> {
   public void resync() {
     String queryString =
         String.format(
-            "select id from %s where deleted=:deleted", ProjectEntity.class.getSimpleName());
+            "select id from %s where deleted=:deleted OR (created=:created AND date_created < :dateCreated) ",
+            ProjectEntity.class.getSimpleName());
 
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query deletedQuery = session.createQuery(queryString);
       deletedQuery.setParameter("deleted", true);
+      deletedQuery.setParameter("created", false);
+      deletedQuery.setParameter("dateCreated", new Date().getTime() - 60000L); // before 1 min
       deletedQuery.setMaxResults(config.maxSync);
       deletedQuery.stream().forEach(id -> this.insert((String) id));
     }

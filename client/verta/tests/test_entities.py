@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import six
 
 import itertools
@@ -8,15 +10,18 @@ import requests
 
 import pytest
 
-from verta.registry._entities import RegisteredModels
-from verta._tracking.deployable_entity import _CACHE_DIR
+from verta.registry.entities import RegisteredModels
+from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from . import utils
 
 import verta
-import verta._internal_utils._utils
+from verta._bases import _PaginatedIterable
+from verta._internal_utils import _utils
 import json
 
 from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
+
+from verta._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
 
 
 KWARGS = {
@@ -33,101 +38,47 @@ KWARGS_COMBOS = [dict(zip(KWARGS.keys(), values))
 TAG = "my-tag"
 
 
+class TestPaginatedIterable:
+    class LL(_PaginatedIterable):
+        def __init__(self, size):
+            super(TestPaginatedIterable.LL, self).__init__(None, None, _ExperimentRunService.FindExperimentRuns())
+            self._size = size
+            self._calls = 0
+
+        def _call_back_end(self, msg):
+            self._calls += 1
+
+            start = (self._page_number(msg)-1)*self._page_limit(msg)
+            end = self._page_number(msg)*self._page_limit(msg)
+            end = min(self._size, end)
+            ids = list(range(start, end))
+            objs = [_ExperimentRunService.ExperimentRun(id=str(i)) for i in ids]
+            assert max(ids) <= self._size
+            return objs, self._size
+
+        def _create_element(self, el):
+            return el
+
+    def test_ll(self):
+        size = 1000
+        ll = TestPaginatedIterable.LL(size)
+
+        for i, obj in enumerate(ll):
+            assert str(i) == obj.id
+
+    def test_limit(self):
+        size = 1000
+        limit = 10
+        ll = TestPaginatedIterable.LL(size)
+        ll.set_page_limit(limit)
+
+        for i, obj in enumerate(ll):
+            assert str(i) == obj.id
+
+        assert ll._calls == size/limit
+
+
 class TestClient:
-    @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
-    def test_auth_headers(self, host):
-        expected_headers = {
-            'Grpc-Metadata-email': os.environ['VERTA_EMAIL'],
-            'Grpc-Metadata-developer_key': os.environ['VERTA_DEV_KEY'],
-            'Grpc-Metadata-developer-key': os.environ['VERTA_DEV_KEY'],
-        }
-        def assert_contains_expected_headers(headers):
-            for key, val in expected_headers.items():
-                assert key in headers
-                assert headers[key] == val
-
-        # present in Client state
-        client = verta.Client(host)
-        assert_contains_expected_headers(client._conn.auth)
-
-        # sent in requests
-        with pytest.raises(requests.HTTPError) as exc_info:
-            verta.Client("www.google.com")
-        request = exc_info.value.request
-        assert_contains_expected_headers(request.headers)
-
-    @pytest.mark.oss
-    def test_no_auth(self, host):
-        EMAIL_KEY, DEV_KEY_KEY = "VERTA_EMAIL", "VERTA_DEV_KEY"
-        EMAIL, DEV_KEY = os.environ.pop(EMAIL_KEY, None), os.environ.pop(DEV_KEY_KEY, None)
-        try:
-            client = verta.Client(host)
-
-            # still has source set
-            assert 'Grpc-Metadata-source' in client._conn.auth
-
-            assert client.set_project()
-
-            client.proj.delete()
-        finally:
-            if EMAIL is not None:
-                os.environ[EMAIL_KEY] = EMAIL
-            if DEV_KEY is not None:
-                os.environ[DEV_KEY_KEY] = DEV_KEY
-
-
-    @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
-    def test_verta_https(self):
-        hosts = [
-            "app.verta.ai",
-        ]
-
-        for host in hosts:
-            # https by default
-            conn = verta.Client(host)._conn
-            assert conn.scheme == "https"
-            assert conn.scheme == conn.auth['Grpc-Metadata-scheme']
-
-            # http if provided
-            conn = verta.Client("http://{}".format(host))._conn
-            assert conn.scheme == "http"
-            assert conn.scheme == conn.auth['Grpc-Metadata-scheme']
-
-            # https if provided
-            conn = verta.Client("https://{}".format(host))._conn
-            assert conn.scheme == "https"
-            assert conn.scheme == conn.auth['Grpc-Metadata-scheme']
-
-    def test_else_http(self):
-        # test hosts must not redirect http to https
-        hosts = [
-            "www.google.com",
-        ]
-
-        for host in hosts:
-            # http by default
-            try:
-                verta.Client(host, max_retries=0)
-            except requests.HTTPError as e:
-                assert e.request.url.split(':', 1)[0] == "http"
-            else:
-                raise RuntimeError("faulty test; expected error")
-
-            # http if provided
-            try:
-                verta.Client("http://{}".format(host), max_retries=0)
-            except requests.HTTPError as e:
-                assert e.request.url.split(':', 1)[0] == "http"
-            else:
-                raise RuntimeError("faulty test; expected error")
-
-            # https if provided
-            try:
-                verta.Client("https://{}".format(host), max_retries=0)
-            except requests.HTTPError as e:
-                assert e.request.url.split(':', 1)[0] == "https"
-            else:
-                raise RuntimeError("faulty test; expected error")
 
     @pytest.mark.skipif(not all(env_var in os.environ for env_var in ('VERTA_HOST', 'VERTA_EMAIL', 'VERTA_DEV_KEY')), reason="insufficient Verta credentials")
     def test_config_file(self):
@@ -138,9 +89,9 @@ class TestClient:
         self.config_file_with_type_util(connect = True)
 
     def config_file_with_type_util(self, connect):
-        PROJECT_NAME = verta._internal_utils._utils.generate_default_name()
-        DATASET_NAME = verta._internal_utils._utils.generate_default_name()
-        EXPERIMENT_NAME = verta._internal_utils._utils.generate_default_name()
+        PROJECT_NAME = _utils.generate_default_name()
+        DATASET_NAME = _utils.generate_default_name()
+        EXPERIMENT_NAME = _utils.generate_default_name()
         CONFIG_FILENAME = "verta_config.json"
 
         HOST_KEY, EMAIL_KEY, DEV_KEY_KEY = "VERTA_HOST", "VERTA_EMAIL", "VERTA_DEV_KEY"
@@ -197,24 +148,6 @@ class TestClient:
         finally:
             os.environ[HOST_KEY], os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = HOST, EMAIL, DEV_KEY
 
-    @pytest.mark.not_oss
-    def test_wrong_credentials(self):
-        EMAIL_KEY, DEV_KEY_KEY = "VERTA_EMAIL", "VERTA_DEV_KEY"
-        old_email, old_dev_key = os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
-
-        try:
-            os.environ[EMAIL_KEY] = "abc@email.com"
-            os.environ[DEV_KEY_KEY] = "def"
-
-            with pytest.raises(requests.exceptions.HTTPError) as excinfo:
-                verta.Client()
-
-            excinfo_value = str(excinfo.value).strip()
-            assert "401 Client Error" in excinfo_value
-            assert "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`" in excinfo_value
-        finally:
-            os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = old_email, old_dev_key
-
 class TestEntities:
     def test_cache(self, client, strs):
         client.set_project()
@@ -252,10 +185,6 @@ class TestEntities:
         proj = client.create_project()
         assert_new_run_in_proj()
 
-        client.get_or_create_repository(next(strs)).delete()
-        # client.create_repository(next(strs)).delete()  # method DNE
-        assert_new_run_in_proj()
-
         client.get_or_create_registered_model().delete()
         client.create_registered_model().delete()
         assert_new_run_in_proj()
@@ -273,7 +202,7 @@ class TestProject:
     def test_create(self, client):
         assert client.set_project()
         assert client.proj is not None
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
         assert client.create_project(name)
         assert client.proj is not None
         with pytest.raises(requests.HTTPError) as excinfo:
@@ -285,7 +214,7 @@ class TestProject:
             client.get_or_create_project(name=name, tags=["tag1", "tag2"])
 
     def test_get(self, client):
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
 
         with pytest.raises(ValueError):
             client.get_project(name)
@@ -321,8 +250,8 @@ class TestProject:
             client._conn.scheme,
             client._conn.socket,
         )
-        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': proj.id})
-        verta._internal_utils._utils.raise_for_http_error(response)
+        response = _utils.make_request("GET", endpoint, client._conn, params={'id': proj.id})
+        _utils.raise_for_http_error(response)
         assert response.json().get('tags', []) == [TAG]
 
 
@@ -332,7 +261,7 @@ class TestExperiment:
         assert client.set_experiment()
         assert client.expt is not None
 
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
         assert client.create_experiment(name)
         assert client.expt is not None
         with pytest.raises(requests.HTTPError) as excinfo:
@@ -345,7 +274,7 @@ class TestExperiment:
 
     def test_get(self, client):
         proj = client.set_project()
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
 
         with pytest.raises(ValueError):
             client.get_experiment(name)
@@ -391,8 +320,8 @@ class TestExperiment:
             client._conn.scheme,
             client._conn.socket,
         )
-        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': expt.id})
-        verta._internal_utils._utils.raise_for_http_error(response)
+        response = _utils.make_request("GET", endpoint, client._conn, params={'id': expt.id})
+        _utils.raise_for_http_error(response)
         assert response.json().get('tags', []) == [TAG]
 
 
@@ -403,7 +332,7 @@ class TestExperimentRun:
 
         assert client.set_experiment_run()
 
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
         assert client.create_experiment_run(name)
         with pytest.raises(requests.HTTPError) as excinfo:
             assert client.create_experiment_run(name)
@@ -416,7 +345,7 @@ class TestExperimentRun:
     def test_get(self, client):
         proj = client.set_project()
         expt = client.set_experiment()
-        name = verta._internal_utils._utils.generate_default_name()
+        name = _utils.generate_default_name()
 
         with pytest.raises(ValueError):
             client.get_experiment_run(name)
@@ -470,8 +399,8 @@ class TestExperimentRun:
             client._conn.scheme,
             client._conn.socket,
         )
-        response = verta._internal_utils._utils.make_request("GET", endpoint, client._conn, params={'id': run.id})
-        verta._internal_utils._utils.raise_for_http_error(response)
+        response = _utils.make_request("GET", endpoint, client._conn, params={'id': run.id})
+        _utils.raise_for_http_error(response)
         assert response.json().get('tags', []) == [TAG]
 
     def test_clone(self, experiment_run):

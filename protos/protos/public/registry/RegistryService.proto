@@ -9,6 +9,7 @@ import "google/api/annotations.proto";
 import "google/protobuf/field_mask.proto";
 import "common/CommonService.proto";
 import "modeldb/versioning/Environment.proto";
+import "modeldb/versioning/Code.proto";
 import "registry/StageService.proto";
 import "uac/Collaborator.proto";
 
@@ -52,6 +53,11 @@ message RegisteredModel {
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 13;
     uac.ResourceVisibility resource_visibility = 14;
+    // Other artifacts
+    repeated common.Artifact artifacts = 15;
+
+    // Is true if the readme text has been updated at least once
+    bool readme_text_updated = 16;
 }
 
 //CRUD for Registred Models
@@ -79,6 +85,14 @@ message GetRegisteredModelRequest {
 
     message Response {
         RegisteredModel registered_model = 1;
+    }
+}
+
+message GetRegisteredModelCountRequest {
+    string project_id = 1;
+
+    message Response {
+        int64 registered_model_count = 1;
     }
 }
 
@@ -181,6 +195,9 @@ message ModelVersion {
 
     // Current lock level for this model version
     ModelVersionLockLevelEnum.ModelVersionLockLevel lock_level = 19;
+
+    repeated common.Artifact datasets = 20;
+    map<string, modeldb.versioning.CodeBlob> code_blob_map = 21;
 }
 
 message SetLockModelVersionRequest {
@@ -299,6 +316,27 @@ message CommitMultipartArtifact {
     message Response { }
 }
 
+message LogDatasetsInModelVersion {
+    uint64 model_version_id = 1;
+    repeated common.Artifact datasets = 2;
+
+    message Response { }
+}
+
+message LogCodeBlobInModelVersion {
+    uint64 model_version_id = 1;
+    map<string, modeldb.versioning.CodeBlob> code_blob_map = 2;
+
+    message Response { }
+}
+
+message LogAttributesInModelVersion {
+    uint64 model_version_id = 1;
+    repeated common.KeyValue attributes = 2;
+
+    message Response { }
+}
+
 service RegistryService {
    // CRUD for RegisteredModel
     rpc FindRegisteredModel(FindRegisteredModelRequest) returns (FindRegisteredModelRequest.Response) {
@@ -319,6 +357,12 @@ service RegistryService {
             additional_bindings {
                 get: "/v1/registry/registered_models/{id.registered_model_id}"
             }
+        };
+    };
+
+    rpc GetRegisteredModelCount(GetRegisteredModelCountRequest) returns (GetRegisteredModelCountRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/registry/registered_models/count"
         };
     };
 
@@ -475,6 +519,27 @@ service RegistryService {
     rpc commitMultipartArtifact(CommitMultipartArtifact) returns (CommitMultipartArtifact.Response) {
         option (google.api.http) = {
             post: "/v1/registry/model_versions/{model_version_id}/commitMultipartArtifact"
+            body: "*"
+        };
+    };
+
+    rpc logDatasetsInModelVersion(LogDatasetsInModelVersion) returns (LogDatasetsInModelVersion.Response) {
+        option (google.api.http) = {
+            post: "/v1/registry/model_versions/{model_version_id}/logDatasets"
+            body: "*"
+        };
+    };
+
+    rpc logCodeBlobInModelVersion(LogCodeBlobInModelVersion) returns (LogCodeBlobInModelVersion.Response) {
+       option (google.api.http) = {
+            post: "/v1/registry/model_versions/{model_version_id}/logCodeBlobInModelVersion"
+            body: "*"
+        };
+    };
+
+    rpc logAttributesInModelVersion(LogAttributesInModelVersion) returns (LogAttributesInModelVersion.Response) {
+        option (google.api.http) = {
+            post: "/v1/registry/model_versions/{model_version_id}/logAttributes"
             body: "*"
         };
     };

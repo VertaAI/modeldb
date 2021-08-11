@@ -4,9 +4,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.uac.*;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.GeneratedMessageV3;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,18 +26,16 @@ public interface RoleService {
   boolean deleteEntityResourcesWithServiceUser(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  ListenableFuture<GetResourcesResponseItem> getEntityResource(
+  GetResourcesResponseItem getEntityResource(
       Optional<String> entityId,
       Optional<String> workspaceName,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   default GetResourcesResponseItem getEntityResource(
-      String entityId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes)
+      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes)
       throws ExecutionException, InterruptedException {
-    return getEntityResource(Optional.of(entityId), Optional.empty(), modelDBServiceResourceTypes).get();
+    return getEntityResource(Optional.of(entityId), Optional.empty(), modelDBServiceResourceTypes);
   }
-
 
   List<GetResourcesResponseItem> getEntityResourcesByName(
       Optional<String> entityName,
@@ -52,6 +48,11 @@ public interface RoleService {
   GeneratedMessageV3 getTeamById(String teamId);
 
   List<GetResourcesResponseItem> getResourceItems(
+      Workspace workspace,
+      Set<String> resourceIds,
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+
+  List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
       Workspace workspace,
       Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
@@ -104,21 +105,12 @@ public interface RoleService {
       List<String> resourceIds, ModelDBServiceResourceTypes type);
 
   void createRoleBinding(
-      Role role,
-      CollaboratorBase collaborator,
-      String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
-  void createRoleBinding(
       String roleName,
-      RoleScope roleBindingScope,
       CollaboratorBase collaborator,
       String resourceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
-  Role getRoleByName(String roleName, RoleScope roleScope);
-
-  boolean deleteRoleBindings(List<String> roleBindingNames);
+  boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames);
 
   GeneratedMessageV3 getTeamByName(String orgId, String teamName);
 

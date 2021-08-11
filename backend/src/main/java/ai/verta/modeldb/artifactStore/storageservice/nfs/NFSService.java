@@ -34,8 +34,8 @@ public class NFSService implements ArtifactStoreService {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSService.class);
   private final Path fileStorageLocation;
-  private App app = App.getInstance();
-  private Config config = Config.getInstance();
+  private final App app = App.getInstance();
+  private final Config config = app.config;
 
   /**
    * Create NFS service bean by springBoot and create root folder if not exists
@@ -228,7 +228,7 @@ public class NFSService implements ArtifactStoreService {
         return fileInputStream;
       }
     } catch (IOException e) {
-      throw new ModelDBException(e.getMessage(), Code.INTERNAL);
+      throw new ModelDBException(e.getMessage(), Code.INTERNAL, e);
     }
 
     String errorMessage = "artifact file not found in NFS storage for given key : " + artifactPath;

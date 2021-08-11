@@ -7,6 +7,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
@@ -24,7 +25,6 @@ import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.exceptions.*;
@@ -377,15 +377,6 @@ public class ModelDBUtils {
       LOGGER.warn(
           "Detected communication exception of type {}",
           communicationsException.getCause().getClass());
-      ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-      if (modelDBHibernateUtil.checkDBConnection()) {
-        LOGGER.info("Resetting session Factory");
-
-        modelDBHibernateUtil.resetSessionFactory();
-        LOGGER.info("Resetted session Factory");
-      } else {
-        LOGGER.warn("DB could not be reached");
-      }
       return true;
     } else if ((communicationsException.getCause() instanceof LockAcquisitionException)) {
       LOGGER.warn(communicationsException.getMessage());
@@ -564,7 +555,7 @@ public class ModelDBUtils {
   public static Object retryOrThrowException(
       StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
     return CommonUtils.retryOrThrowException(
-        ex, retry, retryCallInterface, Config.getInstance().grpcServer.requestTimeout);
+        ex, retry, retryCallInterface, App.getInstance().config.grpcServer.requestTimeout);
   }
 
   public static ModelDBServiceResourceTypes getModelDBServiceResourceTypesFromRepository(

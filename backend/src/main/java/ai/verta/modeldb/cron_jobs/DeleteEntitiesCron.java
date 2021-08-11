@@ -3,7 +3,6 @@ package ai.verta.modeldb.cron_jobs;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.DatasetEntity;
@@ -55,7 +54,6 @@ public class DeleteEntitiesCron extends TimerTask {
   public void run() {
     LOGGER.info("DeleteEntitiesCron wakeup");
 
-    CommonUtils.registeredBackgroundUtilsCount();
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       // Update project timestamp
       deleteProjects(session);
@@ -85,8 +83,6 @@ public class DeleteEntitiesCron extends TimerTask {
       } else {
         LOGGER.warn("DeleteEntitiesCron Exception: ", ex);
       }
-    } finally {
-      CommonUtils.unregisteredBackgroundUtilsCount();
     }
     LOGGER.info("DeleteEntitiesCron finish tasks and reschedule");
   }
@@ -245,7 +241,7 @@ public class DeleteEntitiesCron extends TimerTask {
       }
     }
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
+      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 
@@ -327,7 +323,7 @@ public class DeleteEntitiesCron extends TimerTask {
       }
     }
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindings(roleBindingNames);
+      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 

@@ -44,6 +44,7 @@ release = ''
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx_copybutton',
     'sphinx_click',
@@ -62,6 +63,10 @@ autodoc_mock_imports = [
     'xgboost',
     'yaml',
 ]
+
+autosummary_generate = True
+
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 napoleon_use_rtype = False
 napoleon_use_ivar = True
@@ -229,5 +234,5 @@ epub_exclude_files = ['search.html']
 
 # -- Extension configuration -------------------------------------------------
 def setup(app):
-    app.add_javascript('custom.js')
-    app.add_stylesheet('custom.css')
+    app.add_js_file('custom.js')
+    app.add_css_file('custom.css')

@@ -9,7 +9,6 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
@@ -69,8 +68,12 @@ public class RdbmsUtils {
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
     List<Project> projects = new ArrayList<>();
     if (projectEntityList != null) {
+      Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
+      Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
       for (ProjectEntity projectEntity : projectEntityList) {
-        projects.add(projectEntity.getProtoObject(roleService, authService));
+        projects.add(
+            projectEntity.getProtoObject(
+                roleService, authService, cacheWorkspaceMap, getResourcesMap));
       }
     }
     return projects;
@@ -304,7 +307,7 @@ public class RdbmsUtils {
     return observationList;
   }
 
-  private static String getObservationCompareKey(Observation observation) {
+  public static String getObservationCompareKey(Observation observation) {
     if (observation.hasArtifact()) {
       return observation.getArtifact().getKey();
     } else {
@@ -760,7 +763,7 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (Config.getInstance().database.RdbConfiguration.isPostgres()) {
+        if (App.getInstance().config.database.RdbConfiguration.isPostgres()) {
           if (stringColumn) {
 
             return getOperatorPredicate(
@@ -2110,7 +2113,7 @@ public class RdbmsUtils {
           new VersioningModeldbEntityMapping(
               versioningEntry.getRepositoryId(),
               versioningEntry.getCommit(),
-              null,
+              ModelDBConstants.EMPTY_STRING,
               null,
               null,
               null,
@@ -2227,8 +2230,7 @@ public class RdbmsUtils {
       OperatorEnum.Operator operator,
       Object value,
       Map<String, Object> parametersMap) {
-    long timestamp =
-        index0 + Math.round(100.0 * Math.random()) + Calendar.getInstance().getTimeInMillis();
+    long timestamp = index0 + new Random(System.nanoTime()).nextInt(Integer.MAX_VALUE);
     String key;
     switch (operator.ordinal()) {
       case OperatorEnum.Operator.GT_VALUE:

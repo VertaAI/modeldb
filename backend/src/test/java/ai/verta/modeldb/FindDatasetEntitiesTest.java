@@ -5,7 +5,6 @@ import static org.junit.Assert.*;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.GetUser;
@@ -423,8 +422,6 @@ public class FindDatasetEntitiesTest extends TestsInit {
   public void findDatasetsByAttributesTest() {
     LOGGER.info("FindDatasets by attribute test start................................");
 
-    DatasetTest datasetTest = new DatasetTest();
-
     // get dataset with value of attributes.attribute_1 <= 0.6543210
     Value numValue = Value.newBuilder().setNumberValue(0.6543210).build();
     KeyValueQuery keyValueQuery =
@@ -437,18 +434,16 @@ public class FindDatasetEntitiesTest extends TestsInit {
     FindDatasets findDatasets = FindDatasets.newBuilder().addPredicates(keyValueQuery).build();
 
     FindDatasets.Response response = datasetServiceStub.findDatasets(findDatasets);
-    LOGGER.info("FindDatasets Response : " + response.getDatasetsList());
-    assertEquals(
-        "Dataset count not match with expected dataset count",
-        3,
-        response.getDatasetsList().size());
+    List<Dataset> expectedDatasets = new ArrayList<>();
+    for (Dataset dataset : response.getDatasetsList()) {
+      if (datasetMap.containsKey(dataset.getId())) {
+        expectedDatasets.add(dataset);
+      }
+    }
+    LOGGER.info("FindDatasets Response : " + expectedDatasets.size());
+    assertEquals("Dataset count not match with expected dataset count", 3, expectedDatasets.size());
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
-
-    for (Dataset fetchedDataset : response.getDatasetsList()) {
+    for (Dataset fetchedDataset : expectedDatasets) {
       boolean doesAttributeExist = false;
       for (KeyValue fetchedAttribute : fetchedDataset.getAttributesList()) {
         if (fetchedAttribute.getKey().equals("attribute_1")) {
@@ -998,11 +993,6 @@ public class FindDatasetEntitiesTest extends TestsInit {
         3,
         expectedDatasetVersions.size());
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
-
     numValue = Value.newBuilder().setStringValue("0.6543210").build();
     keyValueQuery =
         KeyValueQuery.newBuilder()
@@ -1019,15 +1009,16 @@ public class FindDatasetEntitiesTest extends TestsInit {
 
     response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
     LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsList());
+    expectedDatasetVersions = new ArrayList<>();
+    for (DatasetVersion datasetVersion : response.getDatasetVersionsList()) {
+      if (datasetVersionMap.containsKey(datasetVersion.getId())) {
+        expectedDatasetVersions.add(datasetVersion);
+      }
+    }
     assertEquals(
         "DatasetVersion count not match with expected datasetVersion count",
         3,
-        response.getDatasetVersionsList().size());
-
-    assertEquals(
-        "Total records count not matched with expected records count",
-        3,
-        response.getTotalRecords());
+        expectedDatasetVersions.size());
 
     LOGGER.info("FindDatasetVersions by attribute test stop................................");
   }
@@ -1409,20 +1400,25 @@ public class FindDatasetEntitiesTest extends TestsInit {
     FindDatasets findDatasets = FindDatasets.newBuilder().build();
 
     FindDatasets.Response response = datasetServiceStub.findDatasets(findDatasets);
-    LOGGER.info("FindDatasets Response : " + response.getDatasetsCount());
+    List<Dataset> expectedDatasets = new ArrayList<>();
+    for (Dataset dataset : response.getDatasetsList()) {
+      if (datasetMap.containsKey(dataset.getId())) {
+        expectedDatasets.add(dataset);
+      }
+    }
+    LOGGER.info("FindDatasets Response : " + expectedDatasets.size());
+
     assertEquals(
         "Total records count not matched with expected records count",
-        datasetVersionMap.size(),
-        response.getTotalRecords());
+        datasetMap.size(),
+        expectedDatasets.size());
 
-    response
-        .getDatasetsList()
-        .forEach(
-            dataset -> {
-              if (dataset.getId().equals(String.valueOf(id))) {
-                fail("Regular repository should not visible in protected repository list");
-              }
-            });
+    expectedDatasets.forEach(
+        dataset -> {
+          if (dataset.getId().equals(String.valueOf(id))) {
+            fail("Regular repository should not visible in protected repository list");
+          }
+        });
 
     DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()
@@ -1439,7 +1435,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
   public void findDatasetVersionsByFuzzyOwnerTest() {
     LOGGER.info(
         "FindDatasetVersions by owner fuzzy search test start................................");
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }

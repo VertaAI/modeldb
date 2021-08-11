@@ -24,6 +24,11 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.Response.FromString,
         )
+    self.GetRegisteredModelCount = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/GetRegisteredModelCount',
+        request_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.Response.FromString,
+        )
     self.CreateRegisteredModel = channel.unary_unary(
         '/ai.verta.registry.RegistryService/CreateRegisteredModel',
         request_serializer=registry_dot_RegistryService__pb2.SetRegisteredModel.SerializeToString,
@@ -89,6 +94,21 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.CommitMultipartArtifact.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.CommitMultipartArtifact.Response.FromString,
         )
+    self.logDatasetsInModelVersion = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/logDatasetsInModelVersion',
+        request_serializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.Response.FromString,
+        )
+    self.logCodeBlobInModelVersion = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/logCodeBlobInModelVersion',
+        request_serializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.Response.FromString,
+        )
+    self.logAttributesInModelVersion = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/logAttributesInModelVersion',
+        request_serializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.Response.FromString,
+        )
 
 
 class RegistryServiceServicer(object):
@@ -103,6 +123,13 @@ class RegistryServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def GetRegisteredModel(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetRegisteredModelCount(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -200,6 +227,27 @@ class RegistryServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def logDatasetsInModelVersion(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def logCodeBlobInModelVersion(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def logAttributesInModelVersion(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_RegistryServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -212,6 +260,11 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           servicer.GetRegisteredModel,
           request_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.FromString,
           response_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelRequest.Response.SerializeToString,
+      ),
+      'GetRegisteredModelCount': grpc.unary_unary_rpc_method_handler(
+          servicer.GetRegisteredModelCount,
+          request_deserializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.GetRegisteredModelCountRequest.Response.SerializeToString,
       ),
       'CreateRegisteredModel': grpc.unary_unary_rpc_method_handler(
           servicer.CreateRegisteredModel,
@@ -277,6 +330,21 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           servicer.commitMultipartArtifact,
           request_deserializer=registry_dot_RegistryService__pb2.CommitMultipartArtifact.FromString,
           response_serializer=registry_dot_RegistryService__pb2.CommitMultipartArtifact.Response.SerializeToString,
+      ),
+      'logDatasetsInModelVersion': grpc.unary_unary_rpc_method_handler(
+          servicer.logDatasetsInModelVersion,
+          request_deserializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.LogDatasetsInModelVersion.Response.SerializeToString,
+      ),
+      'logCodeBlobInModelVersion': grpc.unary_unary_rpc_method_handler(
+          servicer.logCodeBlobInModelVersion,
+          request_deserializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.LogCodeBlobInModelVersion.Response.SerializeToString,
+      ),
+      'logAttributesInModelVersion': grpc.unary_unary_rpc_method_handler(
+          servicer.logAttributesInModelVersion,
+          request_deserializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

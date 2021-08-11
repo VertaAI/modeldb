@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Keras callback for automatic experiment run logging."""
 
 from ...external import six
 
@@ -26,7 +27,7 @@ class VertaCallback(keras.callbacks.Callback):
 
     Parameters
     ----------
-    run : :class:`~verta._tracking.experimentrun.ExperimentRun`
+    run : :class:`~verta.tracking.entities.ExperimentRun`
         Experiment Run tracking this model.
 
     Examples

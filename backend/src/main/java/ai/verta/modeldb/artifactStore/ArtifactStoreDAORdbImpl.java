@@ -22,13 +22,13 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(ArtifactStoreDAORdbImpl.class);
   private ArtifactStoreService artifactStoreService;
-  private App app;
-  private Config config;
+  private final App app;
+  private final Config config;
 
-  public ArtifactStoreDAORdbImpl(ArtifactStoreService artifactStoreService) {
+  public ArtifactStoreDAORdbImpl(ArtifactStoreService artifactStoreService, Config config) {
     this.artifactStoreService = artifactStoreService;
     this.app = App.getInstance();
-    this.config = Config.getInstance();
+    this.config = config;
   }
 
   @Override

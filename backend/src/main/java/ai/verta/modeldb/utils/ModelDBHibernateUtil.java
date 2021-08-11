@@ -7,12 +7,10 @@ import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
 import ai.verta.modeldb.common.CommonHibernateUtil;
-import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
-import ai.verta.modeldb.common.entities.audit_log.AuditLogLocalEntity;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
@@ -65,6 +63,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import java.sql.SQLException;
+import java.util.List;
 import liquibase.exception.DatabaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -84,8 +83,6 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
   }
 
   private static void initializedUtil() {
-    config = Config.getInstance();
-    databaseConfig = config.database;
     liquibaseRootFilePath = "\\src\\main\\resources\\liquibase\\db-changelog-master.xml";
     entities =
         new Class[] {
@@ -139,9 +136,13 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
           DatasetRepositoryMappingEntity.class,
           UploadStatusEntity.class,
           KeyValuePropertyMappingEntity.class,
-          QueryDatasetComponentBlobEntity.class,
-          AuditLogLocalEntity.class
+          QueryDatasetComponentBlobEntity.class
         };
+  }
+
+  public void initializedConfigAndDatabase(Config mdbConfig, DatabaseConfig dbConfig) {
+    config = mdbConfig;
+    databaseConfig = dbConfig;
   }
 
   // TODO: this will removed after merging of the PR: https://github.com/VertaAI/modeldb/pull/1846
@@ -233,13 +234,12 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
    * If you want to define new migration then add new if check for your migration in `if (migration)
    * {` condition.
    */
-  public void runMigration(Config config)
+  public void runMigration(DatabaseConfig databaseConfig, List<MigrationConfig> migrations)
       throws ClassNotFoundException, ModelDBException, DatabaseException, SQLException {
-    DatabaseConfig databaseConfig = config.database;
     RdbConfig rdb = databaseConfig.RdbConfiguration;
-
-    if (config.migrations != null) {
-      for (MigrationConfig migrationConfig : config.migrations) {
+    if (migrations != null) {
+      LOGGER.debug("Running code migrations.");
+      for (MigrationConfig migrationConfig : migrations) {
         if (!migrationConfig.enabled) {
           continue;
         }
@@ -254,7 +254,6 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
             PopulateVersionMigration.execute(migrationConfig.record_update_limit);
             break;
           case ModelDBConstants.DATASET_VERSIONING_MIGRATION:
-            CommonUtils.registeredBackgroundUtilsCount();
             boolean isLocked = checkMigrationLockedStatus(migrationConfig.name, rdb);
             if (!isLocked) {
               LOGGER.debug("Obtaining migration lock");
@@ -267,7 +266,9 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
         }
       }
     }
-
+    LOGGER.debug("Completed code migrations.");
+    LOGGER.debug("Running collaborator resource migration.");
     CollaboratorResourceMigration.execute();
+    LOGGER.debug("Completed collaborator resource migration.");
   }
 }

@@ -6,22 +6,25 @@ import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.GracefulShutdown;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
+import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.monitoring.AuditLogInterceptor;
+import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
 import ai.verta.modeldb.experiment.ExperimentServiceImpl;
-import ai.verta.modeldb.experimentRun.ExperimentRunServiceImpl;
+import ai.verta.modeldb.experimentRun.FutureExperimentRunServiceImpl;
 import ai.verta.modeldb.health.HealthServiceImpl;
 import ai.verta.modeldb.health.HealthStatusManager;
 import ai.verta.modeldb.lineage.LineageServiceImpl;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
-import ai.verta.modeldb.project.ProjectServiceImpl;
+import ai.verta.modeldb.project.FutureProjectServiceImpl;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -32,21 +35,22 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
-import io.jaegertracing.Configuration;
-import io.opentracing.Tracer;
-import io.opentracing.contrib.grpc.TracingServerInterceptor;
-import io.opentracing.contrib.jdbc.TracingDriver;
-import io.opentracing.util.GlobalTracer;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
+import io.prometheus.jmx.BuildInfoCollector;
+import io.prometheus.jmx.JmxCollector;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.TimerTask;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import javax.management.MalformedObjectNameException;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -84,6 +88,7 @@ public class App implements ApplicationContextAware {
   private static final Logger LOGGER = LogManager.getLogger(App.class);
 
   private static App app = null;
+  public Config config;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -101,15 +106,26 @@ public class App implements ApplicationContextAware {
     return app.applicationContext;
   }
 
+  // Export all JMX metrics to Prometheus
+  private static final String rules = "---\n" + "rules:\n" + "  - pattern: \".*\"";
+  private static final AtomicBoolean metricsInitialized = new AtomicBoolean(false);
+
   @Bean
-  public ServletRegistrationBean<MetricsServlet> servletRegistrationBean() {
-    DefaultExports.initialize();
+  public ServletRegistrationBean<MetricsServlet> servletRegistrationBean()
+      throws MalformedObjectNameException {
+    if (!metricsInitialized.getAndSet(true)) {
+      DefaultExports.initialize();
+      new BuildInfoCollector().register();
+      new JmxCollector(rules).register();
+    }
     return new ServletRegistrationBean<>(new MetricsServlet(), "/metrics");
   }
 
   @Bean
   public GracefulShutdown gracefulShutdown() {
-    Config config = Config.getInstance();
+    if (config == null) {
+      return new GracefulShutdown(30L);
+    }
     return new GracefulShutdown(config.springServer.shutdownTimeout);
   }
 
@@ -136,34 +152,36 @@ public class App implements ApplicationContextAware {
     return app;
   }
 
-  public static boolean migrate(Config config)
+  public static boolean migrate(DatabaseConfig databaseConfig, List<MigrationConfig> migrations)
       throws SQLException, LiquibaseException, ClassNotFoundException, InterruptedException {
     boolean liquibaseMigration =
         Boolean.parseBoolean(
             Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
                 .orElse("false"));
     ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
+    modelDBHibernateUtil.initializedConfigAndDatabase(App.getInstance().config, databaseConfig);
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
-      modelDBHibernateUtil.runLiquibaseMigration(config.database);
+      modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
       LOGGER.info("Liquibase migration done");
 
-      modelDBHibernateUtil.createOrGetSessionFactory(config.database);
+      modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
 
       LOGGER.info("Code migration starting");
-      modelDBHibernateUtil.runMigration(config);
+      modelDBHibernateUtil.runMigration(databaseConfig, migrations);
       LOGGER.info("Code migration done");
 
       boolean runLiquibaseSeparate =
           Boolean.parseBoolean(
               Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))
                   .orElse("false"));
+      LOGGER.trace("run Liquibase separate: " + runLiquibaseSeparate);
       if (runLiquibaseSeparate) {
         return true;
       }
     }
 
-    modelDBHibernateUtil.createOrGetSessionFactory(config.database);
+    modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
 
     return false;
   }
@@ -177,27 +195,41 @@ public class App implements ApplicationContextAware {
       // --------------- Start reading properties --------------------------
       Config config = Config.getInstance();
 
-      // Initialize database configuration and maybe run migration
-      if (migrate(config)) return;
-
-      // Configure server
+      // Configure spring HTTP server
+      LOGGER.info("Configuring spring HTTP traffic on port " + config.springServer.port);
       System.getProperties().put("server.port", config.springServer.port);
 
       // Initialize services that we depend on
-      ServiceSet services = ServiceSet.fromConfig(config);
+      ServiceSet services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
+
+      // Initialize database configuration and maybe run migration
+      if (migrate(config.database, config.migrations)) {
+        LOGGER.info("Migrations have completed.  System exiting.");
+        initiateShutdown(0);
+        return;
+      }
+      LOGGER.info("Migrations are disabled, starting application.");
+
+      // Initialize executor so we don't lose context using Futures
+      final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
 
       // Initialize data access
-      DAOSet daos = DAOSet.fromServices(services);
+      DAOSet daos =
+          DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config, config.trial);
 
       // Initialize telemetry
       initializeTelemetryBasedOnConfig(config);
 
       // Initialize cron jobs
       CronJobUtils.initializeCronJobs(config, services);
-      ReconcilerInitializer.initialize(config, services);
+      ReconcilerInitializer.initialize(config, services, config.getJdbi(), handleExecutor);
 
       // Initialize grpc server
-      ServerBuilder<?> serverBuilder = ServerBuilder.forPort(config.grpcServer.port);
+      ServerBuilder<?> serverBuilder =
+          ServerBuilder.forPort(config.grpcServer.port).executor(handleExecutor);
+      if (config.grpcServer.maxInboundMessageSize != null) {
+        serverBuilder.maxInboundMessageSize(config.grpcServer.maxInboundMessageSize);
+      }
 
       // Initialize health check
       HealthServiceImpl healthService = getContext().getBean(HealthServiceImpl.class);
@@ -205,24 +237,15 @@ public class App implements ApplicationContextAware {
       serverBuilder.addService(healthStatusManager.getHealthService());
 
       // Add middleware/interceptors
-      if (config.enableTrace) {
-        Tracer tracer = Configuration.fromEnv().getTracer();
-        TracingServerInterceptor tracingInterceptor =
-            TracingServerInterceptor.newBuilder().withTracer(tracer).build();
-        GlobalTracer.register(tracer);
-        TracingDriver.load();
-        TracingDriver.setInterceptorMode(true);
-        TracingDriver.setInterceptorProperty(true);
-        serverBuilder.intercept(tracingInterceptor);
-      }
-
+      config.getTracingServerInterceptor().map(serverBuilder::intercept);
+      serverBuilder.intercept(new MetadataForwarder());
       serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());
       serverBuilder.intercept(new AuthInterceptor());
-      serverBuilder.intercept(new AuditLogInterceptor(config.grpcServer.quitOnAuditMissing));
 
       // Add APIs
-      initializeBackendServices(serverBuilder, services, daos);
+      LOGGER.info("Initializing backend services.");
+      initializeBackendServices(serverBuilder, services, daos, handleExecutor);
 
       // Create the server
       Server server = serverBuilder.build();
@@ -271,12 +294,12 @@ public class App implements ApplicationContextAware {
   }
 
   public static void initializeBackendServices(
-      ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos) {
-    wrapService(serverBuilder, new ProjectServiceImpl(services, daos));
+      ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos, Executor executor) {
+    wrapService(serverBuilder, new FutureProjectServiceImpl(services, daos, executor));
     LOGGER.trace("Project serviceImpl initialized");
     wrapService(serverBuilder, new ExperimentServiceImpl(services, daos));
     LOGGER.trace("Experiment serviceImpl initialized");
-    wrapService(serverBuilder, new ExperimentRunServiceImpl(services, daos));
+    wrapService(serverBuilder, new FutureExperimentRunServiceImpl(services, daos, executor));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
     wrapService(serverBuilder, new CommentServiceImpl(services, daos));
     LOGGER.trace("Comment serviceImpl initialized");
@@ -284,7 +307,7 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("Dataset serviceImpl initialized");
     wrapService(serverBuilder, new DatasetVersionServiceImpl(services, daos));
     LOGGER.trace("Dataset Version serviceImpl initialized");
-    wrapService(serverBuilder, new AdvancedServiceImpl(services, daos));
+    wrapService(serverBuilder, new AdvancedServiceImpl(services, daos, executor));
     LOGGER.trace("Hydrated serviceImpl initialized");
     wrapService(serverBuilder, new LineageServiceImpl(daos));
     LOGGER.trace("Lineage serviceImpl initialized");
@@ -293,7 +316,7 @@ public class App implements ApplicationContextAware {
     LOGGER.trace("Versioning serviceImpl initialized");
     wrapService(serverBuilder, new MetadataServiceImpl(daos));
     LOGGER.trace("Metadata serviceImpl initialized");
-    LOGGER.info("All services initialized and resolved dependency before server start");
+    LOGGER.info("All services initialized and dependencies resolved");
   }
 
   private static void wrapService(ServerBuilder<?> serverBuilder, BindableService bindableService) {

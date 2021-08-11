@@ -15,6 +15,7 @@ message StageEnum {
         STAGING = 2;
         PRODUCTION = 3;
         ARCHIVED = 4;
+        UNASSIGNED = 5;
     }
 }
 

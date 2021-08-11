@@ -79,17 +79,6 @@ class TestHyperparameters:
         for value_msg, value in zip(hyperparam_msg.discrete.values, sequence):
             assert getattr(value_msg, value_msg.WhichOneof('value')) == value
 
-    def test_commit(self, commit):
-        config = verta.configuration.Hyperparameters(
-            hyperparameters=self.HYPERPARAMETERS,
-            hyperparameter_ranges=self.HYPERPARAMETER_RANGES,
-            hyperparameter_sets=self.HYPERPARAMETER_SETS,
-        )
-
-        commit.update('config', config)
-        commit.save(message="banana")
-        assert commit.get('config')
-
     def test_repr(self):
         """Tests that __repr__() executes without error"""
         config = verta.configuration.Hyperparameters(

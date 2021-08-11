@@ -4,9 +4,9 @@ import static org.junit.Assert.*;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
+import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.authservice.*;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -92,7 +92,7 @@ public class ExperimentTest extends TestsInit {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -1817,7 +1817,7 @@ public class ExperimentTest extends TestsInit {
       } catch (StatusRuntimeException e) {
         Status status = Status.fromThrowable(e);
         LOGGER.info("Error Code : " + status.getCode() + " Error : " + status.getDescription());
-        assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
+        assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
       }
     }
 

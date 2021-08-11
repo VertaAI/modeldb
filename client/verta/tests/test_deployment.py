@@ -18,13 +18,14 @@ import requests
 import yaml
 
 import verta
-from verta._tracking.deployable_entity import _CACHE_DIR
+from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from verta._internal_utils import (
     _artifact_utils,
     _histogram_utils,
     _utils,
 )
 from verta.endpoint.update import DirectUpdateStrategy
+from verta.environment import Python
 
 pytestmark = pytest.mark.not_oss
 
@@ -235,7 +236,7 @@ class TestLogModel:
         # log real artifact using `overwrite`
         experiment_run.log_artifact(key, val)
         experiment_run.log_model(ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True)
-        experiment_run.log_requirements(requirements=[])
+        experiment_run.log_environment(Python([]))
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
         assert val == endpoint.get_deployed_model().predict(val)
@@ -429,55 +430,6 @@ class TestFetchArtifacts:
             experiment_run.fetch_artifacts(strs[1:])
 
 
-class TestLogTrainingData:
-    def test_numpy_error(self, experiment_run, model_for_deployment):
-        with pytest.raises(TypeError):
-            experiment_run.log_training_data(
-                model_for_deployment['train_features'].values,
-                model_for_deployment['train_targets'].values,
-            )
-
-    def test_list_error(self, experiment_run, model_for_deployment):
-        with pytest.raises(TypeError):
-            experiment_run.log_training_data(
-                model_for_deployment['train_features'].values.tolist(),
-                model_for_deployment['train_targets'].values.tolist(),
-            )
-
-    def test_column_name_error(self, experiment_run, model_for_deployment):
-        X_train = model_for_deployment['train_features']
-        y_train = model_for_deployment['train_targets']
-
-        y_train = y_train.rename(X_train.columns[0])
-
-        with pytest.raises(ValueError):
-            experiment_run.log_training_data(X_train, y_train)
-
-    def test_series(self, experiment_run, model_for_deployment):
-        X_train = model_for_deployment['train_features']
-        y_train = model_for_deployment['train_targets']
-        col_names = set(X_train.columns) | set([y_train.name])
-
-        experiment_run.log_training_data(X_train, y_train)
-        histogram = experiment_run._get_histogram()
-        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
-
-        assert set(retrieved_col_names) == col_names
-
-    def test_dataframe(self, experiment_run, model_for_deployment):
-        X_train = model_for_deployment['train_features']
-        y_train = model_for_deployment['train_targets']
-        col_names = set(X_train.columns) | set([y_train.name])
-
-        y_train = y_train.to_frame()
-
-        experiment_run.log_training_data(X_train, y_train)
-        histogram = experiment_run._get_histogram()
-        retrieved_col_names = map(six.ensure_str, histogram['features'].keys())
-
-        assert set(retrieved_col_names) == col_names
-
-
 class TestHistogram:
     @staticmethod
     def assert_histograms_match_dataframe(histograms, df):
@@ -617,60 +569,12 @@ class TestHistogram:
         )
         self.assert_histograms_match_dataframe(histograms, df)
 
-    def test_integration(self, experiment_run):
-        np = pytest.importorskip("numpy")
-        pd = pytest.importorskip("pandas")
 
-        binary_col_name = 'binary col'
-        discrete_col_name = 'discrete col'
-        float_col_name = 'float col'
-        df = pd.concat(
-            objs=[
-                pd.Series([True]*10 + [False]*20, name=binary_col_name),
-                pd.Series([0]*5 + [1]*10 + [2]*15, name=discrete_col_name),
-                pd.Series(range(30), name=float_col_name),
-            ],
-            axis='columns',
-        )
-        histograms = _histogram_utils.calculate_histograms(df)
-
-        experiment_run.log_training_data(df[[binary_col_name, discrete_col_name]], df[float_col_name])
-        endpoint = "{}://{}/api/v1/monitoring/data/references/{}".format(
-            experiment_run._conn.scheme,
-            experiment_run._conn.socket,
-            experiment_run.id,
-        )
-        response = _utils.make_request("GET", endpoint, experiment_run._conn)
-        _utils.raise_for_http_error(response)
-        retrieved_histograms = response.json()
-
-        # features match
-        features = histograms['features']
-        retrieved_features = retrieved_histograms['features']
-        assert set(features.keys()) == set(retrieved_features.keys())
-
-        # binary matches
-        binary_hist = histograms['features'][binary_col_name]['histogram']['binary']
-        retrieved_binary_hist = retrieved_histograms['features'][binary_col_name]['histogram']['binary']
-        assert binary_hist['count'] == retrieved_binary_hist['count']
-
-        # discrete matches
-        discrete_hist = histograms['features'][discrete_col_name]['histogram']['discrete']
-        retrieved_discrete_hist = retrieved_histograms['features'][discrete_col_name]['histogram']['discrete']
-        assert discrete_hist['bucket_values'] == retrieved_discrete_hist['bucket_values']
-        assert discrete_hist['count'] == retrieved_discrete_hist['count']
-
-        # float matches
-        float_hist = histograms['features'][float_col_name]['histogram']['float']
-        retrieved_float_hist = retrieved_histograms['features'][float_col_name]['histogram']['float']
-        assert all(np.isclose(float_hist['bucket_limits'], retrieved_float_hist['bucket_limits']))
-        assert float_hist['count'] == retrieved_float_hist['count']
-
-
+@pytest.mark.skip(reason="old deployment API is being phased out (VR-7935)")
 class TestDeploy:
     def test_auto_path_auto_token_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy()
 
@@ -687,7 +591,7 @@ class TestDeploy:
         token = "coconut"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(token=token)
 
@@ -702,7 +606,7 @@ class TestDeploy:
 
     def test_auto_path_no_token_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(no_token=True)
 
@@ -719,7 +623,7 @@ class TestDeploy:
         path = "banana"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(path=path)
 
@@ -736,7 +640,7 @@ class TestDeploy:
         path, token = "banana", "coconut"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(path=path, token=token)
 
@@ -753,7 +657,7 @@ class TestDeploy:
         path = "banana"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(path=path, no_token=True)
 
@@ -768,7 +672,7 @@ class TestDeploy:
 
     def test_wait_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         status = experiment_run.deploy(wait=True)
 
@@ -784,7 +688,7 @@ class TestDeploy:
 
     def test_already_deployed_deploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         experiment_run.deploy()
 
@@ -799,7 +703,7 @@ class TestDeploy:
 
     def test_no_model_deploy_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         # delete model
         response = _utils.make_request(
@@ -822,7 +726,7 @@ class TestDeploy:
 
     def test_no_api_deploy_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         # delete model API
         response = _utils.make_request(
@@ -858,7 +762,7 @@ class TestDeploy:
 
     def test_deployment_failure_deploy_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements([])
+        experiment_run.log_environment(Python([]))
 
         with pytest.raises(RuntimeError) as excinfo:
             experiment_run.deploy(wait=True)
@@ -873,10 +777,11 @@ class TestDeploy:
         )
 
 
+@pytest.mark.skip(reason="old deployment API is being phased out (VR-7935)")
 class TestUndeploy:
     def test_undeploy(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         experiment_run.deploy(wait=True)
 
@@ -895,6 +800,7 @@ class TestUndeploy:
         experiment_run.undeploy()
 
 
+@pytest.mark.skip(reason="old deployment API is being phased out (VR-7935)")
 class TestGetDeployedModel:
     def test_get(self, experiment_run, model_for_deployment):
         model = model_for_deployment['model'].fit(
@@ -903,7 +809,7 @@ class TestGetDeployedModel:
         )
 
         experiment_run.log_model(model, custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         experiment_run.deploy(wait=True)
 
@@ -928,7 +834,7 @@ class TestGetDeployedModel:
 
     def test_undeployed_get_error(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         experiment_run.deploy(wait=True)
         experiment_run.undeploy(wait=True)
@@ -952,7 +858,7 @@ class TestGitOps:
             custom_modules=[],
             model_api=model_for_deployment['model_api'],
         )
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         filepath = experiment_run.download_deployment_yaml(download_to_path)
         assert filepath == os.path.abspath(download_to_path)
@@ -968,7 +874,7 @@ class TestGitOps:
         download_to_path = "context.tgz"
 
         experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_requirements(['scikit-learn'])
+        experiment_run.log_environment(Python(['scikit-learn']))
 
         filepath = experiment_run.download_docker_context(download_to_path)
         assert filepath == os.path.abspath(download_to_path)

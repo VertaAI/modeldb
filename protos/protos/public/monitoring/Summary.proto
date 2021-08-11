@@ -1,0 +1,248 @@
+syntax = "proto3";
+
+package ai.verta.monitoring;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+
+import "monitoring/DataMonitoringService.proto";
+
+message Empty {}
+
+// Summary is a collection of multiple samples through time with a shared name and type. It's used to make sure the multiple samples are consistent with each other.
+message Summary {
+    uint64 id = 1;
+    uint64 monitored_entity_id = 2;
+    string name = 3;
+    string type_name = 4;
+    map<string, string> attributes = 5;
+}
+
+// Request to create a summary sample
+message CreateSummaryRequest {
+    uint64 monitored_entity_id = 1;
+    string name = 2;
+    string type_name = 3;
+    map<string, string> attributes = 4;
+}
+
+// Request to fetch multiple summaries
+message FindSummaryRequest {
+    FindMonitoredEntityRequest find_monitored_entities = 5;
+
+    repeated uint64 ids = 1;
+    repeated string names = 2;
+    repeated string type_names = 3;
+    repeated uint64 monitored_entity_ids = 4;
+
+    // Pagination
+    int32 page_number = 6;
+    int32 page_limit = 7;
+
+    message Response {
+        repeated Summary summaries = 1;
+        int32 total_records = 2;
+    }
+}
+
+// Request to delete summaries. It deletes all the associated samples
+message DeleteSummaryRequest {
+    repeated uint64 ids = 1;
+}
+
+// Summary value is a single data point for a summary corresponding to a specific time and a given set of labels.
+message SummaryValue {
+    uint64 id = 1;
+    uint64 summary_id = 2;
+    map<string, string> labels = 3;
+    enum Type {
+        STRING = 0;
+        NUMBER = 1;
+        BOOLEAN = 2;
+    }
+    Type type = 4;
+    oneof value {
+        string string_value = 5;
+        double double_value = 6;
+        bool boolean_value = 7;
+    }
+    uint64 created_at_millis = 8;
+    uint64 timestamp_millis = 9;
+}
+
+// Request to create a summary value
+message CreateSummaryValue {
+    // Summary info if detailed (e.g. want to avoid the extra hop to fetch the id and do the creation dance)
+    uint64 monitored_entity_id = 1;
+    string summary_name = 2;
+    string summary_type_name = 3;
+    // or just the summary id
+    uint64 summary_id = 4;
+
+    // Sample info
+    map<string, string> labels = 5; // Any label starting with "verta_" should be blocked for internal use
+    SummaryValue.Type type = 6;
+    oneof value {
+        string string_value = 7;
+        double double_value = 8;
+        bool boolean_value = 9;
+    }
+    uint64 created_at_millis = 10;
+    uint64 timestamp_millis = 11;
+}
+
+// Summary sample is one instance of a summary corresponding to a given time range and a given set of labels.
+message SummarySample {
+    uint64 id = 1;
+    uint64 summary_id = 2;
+    map<string, string> labels = 3;
+    string content = 4;
+    uint64 created_at_millis = 6;
+    uint64 time_window_start_at_millis = 7;
+    uint64 time_window_end_at_millis = 8;
+    bool is_aggregate = 9;
+}
+
+// Request to create a summary sample
+message CreateSummarySample {
+    // Summary info if detailed (e.g. want to avoid the extra hop to fetch the id and do the creation dance)
+    uint64 monitored_entity_id = 1;
+    string summary_name = 2;
+    string summary_type_name = 3;
+    // or just the summary id
+    uint64 summary_id = 4;
+
+    // Sample info
+    map<string, string> labels = 5; // Any label starting with "verta_" should be blocked for internal use
+    string content = 6;
+    uint64 created_at_millis = 7;
+    uint64 time_window_start_at_millis = 8;
+    uint64 time_window_end_at_millis = 9;
+}
+
+// Request to create a batch of summary samples
+message CreateSummarySampleBatch {
+    repeated CreateSummarySample samples = 1;
+}
+
+// Request to fetch multiple summary samples, potentially with aggregation.
+message FindSummarySampleRequest {
+    FilterQuerySummarySample filter = 1; // Optional
+    AggregationQuerySummary aggregation = 2; // Optional
+
+    // Pagination
+    int32 page_number = 3;
+    int32 page_limit = 4;
+
+    // If there is an aggregation defined and this value is true, the aggregation will be stored to the database
+    bool store_aggregate = 5;
+
+    // If true aggregate samples will be included in the results.  If false, only raw samples are returned.
+    bool allow_aggregate_samples = 6;
+
+    message Response {
+        repeated SummarySample samples = 1;
+        int32 total_records = 2;
+    }
+}
+
+// Filters the caller wants to apply to selectively summary samples.
+message FilterQuerySummarySample {
+    FindSummaryRequest find_summaries = 1;
+
+    repeated uint64 sample_ids = 2;
+    map<string, LabelFilterQuerySummarySample> labels = 3;
+    uint64 time_window_start_at_millis = 4;
+    uint64 time_window_end_at_millis = 5;
+    uint64 created_at_after_millis = 6;
+}
+
+// Filter details for a given label.
+message LabelFilterQuerySummarySample {
+    repeated string label_value = 1;
+}
+
+// If any of the fields are not provided, we assume that the original value from the sample is kept.
+// For example, if time_granularity_millis=0, then time for the "aggregated sample" must match the
+// time of all the original samples associated with it.
+// By default the aggregation will include any logged values for the time window.  This
+// behavior can be disable to exclude the observations.
+message AggregationQuerySummary {
+    // Optional time granularity for aggregation
+    // This applies to time_window_start_at_millis and time_window_end_at_millis
+    // The time window precision is reduced to this granularity
+    // For example, if time_granularity_millis = "1 day", we will group samples that fall in the same
+    // day and aggregate them to create a single "aggregated sample"
+    uint64 time_granularity_millis = 1;
+    enum AggregationOperation {
+      SUM = 0;
+    }
+    AggregationOperation operation = 2;
+    bool exclude_values = 3; // default false.  Set to true to explicitly exclude logged values from aggregation.
+}
+
+// Request to delete summary samples
+message DeleteSummarySampleRequest {
+    repeated uint64 ids = 1;
+}
+
+service SummaryService {
+    rpc createSummary(CreateSummaryRequest) returns (Summary) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/summaries/createSummary"
+            body: "*"
+        };
+    };
+
+    rpc findSummary(FindSummaryRequest) returns (FindSummaryRequest.Response) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/summaries/findSummary"
+            body: "*"
+        };
+    };
+
+    rpc deleteSummary(DeleteSummaryRequest) returns (Empty) {
+        option (google.api.http) = {
+            delete: "/api/v1/monitoring/summaries/deleteSummary"
+            body: "*"
+        };
+    };
+
+    rpc createValue(CreateSummaryValue) returns (SummaryValue) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/summaries/createValue"
+            body: "*"
+        };
+    };
+
+    rpc createSample(CreateSummarySample) returns (SummarySample) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/summaries/createSample"
+            body: "*"
+        };
+    };
+
+    rpc createSampleBatch(CreateSummarySampleBatch) returns (Empty) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/summaries/createSampleBatch"
+            body: "*"
+        };
+    };
+
+    rpc findSample(FindSummarySampleRequest) returns (FindSummarySampleRequest.Response) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/summaries/findSample"
+            body: "*"
+        };
+    };
+
+    rpc deleteSample(DeleteSummarySampleRequest) returns (Empty) {
+        option (google.api.http) = {
+            delete: "/api/v1/monitoring/summaries/deleteSample"
+            body: "*"
+        };
+    };
+}

@@ -160,6 +160,8 @@ def process_requirements(requirements):
 
     set_version_pins(requirements)
 
+    remove_public_version_identifier(requirements)
+
     add_verta_and_cloudpickle(requirements)
 
 
@@ -294,6 +296,42 @@ def add_verta_and_cloudpickle(requirements):
         requirements.append(cloudpickle_req)
 
 
+def remove_public_version_identifier(requirements):
+    """Removes local version identifiers from version pins if present.
+
+    PyTorch in particular adds local build information to its pip environment
+    version number during installation. This suffix results in a version
+    specifier that won't be installable from PyPI [1]_ and therefore needs to
+    be removed for model deployment.
+
+    Parameters
+    ----------
+    requirements : list of str
+        pip requirements with pinned version numbers.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        before = ["torch==1.8.1+cu102"]
+        after = ["torch==1.8.1"]
+
+        remove_public_version_identifier(before)
+        assert before == after
+
+    References
+    ----------
+    .. [1] https://www.python.org/dev/peps/pep-0440/#local-version-identifiers
+
+    """
+    for i, req in enumerate(requirements):
+        library, version = req.split("==", 1)
+        requirements[i] = "==".join([
+            library,
+            version.split("+")[0],
+        ])
+
+
 def clean_reqs_file_lines(requirements):
     """
     Performs basic preprocessing on a requirements file's lines so it's easier to handle downstream.
@@ -315,6 +353,7 @@ def clean_reqs_file_lines(requirements):
     requirements = [req for req in requirements if not req.startswith('#')]  # comment line
 
     # remove unsupported options
+    # TODO: add support in VR-12389
     supported_requirements = []
     for req in requirements:
         # https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format

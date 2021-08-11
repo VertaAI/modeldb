@@ -151,7 +151,9 @@
         "BITBUCKET",
         "GOOGLE",
         "VERTA",
-        "SAML"
+        "SAML",
+        "AD_OAUTH2",
+        "LDAP"
       ],
       "default": "UNKNOWN"
     },

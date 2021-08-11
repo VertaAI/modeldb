@@ -49,6 +49,14 @@ message CollaboratorTypeEnum {
     }
 }
 
+message CollaboratorTypeEnumWithDefaultEnum {
+    enum CollaboratorTypeEnumWithDefault {
+        UNKNOWN = 0;
+        READ_WRITE = 1;
+        READ_ONLY = 2;
+    }
+}
+
 message EntitiesEnum {
     enum EntitiesTypes {
         UNKNOWN = 0; // Resource 0 should always cause an error
@@ -72,6 +80,7 @@ message ModelDBResourceEnum {
         REGISTERED_MODEL = 9;
         REGISTERED_MODEL_VERSION = 10;
         MONITORED_ENTITY = 11;
+        NOTIFICATION_CHANNEL = 12;
     }
 };
 
@@ -147,4 +156,20 @@ message VisibilityEnum {
         //Default access for organization
         ORG_DEFAULT = 3;
     }
+}
+
+// code version
+message CodeVersion {
+    oneof code {
+        GitSnapshot git_snapshot = 1;
+        common.Artifact code_archive = 2; // ZIP archive of source code
+    }
+    uint64 date_logged = 3;
+}
+
+message GitSnapshot {
+    repeated string filepaths = 1; // paths to relevant source code
+    string repo = 2; // URL to remote repository
+    string hash = 3; // commit hash
+    common.TernaryEnum.Ternary is_dirty = 4;
 }

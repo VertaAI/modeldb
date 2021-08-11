@@ -1,0 +1,3 @@
+[pydocstyle]
+convention = numpy
+add-ignore = D105

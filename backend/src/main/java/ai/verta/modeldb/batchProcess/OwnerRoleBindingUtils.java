@@ -1,6 +1,7 @@
 package ai.verta.modeldb.batchProcess;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.AuthServiceUtils;
 import ai.verta.modeldb.authservice.RoleService;
@@ -16,7 +17,6 @@ import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
 import java.util.HashSet;
 import java.util.List;
@@ -42,10 +42,11 @@ public class OwnerRoleBindingUtils {
   private static RoleService roleService;
 
   public static void execute() {
-    if (Config.getInstance().hasAuth()) {
-      authService = AuthServiceUtils.FromConfig(Config.getInstance());
-      uac = UAC.FromConfig(Config.getInstance());
-      roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
+    Config config = App.getInstance().config;
+    if (config.hasAuth()) {
+      uac = UAC.FromConfig(config);
+      authService = AuthServiceUtils.FromConfig(config, uac);
+      roleService = RoleServiceUtils.FromConfig(config, authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
       return;
@@ -72,7 +73,6 @@ public class OwnerRoleBindingUtils {
     final int pagesize = 5000;
     LOGGER.debug("Total experiments {}", count);
 
-    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_OWNER, null);
     while (lowerBound < count) {
 
       try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -112,7 +112,7 @@ public class OwnerRoleBindingUtils {
             if (userInfoValue != null) {
               try {
                 roleService.createRoleBinding(
-                    ownerRole,
+                    ModelDBConstants.ROLE_EXPERIMENT_OWNER,
                     new CollaboratorUser(authService, userInfoValue),
                     experimentEntity.getId(),
                     ModelDBServiceResourceTypes.EXPERIMENT);
@@ -158,7 +158,6 @@ public class OwnerRoleBindingUtils {
     final int pagesize = 5000;
     LOGGER.debug("Total experimentruns {}", count);
 
-    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER, null);
     while (lowerBound < count) {
 
       try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -196,7 +195,7 @@ public class OwnerRoleBindingUtils {
           if (userInfoValue != null) {
             try {
               roleService.createRoleBinding(
-                  ownerRole,
+                  ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
                   new CollaboratorUser(authService, userInfoValue),
                   experimentRunEntity.getId(),
                   ModelDBServiceResourceTypes.EXPERIMENT_RUN);
@@ -239,7 +238,6 @@ public class OwnerRoleBindingUtils {
     final int pagesize = 5000;
     LOGGER.debug("Total datasetVersions {}", count);
 
-    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_DATASET_VERSION_OWNER, null);
     while (lowerBound < count) {
 
       try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -279,7 +277,7 @@ public class OwnerRoleBindingUtils {
             if (userInfoValue != null) {
               try {
                 roleService.createRoleBinding(
-                    ownerRole,
+                    ModelDBConstants.ROLE_DATASET_VERSION_OWNER,
                     new CollaboratorUser(authService, userInfoValue),
                     datasetVersionEntity.getId(),
                     ModelDBServiceResourceTypes.DATASET_VERSION);
@@ -326,7 +324,6 @@ public class OwnerRoleBindingUtils {
     final int pagesize = 5000;
     LOGGER.debug("Total repositories {}", count);
 
-    Role ownerRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_OWNER, null);
     while (lowerBound < count) {
 
       try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
@@ -367,7 +364,7 @@ public class OwnerRoleBindingUtils {
                 ModelDBServiceResourceTypes modelDBServiceResourceTypes =
                     ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
                 roleService.createRoleBinding(
-                    ownerRole,
+                    ModelDBConstants.ROLE_REPOSITORY_OWNER,
                     new CollaboratorUser(authService, userInfoValue),
                     String.valueOf(repositoryEntity.getId()),
                     modelDBServiceResourceTypes);

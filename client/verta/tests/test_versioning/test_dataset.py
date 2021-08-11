@@ -465,7 +465,7 @@ class TestPath:
 
 @pytest.mark.usefixtures("with_boto3", "in_tempdir")
 class TestS3ManagedVersioning:
-    def test_mngd_ver_file(self, commit):
+    def test_mngd_ver_file(self, dataset):
         s3 = pytest.importorskip("boto3").client('s3')
 
         filename = "tiny1.bin"
@@ -480,21 +480,19 @@ class TestS3ManagedVersioning:
             FILE_CONTENTS = f.read()
         os.remove(filename)
 
-        # commit dataset blob
-        dataset = verta.dataset.S3(s3_key, enable_mdb_versioning=True)
-        commit.update(blob_path, dataset)
-        commit.save("Version data.")
-        dataset = commit.get(blob_path)
+        # log & get dataset blob
+        dataset_blob = verta.dataset.S3(s3_key, enable_mdb_versioning=True)
+        dataset_blob = dataset.create_version(dataset_blob).get_content()
 
         # download to implicit path
-        filepath = dataset.download(s3_key)
+        filepath = dataset_blob.download(s3_key)
         assert os.path.isfile(filepath)
         assert filepath == os.path.abspath(filename)
         with open(filepath, 'rb') as f:
             assert f.read() == FILE_CONTENTS
 
         # download to implicit path without collision
-        filepath2 = dataset.download(s3_key)
+        filepath2 = dataset_blob.download(s3_key)
         assert os.path.isfile(filepath2)
         assert filepath2 != filepath
         with open(filepath2, 'rb') as f:
@@ -502,13 +500,13 @@ class TestS3ManagedVersioning:
 
         # download to explicit path with overwrite
         last_updated = os.path.getmtime(filepath)
-        filepath3 = dataset.download(s3_key, filepath)
+        filepath3 = dataset_blob.download(s3_key, filepath)
         assert filepath3 == filepath
         with open(filepath3, 'rb') as f:
             assert f.read() == FILE_CONTENTS
         assert os.path.getmtime(filepath) > last_updated
 
-    def test_mngd_ver_folder(self, commit):
+    def test_mngd_ver_folder(self, dataset):
         s3 = pytest.importorskip("boto3").client('s3')
 
         bucket = "verta-versioned-bucket"
@@ -529,48 +527,44 @@ class TestS3ManagedVersioning:
         # start with `dirname`, so we have to go deeper for `reference_dir` to account for that.
         reference_dir = os.path.join(reference_dir, dirname)
 
-        # commit dataset blob
-        dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
-        commit.update(blob_path, dataset)
-        commit.save("Version data.")
-        dataset = commit.get(blob_path)
+        # log & get dataset blob
+        dataset_blob = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
+        dataset_blob = dataset.create_version(dataset_blob).get_content()
 
         # download to implicit path
-        dirpath = dataset.download(s3_folder)
+        dirpath = dataset_blob.download(s3_folder)
         assert os.path.isdir(dirpath)
         assert dirpath == os.path.abspath(dirname)
         assert_dirs_match(dirpath, reference_dir)
 
         # download to implicit path without collision
-        dirpath2 = dataset.download(s3_folder)
+        dirpath2 = dataset_blob.download(s3_folder)
         assert os.path.isdir(dirpath2)
         assert dirpath2 != dirpath
         assert_dirs_match(dirpath2, reference_dir)
 
         # download to explicit path with overwrite
         last_updated = os.path.getmtime(dirpath)
-        dirpath3 = dataset.download(s3_folder, dirpath)
+        dirpath3 = dataset_blob.download(s3_folder, dirpath)
         assert dirpath3 == dirpath
         assert_dirs_match(dirpath3, reference_dir)
         assert os.path.getmtime(dirpath) > last_updated
 
-    def test_not_to_s3_dir(self, commit):
+    def test_not_to_s3_dir(self, dataset):
         """If the user specifies "s3://", things shouldn't go into an "s3:" dir."""
         bucket = "verta-versioned-bucket"
         dirname = "tiny-files/"
         s3_folder = "s3://{}/{}".format(bucket, dirname)
         blob_path = "data"
 
-        # commit dataset blob
-        dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
-        commit.update(blob_path, dataset)
-        commit.save("Version data.")
-        dataset = commit.get(blob_path)
+        # log & get dataset blob
+        dataset_blob = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
+        dataset_blob = dataset.create_version(dataset_blob).get_content()
 
-        dirpath = dataset.download("s3://")
+        dirpath = dataset_blob.download("s3://")
         assert "s3:" not in pathlib2.Path(dirpath).parts
 
-    def test_download_all(self, commit):
+    def test_download_all(self, dataset):
         s3 = pytest.importorskip("boto3").client('s3')
 
         bucket = "verta-versioned-bucket"
@@ -586,20 +580,17 @@ class TestS3ManagedVersioning:
 
             s3.download_file(bucket, key, filepath)
 
-        # commit dataset blob
-        blob_path = "data"
-        dataset = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
-        commit.update(blob_path, dataset)
-        commit.save("Version data.")
-        dataset = commit.get(blob_path)
+        # log & get dataset blob
+        dataset_blob = verta.dataset.S3(s3_folder, enable_mdb_versioning=True)
+        dataset_blob = dataset.create_version(dataset_blob).get_content()
 
-        dirpath = dataset.download()
+        dirpath = dataset_blob.download()
         assert dirpath == os.path.abspath(_dataset.DEFAULT_DOWNLOAD_DIR)
 
         assert os.path.isdir(dirpath)
         assert_dirs_match(dirpath, reference_dir)
 
-    def test_concat(self, commit):
+    def test_concat(self, dataset):
         s3 = pytest.importorskip("boto3").client('s3')
 
         bucket1 = "verta-starter"
@@ -627,14 +618,10 @@ class TestS3ManagedVersioning:
             "s3://{}/{}".format(bucket2, key2),
             enable_mdb_versioning=True,
         )
-        dataset = dataset1 + dataset2
+        dataset_blob = dataset1 + dataset2
+        dataset_blob = dataset.create_version(dataset_blob).get_content()
 
-        blob_path = "data"
-        commit.update(blob_path, dataset)
-        commit.save("Version data.")
-        dataset = commit.get(blob_path)
-
-        dirpath = dataset.download()
+        dirpath = dataset_blob.download()
         assert_dirs_match(dirpath, reference_dir)
 
     def test_concat_arg_mismatch_error(self):
@@ -653,28 +640,26 @@ class TestS3ManagedVersioning:
 
 @pytest.mark.usefixtures("in_tempdir")
 class TestPathManagedVersioning:
-    def test_mngd_ver_file(self, commit):
+    def test_mngd_ver_file(self, dataset):
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2**16)
         with open(filename, 'wb') as f:
             f.write(FILE_CONTENTS)
         blob_path = "data"
 
-        dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
-        commit.update(blob_path, dataset)
-        commit.save("Version data.")
+        dataset_blob = verta.dataset.Path(filename, enable_mdb_versioning=True)
+        dataset_blob = dataset.create_version(dataset_blob).get_content()
         os.remove(filename)  # delete for first download test
-        dataset = commit.get(blob_path)
 
         # download to implicit path
-        filepath = dataset.download(filename)
+        filepath = dataset_blob.download(filename)
         assert os.path.isfile(filepath)
         assert filepath == os.path.abspath(filename)
         with open(filepath, 'rb') as f:
             assert f.read() == FILE_CONTENTS
 
         # download to implicit path without collision
-        filepath2 = dataset.download(filename)
+        filepath2 = dataset_blob.download(filename)
         assert os.path.isfile(filepath2)
         assert filepath2 != filepath
         with open(filepath2, 'rb') as f:
@@ -682,13 +667,13 @@ class TestPathManagedVersioning:
 
         # download to explicit path with overwrite
         last_updated = os.path.getmtime(filepath)
-        filepath3 = dataset.download(filename, filepath)
+        filepath3 = dataset_blob.download(filename, filepath)
         assert filepath3 == filepath
         with open(filepath3, 'rb') as f:
             assert f.read() == FILE_CONTENTS
         assert os.path.getmtime(filepath) > last_updated
 
-    def test_mngd_ver_folder(self, commit):
+    def test_mngd_ver_folder(self, dataset):
         reference_dir = "reference/"
         dirname = "tiny-files/"
         os.mkdir(dirname)
@@ -697,67 +682,30 @@ class TestPathManagedVersioning:
                 f.write(os.urandom(2**16))
 
         blob_path = "data"
-        dataset = verta.dataset.Path(dirname, enable_mdb_versioning=True)
-        commit.update(blob_path, dataset)
-        commit.save("Version data.")
+        dataset_blob = verta.dataset.Path(dirname, enable_mdb_versioning=True)
+        dataset_blob = dataset.create_version(dataset_blob).get_content()
         shutil.move(dirname, reference_dir)  # move sources to avoid collision
-        dataset = commit.get(blob_path)
 
         # download to implicit path
-        dirpath = dataset.download(dirname)
+        dirpath = dataset_blob.download(dirname)
         assert os.path.isdir(dirpath)
         assert dirpath == os.path.abspath(dirname)
         assert_dirs_match(dirpath, reference_dir)
 
         # download to implicit path without collision
-        dirpath2 = dataset.download(dirname)
+        dirpath2 = dataset_blob.download(dirname)
         assert os.path.isdir(dirpath2)
         assert dirpath2 != dirpath
         assert_dirs_match(dirpath2, reference_dir)
 
         # download to explicit path with overwrite
         last_updated = os.path.getmtime(dirpath)
-        dirpath3 = dataset.download(dirname, dirpath)
+        dirpath3 = dataset_blob.download(dirname, dirpath)
         assert dirpath3 == dirpath
         assert_dirs_match(dirpath3, reference_dir)
         assert os.path.getmtime(dirpath) > last_updated
 
-    def test_mngd_ver_rollback(self, commit):
-        """Recover a versioned file by loading a prior commit."""
-        filename = "tiny1.bin"
-        file1_contents = os.urandom(2**16)
-        with open(filename, 'wb') as f:
-            f.write(file1_contents)
-        blob_path = "data"
-
-        dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
-        commit.update(blob_path, dataset)
-        commit.save("First file.")
-
-        # new file with same name
-        os.remove(filename)
-        file2_contents = os.urandom(2**16)
-        with open(filename, 'wb') as f:
-            f.write(file2_contents)
-
-        dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
-        commit.update(blob_path, dataset)
-        commit.save("Second file.")
-
-        # check latest commit's file
-        dataset = commit.get(blob_path)
-        new_filename = dataset.download(filename)
-        with open(new_filename, 'rb') as f:
-            assert f.read() == file2_contents
-
-        # recover previous commit's file
-        commit = commit.parent
-        dataset = commit.get(blob_path)
-        new_filename = dataset.download(filename)
-        with open(new_filename, 'rb') as f:
-            assert f.read() == file1_contents
-
-    def test_mngd_ver_to_parent_dir(self, commit):
+    def test_mngd_ver_to_parent_dir(self, dataset):
         """Download to parent directory works as expected."""
         child_dirname = "child"
         os.mkdir(child_dirname)
@@ -769,20 +717,18 @@ class TestPathManagedVersioning:
                 f.write(FILE_CONTENTS)
             blob_path = "data"
 
-            dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
-            commit.update(blob_path, dataset)
-            commit.save("First file.")
-            dataset = commit.get(blob_path)
+            dataset_blob = verta.dataset.Path(filename, enable_mdb_versioning=True)
+            dataset_blob = dataset.create_version(dataset_blob).get_content()
 
             # download to parent dir
             download_to_path = os.path.join("..", filename)
-            filepath = dataset.download(filename, download_to_path)
+            filepath = dataset_blob.download(filename, download_to_path)
             assert os.path.isfile(filepath)
             assert filepath == os.path.abspath(download_to_path)
             with open(filepath, 'rb') as f:
                 assert f.read() == FILE_CONTENTS
 
-    def test_mngd_ver_to_sibling_dir(self, commit):
+    def test_mngd_ver_to_sibling_dir(self, dataset):
         """Download to sibling directory works as expected."""
         child_dirname = "child"
         os.mkdir(child_dirname)
@@ -796,34 +742,30 @@ class TestPathManagedVersioning:
                 f.write(FILE_CONTENTS)
             blob_path = "data"
 
-            dataset = verta.dataset.Path(filename, enable_mdb_versioning=True)
-            commit.update(blob_path, dataset)
-            commit.save("First file.")
-            dataset = commit.get(blob_path)
+            dataset_blob = verta.dataset.Path(filename, enable_mdb_versioning=True)
+            dataset_blob = dataset.create_version(dataset_blob).get_content()
 
             # download to sibling dir
             download_to_path = os.path.join("..", sibling_dirname, filename)
-            filepath = dataset.download(filename, download_to_path)
+            filepath = dataset_blob.download(filename, download_to_path)
             assert os.path.isfile(filepath)
             assert filepath == os.path.abspath(download_to_path)
             with open(filepath, 'rb') as f:
                 assert f.read() == FILE_CONTENTS
 
-    def test_download_all(self, commit):
+    def test_download_all(self, dataset):
         reference_dir = "tiny-files/"
         os.mkdir(reference_dir)
         for filename in ["tiny{}.bin".format(i) for i in range(3)]:
             with open(os.path.join(reference_dir, filename), 'wb') as f:
                 f.write(os.urandom(2**16))
 
-        # commit dataset blob
+        # log & get dataset blob
         blob_path = "data"
-        dataset = verta.dataset.Path(reference_dir, enable_mdb_versioning=True)
-        commit.update(blob_path, dataset)
-        commit.save("Version data.")
-        dataset = commit.get(blob_path)
+        dataset_blob = verta.dataset.Path(reference_dir, enable_mdb_versioning=True)
+        dataset_blob = dataset.create_version(dataset_blob).get_content()
 
-        dirpath = dataset.download()
+        dirpath = dataset_blob.download()
         assert dirpath == os.path.abspath(_dataset.DEFAULT_DOWNLOAD_DIR)
 
         # uploaded filetree was recreated within `DEFAULT_DOWNLOAD_DIR`
@@ -831,7 +773,7 @@ class TestPathManagedVersioning:
         assert os.path.isdir(destination_dir)
         assert_dirs_match(destination_dir, reference_dir)
 
-    def test_base_path(self, commit):
+    def test_base_path(self, dataset):
         reference_dir = "tiny-files/"
         os.mkdir(reference_dir)
         # three .file files in tiny-files/
@@ -846,25 +788,23 @@ class TestPathManagedVersioning:
             with open(os.path.join(reference_dir, sub_dir, filename), 'wb') as f:
                 f.write(os.urandom(2**16))
 
-        # commit dataset blob
+        # log & get dataset blob
         blob_path = "data"
-        dataset = verta.dataset.Path(
+        dataset_blob = verta.dataset.Path(
             reference_dir, base_path=reference_dir,
             enable_mdb_versioning=True,
         )
-        commit.update(blob_path, dataset)
-        commit.save("Version data.")
-        dataset = commit.get(blob_path)
+        dataset_blob = dataset.create_version(dataset_blob).get_content()
 
         # `reference_dir` was dropped as base path, so KeyError
         with pytest.raises(KeyError):
-            dataset.download(reference_dir)
+            dataset_blob.download(reference_dir)
 
-        dirpath = dataset.download()
+        dirpath = dataset_blob.download()
         assert os.path.abspath(dirpath) != os.path.abspath(reference_dir)
         assert_dirs_match(dirpath, reference_dir)
 
-    def test_concat(self, commit):
+    def test_concat(self, dataset):
         reference_dir = "tiny-files/"
         os.mkdir(reference_dir)
         # two .file files in tiny-files/
@@ -881,14 +821,10 @@ class TestPathManagedVersioning:
             "tiny-files/tiny1.file",
             enable_mdb_versioning=True,
         )
-        dataset = dataset1 + dataset2
+        dataset_blob = dataset1 + dataset2
+        dataset_blob = dataset.create_version(dataset_blob).get_content()
 
-        blob_path = "data"
-        commit.update(blob_path, dataset)
-        commit.save("Version data.")
-        dataset = commit.get(blob_path)
-
-        dirpath = dataset.download()
+        dirpath = dataset_blob.download()
         dirpath = os.path.join(dirpath, reference_dir)  # "tiny-files/" nested in new dir
         assert_dirs_match(dirpath, reference_dir)
 

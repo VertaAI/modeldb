@@ -42,7 +42,7 @@ Helm chart is available at `chart/modeldb`. ModelDB can be brought up on a Kuber
 
 ```bash
 cd chart/modeldb
-helm install . --name <release-name> --namespace <k8s namespace>
+helm install --namespace <k8s namespace> <release-name> .
 ```
 
 By default, the `default` namespace on your Kubernetes cluster is used. `release-name` is a arbitrary identifier user picks to perform future helm operations on the cluster.

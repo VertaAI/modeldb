@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Rules to guide canary endpoint updates."""
 
 import abc
 import json
@@ -26,22 +27,15 @@ class _UpdateRule(object):
             ],
         }
 
-    @staticmethod
-    def _from_dict(rule_dict):
+    @classmethod
+    def _from_dict(cls, rule_dict):
         parent_name = rule_dict['rule']
         rule_name = rule_dict['rule_parameters'][0]['name']
         rule_value = float(rule_dict['rule_parameters'][0]['value'])
 
-        RULE_SUBCLASSES = [
-            MaximumAverageLatencyThresholdRule,
-            MaximumP90LatencyThresholdRule,
-            MaximumRequestErrorPercentageThresholdRule,
-            MaximumServerErrorPercentageThresholdRule
-        ]
-
-        for Subclass in RULE_SUBCLASSES:
-            if parent_name == Subclass._PARENT_NAME and rule_name == Subclass._NAME:
-                rule = Subclass(rule_value)
+        for subcls in cls.__subclasses__():
+            if parent_name == subcls._PARENT_NAME and rule_name == subcls._NAME:
+                rule = subcls(rule_value)
                 break
         else:
             # does not match any rule

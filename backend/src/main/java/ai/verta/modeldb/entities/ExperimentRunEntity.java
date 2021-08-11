@@ -1,6 +1,6 @@
 package ai.verta.modeldb.entities;
 
-import ai.verta.modeldb.CodeVersion;
+import ai.verta.common.CodeVersion;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
@@ -206,6 +206,9 @@ public class ExperimentRunEntity {
 
   @Column(name = "environment", columnDefinition = "TEXT")
   private String environment;
+
+  @Column(name = "created")
+  private Boolean created = false;
 
   @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 
@@ -464,6 +467,11 @@ public class ExperimentRunEntity {
 
   public void setEnvironment(String environment) {
     this.environment = environment;
+  }
+
+  // TODO: update indices and code to take this flag into consideration
+  public void setCreated(Boolean created) {
+    this.created = created;
   }
 
   public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {

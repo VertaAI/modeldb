@@ -3,6 +3,7 @@ package ai.verta.modeldb.batchProcess;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.EntitiesEnum;
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetTypeEnum;
 import ai.verta.modeldb.DatasetVersion;
@@ -63,17 +64,14 @@ public class DatasetToRepositoryMigration {
   private static MetadataDAO metadataDAO;
   private static BlobDAO blobDAO;
   private static int recordUpdateLimit = 100;
-  private static Role readOnlyRole;
   private static Role writeOnlyRole;
 
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
-    authService = AuthServiceUtils.FromConfig(ai.verta.modeldb.config.Config.getInstance());
-    uac = UAC.FromConfig(Config.getInstance());
-    roleService = RoleServiceUtils.FromConfig(Config.getInstance(), authService, uac);
-
-    readOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_ONLY, null);
-    writeOnlyRole = roleService.getRoleByName(ModelDBConstants.ROLE_REPOSITORY_READ_WRITE, null);
+    Config config = App.getInstance().config;
+    uac = UAC.FromConfig(config);
+    authService = AuthServiceUtils.FromConfig(config, uac);
+    roleService = RoleServiceUtils.FromConfig(config, authService, uac);
 
     commitDAO = new CommitDAORdbImpl(authService, roleService);
     repositoryDAO = new RepositoryDAORdbImpl(authService, roleService, commitDAO, metadataDAO);
@@ -81,7 +79,7 @@ public class DatasetToRepositoryMigration {
     metadataDAO = new MetadataDAORdbImpl();
     experimentRunDAO =
         new ExperimentRunDAORdbImpl(
-            authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
+            config, authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
     migrateDatasetsToRepositories();
   }
 
@@ -337,13 +335,13 @@ public class DatasetToRepositoryMigration {
             .getCollaboratorType()
             .equals(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)) {
           roleService.createRoleBinding(
-              readOnlyRole,
+              ModelDBConstants.ROLE_REPOSITORY_READ_ONLY,
               collaboratorBase,
               dataset.getId(),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
         } else {
           roleService.createRoleBinding(
-              writeOnlyRole,
+              ModelDBConstants.ROLE_REPOSITORY_READ_WRITE,
               collaboratorBase,
               dataset.getId(),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);

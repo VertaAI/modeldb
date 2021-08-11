@@ -10,6 +10,7 @@ import time
 from verta._internal_utils.importer import get_tensorflow_major_version
 
 
+@pytest.mark.tensorflow
 class TestKeras:
     def test_sequential_api(self, experiment_run):
         verta_integrations_keras = pytest.importorskip("verta.integrations.keras")
@@ -183,6 +184,7 @@ class TestScikitLearn:
             assert run.get_hyperparameters()
 
 
+@pytest.mark.tensorflow
 class TestTensorFlow:
     def test_estimator_hook(self, experiment_run):
         verta_integrations_tensorflow = pytest.importorskip("verta.integrations.tensorflow")
@@ -321,6 +323,9 @@ class TestTensorFlow:
 
 
 class TestXGBoost:
+
+    # TODO: re-enable with VR-11963
+    @pytest.mark.skip(six.PY2, reason="XGBoost causes a segfault in Python 2")
     def test_callback(self, experiment_run):
         verta_integrations_xgboost = pytest.importorskip("verta.integrations.xgboost")
         verta_callback = verta_integrations_xgboost.verta_callback

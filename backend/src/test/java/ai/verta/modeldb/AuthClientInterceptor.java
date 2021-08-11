@@ -1,8 +1,8 @@
 package ai.verta.modeldb;
 
-import ai.verta.modeldb.common.config.TestConfig;
-import ai.verta.modeldb.common.config.TestUser;
+import ai.verta.modeldb.common.config.ServiceUserConfig;
 import io.grpc.*;
+import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public class AuthClientInterceptor {
@@ -14,11 +14,11 @@ public class AuthClientInterceptor {
   private Client1AuthInterceptor client1AuthInterceptor;
   private Client2AuthInterceptor client2AuthInterceptor;
 
-  public AuthClientInterceptor(TestConfig testConfig) {
+  public AuthClientInterceptor(Map<String, ServiceUserConfig> testUsers) {
     client1AuthInterceptor =
-        new Client1AuthInterceptor(testConfig.testUsers.getOrDefault("primaryUser", null));
+        new Client1AuthInterceptor(testUsers.getOrDefault("primaryUser", null));
     client2AuthInterceptor =
-        new Client2AuthInterceptor(testConfig.testUsers.getOrDefault("secondaryUser", null));
+        new Client2AuthInterceptor(testUsers.getOrDefault("secondaryUser", null));
   }
 
   public Client1AuthInterceptor getClient1AuthInterceptor() {
@@ -39,7 +39,7 @@ public class AuthClientInterceptor {
 
   private class Client1AuthInterceptor implements ClientInterceptor {
 
-    public Client1AuthInterceptor(TestUser user) {
+    public Client1AuthInterceptor(ServiceUserConfig user) {
       client1Email = user.email;
       client1DevKey = user.devKey;
     }
@@ -70,7 +70,7 @@ public class AuthClientInterceptor {
 
   private class Client2AuthInterceptor implements ClientInterceptor {
 
-    Client2AuthInterceptor(TestUser user) {
+    Client2AuthInterceptor(ServiceUserConfig user) {
       client2Email = user.email;
       client2DevKey = user.devKey;
     }

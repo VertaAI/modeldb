@@ -9,18 +9,14 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.cron_jobs.ParentTimestampUpdateCron;
-import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
+import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.DeleteOrganization;
-import ai.verta.uac.GetRoleByName;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.RoleScope;
 import ai.verta.uac.SetOrganization;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.ListValue;
@@ -204,7 +200,7 @@ public class DatasetTest extends TestsInit {
   private void checkEqualsAssert(StatusRuntimeException e) {
     Status status = Status.fromThrowable(e);
     LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (config.hasAuth()) {
+    if (testConfig.hasAuth()) {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
@@ -416,7 +412,7 @@ public class DatasetTest extends TestsInit {
         assertEquals("Shared dataset name not match", dataset.getName(), sharedDataset.getName());
       }
 
-      if (config.hasAuth()) {
+      if (testConfig.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorTest.addCollaboratorRequestDataset(
                 dataset,
@@ -495,7 +491,7 @@ public class DatasetTest extends TestsInit {
   @Test
   public void k_getDatasetByNameWithWorkspace() {
     LOGGER.info("Get Dataset by name with workspace test start................................");
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       assertTrue(true);
       return;
     }
@@ -1416,9 +1412,7 @@ public class DatasetTest extends TestsInit {
           experimentRun.getDateUpdated(),
           response.getExperimentRun().getDateUpdated());
 
-      ParentTimestampUpdateCron parentTimestampUpdateCron =
-          new ParentTimestampUpdateCron(100, config.database.RdbConfiguration.isPostgres());
-      parentTimestampUpdateCron.run();
+      ReconcilerInitializer.initialize(testConfig, services, testConfig.getJdbi(), handleExecutor);
 
       LastExperimentByDatasetId lastExperimentByDatasetId =
           LastExperimentByDatasetId.newBuilder().setDatasetId(dataset.getId()).build();
@@ -1680,12 +1674,12 @@ public class DatasetTest extends TestsInit {
   public void createDatasetWithGlobalSharingOrganization() {
     LOGGER.info("Global organization Dataset test start................................");
 
-    if (!config.hasAuth()) {
+    if (!testConfig.hasAuth()) {
       Assert.assertTrue(true);
       return;
     }
 
-    String orgName = "Org-test-verta";
+    String orgName = "Org-test-verta-" + new Date().getTime();
     SetOrganization setOrganization =
         SetOrganization.newBuilder()
             .setOrganization(
@@ -1701,19 +1695,6 @@ public class DatasetTest extends TestsInit {
         "Organization name not matched with expected organization name",
         orgName,
         organization.getName());
-
-    String orgRoleName = "O_" + organization.getId() + DatasetDAORdbImpl.GLOBAL_SHARING;
-    GetRoleByName getRoleByName =
-        GetRoleByName.newBuilder()
-            .setName(orgRoleName)
-            .setScope(RoleScope.newBuilder().setOrgId(organization.getId()).build())
-            .build();
-    GetRoleByName.Response getRoleByNameResponse =
-        roleServiceBlockingStub.getRoleByName(getRoleByName);
-    assertEquals(
-        "Expected role name not found in DB",
-        orgRoleName,
-        getRoleByNameResponse.getRole().getName());
 
     CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
     createDatasetRequest =

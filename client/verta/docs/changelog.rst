@@ -1,5 +1,5 @@
-Release Notes
-=============
+Changelog
+=========
 
 
 .. This comment block is a template for version release notes.
@@ -8,33 +8,289 @@ Release Notes
 
    Backwards Incompatibilities
    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
 
    Deprecations
    ^^^^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
 
    New Features
    ^^^^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
 
    Enhancements
    ^^^^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
 
    Bug Fixes
    ^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
 
    Internal Changes
    ^^^^^^^^^^^^^^^^
-   - `
-     <>`__
+   -
+     (`# <>`__)
+
+
+v0.19.1 (2021-08-09)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add ``@verify_io`` decorator for use with ``VertaModelBase.predict()``
+  (`#2540 <https://github.com/VertaAI/modeldb/pull/2540>`__)
+
+Enhancements
+^^^^^^^^^^^^
+- paginate ``alerts.list()``
+  (`#2525 <https://github.com/VertaAI/modeldb/pull/2525>`__)
+
+Bug Fixes
+^^^^^^^^^
+- filter out ``lib32/`` and ``lib64/`` when collecting custom modules
+  (`#2534 <https://github.com/VertaAI/modeldb/pull/2534>`__)
+- pick up environment variables (such as ``REQUESTS_CA_BUNDLE``) for HTTP
+  requests
+  (`#2535 <https://github.com/VertaAI/modeldb/pull/2535>`__)
+
+
+v0.19.0 (2021-08-03)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- remove Repository
+  (`#2498 <https://github.com/VertaAI/modeldb/pull/2498>`__)
+
+New Features
+^^^^^^^^^^^^
+- enable extra headers to be passed on requests
+  (`#2510 <https://github.com/VertaAI/modeldb/pull/2510>`__)
+- add ``RegisteredModelVersion.log_code_version()``
+  (`#2523 <https://github.com/VertaAI/modeldb/pull/2523>`__)
+- enable Kafka configuration on endpoints (if supported by Verta backend)
+  (`#2488 <https://github.com/VertaAI/modeldb/pull/2488>`__,
+  `#2520 <https://github.com/VertaAI/modeldb/pull/2520>`__)
+
+Enhancements
+^^^^^^^^^^^^
+- batch requests in ``log_training_data_profile()`` for a drastic speedup
+  (`#2511 <https://github.com/VertaAI/modeldb/pull/2511>`__)
+- allow ``RegisteredModel.create_version_from_run()`` to take a run object
+  (`#2500 <https://github.com/VertaAI/modeldb/pull/2500>`__)
+
+Bug Fixes
+^^^^^^^^^
+- properly promote naïve datetimes in Python 2
+  (`#2506 <https://github.com/VertaAI/modeldb/pull/2506>`__)
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- include non-public fields in ``Alert.summary_sample_base``
+  (`#2519 <https://github.com/VertaAI/modeldb/pull/2519>`__)
+
+
+v0.18.2 (2021-07-14)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add convenience functions to create ready-to-deploy standard Verta model
+  versions
+  (`#2397 <https://github.com/VertaAI/modeldb/pull/2397>`__,
+  `#2450 <https://github.com/VertaAI/modeldb/pull/2450>`__,
+  `#2486 <https://github.com/VertaAI/modeldb/pull/2486>`__)
+- add model_version.log_training_data_profile() for deployment monitoring
+  (`#2434 <https://github.com/VertaAI/modeldb/pull/2434>`__,
+  `#2446 <https://github.com/VertaAI/modeldb/pull/2446>`__,
+  `#2457 <https://github.com/VertaAI/modeldb/pull/2457>`__,
+  `#2484 <https://github.com/VertaAI/modeldb/pull/2484>`__)
+- `add profile_point() to profilers
+  <https://github.com/VertaAI/modeldb/pull/2433>`__
+- `support specifying start_time and end_time on experiment runs
+  <https://github.com/VertaAI/modeldb/pull/2479>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `propagate model logs when a deployment fails during initialization
+  <https://github.com/VertaAI/modeldb/pull/2444>`__
+- `hide internal attributes from histogram __repr__()s
+  <https://github.com/VertaAI/modeldb/pull/2442>`__
+
+Bug Fixes
+^^^^^^^^^
+- `resolve a ParseError for the "UNASSIGNED" model_version stage
+  <https://github.com/VertaAI/modeldb/commit/2e5a67d#diff-948fe60>`__
+- `fix bug where NumericValues were deserialized inconsistently when "unit" is
+  empty
+  <https://github.com/VertaAI/modeldb/pull/2428>`__
+- `fix bug where ContinuousHistogramProfiler was unable to handle missing data
+  <https://github.com/VertaAI/modeldb/pull/2440>`__
+- `allow alerts to properly handle samples of past time windows
+  <https://github.com/VertaAI/modeldb/pull/2478>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `deprecate verta._internal_utils._histogram_utils
+  <https://github.com/VertaAI/modeldb/pull/2436>`__
+
+
+v0.18.1 (2021-06-17)
+--------------------
+
+Enhancements
+^^^^^^^^^^^^
+- `raise warning when duplicate attributes are ignored in model versions
+  <https://github.com/VertaAI/modeldb/pull/2405>`__
+
+Bug Fixes
+^^^^^^^^^
+- `fix zip-unzip magic for directories logged with run.log_model()
+  <https://github.com/VertaAI/modeldb/pull/2420>`__
+
+
+v0.18.0 (2021-06-11)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- `rename with_workspace(workspace_name) parameter to
+  with_workspace(workspace)
+  <https://github.com/VertaAI/modeldb/pull/2352>`__
+- move formerly-private modules and entity classes to public import paths
+  (`#2011 <https://github.com/VertaAI/modeldb/pull/2011>`__,
+  `#2308 <https://github.com/VertaAI/modeldb/pull/2308>`__,
+  `#2313 <https://github.com/VertaAI/modeldb/pull/2313>`__,
+  `#2314 <https://github.com/VertaAI/modeldb/pull/2314>`__)
+- `set upper version bounds on dependency libraries
+  <https://github.com/VertaAI/modeldb/pull/2293>`__
+- `add pytimeparse as a dependency
+  <https://github.com/VertaAI/modeldb/pull/2348/files#diff-6890bb89ea3cf891e88298d45a9a377077ca81742d1675fb72b11c5043b99e37R33>`__
+- `hide sklearn integration's internally-used functions
+  <https://github.com/VertaAI/modeldb/pull/2307/files#diff-8393105a4ae4d198e065ad00cf00f62b64ebb4ac6bb7695b1aedbaa077c4cf22>`__
+
+Deprecations
+^^^^^^^^^^^^
+- `log_training_data(), being superseded by new monitoring functionality
+  <https://github.com/VertaAI/modeldb/pull/2253>`__
+- `log_requirements(), being superseded by log_environment()
+  <https://github.com/VertaAI/modeldb/pull/2258>`__
+- `TFSavedModel utility, long-since superseded by Standard Verta Models
+  <https://github.com/VertaAI/modeldb/pull/2307/files#diff-38dbfbb4b30b23b1fa5af3f91dc2046c18f405169c49865db152d0a37558072a>`__
+
+New Features
+^^^^^^^^^^^^
+- add monitoring sub-client
+  (`#2077 <https://github.com/VertaAI/modeldb/pull/2077>`__,
+  `#2096 <https://github.com/VertaAI/modeldb/pull/2096>`__,
+  `#2097 <https://github.com/VertaAI/modeldb/pull/2097>`__,
+  `#2095 <https://github.com/VertaAI/modeldb/pull/2095>`__,
+  `#2091 <https://github.com/VertaAI/modeldb/pull/2091>`__,
+  `#2133 <https://github.com/VertaAI/modeldb/pull/2133>`__,
+  `#2120 <https://github.com/VertaAI/modeldb/pull/2120>`__,
+  `#2126 <https://github.com/VertaAI/modeldb/pull/2126>`__,
+  `#2134 <https://github.com/VertaAI/modeldb/pull/2134>`__,
+  `#2145 <https://github.com/VertaAI/modeldb/pull/2145>`__,
+  `#2159 <https://github.com/VertaAI/modeldb/pull/2159>`__,
+  `#2162 <https://github.com/VertaAI/modeldb/pull/2162>`__,
+  `#2164 <https://github.com/VertaAI/modeldb/pull/2164>`__,
+  `#2182 <https://github.com/VertaAI/modeldb/pull/2182>`__,
+  `#2186 <https://github.com/VertaAI/modeldb/pull/2186>`__,
+  `#2187 <https://github.com/VertaAI/modeldb/pull/2187>`__,
+  `#2184 <https://github.com/VertaAI/modeldb/pull/2184>`__,
+  `#2200 <https://github.com/VertaAI/modeldb/pull/2200>`__,
+  `#2201 <https://github.com/VertaAI/modeldb/pull/2201>`__,
+  `#2212 <https://github.com/VertaAI/modeldb/pull/2212>`__,
+  `#2252 <https://github.com/VertaAI/modeldb/pull/2252>`__,
+  `#2262 <https://github.com/VertaAI/modeldb/pull/2262>`__,
+  `#2263 <https://github.com/VertaAI/modeldb/pull/2263>`__,
+  `#2269 <https://github.com/VertaAI/modeldb/pull/2269>`__,
+  `#2317 <https://github.com/VertaAI/modeldb/pull/2317>`__,
+  `#2318 <https://github.com/VertaAI/modeldb/pull/2318>`__,
+  `#2332 <https://github.com/VertaAI/modeldb/pull/2332>`__,
+  `#2326 <https://github.com/VertaAI/modeldb/pull/2326>`__,
+  `#2348 <https://github.com/VertaAI/modeldb/pull/2348>`__,
+  `#2355 <https://github.com/VertaAI/modeldb/pull/2355>`__,
+  `#2356 <https://github.com/VertaAI/modeldb/pull/2356>`__,
+  `#2360 <https://github.com/VertaAI/modeldb/pull/2360>`__,
+  `#2370 <https://github.com/VertaAI/modeldb/pull/2370>`__,
+  `#2374 <https://github.com/VertaAI/modeldb/pull/2374>`__,
+  `#2399 <https://github.com/VertaAI/modeldb/pull/2399>`__)
+- `allow setting workspace through environment variable
+  <https://github.com/VertaAI/modeldb/pull/2351>`__
+- `add apt_packages to Python()
+  <https://github.com/VertaAI/modeldb/pull/2385>`__
+- `add NumericValue and StringValue to verta.data_types
+  <https://github.com/VertaAI/modeldb/pull/2085>`__
+- `add verta.registry.VertaModelBase for Standard Verta Models
+  <https://github.com/VertaAI/modeldb/pull/2378>`__
+
+Enhancements
+^^^^^^^^^^^^
+- `add __repr__()s to verta.data_types
+  <https://github.com/VertaAI/modeldb/pull/2087>`__
+
+Bug Fixes
+^^^^^^^^^
+- `return path from download_model()
+  <https://github.com/VertaAI/modeldb/pull/2325>`__
+- `support mismatched buckets for discrete histogram data_type
+  <https://github.com/VertaAI/modeldb/pull/2215>`__
+- `remove local version identifier from captured library version numbers to
+  unblock deployment
+  <https://github.com/VertaAI/modeldb/pull/2257>`__
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- `use __subclasses__() instead of a manual list
+  <https://github.com/VertaAI/modeldb/pull/2102>`__
+- `add client._conn.email
+  <https://github.com/VertaAI/modeldb/pull/2254>`__
+- `rewrite __module__s to public import paths
+  <https://github.com/VertaAI/modeldb/pull/2307>`__
+- `move verta._dataset_versioning to verta.dataset.entities
+  <https://github.com/VertaAI/modeldb/pull/2313>`__
+
+
+v0.17.6 (2021-04-23)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `add download_artifact() and download_model() to RegisteredModelVersion
+  <https://github.com/VertaAI/modeldb/pull/2222>`__
+
+
+v0.17.5 (2021-04-14)
+--------------------
+
+Bug Fixes
+^^^^^^^^^
+- `unzip directory models in run.download_model()
+  <https://github.com/VertaAI/modeldb/pull/2121>`__
+
+
+v0.17.4 (2021-03-26)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- `support logging structured data types as run attributes
+  <https://github.com/VertaAI/modeldb/pull/2057>`__
+- `support getting back structured data type attributes
+  <https://github.com/VertaAI/modeldb/pull/2062>`__
+- `enable manually specifying page limit for _LazyList iteration
+  <https://github.com/VertaAI/modeldb/pull/2064>`__
+
+Bug Fixes
+^^^^^^^^^
+- `properly paginate _LazyList requests
+  <https://github.com/VertaAI/modeldb/pull/2063>`__
 
 
 v0.17.3 (2021-03-17)
@@ -368,9 +624,9 @@ v0.15.0 (2020-08-24)
 New Features
 ^^^^^^^^^^^^
 - `Verta model registry
-  <https://docs.verta.ai/en/master/api/api/registered_model.html>`__
+  <https://verta.readthedocs.io/en/master/_autogen/verta.registry.html>`__
 - `Verta endpoints
-  <https://docs.verta.ai/en/master/api/api/endpoint.html>`__
+  <https://verta.readthedocs.io/en/master/_autogen/verta.endpoint.html>`__
 
 Enhancements
 ^^^^^^^^^^^^
@@ -446,7 +702,7 @@ v0.14.13 (2020-07-24)
 
 Enhancements
 ^^^^^^^^^^^^
-- `add more possible keys for LazyList.find()
+- `add more possible keys for _LazyList.find()
   <https://github.com/VertaAI/modeldb/pull/1038>`__
 - `print full response body for HTTP errors
   <https://github.com/VertaAI/modeldb/pull/1083>`__
@@ -457,7 +713,7 @@ Bug Fixes
   <https://github.com/VertaAI/modeldb/pull/1130>`__
 - `clear cache after every ExperimentRun logs
   <https://github.com/VertaAI/modeldb/pull/1101>`__
-- `fix TypeError in LazyList.with_workspace(None)
+- `fix TypeError in _LazyList.with_workspace(None)
   <https://github.com/VertaAI/modeldb/pull/1098>`__
 
 Internal Changes
@@ -873,9 +1129,9 @@ New Features
 ^^^^^^^^^^^^
 - `support logging classes as models
   <https://github.com/VertaAI/modeldb-client/pull/298>`__
-- `support associating artifact dependencies with class models
+- `support associating artifact dependencies with Standard Verta Models
   <https://github.com/VertaAI/modeldb-client/pull/299>`__
-- `enable downloading artifacts into a local cache for use with class models
+- `enable downloading artifacts into a local cache for use with Standard Verta Models
   <https://github.com/VertaAI/modeldb-client/pull/300>`__
 
 

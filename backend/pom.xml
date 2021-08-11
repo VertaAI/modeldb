@@ -24,7 +24,7 @@
         <grpc.version>1.28.1</grpc.version>
         <postgres.version>42.2.6</postgres.version>
         <liquibase.version>3.8.0</liquibase.version>
-        <prometheus.version>0.8.1</prometheus.version>
+        <prometheus.version>0.10.0</prometheus.version>
         <protobuf.version>3.8.0</protobuf.version>
         <aws.version>1.11.878</aws.version>
 
@@ -124,12 +124,6 @@
             <artifactId>hibernate-core</artifactId>
             <version>${hibernate.version}</version>
         </dependency>
-        <!-- Hibernate c3p0 connection pool -->
-        <!--        <dependency>-->
-        <!--            <groupId>org.hibernate</groupId>-->
-        <!--            <artifactId>hibernate-c3p0</artifactId>-->
-        <!--            <version>${hibernate.version}</version>-->
-        <!--        </dependency>-->
         <!-- Hibernate hikari connection pool -->
         <dependency>
             <groupId>org.hibernate</groupId>
@@ -140,6 +134,16 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>4.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jdbi</groupId>
+            <artifactId>jdbi3-core</artifactId>
+            <version>3.16.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentracing.contrib</groupId>
+            <artifactId>opentracing-jdbi3</artifactId>
+            <version>0.6.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
@@ -214,6 +218,17 @@
             <artifactId>simpleclient_hotspot</artifactId>
             <version>${prometheus.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_hibernate</artifactId>
+            <version>${prometheus.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.prometheus.jmx/collector -->
+        <dependency>
+            <groupId>io.prometheus.jmx</groupId>
+            <artifactId>collector</artifactId>
+            <version>0.15.0</version>
+        </dependency>
         <!-- Mysql Connector -->
         <dependency>
             <groupId>mysql</groupId>
@@ -222,28 +237,29 @@
         </dependency>
         <dependency>
             <groupId>io.jaegertracing</groupId>
-            <artifactId>jaeger-core</artifactId>
-            <version>1.2.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.jaegertracing</groupId>
-            <artifactId>jaeger-thrift</artifactId>
-            <version>0.32.0</version>
+            <artifactId>jaeger-client</artifactId>
+            <version>1.6.0</version>
         </dependency>
         <dependency>
             <groupId>io.opentracing.contrib</groupId>
             <artifactId>opentracing-grpc</artifactId>
-            <version>0.2.1</version>
+            <version>0.2.3</version>
         </dependency>
         <dependency>
             <groupId>io.opentracing.contrib</groupId>
             <artifactId>opentracing-jdbc</artifactId>
-            <version>0.2.10</version>
+            <version>0.2.15</version>
         </dependency>
         <dependency>
             <groupId>com.oblac</groupId>
             <artifactId>nomen-est-omen</artifactId>
             <version>2.0.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/mssql-jdbc -->
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>9.2.1.jre11</version>
         </dependency>
     </dependencies>
 
@@ -412,6 +428,16 @@
                 <version>2.8.1</version>
                 <configuration>
                     <generateBackupPoms>false</generateBackupPoms>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                    <release>11</release>
                 </configuration>
             </plugin>
         </plugins>

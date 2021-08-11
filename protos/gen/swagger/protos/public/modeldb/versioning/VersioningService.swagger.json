@@ -2813,6 +2813,9 @@
         },
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -2826,6 +2829,17 @@
         "WORKSPACE_DEFAULT"
       ],
       "default": "UNKNOWN"
+    },
+    "versioningAptEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "versioningBlob": {
       "type": "object",
@@ -3236,6 +3250,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "apt": {
+          "$ref": "#/definitions/versioningAptEnvironmentBlob"
         }
       }
     },

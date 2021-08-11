@@ -9,3 +9,5 @@ data
 # ignore Python dev tool files and dirs
 **/.python-version
 **/.ropeproject
+.pre-commit-config.yaml
+

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""TensorFlow and TensorBoard integrations for automatic experiment run logging."""
 
 from ...external import six
 
@@ -43,7 +44,7 @@ class VertaHook(SessionRunHook):
 
     Parameters
     ----------
-    run : :class:`~verta._tracking.experimentrun.ExperimentRun`
+    run : :class:`~verta.tracking.entities.ExperimentRun`
         Experiment Run tracking this model.
     every_n_steps : int, default 1000
         How often to log summary metrics.
@@ -174,7 +175,7 @@ def log_tensorboard_events(run, log_dir):
 
     Parameters
     ----------
-    run : :class:`~verta._tracking.experimentrun.ExperimentRun`
+    run : :class:`~verta.tracking.entities.ExperimentRun`
         Experiment Run.
     log_dir : str
         Directory containing TensorBoard-compatible event files.

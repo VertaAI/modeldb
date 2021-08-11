@@ -349,6 +349,153 @@
         ]
       }
     },
+    "/registry/model_versions/{model_version_id}/logAttributes": {
+      "post": {
+        "operationId": "RegistryService_logAttributesInModelVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryLogAttributesInModelVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryLogAttributesInModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/model_versions/{model_version_id}/logCodeBlobInModelVersion": {
+      "post": {
+        "operationId": "RegistryService_logCodeBlobInModelVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryLogCodeBlobInModelVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryLogCodeBlobInModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/model_versions/{model_version_id}/logDatasets": {
+      "post": {
+        "operationId": "RegistryService_logDatasetsInModelVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryLogDatasetsInModelVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryLogDatasetsInModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/registered_models/count": {
+      "get": {
+        "operationId": "RegistryService_GetRegisteredModelCount",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryGetRegisteredModelCountRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
     "/registry/registered_models/find": {
       "post": {
         "summary": "CRUD for RegisteredModel",
@@ -1619,7 +1766,8 @@
         "DEVELOPMENT",
         "STAGING",
         "PRODUCTION",
-        "ARCHIVED"
+        "ARCHIVED",
+        "UNASSIGNED"
       ],
       "default": "UNKNOWN"
     },
@@ -1902,6 +2050,15 @@
         }
       }
     },
+    "registryGetRegisteredModelCountRequestResponse": {
+      "type": "object",
+      "properties": {
+        "registered_model_count": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "registryGetRegisteredModelRequestResponse": {
       "type": "object",
       "properties": {
@@ -1955,6 +2112,60 @@
           }
         }
       }
+    },
+    "registryLogAttributesInModelVersion": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          }
+        }
+      }
+    },
+    "registryLogAttributesInModelVersionResponse": {
+      "type": "object"
+    },
+    "registryLogCodeBlobInModelVersion": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "code_blob_map": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/versioningCodeBlob"
+          }
+        }
+      }
+    },
+    "registryLogCodeBlobInModelVersionResponse": {
+      "type": "object"
+    },
+    "registryLogDatasetsInModelVersion": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "datasets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifact"
+          }
+        }
+      }
+    },
+    "registryLogDatasetsInModelVersionResponse": {
+      "type": "object"
     },
     "registryModelVersion": {
       "type": "object",
@@ -2045,6 +2256,18 @@
         "lock_level": {
           "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel",
           "title": "Current lock level for this model version"
+        },
+        "datasets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifact"
+          }
+        },
+        "code_blob_map": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/versioningCodeBlob"
+          }
         }
       }
     },
@@ -2128,6 +2351,18 @@
         },
         "resource_visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifact"
+          },
+          "title": "Other artifacts"
+        },
+        "readme_text_updated": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Is true if the readme text has been updated at least once"
         }
       }
     },
@@ -2247,6 +2482,9 @@
         },
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -2260,6 +2498,28 @@
         "WORKSPACE_DEFAULT"
       ],
       "default": "UNKNOWN"
+    },
+    "versioningAptEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "versioningCodeBlob": {
+      "type": "object",
+      "properties": {
+        "git": {
+          "$ref": "#/definitions/versioningGitCodeBlob"
+        },
+        "notebook": {
+          "$ref": "#/definitions/versioningNotebookCodeBlob"
+        }
+      }
     },
     "versioningDockerEnvironmentBlob": {
       "type": "object",
@@ -2295,6 +2555,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "apt": {
+          "$ref": "#/definitions/versioningAptEnvironmentBlob"
         }
       }
     },
@@ -2305,6 +2568,66 @@
           "type": "string"
         },
         "value": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningGitCodeBlob": {
+      "type": "object",
+      "properties": {
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "versioningNotebookCodeBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+        },
+        "git_repo": {
+          "$ref": "#/definitions/versioningGitCodeBlob"
+        }
+      }
+    },
+    "versioningPathDatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "last_modified_at_source": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "md5": {
+          "type": "string"
+        },
+        "internal_versioned_path": {
+          "type": "string"
+        },
+        "base_path": {
           "type": "string"
         }
       }

@@ -9,9 +9,10 @@ import hashlib
 import os
 import pathlib2
 
-from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
+from verta.external import six
+from verta import _blob
 
-from ..external import six
+from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
 from .._internal_utils import (
     _file_utils,
@@ -19,20 +20,19 @@ from .._internal_utils import (
     _utils,
 )
 
-from .._repository import blob
 
 
 DEFAULT_DOWNLOAD_DIR = "mdb-data-download"  # to be in cwd
 
 
-class _Dataset(blob.Blob):
+class _Dataset(_blob.Blob):
     """
     Base class for dataset versioning. Not for human consumption.
 
     """
     _CANNOT_DOWNLOAD_ERROR = RuntimeError(
         "this dataset cannot be used for downloads;"
-        " consider using `commit.get()` or `dataset_version.get_content()"
+        " consider using `dataset_version.get_content()"
         " to obtain a download-capable dataset"
         " if ModelDB-managed versioning was enabled"
     )
@@ -45,9 +45,6 @@ class _Dataset(blob.Blob):
         self._mdb_versioned = enable_mdb_versioning
 
         # to enable download() with ModelDB-managed versioning
-        # using commit.get()
-        self._commit = None
-        self._blob_path = None
         # using dataset_version.get_content()
         self._dataset_version = None
 
@@ -103,44 +100,25 @@ class _Dataset(blob.Blob):
     def _clean_up_uploaded_components(self):
         pass
 
-    def _set_commit_and_blob_path(self, commit, blob_path):
-        """
-        Associate this blob with a commit and path to enable downloads.
-
-        Parameters
-        ----------
-        commit : :class:`verta._repository.commit.Commit`
-            Commit this blob was gotten from.
-        blob_path : str
-            Location of this blob within its Repository.
-
-        """
-        # TODO: raise error if _dataset_version already set
-        self._commit = commit
-        self._blob_path = blob_path
-
     def _set_dataset_version(self, dataset_version):
         """
         Associate this blob with a dataset version to enable downloads.
 
         Parameters
         ----------
-        dataset_version : :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+        dataset_version : :class:`~verta.dataset.entities.DatasetVersion`
             Dataset version this blob was gotten from.
 
         """
-        # TODO: raise error if _commit already set
         self._dataset_version = dataset_version
 
     @property
     def _is_downloadable(self):
         """
-        Whether this has a linked commit or dataset version to download from.
+        Whether this has a linked dataset version to download from.
 
         """
-        if self._commit and self._blob_path:
-            return True
-        elif self._dataset_version:
+        if self._dataset_version:
             return True
         else:
             return False
@@ -148,20 +126,16 @@ class _Dataset(blob.Blob):
     @property
     def _conn(self):
         """
-        Co-opts the ``_conn`` from associated commit or dataset version.
+        Co-opts the ``_conn`` from associated dataset version.
 
         """
-        if self._commit:
-            return self._commit._conn
-        elif self._dataset_version:
+        if self._dataset_version:
             return self._dataset_version._conn
         else:
             raise self._CANNOT_DOWNLOAD_ERROR
 
     def _get_url_for_artifact(self, path, method):
-        if self._commit and self._blob_path:
-            return self._commit._get_url_for_artifact(self._blob_path, path, method)
-        elif self._dataset_version:
+        if self._dataset_version:
             return self._dataset_version._get_url_for_artifact(path, method)
         else:
             raise self._CANNOT_DOWNLOAD_ERROR
@@ -286,7 +260,7 @@ class _Dataset(blob.Blob):
 
         Returns
         -------
-        dataset :ref:`blob <blobs>`
+        dataset : :mod:`~verta.dataset`
             Dataset blob capturing the metadata of the binary files.
 
         """
@@ -392,7 +366,7 @@ class _Dataset(blob.Blob):
 
         Returns
         -------
-        components : list of :class:`~verta.dataset._dataset.Component`
+        components : list of :class:`~verta.dataset.Component`
             Components.
 
         """
