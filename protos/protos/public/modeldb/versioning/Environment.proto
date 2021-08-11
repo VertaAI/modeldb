@@ -40,6 +40,8 @@ message PythonEnvironmentBlob {
     VersionEnvironmentBlob version = 1;
     repeated PythonRequirementEnvironmentBlob requirements = 2;
     repeated PythonRequirementEnvironmentBlob constraints = 3;
+    string raw_requirements = 4;
+    string raw_constraints = 5;
 }
 
 message DockerEnvironmentBlob {
