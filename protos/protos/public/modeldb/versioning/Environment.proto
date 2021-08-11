@@ -40,6 +40,7 @@ message PythonEnvironmentBlob {
     VersionEnvironmentBlob version = 1;
     repeated PythonRequirementEnvironmentBlob requirements = 2;
     repeated PythonRequirementEnvironmentBlob constraints = 3;
+    // These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example.
     string raw_requirements = 4;
     string raw_constraints = 5;
 }
