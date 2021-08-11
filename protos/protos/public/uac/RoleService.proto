@@ -45,6 +45,7 @@ message AuthzActionEnum {
         UPDATE = 6;
         DELETE = 7;
         READ_SECRETS = 8;
+        CREATE_SERVICE_ACCOUNT = 9;
     }
 
 };
