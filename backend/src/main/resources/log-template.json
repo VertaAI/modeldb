@@ -11,8 +11,8 @@
     }
   },
   "location": {
-    "$resolver": "logger",
-    "field": "fqcn"
+    "$resolver": "source",
+    "field": "className"
   },
   "method": {
     "$resolver": "source",
