@@ -1431,6 +1431,30 @@ public class CommitTest extends TestsInit {
             .addAllLocation(location4)
             .build();
 
+    List<String> location5 = new ArrayList<>();
+    location5.add("raw-constraint-data");
+    BlobExpanded blobExpanded5 =
+        BlobExpanded.newBuilder()
+            .setBlob(
+                Blob.newBuilder()
+                    .setEnvironment(
+                        EnvironmentBlob.newBuilder()
+                            .addCommandLine("docker pull vertaaiofficial/modeldb-backend:latest")
+                            .setPython(
+                                PythonEnvironmentBlob.newBuilder()
+                                    .setVersion(
+                                        VersionEnvironmentBlob.newBuilder()
+                                            .setMajor(10)
+                                            .setMinor(1)
+                                            .setPatch(2)
+                                            .build())
+                                    .setRawConstraints("test-raw-constraint")
+                                    .build())
+                            .build())
+                    .build())
+            .addAllLocation(location5)
+            .build();
+
     Commit.Builder commitBuilder =
         Commit.newBuilder()
             .setMessage("this is the test commit message")
@@ -1449,6 +1473,7 @@ public class CommitTest extends TestsInit {
             .addBlobs(blobExpanded2)
             .addBlobs(blobExpanded3)
             .addBlobs(blobExpanded4)
+            .addBlobs(blobExpanded5)
             .build();
 
     CreateCommitRequest.Response commitResponse =
@@ -1550,6 +1575,24 @@ public class CommitTest extends TestsInit {
     assertTrue(
         "blob data not match with expected blob data",
         listCommitBlobsResponse.getBlobsList().contains(blobExpanded3));
+
+    listCommitBlobsRequest =
+        ListCommitBlobsRequest.newBuilder()
+            .setCommitSha(commitResponse.getCommit().getCommitSha())
+            .setRepositoryId(
+                RepositoryIdentification.newBuilder().setRepoId(repository.getId()).build())
+            .addAllLocationPrefix(location5)
+            .build();
+
+    listCommitBlobsResponse = versioningServiceBlockingStub.listCommitBlobs(listCommitBlobsRequest);
+    Assert.assertEquals(
+        "blob count not match with expected blob count",
+        1,
+        listCommitBlobsResponse.getBlobsCount());
+    Assert.assertEquals(
+        "blob data not match with expected blob data",
+        blobExpanded5,
+        listCommitBlobsResponse.getBlobs(0));
 
     listCommitBlobsRequest =
         ListCommitBlobsRequest.newBuilder()
