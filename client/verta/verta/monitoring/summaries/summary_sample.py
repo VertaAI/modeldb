@@ -31,7 +31,11 @@ class SummarySample(_entity._ModelDBEntity):
     Attributes
     ----------
     content
-        A :mod:`VertaDataType <verta.data_types>` consistent with the type of this summary.
+        A :mod:`VertaDataType <verta.data_types>` consistent with the type of
+        this sample.
+    is_aggregate : bool
+        Whether this sample was the result of an aggregation performed on
+        other, raw samples.
     labels : dict of str to str, optional
         A mapping between label keys and values.
     time_window_start : datetime.datetime or int
@@ -56,6 +60,7 @@ class SummarySample(_entity._ModelDBEntity):
 
     def __init__(self, conn, conf, msg):
         super(SummarySample, self).__init__(conn, conf, SummaryService, "summary", msg)
+        # TODO: convert these public attributes to read-only properties
         self.summary_id = msg.summary_id
         self.labels = msg.labels
         self.content = self._maybe_deserialize_datatype(msg.content)
@@ -87,3 +92,8 @@ class SummarySample(_entity._ModelDBEntity):
             return data_types._VertaDataType._from_dict(json.loads(content))
         except:
             return content
+
+    @property
+    def is_aggregate(self):
+        self._refresh_cache()
+        return self._msg.is_aggregate
