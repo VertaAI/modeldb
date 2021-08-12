@@ -2,11 +2,10 @@
 <Configuration status="INFO">
     <Appenders>
         <Console name="ConsoleJSONAppender" target="SYSTEM_OUT">
-              <!--  Doc link for key value pair: https://logging.apache.org/log4j/2.x/manual/lookups.html -->
-              <JsonLayout complete="false" compact="true" eventEol="true" stacktraceAsString="true" locationInfo="true">
-                <KeyValuePair key="hostName" value="${env:hostName:-}"/>
-                <KeyValuePair key="kubernetes.podIP" value="${k8s:podIp:-}"/>
-            </JsonLayout>
+            <JsonTemplateLayout eventTemplateUri="classpath:log-template.json" locationInfoEnabled="true">
+                <EventTemplateAdditionalField key="hostName" value="${env:hostName:-}"/>
+                <EventTemplateAdditionalField key="kubernetes.podIP" value="${k8s:podIp:-}"/>
+            </JsonTemplateLayout>
         </Console>
     </Appenders>
     <Loggers>

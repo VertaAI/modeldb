@@ -1,0 +1,29 @@
+{
+  "level": {
+    "$resolver": "level",
+    "field": "name"
+  },
+  "@timestamp": {
+    "$resolver": "timestamp",
+    "pattern": {
+      "format": "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+      "timeZone": "UTC"
+    }
+  },
+  "location": {
+    "$resolver": "logger",
+    "field": "fqcn"
+  },
+  "method": {
+    "$resolver": "source",
+    "field": "methodName"
+  },
+  "line": {
+    "$resolver": "source",
+    "field": "lineNumber"
+  },
+  "message": {
+    "$resolver": "message",
+    "stringified": true
+  }
+}
