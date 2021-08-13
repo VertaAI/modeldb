@@ -198,7 +198,7 @@ class BinaryHistogramProfiler(Profiler):
         buckets = reference._buckets
         data = [0]*len(buckets)
 
-        if sample is not None:
+        if (sample is not None) and (sample in buckets):
             data[buckets.index(sample)] = 1
         return DiscreteHistogram(buckets, data)
 
