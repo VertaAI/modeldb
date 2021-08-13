@@ -63,10 +63,12 @@ class TestContinuousHistogramProfiler:
             assert sum(profile._data) == 1
 
             # check value is in correct bucket
-            lower_bucket_limit = max(filter(
-                lambda bucket: bucket <= value,
-                profile._bucket_limits,
-            ))
+            lower_bucket_limit = max(
+                filter(
+                    lambda bucket: bucket <= value,
+                    profile._bucket_limits,
+                )
+            )
             data_index = min(
                 profile._bucket_limits.index(lower_bucket_limit),
                 len(profile._data) - 1,  # right-most bucket
