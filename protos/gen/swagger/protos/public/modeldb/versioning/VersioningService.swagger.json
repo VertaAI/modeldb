@@ -2995,6 +2995,11 @@
           "type": "string",
           "format": "uint64",
           "description": "Updated Date while create tags & attribute for the commit."
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       },
       "title": "Base commit for the versioning system\nDO NOT USE TO COMPUTE SHA"
@@ -4068,6 +4073,11 @@
         },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
