@@ -76,7 +76,6 @@ class Profiler(object):
         """
         raise NotImplementedError("")
 
-    # TODO: this conceptually could be a static method
     @abc.abstractmethod
     def profile_point(self, sample, reference):
         """Profile a single value against a reference distribution.
