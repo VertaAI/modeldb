@@ -76,6 +76,28 @@ class Profiler(object):
         """
         raise NotImplementedError("")
 
+    # TODO: this conceptually could be a static method
+    @abc.abstractmethod
+    def profile_point(self, sample, reference):
+        """Profile a single value against a reference distribution.
+
+        Parameters
+        ----------
+        sample : any
+            Value to be profiled.
+        reference : :mod:`VertaDataType <verta.data_types>`
+            Reference distribution for `sample` to be profiled against. An
+            instance of this profiler's data type.
+
+        Returns
+        -------
+        profile : :mod:`VertaDataType <verta.data_types>`
+            Profile of `sample` against `reference`. An instance of this
+            profiler's data type.
+
+        """
+        raise NotImplementedError
+
 
 class MissingValuesProfiler(Profiler):
     """Produces discrete histograms for present and missing values.
