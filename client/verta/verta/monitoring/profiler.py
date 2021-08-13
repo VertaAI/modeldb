@@ -233,5 +233,9 @@ class ContinuousHistogramProfiler(Profiler):
 
     # TODO: consider the case where the data is outside of the bucket list
     def profile_point(self, sample, reference):
-        values, _ = self._np.histogram([sample], bins=reference._bucket_limits)
+        if sample is not None:
+            values, _ = self._np.histogram([sample], bins=reference._bucket_limits)
+        else:
+            values = [0]*len(reference._data)
+
         return FloatHistogram(reference._bucket_limits, values)
