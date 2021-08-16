@@ -85,7 +85,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
             .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
-            .addAllArtifacts(request.getArtifactsList());
+            .addAllArtifacts(request.getArtifactsList())
+            .setVersionNumber(1L);
 
     if (request.getDateCreated() != 0L) {
       experimentBuilder

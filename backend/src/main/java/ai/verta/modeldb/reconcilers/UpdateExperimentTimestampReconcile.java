@@ -61,7 +61,7 @@ public class UpdateExperimentTimestampReconcile
           .useHandle(
               handle -> {
                 var updateExperimentTimestampQuery =
-                    "UPDATE experiment SET date_updated = :updatedDate WHERE id = :id";
+                    "UPDATE experiment SET date_updated = :updatedDate, version_number=(version_number + 1) WHERE id = :id";
 
                 final var batch = handle.prepareBatch(updateExperimentTimestampQuery);
                 for (AbstractMap.SimpleEntry<String, Long> updatedRecord : updatedMaxDateMap) {
