@@ -117,7 +117,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             .addAllDatasets(request.getDatasetsList())
             .addAllMetrics(request.getMetricsList())
             .addAllObservations(request.getObservationsList())
-            .addAllFeatures(request.getFeaturesList());
+            .addAllFeatures(request.getFeaturesList())
+            .setVersionNumber(1L);
 
     if (request.getDateCreated() != 0L) {
       experimentRunBuilder
