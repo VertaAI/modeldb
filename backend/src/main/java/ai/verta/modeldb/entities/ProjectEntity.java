@@ -50,6 +50,7 @@ public class ProjectEntity {
     }
     setWorkspace(project.getWorkspaceId());
     setWorkspace_type(project.getWorkspaceTypeValue());
+    this.version_number = project.getVersionNumber();
   }
 
   @Id
@@ -137,6 +138,9 @@ public class ProjectEntity {
 
   @Column(name = "visibility_migration")
   private Boolean visibility_migration = false;
+
+  @Column(name = "version_number")
+  private Long version_number;
 
   public String getId() {
     return id;
@@ -326,6 +330,10 @@ public class ProjectEntity {
     this.visibility_migration = visibility_migration;
   }
 
+  public void increaseVersionNumber() {
+    this.version_number = this.version_number + 1L;
+  }
+
   public Project getProtoObject(
       RoleService roleService,
       AuthService authService,
@@ -348,7 +356,8 @@ public class ProjectEntity {
                 RdbmsUtils.convertArtifactEntityListFromArtifacts(
                     getArtifactMapping(ModelDBConstants.ARTIFACTS)))
             .setOwner(getOwner())
-            .setReadmeText(getReadme_text());
+            .setReadmeText(getReadme_text())
+            .setVersionNumber(this.version_number);
 
     if (getCode_version_snapshot() != null) {
       projectBuilder.setCodeVersionSnapshot(getCode_version_snapshot().getProtoObject());
