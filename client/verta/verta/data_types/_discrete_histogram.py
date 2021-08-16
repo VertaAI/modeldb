@@ -106,8 +106,8 @@ class DiscreteHistogram(_VertaDataType):
 
     def normalized_data(self, keys=None):
         keys = keys if keys else self._buckets
-        total = sum(self._data)
         data = [self._data_dict[k] for k in keys]
+        total = sum(data)
         if not total:
             return data
-        return [self._data_dict[k] / total for k in keys]
+        return [x / total for x in data]
