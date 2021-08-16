@@ -83,7 +83,29 @@ class TestDiscreteHistogram:
             data=[1, 0],
         )
         d = one.diff(two)
-        np.isclose(d, 0)
+        assert np.isclose(d, 1)
+
+    def test_normalize_zero_values(self):
+        np = pytest.importorskip("numpy")
+        one = data_types.DiscreteHistogram(
+            buckets=["a", "b"],
+            data=[0, 0],
+        )
+        d = one.diff(one)
+        assert (
+            np.isnan(d)
+            or np.isclose(d, 0)  # scipy>=1.7
+        )
+
+        two = data_types.DiscreteHistogram(
+            buckets=one._buckets,
+            data=[1, 0],
+        )
+        d = one.diff(two)
+        assert (
+            np.isnan(d)
+            or np.isclose(d, 0)  # scipy>=1.7
+        )
 
 
 class TestFloatHistogram:
@@ -115,6 +137,28 @@ class TestFloatHistogram:
                 "data": [10, 20],
             },
         }
+
+    def test_normalize_zero_values(self):
+        np = pytest.importorskip("numpy")
+        one = data_types.FloatHistogram(
+            bucket_limits=[0, 3, 6],
+            data=[0, 0],
+        )
+        d = one.diff(one)
+        assert (
+            np.isnan(d)
+            or np.isclose(d, 0)  # scipy>=1.7
+        )
+
+        two = data_types.FloatHistogram(
+            bucket_limits=one._bucket_limits,
+            data=[1, 0]
+        )
+        d = one.diff(two)
+        assert (
+            np.isnan(d)
+            or np.isclose(d, 0)  # scipy>=1.7
+        )
 
 
 class TestLine:
