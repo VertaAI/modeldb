@@ -861,4 +861,22 @@
         <tagDatabase tag="db_version_2.29"/>
     </changeSet>
 
+    <changeSet id="add-version-number-on-commit" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="commit" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="commit">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="commit" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.30" author="anandJ">
+        <tagDatabase tag="db_version_2.30"/>
+    </changeSet>
+
 </databaseChangeLog>
