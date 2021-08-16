@@ -825,6 +825,24 @@
         <tagDatabase tag="db_version_2.27"/>
     </changeSet>
 
+    <changeSet id="add-version-number-on-project" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="project" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.28" author="anandJ">
+        <tagDatabase tag="db_version_2.28"/>
+    </changeSet>
+
     <changeSet id="add-version-number-on-experiment" author="anandJ">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -839,8 +857,8 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="db_version_2.28" author="anandJ">
-        <tagDatabase tag="db_version_2.28"/>
+    <changeSet id="db_version_2.29" author="anandJ">
+        <tagDatabase tag="db_version_2.29"/>
     </changeSet>
 
 </databaseChangeLog>
