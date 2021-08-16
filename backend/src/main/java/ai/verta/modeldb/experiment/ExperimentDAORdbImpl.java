@@ -240,6 +240,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       experimentEntity.setName(experimentName);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentEntity.setDate_updated(currentTimestamp);
+      experimentEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(experimentEntity);
       transaction.commit();
@@ -263,6 +264,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       experimentEntity.setDescription(experimentDescription);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentEntity.setDate_updated(currentTimestamp);
+      experimentEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(experimentEntity);
       transaction.commit();
@@ -361,6 +363,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
             RdbmsUtils.convertTagListFromTagMappingList(experimentObj, newTags);
         experimentObj.getTags().addAll(newTagMappings);
         experimentObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
+        experimentObj.increaseVersionNumber();
         Transaction transaction = session.beginTransaction();
         session.saveOrUpdate(experimentObj);
         transaction.commit();
@@ -421,6 +424,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       ExperimentEntity experimentObj = session.get(ExperimentEntity.class, experimentId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentObj.setDate_updated(currentTimestamp);
+      experimentObj.increaseVersionNumber();
       session.update(experimentObj);
       transaction.commit();
       LOGGER.debug("Experiment tags deleted successfully");
@@ -449,6 +453,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
               experimentObj, ModelDBConstants.ATTRIBUTES, attributes));
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentObj.setDate_updated(currentTimestamp);
+      experimentObj.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentObj);
       transaction.commit();
@@ -520,6 +525,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       ExperimentEntity experimentObj = session.get(ExperimentEntity.class, experimentId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentObj.setDate_updated(currentTimestamp);
+      experimentObj.increaseVersionNumber();
       session.update(experimentObj);
       transaction.commit();
       return experimentObj.getProtoObject();
@@ -737,6 +743,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       }
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentEntity.setDate_updated(currentTimestamp);
+      experimentEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(experimentEntity);
       transaction.commit();
@@ -962,6 +969,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
               experimentEntity, ModelDBConstants.ARTIFACTS, newArtifacts));
       experimentEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      experimentEntity.increaseVersionNumber();
       session.update(experimentEntity);
       transaction.commit();
       LOGGER.debug("Experiment log artifact successfully");
@@ -1014,6 +1022,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       query.executeUpdate();
       ExperimentEntity experimentObj = session.get(ExperimentEntity.class, experimentId);
       experimentObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      experimentObj.increaseVersionNumber();
       session.update(experimentObj);
       transaction.commit();
       return experimentObj.getProtoObject();

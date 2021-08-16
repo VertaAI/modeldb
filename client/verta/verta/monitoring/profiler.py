@@ -76,6 +76,27 @@ class Profiler(object):
         """
         raise NotImplementedError("")
 
+    @abc.abstractmethod
+    def profile_point(self, sample, reference):
+        """Profile a single value against a reference distribution.
+
+        Parameters
+        ----------
+        sample : any
+            Value to be profiled.
+        reference : :mod:`VertaDataType <verta.data_types>`
+            Reference distribution for `sample` to be profiled against. An
+            instance of this profiler's data type.
+
+        Returns
+        -------
+        profile : :mod:`VertaDataType <verta.data_types>`
+            Profile of `sample` against `reference`. An instance of this
+            profiler's data type.
+
+        """
+        raise NotImplementedError
+
 
 class MissingValuesProfiler(Profiler):
     """Produces discrete histograms for present and missing values.
@@ -176,7 +197,7 @@ class BinaryHistogramProfiler(Profiler):
         buckets = reference._buckets
         data = [0]*len(buckets)
 
-        if sample:
+        if (sample is not None) and (sample in buckets):
             data[buckets.index(sample)] = 1
         return DiscreteHistogram(buckets, data)
 
@@ -211,5 +232,9 @@ class ContinuousHistogramProfiler(Profiler):
 
     # TODO: consider the case where the data is outside of the bucket list
     def profile_point(self, sample, reference):
-        values, _ = self._np.histogram([sample], bins=reference._bucket_limits)
+        if sample is not None:
+            values, _ = self._np.histogram([sample], bins=reference._bucket_limits)
+        else:
+            values = [0]*len(reference._data)
+
         return FloatHistogram(reference._bucket_limits, values)

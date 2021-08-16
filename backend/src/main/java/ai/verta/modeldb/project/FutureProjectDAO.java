@@ -72,7 +72,8 @@ public class FutureProjectDAO {
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
         .thenCompose(unused -> attributeHandler.deleteKeyValues(projectId, maybeKeys), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
 
   public InternalFuture<List<KeyValue>> getAttributes(GetAttributes request) {
@@ -121,7 +122,8 @@ public class FutureProjectDAO {
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
         .thenCompose(unused -> attributeHandler.logKeyValues(projectId, attributes), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
 
   public InternalFuture<Void> updateProjectAttributes(UpdateProjectAttributes request) {
@@ -146,7 +148,8 @@ public class FutureProjectDAO {
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
         .thenCompose(unused -> attributeHandler.updateKeyValue(projectId, attribute), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
 
   public InternalFuture<Void> addTags(AddProjectTags request) {
@@ -171,7 +174,8 @@ public class FutureProjectDAO {
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
         .thenCompose(unused -> tagsHandler.addTags(projectId, tags), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
 
   public InternalFuture<Void> deleteTags(DeleteProjectTags request) {
@@ -196,7 +200,8 @@ public class FutureProjectDAO {
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
         .thenCompose(unused -> tagsHandler.deleteTags(projectId, maybeTags), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
 
   public InternalFuture<List<String>> getTags(GetTags request) {
@@ -226,6 +231,16 @@ public class FutureProjectDAO {
                     "update project set date_updated=greatest(date_updated, :now) where id=:project_id")
                 .bind("project_id", projectId)
                 .bind("now", now)
+                .execute());
+  }
+
+  private InternalFuture<Void> updateVersionNumber(String projectId) {
+    return jdbi.useHandle(
+        handle ->
+            handle
+                .createUpdate(
+                    "update project set version_number=(version_number + 1) where id=:project_id")
+                .bind("project_id", projectId)
                 .execute());
   }
 

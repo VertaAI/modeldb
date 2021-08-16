@@ -196,9 +196,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             .setVisibility(request.getVisibility())
             .addAllArtifacts(request.getArtifactsList())
             .setReadmeText(request.getReadmeText())
-            .setCustomPermission(request.getCustomPermission());
+            .setCustomPermission(request.getCustomPermission())
+            .setVersionNumber(1L);
 
-    App app = App.getInstance();
     if (request.getDateCreated() != 0L) {
       projectBuilder
           .setDateCreated(request.getDateCreated())
@@ -280,6 +280,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           session.load(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
       projectEntity.setDescription(projectDescription);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      projectEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
       transaction.commit();
@@ -303,6 +304,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           session.load(ProjectEntity.class, projectId, LockMode.PESSIMISTIC_WRITE);
       projectEntity.setReadme_text(projectReadme);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      projectEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
       transaction.commit();
@@ -347,6 +349,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         }
       }
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      projectEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
       transaction.commit();
@@ -395,6 +398,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         projectObj.setAttributeMapping(Collections.singletonList(updatedAttributeObj));
       }
       projectObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      projectObj.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(projectObj);
       transaction.commit();
@@ -466,6 +470,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             RdbmsUtils.convertTagListFromTagMappingList(projectObj, newTags);
         projectObj.getTags().addAll(newTagMappings);
         projectObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
+        projectObj.increaseVersionNumber();
         Transaction transaction = session.beginTransaction();
         session.saveOrUpdate(projectObj);
         transaction.commit();
@@ -507,6 +512,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
       projectObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      projectObj.increaseVersionNumber();
       session.update(projectObj);
       transaction.commit();
       LOGGER.debug("Project tags deleted successfully");
@@ -569,6 +575,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           RdbmsUtils.convertAttributesFromAttributeEntityList(
               projectObj, ModelDBConstants.ATTRIBUTES, attributesList));
       projectObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      projectObj.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(projectObj);
       transaction.commit();
@@ -608,6 +615,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
       projectObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      projectObj.increaseVersionNumber();
       session.update(projectObj);
       transaction.commit();
       return projectObj.getProtoObject(roleService, authService, new HashMap<>(), new HashMap<>());
@@ -825,6 +833,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ProjectEntity projectEntity = (ProjectEntity) query.uniqueResult();
       projectEntity.setShort_name(projectShortName);
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      projectEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
       transaction.commit();
@@ -1082,6 +1091,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
               projectEntity, ModelDBConstants.ARTIFACTS, newArtifacts));
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      projectEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(projectEntity);
       transaction.commit();
@@ -1144,6 +1154,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       }
       ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
       projectObj.setDate_updated(Calendar.getInstance().getTimeInMillis());
+      projectObj.increaseVersionNumber();
       session.update(projectObj);
       transaction.commit();
       return projectObj.getProtoObject(roleService, authService, new HashMap<>(), new HashMap<>());
