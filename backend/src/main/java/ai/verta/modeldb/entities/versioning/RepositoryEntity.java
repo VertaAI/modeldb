@@ -59,6 +59,8 @@ public class RepositoryEntity {
         this.repositoryAccessModifier = RepositoryModifierEnum.REGULAR.ordinal();
         break;
     }
+
+    this.version_number = repository.getVersionNumber();
   }
 
   @Id
@@ -121,6 +123,9 @@ public class RepositoryEntity {
 
   @Column(name = "visibility_migration")
   private Boolean visibility_migration = false;
+
+  @Column(name = "version_number")
+  private Long version_number;
 
   public Long getId() {
     return id;
@@ -197,6 +202,10 @@ public class RepositoryEntity {
     this.visibility_migration = visibility_migration;
   }
 
+  public void increaseVersionNumber() {
+    this.version_number = this.version_number + 1L;
+  }
+
   public Repository toProto(
       RoleService roleService,
       AuthService authService,
@@ -209,7 +218,8 @@ public class RepositoryEntity {
         .setDateCreated(this.date_created)
         .setDateUpdated(this.date_updated)
         .addAllAttributes(
-            RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()));
+            RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))
+        .setVersionNumber(this.version_number);
 
     ModelDBServiceResourceTypes modelDBServiceResourceTypes =
         ModelDBUtils.getModelDBServiceResourceTypesFromRepository(this);
@@ -285,6 +295,7 @@ public class RepositoryEntity {
 
   public void update() {
     this.date_updated = new Date().getTime();
+    increaseVersionNumber();
   }
 
   public String getOwner() {

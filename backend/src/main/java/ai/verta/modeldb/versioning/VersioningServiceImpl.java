@@ -110,6 +110,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       SetRepository.Builder requestBuilder = request.toBuilder();
+      requestBuilder.setRepository(request.getRepository().toBuilder().setVersionNumber(1L));
       if (userInfo != null) {
         String vertaId = authService.getVertaIdFromUserInfo(userInfo);
         requestBuilder.setRepository(request.getRepository().toBuilder().setOwner(vertaId));
