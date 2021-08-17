@@ -92,6 +92,8 @@ public class ExperimentRunEntity {
       EnvironmentBlob environmentBlob = sortPythonEnvironmentBlob(experimentRun.getEnvironment());
       this.environment = ModelDBUtils.getStringFromProtoObject(environmentBlob);
     }
+
+    this.version_number = experimentRun.getVersionNumber();
   }
 
   @Id
@@ -209,6 +211,9 @@ public class ExperimentRunEntity {
 
   @Column(name = "created")
   private Boolean created = false;
+
+  @Column(name = "version_number")
+  private Long version_number;
 
   @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 
@@ -474,6 +479,10 @@ public class ExperimentRunEntity {
     this.created = created;
   }
 
+  public void increaseVersionNumber() {
+    this.version_number = this.version_number + 1L;
+  }
+
   public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {
     LOGGER.trace("starting conversion");
     if (keyValueEntityMap.size() == 0) {
@@ -541,7 +550,8 @@ public class ExperimentRunEntity {
             .addAllFeatures(RdbmsUtils.convertFeatureEntityListFromFeatureList(features))
             .setJobId(job_id)
             .setParentId(parent_id)
-            .setOwner(owner);
+            .setOwner(owner)
+            .setVersionNumber(this.version_number);
 
     if (code_version_snapshot != null) {
       experimentRunBuilder.setCodeVersionSnapshot(code_version_snapshot.getProtoObject());
