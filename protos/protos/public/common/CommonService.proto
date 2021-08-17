@@ -117,6 +117,8 @@ message Artifact {
     ArtifactTypeEnum.ArtifactType artifact_type = 4;
     string linked_artifact_id = 5;
     string filename_extension = 6;
+    string serialization = 7;
+    string artifact_subtype = 8;
 }
 
 message KeyValueQuery {
