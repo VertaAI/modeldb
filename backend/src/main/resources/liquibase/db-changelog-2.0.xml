@@ -915,4 +915,36 @@
         <tagDatabase tag="db_version_2.32"/>
     </changeSet>
 
+    <changeSet id="add-raw_requirements-in-python_environment_blob" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="python_environment_blob" columnName="raw_requirements"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="python_environment_blob">
+            <column name="raw_requirements" type="TEXT" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="python_environment_blob" columnName="raw_requirements"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="add-raw_constraints-in-python_environment_blob" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="python_environment_blob" columnName="raw_constraints"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="python_environment_blob">
+            <column name="raw_constraints" type="TEXT" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="python_environment_blob" columnName="raw_constraints"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.33" author="anandJ">
+        <tagDatabase tag="db_version_2.33"/>
+    </changeSet>
+
 </databaseChangeLog>
