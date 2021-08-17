@@ -217,6 +217,7 @@ public class ArtifactEntity {
         .setPathOnly(path_only)
         .setLinkedArtifactId(linked_artifact_id)
         .setFilenameExtension(filename_extension)
+        .setUploadCompleted(this.uploadCompleted)
         .build();
   }
 }
