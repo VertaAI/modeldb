@@ -113,4 +113,7 @@ class FloatHistogram(_VertaDataType):
 
     def normalized_data(self):
         total = sum(self._data)
+        data = self._data
+        if not total:
+            return data
         return [x / total for x in self._data]

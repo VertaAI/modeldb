@@ -861,6 +861,42 @@
         <tagDatabase tag="db_version_2.29"/>
     </changeSet>
 
+    <changeSet id="add-version-number-on-experiment-run" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment_run" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment_run">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="experiment_run" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.30" author="anandJ">
+        <tagDatabase tag="db_version_2.30"/>
+    </changeSet>
+
+    <changeSet id="add-version-number-on-repository" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="repository" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="repository">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="repository" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.31" author="anandJ">
+        <tagDatabase tag="db_version_2.31"/>
+    </changeSet>
+
     <changeSet id="add-version-number-on-commit" author="anandJ">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -875,8 +911,8 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="db_version_2.30" author="anandJ">
-        <tagDatabase tag="db_version_2.30"/>
+    <changeSet id="db_version_2.32" author="anandJ">
+        <tagDatabase tag="db_version_2.32"/>
     </changeSet>
 
 </databaseChangeLog>
