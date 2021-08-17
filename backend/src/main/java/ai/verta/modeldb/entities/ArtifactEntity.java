@@ -30,6 +30,8 @@ public class ArtifactEntity {
     setPath_only(artifact.getPathOnly());
     setLinked_artifact_id(artifact.getLinkedArtifactId());
     setFilename_extension(artifact.getFilenameExtension());
+    this.serialization = artifact.getSerialization();
+    this.artifact_subtype = artifact.getArtifactSubtype();
 
     if (entity instanceof ProjectEntity) {
       setProjectEntity(entity);
@@ -79,6 +81,12 @@ public class ArtifactEntity {
 
   @Column(name = "upload_completed")
   private boolean uploadCompleted;
+
+  @Column(name = "serialization", columnDefinition = "TEXT")
+  private String serialization;
+
+  @Column(name = "artifact_subtype")
+  private String artifact_subtype;
 
   @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @JoinColumn(name = "project_id")
@@ -217,6 +225,8 @@ public class ArtifactEntity {
         .setPathOnly(path_only)
         .setLinkedArtifactId(linked_artifact_id)
         .setFilenameExtension(filename_extension)
+        .setSerialization(serialization)
+        .setArtifactSubtype(artifact_subtype)
         .build();
   }
 }

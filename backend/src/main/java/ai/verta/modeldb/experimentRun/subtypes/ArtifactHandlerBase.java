@@ -86,7 +86,7 @@ public class ArtifactHandlerBase {
             jdbi.withHandle(
                 handle -> {
                   var queryStr =
-                      "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe from "
+                      "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, serialization as ser, artifact_subtype as ast from "
                           + getTableName()
                           + " where entity_name=:entity_name and field_type=:field_type and "
                           + entityIdReferenceColumn
@@ -113,6 +113,8 @@ public class ArtifactHandlerBase {
                                   .setPathOnly(rs.getBoolean("po"))
                                   .setLinkedArtifactId(rs.getString("lai"))
                                   .setFilenameExtension(rs.getString("fe"))
+                                  .setSerialization(rs.getString("ser"))
+                                  .setArtifactSubtype(rs.getString("ast"))
                                   .build())
                       .list();
                 }),
@@ -123,7 +125,7 @@ public class ArtifactHandlerBase {
     return jdbi.withHandle(
             handle -> {
               var queryStr =
-                  "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, "
+                  "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, serialization as ser, artifact_subtype as ast, "
                       + entityIdReferenceColumn
                       + " as entity_id from "
                       + getTableName()
@@ -150,6 +152,8 @@ public class ArtifactHandlerBase {
                                   .setPathOnly(rs.getBoolean("po"))
                                   .setLinkedArtifactId(rs.getString("lai"))
                                   .setFilenameExtension(rs.getString("fe"))
+                                  .setSerialization(rs.getString("ser"))
+                                  .setArtifactSubtype(rs.getString("ast"))
                                   .build()))
                   .list();
             })
@@ -242,10 +246,10 @@ public class ArtifactHandlerBase {
                             .createUpdate(
                                 "insert into "
                                     + getTableName()
-                                    + " (entity_name, field_type, ar_key, ar_path, artifact_type, path_only, linked_artifact_id, filename_extension, store_type_path,"
+                                    + " (entity_name, field_type, ar_key, ar_path, artifact_type, path_only, linked_artifact_id, filename_extension, store_type_path, serialization, artifact_subtype,"
                                     + entityIdReferenceColumn
                                     + ") "
-                                    + "values (:entity_name, :field_type, :key, :path, :type,:path_only,:linked_artifact_id,:filename_extension,:store_type_path, :entity_id)")
+                                    + "values (:entity_name, :field_type, :key, :path, :type,:path_only,:linked_artifact_id,:filename_extension,:store_type_path, :serialization, :artifact_subtype, :entity_id)")
                             .bind("key", artifact.getKey())
                             .bind("path", artifact.getPath())
                             .bind("type", artifact.getArtifactTypeValue())
@@ -253,6 +257,8 @@ public class ArtifactHandlerBase {
                             .bind("linked_artifact_id", artifact.getLinkedArtifactId())
                             .bind("filename_extension", artifact.getFilenameExtension())
                             .bind("store_type_path", storeTypePath)
+                            .bind("serialization", artifact.getSerialization())
+                            .bind("artifact_subtype", artifact.getArtifactSubtype())
                             .bind("entity_id", entityId)
                             .bind("field_type", fieldType)
                             .bind("entity_name", entityName)
