@@ -882,7 +882,7 @@
             </not>
         </preConditions>
         <addColumn tableName="artifact">
-            <column name="artifact_subtype" type="TEXT" value=""/>
+            <column name="artifact_subtype" type="varchar(255)" value=""/>
         </addColumn>
         <rollback>
             <dropColumn tableName="artifact" columnName="artifact_subtype"/>
