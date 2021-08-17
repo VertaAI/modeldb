@@ -179,12 +179,12 @@ message UpdateAlertRequest {
 }
 
 message FindAlertRequest {
+    reserved 9; // Field removed
+    reserved 10; // Field removed
     reserved 11; // Field removed
     repeated uint64 ids = 1;
     repeated string names = 2;
     repeated uint64 monitored_entity_ids = 3;
-    repeated uint64 summary_ids = 9;
-    repeated uint64 samples_ids = 10;
 
     // Find alerts based on when they were last evaluated
     uint64 last_evaluated_at_millis_after = 4;

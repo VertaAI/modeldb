@@ -825,6 +825,96 @@
         <tagDatabase tag="db_version_2.27"/>
     </changeSet>
 
+    <changeSet id="add-version-number-on-project" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="project" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="project">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="project" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.28" author="anandJ">
+        <tagDatabase tag="db_version_2.28"/>
+    </changeSet>
+
+    <changeSet id="add-version-number-on-experiment" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="experiment" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.29" author="anandJ">
+        <tagDatabase tag="db_version_2.29"/>
+    </changeSet>
+
+    <changeSet id="add-version-number-on-experiment-run" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment_run" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment_run">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="experiment_run" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.30" author="anandJ">
+        <tagDatabase tag="db_version_2.30"/>
+    </changeSet>
+
+    <changeSet id="add-version-number-on-repository" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="repository" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="repository">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="repository" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.31" author="anandJ">
+        <tagDatabase tag="db_version_2.31"/>
+    </changeSet>
+
+    <changeSet id="add-version-number-on-commit" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="commit" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="commit">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="commit" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.32" author="anandJ">
+        <tagDatabase tag="db_version_2.32"/>
+    </changeSet>
+
     <changeSet id="add-raw_requirements-in-python_environment_blob" author="anandJ">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -853,8 +943,8 @@
         </rollback>
     </changeSet>
 
-    <changeSet id="db_version_2.28" author="anandJ">
-        <tagDatabase tag="db_version_2.28"/>
+    <changeSet id="db_version_2.33" author="anandJ">
+        <tagDatabase tag="db_version_2.33"/>
     </changeSet>
 
 </databaseChangeLog>

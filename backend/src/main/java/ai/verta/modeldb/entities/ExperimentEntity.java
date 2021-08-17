@@ -48,6 +48,8 @@ public class ExperimentEntity {
           RdbmsUtils.generateCodeVersionEntity(
               ModelDBConstants.CODE_VERSION, experiment.getCodeVersionSnapshot()));
     }
+
+    this.version_number = experiment.getVersionNumber();
   }
 
   @Id
@@ -110,6 +112,9 @@ public class ExperimentEntity {
 
   @Column(name = "deleted")
   private Boolean deleted = false;
+
+  @Column(name = "version_number")
+  private Long version_number;
 
   @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
 
@@ -218,6 +223,10 @@ public class ExperimentEntity {
     this.owner = owner;
   }
 
+  public void increaseVersionNumber() {
+    this.version_number = this.version_number + 1L;
+  }
+
   public CodeVersionEntity getCode_version_snapshot() {
     return code_version_snapshot;
   }
@@ -260,7 +269,8 @@ public class ExperimentEntity {
             .addAllArtifacts(
                 RdbmsUtils.convertArtifactEntityListFromArtifacts(
                     getArtifactMapping(ModelDBConstants.ARTIFACTS)))
-            .setOwner(getOwner());
+            .setOwner(getOwner())
+            .setVersionNumber(this.version_number);
 
     if (getCode_version_snapshot() != null) {
       experimentBuilder.setCodeVersionSnapshot(getCode_version_snapshot().getProtoObject());

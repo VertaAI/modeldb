@@ -682,7 +682,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             .setDescription(dataset.getDescription())
             .setOwner(dataset.getOwner())
             .addAllAttributes(dataset.getAttributesList())
-            .setCustomPermission(dataset.getCustomPermission());
+            .setCustomPermission(dataset.getCustomPermission())
+            .setVersionNumber(dataset.getVersionNumber());
 
     if (!dataset.getId().isEmpty()) {
       datasetRepositoryBuilder.setId(Long.parseLong(dataset.getId()));
@@ -733,7 +734,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         .setCustomPermission(repository.getCustomPermission())
         .setDatasetVisibility(
             DatasetVisibilityEnum.DatasetVisibility.forNumber(
-                repository.getRepositoryVisibilityValue()));
+                repository.getRepositoryVisibilityValue()))
+        .setVersionNumber(repository.getVersionNumber());
     dataset.addAllAttributes(repository.getAttributesList());
     try (Session session1 = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<String> tags =
@@ -1787,7 +1789,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       StringBuilder updateRepoTimeQuery =
           new StringBuilder(
-              "UPDATE RepositoryEntity rp SET rp.date_updated = :updatedTime where rp.id = :repoId ");
+              "UPDATE RepositoryEntity rp SET rp.date_updated = :updatedTime, version_number=(version_number + 1)  where rp.id = :repoId ");
       Query updateRepoQuery = session.createQuery(updateRepoTimeQuery.toString());
       updateRepoQuery.setParameter("updatedTime", new Date().getTime());
       updateRepoQuery.setParameter("repoId", repositoryId);

@@ -228,7 +228,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> observationHandler.deleteObservations(runId, maybeKeys), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<List<Observation>> getObservations(GetObservations request) {
@@ -259,7 +260,8 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused -> observationHandler.logObservations(runId, observations, now), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<Void> deleteMetrics(DeleteMetrics request) {
@@ -272,7 +274,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> metricsHandler.deleteKeyValues(runId, maybeKeys), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<Void> deleteHyperparameters(DeleteHyperparameters request) {
@@ -287,7 +290,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> hyperparametersHandler.deleteKeyValues(runId, maybeKeys), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<Void> deleteAttributes(DeleteExperimentRunAttributes request) {
@@ -300,7 +304,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> attributeHandler.deleteKeyValues(runId, maybeKeys), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<List<KeyValue>> getMetrics(GetMetrics request) {
@@ -358,7 +363,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> metricsHandler.logKeyValues(runId, metrics), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<Void> logHyperparameters(LogHyperparameters request) {
@@ -370,7 +376,8 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused -> hyperparametersHandler.logKeyValues(runId, hyperparameters), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<Void> logAttributes(LogAttributes request) {
@@ -381,7 +388,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> attributeHandler.logKeyValues(runId, attributes), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<Void> addTags(AddExperimentRunTags request) {
@@ -394,7 +402,8 @@ public class FutureExperimentRunDAO {
         .thenCompose(
             unused -> tagsHandler.addTags(runId, ModelDBUtils.checkEntityTagsLength(tags)),
             executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<Void> deleteTags(DeleteExperimentRunTags request) {
@@ -407,7 +416,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> tagsHandler.deleteTags(runId, maybeTags), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<List<String>> getTags(GetTags request) {
@@ -435,6 +445,16 @@ public class FutureExperimentRunDAO {
               .bind("date_updated", dateUpdated)
               .execute();
         });
+  }
+
+  private InternalFuture<Void> updateVersionNumber(String erId) {
+    return jdbi.useHandle(
+        handle ->
+            handle
+                .createUpdate(
+                    "update experiment_run set version_number=(version_number + 1) where id=:er_id")
+                .bind("er_id", erId)
+                .execute());
   }
 
   private InternalFuture<Boolean> getEntityPermissionBasedOnResourceTypes(
@@ -609,7 +629,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> artifactHandler.logArtifacts(runId, artifacts, false), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<List<Artifact>> getArtifacts(GetArtifacts request) {
@@ -640,7 +661,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> artifactHandler.deleteArtifacts(runId, optionalKeys), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<Void> logDatasets(LogDatasets request) {
@@ -658,7 +680,8 @@ public class FutureExperimentRunDAO {
             privilegedDatasets ->
                 datasetHandler.logArtifacts(runId, privilegedDatasets, request.getOverwrite()),
             executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<List<Artifact>> getDatasets(GetDatasets request) {
@@ -681,7 +704,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> codeVersionHandler.logCodeVersion(request), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<Optional<CodeVersion>> getCodeVersion(GetExperimentRunCodeVersion request) {
@@ -1557,7 +1581,8 @@ public class FutureExperimentRunDAO {
                 versionInputHandler.validateAndInsertVersionedInputs(
                     request.getId(), request.getVersionedInputs()),
             executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<VersioningEntry> getVersionedInputs(GetVersionedInput request) {
@@ -1675,7 +1700,8 @@ public class FutureExperimentRunDAO {
                             .bind("description", description)
                             .execute()),
             executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor);
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
 
   public InternalFuture<GetExperimentRunsInExperiment.Response> getExperimentRunsInExperiment(

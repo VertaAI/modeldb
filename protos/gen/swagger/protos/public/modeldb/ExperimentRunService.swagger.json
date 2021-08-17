@@ -2946,6 +2946,11 @@
           "additionalProperties": {
             "$ref": "#/definitions/commonCodeVersion"
           }
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       },
       "title": "ExperimentRun Entity"
