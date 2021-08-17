@@ -38,6 +38,10 @@ public class EnvironmentBlobFactory extends BlobFactory {
             pythonEnvironmentBlobEntity.getPythonEnvironmentRequirementBlobEntity()) {
           pythonEnvironmentRequirementBlobEntity.toProto(pythonEnvironmentBlobBuilder);
         }
+        pythonEnvironmentBlobBuilder.setRawRequirements(
+            pythonEnvironmentBlobEntity.getRaw_requirements());
+        pythonEnvironmentBlobBuilder.setRawConstraints(
+            pythonEnvironmentBlobEntity.getRaw_constraints());
         environmentBlobBuilder.setPython(pythonEnvironmentBlobBuilder);
         break;
       case DOCKER_ENV_TYPE:

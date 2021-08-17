@@ -65,7 +65,7 @@ public class UpdateRepositoryTimestampReconcile
           .useHandle(
               handle -> {
                 var updateDatasetTimestampQuery =
-                    "UPDATE repository SET date_updated = :updatedDate WHERE id = :id";
+                    "UPDATE repository SET date_updated = :updatedDate, version_number=(version_number + 1) WHERE id = :id";
 
                 final var batch = handle.prepareBatch(updateDatasetTimestampQuery);
                 for (AbstractMap.SimpleEntry<Long, Long> updatedRecord : updatedMaxDateMap) {

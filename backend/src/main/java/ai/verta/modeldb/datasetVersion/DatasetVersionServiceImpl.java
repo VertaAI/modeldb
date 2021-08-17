@@ -92,7 +92,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             .setDatasetId(request.getDatasetId())
             .setDescription(request.getDescription())
             .addAllTags(request.getTagsList())
-            .addAllAttributes(request.getAttributesList());
+            .addAllAttributes(request.getAttributesList())
+            .setVersionNumber(1L);
 
     if (request.getTimeCreated() != 0L) {
       datasetVersionBuilder.setTimeLogged(request.getTimeCreated());

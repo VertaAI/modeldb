@@ -200,6 +200,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       setBlobsAttributes(
           session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList, addAttribute);
       commitEntity.setDate_updated(new Date().getTime());
+      commitEntity.increaseVersionNumber();
       session.update(commitEntity);
       session.getTransaction().commit();
     } catch (Exception ex) {
@@ -303,6 +304,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         }
       }
       commitEntity.setDate_updated(new Date().getTime());
+      commitEntity.increaseVersionNumber();
       session.update(commitEntity);
       session.getTransaction().commit();
     } catch (Exception ex) {
@@ -580,6 +582,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         }
         datasetVersionBuilder.addAllAttributes(getComponentResponse.getAttributesList());
         datasetVersionBuilder.setOwner(commit.getAuthor());
+        datasetVersionBuilder.setVersionNumber(commit.getVersion_number());
         DatasetBlob dataset = blob.getDataset();
         PathDatasetVersionInfo.Builder builderPathDatasetVersion =
             PathDatasetVersionInfo.newBuilder();
