@@ -204,6 +204,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
       builder.setDateCreated(datasetVersion.getTimeLogged());
       builder.setDateUpdated(datasetVersion.getTimeUpdated());
+      builder.setVersionNumber(datasetVersion.getVersionNumber());
       Commit commit = builder.build();
 
       if (!repositoryEntity.isDataset()) {
@@ -281,6 +282,14 @@ public class CommitDAORdbImpl implements CommitDAO {
               .build(),
           ModelDBConstants.VERSION,
           String.valueOf(version));
+      metadataDAO.addProperty(
+          session,
+          IdentificationType.newBuilder()
+              .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
+              .setStringId(compositeId)
+              .build(),
+          "version_number",
+          String.valueOf(datasetVersion.getVersionNumber()));
       session.getTransaction().commit();
 
       repositoryDAO.setBranch(
@@ -354,6 +363,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             .setAuthor(author)
             .setMessage(commit.getMessage())
             .setCommitSha(generateCommitSHA(rootSha, commit, timeCreated))
+            .setVersionNumber(commit.getVersionNumber())
             .build();
     CommitEntity commitEntity =
         new CommitEntity(repositoryEntity, parentOrderMap, internalCommit, rootSha);
@@ -875,6 +885,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       CommitEntity commitEntity =
           getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
       commitEntity.setDate_updated(new Date().getTime());
+      commitEntity.increaseVersionNumber();
       session.update(commitEntity);
       session.getTransaction().commit();
     } catch (Exception ex) {
@@ -1504,6 +1515,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           "description",
           description);
       commitEntity.setDate_updated(new Date().getTime());
+      commitEntity.increaseVersionNumber();
       session.update(commitEntity);
       session.getTransaction().commit();
       return blobDAO.convertToDatasetVersion(
