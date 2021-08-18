@@ -502,7 +502,9 @@
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
               "MONITORED_ENTITY",
-              "NOTIFICATION_CHANNEL"
+              "NOTIFICATION_CHANNEL",
+              "ENDPOINT",
+              "BUILD"
             ],
             "default": "UNKNOWN"
           },
@@ -625,7 +627,9 @@
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
               "MONITORED_ENTITY",
-              "NOTIFICATION_CHANNEL"
+              "NOTIFICATION_CHANNEL",
+              "ENDPOINT",
+              "BUILD"
             ],
             "default": "UNKNOWN"
           },
@@ -768,7 +772,9 @@
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
               "MONITORED_ENTITY",
-              "NOTIFICATION_CHANNEL"
+              "NOTIFICATION_CHANNEL",
+              "ENDPOINT",
+              "BUILD"
             ],
             "default": "UNKNOWN"
           },
@@ -1323,7 +1329,9 @@
         "LOCK",
         "UNLOCK",
         "UPDATE_REDACT",
-        "ALERTER"
+        "ALERTER",
+        "PREDICT",
+        "CONTROL"
       ],
       "default": "UNKNOWN"
     },
@@ -1342,7 +1350,9 @@
         "REGISTERED_MODEL",
         "REGISTERED_MODEL_VERSION",
         "MONITORED_ENTITY",
-        "NOTIFICATION_CHANNEL"
+        "NOTIFICATION_CHANNEL",
+        "ENDPOINT",
+        "BUILD"
       ],
       "default": "UNKNOWN"
     },
