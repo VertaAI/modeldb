@@ -64,6 +64,8 @@ message ModelDBActionEnum {
         UNLOCK = 10;
         UPDATE_REDACT = 11;
         ALERTER = 12;
+        PREDICT = 13;
+        CONTROL = 14;
     }
 };
 

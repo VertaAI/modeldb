@@ -58,9 +58,6 @@ message RegisteredModel {
 
     // Is true if the readme text has been updated at least once
     bool readme_text_updated = 16;
-
-    // Doc for version_number https://github.com/VertaAI/docs/pull/53
-    uint64 version_number = 17;
 }
 
 //CRUD for Registred Models
@@ -201,9 +198,6 @@ message ModelVersion {
 
     repeated common.Artifact datasets = 20;
     map<string, modeldb.versioning.CodeBlob> code_blob_map = 21;
-
-    // Doc for version_number https://github.com/VertaAI/docs/pull/53
-    uint64 version_number = 23;
 }
 
 message SetLockModelVersionRequest {
