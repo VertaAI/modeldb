@@ -331,7 +331,7 @@ class Endpoint(object):
 
             print()
             if status_dict["status"] == "error":
-                failure_msg = status_dict['components'][0].get('message', "no error message available")
+                failure_msg = status_dict['components'][-1].get('message', "no error message available")
                 # NOTE: we might consider truncating the length of the logs here,
                 #     e.g. first and last 25 lines, if too unwieldy
                 raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
