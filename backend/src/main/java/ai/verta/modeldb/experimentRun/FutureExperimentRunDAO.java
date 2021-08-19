@@ -941,7 +941,8 @@ public class FutureExperimentRunDAO {
                                                       .setJobId(
                                                           rs.getString("experiment_run.job_id"))
                                                       .setVersionNumber(
-                                                          rs.getLong("experiment_run.version_number"));
+                                                          rs.getLong(
+                                                              "experiment_run.version_number"));
 
                                               var environment =
                                                   rs.getString("experiment_run.environment");
