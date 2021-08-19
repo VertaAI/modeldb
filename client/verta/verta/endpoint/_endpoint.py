@@ -331,11 +331,9 @@ class Endpoint(object):
 
             print()
             if status_dict["status"] == "error":
-                # TODO: switch back to component "message" when VR-7740 is done
-                # failure_msg = status_dict['components'][0].get('message', "no error message available")
+                failure_msg = status_dict['components'][0].get('message', "no error message available")
                 # NOTE: we might consider truncating the length of the logs here,
                 #     e.g. first and last 25 lines, if too unwieldy
-                failure_msg = "\n".join(self.get_logs())
                 raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
 
         return self.get_status()
