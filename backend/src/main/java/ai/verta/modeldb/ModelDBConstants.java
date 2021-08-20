@@ -5,84 +5,37 @@ public interface ModelDBConstants {
   // Properties Keys
   String VERTA_MODELDB_CONFIG = "VERTA_MODELDB_CONFIG";
   String VERTA_MODELDB_TEST_CONFIG = "VERTA_MODELDB_TEST_CONFIG";
-  String ARTIFACT_ENDPOINT = "artifactEndpoint";
   String ARTIFACT_STORE_CONFIG = "artifactStoreConfig";
   String ARTIFACT_STORE_TYPE = "artifactStoreType";
-  String AUTH_SERVICE = "authService";
-  String CLOUD_ACCESS_KEY = "cloudAccessKey";
-  String CLOUD_SECRET_KEY = "cloudSecretKey";
   String CLOUD_BUCKET_NAME = "cloudBucketName";
-  String MINIO_ENDPOINT = "minioEndpoint";
-  String AWS_REGION = "aws_region";
-  String DB_TYPE = "DBType";
-  String MIN_CONNECTION_POOL_SIZE = "minConnectionPoolSize";
-  String MAX_CONNECTION_POOL_SIZE = "maxConnectionPoolSize";
-  String CONNECTION_TIMEOUT = "connectionTimeout";
-  String FEATURE_FLAG = "feature-flag";
-  String GET_ARTIFACT_ENDPOINT = "getArtifact";
-  String GRPC_SERVER = "grpcServer";
-  String HOST = "host";
-  String HTTPS_STR = "https";
   String NFS = "NFS";
-  String PICK_ARTIFACT_STORE_HOST_FROM_CONFIG = "pickArtifactStoreHostFromConfig";
-  String PICK_NFS_HOST_FROM_CONFIG = "pickNFSHostFromConfig";
   String NFS_ROOT_PATH = "nfsRootPath";
-  String ARTIFACT_STORE_SERVER_HOST = "artifactStoreServerHost";
-  String ARTIFACT_STORE_URL_PROTOCOL = "artifactStoreUrlProtocol";
-  String NFS_SERVER_HOST = "nfsServerHost";
-  String NFS_URL_PROTOCOL = "nfsUrlProtocol";
   String PATH = "path";
   String PORT = "port";
-  String RELATIONAL = "relational";
   String S3 = "S3";
-  String SHUTDOWN_TIMEOUT = "shutdownTimeout";
-  String SPRING_SERVER = "springServer";
   String STORE_TYPE_PATH = "store_type_path";
-  String STARTER_PROJECT = "starterProject";
-  String STARTER_PROJECT_ID = "starterProjectId";
-  String STORE_ARTIFACT_ENDPOINT = "storeArtifact";
-  String MDB_SERVICE_USER = "mdb_service_user";
-  String POPULATE_CONNECTIONS_BASED_ON_PRIVILEGES = "populateConnectionsBasedOnPrivileges";
   String LIQUIBASE_MIGRATION = "LIQUIBASE_MIGRATION";
   String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
-  String TRIAL = "trial";
-  String RESTRICTIONS = "restrictions";
-  String MAX_ARTIFACT_SIZE_MB = "max_artifact_size_MB";
-  String MAX_ARTIFACT_PER_RUN = "max_artifact_per_run";
-  String MAX_EXPERIMENT_RUN_PER_WORKSPACE = "max_experiment_run_per_workspace";
   String LIMIT_RUN_ARTIFACT_NUMBER = "LIMIT_RUN_ARTIFACT_NUMBER: ";
   String LIMIT_RUN_NUMBER = "LIMIT_RUN_NUMBER: ";
   String LIMIT_RUN_ARTIFACT_SIZE = "LIMIT_RUN_ARTIFACT_SIZE: ";
-  Integer MAX_ARTIFACT_SIZE_DEFAULT = 1024; // in MB
 
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
-  String DEFAULT_AWS_REGION = "us-east-1";
   String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
-  String AWS_WEB_IDENTITY_TOKEN = "AWS_WEB_IDENTITY_TOKEN";
-  Integer RETRY_INIT_TIME_AWS_TEMP_CREDENTIALS = 10 * 60; // Time in second
-
-  // feature-flags
-  String STORE_CLIENT_CREATION_TIMESTAMP = "store-client-creation-timestamp";
-  String DISABLED_ARTIFACT_STORE = "disabled-artifact-store";
 
   // Threshold Constant
-  Long DEFAULT_SHUTDOWN_TIMEOUT = 30L; // timeout in second
   Integer NAME_MAX_LENGTH = 40;
   Integer NAME_LENGTH = 256;
   String PATH_DELIMITER = "/";
   Integer TAG_LENGTH = 40;
-  int INITIAL_CRON_DELAY = 300; // 300second = 5min : timeout in second
-  String INITIAL_DELAY = "initial_delay";
 
   String EMPTY_STRING = "";
 
   // Column/protos field names
   String ARTIFACTS = "artifacts";
   String ATTRIBUTES = "attributes";
-  String DATASET_COLLABORATORS = "dataset_collaborators";
   String DATASETS = "datasets";
-  String REPOSITORIES = "repositories";
   String DATE_CREATED = "date_created";
   String DATE_UPDATED = "date_updated";
   String ENTITY_ID = "entity_id";
@@ -99,7 +52,6 @@ public interface ModelDBConstants {
   String OWNER = "owner";
   String PARENT_ID = "parent_id";
   String PATH_DATSET_VERSION_INFO = "path_dataset_version_info";
-  String PROJECT_COLLABORATORS = "project_collaborators";
   String PROJECT_ID = "project_id";
   String PROJECT_IDS = "project_ids";
   String QUERY_DATSET_VERSION_INFO = "query_dataset_version_info";
@@ -122,7 +74,6 @@ public interface ModelDBConstants {
   String TAG_MAPPINGS = "tagmappings";
   String VERSIONED_INPUTS = "versioned_inputs";
   String HYPERPARAMETER_ELEMENT_MAPPINGS = "hyperparameter_element_mappings";
-  String MODEL_PKL = "model.pkl";
   String MODEL_API_JSON = "model_api.json";
   String REQUIREMENTS_TXT = "requirements.txt";
   String VER_SPEC_PATTERN = "~=|==|!=|<=|>=|<|>|===";
@@ -161,16 +112,10 @@ public interface ModelDBConstants {
   String TIME_UPDATED = "time_updated";
   String TIME_LOGGED = "time_logged";
   String VERSION = "version";
-  String VERTA_ID_STR = "vertaId";
   String VERTA_ID = "verta_id";
-  String EMAIL = "email";
   String USERNAME = "username";
-  String GRPC_HEALTH_CHECK_METHOD_NAME = "grpc.health.v1.Health/Check";
-  String HEALTH_CHECK_SERVICE_FIELD = "service";
   String DELETED = "deleted";
   String CREATED = "created";
-  String DEV_KEY = "devKey";
-  String REQUEST_TIMEOUT = "requestTimeout";
 
   // Common error messages
   String ACCESS_DENIED_EXPERIMENT_RUN = "User does not have access to the ExperimentRun.";
@@ -190,7 +135,6 @@ public interface ModelDBConstants {
   String VERSIONED_ALIAS = "ver_";
 
   // Migration Constants
-  String MIGRATION = "migration";
   String ENABLE = "enable";
   String SUB_ENTITIES_OWNERS_RBAC_MIGRATION = "SUB_ENTITIES_OWNERS_RBAC_MIGRATION";
   String ROLE_REPOSITORY_READ_WRITE = "REPOSITORY_READ_WRITE";
@@ -214,9 +158,7 @@ public interface ModelDBConstants {
   String ROLE_PROJECT_READ_WRITE = "PROJECT_READ_WRITE";
   String ROLE_PROJECT_READ_ONLY = "PROJECT_READ_ONLY";
   String ROLE_PROJECT_PUBLIC_READ = "PROJECT_PUBLIC_READ";
-  String ROLE_PROJECT_DEPLOY = "PROJECT_DEPLOY";
   String ROLE_PROJECT_ADMIN = "PROJECT_ADMIN";
-  String ROLE_DATASET_ADMIN = "DATASET_ADMIN";
   String ROLE_EXPERIMENT_OWNER = "EXPERIMENT_OWNER";
   String ROLE_EXPERIMENT_RUN_OWNER = "EXPERIMENT_RUN_OWNER";
   String ROLE_DATASET_VERSION_OWNER = "DATASET_VERSION_OWNER";
@@ -224,17 +166,11 @@ public interface ModelDBConstants {
   String ROLE_REPOSITORY_ADMIN = "REPOSITORY_ADMIN";
 
   // Telemetry Constants
-  String TELEMETRY = "telemetry";
-  String OPT_IN = "opt_in";
-  String TELEMENTRY_FREQUENCY = "frequency"; // frequency to share data in hours
-  String TELEMETRY_CONSUMER = "consumer";
   String TELEMETRY_CONSUMER_URL =
       "https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry";
 
   // Versioning constant
   String BLOB = "blob";
-  String BLOBS = "blobs";
-  String SUBTREES = "subtrees";
   String REPOSITORY_ID = "repository_id";
   String TAG = "tag";
   String ENTITY_HASH = "entity_hash";
@@ -251,21 +187,14 @@ public interface ModelDBConstants {
   String VISIBILITY = "visibility";
   String REPOSITORY = "repository";
   String VERSIONING_REPOSITORY = "versioning_repository";
-  String VERSIONING_COMMIT = "versioning_commit";
   String VERSIONING_REPO_COMMIT_BLOB = "versioning_repo_commit_blob";
-  String VERSIONING_REPO_COMMIT = "versioning_repo_commit";
   String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
   String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
   String PROPERTY_NAME = "property_name";
-  String S3_PRESIGNED_URL_ENABLED = "s3presignedURLEnabled";
   String FILENAME = "FileName";
 
   // Cron job constant
-  String FREQUENCY = "frequency"; // frequency to run cron job in second
-  String RECORD_UPDATE_LIMIT = "record_update_limit";
-  String CRON_JOB = "cron_job";
   String DELETE_ENTITIES = "delete_entities";
-  String EXPIRED_TOKEN = "ExpiredToken";
   String UPDATE_RUN_ENVIRONMENTS = "update_run_environments";
   String CLEAN_UP_ENTITIES = "clean_up_entities";
 
@@ -274,14 +203,10 @@ public interface ModelDBConstants {
   String UPDATE = "UPDATE";
   String DELETE = "DELETE";
   String SERVICE_NAME = "MDB";
-  String METADATA_JSON_TEMPLATE = "{\"action\" : {\"%s_%s\" : \"%s\"}}";
   String PROJECT = "PROJECT";
   String EXPERIMENT = "EXPERIMENT";
   String EXPERIMENT_RUN = "EXPERIMENT_RUN";
   String DATASET = "DATASET";
   String DATASET_VERSION = "DATASET_VERSION";
-  String REPOSITORY_CAPS = "REPOSITORY";
   String COMMENT = "COMMENT";
-
-  String COMMA_DELIMITER = ",";
 }
