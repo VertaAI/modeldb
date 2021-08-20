@@ -841,6 +841,7 @@ public class HydratedServiceTest extends TestsInit {
               .clearTags()
               .addAllTags(tags)
               .setDateUpdated(responseExperiment.getDateUpdated())
+              .setVersionNumber(responseExperiment.getVersionNumber())
               .build();
       experimentMap.put(experiment.getId(), experiment);
       assertEquals(
@@ -1556,6 +1557,7 @@ public class HydratedServiceTest extends TestsInit {
                   .clearTags()
                   .addAllTags(tags)
                   .setDateUpdated(experiment.getDateUpdated())
+                  .setVersionNumber(experiment.getVersionNumber())
                   .build();
           experimentMap.put(expectedExperiment.getId(), expectedExperiment);
           assertEquals(
@@ -1935,6 +1937,7 @@ public class HydratedServiceTest extends TestsInit {
                   .clearTags()
                   .addAllTags(tags)
                   .setDateUpdated(experiment.getDateUpdated())
+                  .setVersionNumber(experiment.getVersionNumber())
                   .build();
           experimentMap.put(expectedExperiment.getId(), expectedExperiment);
           assertEquals(
@@ -2238,7 +2241,11 @@ public class HydratedServiceTest extends TestsInit {
         for (Project project : projectList) {
           Project expectedProject = projectsMap.get(project.getId());
           expectedProject =
-              expectedProject.toBuilder().setDateUpdated(project.getDateUpdated()).build();
+              expectedProject
+                  .toBuilder()
+                  .setDateUpdated(project.getDateUpdated())
+                  .setVersionNumber(project.getVersionNumber())
+                  .build();
           projectsMap.put(expectedProject.getId(), expectedProject);
           assertEquals("Project not match with expected Project", expectedProject, project);
         }
@@ -2538,7 +2545,11 @@ public class HydratedServiceTest extends TestsInit {
         for (Project project : projectList) {
           Project expectedProject = projectsMap.get(project.getId());
           expectedProject =
-              expectedProject.toBuilder().setDateUpdated(project.getDateUpdated()).build();
+              expectedProject
+                  .toBuilder()
+                  .setDateUpdated(project.getDateUpdated())
+                  .setVersionNumber(project.getVersionNumber())
+                  .build();
           projectsMap.put(expectedProject.getId(), expectedProject);
           assertEquals("Project not match with expected Project", expectedProject, project);
 
