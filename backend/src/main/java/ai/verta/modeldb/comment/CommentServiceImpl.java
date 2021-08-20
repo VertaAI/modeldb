@@ -8,7 +8,6 @@ import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.DeleteComment;
 import ai.verta.modeldb.GetComments;
 import ai.verta.modeldb.GetComments.Response;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateComment;
 import ai.verta.modeldb.authservice.RoleService;
@@ -33,8 +32,6 @@ public class CommentServiceImpl extends CommentServiceImplBase {
   private final RoleService roleService;
   private final CommentDAO commentDAO;
   private final ExperimentRunDAO experimentRunDAO;
-  private static final String SERVICE_NAME =
-      String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.COMMENT);
 
   String experimentRunEntity = ExperimentRunEntity.class.getSimpleName();
 
