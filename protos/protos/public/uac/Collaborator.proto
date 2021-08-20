@@ -314,7 +314,7 @@ service CollaboratorService {
         };
     };
 
-    rpc getEndpointCollaborators (GetCollaborator) returns (GetCollaborator.Response){
+    rpc getEndpointCollaboratorsCommonService (GetCollaborator) returns (GetCollaborator.Response){
         option (google.api.http) = {
             get: "/v1/collaborator/getEndpointCollaboratorsCommonService"
         };
