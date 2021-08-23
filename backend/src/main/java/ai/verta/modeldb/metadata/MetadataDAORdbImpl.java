@@ -36,6 +36,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
           .append(" AND lm.id.")
           .append(ModelDBConstants.ENTITY_TYPE)
           .append(" = :entityType")
+          .append(" ORDER BY lm.id.label")
           .toString();
   private static final String GET_LABEL_IDS_HQL =
       new StringBuilder("From LabelsMappingEntity lm where ").toString();
@@ -187,7 +188,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   private List<LabelsMappingEntity> getLabelsMappingEntities(
       Session session, IdentificationType id) {
     Query<LabelsMappingEntity> query =
-        session.createQuery(GET_LABELS_HQL + " ORDER BY lm.id.label", LabelsMappingEntity.class);
+        session.createQuery(GET_LABELS_HQL, LabelsMappingEntity.class);
     query.setParameter("entityHash", getEntityHash(id));
     query.setParameter("entityType", id.getIdTypeValue());
     return query.list();

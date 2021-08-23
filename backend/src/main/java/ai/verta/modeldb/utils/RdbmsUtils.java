@@ -240,13 +240,13 @@ public class RdbmsUtils {
       return new ObservationEntity(entity, fieldType, observation);
     } else {
       if (entity_name.equalsIgnoreCase("ExperimentRunEntity") && observation.hasAttribute()) {
-        String MAX_EPOCH_NUMBER_SQL =
-            MAX_EPOCH_NUMBER_SQL_1
-                + entity_id
-                + MAX_EPOCH_NUMBER_SQL_2
-                + observation.getAttribute().getKey()
-                + MAX_EPOCH_NUMBER_SQL_3;
-        Query sqlQuery = session.createSQLQuery(MAX_EPOCH_NUMBER_SQL);
+        StringBuilder MAX_EPOCH_NUMBER_SQL =
+            new StringBuilder(MAX_EPOCH_NUMBER_SQL_1)
+                .append(entity_id)
+                .append(MAX_EPOCH_NUMBER_SQL_2)
+                .append(observation.getAttribute().getKey())
+                .append(MAX_EPOCH_NUMBER_SQL_3);
+        Query sqlQuery = session.createSQLQuery(MAX_EPOCH_NUMBER_SQL.toString());
         BigInteger maxEpochNumber = (BigInteger) sqlQuery.uniqueResult();
         Long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber.longValue() + 1;
 
@@ -2138,10 +2138,7 @@ public class RdbmsUtils {
                 entity);
         if (blob.getContentCase().equals(Blob.ContentCase.CONFIG)) {
           Query query =
-              session.createQuery(
-                  "FROM "
-                      + ConfigBlobEntity.class.getSimpleName()
-                      + " cb WHERE cb.blob_hash = :blobHash");
+              session.createQuery("FROM ConfigBlobEntity cb WHERE cb.blob_hash = :blobHash");
           query.setParameter("blobHash", blobExpandedWithHashMap.getValue());
           List<ConfigBlobEntity> configBlobEntities = query.list();
           vmem.setConfig_blob_entities(new HashSet<>(configBlobEntities));

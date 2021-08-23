@@ -357,9 +357,7 @@ public class DatasetToRepositoryMigration {
         datasetId,
         repoId);
     String countQuery =
-        "SELECT COUNT(dv) FROM "
-            + DatasetVersionEntity.class.getSimpleName()
-            + " dv WHERE dv.dataset_id = :datasetId";
+        "SELECT COUNT(dv) FROM DatasetVersionEntity dv WHERE dv.dataset_id = :datasetId";
     Query query = session.createQuery(countQuery);
     query.setParameter("datasetId", datasetId);
     Long count = (Long) query.uniqueResult();

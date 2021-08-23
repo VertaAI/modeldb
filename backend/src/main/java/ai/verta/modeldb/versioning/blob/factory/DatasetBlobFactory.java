@@ -55,9 +55,7 @@ public class DatasetBlobFactory extends BlobFactory {
 
   private static S3DatasetBlob getS3Blob(Session session, String blobHash) throws ModelDBException {
     String s3ComponentQueryHQL =
-        "From "
-            + S3DatasetComponentBlobEntity.class.getSimpleName()
-            + " s3 WHERE s3.id.s3_dataset_blob_id = :blobShas";
+        "From S3DatasetComponentBlobEntity s3 WHERE s3.id.s3_dataset_blob_id = :blobShas";
 
     Query<S3DatasetComponentBlobEntity> s3ComponentQuery = session.createQuery(s3ComponentQueryHQL);
     s3ComponentQuery.setParameter("blobShas", blobHash);
@@ -76,9 +74,7 @@ public class DatasetBlobFactory extends BlobFactory {
 
   static PathDatasetBlob getPathBlob(Session session, String blobHash) {
     String pathComponentQueryHQL =
-        "From "
-            + PathDatasetComponentBlobEntity.class.getSimpleName()
-            + " p WHERE p.id.path_dataset_blob_id = :blobShas";
+        "From PathDatasetComponentBlobEntity p WHERE p.id.path_dataset_blob_id = :blobShas";
 
     Query<PathDatasetComponentBlobEntity> pathComponentQuery =
         session.createQuery(pathComponentQueryHQL);
@@ -99,9 +95,7 @@ public class DatasetBlobFactory extends BlobFactory {
 
   static QueryDatasetBlob getQueryBlob(Session session, String blobHash) {
     String pathComponentQueryHQL =
-        "From "
-            + QueryDatasetComponentBlobEntity.class.getSimpleName()
-            + " q WHERE q.id.query_dataset_blob_id = :blobShas";
+        "From QueryDatasetComponentBlobEntity q WHERE q.id.query_dataset_blob_id = :blobShas";
 
     Query<QueryDatasetComponentBlobEntity> queryComponentQuery =
         session.createQuery(pathComponentQueryHQL);

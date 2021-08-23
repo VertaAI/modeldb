@@ -516,9 +516,7 @@ public class DeleteEntitiesCron extends TimerTask {
 
           if (!branches.isEmpty()) {
             String deleteBranchesHQL =
-                "DELETE FROM "
-                    + BranchEntity.class.getSimpleName()
-                    + " br where br.id.repository_id = :repositoryId AND br.id.branch IN (:branches)";
+                "DELETE FROM BranchEntity br where br.id.repository_id = :repositoryId AND br.id.branch IN (:branches)";
             Query deleteBranchQuery = session.createQuery(deleteBranchesHQL);
             deleteBranchQuery.setParameter("repositoryId", repository.getId());
             deleteBranchQuery.setParameterList("branches", branches);

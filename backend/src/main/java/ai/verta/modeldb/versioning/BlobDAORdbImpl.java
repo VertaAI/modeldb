@@ -394,10 +394,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   private Folder getFolder(Session session, String commitSha, String folderSha) {
     Query query =
-        session.createQuery(
-            "From "
-                + InternalFolderElementEntity.class.getSimpleName()
-                + " where folder_hash = :folder_hash");
+        session.createQuery("From InternalFolderElementEntity where folder_hash = :folder_hash");
     query.setParameter("folder_hash", folderSha);
     Optional result =
         query.list().stream()
@@ -465,9 +462,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     for (int index = 0; index < locationList.size(); index++) {
       String folderLocation = locationList.get(index);
       String folderQueryHQL =
-          "From "
-              + InternalFolderElementEntity.class.getSimpleName()
-              + " parentIfe WHERE parentIfe.element_name = :location AND parentIfe.folder_hash = :folderHash";
+          "From InternalFolderElementEntity parentIfe WHERE parentIfe.element_name = :location AND parentIfe.folder_hash = :folderHash";
       Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL);
       fetchTreeQuery.setParameter("location", folderLocation);
       fetchTreeQuery.setParameter("folderHash", folderHash);
@@ -678,9 +673,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<BlobType> blobTypeList)
       throws ModelDBException {
     String folderQueryHQL =
-        "From "
-            + InternalFolderElementEntity.class.getSimpleName()
-            + " parentIfe WHERE parentIfe.folder_hash = :folderHash";
+        "From InternalFolderElementEntity parentIfe WHERE parentIfe.folder_hash = :folderHash";
     Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL);
     fetchTreeQuery.setParameter("folderHash", parentFolderHash);
     List<InternalFolderElementEntity> childElementFolders = fetchTreeQuery.list();
