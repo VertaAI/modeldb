@@ -449,9 +449,10 @@ public abstract class CommonHibernateUtil {
 
       Statement stmt = jdbcCon.createStatement();
 
-      String sql =
-          "SELECT * FROM migration_status ms WHERE ms.migration_name = '" + migrationName + "'";
-      ResultSet rs = stmt.executeQuery(sql);
+      StringBuilder sql =
+              new StringBuilder("SELECT * FROM migration_status ms WHERE ms.migration_name = '")
+                      .append(migrationName).append("'");
+      ResultSet rs = stmt.executeQuery(sql.toString());
 
       boolean locked = false;
       // Extract data from result set
@@ -484,11 +485,9 @@ public abstract class CommonHibernateUtil {
 
       Statement stmt = jdbcCon.createStatement();
 
-      String sql =
-          "INSERT INTO migration_status (migration_name, status) VALUES ('"
-              + migrationName
-              + "', 1);";
-      int updatedRowCount = stmt.executeUpdate(sql);
+      StringBuilder sql =
+              new StringBuilder("INSERT INTO migration_status (migration_name, status) VALUES ('").append(migrationName).append("', 1);");
+      int updatedRowCount = stmt.executeUpdate(sql.toString());
       stmt.close();
       LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);
     } catch (DatabaseException e) {
@@ -549,7 +548,8 @@ public abstract class CommonHibernateUtil {
 
     System.out.println("the database " + rdb.RdbDatabaseName + " does not exists");
     Statement statement = connection.createStatement();
-    statement.executeUpdate("CREATE DATABASE " + dbName);
+    StringBuilder queryBuilder = new StringBuilder("CREATE DATABASE " + dbName);
+    statement.executeUpdate(queryBuilder.toString());
     System.out.println("the database " + rdb.RdbDatabaseName + " created successfully");
   }
 }

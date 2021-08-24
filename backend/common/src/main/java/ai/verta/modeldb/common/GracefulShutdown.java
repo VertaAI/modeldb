@@ -4,6 +4,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.apache.catalina.connector.Connector;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
@@ -13,6 +15,7 @@ public class GracefulShutdown
 
   private volatile Connector connector;
   private long shutdownTimeout;
+  private static final Logger LOGGER = LogManager.getLogger(GracefulShutdown.class);
 
   public GracefulShutdown(Long shutdownTimeout) {
     this.shutdownTimeout = shutdownTimeout;
@@ -38,7 +41,9 @@ public class GracefulShutdown
           try {
             Thread.sleep(1000); // wait for 1s
           } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
+            // Restore interrupted state...
+            Thread.currentThread().interrupt();
           }
         }
 
