@@ -450,8 +450,9 @@ public abstract class CommonHibernateUtil {
       Statement stmt = jdbcCon.createStatement();
 
       StringBuilder sql =
-              new StringBuilder("SELECT * FROM migration_status ms WHERE ms.migration_name = '")
-                      .append(migrationName).append("'");
+          new StringBuilder("SELECT * FROM migration_status ms WHERE ms.migration_name = '")
+              .append(migrationName)
+              .append("'");
       ResultSet rs = stmt.executeQuery(sql.toString());
 
       boolean locked = false;
@@ -486,7 +487,9 @@ public abstract class CommonHibernateUtil {
       Statement stmt = jdbcCon.createStatement();
 
       StringBuilder sql =
-              new StringBuilder("INSERT INTO migration_status (migration_name, status) VALUES ('").append(migrationName).append("', 1);");
+          new StringBuilder("INSERT INTO migration_status (migration_name, status) VALUES ('")
+              .append(migrationName)
+              .append("', 1);");
       int updatedRowCount = stmt.executeUpdate(sql.toString());
       stmt.close();
       LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);
