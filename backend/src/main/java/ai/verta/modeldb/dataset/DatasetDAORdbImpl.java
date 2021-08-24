@@ -25,11 +25,9 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.*;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.*;
 import org.apache.logging.log4j.LogManager;
@@ -113,8 +111,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public Dataset createDataset(Dataset dataset, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public Dataset createDataset(Dataset dataset, UserInfo userInfo) {
     // Check entity already exists
     checkDatasetAlreadyExist(dataset);
 
@@ -152,8 +149,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public List<Dataset> getDatasetByIds(List<String> sharedDatasetIds)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public List<Dataset> getDatasetByIds(List<String> sharedDatasetIds) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<DatasetEntity> datasetEntities = getDatasetEntityList(session, sharedDatasetIds);
       LOGGER.debug("Got Dataset by Ids successfully");
@@ -181,8 +177,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      ResourceVisibility datasetVisibility)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      ResourceVisibility datasetVisibility) {
     FindDatasets findDatasets =
         FindDatasets.newBuilder()
             .setPageNumber(pageNumber)
@@ -228,8 +223,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public Dataset getDatasetById(String datasetId)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public Dataset getDatasetById(String datasetId) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj = getDatasetEntity(session, datasetId);
       return datasetObj.getProtoObject(roleService);
@@ -256,8 +250,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public DatasetPaginationDTO findDatasets(
       FindDatasets queryParameters,
       UserInfo currentLoginUserInfo,
-      ResourceVisibility datasetVisibility)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      ResourceVisibility datasetVisibility) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       List<String> accessibleDatasetIds =
@@ -445,8 +438,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public List<Dataset> getDatasets(String key, String value, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public List<Dataset> getDatasets(String key, String value, UserInfo userInfo) {
     FindDatasets findDatasets =
         FindDatasets.newBuilder()
             .addPredicates(
@@ -464,8 +456,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public Dataset updateDatasetName(String datasetId, String datasetName)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public Dataset updateDatasetName(String datasetId, String datasetName) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
@@ -496,8 +487,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public Dataset updateDatasetDescription(String datasetId, String datasetDescription)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public Dataset updateDatasetDescription(String datasetId, String datasetDescription) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
@@ -518,8 +508,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public Dataset addDatasetTags(String datasetId, List<String> tagsList)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public Dataset addDatasetTags(String datasetId, List<String> tagsList) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
@@ -555,8 +544,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public List<String> getDatasetTags(String datasetId)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public List<String> getDatasetTags(String datasetId) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       LOGGER.debug("Got Dataset");
@@ -571,8 +559,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public Dataset deleteDatasetTags(String datasetId, List<String> datasetTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public Dataset deleteDatasetTags(
+      String datasetId, List<String> datasetTagList, Boolean deleteAll) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
       StringBuilder stringQueryBuilder = new StringBuilder("delete from TagsMapping tm WHERE ");
@@ -612,8 +600,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public Dataset addDatasetAttributes(String datasetId, List<KeyValue> attributesList)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public Dataset addDatasetAttributes(String datasetId, List<KeyValue> attributesList) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
@@ -636,8 +623,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   }
 
   @Override
-  public Dataset updateDatasetAttributes(String datasetId, KeyValue attribute)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public Dataset updateDatasetAttributes(String datasetId, KeyValue attribute) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
@@ -683,8 +669,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public List<KeyValue> getDatasetAttributes(
-      String datasetId, List<String> attributeKeyList, Boolean getAll)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      String datasetId, List<String> attributeKeyList, Boolean getAll) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       if (getAll) {
         DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
@@ -710,8 +695,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset deleteDatasetAttributes(
-      String datasetId, List<String> attributeKeyList, Boolean deleteAll)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      String datasetId, List<String> attributeKeyList, Boolean deleteAll) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Transaction transaction = session.beginTransaction();
 

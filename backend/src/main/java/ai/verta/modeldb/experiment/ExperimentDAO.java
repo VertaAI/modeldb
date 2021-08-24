@@ -11,7 +11,6 @@ import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 import java.util.Map;
 
@@ -23,45 +22,35 @@ public interface ExperimentDAO {
    * @param Experiment experiment
    * @param userInfo
    * @return Experiment insertedExperiment
-   * @throws InvalidProtocolBufferException
    */
-  Experiment insertExperiment(Experiment experiment, UserInfo userInfo)
-      throws InvalidProtocolBufferException;
+  Experiment insertExperiment(Experiment experiment, UserInfo userInfo);
 
   /**
    * @param experimentId : experiment.id
    * @param experimentName : updated experiment name from client request
    * @return {@link Experiment} : updated experiment
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Experiment updateExperimentName(String experimentId, String experimentName)
-      throws InvalidProtocolBufferException;
+  Experiment updateExperimentName(String experimentId, String experimentName);
 
   /**
    * @param experimentId : experiment.id
    * @param experimentDescription : updated experiment description from client request
    * @return {@link Experiment} : updated experiment
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Experiment updateExperimentDescription(String experimentId, String experimentDescription)
-      throws InvalidProtocolBufferException;
+  Experiment updateExperimentDescription(String experimentId, String experimentDescription);
 
   /**
    * Get Experiment entity using given experimentID from database.
    *
    * @param String experimentId
    * @return Experiment experiment
-   * @throws InvalidProtocolBufferException
    */
-  Experiment getExperiment(String experimentId) throws InvalidProtocolBufferException;
-
+  Experiment getExperiment(String experimentId);
   /**
    * @param experimentIds : list of experiment ids
    * @return : experiment list
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  public List<Experiment> getExperimentsByBatchIds(List<String> experimentIds)
-      throws InvalidProtocolBufferException;
+  public List<Experiment> getExperimentsByBatchIds(List<String> experimentIds);
 
   /**
    * Get List of Experiment entity using given projectId from database.
@@ -73,7 +62,6 @@ public interface ExperimentDAO {
    * @param pageLimit page limit
    * @return ExperimentPaginationDTO experimentPaginationDTO contain the experimentList &
    *     total_pages count
-   * @throws InvalidProtocolBufferException
    */
   ExperimentPaginationDTO getExperimentsInProject(
       ProjectDAO projectDAO,
@@ -82,26 +70,23 @@ public interface ExperimentDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey)
-      throws InvalidProtocolBufferException, PermissionDeniedException;
+      throws PermissionDeniedException;
 
   /**
    * Add List of Experiment Tags in database.
    *
    * @param String experimentId, List<String> tagsList
    * @return Experiment updatedExperiment
-   * @throws InvalidProtocolBufferException
    */
-  Experiment addExperimentTags(String experimentId, List<String> tagsList)
-      throws InvalidProtocolBufferException;
+  Experiment addExperimentTags(String experimentId, List<String> tagsList);
 
   /**
    * Fetch Experiment Tags from database using experimentId.
    *
    * @param String experimentId
    * @return List<String> projectTags
-   * @throws InvalidProtocolBufferException
    */
-  List<String> getExperimentTags(String experimentId) throws InvalidProtocolBufferException;
+  List<String> getExperimentTags(String experimentId);
 
   /**
    * Delete Experiment Tags from Experiment entity.
@@ -110,11 +95,9 @@ public interface ExperimentDAO {
    * @param deleteAll
    * @param String experimentId
    * @return Experiment updatedExperiment
-   * @throws InvalidProtocolBufferException
    */
   Experiment deleteExperimentTags(
-      String experimentId, List<String> experimentTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException;
+      String experimentId, List<String> experimentTagList, Boolean deleteAll);
 
   /**
    * Add Attribute in Experiment Attributes list in database.
@@ -122,10 +105,8 @@ public interface ExperimentDAO {
    * @param String experimentId
    * @param List<KeyValue> attributes
    * @return Experiment updatedExperiment
-   * @throws InvalidProtocolBufferException
    */
-  Experiment addExperimentAttributes(String experimentId, List<KeyValue> attributes)
-      throws InvalidProtocolBufferException;
+  Experiment addExperimentAttributes(String experimentId, List<KeyValue> attributes);
 
   /**
    * Fetch Experiment Attributes from database using experimentId.
@@ -134,11 +115,9 @@ public interface ExperimentDAO {
    * @param attributeKeyList
    * @param String experimentId
    * @return List<KeyValue> experimentAttributes.
-   * @throws InvalidProtocolBufferException
    */
   List<KeyValue> getExperimentAttributes(
-      String experimentId, List<String> attributeKeyList, Boolean getAll)
-      throws InvalidProtocolBufferException;
+      String experimentId, List<String> attributeKeyList, Boolean getAll);
 
   /**
    * Delete Experiment Attributes in database using experimentId.
@@ -147,11 +126,9 @@ public interface ExperimentDAO {
    * @param attributeKeyList
    * @param String experimentId
    * @return Experiment experiment
-   * @throws InvalidProtocolBufferException
    */
   Experiment deleteExperimentAttributes(
-      String experimentId, List<String> attributeKeyList, Boolean deleteAll)
-      throws InvalidProtocolBufferException;
+      String experimentId, List<String> attributeKeyList, Boolean deleteAll);
 
   /**
    * Delete the Experiments from database using experimentIds list.
@@ -159,8 +136,7 @@ public interface ExperimentDAO {
    * @param experimentIds : list of experimentRunId
    * @return {@link List} : return deleted ids
    */
-  List<String> deleteExperiments(List<String> experimentIds)
-      throws InvalidProtocolBufferException, PermissionDeniedException;
+  List<String> deleteExperiments(List<String> experimentIds) throws PermissionDeniedException;
 
   /**
    * Return experiment using given key value list. keyValue has key as ModelDBConstants.PROJECT_ID
@@ -168,13 +144,12 @@ public interface ExperimentDAO {
    *
    * @param keyValue --> list of KeyValue
    * @return Experiment entity.
-   * @throws InvalidProtocolBufferException
    */
   @Deprecated
   // This should be deprecated, there should be no assumption on the length of data in a generic
   // function
   // asserts if required should be at the caller which has more context about the data being queries
-  Experiment getExperiment(List<KeyValue> keyValues) throws InvalidProtocolBufferException;
+  Experiment getExperiment(List<KeyValue> keyValues);
 
   /**
    * Return experiment using given key value list. keyValue has key as ModelDBConstants.PROJECT_ID
@@ -182,9 +157,8 @@ public interface ExperimentDAO {
    *
    * @param keyValue --> list of KeyValue
    * @return Experiment entity.
-   * @throws InvalidProtocolBufferException
    */
-  List<Experiment> getExperiments(List<KeyValue> keyValues) throws InvalidProtocolBufferException;
+  List<Experiment> getExperiments(List<KeyValue> keyValues);
 
   /**
    * Deep copy experiments in database. In current scope we deep copy associated ExperimentRuns
@@ -193,20 +167,16 @@ public interface ExperimentDAO {
    * @param newProject
    * @param newOwner
    * @return
-   * @throws InvalidProtocolBufferException
    */
   Experiment deepCopyExperimentForUser(
-      Experiment srcExperiment, Project newProject, UserInfo newOwner)
-      throws InvalidProtocolBufferException;
+      Experiment srcExperiment, Project newProject, UserInfo newOwner);
 
   /**
    * @param experimentId : experiment.id
    * @param updatedCodeVersion : updated experiment code version snapshot from client request
    * @return {@link Experiment} : updated experiment
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Experiment logExperimentCodeVersion(String experimentId, CodeVersion updatedCodeVersion)
-      throws InvalidProtocolBufferException;
+  Experiment logExperimentCodeVersion(String experimentId, CodeVersion updatedCodeVersion);
 
   /**
    * Return list of experiments based on FindExperiments queryParameters
@@ -214,11 +184,10 @@ public interface ExperimentDAO {
    * @param queryParameters : queryParameters --> query parameters for filtering experiments
    * @return ExperimentPaginationDTO : experimentPaginationDTO contains the list of experiments
    *     based on filter queryParameters & total_pages count
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   ExperimentPaginationDTO findExperiments(
       ProjectDAO projectDAO, UserInfo userInfo, FindExperiments queryParameters)
-      throws InvalidProtocolBufferException, PermissionDeniedException;
+      throws PermissionDeniedException;
 
   /**
    * Experiment has artifacts field. Add new Artifact in that artifacts List.
@@ -226,19 +195,16 @@ public interface ExperimentDAO {
    * @param experimentId : experiment.id
    * @param artifacts : experiment.artifacts
    * @return {@link Experiment} : updated experiment
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Experiment logArtifacts(String experimentId, List<Artifact> artifacts)
-      throws InvalidProtocolBufferException, NotFoundException;
+  Experiment logArtifacts(String experimentId, List<Artifact> artifacts) throws NotFoundException;
 
   /**
    * Return List<Artifact> artifacts from Experiment entity.
    *
    * @param experimentId : experiment.id
    * @return {@link List<Artifact>} : artifact list from Experiment
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  List<Artifact> getExperimentArtifacts(String experimentId) throws InvalidProtocolBufferException;
+  List<Artifact> getExperimentArtifacts(String experimentId);
 
   /**
    * Deletes the artifact key associated with the experiment
@@ -246,10 +212,8 @@ public interface ExperimentDAO {
    * @param experimentId : experiment.id
    * @param artifactKey : artifact.key
    * @return {@link Experiment} : updated experiment
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Experiment deleteArtifacts(String experimentId, String artifactKey)
-      throws InvalidProtocolBufferException;
+  Experiment deleteArtifacts(String experimentId, String artifactKey);
 
   /**
    * Get Project Id from Experiment entity using given experimentID.

@@ -30,10 +30,14 @@ public class CommonUtils {
     return filePath;
   }
 
-  public static Message.Builder getProtoObjectFromString(String jsonString, Message.Builder builder)
-      throws InvalidProtocolBufferException {
+  public static Message.Builder getProtoObjectFromString(String jsonString, Message.Builder builder) {
+    try {
     JsonFormat.parser().merge(jsonString, builder);
     return builder;
+    } catch (InvalidProtocolBufferException ex){
+      LOGGER.warn("Error generating builder for {}", jsonString, ex);
+      throw new RuntimeException(ex);
+    }
   }
 
   public interface RetryCallInterface<T> {
@@ -54,6 +58,8 @@ public class CommonUtils {
           Thread.sleep(requestTimeout * 1000);
           retry = false;
         } catch (InterruptedException e) {
+          // Restore interrupted state...
+          Thread.currentThread().interrupt();
           throw new InternalErrorException("Thread interrupted while UAC retrying call");
         }
         return retryCallInterface.retryCall(retry);
@@ -78,6 +84,10 @@ public class CommonUtils {
       CompletionException ex = (CompletionException) e;
       return logError(ex.getCause(), defaultInstance);
     } else {
+      if (e == null){
+        var status1 = Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage("Exception found null").build();
+        return StatusProto.toStatusRuntimeException(status1);
+      }
       Throwable throwable = findRootCause(e);
       // Condition 'throwable != null' covered by below condition 'throwable instanceof
       // SocketException'

@@ -9,7 +9,6 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.UserInfo;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import org.hibernate.Session;
 
 public interface CommitDAO {
@@ -27,7 +26,7 @@ public interface CommitDAO {
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       RepositoryEntity repositoryEntity)
-      throws ModelDBException, NoSuchAlgorithmException, ExecutionException, InterruptedException;
+      throws ModelDBException, NoSuchAlgorithmException;
 
   CommitEntity saveCommitEntity(
       Session session,
@@ -39,14 +38,13 @@ public interface CommitDAO {
 
   ListCommitsRequest.Response listCommits(
       ListCommitsRequest request, RepositoryFunction getRepository, boolean ascending)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
-  Commit getCommit(String commitHash, RepositoryFunction getRepository)
-      throws ModelDBException, ExecutionException, InterruptedException;
+  Commit getCommit(String commitHash, RepositoryFunction getRepository) throws ModelDBException;
 
   CommitEntity getCommitEntity(
       Session session, String commitHash, RepositoryFunction getRepositoryFunction)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   String getDatasetIdByDatasetVersion(RepositoryDAO repositoryDAO, String commitHash)
       throws ModelDBException;
@@ -55,13 +53,13 @@ public interface CommitDAO {
       RepositoryIdentification repositoryIdentification,
       List<String> datasetVersionIds,
       RepositoryDAO repositoryDAO)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   boolean deleteCommits(
       RepositoryIdentification repositoryIdentification,
       List<String> commitShas,
       RepositoryDAO repositoryDAO)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   DatasetVersion addDeleteDatasetVersionTags(
       RepositoryDAO repositoryDAO,
@@ -72,7 +70,7 @@ public interface CommitDAO {
       String datasetVersionId,
       List<String> tagsList,
       boolean deleteAll)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   void addDeleteCommitLabels(
       RepositoryEntity repositoryEntity,
@@ -81,7 +79,7 @@ public interface CommitDAO {
       boolean addLabels,
       List<String> labelsList,
       boolean deleteAll)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   CommitPaginationDTO findCommits(
       FindRepositoriesBlobs request,
@@ -113,12 +111,12 @@ public interface CommitDAO {
       String datasetId,
       String datasetVersionId,
       String description)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   DatasetVersion getDatasetVersionById(
       RepositoryDAO repositoryDAO,
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       String datasetVersionId)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 }

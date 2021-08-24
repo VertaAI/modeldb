@@ -3,7 +3,6 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.QueryParameter;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
 import javax.persistence.CascadeType;
@@ -23,8 +22,7 @@ public class QueryParameterEntity {
 
   public QueryParameterEntity() {}
 
-  public QueryParameterEntity(Object entity, String fieldType, QueryParameter queryParameter)
-      throws InvalidProtocolBufferException {
+  public QueryParameterEntity(Object entity, String fieldType, QueryParameter queryParameter) {
     setParameter_name(queryParameter.getParameterName());
     setValue(ModelDBUtils.getStringFromProtoObject(queryParameter.getValue()));
     setParameter_type(queryParameter.getParameterTypeValue());
@@ -106,7 +104,7 @@ public class QueryParameterEntity {
     return field_type;
   }
 
-  public QueryParameter getProtoObject() throws InvalidProtocolBufferException {
+  public QueryParameter getProtoObject() {
     Builder valueBuilder = Value.newBuilder();
     valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(getValue(), valueBuilder);
     return QueryParameter.newBuilder()

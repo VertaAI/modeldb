@@ -10,11 +10,9 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import javax.persistence.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -25,7 +23,7 @@ public class DatasetEntity {
 
   public DatasetEntity() {}
 
-  public DatasetEntity(Dataset dataset) throws InvalidProtocolBufferException {
+  public DatasetEntity(Dataset dataset) {
 
     setId(dataset.getId());
     setName(dataset.getName());
@@ -221,8 +219,7 @@ public class DatasetEntity {
     this.deleted = deleted;
   }
 
-  public Dataset getProtoObject(RoleService roleService)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public Dataset getProtoObject(RoleService roleService) {
     Dataset.Builder datasetBuilder =
         Dataset.newBuilder()
             .setId(getId())

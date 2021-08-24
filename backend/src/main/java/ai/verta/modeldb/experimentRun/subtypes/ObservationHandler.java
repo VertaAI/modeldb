@@ -3,12 +3,10 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;
 import java.util.List;
@@ -60,9 +58,8 @@ public class ObservationHandler {
                         .bind("entity_name", "ExperimentRunEntity")
                         .bind("name", key)
                         .map(
-                            (rs, ctx) -> {
-                              try {
-                                return Observation.newBuilder()
+                            (rs, ctx) ->
+                                Observation.newBuilder()
                                     .setEpochNumber(
                                         Value.newBuilder().setNumberValue(rs.getLong("epoch")))
                                     .setAttribute(
@@ -73,13 +70,7 @@ public class ObservationHandler {
                                                     CommonUtils.getProtoObjectFromString(
                                                         rs.getString("_value"), Value.newBuilder()))
                                             .setValueTypeValue(rs.getInt("_type")))
-                                    .build();
-                              } catch (InvalidProtocolBufferException e) {
-                                LOGGER.error(
-                                    "Error generating builder for {}", rs.getString("_value"));
-                                throw new ModelDBException(e);
-                              }
-                            })
+                                    .build())
                         .list()),
         executor);
   }
@@ -97,9 +88,8 @@ public class ObservationHandler {
                     .bindList("run_ids", runIds)
                     .bind("entityName", "ExperimentRunEntity")
                     .map(
-                        (rs, ctx) -> {
-                          try {
-                            return new AbstractMap.SimpleEntry<>(
+                        (rs, ctx) ->
+                            new AbstractMap.SimpleEntry<>(
                                 rs.getString("run_id"),
                                 Observation.newBuilder()
                                     .setTimestamp(rs.getLong("timestamp"))
@@ -113,12 +103,7 @@ public class ObservationHandler {
                                                     CommonUtils.getProtoObjectFromString(
                                                         rs.getString("_value"), Value.newBuilder()))
                                             .setValueTypeValue(rs.getInt("_type")))
-                                    .build());
-                          } catch (InvalidProtocolBufferException e) {
-                            LOGGER.error("Error generating builder for {}", rs.getString("_value"));
-                            throw new ModelDBException(e);
-                          }
-                        })
+                                    .build()))
                     .list())
         .thenApply(MapSubtypes::from, executor);
   }

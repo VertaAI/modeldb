@@ -60,7 +60,6 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.ArrayList;
@@ -72,7 +71,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1072,8 +1070,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     }
   }
 
-  private String getUrlForCode(GetUrlForArtifact request)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  private String getUrlForCode(GetUrlForArtifact request) {
     String s3Key = null;
     Project proj = projectDAO.getProjectByID(request.getId());
     if (proj.getCodeVersionSnapshot() != null
