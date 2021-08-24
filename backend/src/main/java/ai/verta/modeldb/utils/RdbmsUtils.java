@@ -1808,7 +1808,7 @@ public class RdbmsUtils {
               }
           }
         } catch (IllegalArgumentException ex) {
-          ex.printStackTrace();
+          LOGGER.error(ex.getMessage(), ex);
           if (ex.getMessage()
               .contains(
                   "Unable to locate Attribute  with the the given name ["
@@ -2227,6 +2227,7 @@ public class RdbmsUtils {
       OperatorEnum.Operator operator,
       Object value,
       Map<String, Object> parametersMap) {
+    @SuppressWarnings("squid:S2245")
     long timestamp = index0 + new Random(System.nanoTime()).nextInt(Integer.MAX_VALUE);
     String key;
     switch (operator.ordinal()) {

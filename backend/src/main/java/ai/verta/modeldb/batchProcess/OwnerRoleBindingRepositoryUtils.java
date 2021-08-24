@@ -9,7 +9,6 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -109,16 +108,10 @@ public class OwnerRoleBindingRepositoryUtils {
                 LOGGER.error(e.getMessage());
               }
             } else {
-              LOGGER.info(
+              LOGGER.warn(
                   "Repository owner not found from UAC response list : RepositoryId - {} & userId - {}",
                   repositoryEntity.getId(),
                   repositoryEntity.getOwner());
-              new ModelDBException(
-                      "Repository owner not found from UAC response list : RepositoryId - "
-                          + repositoryEntity.getId()
-                          + " & userId - "
-                          + repositoryEntity.getOwner())
-                  .printStackTrace();
             }
           }
         } else {

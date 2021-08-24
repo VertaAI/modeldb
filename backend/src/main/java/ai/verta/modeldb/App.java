@@ -267,7 +267,7 @@ public class App implements ApplicationContextAware {
                       try {
                         Thread.sleep(1000); // wait for 1s
                       } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        LOGGER.error("Getting error while graceful shutdown", e);
                       }
                     }
                     // Use stderr here since the logger may have been reset by its JVM shutdown
@@ -278,7 +278,7 @@ public class App implements ApplicationContextAware {
                     try {
                       server.awaitTermination();
                     } catch (InterruptedException e) {
-                      e.printStackTrace();
+                      LOGGER.error("Getting error while shutting down gRPC server", e);
                     }
                     System.err.println("*** Server Shutdown ***");
                   }));
@@ -287,7 +287,7 @@ public class App implements ApplicationContextAware {
       server.awaitTermination();
       up.dec();
     } catch (Exception ex) {
-      ex.printStackTrace();
+      LOGGER.error("Getting error while starting MDB service", ex);
       initiateShutdown(0);
       System.exit(0);
     }

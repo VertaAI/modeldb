@@ -171,8 +171,7 @@ public class DatasetToRepositoryMigration {
                   createRepository(
                       session, datasetEntity, userInfoMap.get(datasetEntity.getOwner()));
                 } catch (Exception e) {
-                  e.printStackTrace();
-                  LOGGER.error(e.getMessage());
+                  LOGGER.error(e.getMessage(), e);
                 }
               }
             }
@@ -421,8 +420,7 @@ public class DatasetToRepositoryMigration {
                     newDatasetVersion.getDatasetVersionInfoCase());
               }
             } catch (Exception e) {
-              e.printStackTrace();
-              LOGGER.error(e.getMessage());
+              LOGGER.error(e.getMessage(), e);
             }
           }
         } else {

@@ -101,6 +101,7 @@ public class ModelDBUtils {
 
   private static String getMd5String(String inputString) {
     try {
+      @SuppressWarnings("squid:S4790")
       MessageDigest md = MessageDigest.getInstance("MD5");
       byte[] messageDigest = md.digest(inputString.getBytes());
       BigInteger no = new BigInteger(1, messageDigest);
