@@ -60,7 +60,7 @@ public abstract class Reconciler<T> {
     executor.scheduleAtFixedRate(runnable, 0, config.resyncPeriodSeconds, TimeUnit.SECONDS);
   }
 
-  private void startWorkers() {
+  public void startWorkers() {
     ExecutorService executor = Executors.newFixedThreadPool(config.workerCount);
     for (int i = 0; i < config.workerCount; i++) {
       Runnable runnable =
