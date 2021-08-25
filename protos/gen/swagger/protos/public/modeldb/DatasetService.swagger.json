@@ -686,12 +686,6 @@
         },
         "filename_extension": {
           "type": "string"
-        },
-        "serialization": {
-          "type": "string"
-        },
-        "artifact_subtype": {
-          "type": "string"
         }
       }
     },
