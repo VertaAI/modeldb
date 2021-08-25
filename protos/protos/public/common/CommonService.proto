@@ -121,6 +121,7 @@ message Artifact {
     string filename_extension = 6;
     string serialization = 7;
     string artifact_subtype = 8;
+    bool upload_completed = 9;
 }
 
 message KeyValueQuery {

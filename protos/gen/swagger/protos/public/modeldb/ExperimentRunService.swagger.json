@@ -2356,6 +2356,10 @@
         },
         "artifact_subtype": {
           "type": "string"
+        },
+        "upload_completed": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
