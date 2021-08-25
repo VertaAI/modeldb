@@ -1822,6 +1822,16 @@
         },
         "filename_extension": {
           "type": "string"
+        },
+        "serialization": {
+          "type": "string"
+        },
+        "artifact_subtype": {
+          "type": "string"
+        },
+        "upload_completed": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -2268,6 +2278,11 @@
           "additionalProperties": {
             "$ref": "#/definitions/versioningCodeBlob"
           }
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
@@ -2363,6 +2378,11 @@
           "type": "boolean",
           "format": "boolean",
           "title": "Is true if the readme text has been updated at least once"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
@@ -2649,6 +2669,13 @@
           "items": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
+        },
+        "raw_requirements": {
+          "type": "string",
+          "description": "These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example."
+        },
+        "raw_constraints": {
+          "type": "string"
         }
       }
     },

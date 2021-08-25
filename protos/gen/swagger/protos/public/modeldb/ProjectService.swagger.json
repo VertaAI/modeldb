@@ -1151,6 +1151,16 @@
         },
         "filename_extension": {
           "type": "string"
+        },
+        "serialization": {
+          "type": "string"
+        },
+        "artifact_subtype": {
+          "type": "string"
+        },
+        "upload_completed": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -1851,6 +1861,11 @@
           "items": {
             "$ref": "#/definitions/commonArtifact"
           }
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },

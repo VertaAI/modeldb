@@ -81,6 +81,8 @@ message ModelDBResourceEnum {
         REGISTERED_MODEL_VERSION = 10;
         MONITORED_ENTITY = 11;
         NOTIFICATION_CHANNEL = 12;
+        ENDPOINT = 13;
+        BUILD = 14;
     }
 };
 
@@ -117,6 +119,9 @@ message Artifact {
     ArtifactTypeEnum.ArtifactType artifact_type = 4;
     string linked_artifact_id = 5;
     string filename_extension = 6;
+    string serialization = 7;
+    string artifact_subtype = 8;
+    bool upload_completed = 9;
 }
 
 message KeyValueQuery {
