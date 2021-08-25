@@ -31,6 +31,8 @@ message Dataset {
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 14;
     uac.ResourceVisibility visibility = 15;
+    // Doc for version_number https://github.com/VertaAI/docs/pull/53
+    uint64 version_number = 16;
 }
 
 message DatasetTypeEnum {

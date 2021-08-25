@@ -26,6 +26,8 @@ message Experiment {
     string owner = 22;
     common.CodeVersion code_version_snapshot = 23;
     repeated common.Artifact artifacts = 24;
+    // Doc for version_number https://github.com/VertaAI/docs/pull/53
+    uint64 version_number = 25;
 }
 
 message GetExperimentsInProject {
