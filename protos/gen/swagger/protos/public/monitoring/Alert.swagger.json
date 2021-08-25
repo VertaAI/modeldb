@@ -463,6 +463,10 @@
         },
         "alerter_range": {
           "$ref": "#/definitions/monitoringAlertRange"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
