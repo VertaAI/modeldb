@@ -5,6 +5,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
+import "uac/UACService.proto";
 
 message Session {
     uint64 id = 1;
