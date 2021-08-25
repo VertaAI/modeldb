@@ -913,7 +913,9 @@
         "LOCK",
         "UNLOCK",
         "UPDATE_REDACT",
-        "ALERTER"
+        "ALERTER",
+        "PREDICT",
+        "CONTROL"
       ],
       "default": "UNKNOWN"
     },
