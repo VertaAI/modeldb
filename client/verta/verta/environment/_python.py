@@ -31,8 +31,6 @@ class Python(_environment._Environment):
         captured.
     env_vars : list of str, optional
         Names of environment variables to capture. If not provided, nothing will be captured.
-    apt_packages : list of str, optional
-        Apt packages to be installed alongside a Python environment.
     _autocapture : bool, default True
         Whether to enable the automatic capturing behavior of parameters above.
 
