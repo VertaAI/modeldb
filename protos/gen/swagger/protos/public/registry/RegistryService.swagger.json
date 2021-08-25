@@ -1822,6 +1822,12 @@
         },
         "filename_extension": {
           "type": "string"
+        },
+        "serialization": {
+          "type": "string"
+        },
+        "artifact_subtype": {
+          "type": "string"
         }
       }
     },
@@ -2268,6 +2274,11 @@
           "additionalProperties": {
             "$ref": "#/definitions/versioningCodeBlob"
           }
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
@@ -2363,6 +2374,11 @@
           "type": "boolean",
           "format": "boolean",
           "title": "Is true if the readme text has been updated at least once"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },

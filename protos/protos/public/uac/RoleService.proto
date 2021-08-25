@@ -45,6 +45,7 @@ message AuthzActionEnum {
         UPDATE = 6;
         DELETE = 7;
         READ_SECRETS = 8;
+        CREATE_SERVICE_ACCOUNT = 9;
     }
 
 };
@@ -64,6 +65,8 @@ message ModelDBActionEnum {
         UNLOCK = 10;
         UPDATE_REDACT = 11;
         ALERTER = 12;
+        PREDICT = 13;
+        CONTROL = 14;
     }
 };
 

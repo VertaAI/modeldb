@@ -819,7 +819,8 @@
         "READ",
         "UPDATE",
         "DELETE",
-        "READ_SECRETS"
+        "READ_SECRETS",
+        "CREATE_SERVICE_ACCOUNT"
       ],
       "default": "UNKNOWN"
     },
@@ -912,7 +913,9 @@
         "LOCK",
         "UNLOCK",
         "UPDATE_REDACT",
-        "ALERTER"
+        "ALERTER",
+        "PREDICT",
+        "CONTROL"
       ],
       "default": "UNKNOWN"
     },
@@ -1026,6 +1029,12 @@
           "type": "string"
         },
         "filename_extension": {
+          "type": "string"
+        },
+        "serialization": {
+          "type": "string"
+        },
+        "artifact_subtype": {
           "type": "string"
         }
       }

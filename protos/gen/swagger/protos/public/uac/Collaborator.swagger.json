@@ -75,6 +75,38 @@
         ]
       }
     },
+    "/collaborator/addOrUpdateEndpointCollaboratorCommonService": {
+      "post": {
+        "operationId": "CollaboratorService_addOrUpdateEndpointCollaboratorCommonService",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacAddCollaboratorRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
     "/collaborator/addOrUpdateMonitoredEntityCollaborator": {
       "post": {
         "operationId": "CollaboratorService_addOrUpdateMonitoredEntityCollaborator",
@@ -268,6 +300,36 @@
     "/collaborator/getEndpointCollaborators": {
       "get": {
         "operationId": "CollaboratorService_getEndpointCollaborators",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/getEndpointCollaboratorsCommonService": {
+      "get": {
+        "operationId": "CollaboratorService_getEndpointCollaboratorsCommonService",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -502,7 +564,9 @@
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
               "MONITORED_ENTITY",
-              "NOTIFICATION_CHANNEL"
+              "NOTIFICATION_CHANNEL",
+              "ENDPOINT",
+              "BUILD"
             ],
             "default": "UNKNOWN"
           },
@@ -625,7 +689,9 @@
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
               "MONITORED_ENTITY",
-              "NOTIFICATION_CHANNEL"
+              "NOTIFICATION_CHANNEL",
+              "ENDPOINT",
+              "BUILD"
             ],
             "default": "UNKNOWN"
           },
@@ -768,7 +834,9 @@
               "REGISTERED_MODEL",
               "REGISTERED_MODEL_VERSION",
               "MONITORED_ENTITY",
-              "NOTIFICATION_CHANNEL"
+              "NOTIFICATION_CHANNEL",
+              "ENDPOINT",
+              "BUILD"
             ],
             "default": "UNKNOWN"
           },
@@ -870,6 +938,62 @@
     "/collaborator/removeEndpointCollaborator": {
       "delete": {
         "operationId": "CollaboratorService_removeEndpointCollaborator",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacRemoveCollaboratorResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "date_deleted",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "authz_entity_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "UNKNOWN",
+              "ORGANIZATION",
+              "TEAM",
+              "USER"
+            ],
+            "default": "UNKNOWN"
+          }
+        ],
+        "tags": [
+          "CollaboratorService"
+        ]
+      }
+    },
+    "/collaborator/removeEndpointCollaboratorCommonService": {
+      "delete": {
+        "operationId": "CollaboratorService_removeEndpointCollaboratorCommonService",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -1225,7 +1349,8 @@
         "READ",
         "UPDATE",
         "DELETE",
-        "READ_SECRETS"
+        "READ_SECRETS",
+        "CREATE_SERVICE_ACCOUNT"
       ],
       "default": "UNKNOWN"
     },
@@ -1323,7 +1448,9 @@
         "LOCK",
         "UNLOCK",
         "UPDATE_REDACT",
-        "ALERTER"
+        "ALERTER",
+        "PREDICT",
+        "CONTROL"
       ],
       "default": "UNKNOWN"
     },
@@ -1342,7 +1469,9 @@
         "REGISTERED_MODEL",
         "REGISTERED_MODEL_VERSION",
         "MONITORED_ENTITY",
-        "NOTIFICATION_CHANNEL"
+        "NOTIFICATION_CHANNEL",
+        "ENDPOINT",
+        "BUILD"
       ],
       "default": "UNKNOWN"
     },
