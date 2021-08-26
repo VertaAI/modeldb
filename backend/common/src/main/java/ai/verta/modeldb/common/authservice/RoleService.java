@@ -33,7 +33,7 @@ public interface RoleService {
 
   default GetResourcesResponseItem getEntityResource(
       String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes)
-      throws ExecutionException, InterruptedException {
+       {
     return getEntityResource(Optional.of(entityId), Optional.empty(), modelDBServiceResourceTypes);
   }
 
@@ -41,7 +41,7 @@ public interface RoleService {
       Optional<String> entityName,
       Optional<String> workspaceName,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes)
-      throws ExecutionException, InterruptedException;
+      ;
 
   GeneratedMessageV3 getOrgById(String orgId);
 

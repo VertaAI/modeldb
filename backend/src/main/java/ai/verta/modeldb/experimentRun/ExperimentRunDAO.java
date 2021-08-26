@@ -18,7 +18,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
 import org.hibernate.Session;
 
 public interface ExperimentRunDAO {
@@ -33,8 +32,7 @@ public interface ExperimentRunDAO {
    */
   ExperimentRun insertExperimentRun(
       ProjectDAO projectDAO, ExperimentRun experimentRun, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException,
-          ExecutionException, InterruptedException;
+      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException;
 
   /**
    * Delete the ExperimentRuns from database using experimentRunId list.
@@ -97,8 +95,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   ExperimentRun getExperimentRun(String experimentRunId)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   boolean isExperimentRunExists(Session session, String experimentRunId);
 
@@ -116,8 +113,7 @@ public interface ExperimentRunDAO {
    */
   ExperimentRun updateExperimentRunDescription(
       String experimentRunId, String experimentRunDescription)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * @param experimentRunId : experimentRun.id
@@ -142,8 +138,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException : InvalidProtocolBufferException
    */
   ExperimentRun addExperimentRunTags(String experimentRunId, List<String> tagsList)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * Delete ExperimentRun Tags from ExperimentRun entity.
@@ -156,8 +151,7 @@ public interface ExperimentRunDAO {
    */
   ExperimentRun deleteExperimentRunTags(
       String experimentRunId, List<String> experimentRunTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * ExperimentRun has Observations list field. Add new Observation in that Observations List.
@@ -208,8 +202,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   List<Artifact> getExperimentRunDatasets(String experimentRunId)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * ExperimentRun has artifacts field. Add new Artifact in that artifacts List.
@@ -379,8 +372,7 @@ public interface ExperimentRunDAO {
    * @throws InvalidProtocolBufferException
    */
   void logDatasets(String experimentRunId, List<Artifact> datasets, boolean overwrite)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   /**
    * Deletes the artifact key associated with the experiment run
@@ -437,8 +429,7 @@ public interface ExperimentRunDAO {
       throws InvalidProtocolBufferException;
 
   void logVersionedInput(LogVersionedInput request)
-      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException,
-          ExecutionException, InterruptedException;
+      throws InvalidProtocolBufferException, ModelDBException, NoSuchAlgorithmException;
 
   void deleteLogVersionedInputs(Session session, Long repoId, String commitHash);
 
@@ -452,16 +443,14 @@ public interface ExperimentRunDAO {
       ListCommitExperimentRunsRequest request,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
-      throws ModelDBException, InvalidProtocolBufferException, ExecutionException,
-          InterruptedException;
+      throws ModelDBException, InvalidProtocolBufferException;
 
   ListBlobExperimentRunsRequest.Response listBlobExperimentRuns(
       ProjectDAO projectDAO,
       ListBlobExperimentRunsRequest request,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
-      throws ModelDBException, InvalidProtocolBufferException, ExecutionException,
-          InterruptedException;
+      throws ModelDBException, InvalidProtocolBufferException;
 
   Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
       String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
@@ -482,11 +471,11 @@ public interface ExperimentRunDAO {
       List<String> experimentRunKeyValuesKeys,
       Boolean deleteAll,
       String fieldType)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      throws InvalidProtocolBufferException;
 
   void deleteExperimentRunObservationsEntities(
       String experimentRunId, List<String> experimentRunObservationsKeys, Boolean deleteAll)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      throws InvalidProtocolBufferException;
 
   ExperimentRunPaginationDTO getExperimentRunsByDatasetVersionId(
       ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request)
@@ -494,8 +483,7 @@ public interface ExperimentRunDAO {
 
   ExperimentRun cloneExperimentRun(
       ProjectDAO projectDAO, CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException;
+      throws InvalidProtocolBufferException, ModelDBException;
 
   void logEnvironment(String experimentRunId, EnvironmentBlob environmentBlob)
       throws InvalidProtocolBufferException;

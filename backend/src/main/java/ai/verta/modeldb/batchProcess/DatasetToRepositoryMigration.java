@@ -38,7 +38,6 @@ import io.grpc.StatusRuntimeException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -265,8 +264,7 @@ public class DatasetToRepositoryMigration {
 
   private static void createRepository(
       Session session, DatasetEntity datasetEntity, UserInfo userInfoValue)
-      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException,
-          ExecutionException, InterruptedException {
+      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
     String datasetId = datasetEntity.getId();
     Dataset newDataset = datasetEntity.getProtoObject(roleService).toBuilder().setId("").build();
     Dataset dataset;
@@ -446,7 +444,7 @@ public class DatasetToRepositoryMigration {
 
   private static String createCommitAndBlobsFromDatsetVersion(
       Session session, DatasetVersion newDatasetVersion, Long repoId)
-      throws ModelDBException, NoSuchAlgorithmException, ExecutionException, InterruptedException {
+      throws ModelDBException, NoSuchAlgorithmException {
     RepositoryEntity repositoryEntity = session.get(RepositoryEntity.class, repoId);
     CreateCommitRequest.Response createCommitResponse =
         commitDAO.setCommitFromDatasetVersion(

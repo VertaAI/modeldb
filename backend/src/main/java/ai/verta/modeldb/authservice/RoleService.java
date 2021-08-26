@@ -11,7 +11,6 @@ import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Metadata;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public interface RoleService extends ai.verta.modeldb.common.authservice.RoleService {
 
@@ -34,7 +33,7 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
       ModelDBServiceActions modelDBServiceActions)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      throws InvalidProtocolBufferException;
 
   String buildReadOnlyRoleBindingName(
       String resourceId,

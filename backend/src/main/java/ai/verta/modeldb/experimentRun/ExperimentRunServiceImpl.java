@@ -34,7 +34,6 @@ import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -991,8 +990,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   private Map.Entry<String, String> getUrlForData(GetUrlForArtifact request)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException {
+      throws InvalidProtocolBufferException, ModelDBException {
 
     assert (request.getArtifactType().equals(ArtifactType.DATA));
     assert (!request.getId().isEmpty());
@@ -1018,8 +1016,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   private String getUrlForCode(GetUrlForArtifact request)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException {
+      throws InvalidProtocolBufferException, ModelDBException {
     ExperimentRun exprRun = experimentRunDAO.getExperimentRun(request.getId());
     String s3Key = null;
     /*If code version is not logged at a lower level we check for code at the higher level

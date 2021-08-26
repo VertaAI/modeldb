@@ -28,7 +28,6 @@ import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Metadata;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 public class PublicRoleServiceUtils implements RoleService {
 
@@ -114,7 +113,7 @@ public class PublicRoleServiceUtils implements RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
       ModelDBServiceActions modelDBServiceActions)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      throws InvalidProtocolBufferException {
     if (resourceId != null && !resourceId.isEmpty()) {
       if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
         if (!projectDAO.projectExistsInDB(resourceId)) {

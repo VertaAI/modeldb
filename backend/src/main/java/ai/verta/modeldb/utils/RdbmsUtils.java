@@ -31,7 +31,6 @@ import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
 import java.math.BigInteger;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.*;
@@ -65,7 +64,7 @@ public class RdbmsUtils {
   // TODO: delete as it seems unused
   public static List<Project> convertProjectsFromProjectEntityList(
       RoleService roleService, AuthService authService, List<ProjectEntity> projectEntityList)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      throws InvalidProtocolBufferException {
     List<Project> projects = new ArrayList<>();
     if (projectEntityList != null) {
       Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
@@ -373,7 +372,7 @@ public class RdbmsUtils {
 
   public static List<Dataset> convertDatasetsFromDatasetEntityList(
       RoleService roleService, List<DatasetEntity> datasetEntityList)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      throws InvalidProtocolBufferException {
     List<Dataset> datasets = new ArrayList<>();
     if (datasetEntityList != null) {
       for (DatasetEntity datasetEntity : datasetEntityList) {
