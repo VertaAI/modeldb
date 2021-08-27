@@ -174,21 +174,23 @@ public class KeyValueHandler {
   }
 
   private void insertKeyValue(String entityId, Handle handle, KeyValue kv) {
-    handle
-        .createUpdate(
-            "insert into "
-                + getTableName()
-                + " (entity_name, field_type, kv_key, kv_value, value_type, "
-                + entityIdReferenceColumn
-                + ") "
-                + "values (:entity_name, :field_type, :key, :value, :type, :entity_id)")
-        .bind("key", kv.getKey())
-        .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
-        .bind("type", kv.getValueTypeValue())
-        .bind("entity_id", entityId)
-        .bind("field_type", fieldType)
-        .bind("entity_name", entityName)
-        .execute();
+    var queryString =
+        "insert into "
+            + getTableName()
+            + " (entity_name, field_type, kv_key, kv_value, value_type, "
+            + entityIdReferenceColumn
+            + ") "
+            + "values (:entity_name, :field_type, :key, :value, :type, :entity_id)";
+    try (var queryHandler = handle.createUpdate(queryString)) {
+      queryHandler
+          .bind("key", kv.getKey())
+          .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
+          .bind("type", kv.getValueTypeValue())
+          .bind("entity_id", entityId)
+          .bind("field_type", fieldType)
+          .bind("entity_name", entityName)
+          .execute();
+    }
   }
 
   public InternalFuture<Void> deleteKeyValues(String entityId, Optional<List<String>> maybeKeys) {

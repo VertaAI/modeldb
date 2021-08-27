@@ -131,8 +131,8 @@ public class TelemetryUtils {
   }
 
   public void deleteTelemetryInformation() {
-    try (Connection connection = modelDBHibernateUtil.getConnection()) {
-      Statement stmt = connection.createStatement();
+    try (var connection = modelDBHibernateUtil.getConnection();
+        var stmt = connection.createStatement()) {
       String query = "DELETE FROM telemetry_information";
       int deletedRows = stmt.executeUpdate(query);
       LOGGER.info("Record deleted successfully : {}", deletedRows);

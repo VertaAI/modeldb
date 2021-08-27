@@ -237,7 +237,7 @@ public class App implements ApplicationContextAware {
       serverBuilder.addService(healthStatusManager.getHealthService());
 
       // Add middleware/interceptors
-      config.getTracingServerInterceptor().map(serverBuilder::intercept);
+      config.getTracingServerInterceptor().ifPresent(serverBuilder::intercept);
       serverBuilder.intercept(new MetadataForwarder());
       serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());

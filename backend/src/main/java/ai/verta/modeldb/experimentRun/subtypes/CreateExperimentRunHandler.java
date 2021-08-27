@@ -343,13 +343,15 @@ public class CreateExperimentRunHandler {
             + " AND experiment_id = :experimentId "
             + " AND deleted = :deleted ";
 
-    var query = handle.createQuery(queryStr).bind("experimentRunName", experimentRun.getName());
-    query.bind("projectId", experimentRun.getProjectId());
-    query.bind("experimentId", experimentRun.getExperimentId());
-    query.bind("deleted", false);
+    try (var query = handle.createQuery(queryStr)) {
+      query.bind("experimentRunName", experimentRun.getName());
+      query.bind("projectId", experimentRun.getProjectId());
+      query.bind("experimentId", experimentRun.getExperimentId());
+      query.bind("deleted", false);
 
-    long count = query.mapTo(Long.class).one();
-    return count > 0;
+      long count = query.mapTo(Long.class).one();
+      return count > 0;
+    }
   }
 
   private String buildRoleBindingName(
