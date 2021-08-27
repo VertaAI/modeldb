@@ -85,7 +85,7 @@ public class RoleServiceUtils implements RoleService {
               .getCollaboratorServiceBlockingStub()
               .setResource(setResourcesBuilder.build());
 
-      LOGGER.trace("SetResources message sent.  Response: " + setResourcesResponse);
+      LOGGER.trace("SetResources message sent.  Response: {}", setResourcesResponse);
       return true;
     } catch (StatusRuntimeException ex) {
       LOGGER.trace(ex);
@@ -103,7 +103,7 @@ public class RoleServiceUtils implements RoleService {
           authServiceChannel
               .getCollaboratorServiceBlockingStubForServiceUser()
               .deleteResources(deleteResources);
-      LOGGER.trace("DeleteResources message sent.  Response: " + response);
+      LOGGER.trace("DeleteResources message sent.  Response: {}", response);
       return true;
     } catch (StatusRuntimeException ex) {
       LOGGER.trace(ex);
@@ -142,11 +142,12 @@ public class RoleServiceUtils implements RoleService {
               modelDBServiceResourceTypes,
               authServiceChannel);
       if (responseItems.size() > 1) {
+        var mdbServiceTypeName = modelDBServiceResourceTypes.name();
         LOGGER.warn(
             "Role service returned {}"
                 + " resource response items fetching {} resource, but only expected 1. ID: {}",
             responseItems.size(),
-            modelDBServiceResourceTypes.name(),
+            mdbServiceTypeName,
             entityId);
       }
       Optional<GetResourcesResponseItem> responseItem = responseItems.stream().findFirst();
@@ -386,7 +387,7 @@ public class RoleServiceUtils implements RoleService {
             collaboratorUser = new CollaboratorUser(authService, workspaceId);
             break;
           default:
-            return null;
+            return workspaceRoleBindingList;
         }
         String roleBindingName =
             buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
@@ -465,7 +466,7 @@ public class RoleServiceUtils implements RoleService {
       }
       resourceIdsSet.addAll(accessibleResourceIds);
       LOGGER.debug(
-          "Accessible " + modelDBServiceResourceTypes + " Ids size is {}",
+          "Accessible {} Ids size is {}", modelDBServiceResourceTypes,
           accessibleResourceIds.size());
     }
 

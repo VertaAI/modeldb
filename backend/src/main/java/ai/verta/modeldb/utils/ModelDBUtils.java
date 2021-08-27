@@ -367,18 +367,20 @@ public class ModelDBUtils {
 
   public static boolean needToRetry(Exception ex) {
     Throwable communicationsException = findCommunicationsFailedCause(ex);
-    if ((communicationsException.getCause() instanceof CommunicationsException)
-        || (communicationsException.getCause() instanceof SocketException)
-        || (communicationsException.getCause() instanceof CJCommunicationsException)) {
-      LOGGER.warn(communicationsException.getMessage());
-      LOGGER.warn(
-          "Detected communication exception of type {}",
-          communicationsException.getCause().getClass());
-      return true;
-    } else if ((communicationsException.getCause() instanceof LockAcquisitionException)) {
-      LOGGER.warn(communicationsException.getMessage());
-      LOGGER.warn("Retrying since could not get lock");
-      return true;
+    if (communicationsException != null) {
+      if ((communicationsException.getCause() instanceof CommunicationsException)
+          || (communicationsException.getCause() instanceof SocketException)
+          || (communicationsException.getCause() instanceof CJCommunicationsException)) {
+        LOGGER.warn(communicationsException.getMessage());
+        LOGGER.warn(
+            "Detected communication exception of type {}",
+            communicationsException.getCause().getClass());
+        return true;
+      } else if ((communicationsException.getCause() instanceof LockAcquisitionException)) {
+        LOGGER.warn(communicationsException.getMessage());
+        LOGGER.warn("Retrying since could not get lock");
+        return true;
+      }
     }
     LOGGER.debug(
         "Detected exception of type {}, which is not categorized as retryable",

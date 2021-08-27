@@ -175,7 +175,7 @@ public class App implements ApplicationContextAware {
           Boolean.parseBoolean(
               Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))
                   .orElse("false"));
-      LOGGER.trace("run Liquibase separate: " + runLiquibaseSeparate);
+      LOGGER.trace("run Liquibase separate: {}", runLiquibaseSeparate);
       if (runLiquibaseSeparate) {
         return true;
       }
@@ -196,7 +196,7 @@ public class App implements ApplicationContextAware {
       Config config = Config.getInstance();
 
       // Configure spring HTTP server
-      LOGGER.info("Configuring spring HTTP traffic on port " + config.springServer.port);
+      LOGGER.info("Configuring spring HTTP traffic on port: {}", config.springServer.port);
       System.getProperties().put("server.port", config.springServer.port);
 
       // Initialize services that we depend on
@@ -264,16 +264,15 @@ public class App implements ApplicationContextAware {
                       int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
                       while (activeRequestCount > 0) {
                         activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-                        System.err.println("Active Request Count in while: " + activeRequestCount);
+                        LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
                         Thread.sleep(1000); // wait for 1s
                       }
                       // Use stderr here since the logger may have been reset by its JVM shutdown
                       // hook.
-                      System.err.println(
-                          "*** Shutting down gRPC server since JVM is shutting down ***");
+                      LOGGER.info("*** Shutting down gRPC server since JVM is shutting down ***");
                       server.shutdown();
                       server.awaitTermination();
-                      System.err.println("*** Server Shutdown ***");
+                      LOGGER.info("*** Server Shutdown ***");
                     } catch (InterruptedException e) {
                       LOGGER.error("Getting error while graceful shutdown", e);
                       // Restore interrupted state...

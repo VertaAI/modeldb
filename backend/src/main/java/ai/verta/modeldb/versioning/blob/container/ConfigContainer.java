@@ -18,11 +18,14 @@ import ai.verta.modeldb.versioning.TreeElem;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 
 public class ConfigContainer extends BlobContainer {
 
   private final ConfigBlob config;
+  private static final Logger LOGGER = LogManager.getLogger(ConfigContainer.class);
 
   public ConfigContainer(BlobExpanded blobExpanded) {
     super(blobExpanded);
@@ -97,12 +100,16 @@ public class ConfigContainer extends BlobContainer {
 
           hyperparameterSetConfigBlobEntity.setHyperparameterSetConfigElementMapping(
               hyperparameterElementConfigBlobEntitySet.values());
-          hyperparameterElementConfigBlobEntitySet.values().stream()
-              .map(
-                  hyperparameterElementConfigBlobEntity ->
-                      "value:" + hyperparameterElementConfigBlobEntity.getBlobHash())
-              .reduce((s, s2) -> s + ":" + s2)
-              .orElseThrow(() -> new ModelDBException("Empty set found"));
+          var hecbesString =
+              hyperparameterElementConfigBlobEntitySet.values().stream()
+                  .map(
+                      hyperparameterElementConfigBlobEntity ->
+                          "value:" + hyperparameterElementConfigBlobEntity.getBlobHash())
+                  .reduce((s, s2) -> s + ":" + s2)
+                  .orElseThrow(() -> new ModelDBException("Empty set found"));
+          LOGGER.debug(
+              "Config container: hyperparameterElementConfigBlobEntitySet string: {}",
+              hecbesString);
           break;
         default:
           throw new ModelDBException(

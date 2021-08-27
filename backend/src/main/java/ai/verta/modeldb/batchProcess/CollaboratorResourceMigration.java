@@ -446,7 +446,7 @@ public class CollaboratorResourceMigration {
               projectId,
               ModelDBConstants.ROLE_PROJECT_ADMIN,
               ModelDBServiceResourceTypes.PROJECT,
-              project.getProjectVisibility().equals(VisibilityEnum.Visibility.ORG_SCOPED_PUBLIC),
+              project.getProjectVisibility().equals(ResourceVisibility.ORG_CUSTOM),
               "_GLOBAL_SHARING");
       roleBindingNames.addAll(workspaceRoleBindingNames);
     }

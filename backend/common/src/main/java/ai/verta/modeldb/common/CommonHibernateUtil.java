@@ -401,7 +401,6 @@ public abstract class CommonHibernateUtil {
       } catch (JDBCConnectionException ex) {
         LOGGER.error(
             "CommonHibernateUtil ping() : DB connection not found, got error: {}", ex.getMessage());
-        // CommonHibernateUtil.sessionFactory = null;
       }
     }
     return false;
@@ -414,7 +413,7 @@ public abstract class CommonHibernateUtil {
       }
       return HealthCheckResponse.ServingStatus.NOT_SERVING;
     } catch (Exception ex) {
-      LOGGER.error("Getting error on health checkReady: " + ex.getMessage(), ex);
+      LOGGER.error("Getting error on health checkReady: {}", ex.getMessage(), ex);
       return HealthCheckResponse.ServingStatus.NOT_SERVING;
     }
   }
@@ -537,31 +536,31 @@ public abstract class CommonHibernateUtil {
   }
 
   public void createDBIfNotExists(RdbConfig rdb) throws SQLException {
-    LOGGER.info("Checking DB " + rdb.RdbUrl);
+    LOGGER.info("Checking DB: {}", rdb.RdbUrl);
     Properties properties = new Properties();
     properties.put("user", rdb.RdbUsername);
     properties.put("password", rdb.RdbPassword);
     properties.put("sslMode", rdb.sslMode);
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
-    LOGGER.info("Connecting to DB server url " + dbUrl);
+    LOGGER.info("Connecting to DB server url: {} ", dbUrl);
     try (var connection = DriverManager.getConnection(dbUrl, properties)) {
       ResultSet resultSet = connection.getMetaData().getCatalogs();
 
       while (resultSet.next()) {
         String databaseNameRes = resultSet.getString(1);
         if (rdb.RdbDatabaseName.equals(databaseNameRes)) {
-          System.out.println("the database " + rdb.RdbDatabaseName + " exists");
+          LOGGER.info("the database {} exists", rdb.RdbDatabaseName);
           return;
         }
       }
 
       var dbName = RdbConfig.buildDatabaseName(rdb);
 
-      System.out.println("the database " + rdb.RdbDatabaseName + " does not exists");
+      LOGGER.info("the database {} does not exists", rdb.RdbDatabaseName);
       try (var statement = connection.createStatement()) {
         StringBuilder queryBuilder = new StringBuilder("CREATE DATABASE " + dbName);
         statement.executeUpdate(queryBuilder.toString());
-        System.out.println("the database " + rdb.RdbDatabaseName + " created successfully");
+        LOGGER.info("the database {} created successfully", rdb.RdbDatabaseName);
       }
     }
     }

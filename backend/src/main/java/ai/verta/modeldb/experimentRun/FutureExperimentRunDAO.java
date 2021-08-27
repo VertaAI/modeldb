@@ -1610,12 +1610,15 @@ public class FutureExperimentRunDAO {
                 // Validate requested dataset version exists
                 jdbi.useHandle(
                     handle -> {
-                      handle
-                          .createQuery("SELECT COUNT(id) FROM commit WHERE id = :id")
-                          .bind("id", request.getDatasetVersionId())
-                          .mapTo(Long.class)
-                          .findOne()
-                          .orElseThrow(() -> new NotFoundException("DatasetVersion not found"));
+                      Optional<Long> count =
+                          handle
+                              .createQuery("SELECT COUNT(id) FROM commit WHERE id = :id")
+                              .bind("id", request.getDatasetVersionId())
+                              .mapTo(Long.class)
+                              .findOne();
+                      if (count.isEmpty() || count.get() == 0) {
+                        throw new NotFoundException("DatasetVersion not found");
+                      }
 
                       // Validate requested dataset version mappings with datasets
                       List<Long> mappingDatasetIds =
