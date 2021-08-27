@@ -8,7 +8,6 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Metadata;
 import java.util.List;
 
@@ -32,8 +31,7 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
   void validateEntityUserWithUserInfo(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       String resourceId,
-      ModelDBServiceActions modelDBServiceActions)
-      throws InvalidProtocolBufferException;
+      ModelDBServiceActions modelDBServiceActions);
 
   String buildReadOnlyRoleBindingName(
       String resourceId,

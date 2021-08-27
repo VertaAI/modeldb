@@ -6,7 +6,6 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
 import javax.persistence.CascadeType;
@@ -30,8 +29,7 @@ public class AttributeEntity {
 
   public AttributeEntity() {}
 
-  public AttributeEntity(Object entity, String fieldType, KeyValue keyValue)
-      throws InvalidProtocolBufferException {
+  public AttributeEntity(Object entity, String fieldType, KeyValue keyValue) {
     setKey(keyValue.getKey());
     setValue(ModelDBUtils.getStringFromProtoObject(keyValue.getValue()));
     setValue_type(keyValue.getValueTypeValue());
@@ -210,14 +208,9 @@ public class AttributeEntity {
     return field_type;
   }
 
-  public KeyValue getProtoObj() throws InvalidProtocolBufferException {
+  public KeyValue getProtoObj() {
     Builder valueBuilder = Value.newBuilder();
-    try {
-      valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(value, valueBuilder);
-    } catch (InvalidProtocolBufferException e) {
-      LOGGER.warn("Error generating builder for {}", value);
-      throw e;
-    }
+    valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(value, valueBuilder);
     return KeyValue.newBuilder()
         .setKey(key)
         .setValue(valueBuilder.build())

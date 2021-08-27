@@ -24,7 +24,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
@@ -934,7 +933,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     }
   }
 
-  private String getUrlForCode(GetUrlForArtifact request) throws InvalidProtocolBufferException {
+  private String getUrlForCode(GetUrlForArtifact request) {
     String s3Key = null;
     Experiment expr = experimentDAO.getExperiment(request.getId());
     if (expr.getCodeVersionSnapshot() != null

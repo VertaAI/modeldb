@@ -34,7 +34,6 @@ import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import com.google.protobuf.GeneratedMessageV3;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import io.grpc.Metadata;
 import io.grpc.stub.StreamObserver;
@@ -71,8 +70,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     this.executor = executor;
   }
 
-  private List<HydratedProject> getHydratedProjects(List<Project> projects)
-      throws InvalidProtocolBufferException {
+  private List<HydratedProject> getHydratedProjects(List<Project> projects) {
 
     LOGGER.trace("Hydrating {} projects.", projects.size());
     if (projects.isEmpty()) {
@@ -305,8 +303,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     }
   }
 
-  private List<HydratedExperimentRun> getHydratedExperimentRuns(List<ExperimentRun> experimentRuns)
-      throws InvalidProtocolBufferException {
+  private List<HydratedExperimentRun> getHydratedExperimentRuns(
+      List<ExperimentRun> experimentRuns) {
     LOGGER.debug(
         "experimentRuns count in getHydratedExperimentRuns method : {}", experimentRuns.size());
     Set<String> experimentIdSet = new HashSet<>();
@@ -509,13 +507,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                         HydratedExperimentRun.newBuilder().setExperimentRun(experimentRun).build());
                   }
                 } else if (!experimentRunPaginationDTO.getExperimentRunsList().isEmpty()) {
-                  try {
-                    hydratedExperimentRuns =
-                        getHydratedExperimentRuns(
-                            experimentRunPaginationDTO.getExperimentRunsList());
-                  } catch (InvalidProtocolBufferException e) {
-                    return InternalFuture.failedStage(e);
-                  }
+                  hydratedExperimentRuns =
+                      getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRunsList());
                 }
 
                 LOGGER.debug("hydratedExperimentRuns size {}", hydratedExperimentRuns.size());
@@ -748,8 +741,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     }
   }
 
-  private List<HydratedDataset> getHydratedDatasets(List<Dataset> datasets)
-      throws InvalidProtocolBufferException {
+  private List<HydratedDataset> getHydratedDatasets(List<Dataset> datasets) {
 
     LOGGER.trace("Hydrating {} datasets.", datasets.size());
     List<HydratedDataset> hydratedDatasets = new ArrayList<>();
@@ -826,8 +818,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   }
 
   private List<HydratedDataset> findHydratedDatasets(
-      DatasetPaginationDTO datasetPaginationDTO, Boolean isIdsOnly)
-      throws InvalidProtocolBufferException {
+      DatasetPaginationDTO datasetPaginationDTO, Boolean isIdsOnly) {
     List<HydratedDataset> hydratedDatasets = new ArrayList<>();
     if (isIdsOnly) {
       for (Dataset dataset : datasetPaginationDTO.getDatasets()) {
@@ -1024,8 +1015,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       FindProjects findProjectsRequest,
       UserInfo currentLoginUserInfo,
       CollaboratorBase host,
-      ResourceVisibility visibility)
-      throws InvalidProtocolBufferException {
+      ResourceVisibility visibility) {
 
     ProjectPaginationDTO projectPaginationDTO =
         projectDAO.findProjects(findProjectsRequest, host, currentLoginUserInfo, visibility);

@@ -3,7 +3,6 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,7 +26,7 @@ public class ExperimentEntity {
 
   public ExperimentEntity() {}
 
-  public ExperimentEntity(Experiment experiment) throws InvalidProtocolBufferException {
+  public ExperimentEntity(Experiment experiment) {
     setId(experiment.getId());
     setProject_id(experiment.getProjectId());
     setName(experiment.getName());
@@ -254,7 +253,7 @@ public class ExperimentEntity {
     this.deleted = deleted;
   }
 
-  public Experiment getProtoObject() throws InvalidProtocolBufferException {
+  public Experiment getProtoObject() {
     Experiment.Builder experimentBuilder =
         Experiment.newBuilder()
             .setId(getId())

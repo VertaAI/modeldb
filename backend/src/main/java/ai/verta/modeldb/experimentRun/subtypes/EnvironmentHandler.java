@@ -6,7 +6,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -27,8 +26,7 @@ public class EnvironmentHandler {
     this.entityName = entityName;
   }
 
-  public String getEnvironmentStringFromBlob(EnvironmentBlob runEnvironmentBlob)
-      throws InvalidProtocolBufferException {
+  public String getEnvironmentStringFromBlob(EnvironmentBlob runEnvironmentBlob) {
     if (runEnvironmentBlob != null) {
       EnvironmentBlob sortedEnvironmentBlob = sortPythonEnvironmentBlob(runEnvironmentBlob);
       return ModelDBUtils.getStringFromProtoObject(sortedEnvironmentBlob);

@@ -101,7 +101,6 @@ import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import java.util.ArrayList;
@@ -949,14 +948,8 @@ public class FutureExperimentRunDAO {
                                               if (environment != null && !environment.isEmpty()) {
                                                 EnvironmentBlob.Builder environmentBlobBuilder =
                                                     EnvironmentBlob.newBuilder();
-                                                try {
-                                                  CommonUtils.getProtoObjectFromString(
-                                                      environment, environmentBlobBuilder);
-                                                } catch (InvalidProtocolBufferException e) {
-                                                  LOGGER.error(
-                                                      "Error generating builder for environment");
-                                                  throw new ModelDBException(e);
-                                                }
+                                                CommonUtils.getProtoObjectFromString(
+                                                    environment, environmentBlobBuilder);
                                                 runBuilder.setEnvironment(
                                                     environmentBlobBuilder.build());
                                               }
