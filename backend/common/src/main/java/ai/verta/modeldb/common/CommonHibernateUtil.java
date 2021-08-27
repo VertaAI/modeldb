@@ -208,7 +208,7 @@ public abstract class CommonHibernateUtil {
       LOGGER.warn(
           "CommonHibernateUtil validateConnectionAndFetchExistingSessionFactory() getting error ",
           ex);
-      if (ex instanceof InterruptedException){
+      if (ex instanceof InterruptedException) {
         // Restore interrupted state...
         Thread.currentThread().interrupt();
       }
@@ -563,5 +563,5 @@ public abstract class CommonHibernateUtil {
         LOGGER.info("the database {} created successfully", rdb.RdbDatabaseName);
       }
     }
-    }
+  }
 }

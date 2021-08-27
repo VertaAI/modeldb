@@ -466,7 +466,8 @@ public class RoleServiceUtils implements RoleService {
       }
       resourceIdsSet.addAll(accessibleResourceIds);
       LOGGER.debug(
-          "Accessible {} Ids size is {}", modelDBServiceResourceTypes,
+          "Accessible {} Ids size is {}",
+          modelDBServiceResourceTypes,
           accessibleResourceIds.size());
     }
 

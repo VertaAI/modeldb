@@ -12,7 +12,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class FutureGrpc {
-  private FutureGrpc(){}
+  private FutureGrpc() {}
 
   // Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom
   // InternalFuture

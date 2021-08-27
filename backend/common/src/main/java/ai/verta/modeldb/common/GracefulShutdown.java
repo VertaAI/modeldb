@@ -44,8 +44,9 @@ public class GracefulShutdown
         threadPoolExecutor.shutdown();
         if (!threadPoolExecutor.awaitTermination(shutdownTimeout, TimeUnit.SECONDS)) {
           LOGGER.info(
-              "NFS Server thread pool did not shut down gracefully within " +
-                      "{} seconds. Proceeding with forceful shutdown", shutdownTimeout);
+              "NFS Server thread pool did not shut down gracefully within "
+                  + "{} seconds. Proceeding with forceful shutdown",
+              shutdownTimeout);
 
           threadPoolExecutor.shutdownNow();
 

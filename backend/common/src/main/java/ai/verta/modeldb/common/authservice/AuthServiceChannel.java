@@ -98,8 +98,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   private void initRoleServiceStubChannel() {
-    roleServiceBlockingStub =
-        attachInterceptors(RoleServiceGrpc.newBlockingStub(authChannel));
+    roleServiceBlockingStub = attachInterceptors(RoleServiceGrpc.newBlockingStub(authChannel));
   }
 
   public RoleServiceGrpc.RoleServiceBlockingStub getRoleServiceBlockingStub() {
@@ -136,8 +135,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   private void initAuthzServiceStubChannel() {
-    authzServiceBlockingStub =
-        attachInterceptors(AuthzServiceGrpc.newBlockingStub(authChannel));
+    authzServiceBlockingStub = attachInterceptors(AuthzServiceGrpc.newBlockingStub(authChannel));
   }
 
   public AuthzServiceGrpc.AuthzServiceBlockingStub getAuthzServiceBlockingStub() {
@@ -148,8 +146,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   private void initTeamServiceStubChannel() {
-    teamServiceBlockingStub =
-        attachInterceptors(TeamServiceGrpc.newBlockingStub(authChannel));
+    teamServiceBlockingStub = attachInterceptors(TeamServiceGrpc.newBlockingStub(authChannel));
   }
 
   public TeamServiceGrpc.TeamServiceBlockingStub getTeamServiceBlockingStub() {
@@ -191,8 +188,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private void initCollaboratorServiceStubChannelForServiceUser() {
     collaboratorServiceBlockingStubForServiceUser =
-        attachInterceptorsForServiceUser(
-            CollaboratorServiceGrpc.newBlockingStub(authChannel));
+        attachInterceptorsForServiceUser(CollaboratorServiceGrpc.newBlockingStub(authChannel));
   }
 
   public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
