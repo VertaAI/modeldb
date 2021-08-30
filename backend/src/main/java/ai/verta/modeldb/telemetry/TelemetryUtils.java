@@ -7,11 +7,9 @@ import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.io.FileNotFoundException;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Calendar;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
@@ -40,7 +38,7 @@ public class TelemetryUtils {
     if (!telemetryInitialized) {
       LOGGER.info("Found value for telemetryInitialized : {}", telemetryInitialized);
 
-      try (Connection connection = modelDBHibernateUtil.getConnection()) {
+      try (var connection = modelDBHibernateUtil.getConnection()) {
         final var database = App.getInstance().config.database;
         final var existStatus =
             ModelDBHibernateUtil.tableExists(connection, database, "modeldb_deployment_info");
@@ -53,7 +51,7 @@ public class TelemetryUtils {
           final var createTelemetryInformationQuery =
               "Create table telemetry_information (tel_key varchar(50),tel_value varchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer varchar(256)) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
 
-          try (Statement statement = connection.createStatement()) {
+          try (var statement = connection.createStatement()) {
             statement.executeUpdate(createModelDBDeploymentInfoQuery);
             statement.executeUpdate(createTelemetryInformationQuery);
             LOGGER.info(
@@ -67,18 +65,19 @@ public class TelemetryUtils {
         } else {
           if (database.RdbConfiguration.isMysql()) {
             // UTF migration is only applied to mysql due to db-specific syntax
-            try (Statement stmt = connection.createStatement()) {
-              String[] updateStatements = {
-                "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
-              };
+            try (var stmt = connection.createStatement()) {
+              var updateStatements =
+                  new String[] {
+                    "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                    "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                    "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                    "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                    "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
+                  };
               for (String updateStatement : updateStatements) {
                 stmt.executeUpdate(updateStatement);
               }
-              String selectQuery = "Select * from modeldb_deployment_info where md_key = 'id'";
+              var selectQuery = "Select * from modeldb_deployment_info where md_key = 'id'";
               ResultSet rs = stmt.executeQuery(selectQuery);
               if (rs.next()) {
                 telemetryUniqueIdentifier = rs.getString(2);
@@ -107,8 +106,8 @@ public class TelemetryUtils {
     }
     LOGGER.info("Telemetry unique identifier not initialized");
     telemetryUniqueIdentifier = UUID.randomUUID().toString();
-    try (Connection connection = modelDBHibernateUtil.getConnection()) {
-      String sql =
+    try (var connection = modelDBHibernateUtil.getConnection()) {
+      var sql =
           "INSERT INTO modeldb_deployment_info (md_key, md_value, creation_timestamp) VALUES(?,?,?)";
       try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
         pstmt.setString(1, ModelDBConstants.ID);
@@ -133,7 +132,7 @@ public class TelemetryUtils {
   public void deleteTelemetryInformation() {
     try (var connection = modelDBHibernateUtil.getConnection();
         var stmt = connection.createStatement()) {
-      String query = "DELETE FROM telemetry_information";
+      var query = "DELETE FROM telemetry_information";
       int deletedRows = stmt.executeUpdate(query);
       LOGGER.info("Record deleted successfully : {}", deletedRows);
       if (!connection.getAutoCommit()) connection.commit();
@@ -143,8 +142,8 @@ public class TelemetryUtils {
   }
 
   public void insertTelemetryInformation(KeyValue telemetryMetric) {
-    try (Connection connection = modelDBHibernateUtil.getConnection()) {
-      String sql =
+    try (var connection = modelDBHibernateUtil.getConnection()) {
+      var sql =
           "INSERT INTO telemetry_information (tel_key, tel_value, collection_timestamp, telemetry_consumer) VALUES(?,?,?,?)";
       try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
         pstmt.setString(1, telemetryMetric.getKey());

@@ -64,7 +64,7 @@ public class PublicAuthServiceUtils implements AuthService {
 
   @Override
   public UserInfoPaginationDTO getFuzzyUserInfoList(String username_char) {
-    UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
+    var paginationDTO = new UserInfoPaginationDTO();
     paginationDTO.setUserInfoList(Collections.emptyList());
     paginationDTO.setTotalRecords(0L);
     return paginationDTO;

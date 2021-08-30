@@ -9,7 +9,6 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
@@ -22,13 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 public class OwnerRoleBindingUtils {
   private OwnerRoleBindingUtils() {}
@@ -41,7 +37,7 @@ public class OwnerRoleBindingUtils {
   private static RoleService roleService;
 
   public static void execute() {
-    Config config = App.getInstance().config;
+    var config = App.getInstance().config;
     if (config.hasAuth()) {
       uac = UAC.FromConfig(config);
       authService = AuthServiceUtils.FromConfig(config, uac);
@@ -68,15 +64,15 @@ public class OwnerRoleBindingUtils {
     LOGGER.debug("Experiments migration started");
     Long count = getEntityCount(ExperimentEntity.class);
 
-    int lowerBound = 0;
-    final int pagesize = 5000;
+    var lowerBound = 0;
+    final var pagesize = 5000;
     LOGGER.debug("Total experiments {}", count);
 
     while (lowerBound < count) {
 
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-        Transaction transaction = session.beginTransaction();
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+        var transaction = session.beginTransaction();
+        var criteriaBuilder = session.getCriteriaBuilder();
 
         CriteriaQuery<ExperimentEntity> criteriaQuery =
             criteriaBuilder.createQuery(ExperimentEntity.class);
@@ -107,7 +103,7 @@ public class OwnerRoleBindingUtils {
           Map<String, UserInfo> userInfoMap =
               authService.getUserInfoFromAuthServer(userIds, null, null);
           for (ExperimentEntity experimentEntity : experimentEntities) {
-            UserInfo userInfoValue = userInfoMap.get(experimentEntity.getOwner());
+            var userInfoValue = userInfoMap.get(experimentEntity.getOwner());
             if (userInfoValue != null) {
               try {
                 roleService.createRoleBinding(
@@ -146,16 +142,16 @@ public class OwnerRoleBindingUtils {
     LOGGER.debug("ExperimentRuns migration started");
     Long count = getEntityCount(ExperimentRunEntity.class);
 
-    int lowerBound = 0;
-    final int pagesize = 5000;
+    var lowerBound = 0;
+    final var pagesize = 5000;
     LOGGER.debug("Total experimentruns {}", count);
 
     while (lowerBound < count) {
 
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-        Transaction transaction = session.beginTransaction();
+      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+        var transaction = session.beginTransaction();
 
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        var criteriaBuilder = session.getCriteriaBuilder();
 
         CriteriaQuery<ExperimentRunEntity> criteriaQuery =
             criteriaBuilder.createQuery(ExperimentRunEntity.class);
@@ -183,7 +179,7 @@ public class OwnerRoleBindingUtils {
         Map<String, UserInfo> userInfoMap =
             authService.getUserInfoFromAuthServer(userIds, null, null);
         for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-          UserInfo userInfoValue = userInfoMap.get(experimentRunEntity.getOwner());
+          var userInfoValue = userInfoMap.get(experimentRunEntity.getOwner());
           if (userInfoValue != null) {
             try {
               roleService.createRoleBinding(
@@ -219,15 +215,15 @@ public class OwnerRoleBindingUtils {
     LOGGER.debug("DatasetVersions migration started");
     Long count = getEntityCount(DatasetVersionEntity.class);
 
-    int lowerBound = 0;
-    final int pagesize = 5000;
+    var lowerBound = 0;
+    final var pagesize = 5000;
     LOGGER.debug("Total datasetVersions {}", count);
 
     while (lowerBound < count) {
 
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-        Transaction transaction = session.beginTransaction();
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+        var transaction = session.beginTransaction();
+        var criteriaBuilder = session.getCriteriaBuilder();
 
         CriteriaQuery<DatasetVersionEntity> criteriaQuery =
             criteriaBuilder.createQuery(DatasetVersionEntity.class);
@@ -258,7 +254,7 @@ public class OwnerRoleBindingUtils {
           Map<String, UserInfo> userInfoMap =
               authService.getUserInfoFromAuthServer(userIds, null, null);
           for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
-            UserInfo userInfoValue = userInfoMap.get(datasetVersionEntity.getOwner());
+            var userInfoValue = userInfoMap.get(datasetVersionEntity.getOwner());
             if (userInfoValue != null) {
               try {
                 roleService.createRoleBinding(
@@ -298,15 +294,15 @@ public class OwnerRoleBindingUtils {
     LOGGER.debug("Repositories migration started");
     Long count = getEntityCount(RepositoryEntity.class);
 
-    int lowerBound = 0;
-    final int pagesize = 5000;
+    var lowerBound = 0;
+    final var pagesize = 5000;
     LOGGER.debug("Total repositories {}", count);
 
     while (lowerBound < count) {
 
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-        Transaction transaction = session.beginTransaction();
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+        var transaction = session.beginTransaction();
+        var criteriaBuilder = session.getCriteriaBuilder();
 
         CriteriaQuery<RepositoryEntity> criteriaQuery =
             criteriaBuilder.createQuery(RepositoryEntity.class);
@@ -336,10 +332,10 @@ public class OwnerRoleBindingUtils {
           Map<String, UserInfo> userInfoMap =
               authService.getUserInfoFromAuthServer(userIds, null, null);
           for (RepositoryEntity repositoryEntity : repositoryEntities) {
-            UserInfo userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
+            var userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
             if (userInfoValue != null) {
               try {
-                ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+                var modelDBServiceResourceTypes =
                     ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
                 roleService.createRoleBinding(
                     ModelDBConstants.ROLE_REPOSITORY_OWNER,
@@ -375,8 +371,8 @@ public class OwnerRoleBindingUtils {
   }
 
   private static Long getEntityCount(Class<?> klass) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var criteriaBuilder = session.getCriteriaBuilder();
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
       countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
       return session.createQuery(countQuery).getSingleResult();

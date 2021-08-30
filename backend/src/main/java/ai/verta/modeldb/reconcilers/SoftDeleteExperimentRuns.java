@@ -16,8 +16,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 public class SoftDeleteExperimentRuns extends Reconciler<String> {
@@ -34,11 +32,11 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
 
   @Override
   public void resync() {
-    String queryString =
+    var queryString =
         String.format(
             "select id from %s where deleted=:deleted", ExperimentRunEntity.class.getSimpleName());
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query<String> deletedQuery = session.createQuery(queryString, String.class);
       deletedQuery.setParameter("deleted", true);
       deletedQuery.setMaxResults(config.maxSync);
@@ -52,8 +50,8 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
 
     deleteRoleBindings(ids);
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      String experimentRunQueryString =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunQueryString =
           String.format("from %s where id in (:ids)", ExperimentRunEntity.class.getSimpleName());
 
       Query<ExperimentRunEntity> experimentRunDeleteQuery =
@@ -61,10 +59,10 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
       experimentRunDeleteQuery.setParameter("ids", ids);
       List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
 
-      Transaction transaction = session.beginTransaction();
-      String delete =
+      var transaction = session.beginTransaction();
+      var delete =
           String.format("FROM %s WHERE entity_id IN (:ids)", CommentEntity.class.getSimpleName());
-      Query deleteQuery = session.createQuery(delete);
+      var deleteQuery = session.createQuery(delete);
       deleteQuery.setParameterList("ids", ids);
       List<CommentEntity> comments = deleteQuery.list();
       for (CommentEntity commentEntity : comments) {
@@ -83,8 +81,8 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
   }
 
   private void deleteRoleBindings(Set<String> ids) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      String deleteExperimentRunQueryString =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var deleteExperimentRunQueryString =
           String.format("FROM %s WHERE id IN (:ids)", ExperimentRunEntity.class.getSimpleName());
 
       Query<ExperimentRunEntity> experimentRunDeleteQuery =

@@ -42,12 +42,12 @@ public class NFSController {
       return new UploadFileResponse(fileName, null, null, -1L, null);
     } catch (ModelDBException e) {
       LOGGER.info(e.getMessage(), e);
-      Status status =
+      var status =
           Status.newBuilder().setCode(e.getCode().value()).setMessage(e.getMessage()).build();
       throw StatusProto.toStatusRuntimeException(status);
     } catch (Exception e) {
       LOGGER.warn(e.getMessage(), e);
-      Status status =
+      var status =
           Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
       throw StatusProto.toStatusRuntimeException(status);
     }
@@ -61,7 +61,7 @@ public class NFSController {
       throws ModelDBException {
     try {
       // Load file as Resource
-      Resource resource = nfsService.loadFileAsResource(artifactPath);
+      var resource = nfsService.loadFileAsResource(artifactPath);
 
       // Try to determine file's content type
       String contentType = getContentType(request, resource);

@@ -49,7 +49,7 @@ public class DAOSet {
       Executor executor,
       Config config,
       TrialConfig trialConfig) {
-    DAOSet set = new DAOSet();
+    var set = new DAOSet();
 
     set.metadataDAO = new MetadataDAORdbImpl();
     set.commitDAO = new CommitDAORdbImpl(services.authService, services.roleService);

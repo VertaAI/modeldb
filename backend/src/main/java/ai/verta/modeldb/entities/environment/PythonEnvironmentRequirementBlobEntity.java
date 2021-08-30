@@ -111,7 +111,7 @@ public class PythonEnvironmentRequirementBlobEntity implements Serializable {
   }
 
   public void toProto(Builder pythonEnvironmentBlobBuilder) {
-    final PythonRequirementEnvironmentBlob.Builder builderForValue =
+    final var builderForValue =
         PythonRequirementEnvironmentBlob.newBuilder().setVersion(getVersion());
     builderForValue.setLibrary(library).setConstraint(constraint);
     if (isRequirement()) {

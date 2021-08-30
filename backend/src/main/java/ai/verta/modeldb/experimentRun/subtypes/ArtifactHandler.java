@@ -104,7 +104,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                       throw new NotFoundException(finalErrorMessage);
                     }
 
-                    GetUrlForArtifact.Response response =
+                    var response =
                         artifactStoreDAO.getUrlForArtifactMultipart(
                             s3Key, request.getMethod(), request.getPartNumber(), uploadId);
 
@@ -124,8 +124,8 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               final var id =
                   maybeId.orElseThrow(
                       () -> new InvalidArgumentException("Key " + key + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 return getS3PathAndMultipartUploadId(
                     session, artifactEntity, partNumber != 0, initializeMultipart);
@@ -220,8 +220,8 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                   maybeId.orElseThrow(
                       () ->
                           new InvalidArgumentException("Key " + request.getKey() + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 VersioningUtils.saveArtifactPartEntity(
                     request.getArtifactPart(),
@@ -242,17 +242,16 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                   maybeId.orElseThrow(
                       () ->
                           new InvalidArgumentException("Key " + request.getKey() + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 Set<ArtifactPartEntity> artifactPartEntities =
                     VersioningUtils.getArtifactPartEntities(
                         session,
                         String.valueOf(artifactEntity.getId()),
                         ArtifactPartEntity.EXP_RUN_ARTIFACT);
-                ;
-                GetCommittedArtifactParts.Response.Builder response =
-                    GetCommittedArtifactParts.Response.newBuilder();
+
+                var response = GetCommittedArtifactParts.Response.newBuilder();
                 artifactPartEntities.forEach(
                     artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
                 return response.build();
@@ -269,11 +268,11 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                   maybeId.orElseThrow(
                       () ->
                           new InvalidArgumentException("Key " + request.getKey() + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 if (artifactEntity.getUploadId() == null) {
-                  String message =
+                  var message =
                       "Multipart wasn't initialized OR Multipart artifact already committed";
                   throw new InvalidArgumentException(message);
                 }

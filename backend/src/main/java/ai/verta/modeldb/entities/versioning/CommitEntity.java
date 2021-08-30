@@ -156,7 +156,7 @@ public class CommitEntity {
   }
 
   public Commit toCommitProto() {
-    Commit.Builder commitBuilder =
+    var commitBuilder =
         Commit.newBuilder()
             .setCommitSha(this.commit_hash)
             .addAllParentShas(getParentCommitIds())

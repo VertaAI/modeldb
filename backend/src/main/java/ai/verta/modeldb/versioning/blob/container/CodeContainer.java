@@ -36,14 +36,14 @@ public class CodeContainer extends BlobContainer {
     switch (code.getContentCase()) {
       case GIT:
         blobType = GIT_CODE_BLOB;
-        GitCodeBlob gitCodeBlob = code.getGit();
+        var gitCodeBlob = code.getGit();
         blobHash = saveBlob(session, gitCodeBlob, blobHashes).getBlobHash();
         break;
       case NOTEBOOK:
         blobType = NOTEBOOK_CODE_BLOB;
         NotebookCodeBlob notebook = code.getNotebook();
-        GitCodeBlobEntity gitCodeBlobEntity = saveBlob(session, notebook.getGitRepo(), blobHashes);
-        PathDatasetBlob.Builder pathDatasetBlobBuilder = PathDatasetBlob.newBuilder();
+        var gitCodeBlobEntity = saveBlob(session, notebook.getGitRepo(), blobHashes);
+        var pathDatasetBlobBuilder = PathDatasetBlob.newBuilder();
         if (notebook.getPath() != null) {
           pathDatasetBlobBuilder.addComponents(notebook.getPath());
         }
@@ -72,7 +72,7 @@ public class CodeContainer extends BlobContainer {
       throws NoSuchAlgorithmException {
     String sha = computeSHA(gitCodeBlob);
     if (!blobHashes.contains(sha)) {
-      GitCodeBlobEntity gitCodeBlobEntity = new GitCodeBlobEntity(sha, gitCodeBlob);
+      var gitCodeBlobEntity = new GitCodeBlobEntity(sha, gitCodeBlob);
       session.saveOrUpdate(gitCodeBlobEntity);
       blobHashes.add(sha);
       return gitCodeBlobEntity;
@@ -82,7 +82,7 @@ public class CodeContainer extends BlobContainer {
   }
 
   private String computeSHA(GitCodeBlob gitCodeBlob) throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     sb.append("git:repo:")
         .append(gitCodeBlob.getRepo())
         .append(":tag:")

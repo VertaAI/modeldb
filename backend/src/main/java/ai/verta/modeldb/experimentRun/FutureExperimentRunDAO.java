@@ -560,7 +560,7 @@ public class FutureExperimentRunDAO {
       Optional<List<String>> resourceIds,
       Long workspaceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    ResourceType resourceType =
+    var resourceType =
         ResourceType.newBuilder()
             .setModeldbServiceResourceType(modelDBServiceResourceTypes)
             .build();
@@ -912,7 +912,7 @@ public class FutureExperimentRunDAO {
                                     return query
                                         .map(
                                             (rs, ctx) -> {
-                                              ExperimentRun.Builder runBuilder =
+                                              var runBuilder =
                                                   ExperimentRun.newBuilder()
                                                       .setId(rs.getString("experiment_run.id"))
                                                       .setProjectId(
@@ -946,7 +946,7 @@ public class FutureExperimentRunDAO {
                                               var environment =
                                                   rs.getString("experiment_run.environment");
                                               if (environment != null && !environment.isEmpty()) {
-                                                EnvironmentBlob.Builder environmentBlobBuilder =
+                                                var environmentBlobBuilder =
                                                     EnvironmentBlob.newBuilder();
                                                 CommonUtils.getProtoObjectFromString(
                                                     environment, environmentBlobBuilder);
@@ -1269,7 +1269,7 @@ public class FutureExperimentRunDAO {
   private List<ExperimentRun> sortExperimentRunFields(List<ExperimentRun> experimentRuns) {
     List<ExperimentRun> sortedRuns = new LinkedList<>();
     for (ExperimentRun run : experimentRuns) {
-      ExperimentRun.Builder experimentRunBuilder = ExperimentRun.newBuilder(run);
+      var experimentRunBuilder = ExperimentRun.newBuilder(run);
       experimentRunBuilder
           .clearTags()
           .addAllTags(run.getTagsList().stream().sorted().collect(Collectors.toList()))
@@ -1382,7 +1382,7 @@ public class FutureExperimentRunDAO {
   }
 
   private boolean checkAllResourceAllowed(List<Resources> resources) {
-    boolean allowedAllResources = false;
+    var allowedAllResources = false;
     if (!resources.isEmpty()) {
       // This should always MODEL_DB_SERVICE be the case unless we have a bug.
       allowedAllResources = resources.get(0).getAllResourceIds();
@@ -1558,8 +1558,7 @@ public class FutureExperimentRunDAO {
             executor)
         .thenAccept(
             existingVersioningEntryMap -> {
-              VersioningEntry existingVersioningEntry =
-                  existingVersioningEntryMap.get(request.getId());
+              var existingVersioningEntry = existingVersioningEntryMap.get(request.getId());
               if (existingVersioningEntry != null) {
                 if (existingVersioningEntry.getRepositoryId()
                         != request.getVersionedInputs().getRepositoryId()
@@ -1709,7 +1708,7 @@ public class FutureExperimentRunDAO {
         InternalFuture.runAsync(
             () -> {
               if (request.getExperimentId().isEmpty()) {
-                String errorMessage = "Experiment ID not present";
+                var errorMessage = "Experiment ID not present";
                 throw new InvalidArgumentException(errorMessage);
               }
             },
@@ -1780,7 +1779,7 @@ public class FutureExperimentRunDAO {
                           if (findExperimentRuns.getExperimentRunsList().isEmpty()) {
                             throw new NotFoundException("Source experiment run not found");
                           }
-                          ExperimentRun srcExperimentRun = findExperimentRuns.getExperimentRuns(0);
+                          var srcExperimentRun = findExperimentRuns.getExperimentRuns(0);
                           return srcExperimentRun.toBuilder().clone();
                         },
                         executor)

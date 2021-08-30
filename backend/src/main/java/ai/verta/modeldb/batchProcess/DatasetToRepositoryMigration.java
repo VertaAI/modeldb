@@ -18,7 +18,6 @@ import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -38,13 +37,11 @@ import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 public class DatasetToRepositoryMigration {
@@ -66,7 +63,7 @@ public class DatasetToRepositoryMigration {
 
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
-    Config config = App.getInstance().config;
+    var config = App.getInstance().config;
     uac = UAC.FromConfig(config);
     authService = AuthServiceUtils.FromConfig(config, uac);
     roleService = RoleServiceUtils.FromConfig(config, authService, uac);
@@ -85,15 +82,15 @@ public class DatasetToRepositoryMigration {
     LOGGER.debug("Datasets To Repositories migration started");
     LOGGER.debug("using batch size {}", recordUpdateLimit);
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       try {
-        String addBackupLinkedArtifactId =
+        var addBackupLinkedArtifactId =
             "ALTER TABLE artifact ADD COLUMN backup_linked_artifact_id varchar(255);";
         Query query = session.createSQLQuery(addBackupLinkedArtifactId);
         query.executeUpdate();
 
-        String copyDataToBackupColumn =
+        var copyDataToBackupColumn =
             "UPDATE artifact set backup_linked_artifact_id = linked_artifact_id";
         query = session.createSQLQuery(copyDataToBackupColumn);
         query.executeUpdate();
@@ -101,7 +98,7 @@ public class DatasetToRepositoryMigration {
         LOGGER.debug("backup_linked_artifact_id already exists");
       }
 
-      String createDatasetMigrationTable =
+      var createDatasetMigrationTable =
           "CREATE TABLE IF NOT EXISTS dataset_migration_status (dataset_id varchar(225) NOT NULL, repo_id bigint(20) NOT NULL, status varchar(255) DEFAULT NULL)";
       Query createQuery = session.createSQLQuery(createDatasetMigrationTable);
       createQuery.executeUpdate();
@@ -113,16 +110,16 @@ public class DatasetToRepositoryMigration {
 
     Long count = getEntityCount(DatasetEntity.class);
 
-    int lowerBound = 0;
+    var lowerBound = 0;
     final int pagesize = recordUpdateLimit;
     LOGGER.debug("Total Datasets {}", count);
 
     while (lowerBound < count) {
 
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         LOGGER.debug("starting Dataset Processing for batch starting with {}", lowerBound);
-        Transaction transaction = session.beginTransaction();
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+        var transaction = session.beginTransaction();
+        var criteriaBuilder = session.getCriteriaBuilder();
 
         CriteriaQuery<DatasetEntity> criteriaQuery =
             criteriaBuilder.createQuery(DatasetEntity.class);
@@ -198,7 +195,7 @@ public class DatasetToRepositoryMigration {
 
   private static void deleteAlreadyMigratedEntities(DatasetEntity datasetEntity) {
     LOGGER.debug("Dataset {} already started", datasetEntity.getId());
-    try (Session innerSession = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var innerSession = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Long repoId =
           getRepoIdFromDatasetMigrationStatus(innerSession, datasetEntity.getId(), "started");
       repositoryDAO.deleteRepositories(
@@ -211,7 +208,7 @@ public class DatasetToRepositoryMigration {
 
   private static boolean checkDatasetMigrationStatus(
       Session session, String datasetId, String status) {
-    String updateStatusToStarted =
+    var updateStatusToStarted =
         "select COUNT(*) FROM dataset_migration_status WHERE status = :status AND dataset_id = :datasetId";
     Query query = session.createSQLQuery(updateStatusToStarted);
     query.setParameter("datasetId", datasetId);
@@ -222,7 +219,7 @@ public class DatasetToRepositoryMigration {
 
   private static Long getRepoIdFromDatasetMigrationStatus(
       Session session, String datasetId, String status) {
-    String updateStatusToStarted =
+    var updateStatusToStarted =
         "select repo_id FROM dataset_migration_status WHERE status = :status AND dataset_id = :datasetId";
     Query query = session.createSQLQuery(updateStatusToStarted);
     query.setParameter("datasetId", datasetId);
@@ -232,8 +229,8 @@ public class DatasetToRepositoryMigration {
   }
 
   private static void markStartedDatasetMigration(String datasetId, Long repoId, String status) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      String updateStatusToStarted =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var updateStatusToStarted =
           "INSERT dataset_migration_status VALUES(:datasetId, :repoId, :status)";
       Query query = session.createSQLQuery(updateStatusToStarted);
       query.setParameter("datasetId", datasetId);
@@ -247,8 +244,8 @@ public class DatasetToRepositoryMigration {
   }
 
   private static void updateDatasetMigrationStatus(String datasetId, Long repoId, String status) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      String updateStatusToStarted =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var updateStatusToStarted =
           "UPDATE dataset_migration_status SET status = :status WHERE dataset_id = :datasetId AND repo_id = :repoId";
       Query query = session.createSQLQuery(updateStatusToStarted);
       query.setParameter("datasetId", datasetId);
@@ -265,7 +262,7 @@ public class DatasetToRepositoryMigration {
       Session session, DatasetEntity datasetEntity, UserInfo userInfoValue)
       throws ModelDBException, NoSuchAlgorithmException {
     String datasetId = datasetEntity.getId();
-    Dataset newDataset = datasetEntity.getProtoObject(roleService).toBuilder().setId("").build();
+    var newDataset = datasetEntity.getProtoObject(roleService).toBuilder().setId("").build();
     Dataset dataset;
     try {
       LOGGER.debug("Creating repository for dataset {}", datasetEntity.getId());
@@ -279,7 +276,7 @@ public class DatasetToRepositoryMigration {
       if (e instanceof StatusRuntimeException) {
         LOGGER.info("Getting error while migrating {} dataset", datasetId);
         LOGGER.info(e.getMessage());
-        Status status = Status.fromThrowable(e);
+        var status = Status.fromThrowable(e);
         if (status.getCode().equals(Status.Code.ALREADY_EXISTS)) {
           dataset =
               repositoryDAO.createOrUpdateDataset(
@@ -352,22 +349,22 @@ public class DatasetToRepositoryMigration {
         "DatasetVersions To Commits and Blobs migration started for dataset {}, repo id {}",
         datasetId,
         repoId);
-    String countQuery =
+    var countQuery =
         "SELECT COUNT(dv) FROM DatasetVersionEntity dv WHERE dv.dataset_id = :datasetId";
-    Query query = session.createQuery(countQuery);
+    var query = session.createQuery(countQuery);
     query.setParameter("datasetId", datasetId);
     Long count = (Long) query.uniqueResult();
 
-    int lowerBound = 0;
+    var lowerBound = 0;
     final int pagesize = recordUpdateLimit;
     LOGGER.debug("Total DatasetVersions {} in dataset {}", count, datasetId);
 
     while (lowerBound < count) {
 
-      try (Session session1 = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (var session1 = modelDBHibernateUtil.getSessionFactory().openSession()) {
         LOGGER.debug("starting Dataset Version Processing for batch starting with {}", lowerBound);
-        Transaction transaction = session1.beginTransaction();
-        CriteriaBuilder criteriaBuilder = session1.getCriteriaBuilder();
+        var transaction = session1.beginTransaction();
+        var criteriaBuilder = session1.getCriteriaBuilder();
 
         CriteriaQuery<DatasetVersionEntity> criteriaQuery =
             criteriaBuilder.createQuery(DatasetVersionEntity.class);
@@ -392,16 +389,16 @@ public class DatasetToRepositoryMigration {
         if (datasetVersionEntities.size() > 0) {
           for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
             try {
-              DatasetVersion newDatasetVersion = datasetVersionEntity.getProtoObject();
+              var newDatasetVersion = datasetVersionEntity.getProtoObject();
               if (newDatasetVersion.hasPathDatasetVersionInfo()) {
                 String commitHash =
                     createCommitAndBlobsFromDatsetVersion(session1, newDatasetVersion, repoId);
                 LOGGER.debug(
                     "{} datasetversion mapped to {} commit", newDatasetVersion.getId(), commitHash);
 
-                String updateDatasetsLinkedArtifactId =
+                var updateDatasetsLinkedArtifactId =
                     "UPDATE ArtifactEntity ar SET ar.linked_artifact_id = :commitHash WHERE ar.linked_artifact_id = :datasetVersionId";
-                Query linkedArtifactQuery = session1.createQuery(updateDatasetsLinkedArtifactId);
+                var linkedArtifactQuery = session1.createQuery(updateDatasetsLinkedArtifactId);
                 linkedArtifactQuery.setParameter("commitHash", commitHash);
                 linkedArtifactQuery.setParameter("datasetVersionId", datasetVersionEntity.getId());
                 int updateCount = linkedArtifactQuery.executeUpdate();
@@ -444,16 +441,16 @@ public class DatasetToRepositoryMigration {
   private static String createCommitAndBlobsFromDatsetVersion(
       Session session, DatasetVersion newDatasetVersion, Long repoId)
       throws ModelDBException, NoSuchAlgorithmException {
-    RepositoryEntity repositoryEntity = session.get(RepositoryEntity.class, repoId);
-    CreateCommitRequest.Response createCommitResponse =
+    var repositoryEntity = session.get(RepositoryEntity.class, repoId);
+    var createCommitResponse =
         commitDAO.setCommitFromDatasetVersion(
             newDatasetVersion, repositoryDAO, blobDAO, metadataDAO, repositoryEntity);
     return createCommitResponse.getCommit().getCommitSha();
   }
 
   private static Long getEntityCount(Class<?> klass) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var criteriaBuilder = session.getCriteriaBuilder();
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
       countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
       return session.createQuery(countQuery).getSingleResult();

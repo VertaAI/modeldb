@@ -45,7 +45,7 @@ public class FutureProjectDAO {
     this.jdbi = jdbi;
     this.uac = uac;
 
-    String entityName = "ProjectEntity";
+    var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
     tagsHandler = new TagsHandler(executor, jdbi, entityName);
   }

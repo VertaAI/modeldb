@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriComponentsBuilder;
 
 public interface ArtifactStoreService {
 
@@ -101,7 +100,7 @@ public interface ArtifactStoreService {
     String[] hostArr = host.split(":");
     String finalHost = hostArr[0];
 
-    UriComponentsBuilder uriComponentsBuilder =
+    var uriComponentsBuilder =
         ServletUriComponentsBuilder.newInstance().scheme(scheme).host(finalHost).path(endpoint);
     for (Map.Entry<String, Object> queryParam : parameters.entrySet()) {
       // Adding the filename to the path to enable file saved with that name

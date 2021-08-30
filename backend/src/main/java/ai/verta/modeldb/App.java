@@ -32,7 +32,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
 import io.grpc.BindableService;
-import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.prometheus.client.Gauge;
@@ -81,7 +80,7 @@ public class App implements ApplicationContextAware {
    * @param returnCode : for system exit - 0
    */
   public static void initiateShutdown(int returnCode) {
-    App app = App.getInstance();
+    var app = App.getInstance();
     SpringApplication.exit(app.applicationContext, () -> returnCode);
   }
 
@@ -131,7 +130,7 @@ public class App implements ApplicationContextAware {
 
   @Bean
   public ServletWebServerFactory servletContainer(final GracefulShutdown gracefulShutdown) {
-    TomcatServletWebServerFactory factory = new TomcatServletWebServerFactory();
+    var factory = new TomcatServletWebServerFactory();
     factory.addConnectorCustomizers(gracefulShutdown);
     return factory;
   }
@@ -154,11 +153,11 @@ public class App implements ApplicationContextAware {
 
   public static boolean migrate(DatabaseConfig databaseConfig, List<MigrationConfig> migrations)
       throws SQLException, LiquibaseException, ClassNotFoundException, InterruptedException {
-    boolean liquibaseMigration =
+    var liquibaseMigration =
         Boolean.parseBoolean(
             Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
                 .orElse("false"));
-    ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
+    var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(App.getInstance().config, databaseConfig);
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
@@ -171,7 +170,7 @@ public class App implements ApplicationContextAware {
       modelDBHibernateUtil.runMigration(databaseConfig, migrations);
       LOGGER.info("Code migration done");
 
-      boolean runLiquibaseSeparate =
+      var runLiquibaseSeparate =
           Boolean.parseBoolean(
               Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))
                   .orElse("false"));
@@ -193,14 +192,14 @@ public class App implements ApplicationContextAware {
           java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
       logger.setLevel(Level.WARNING);
       // --------------- Start reading properties --------------------------
-      Config config = Config.getInstance();
+      var config = Config.getInstance();
 
       // Configure spring HTTP server
       LOGGER.info("Configuring spring HTTP traffic on port: {}", config.springServer.port);
       System.getProperties().put("server.port", config.springServer.port);
 
       // Initialize services that we depend on
-      ServiceSet services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
+      var services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
 
       // Initialize database configuration and maybe run migration
       if (migrate(config.database, config.migrations)) {
@@ -211,10 +210,10 @@ public class App implements ApplicationContextAware {
       LOGGER.info("Migrations are disabled, starting application.");
 
       // Initialize executor so we don't lose context using Futures
-      final Executor handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
+      final var handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
 
       // Initialize data access
-      DAOSet daos =
+      var daos =
           DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config, config.trial);
 
       // Initialize telemetry
@@ -233,7 +232,7 @@ public class App implements ApplicationContextAware {
 
       // Initialize health check
       HealthServiceImpl healthService = getContext().getBean(HealthServiceImpl.class);
-      HealthStatusManager healthStatusManager = new HealthStatusManager(healthService);
+      var healthStatusManager = new HealthStatusManager(healthService);
       serverBuilder.addService(healthStatusManager.getHealthService());
 
       // Add middleware/interceptors
@@ -248,7 +247,7 @@ public class App implements ApplicationContextAware {
       initializeBackendServices(serverBuilder, services, daos, handleExecutor);
 
       // Create the server
-      Server server = serverBuilder.build();
+      var server = serverBuilder.build();
 
       // --------------- Start modelDB gRPC server --------------------------
       server.start();

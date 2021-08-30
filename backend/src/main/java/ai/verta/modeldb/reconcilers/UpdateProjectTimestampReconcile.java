@@ -36,8 +36,8 @@ public class UpdateProjectTimestampReconcile
                 .setFetchSize(config.maxSync)
                 .map(
                     (rs, ctx) -> {
-                      String projectId = rs.getString("ex.project_id");
-                      Long maxUpdatedDate = rs.getLong("max_date");
+                      var projectId = rs.getString("ex.project_id");
+                      var maxUpdatedDate = rs.getLong("max_date");
                       this.insert(new AbstractMap.SimpleEntry<>(projectId, maxUpdatedDate));
                       return rs;
                     })

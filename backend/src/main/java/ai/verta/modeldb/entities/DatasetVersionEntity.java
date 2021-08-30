@@ -257,7 +257,7 @@ public class DatasetVersionEntity {
   }
 
   public DatasetVersion getProtoObject() {
-    DatasetVersion.Builder datasetVersionBuilder =
+    var datasetVersionBuilder =
         DatasetVersion.newBuilder()
             .setId(getId())
             .setParentId(getParent_id() != null ? getParent_id() : "")

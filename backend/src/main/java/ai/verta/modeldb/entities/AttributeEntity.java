@@ -209,7 +209,7 @@ public class AttributeEntity {
   }
 
   public KeyValue getProtoObj() {
-    Builder valueBuilder = Value.newBuilder();
+    var valueBuilder = Value.newBuilder();
     valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(value, valueBuilder);
     return KeyValue.newBuilder()
         .setKey(key)

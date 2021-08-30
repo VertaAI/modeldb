@@ -254,7 +254,7 @@ public class ExperimentEntity {
   }
 
   public Experiment getProtoObject() {
-    Experiment.Builder experimentBuilder =
+    var experimentBuilder =
         Experiment.newBuilder()
             .setId(getId())
             .setProjectId(getProject_id())

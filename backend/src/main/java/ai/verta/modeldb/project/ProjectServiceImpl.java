@@ -2,7 +2,6 @@ package ai.verta.modeldb.project;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
-import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddProjectAttributes;
@@ -52,14 +51,12 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.UserInfo;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.ArrayList;
@@ -107,11 +104,10 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, null, ModelDBServiceActions.CREATE);
 
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      Project project = projectDAO.insertProject(request, userInfo);
+      var userInfo = authService.getCurrentLoginUserInfo();
+      var project = projectDAO.insertProject(request, userInfo);
 
-      CreateProject.Response response =
-          CreateProject.Response.newBuilder().setProject(project).build();
+      var response = CreateProject.Response.newBuilder().setProject(project).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -134,7 +130,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID is not found in UpdateProjectDescription request";
+        var errorMessage = "Project ID is not found in UpdateProjectDescription request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -142,9 +138,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project updatedProject =
+      var updatedProject =
           projectDAO.updateProjectDescription(request.getId(), request.getDescription());
-      UpdateProjectDescription.Response response =
+      var response =
           UpdateProjectDescription.Response.newBuilder().setProject(updatedProject).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -178,10 +174,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project updatedProject =
+      var updatedProject =
           projectDAO.addProjectAttributes(request.getId(), request.getAttributesList());
-      AddProjectAttributes.Response response =
-          AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
+      var response = AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -220,9 +215,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project updatedProject =
+      var updatedProject =
           projectDAO.updateProjectAttributes(request.getId(), request.getAttribute());
-      UpdateProjectAttributes.Response response =
+      var response =
           UpdateProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -268,8 +263,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.getProjectAttributes(
               request.getId(), request.getAttributeKeysList(), request.getGetAll());
 
-      GetAttributes.Response response =
-          GetAttributes.Response.newBuilder().addAllAttributes(attributes).build();
+      var response = GetAttributes.Response.newBuilder().addAllAttributes(attributes).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -304,10 +298,10 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.DELETE);
 
-      Project updatedProject =
+      var updatedProject =
           projectDAO.deleteProjectAttributes(
               request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
-      DeleteProjectAttributes.Response response =
+      var response =
           DeleteProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -330,7 +324,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in AddProjectTags request";
+        var errorMessage = "Project ID not found in AddProjectTags request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -338,11 +332,10 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project updatedProject =
+      var updatedProject =
           projectDAO.addProjectTags(
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
-      AddProjectTags.Response response =
-          AddProjectTags.Response.newBuilder().setProject(updatedProject).build();
+      var response = AddProjectTags.Response.newBuilder().setProject(updatedProject).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -356,7 +349,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetTags request";
+        var errorMessage = "Project ID not found in GetTags request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -365,7 +358,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
       List<String> tags = projectDAO.getProjectTags(request.getId());
-      GetTags.Response response = GetTags.Response.newBuilder().addAllTags(tags).build();
+      var response = GetTags.Response.newBuilder().addAllTags(tags).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -402,11 +395,10 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project updatedProject =
+      var updatedProject =
           projectDAO.deleteProjectTags(
               request.getId(), request.getTagsList(), request.getDeleteAll());
-      DeleteProjectTags.Response response =
-          DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build();
+      var response = DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -438,12 +430,11 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project updatedProject =
+      var updatedProject =
           projectDAO.addProjectTags(
               request.getId(),
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
-      AddProjectTag.Response response =
-          AddProjectTag.Response.newBuilder().setProject(updatedProject).build();
+      var response = AddProjectTag.Response.newBuilder().setProject(updatedProject).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -474,10 +465,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project updatedProject =
+      var updatedProject =
           projectDAO.deleteProjectTags(request.getId(), Arrays.asList(request.getTag()), false);
-      DeleteProjectTag.Response response =
-          DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build();
+      var response = DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -498,13 +488,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in DeleteProject request";
+        var errorMessage = "Project ID not found in DeleteProject request";
         throw new InvalidArgumentException(errorMessage);
       }
 
       List<String> deletedProjectIds =
           projectDAO.deleteProjects(Collections.singletonList(request.getId()));
-      DeleteProject.Response response =
+      var response =
           DeleteProject.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -526,7 +516,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       GetProjects request, StreamObserver<GetProjects.Response> responseObserver) {
     try {
       LOGGER.debug("getting project");
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
       FindProjects.Builder findProjects =
           FindProjects.newBuilder()
@@ -536,11 +526,11 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               .setSortKey(request.getSortKey())
               .setWorkspaceName(request.getWorkspaceName());
 
-      ProjectPaginationDTO projectPaginationDTO =
+      var projectPaginationDTO =
           projectDAO.findProjects(findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
 
       List<Project> projects = projectPaginationDTO.getProjects();
-      GetProjects.Response response =
+      var response =
           GetProjects.Response.newBuilder()
               .addAllProjects(projects)
               .setTotalRecords(projectPaginationDTO.getTotalRecords())
@@ -559,7 +549,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetProjectById request";
+        var errorMessage = "Project ID not found in GetProjectById request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -567,9 +557,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
-      Project project = projectDAO.getProjectByID(request.getId());
-      GetProjectById.Response response =
-          GetProjectById.Response.newBuilder().setProject(project).build();
+      var project = projectDAO.getProjectByID(request.getId());
+      var response = GetProjectById.Response.newBuilder().setProject(project).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -593,7 +582,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
       String workspaceName =
           request.getWorkspaceName().isEmpty()
               ? authService.getUsernameFromUserInfo(userInfo)
@@ -612,7 +601,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       .collect(Collectors.toList()))
               .setWorkspaceName(workspaceName);
 
-      ProjectPaginationDTO projectPaginationDTO =
+      var projectPaginationDTO =
           projectDAO.findProjects(findProjects.build(), null, userInfo, ResourceVisibility.PRIVATE);
 
       if (projectPaginationDTO.getTotalRecords() == 0) {
@@ -633,13 +622,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         projectIds.add(project.getId());
       }
 
-      GetProjectByName.Response.Builder responseBuilder = GetProjectByName.Response.newBuilder();
+      var responseBuilder = GetProjectByName.Response.newBuilder();
       if (selfOwnerProject != null) {
         responseBuilder.setProjectByUser(selfOwnerProject);
       }
       responseBuilder.addAllSharedProjects(sharedProjects);
 
-      GetProjectByName.Response response = responseBuilder.build();
+      var response = responseBuilder.build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -661,16 +650,15 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getId() == null) {
-        String errorMessage = "Project ID not found in DeepCopyProject request";
+        var errorMessage = "Project ID not found in DeepCopyProject request";
         throw new InvalidArgumentException(errorMessage);
       }
 
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
-      Project project = projectDAO.deepCopyProjectForUser(request.getId(), userInfo);
-      DeepCopyProject.Response response =
-          DeepCopyProject.Response.newBuilder().setProject(project).build();
+      var project = projectDAO.deepCopyProjectForUser(request.getId(), userInfo);
+      var response = DeepCopyProject.Response.newBuilder().setProject(project).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -701,12 +689,12 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getEntityId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetSummary request";
+        var errorMessage = "Project ID not found in GetSummary request";
         throw new InvalidArgumentException(errorMessage);
       }
 
       LOGGER.debug("Getting user info");
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
@@ -715,13 +703,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       List<Project> projects =
           projectDAO.getProjects(ModelDBConstants.ID, request.getEntityId(), userInfo);
       if (projects.isEmpty()) {
-        String errorMessage = "Project not found for given EntityId";
+        var errorMessage = "Project not found for given EntityId";
         throw new NotFoundException(errorMessage);
       } else if (projects.size() != 1) {
-        String errorMessage = "Multiple projects found for given EntityId";
+        var errorMessage = "Multiple projects found for given EntityId";
         throw new InternalErrorException(errorMessage);
       }
-      Project project = projects.get(0);
+      var project = projects.get(0);
 
       Long experimentCount =
           projectDAO.getExperimentCount(Collections.singletonList(project.getId()));
@@ -762,7 +750,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         for (String key : keySet) {
           Double[] minMaxValueArray = minMaxMetricsValueMap.get(key); // Index 0 = minValue, Index 1
           // = maxValue
-          MetricsSummary minMaxMetricsSummary =
+          var minMaxMetricsSummary =
               MetricsSummary.newBuilder()
                   .setKey(key)
                   .setMinValue(minMaxValueArray[0]) // Index 0 =
@@ -773,7 +761,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         }
       }
 
-      GetSummary.Response.Builder responseBuilder =
+      var responseBuilder =
           GetSummary.Response.newBuilder()
               .setName(project.getName())
               .setLastUpdatedTime(project.getDateUpdated())
@@ -785,7 +773,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         responseBuilder.setLastModifiedExperimentRunSummary(lastModifiedExperimentRunSummary);
       }
 
-      GetSummary.Response response = responseBuilder.build();
+      var response = responseBuilder.build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -817,10 +805,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project updatedProject =
-          projectDAO.updateProjectReadme(request.getId(), request.getReadmeText());
-      SetProjectReadme.Response response =
-          SetProjectReadme.Response.newBuilder().setProject(updatedProject).build();
+      var updatedProject = projectDAO.updateProjectReadme(request.getId(), request.getReadmeText());
+      var response = SetProjectReadme.Response.newBuilder().setProject(updatedProject).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -834,7 +820,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetProjectReadme request";
+        var errorMessage = "Project ID not found in GetProjectReadme request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -842,8 +828,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
-      Project project = projectDAO.getProjectByID(request.getId());
-      GetProjectReadme.Response response =
+      var project = projectDAO.getProjectByID(request.getId());
+      var response =
           GetProjectReadme.Response.newBuilder().setReadmeText(project.getReadmeText()).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -871,7 +857,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       LOGGER.debug("Getting user info");
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
@@ -883,10 +869,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw new InternalErrorException(errorMessage);
       }
 
-      Project project =
+      var project =
           projectDAO.setProjectShortName(request.getId(), request.getShortName(), userInfo);
-      SetProjectShortName.Response response =
-          SetProjectShortName.Response.newBuilder().setProject(project).build();
+      var response = SetProjectShortName.Response.newBuilder().setProject(project).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -901,7 +886,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetProjectShortName request";
+        var errorMessage = "Project ID not found in GetProjectShortName request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -909,8 +894,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
-      Project project = projectDAO.getProjectByID(request.getId());
-      GetProjectShortName.Response response =
+      var project = projectDAO.getProjectByID(request.getId());
+      var response =
           GetProjectShortName.Response.newBuilder().setShortName(project.getShortName()).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -942,7 +927,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project existingProject = projectDAO.getProjectByID(request.getId());
+      var existingProject = projectDAO.getProjectByID(request.getId());
       Project updatedProject;
       /*Update Code version*/
       if (!existingProject.getCodeVersionSnapshot().hasCodeArchive()
@@ -954,8 +939,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw new AlreadyExistsException(errorMessage);
       }
       /*Build response*/
-      LogProjectCodeVersion.Response.Builder responseBuilder =
-          LogProjectCodeVersion.Response.newBuilder().setProject(updatedProject);
+      var responseBuilder = LogProjectCodeVersion.Response.newBuilder().setProject(updatedProject);
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -972,7 +956,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetProjectCodeVersion request";
+        var errorMessage = "Project ID not found in GetProjectCodeVersion request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -981,10 +965,10 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       /*Get code version*/
-      Project existingProject = projectDAO.getProjectByID(request.getId());
-      CodeVersion codeVersion = existingProject.getCodeVersionSnapshot();
+      var existingProject = projectDAO.getProjectByID(request.getId());
+      var codeVersion = existingProject.getCodeVersionSnapshot();
 
-      GetProjectCodeVersion.Response response =
+      var response =
           GetProjectCodeVersion.Response.newBuilder().setCodeVersion(codeVersion).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -1001,13 +985,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     try {
       /*User validation*/
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
-      ProjectPaginationDTO projectPaginationDTO =
+      var projectPaginationDTO =
           projectDAO.findProjects(request, null, userInfo, ResourceVisibility.PRIVATE);
 
       List<Project> projects = projectPaginationDTO.getProjects();
-      FindProjects.Response response =
+      var response =
           FindProjects.Response.newBuilder()
               .addAllProjects(projects)
               .setTotalRecords(projectPaginationDTO.getTotalRecords())
@@ -1060,8 +1044,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       if (s3Key == null) {
         throw new NotFoundException(errorMessage);
       }
-      GetUrlForArtifact.Response response =
-          artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
+      var response = artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1072,7 +1055,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
   private String getUrlForCode(GetUrlForArtifact request) {
     String s3Key = null;
-    Project proj = projectDAO.getProjectByID(request.getId());
+    var proj = projectDAO.getProjectByID(request.getId());
     if (proj.getCodeVersionSnapshot() != null
         && proj.getCodeVersionSnapshot().getCodeArchive() != null) {
       s3Key = proj.getCodeVersionSnapshot().getCodeArchive().getPath();
@@ -1099,9 +1082,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       List<Artifact> artifactList =
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
-      Project updatedProject = projectDAO.logArtifacts(request.getId(), artifactList);
-      LogProjectArtifacts.Response.Builder responseBuilder =
-          LogProjectArtifacts.Response.newBuilder().setProject(updatedProject);
+      var updatedProject = projectDAO.logArtifacts(request.getId(), artifactList);
+      var responseBuilder = LogProjectArtifacts.Response.newBuilder().setProject(updatedProject);
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -1124,8 +1106,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
       List<Artifact> artifactList = projectDAO.getProjectArtifacts(request.getId());
-      GetArtifacts.Response response =
-          GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build();
+      var response = GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1152,9 +1133,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Project updatedProject = projectDAO.deleteArtifacts(request.getId(), request.getKey());
-      DeleteProjectArtifact.Response response =
-          DeleteProjectArtifact.Response.newBuilder().setProject(updatedProject).build();
+      var updatedProject = projectDAO.deleteArtifacts(request.getId(), request.getKey());
+      var response = DeleteProjectArtifact.Response.newBuilder().setProject(updatedProject).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1174,7 +1154,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       List<String> deletedProjectIds = projectDAO.deleteProjects(request.getIdsList());
-      DeleteProjects.Response response =
+      var response =
           DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();

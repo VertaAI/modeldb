@@ -27,7 +27,7 @@ public class ServiceSet {
 
   public static ServiceSet fromConfig(Config config, ArtifactStoreConfig artifactStoreConfig)
       throws IOException {
-    ServiceSet set = new ServiceSet();
+    var set = new ServiceSet();
     set.uac = UAC.FromConfig(config);
     set.authService = AuthServiceUtils.FromConfig(config, set.uac);
     set.roleService = RoleServiceUtils.FromConfig(config, set.authService, set.uac);

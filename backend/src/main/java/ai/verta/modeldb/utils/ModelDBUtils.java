@@ -9,7 +9,6 @@ import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
-import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
@@ -68,7 +67,7 @@ public class ModelDBUtils {
     LOGGER.info("Reading File {} as YAML", filePath);
     filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
     InputStream inputStream = new FileInputStream(new File(filePath));
-    Yaml yaml = new Yaml();
+    var yaml = new Yaml();
     @SuppressWarnings("unchecked")
     Map<String, Object> prop = (Map<String, Object>) yaml.load(inputStream);
     return prop;
@@ -90,7 +89,7 @@ public class ModelDBUtils {
             + "(?:[a-zA-Z0-9-]+\\.)+[a-z"
             + "A-Z]{2,7}$";
 
-    Pattern pat = Pattern.compile(emailRegex);
+    var pat = Pattern.compile(emailRegex);
     if (email == null) return false;
     return pat.matcher(email).matches();
   }
@@ -98,11 +97,11 @@ public class ModelDBUtils {
   private static String getMd5String(String inputString) {
     try {
       @SuppressWarnings("squid:S4790")
-      MessageDigest md = MessageDigest.getInstance("MD5");
+      var md = MessageDigest.getInstance("MD5");
       byte[] messageDigest = md.digest(inputString.getBytes());
-      BigInteger no = new BigInteger(1, messageDigest);
-      String hashtext = no.toString(16);
-      StringBuilder outputStringBuilder = new StringBuilder(hashtext);
+      var no = new BigInteger(1, messageDigest);
+      var hashtext = no.toString(16);
+      var outputStringBuilder = new StringBuilder(hashtext);
       while (outputStringBuilder.toString().length() < 32) {
         outputStringBuilder.append("0").append(outputStringBuilder.toString());
       }
@@ -120,9 +119,9 @@ public class ModelDBUtils {
     // underscore and hyphen
     String projectShortName = projectName.replaceAll("[^a-zA-Z0-9_.-]+", "-");
     if (projectShortName.length() > ModelDBConstants.NAME_MAX_LENGTH) {
-      String first10Characters = projectShortName.substring(0, 10);
-      String remainingCharacters = projectShortName.substring(11);
-      String md5RemainingCharacters = ModelDBUtils.getMd5String(remainingCharacters);
+      var first10Characters = projectShortName.substring(0, 10);
+      var remainingCharacters = projectShortName.substring(11);
+      var md5RemainingCharacters = ModelDBUtils.getMd5String(remainingCharacters);
       projectShortName = first10Characters + md5RemainingCharacters;
     }
     return projectShortName;
@@ -140,7 +139,7 @@ public class ModelDBUtils {
   public static List<String> checkEntityTagsLength(List<String> tags) {
     for (String tag : tags) {
       if (tag.isEmpty()) {
-        String errorMessage = "Invalid tag found, Tag shouldn't be empty";
+        var errorMessage = "Invalid tag found, Tag shouldn't be empty";
         throw new InvalidArgumentException(errorMessage);
       } else if (tag.length() > ModelDBConstants.TAG_LENGTH) {
         String errorMessage =
@@ -223,7 +222,7 @@ public class ModelDBUtils {
           CollaboratorBase collaborator1 = null;
           switch (collaborator.getAuthzEntityType()) {
             case USER:
-              UserInfo userInfoValue = userInfoMap.get(collaborator.getVertaId());
+              var userInfoValue = userInfoMap.get(collaborator.getVertaId());
               if (userInfoValue != null) {
                 collaborator1 = new CollaboratorUser(authService, userInfoValue);
               } else {
@@ -240,10 +239,10 @@ public class ModelDBUtils {
               throw new InternalErrorException(CommonConstants.INTERNAL_ERROR);
           }
 
-          final Builder builder = CollaboratorUserInfo.newBuilder();
+          final var builder = CollaboratorUserInfo.newBuilder();
           if (collaborator1 != null) {
             collaborator1.addToResponse(builder);
-            CollaboratorUserInfo collaboratorUserInfo =
+            var collaboratorUserInfo =
                 builder
                     .setCanDeploy(collaborator.getPermission().getCanDeploy())
                     .setCollaboratorType(collaborator.getPermission().getCollaboratorType())
@@ -316,7 +315,7 @@ public class ModelDBUtils {
             .findFirst()
             .orElseThrow(
                 () -> {
-                  Status status =
+                  var status =
                       Status.newBuilder()
                           .setCode(Code.INTERNAL_VALUE)
                           .setMessage("Can't find allowed actions of current user for: " + ids)
@@ -328,7 +327,7 @@ public class ModelDBUtils {
 
   public static List<KeyValueQuery> getKeyValueQueriesByWorkspace(
       RoleService roleService, UserInfo userInfo, String workspaceName) {
-    WorkspaceDTO workspaceDTO = roleService.getWorkspaceDTOByWorkspaceName(userInfo, workspaceName);
+    var workspaceDTO = roleService.getWorkspaceDTOByWorkspaceName(userInfo, workspaceName);
     return getKeyValueQueriesByWorkspaceDTO(workspaceDTO);
   }
 
@@ -393,7 +392,7 @@ public class ModelDBUtils {
     if (throwable == null) {
       return null;
     }
-    Throwable rootCause = throwable;
+    var rootCause = throwable;
     while (rootCause.getCause() != null
         && !(rootCause.getCause() instanceof CJCommunicationsException
             || rootCause.getCause() instanceof CommunicationsException
@@ -446,7 +445,7 @@ public class ModelDBUtils {
       String workspaceName,
       UserInfo userInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+    var workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
     List<GetResourcesResponseItem> items =
         roleService.getResourceItems(
             workspace, accessibleAllWorkspaceProjectIds, modelDBServiceResourceTypes);
@@ -559,8 +558,7 @@ public class ModelDBUtils {
 
   public static ModelDBServiceResourceTypes getModelDBServiceResourceTypesFromRepository(
       RepositoryEntity repository) {
-    ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-        ModelDBServiceResourceTypes.REPOSITORY;
+    var modelDBServiceResourceTypes = ModelDBServiceResourceTypes.REPOSITORY;
     if (repository.isDataset()) {
       modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
     }

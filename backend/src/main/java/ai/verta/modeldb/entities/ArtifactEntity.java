@@ -20,7 +20,7 @@ public class ArtifactEntity {
   public ArtifactEntity() {}
 
   public ArtifactEntity(Object entity, String fieldType, Artifact artifact) {
-    App app = App.getInstance();
+    var app = App.getInstance();
     setKey(artifact.getKey());
     setPath(artifact.getPath());
     if (!artifact.getPathOnly()) {

@@ -63,8 +63,8 @@ public class SoftDeleteRepositories extends Reconciler<String> {
               RepositoryEntity.class.getSimpleName());
     }
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query deletedQuery = session.createQuery(queryString);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var deletedQuery = session.createQuery(queryString);
       deletedQuery.setParameter("deleted", true);
       deletedQuery.setMaxResults(config.maxSync);
       deletedQuery.stream().forEach(id -> this.insert(String.valueOf(id)));
@@ -83,7 +83,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
           new ArrayList<>(ids), ModelDBServiceResourceTypes.REPOSITORY);
     }
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       deleteRepositories(session, ids);
     }
 
@@ -92,10 +92,10 @@ public class SoftDeleteRepositories extends Reconciler<String> {
 
   private void deleteRepositories(Session session, Set<String> ids) {
     LOGGER.trace("Repository deleting");
-    String repositoriesQueryString =
+    var repositoriesQueryString =
         String.format("from %s where id in (:ids)", RepositoryEntity.class.getSimpleName());
 
-    Query repositoryDeleteQuery = session.createQuery(repositoriesQueryString);
+    var repositoryDeleteQuery = session.createQuery(repositoriesQueryString);
     repositoryDeleteQuery.setParameter(
         "ids", ids.stream().map(Long::parseLong).collect(Collectors.toList()));
     List<RepositoryEntity> repositoryEntities = repositoryDeleteQuery.list();
@@ -104,7 +104,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
       for (RepositoryEntity repository : repositoryEntities) {
         Transaction transaction = null;
         try {
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+          var modelDBServiceResourceTypes =
               ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
           roleService.deleteEntityResourcesWithServiceUser(
               Collections.singletonList(String.valueOf(repository.getId())),
@@ -112,26 +112,26 @@ public class SoftDeleteRepositories extends Reconciler<String> {
 
           transaction = session.beginTransaction();
 
-          String deleteTagsHql =
+          var deleteTagsHql =
               new StringBuilder("DELETE " + TagsEntity.class.getSimpleName() + " te where te.id.")
                   .append(ModelDBConstants.REPOSITORY_ID)
                   .append(" = :repoId ")
                   .toString();
-          Query deleteTagsQuery = session.createQuery(deleteTagsHql);
+          var deleteTagsQuery = session.createQuery(deleteTagsHql);
           deleteTagsQuery.setParameter("repoId", repository.getId());
           deleteTagsQuery.executeUpdate();
 
           deleteLabels(
               session, String.valueOf(repository.getId()), IDTypeEnum.IDType.VERSIONING_REPOSITORY);
 
-          String getRepositoryBranchesHql =
+          var getRepositoryBranchesHql =
               new StringBuilder("From ")
                   .append(BranchEntity.class.getSimpleName())
                   .append(" br where br.id.")
                   .append(ModelDBConstants.REPOSITORY_ID)
                   .append(" = :repoId ")
                   .toString();
-          Query query = session.createQuery(getRepositoryBranchesHql);
+          var query = session.createQuery(getRepositoryBranchesHql);
           query.setParameter("repoId", repository.getId());
           List<BranchEntity> branchEntities = query.list();
 
@@ -141,15 +141,15 @@ public class SoftDeleteRepositories extends Reconciler<String> {
                   .collect(Collectors.toList());
 
           if (!branches.isEmpty()) {
-            String deleteBranchesHQL =
+            var deleteBranchesHQL =
                 "DELETE FROM BranchEntity br where br.id.repository_id = :repositoryId AND br.id.branch IN (:branches)";
-            Query deleteBranchQuery = session.createQuery(deleteBranchesHQL);
+            var deleteBranchQuery = session.createQuery(deleteBranchesHQL);
             deleteBranchQuery.setParameter("repositoryId", repository.getId());
             deleteBranchQuery.setParameterList("branches", branches);
             deleteBranchQuery.executeUpdate();
           }
 
-          StringBuilder commitQueryBuilder =
+          var commitQueryBuilder =
               new StringBuilder(
                   "SELECT cm FROM "
                       + CommitEntity.class.getSimpleName()
@@ -210,7 +210,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
   }
 
   public static void deleteLabels(Session session, Object entityHash, IDTypeEnum.IDType idType) {
-    String deleteLabelsQueryString =
+    var deleteLabelsQueryString =
         new StringBuilder("DELETE LabelsMappingEntity lm where lm.id.")
             .append(ModelDBConstants.ENTITY_HASH)
             .append(" = :entityHash ")
@@ -218,7 +218,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
             .append(ModelDBConstants.ENTITY_TYPE)
             .append(" = :entityType")
             .toString();
-    Query deleteLabelsQuery =
+    var deleteLabelsQuery =
         session
             .createQuery(deleteLabelsQueryString)
             .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -228,14 +228,14 @@ public class SoftDeleteRepositories extends Reconciler<String> {
   }
 
   public static void deleteAttribute(Session session, String entityHash) {
-    String deleteAllAttributes =
+    var deleteAllAttributes =
         new StringBuilder("delete from AttributeEntity at WHERE at.")
             .append(ModelDBConstants.ENTITY_HASH)
             .append(" = :entityHash")
             .append(" AND at.entity_name ")
             .append(" = :entityName")
             .toString();
-    Query deleteLabelsQuery =
+    var deleteLabelsQuery =
         session
             .createQuery(deleteAllAttributes)
             .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));

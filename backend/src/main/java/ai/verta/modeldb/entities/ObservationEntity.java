@@ -155,7 +155,7 @@ public class ObservationEntity {
   }
 
   public Observation getProtoObject() {
-    Observation.Builder builder = Observation.newBuilder();
+    var builder = Observation.newBuilder();
     builder.setTimestamp(timestamp);
     if (epoch_number != null) {
       builder.setEpochNumber(Value.newBuilder().setNumberValue(epoch_number));
