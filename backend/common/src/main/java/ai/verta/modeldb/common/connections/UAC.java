@@ -65,18 +65,16 @@ public class UAC extends Connection {
   }
 
   private Metadata getServiceUserMetadata(Config config) {
-    Metadata requestHeaders = new Metadata();
-    Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-    Metadata.Key<String> dev_key =
-        Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
-    Metadata.Key<String> dev_key_hyphen =
-        Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
-    Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+    var requestHeaders = new Metadata();
+    var emailKey = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
+    var devKey = Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+    var devKeyHyphen = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+    var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-    requestHeaders.put(email_key, config.service_user.email);
-    requestHeaders.put(dev_key, config.service_user.devKey);
-    requestHeaders.put(dev_key_hyphen, config.service_user.devKey);
-    requestHeaders.put(source_key, "PythonClient");
+    requestHeaders.put(emailKey, config.service_user.email);
+    requestHeaders.put(devKey, config.service_user.devKey);
+    requestHeaders.put(devKeyHyphen, config.service_user.devKey);
+    requestHeaders.put(sourceKey, "PythonClient");
     return requestHeaders;
   }
 

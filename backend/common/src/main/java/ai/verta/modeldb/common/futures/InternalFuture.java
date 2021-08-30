@@ -1,7 +1,6 @@
 package ai.verta.modeldb.common.futures;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -89,7 +88,7 @@ public class InternalFuture<T> {
                 }
                 promise.complete(values);
               } catch (RuntimeException | InterruptedException | ExecutionException t) {
-                if (t instanceof InterruptedException){
+                if (t instanceof InterruptedException) {
                   // Restore interrupted state...
                   Thread.currentThread().interrupt();
                 }
@@ -198,11 +197,11 @@ public class InternalFuture<T> {
     return from(stage.whenCompleteAsync(action, executor));
   }
 
-  public T get()  {
+  public T get() {
     try {
       return stage.toCompletableFuture().get();
     } catch (ExecutionException ex) {
-        throw new ModelDBException(ex);
+      throw new ModelDBException(ex);
     } catch (InterruptedException ex) {
       // Restore interrupted state...
       Thread.currentThread().interrupt();

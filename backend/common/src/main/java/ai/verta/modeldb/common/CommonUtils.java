@@ -31,11 +31,12 @@ public class CommonUtils {
   }
 
   @SuppressWarnings({"squid:S112"})
-  public static Message.Builder getProtoObjectFromString(String jsonString, Message.Builder builder) {
+  public static Message.Builder getProtoObjectFromString(
+      String jsonString, Message.Builder builder) {
     try {
-    JsonFormat.parser().merge(jsonString, builder);
-    return builder;
-    } catch (InvalidProtocolBufferException ex){
+      JsonFormat.parser().merge(jsonString, builder);
+      return builder;
+    } catch (InvalidProtocolBufferException ex) {
       LOGGER.warn("Error generating builder for {}", jsonString, ex);
       throw new RuntimeException(ex);
     }
@@ -85,16 +86,20 @@ public class CommonUtils {
       CompletionException ex = (CompletionException) e;
       return logError(ex.getCause(), defaultInstance);
     } else {
-      if (e == null){
-        var status1 = Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage("Exception found null").build();
+      if (e == null) {
+        var status1 =
+            Status.newBuilder()
+                .setCode(Code.INTERNAL_VALUE)
+                .setMessage("Exception found null")
+                .build();
         return StatusProto.toStatusRuntimeException(status1);
       }
-      Throwable throwable = findRootCause(e);
+      var throwable = findRootCause(e);
       // Condition 'throwable != null' covered by below condition 'throwable instanceof
       // SocketException'
       StackTraceElement[] stack = e.getStackTrace();
       if (throwable instanceof SocketException) {
-        String errorMessage = "Database Connection not found: ";
+        var errorMessage = "Database Connection not found: ";
         LOGGER.info("{} {}", errorMessage, e.getMessage());
         status =
             Status.newBuilder()
@@ -102,7 +107,7 @@ public class CommonUtils {
                 .setMessage(errorMessage + throwable.getMessage())
                 .build();
       } else if (e instanceof LockAcquisitionException) {
-        String errorMessage = "Encountered deadlock in database connection.";
+        var errorMessage = "Encountered deadlock in database connection.";
         LOGGER.info(" {} {}", errorMessage, e.getMessage());
         status =
             Status.newBuilder()
@@ -110,7 +115,7 @@ public class CommonUtils {
                 .setMessage(errorMessage + throwable.getMessage())
                 .build();
       } else if (e instanceof ModelDBException) {
-        ModelDBException modelDBException = (ModelDBException) e;
+        var modelDBException = (ModelDBException) e;
         logBasedOnTheErrorCode(isClientError(modelDBException.getCode().value()), modelDBException);
         status =
             Status.newBuilder()
@@ -126,7 +131,7 @@ public class CommonUtils {
                 .setMessage(CommonConstants.INTERNAL_ERROR)
                 .build();
       }
-      int n = 0;
+      var n = 0;
       boolean isLongStack = stack.length > STACKTRACE_LENGTH;
       if (isLongStack) {
         for (; n < STACKTRACE_LENGTH + 1; ++n) {
@@ -191,7 +196,7 @@ public class CommonUtils {
     if (throwable == null) {
       return null;
     }
-    Throwable rootCause = throwable;
+    var rootCause = throwable;
     while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
       rootCause = rootCause.getCause();
     }

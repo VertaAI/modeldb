@@ -6,9 +6,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -62,7 +60,7 @@ public abstract class Reconciler<T> {
 
   private void startWorkers() {
     var executorService = Executors.newFixedThreadPool(config.workerCount);
-    for (int i = 0; i < config.workerCount; i++) {
+    for (var i = 0; i < config.workerCount; i++) {
       Runnable runnable =
           () -> {
             while (true) {

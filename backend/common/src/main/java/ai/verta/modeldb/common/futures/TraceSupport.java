@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class TraceSupport {
-  private TraceSupport(){}
+  private TraceSupport() {}
 
   public static <T> T traceNonFuture(
       Supplier<T> supplier, String operationName, Map<String, String> tags) {
@@ -29,12 +29,12 @@ public class TraceSupport {
   }
 
   public static SpanContext getActiveSpanContext(Tracer tracer) {
-    Span activeSpan = ActiveSpanSource.GRPC_CONTEXT.getActiveSpan();
+    var activeSpan = ActiveSpanSource.GRPC_CONTEXT.getActiveSpan();
     if (activeSpan != null) {
       return activeSpan.context();
     }
 
-    SpanContext spanContext = ActiveSpanContextSource.GRPC_CONTEXT.getActiveSpanContext();
+    var spanContext = ActiveSpanContextSource.GRPC_CONTEXT.getActiveSpanContext();
     if (spanContext != null) {
       return spanContext;
     }

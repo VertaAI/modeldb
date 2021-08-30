@@ -9,7 +9,7 @@ public class MetadataForwarder implements ServerInterceptor {
   @Override
   public <R, S> ServerCall.Listener<R> interceptCall(
       ServerCall<R, S> call, Metadata requestHeaders, ServerCallHandler<R, S> next) {
-    Context context = Context.current().withValue(METADATA_INFO, requestHeaders);
+    var context = Context.current().withValue(METADATA_INFO, requestHeaders);
     ServerCall.Listener<R> delegate = Contexts.interceptCall(context, call, requestHeaders, next);
     return new ForwardingServerCallListener.SimpleForwardingServerCallListener<R>(delegate) {};
   }

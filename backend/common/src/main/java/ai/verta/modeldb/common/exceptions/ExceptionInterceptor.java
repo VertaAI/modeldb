@@ -7,8 +7,6 @@ import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.StatusRuntimeException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 // From https://sultanov.dev/blog/exception-handling-in-grpc-java-server/
 public class ExceptionInterceptor implements ServerInterceptor {
