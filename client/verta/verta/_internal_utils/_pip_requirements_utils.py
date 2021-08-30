@@ -352,15 +352,15 @@ def clean_reqs_file_lines(requirements):
     requirements = [req for req in requirements if req]  # empty line
     requirements = [req for req in requirements if not req.startswith('#')]  # comment line
 
-    # remove unsupported options
+    # remove pip install options
     # TODO: add support in VR-12389
     supported_requirements = []
     for req in requirements:
-        # https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format
+        # https://pip.pypa.io/en/stable/cli/pip_install/#requirements-file-format
         if req.startswith(('--', '-c ', '-f ', '-i ')):
             print("skipping unsupported option \"{}\"".format(req))
             continue
-        # https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
+        # https://pip.pypa.io/en/stable/topics/vcs-support/
         # TODO: upgrade protos and Client to handle VCS-installed packages
         if req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+')):
             print("skipping unsupported VCS-installed package \"{}\"".format(req))
