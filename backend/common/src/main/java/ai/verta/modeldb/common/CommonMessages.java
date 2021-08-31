@@ -1,14 +1,16 @@
 package ai.verta.modeldb.common;
 
 public abstract class CommonMessages {
-  private CommonMessages(){}
+  private CommonMessages() {}
 
   public static final String HOST_PORT_INFO_STR = "Host : {} Port : {}";
-  public static final String AUTH_SERVICE_CHANNEL_CLOSE_ERROR = "AuthServiceChannel close() error : ";
+  public static final String AUTH_SERVICE_CHANNEL_CLOSE_ERROR =
+      "AuthServiceChannel close() error : ";
   public static final String CALL_TO_ROLE_SERVICE_MSG = "Making a call to MDBRoleService";
   public static final String AUTH_SERVICE_REQ_SENT_MSG = "AuthService Request sent";
   public static final String ROLE_SERVICE_RES_RECEIVED_MSG = "MDBRoleService response received";
-  public static final String ROLE_SERVICE_RES_RECEIVED_TRACE_MSG = ROLE_SERVICE_RES_RECEIVED_MSG + " : {}";
+  public static final String ROLE_SERVICE_RES_RECEIVED_TRACE_MSG =
+      ROLE_SERVICE_RES_RECEIVED_MSG + " : {}";
   public static final String AUTH_SERVICE_RES_RECEIVED_MSG = "AuthService response received";
   public static final String READY_STATUS = "Setting isReady to true, was {}";
 }
