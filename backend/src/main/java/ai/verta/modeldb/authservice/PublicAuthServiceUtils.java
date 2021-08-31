@@ -13,8 +13,6 @@ import java.util.Set;
 
 public class PublicAuthServiceUtils implements AuthService {
 
-  public PublicAuthServiceUtils() {}
-
   @Override
   public UserInfo getCurrentLoginUserInfo() {
     return null;

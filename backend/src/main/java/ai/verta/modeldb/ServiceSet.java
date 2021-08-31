@@ -18,6 +18,7 @@ import org.springframework.boot.SpringApplication;
 
 public class ServiceSet {
   private static final Logger LOGGER = LogManager.getLogger(App.class);
+  private static final String SCAN_PACKAGES = "scan.packages";
 
   public ArtifactStoreService artifactStoreService = null;
   public AuthService authService;
@@ -39,7 +40,7 @@ public class ServiceSet {
     if (mdbArtifactStoreConfig.enabled) {
       set.artifactStoreService = initializeArtifactStore(mdbArtifactStoreConfig);
     } else {
-      System.getProperties().put("scan.packages", "dummyPackageName");
+      System.getProperties().put(SCAN_PACKAGES, "dummyPackageName");
       SpringApplication.run(App.class);
     }
 
@@ -77,12 +78,12 @@ public class ServiceSet {
           System.setProperty(
               ModelDBConstants.CLOUD_BUCKET_NAME, mdbArtifactStoreConfig.S3.cloudBucketName);
           System.getProperties()
-              .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
+              .put(SCAN_PACKAGES, "ai.verta.modeldb.artifactStore.storageservice.s3");
           SpringApplication.run(App.class);
           artifactStoreService = App.getInstance().applicationContext.getBean(S3Service.class);
         } else {
           artifactStoreService = new S3Service(mdbArtifactStoreConfig.S3.cloudBucketName);
-          System.getProperties().put("scan.packages", "dummyPackageName");
+          System.getProperties().put(SCAN_PACKAGES, "dummyPackageName");
           SpringApplication.run(App.class);
         }
         break;
@@ -92,7 +93,7 @@ public class ServiceSet {
 
         System.getProperties().put("file.upload-dir", rootDir);
         System.getProperties()
-            .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.nfs");
+            .put(SCAN_PACKAGES, "ai.verta.modeldb.artifactStore.storageservice.nfs");
         SpringApplication.run(App.class, new String[0]);
 
         artifactStoreService = App.getInstance().applicationContext.getBean(NFSService.class);

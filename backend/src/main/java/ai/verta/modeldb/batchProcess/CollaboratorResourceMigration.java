@@ -39,12 +39,12 @@ public class CollaboratorResourceMigration {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private static final String REPOSITORY_GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
+  private static final String VISIBILITY_MIGRATION = "visibility_migration";
+  private static final String CREATED = "created";
   private static AuthService authService;
   private static UAC uac;
   private static MDBRoleService mdbRoleService;
   private static int paginationSize;
-
-  public CollaboratorResourceMigration() {}
 
   public static void execute() {
     var config = App.getInstance().mdbConfig;
@@ -86,8 +86,8 @@ public class CollaboratorResourceMigration {
               .select(root)
               .where(
                   criteriaBuilder.and(
-                      criteriaBuilder.equal(root.get("visibility_migration"), false),
-                      criteriaBuilder.equal(root.get("created"), true)));
+                      criteriaBuilder.equal(root.get(VISIBILITY_MIGRATION), false),
+                      criteriaBuilder.equal(root.get(CREATED), true)));
 
       TypedQuery<ProjectEntity> typedQuery = session.createQuery(selectQuery);
       Stream<ProjectEntity> projectEntities = typedQuery.getResultStream();
@@ -227,8 +227,8 @@ public class CollaboratorResourceMigration {
               .select(root)
               .where(
                   criteriaBuilder.and(
-                      criteriaBuilder.equal(root.get("visibility_migration"), false),
-                      criteriaBuilder.equal(root.get("created"), true)));
+                      criteriaBuilder.equal(root.get(VISIBILITY_MIGRATION), false),
+                      criteriaBuilder.equal(root.get(CREATED), true)));
 
       TypedQuery<RepositoryEntity> typedQuery = session.createQuery(selectQuery);
       List<RepositoryEntity> repositoryEntities = typedQuery.getResultList();
@@ -377,8 +377,8 @@ public class CollaboratorResourceMigration {
           .select(criteriaBuilder.count(root))
           .where(
               criteriaBuilder.and(
-                  criteriaBuilder.equal(root.get("visibility_migration"), false),
-                  criteriaBuilder.equal(root.get("created"), true)));
+                  criteriaBuilder.equal(root.get(VISIBILITY_MIGRATION), false),
+                  criteriaBuilder.equal(root.get(CREATED), true)));
 
       return session.createQuery(countQuery).getSingleResult();
     } catch (Exception ex) {

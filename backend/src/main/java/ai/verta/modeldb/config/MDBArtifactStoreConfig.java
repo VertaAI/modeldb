@@ -12,14 +12,11 @@ public class MDBArtifactStoreConfig extends ArtifactStoreConfig {
 
   public void Validate(String base) throws InvalidConfigException {
     if (artifactStoreType == null || artifactStoreType.isEmpty())
-      throw new InvalidConfigException(
-          base + ".artifactStoreType", Config.MISSING_REQUIRED);
+      throw new InvalidConfigException(base + ".artifactStoreType", Config.MISSING_REQUIRED);
 
     switch (artifactStoreType) {
       case "S3":
-        if (S3 == null)
-          throw new InvalidConfigException(
-              base + ".S3", Config.MISSING_REQUIRED);
+        if (S3 == null) throw new InvalidConfigException(base + ".S3", Config.MISSING_REQUIRED);
         S3.Validate(base + ".S3");
         break;
       case "NFS":
@@ -42,7 +39,8 @@ public class MDBArtifactStoreConfig extends ArtifactStoreConfig {
         return S3.storeTypePathPrefix();
       case "NFS":
         return NFS.storeTypePathPrefix();
+      default:
+        throw new ModelDBException("Unknown artifact store type", Code.INTERNAL);
     }
-    throw new ModelDBException("Unknown artifact store type", Code.INTERNAL);
   }
 }

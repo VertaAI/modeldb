@@ -57,7 +57,7 @@ public class CommonUtils {
       errorMessage = "UAC Service unavailable : " + errorMessage;
       if (retry && retryCallInterface != null) {
         try {
-          Thread.sleep(requestTimeout * 1000);
+          Thread.sleep(requestTimeout.longValue() * 1000L);
           retry = false;
         } catch (InterruptedException e) {
           // Restore interrupted state...

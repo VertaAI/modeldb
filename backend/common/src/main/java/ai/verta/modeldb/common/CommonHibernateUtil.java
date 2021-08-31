@@ -31,8 +31,8 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.exception.JDBCConnectionException;
 import org.hibernate.hikaricp.internal.HikariCPConnectionProvider;
@@ -61,6 +61,8 @@ public abstract class CommonHibernateUtil {
 
   public SessionFactory createOrGetSessionFactory(DatabaseConfig config) throws ModelDBException {
     if (sessionFactory == null) {
+      return validateConnectionAndFetchExistingSessionFactory(sessionFactory);
+    }
       LOGGER.info("Fetching sessionFactory");
       try {
 
@@ -95,9 +97,9 @@ public abstract class CommonHibernateUtil {
                 .setProperty("hibernate.generate_statistics", "true")
                 .setProperty("hibernate.jmx.enabled", "true")
                 .setProperty("hibernate.hbm2ddl.auto", "none")
-                .setProperty(Environment.QUERY_PLAN_CACHE_MAX_SIZE, String.valueOf(200))
+                .setProperty(AvailableSettings.QUERY_PLAN_CACHE_MAX_SIZE, String.valueOf(200))
                 .setProperty(
-                    Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, String.valueOf(20));
+                        AvailableSettings.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, String.valueOf(20));
 
         LOGGER.trace("connectionString {}", connectionString);
         // Create registry builder
@@ -148,9 +150,6 @@ public abstract class CommonHibernateUtil {
         }
         throw new ModelDBException(e.getMessage(), e);
       }
-    } else {
-      return validateConnectionAndFetchExistingSessionFactory(sessionFactory);
-    }
   }
 
   private String getDatasourceClass(RdbConfig rdbConfiguration) {
@@ -243,7 +242,7 @@ public abstract class CommonHibernateUtil {
   }
 
   private void exportSchema(Metadata buildMetadata) {
-    String rootPath = System.getProperty(CommonConstants.userDir);
+    String rootPath = System.getProperty(CommonConstants.USER_DIR);
     rootPath = rootPath + "\\src\\main\\resources\\liquibase\\hibernate-base-db-schema.sql";
     new SchemaExport()
         .setDelimiter(";")
@@ -314,7 +313,7 @@ public abstract class CommonHibernateUtil {
         }
 
         if (locked) {
-          Thread.sleep(config.liquibaseLockThreshold * 1000); // liquibaseLockThreshold = second
+          Thread.sleep(config.liquibaseLockThreshold.longValue() * 1000L); // liquibaseLockThreshold = second
           releaseLiquibaseLock(config);
         }
       }
@@ -343,7 +342,7 @@ public abstract class CommonHibernateUtil {
 
       // Initialize Liquibase and run the update
       var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
-      String rootPath = System.getProperty(CommonConstants.userDir);
+      String rootPath = System.getProperty(CommonConstants.USER_DIR);
       rootPath = rootPath + liquibaseRootPath;
       var liquibase = new Liquibase(rootPath, new FileSystemResourceAccessor(), database);
 

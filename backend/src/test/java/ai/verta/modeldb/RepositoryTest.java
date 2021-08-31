@@ -188,6 +188,11 @@ public class RepositoryTest extends TestsInit {
     String repo1 = "Repo-1-" + new Date().getTime();
     String repo2 = "Repo-2-" + new Date().getTime();
     long id = createRepository(versioningServiceBlockingStub, repo1);
+    GetUser getUserRequest =
+        GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+    // Get the user info by vertaId form the AuthService
+    UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
+    String testUser1UserName = testUser1.getVertaInfo().getUsername();
     try {
       try {
         SetRepository setRepository =
@@ -196,8 +201,8 @@ public class RepositoryTest extends TestsInit {
                     RepositoryIdentification.newBuilder()
                         .setNamedId(
                             RepositoryNamedIdentification.newBuilder()
-                                .setWorkspaceName("test1verta_gmail_com")
-                                .setName(repo2)
+                                .setWorkspaceName(testUser1UserName)
+                                .setName(repo1)
                                 .build())
                         .build())
                 .setRepository(Repository.newBuilder().setName(repo1))
@@ -205,11 +210,7 @@ public class RepositoryTest extends TestsInit {
         versioningServiceBlockingStub.createRepository(setRepository);
         Assert.fail();
       } catch (StatusRuntimeException e) {
-        if (testConfig.hasAuth()) {
-          assertEquals(Status.PERMISSION_DENIED.getCode(), e.getStatus().getCode());
-        } else {
-          assertEquals(Status.ALREADY_EXISTS.getCode(), e.getStatus().getCode());
-        }
+        assertEquals(Status.ALREADY_EXISTS.getCode(), e.getStatus().getCode());
       }
       try {
         versioningServiceBlockingStubClient2.updateRepository(

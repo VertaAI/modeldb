@@ -15,11 +15,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.query.Query;
 
 public class SoftDeleteExperiments extends Reconciler<String> {
-  private static final Logger LOGGER = LogManager.getLogger(SoftDeleteExperiments.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final MDBRoleService mdbRoleService;
@@ -29,7 +27,7 @@ public class SoftDeleteExperiments extends Reconciler<String> {
       MDBRoleService mdbRoleService,
       FutureJdbi futureJdbi,
       Executor executor) {
-    super(config, LOGGER, futureJdbi, executor, false);
+    super(config, LogManager.getLogger(SoftDeleteExperiments.class), futureJdbi, executor, false);
     this.mdbRoleService = mdbRoleService;
   }
 
@@ -49,7 +47,7 @@ public class SoftDeleteExperiments extends Reconciler<String> {
 
   @Override
   protected ReconcileResult reconcile(Set<String> ids) {
-    LOGGER.debug("Reconciling experiments " + ids.toString());
+    logger.debug("Reconciling experiments " + ids.toString());
 
     deleteRoleBindings(ids);
 

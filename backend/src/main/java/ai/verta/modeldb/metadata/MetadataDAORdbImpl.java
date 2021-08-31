@@ -230,6 +230,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
                 switch (builder.getIdType()) {
                   case VERSIONING_REPOSITORY:
                     builder.setIntId(Long.parseLong(labelsMappingEntity.getId().getEntity_hash()));
+                    break;
                   case VERSIONING_COMMIT:
                   default:
                     builder.setStringId(labelsMappingEntity.getId().getEntity_hash());

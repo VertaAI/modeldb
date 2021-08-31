@@ -1,8 +1,5 @@
 package ai.verta.modeldb;
 
-import ai.verta.modeldb.blobs.BlobEquality;
-import ai.verta.modeldb.blobs.BlobProtoEquality;
-import ai.verta.modeldb.blobs.DiffAndMerge;
 import ai.verta.modeldb.lineage.LineageServiceImplNegativeTest;
 import ai.verta.modeldb.metadata.MetadataTest;
 import ai.verta.modeldb.utils.ModelDBUtilsTest;
@@ -28,10 +25,10 @@ import org.junit.runners.Suite;
   RepositoryTest.class,
   CommitTest.class,
   MetadataTest.class,
-  DiffTest.class,
-  BlobEquality.class,
-  BlobProtoEquality.class,
-  DiffAndMerge.class,
+  //   DiffTest.class,
+  //   BlobEquality.class,
+  //   BlobProtoEquality.class,
+  //   DiffAndMerge.class,
   ValidatorBlobTest.class,
   ValidatorBlobDiffTest.class,
   GlobalSharingTest.class

@@ -42,7 +42,6 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   private static final Logger LOGGER = LogManager.getLogger(DatasetDAORdbImpl.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  public static final String GLOBAL_SHARING = "_DATASET_GLOBAL_SHARING";
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
 
