@@ -19,8 +19,7 @@ from . import _environment
 
 
 class Python(_environment._Environment):
-    """
-    Captures metadata about Python, installed packages, and system environment variables.
+    """Capture metadata about Python, installed packages, and system environment variables.
 
     Parameters
     ----------
@@ -140,8 +139,7 @@ class Python(_environment._Environment):
 
     @staticmethod
     def _req_spec_to_msg(req_spec):
-        """
-        Converts a requirement specifier into a protobuf message.
+        """Convert a requirement specifier into a protobuf message.
 
         Parameters
         ----------
@@ -168,8 +166,7 @@ class Python(_environment._Environment):
 
     @staticmethod
     def _req_spec_msg_to_str(msg):
-        """
-        Inverse of :meth:`Python._req_spec_to_msg`.
+        """Inverse of :meth:`Python._req_spec_to_msg`.
 
         Parameters
         ----------
@@ -236,8 +233,13 @@ class Python(_environment._Environment):
 
     @staticmethod
     def read_pip_file(filepath):
-        """
-        Reads a pip requirements file into a list that can be passed into a new :class:`Python`.
+        """Read a pip requirements or constraints file into a list.
+
+        .. versionchanged:: 0.20.0
+
+            This method now includes, rather than skipping, pip packages
+            installed via version control systems, ``pip install`` options,
+            and other requirements file configurations.
 
         Parameters
         ----------
@@ -247,7 +249,18 @@ class Python(_environment._Environment):
         Returns
         -------
         list of str
-            Requirement specifiers.
+            pip requirement specifiers and options.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.environment import Python
+
+            env = Python(
+                requirements=Python.read_pip_file("requirements.txt"),
+                constraints=Python.read_pip_file("constraints.txt"),
+            )
 
         """
         filepath = os.path.expanduser(filepath)
@@ -256,13 +269,25 @@ class Python(_environment._Environment):
 
     @staticmethod
     def read_pip_environment():
-        """
-        Reads package versions from pip into a list that can be passed into a new :class:`Python`.
+        """Read package versions from pip into a list.
+
+        .. versionchanged:: 0.20.0
+
+            This method now includes, rather than skipping, pip packages
+            installed via version control systems.
 
         Returns
         -------
         list of str
-            Requirement specifiers.
+            pip requirement specifiers.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.environment import Python
+
+            env = Python(Python.read_pip_environment())
 
         """
         return _pip_requirements_utils.get_pip_freeze()
