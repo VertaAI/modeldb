@@ -10,7 +10,7 @@ import ai.verta.modeldb.GetComments;
 import ai.verta.modeldb.GetComments.Response;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateComment;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
@@ -29,7 +29,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(CommentServiceImpl.class);
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final CommentDAO commentDAO;
   private final ExperimentRunDAO experimentRunDAO;
 
@@ -37,7 +37,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
 
   public CommentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
-    this.roleService = serviceSet.roleService;
+    this.mdbRoleService = serviceSet.mdbRoleService;
     this.commentDAO = daoSet.commentDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
   }
@@ -147,7 +147,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       }
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getEntityId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<Comment> comments = commentDAO.getComments(experimentRunEntity, request.getEntityId());

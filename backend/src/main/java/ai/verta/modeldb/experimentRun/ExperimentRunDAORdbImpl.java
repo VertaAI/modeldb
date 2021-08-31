@@ -6,14 +6,14 @@ import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.CommitArtifactPart.Response;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
@@ -65,11 +65,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private static final boolean OVERWRITE_VERSION_MAP = false;
-  private final Config config;
+  private final MDBConfig mdbConfig;
   private static final long CACHE_SIZE = 1000;
   private static final int DURATION = 10;
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
@@ -208,16 +208,16 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   public ExperimentRunDAORdbImpl(
-      Config config,
+      MDBConfig mdbConfig,
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       BlobDAO blobDAO,
       MetadataDAO metadataDAO) {
-    this.config = config;
+    this.mdbConfig = mdbConfig;
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
@@ -318,10 +318,16 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       TrialUtils.validateExperimentRunPerWorkspaceForTrial(
-          config.trial, projectDAO, roleService, this, experimentRun.getProjectId(), userInfo);
-      TrialUtils.validateMaxArtifactsForTrial(config.trial, experimentRun.getArtifactsCount(), 0);
+          mdbConfig.trial,
+          projectDAO,
+          mdbRoleService,
+          this,
+          experimentRun.getProjectId(),
+          userInfo);
+      TrialUtils.validateMaxArtifactsForTrial(
+          mdbConfig.trial, experimentRun.getArtifactsCount(), 0);
 
-      if (experimentRun.getDatasetsCount() > 0 && config.populateConnectionsBasedOnPrivileges) {
+      if (experimentRun.getDatasetsCount() > 0 && mdbConfig.populateConnectionsBasedOnPrivileges) {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
       }
 
@@ -359,7 +365,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private void createRoleBindingsForExperimentRun(ExperimentRun experimentRun, UserInfo userInfo) {
-    roleService.createRoleBinding(
+    mdbRoleService.createRoleBinding(
         ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
         new CollaboratorUser(authService, userInfo),
         experimentRun.getId(),
@@ -400,7 +406,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public List<String> deleteExperimentRuns(List<String> experimentRunIds) {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<String> allowedProjectIds =
-          roleService.getSelfAllowedResources(
+          mdbRoleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.PROJECT, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
       List<String> accessibleExperimentRunIds =
@@ -553,7 +559,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private ExperimentRun populateFieldsBasedOnPrivileges(ExperimentRun experimentRun)
       throws ModelDBException {
-    if (config.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.populateConnectionsBasedOnPrivileges) {
       if (experimentRun.getDatasetsCount() > 0) {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, false);
       }
@@ -619,7 +625,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       notAccessibleRepoIdIdsSet.add(repoId);
       experimentRun = experimentRun.toBuilder().clearVersionedInputs().build();
     } else {
-      if (roleService.checkConnectionsBasedOnPrivileges(
+      if (mdbRoleService.checkConnectionsBasedOnPrivileges(
           ModelDBServiceResourceTypes.REPOSITORY,
           ModelDBActionEnum.ModelDBServiceActions.READ,
           String.valueOf(repoId))) {
@@ -992,7 +998,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
-      if (config.populateConnectionsBasedOnPrivileges) {
+      if (mdbConfig.populateConnectionsBasedOnPrivileges) {
         newDatasets = getPrivilegedDatasets(newDatasets, true);
       }
 
@@ -1036,7 +1042,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       TrialUtils.validateMaxArtifactsForTrial(
-          config.trial, newArtifacts.size(), existingArtifacts.size());
+          mdbConfig.trial, newArtifacts.size(), existingArtifacts.size());
 
       List<ArtifactEntity> newArtifactList =
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
@@ -1306,11 +1312,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Workspace workspace = null;
       if (!queryParameters.getWorkspaceName().isEmpty()) {
         workspace =
-            roleService.getWorkspaceByWorkspaceName(
+            mdbRoleService.getWorkspaceByWorkspaceName(
                 currentLoginUserInfo, queryParameters.getWorkspaceName());
       }
       List<GetResourcesResponseItem> accessibleProjectResourceByWorkspace =
-          roleService.getResourceItems(
+          mdbRoleService.getResourceItems(
               workspace,
               !queryParameters.getProjectId().isEmpty()
                   ? new HashSet<>(Collections.singletonList(queryParameters.getProjectId()))
@@ -1343,7 +1349,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           accessibleExperimentRunIds.addAll(accessibleExperimentRunId);
           // Validate if current user has access to the entity or not where predicate key has an id
           RdbmsUtils.validatePredicates(
-              ModelDBConstants.EXPERIMENT_RUNS, accessibleExperimentRunIds, predicate, roleService);
+              ModelDBConstants.EXPERIMENT_RUNS,
+              accessibleExperimentRunIds,
+              predicate,
+              mdbRoleService);
         }
       }
 
@@ -1416,7 +1425,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 criteriaQuery,
                 experimentRunRoot,
                 authService,
-                roleService,
+                mdbRoleService,
                 ModelDBServiceResourceTypes.EXPERIMENT_RUN);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
@@ -1481,9 +1490,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         LOGGER.trace("Converted from Hibernate to proto");
 
         List<String> selfAllowedRepositoryIds = new ArrayList<>();
-        if (config.populateConnectionsBasedOnPrivileges) {
+        if (mdbConfig.populateConnectionsBasedOnPrivileges) {
           selfAllowedRepositoryIds =
-              roleService.getSelfAllowedResources(
+              mdbRoleService.getSelfAllowedResources(
                   ModelDBServiceResourceTypes.REPOSITORY,
                   ModelDBActionEnum.ModelDBServiceActions.READ);
         }
@@ -1531,7 +1540,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               experimentRun = ExperimentRun.newBuilder().setId(experimentRun.getId()).build();
               experimentRuns.add(experimentRun);
             } else {
-              if (config.populateConnectionsBasedOnPrivileges) {
+              if (mdbConfig.populateConnectionsBasedOnPrivileges) {
                 if (experimentRun.getDatasetsCount() > 0) {
                   experimentRun =
                       filteredDatasetsBasedOnPrivileges(
@@ -1605,7 +1614,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     var queryBuilder =
         "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
-    if (config.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.populateConnectionsBasedOnPrivileges) {
       if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
         return new HashMap<>();
       } else {
@@ -1616,7 +1625,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     var query = session.createQuery(queryBuilder);
     query.setParameter("hyperparameterType", HYPERPARAMETER);
     query.setParameterList("expRunIds", expRunIds);
-    if (config.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.populateConnectionsBasedOnPrivileges) {
       query.setParameterList(
           "repoIds",
           selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
@@ -1683,7 +1692,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             + " LEFT JOIN PathDatasetComponentBlobEntity pdcb ON ncb.path_dataset_blob_hash = pdcb.id.path_dataset_blob_id "
             + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
-    if (config.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.populateConnectionsBasedOnPrivileges) {
       if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
         return new HashMap<>();
       } else {
@@ -1694,7 +1703,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     var query = session.createQuery(queryBuilder);
     query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
     query.setParameterList("expRunIds", expRunIds);
-    if (config.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.populateConnectionsBasedOnPrivileges) {
       query.setParameterList(
           "repoIds",
           selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
@@ -2247,7 +2256,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         var experimentRun = experimentRunObj.getProtoObject();
         if (experimentRun.getVersionedInputs() != null
             && experimentRun.getVersionedInputs().getRepositoryId() != 0
-            && config.populateConnectionsBasedOnPrivileges) {
+            && mdbConfig.populateConnectionsBasedOnPrivileges) {
           experimentRun =
               checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
         }
@@ -2308,7 +2317,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
         GetResourcesResponseItem entityResource =
-            roleService.getEntityResource(
+            mdbRoleService.getEntityResource(
                 Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
                 Optional.empty(),
                 ModelDBServiceResourceTypes.REPOSITORY);
@@ -2388,7 +2397,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
         GetResourcesResponseItem entityResource =
-            roleService.getEntityResource(
+            mdbRoleService.getEntityResource(
                 Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
                 Optional.empty(),
                 ModelDBServiceResourceTypes.REPOSITORY);
@@ -2476,7 +2485,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified
-        && config.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)) {
+        && mdbConfig.mdbArtifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {
@@ -2637,7 +2646,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       String fieldType) {
     String projectId = getProjectIdByExperimentRunId(experimentRunId);
     // Validate if current user has access to the entity or not
-    roleService.validateEntityUserWithUserInfo(
+    mdbRoleService.validateEntityUserWithUserInfo(
         ModelDBServiceResourceTypes.PROJECT,
         projectId,
         ModelDBActionEnum.ModelDBServiceActions.UPDATE);
@@ -2672,7 +2681,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       String experimentRunId, List<String> experimentRunObservationsKeys, Boolean deleteAll) {
     String projectId = getProjectIdByExperimentRunId(experimentRunId);
     // Validate if current user has access to the entity or not
-    roleService.validateEntityUserWithUserInfo(
+    mdbRoleService.validateEntityUserWithUserInfo(
         ModelDBServiceResourceTypes.PROJECT,
         projectId,
         ModelDBActionEnum.ModelDBServiceActions.UPDATE);
@@ -2780,7 +2789,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     var srcExperimentRun = getExperimentRun(cloneExperimentRun.getSrcExperimentRunId());
 
     // Validate if current user has access to the entity or not
-    roleService.validateEntityUserWithUserInfo(
+    mdbRoleService.validateEntityUserWithUserInfo(
         ModelDBServiceResourceTypes.PROJECT,
         srcExperimentRun.getProjectId(),
         ModelDBActionEnum.ModelDBServiceActions.UPDATE);
@@ -2810,7 +2819,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
 
         // Validate if current user has access to the entity or not
-        roleService.validateEntityUserWithUserInfo(
+        mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT,
             destExperimentEntity.getProject_id(),
             ModelDBActionEnum.ModelDBServiceActions.UPDATE);

@@ -4,7 +4,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -31,7 +31,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(VersioningServiceImpl.class);
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
@@ -42,7 +42,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
   public VersioningServiceImpl(ServiceSet serviceSet, DAOSet daoSet, FileHasher fileHasher) {
     this.authService = serviceSet.authService;
-    this.roleService = serviceSet.roleService;
+    this.mdbRoleService = serviceSet.mdbRoleService;
     this.repositoryDAO = daoSet.repositoryDAO;
     this.commitDAO = daoSet.commitDAO;
     this.blobDAO = daoSet.blobDAO;
@@ -102,7 +102,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                 .build();
       }
 
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
       var userInfo = authService.getCurrentLoginUserInfo();
       var requestBuilder = request.toBuilder();

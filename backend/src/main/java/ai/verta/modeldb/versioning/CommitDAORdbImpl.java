@@ -7,7 +7,7 @@ import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -54,11 +54,11 @@ public class CommitDAORdbImpl implements CommitDAO {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
-  public CommitDAORdbImpl(AuthService authService, RoleService roleService) {
+  public CommitDAORdbImpl(AuthService authService, MDBRoleService mdbRoleService) {
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
   }
 
   private static final long CACHE_SIZE = 1000;
@@ -990,7 +990,7 @@ public class CommitDAORdbImpl implements CommitDAO {
 
     Set<String> accessibleResourceIds =
         new HashSet<>(
-            roleService.getAccessibleResourceIds(
+            mdbRoleService.getAccessibleResourceIds(
                 null,
                 new CollaboratorUser(authService, currentLoginUserInfo),
                 modelDBServiceResourceTypes,
@@ -1003,14 +1003,14 @@ public class CommitDAORdbImpl implements CommitDAO {
     if (!workspaceName.isEmpty()) {
       accessibleResourceIds =
           ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
-              roleService,
+              mdbRoleService,
               accessibleResourceIds,
               workspaceName,
               currentLoginUserInfo,
               modelDBServiceResourceTypes);
     }
 
-    if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
+    if (accessibleResourceIds.isEmpty() && mdbRoleService.IsImplemented()) {
       LOGGER.debug("Accessible Repository Ids not found, size 0");
       var commitPaginationDTO = new CommitPaginationDTO();
       commitPaginationDTO.setCommitEntities(Collections.emptyList());

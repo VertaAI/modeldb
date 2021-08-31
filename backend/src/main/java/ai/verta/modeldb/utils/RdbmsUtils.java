@@ -4,7 +4,7 @@ import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.*;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -59,7 +59,9 @@ public class RdbmsUtils {
 
   // TODO: delete as it seems unused
   public static List<Project> convertProjectsFromProjectEntityList(
-      RoleService roleService, AuthService authService, List<ProjectEntity> projectEntityList) {
+      MDBRoleService mdbRoleService,
+      AuthService authService,
+      List<ProjectEntity> projectEntityList) {
     List<Project> projects = new ArrayList<>();
     if (projectEntityList != null) {
       Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
@@ -67,7 +69,7 @@ public class RdbmsUtils {
       for (ProjectEntity projectEntity : projectEntityList) {
         projects.add(
             projectEntity.getProtoObject(
-                roleService, authService, cacheWorkspaceMap, getResourcesMap));
+                mdbRoleService, authService, cacheWorkspaceMap, getResourcesMap));
       }
     }
     return projects;
@@ -334,11 +336,11 @@ public class RdbmsUtils {
   }
 
   public static List<Dataset> convertDatasetsFromDatasetEntityList(
-      RoleService roleService, List<DatasetEntity> datasetEntityList) {
+      MDBRoleService mdbRoleService, List<DatasetEntity> datasetEntityList) {
     List<Dataset> datasets = new ArrayList<>();
     if (datasetEntityList != null) {
       for (DatasetEntity datasetEntity : datasetEntityList) {
-        datasets.add(datasetEntity.getProtoObject(roleService));
+        datasets.add(datasetEntity.getProtoObject(mdbRoleService));
       }
     }
     return datasets;
@@ -717,7 +719,7 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (App.getInstance().config.database.RdbConfiguration.isPostgres()) {
+        if (App.getInstance().mdbConfig.database.RdbConfiguration.isPostgres()) {
           if (stringColumn) {
 
             return getOperatorPredicate(
@@ -1344,7 +1346,7 @@ public class RdbmsUtils {
       CriteriaQuery<?> criteriaQuery,
       Root<?> entityRootPath,
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes)
       throws ModelDBException {
     List<Predicate> finalPredicatesList = new ArrayList<>();
@@ -1727,7 +1729,7 @@ public class RdbmsUtils {
                       keyValuePredicates,
                       predicate,
                       operator,
-                      roleService);
+                      mdbRoleService);
                 } else {
                   setFuzzySearchPredicateBasedOnMDBOwner(
                       builder,
@@ -1788,12 +1790,12 @@ public class RdbmsUtils {
       List<Predicate> keyValuePredicates,
       KeyValueQuery predicate,
       Operator operator,
-      RoleService roleService) {
+      MDBRoleService mdbRoleService) {
     if ((operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
       var fuzzySearchPredicate =
           getFuzzyUsersQueryPredicate(
               authService,
-              roleService,
+              mdbRoleService,
               builder,
               entityRootPath,
               predicate,
@@ -1814,7 +1816,7 @@ public class RdbmsUtils {
       Set<String> resourceIdSet =
           getResourceIdsFromUserWorkspaces(
               authService,
-              roleService,
+              mdbRoleService,
               modelDBServiceResourceTypes,
               Collections.singletonList(userInfoMap.get(ownerId)));
       Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
@@ -1890,7 +1892,7 @@ public class RdbmsUtils {
 
   private static Predicate getFuzzyUsersQueryPredicate(
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       CriteriaBuilder builder,
       Root<?> entityRootPath,
       KeyValueQuery requestedPredicate,
@@ -1901,7 +1903,7 @@ public class RdbmsUtils {
       if (userInfoList != null && !userInfoList.isEmpty()) {
         Set<String> projectIdSet =
             getResourceIdsFromUserWorkspaces(
-                authService, roleService, modelDBServiceResourceTypes, userInfoList);
+                authService, mdbRoleService, modelDBServiceResourceTypes, userInfoList);
         Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
         if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
           return builder.not(exp.in(projectIdSet));
@@ -1918,13 +1920,13 @@ public class RdbmsUtils {
 
   public static Set<String> getResourceIdsFromUserWorkspaces(
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       List<UserInfo> userInfoList) {
     Set<String> resourceIdsSet = new HashSet<>();
     for (UserInfo userInfo : userInfoList) {
       List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
-          roleService.getResourceItems(
+          mdbRoleService.getResourceItems(
               Workspace.newBuilder()
                   .setId(authService.getWorkspaceIdFromUserInfo(userInfo))
                   .build(),
@@ -2124,20 +2126,20 @@ public class RdbmsUtils {
    * @param entityName : dataset, project etc.
    * @param accessibleEntityIds : accessible entity ids like project.ids, dataset.ids etc.
    * @param predicate : predicate request
-   * @param roleService : role service
+   * @param mdbRoleService : role service
    */
   public static void validatePredicates(
       String entityName,
       List<String> accessibleEntityIds,
       KeyValueQuery predicate,
-      RoleService roleService) {
+      MDBRoleService mdbRoleService) {
     if (predicate.getKey().equals(ModelDBConstants.ID)) {
       if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
         throw new InvalidArgumentException(ModelDBConstants.NON_EQ_ID_PRED_ERROR_MESSAGE);
       }
       var entityId = predicate.getValue().getStringValue();
       if ((accessibleEntityIds.isEmpty() || !accessibleEntityIds.contains(entityId))
-          && roleService.IsImplemented()) {
+          && mdbRoleService.IsImplemented()) {
         throw new PermissionDeniedException(
             "Access is denied. User is unauthorized for given "
                 + entityName

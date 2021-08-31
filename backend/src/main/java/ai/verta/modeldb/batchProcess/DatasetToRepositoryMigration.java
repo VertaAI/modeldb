@@ -8,9 +8,9 @@ import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetTypeEnum;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
+import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
@@ -52,7 +52,7 @@ public class DatasetToRepositoryMigration {
       ModelDBHibernateUtil.getInstance();
   private static AuthService authService;
   private static UAC uac;
-  private static RoleService roleService;
+  private static MDBRoleService mdbRoleService;
   private static CommitDAO commitDAO;
   private static RepositoryDAO repositoryDAO;
   private static ExperimentRunDAO experimentRunDAO;
@@ -63,18 +63,18 @@ public class DatasetToRepositoryMigration {
 
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
-    var config = App.getInstance().config;
+    var config = App.getInstance().mdbConfig;
     uac = UAC.FromConfig(config);
-    authService = AuthServiceUtils.FromConfig(config, uac);
-    roleService = RoleServiceUtils.FromConfig(config, authService, uac);
+    authService = MDBAuthServiceUtils.FromConfig(config, uac);
+    mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
 
-    commitDAO = new CommitDAORdbImpl(authService, roleService);
-    repositoryDAO = new RepositoryDAORdbImpl(authService, roleService, commitDAO, metadataDAO);
-    blobDAO = new BlobDAORdbImpl(authService, roleService);
+    commitDAO = new CommitDAORdbImpl(authService, mdbRoleService);
+    repositoryDAO = new RepositoryDAORdbImpl(authService, mdbRoleService, commitDAO, metadataDAO);
+    blobDAO = new BlobDAORdbImpl(authService, mdbRoleService);
     metadataDAO = new MetadataDAORdbImpl();
     experimentRunDAO =
         new ExperimentRunDAORdbImpl(
-            config, authService, roleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
+            config, authService, mdbRoleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
     migrateDatasetsToRepositories();
   }
 
@@ -262,7 +262,7 @@ public class DatasetToRepositoryMigration {
       Session session, DatasetEntity datasetEntity, UserInfo userInfoValue)
       throws ModelDBException, NoSuchAlgorithmException {
     String datasetId = datasetEntity.getId();
-    var newDataset = datasetEntity.getProtoObject(roleService).toBuilder().setId("").build();
+    var newDataset = datasetEntity.getProtoObject(mdbRoleService).toBuilder().setId("").build();
     Dataset dataset;
     try {
       LOGGER.debug("Creating repository for dataset {}", datasetEntity.getId());
@@ -303,7 +303,7 @@ public class DatasetToRepositoryMigration {
 
   private static void migrateDatasetCollaborators(String datasetId, Dataset dataset) {
     List<GetCollaboratorResponseItem> collaboratorResponses =
-        roleService.getResourceCollaborators(
+        mdbRoleService.getResourceCollaborators(
             ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET,
             datasetId,
             dataset.getOwner(),
@@ -327,13 +327,13 @@ public class DatasetToRepositoryMigration {
             .getPermission()
             .getCollaboratorType()
             .equals(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)) {
-          roleService.createRoleBinding(
+          mdbRoleService.createRoleBinding(
               ModelDBConstants.ROLE_REPOSITORY_READ_ONLY,
               collaboratorBase,
               dataset.getId(),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
         } else {
-          roleService.createRoleBinding(
+          mdbRoleService.createRoleBinding(
               ModelDBConstants.ROLE_REPOSITORY_READ_WRITE,
               collaboratorBase,
               dataset.getId(),

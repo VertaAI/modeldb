@@ -8,7 +8,7 @@ import ai.verta.modeldb.*;
 import ai.verta.modeldb.DeleteExperimentAttributes.Response;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceImplBase;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
@@ -33,14 +33,14 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentServiceImpl.class);
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final ExperimentDAO experimentDAO;
   private final ProjectDAO projectDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
 
   public ExperimentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
-    this.roleService = serviceSet.roleService;
+    this.mdbRoleService = serviceSet.mdbRoleService;
     this.experimentDAO = daoSet.experimentDAO;
     this.projectDAO = daoSet.projectDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
@@ -115,7 +115,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       var experiment = getExperimentFromRequest(request, userInfo);
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
           experiment.getProjectId(),
           ModelDBServiceActions.UPDATE);
@@ -148,7 +148,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
       var experimentPaginationDTO =
@@ -186,7 +186,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       var experiment = experimentDAO.getExperiment(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
           experiment.getProjectId(),
           ModelDBServiceActions.READ);
@@ -220,7 +220,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
       List<KeyValue> keyValue = new ArrayList<>();
@@ -277,7 +277,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       Experiment updatedExperiment = null;
@@ -328,7 +328,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       var updatedExperiment =
@@ -367,7 +367,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       var updatedExperiment =
@@ -408,7 +408,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       var updatedExperiment =
@@ -447,7 +447,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       var updatedExperiment =
@@ -477,7 +477,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<String> experimentTags = experimentDAO.getExperimentTags(request.getId());
@@ -513,7 +513,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       var updatedExperiment =
@@ -552,7 +552,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       var updatedExperiment =
@@ -587,7 +587,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentDAO.addExperimentAttributes(
@@ -625,7 +625,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       var experiment =
@@ -669,7 +669,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<KeyValue> attributes =
@@ -709,7 +709,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       var updatedExperiment =
@@ -779,7 +779,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       /*User validation*/
       var existingExperiment = experimentDAO.getExperiment(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
           existingExperiment.getProjectId(),
           ModelDBServiceActions.UPDATE);
@@ -820,7 +820,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       /*User validation*/
       var existingExperiment = experimentDAO.getExperiment(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
           existingExperiment.getProjectId(),
           ModelDBServiceActions.READ);
@@ -846,7 +846,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
-        roleService.validateEntityUserWithUserInfo(
+        mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT,
             request.getProjectId(),
             ModelDBServiceActions.READ);
@@ -898,7 +898,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       String s3Key = null;
@@ -968,7 +968,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       List<Artifact> artifactList =
@@ -1004,7 +1004,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<Artifact> artifactList = experimentDAO.getExperimentArtifacts(request.getId());
@@ -1039,7 +1039,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       var updatedExperiment = experimentDAO.deleteArtifacts(request.getId(), request.getKey());
@@ -1065,7 +1065,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Map<String, String> projectIdFromExperimentMap =
           experimentDAO.getProjectIdsByExperimentIds(request.getIdsList());
       List<GetResourcesResponseItem> entityResources =
-          roleService.getResourceItems(
+          mdbRoleService.getResourceItems(
               null,
               new HashSet<>(projectIdFromExperimentMap.values()),
               ModelDBServiceResourceTypes.PROJECT);

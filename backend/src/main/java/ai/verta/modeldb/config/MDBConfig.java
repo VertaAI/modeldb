@@ -1,35 +1,36 @@
 package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import java.util.List;
 
-public class Config extends ai.verta.modeldb.common.config.Config {
+public class MDBConfig extends Config {
 
-  private static Config config = null;
+  private static MDBConfig mdbConfig = null;
   public String starterProject;
-  public ArtifactStoreConfig artifactStoreConfig;
+  public MDBArtifactStoreConfig mdbArtifactStoreConfig;
   public TelemetryConfig telemetry;
   public TrialConfig trial;
   public List<MigrationConfig> migrations;
   protected FutureJdbi jdbi;
 
-  public static Config getInstance() throws InternalErrorException {
-    if (config == null) {
-      config = getInstance(Config.class, ModelDBConstants.VERTA_MODELDB_CONFIG);
-      config.Validate();
+  public static MDBConfig getInstance() throws InternalErrorException {
+    if (mdbConfig == null) {
+      mdbConfig = getInstance(MDBConfig.class, ModelDBConstants.VERTA_MODELDB_CONFIG);
+      mdbConfig.Validate();
     }
-    return config;
+    return mdbConfig;
   }
 
   public void Validate() throws InvalidConfigException {
     super.Validate();
 
-    if (artifactStoreConfig == null)
-      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
-    artifactStoreConfig.Validate("artifactStoreConfig");
+    if (mdbArtifactStoreConfig == null)
+      throw new InvalidConfigException("MDBArtifactStoreConfig", MISSING_REQUIRED);
+    mdbArtifactStoreConfig.Validate("MDBArtifactStoreConfig");
 
     if (service_user != null) {
       service_user.Validate("service_user");
@@ -57,7 +58,7 @@ public class Config extends ai.verta.modeldb.common.config.Config {
   public FutureJdbi getJdbi() {
     if (this.jdbi == null) {
       // Initialize HikariCP and jdbi
-      final var databaseConfig = config.database;
+      final var databaseConfig = mdbConfig.database;
       this.jdbi = initializeFutureJdbi(databaseConfig, "modeldb");
     }
     return this.jdbi;

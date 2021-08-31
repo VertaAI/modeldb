@@ -45,7 +45,7 @@ import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
@@ -58,7 +58,6 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import io.grpc.stub.StreamObserver;
-import java.util.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -76,14 +75,14 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
   public static final Logger LOGGER = LogManager.getLogger(ProjectServiceImpl.class);
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final ProjectDAO projectDAO;
   private final ExperimentRunDAO experimentRunDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
 
   public ProjectServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
-    this.roleService = serviceSet.roleService;
+    this.mdbRoleService = serviceSet.mdbRoleService;
     this.projectDAO = daoSet.projectDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
@@ -100,7 +99,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       CreateProject request, StreamObserver<CreateProject.Response> responseObserver) {
     try {
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, null, ModelDBServiceActions.CREATE);
 
       // Get the user info from the Context
@@ -135,7 +134,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       var updatedProject =
@@ -171,7 +170,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       var updatedProject =
@@ -212,7 +211,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       var updatedProject =
@@ -256,7 +255,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
       List<KeyValue> attributes =
@@ -295,7 +294,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.DELETE);
 
       var updatedProject =
@@ -329,7 +328,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       var updatedProject =
@@ -354,7 +353,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
       List<String> tags = projectDAO.getProjectTags(request.getId());
@@ -392,7 +391,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       var updatedProject =
@@ -427,7 +426,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       var updatedProject =
@@ -462,7 +461,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       var updatedProject =
@@ -554,7 +553,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
       var project = projectDAO.getProjectByID(request.getId());
@@ -588,7 +587,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               ? authService.getUsernameFromUserInfo(userInfo)
               : request.getWorkspaceName();
       List<GetResourcesResponseItem> responseItem =
-          roleService.getEntityResourcesByName(
+          mdbRoleService.getEntityResourcesByName(
               Optional.of(request.getName()),
               Optional.empty(),
               ModelDBServiceResourceTypes.PROJECT);
@@ -697,7 +696,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var userInfo = authService.getCurrentLoginUserInfo();
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getEntityId(), ModelDBServiceActions.READ);
 
       List<Project> projects =
@@ -802,7 +801,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       var updatedProject = projectDAO.updateProjectReadme(request.getId(), request.getReadmeText());
@@ -825,7 +824,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
       var project = projectDAO.getProjectByID(request.getId());
@@ -860,7 +859,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var userInfo = authService.getCurrentLoginUserInfo();
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       String projectShortName = ModelDBUtils.convertToProjectShortName(request.getShortName());
@@ -891,7 +890,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
       var project = projectDAO.getProjectByID(request.getId());
@@ -924,7 +923,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       var existingProject = projectDAO.getProjectByID(request.getId());
@@ -961,7 +960,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       /*Get code version*/
@@ -1026,7 +1025,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
       String s3Key = null;
@@ -1077,7 +1076,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       List<Artifact> artifactList =
@@ -1102,7 +1101,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
       List<Artifact> artifactList = projectDAO.getProjectArtifacts(request.getId());
@@ -1130,7 +1129,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.UPDATE);
 
       var updatedProject = projectDAO.deleteArtifacts(request.getId(), request.getKey());

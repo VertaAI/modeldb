@@ -414,7 +414,7 @@ public class DatasetTest extends TestsInit {
 
       if (testConfig.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
-            CollaboratorTest.addCollaboratorRequestDataset(
+            CollaboratorUtils.addCollaboratorRequestDataset(
                 dataset,
                 authClientInterceptor.getClient1Email(),
                 CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
@@ -523,7 +523,7 @@ public class DatasetTest extends TestsInit {
     try {
 
       AddCollaboratorRequest addCollaboratorRequest =
-          CollaboratorTest.addCollaboratorRequestDataset(
+          CollaboratorUtils.addCollaboratorRequestDataset(
               dataset,
               authClientInterceptor.getClient1Email(),
               CollaboratorTypeEnum.CollaboratorType.READ_WRITE);

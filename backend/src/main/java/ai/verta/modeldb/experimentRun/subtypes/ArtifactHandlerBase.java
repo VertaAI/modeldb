@@ -235,7 +235,10 @@ public class ArtifactHandlerBase {
                       for (final var artifact : artifacts) {
                         var storeTypePath =
                             !artifact.getPathOnly()
-                                ? App.getInstance().config.artifactStoreConfig.storeTypePathPrefix()
+                                ? App.getInstance()
+                                        .mdbConfig
+                                        .mdbArtifactStoreConfig
+                                        .storeTypePathPrefix()
                                     + artifact.getPath()
                                 : "";
                         handle

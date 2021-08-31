@@ -81,7 +81,7 @@ public class TestsInit {
     testConfig = TestConfig.getInstance();
     handleExecutor = FutureGrpc.initializeExecutor(testConfig.grpcServer.threadCount);
     // Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
+    services = ServiceSet.fromConfig(testConfig, testConfig.mdbArtifactStoreConfig);
     authService = services.authService;
     // Initialize data access
     DAOSet daos =
@@ -103,7 +103,8 @@ public class TestsInit {
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(services.authService, services.mdbRoleService, 1000);
 
     if (testConfig.authService != null) {
       ManagedChannel authServiceChannel =

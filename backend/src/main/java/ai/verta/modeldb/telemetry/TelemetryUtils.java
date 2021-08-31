@@ -39,7 +39,7 @@ public class TelemetryUtils {
       LOGGER.info("Found value for telemetryInitialized : {}", telemetryInitialized);
 
       try (var connection = modelDBHibernateUtil.getConnection()) {
-        final var database = App.getInstance().config.database;
+        final var database = App.getInstance().mdbConfig.database;
         final var existStatus =
             ModelDBHibernateUtil.tableExists(connection, database, "modeldb_deployment_info");
         if (!existStatus) {

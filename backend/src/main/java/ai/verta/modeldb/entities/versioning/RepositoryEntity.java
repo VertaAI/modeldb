@@ -4,7 +4,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryModifierEnum;
@@ -203,7 +203,7 @@ public class RepositoryEntity {
   }
 
   public Repository toProto(
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       AuthService authService,
       Map<Long, Workspace> cacheWorkspaceMap,
       Map<String, GetResourcesResponseItem> getResourcesMap) {
@@ -226,7 +226,7 @@ public class RepositoryEntity {
       responseItem = getResourcesMap.get(String.valueOf(this.id));
     } else {
       responseItem =
-          roleService.getEntityResource(
+          mdbRoleService.getEntityResource(
               Optional.of(String.valueOf(this.id)), Optional.empty(), modelDBServiceResourceTypes);
       if (getResourcesMap == null) {
         getResourcesMap = new HashMap<>();

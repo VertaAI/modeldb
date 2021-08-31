@@ -2,14 +2,14 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBConfig;
 import java.util.regex.Pattern;
 
 public class PredicateHandlerUtils {
-  private static final Config config = App.getInstance().config;
+  private static final MDBConfig mdbConfig = App.getInstance().mdbConfig;
 
   protected String columnAsNumber(String colName, boolean isString) {
-    if (config.database.RdbConfiguration.isPostgres()) {
+    if (mdbConfig.database.RdbConfiguration.isPostgres()) {
       if (isString) {
         return String.format("cast(trim('\"' from %s) as double precision)", colName);
       } else {

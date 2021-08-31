@@ -29,7 +29,7 @@ import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateDatasetVersionAttributes;
 import ai.verta.modeldb.UpdateDatasetVersionDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -65,11 +65,11 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private final BlobDAO blobDAO;
   private final MetadataDAO metadataDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
   public DatasetVersionServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
-    this.roleService = serviceSet.roleService;
+    this.mdbRoleService = serviceSet.mdbRoleService;
     this.repositoryDAO = daoSet.repositoryDAO;
     this.commitDAO = daoSet.commitDAO;
     this.blobDAO = daoSet.blobDAO;

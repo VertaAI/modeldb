@@ -2,7 +2,7 @@ package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -22,11 +22,11 @@ import org.hibernate.Session;
 public class CleanUpEntitiesCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(CleanUpEntitiesCron.class);
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final Integer recordUpdateLimit;
 
-  public CleanUpEntitiesCron(RoleService roleService, Integer recordUpdateLimit) {
-    this.roleService = roleService;
+  public CleanUpEntitiesCron(MDBRoleService mdbRoleService, Integer recordUpdateLimit) {
+    this.mdbRoleService = mdbRoleService;
     this.recordUpdateLimit = recordUpdateLimit;
   }
 
@@ -92,7 +92,7 @@ public class CleanUpEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteEntityResourcesWithServiceUser(
+        mdbRoleService.deleteEntityResourcesWithServiceUser(
             projectIds, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
         for (ProjectEntity projectEntity : projectEntities) {
           try {
@@ -179,7 +179,7 @@ public class CleanUpEntitiesCron extends TimerTask {
       Map<String, RepositoryEntity> repositoryEntityMap,
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
     try {
-      roleService.deleteEntityResourcesWithServiceUser(
+      mdbRoleService.deleteEntityResourcesWithServiceUser(
           new ArrayList<>(repositoryEntityMap.keySet()), resourceType);
       for (RepositoryEntity repositoryEntity : repositoryEntities) {
         try {

@@ -4,7 +4,7 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
@@ -54,7 +54,7 @@ public class FindRepositoriesQuery {
 
     final Session session;
     final AuthService authService;
-    final RoleService roleService;
+    final MDBRoleService mdbRoleService;
     String countQueryString;
     Map<String, Object> parametersMap = new HashMap<>();
 
@@ -65,10 +65,10 @@ public class FindRepositoriesQuery {
     private Integer pageLimit = 0;
 
     public FindRepositoriesHQLQueryBuilder(
-        Session session, AuthService authService, RoleService roleService) {
+        Session session, AuthService authService, MDBRoleService mdbRoleService) {
       this.session = session;
       this.authService = authService;
-      this.roleService = roleService;
+      this.mdbRoleService = mdbRoleService;
     }
 
     public FindRepositoriesHQLQueryBuilder setRepoIds(List<Long> repoIds) {
@@ -278,7 +278,7 @@ public class FindRepositoriesQuery {
         Set<String> repositoryIdSet =
             RdbmsUtils.getResourceIdsFromUserWorkspaces(
                 authService,
-                roleService,
+                mdbRoleService,
                 ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
                 userInfoList);
         List<Long> resourcesIds =

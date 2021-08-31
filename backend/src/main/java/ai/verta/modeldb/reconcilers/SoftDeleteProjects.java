@@ -1,7 +1,7 @@
 package ai.verta.modeldb.reconcilers;
 
 import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -21,12 +21,15 @@ public class SoftDeleteProjects extends Reconciler<String> {
   private static final Logger LOGGER = LogManager.getLogger(SoftDeleteProjects.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
   public SoftDeleteProjects(
-      ReconcilerConfig config, RoleService roleService, FutureJdbi futureJdbi, Executor executor) {
+      ReconcilerConfig config,
+      MDBRoleService mdbRoleService,
+      FutureJdbi futureJdbi,
+      Executor executor) {
     super(config, LOGGER, futureJdbi, executor, false);
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
   }
 
   @Override
@@ -50,7 +53,7 @@ public class SoftDeleteProjects extends Reconciler<String> {
   protected ReconcileResult reconcile(Set<String> ids) {
     LOGGER.debug("Reconciling projects " + ids.toString());
 
-    roleService.deleteEntityResourcesWithServiceUser(
+    mdbRoleService.deleteEntityResourcesWithServiceUser(
         new ArrayList<>(ids), ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
 
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
