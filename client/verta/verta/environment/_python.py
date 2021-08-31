@@ -194,16 +194,17 @@ class Python(_environment._Environment):
         self._msg.python.version.patch = sys.version_info.micro
 
     def _capture_requirements(self, requirements):
-        if isinstance(requirements, list) and all(
-            isinstance(req, six.string_types) for req in requirements
+        if not (
+            isinstance(requirements, list)
+            and all(isinstance(req, six.string_types) for req in requirements)
         ):
-            req_specs = copy.copy(requirements)
-            _pip_requirements_utils.process_requirements(req_specs)
-        else:
             raise TypeError(
                 "`requirements` must be list of str,"
                 " not {}".format(type(requirements))
             )
+
+        req_specs = copy.copy(requirements)
+        _pip_requirements_utils.process_requirements(req_specs)
 
         self._msg.python.requirements.extend(
             map(
@@ -215,14 +216,15 @@ class Python(_environment._Environment):
     def _capture_constraints(self, constraints):
         if constraints is None:
             return
-        elif isinstance(constraints, list) and all(
-            isinstance(req, six.string_types) for req in constraints
+        elif not (
+            isinstance(constraints, list)
+            and all(isinstance(req, six.string_types) for req in constraints)
         ):
-            req_specs = copy.copy(constraints)
-        else:
             raise TypeError(
                 "`constraints` must be list of str," " not {}".format(type(constraints))
             )
+
+        req_specs = copy.copy(constraints)
 
         self._msg.python.constraints.extend(
             map(
