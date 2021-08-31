@@ -15,7 +15,7 @@ from ..external import six
 from .. import __about__
 
 
-# for process_requirements()
+# for set_version_pins()
 PYPI_TO_IMPORT = {
     'scikit-learn': "sklearn",
     'tensorflow-gpu': "tensorflow",
@@ -151,37 +151,6 @@ def parse_version(version):
     return major, minor, patch, suffix
 
 
-def process_requirements(requirements):
-    """
-    Validates `requirements` against packages available in the current environment.
-
-    Parameters
-    ----------
-    requirements : list of str
-        PyPI package names.
-
-    Raises
-    ------
-    ValueError
-        If a package's name is invalid for PyPI, or its exact version cannot be determined.
-
-    """
-    # validate package names
-    for req in requirements:
-        if not PKG_NAME_REGEX.match(req):
-            raise ValueError("'{}' does not appear to be a valid PyPI-installable package;"
-                             " please check its spelling,"
-                             " or file an issue if you believe it is in error".format(req))
-
-    strip_inexact_specifiers(requirements)
-
-    set_version_pins(requirements)
-
-    remove_public_version_identifier(requirements)
-
-    add_verta_and_cloudpickle(requirements)
-
-
 def strip_inexact_specifiers(requirements):
     """
     Removes any version specifier that is not ``==``, leaving just the package name.
@@ -234,7 +203,7 @@ def set_version_pins(requirements):
     pip_pkg_vers = dict(
         req_spec.split('==')
         for req_spec
-        in six.ensure_str(subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])).splitlines()
+        in get_pip_freeze()
         if '==' in req_spec
     )
 

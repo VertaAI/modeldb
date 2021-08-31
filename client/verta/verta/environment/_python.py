@@ -203,13 +203,23 @@ class Python(_environment._Environment):
                 " not {}".format(type(requirements))
             )
 
-        req_specs = copy.copy(requirements)
-        _pip_requirements_utils.process_requirements(req_specs)
+        requirements = copy.copy(requirements)
+
+        # validate package names
+        for req in requirements:
+            if not _pip_requirements_utils.PKG_NAME_REGEX.match(req):
+                raise ValueError("'{}' does not appear to be a valid PyPI-installable package;"
+                                " please check its spelling,"
+                                " or file an issue if you believe it is in error".format(req))
+        _pip_requirements_utils.strip_inexact_specifiers(requirements)
+        _pip_requirements_utils.set_version_pins(requirements)
+        _pip_requirements_utils.remove_public_version_identifier(requirements)
+        _pip_requirements_utils.add_verta_and_cloudpickle(requirements)
 
         self._msg.python.requirements.extend(
             map(
                 self._req_spec_to_msg,
-                req_specs,
+                requirements,
             ),
         )
 
@@ -224,12 +234,12 @@ class Python(_environment._Environment):
                 "`constraints` must be list of str," " not {}".format(type(constraints))
             )
 
-        req_specs = copy.copy(constraints)
+        constraints = copy.copy(constraints)
 
         self._msg.python.constraints.extend(
             map(
                 self._req_spec_to_msg,
-                req_specs,
+                constraints,
             ),
         )
 
