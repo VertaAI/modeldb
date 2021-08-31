@@ -3,6 +3,7 @@
 # for composite strategy
 # pylint: disable=no-value-for-parameter
 
+import logging
 import os
 import string
 import subprocess
@@ -138,17 +139,25 @@ class TestPython:
         assert env._msg.environment_variables
 
     def test_reqs_from_env(self):
-        reqs = Python.read_pip_environment()
+        reqs = Python.read_pip_environment(
+            skip_options=True,
+        )
         env = Python(requirements=reqs)
         assert env._msg.python.requirements
 
     def test_reqs(self, requirements_file):
-        reqs = Python.read_pip_file(requirements_file.name)
+        reqs = Python.read_pip_file(
+            requirements_file.name,
+            skip_options=True,
+        )
         env = Python(requirements=reqs)
         assert env._msg.python.requirements
 
     def test_reqs_without_versions(self, requirements_file_without_versions):
-        reqs = Python.read_pip_file(requirements_file_without_versions.name)
+        reqs = Python.read_pip_file(
+            requirements_file_without_versions.name,
+            skip_options=True,
+        )
         env = Python(requirements=reqs)
         assert env._msg.python.requirements
 
@@ -158,11 +167,13 @@ class TestPython:
         assert env._msg.python.constraints
 
     def test_constraints_from_file_no_versions_error(
-        self, requirements_file_without_versions
+        self, requirements_file_without_versions, caplog
     ):
         reqs = Python.read_pip_file(requirements_file_without_versions.name)
-        with pytest.raises(ValueError):
+        with caplog.at_level(logging.WARNING, logger="verta"):
             Python(requirements=[], constraints=reqs)
+        assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text
+        assert "missing its version specifier" in caplog.text
 
     def test_inject_verta_cloudpickle(self):
         env = Python(requirements=[])
@@ -172,7 +183,10 @@ class TestPython:
         assert "cloudpickle" in requirements
 
     def test_reqs_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
-        reqs = Python.read_pip_file(requirements_file_with_unsupported_lines.name)
+        reqs = Python.read_pip_file(
+            requirements_file_with_unsupported_lines.name,
+            skip_options=True,
+        )
         env = Python(requirements=reqs)
         requirements = {req.library for req in env._msg.python.requirements}
 
