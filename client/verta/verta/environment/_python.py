@@ -265,7 +265,8 @@ class Python(_environment._Environment):
         """
         filepath = os.path.expanduser(filepath)
         with open(filepath, "r") as f:
-            return _pip_requirements_utils.clean_reqs_file_lines(f.readlines())
+            requirements = f.readlines()
+        return _pip_requirements_utils.clean_reqs_file_lines(requirements)
 
     @staticmethod
     def read_pip_environment():
@@ -290,4 +291,5 @@ class Python(_environment._Environment):
             env = Python(Python.read_pip_environment())
 
         """
-        return _pip_requirements_utils.get_pip_freeze()
+        requirements = _pip_requirements_utils.get_pip_freeze()
+        return _pip_requirements_utils.clean_reqs_file_lines(requirements)

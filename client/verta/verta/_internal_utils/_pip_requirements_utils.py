@@ -44,12 +44,29 @@ SPACY_MODEL_REGEX = re.compile(SPACY_MODEL_PATTERN)
 
 
 def get_pip_freeze():
+    """Get pip requirement specifiers returned by ``pip freeze``.
+
+    .. versionchanged:: 0.19.2
+
+        See note below.
+
+    .. note::
+
+        This function returns the output of ``pip freeze`` as-is, which could
+        contain VCS-installed packages and spaCy-installed models (which are
+        not themselves pip-installable). The caller is responsible for any
+        necessary post-processing, e.g. calling :func:`clean_reqs_file_lines`.
+
+    Returns
+    -------
+    requirements : list of str
+        Requirement specifiers.
+
+    """
     pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
     pip_freeze = six.ensure_str(pip_freeze)
 
     req_specs = pip_freeze.splitlines()
-
-    req_specs = clean_reqs_file_lines(req_specs)
 
     return req_specs
 
@@ -332,7 +349,7 @@ def remove_public_version_identifier(requirements):
         ])
 
 
-def clean_reqs_file_lines(requirements):
+def clean_reqs_file_lines(requirements, ignore_unsupported=True):
     """
     Performs basic preprocessing on a requirements file's lines so it's easier to handle downstream.
 
@@ -340,11 +357,20 @@ def clean_reqs_file_lines(requirements):
     ----------
     requirements : list of str
         ``requirements_file.readlines()``.
+    ignore_unsupported : bool, default True
+        If ``True``, skip unsupported lines in the requirements file. If
+        ``False``, raise an exception instead.
 
     Returns
     -------
     cleaned_requirements : list of str
         Requirement specifiers.
+
+    Raises
+    ------
+    ValueError
+        If `ignore_unsupported` is ``False`` and an unsupported line is
+        present in `requirements`.
 
     """
     requirements = [req.strip() for req in requirements]
@@ -352,27 +378,32 @@ def clean_reqs_file_lines(requirements):
     requirements = [req for req in requirements if req]  # empty line
     requirements = [req for req in requirements if not req.startswith('#')]  # comment line
 
-    # remove pip install options
+    # check for unsupported options
     # TODO: add support in VR-12389
     supported_requirements = []
     for req in requirements:
+        unsupported_reason = None
+
         # https://pip.pypa.io/en/stable/cli/pip_install/#requirements-file-format
         if req.startswith(('--', '-c ', '-f ', '-i ')):
-            print("skipping unsupported option \"{}\"".format(req))
-            continue
+            unsupported_reason = "unsupported option \"{}\"".format(req)
         # https://pip.pypa.io/en/stable/topics/vcs-support/
         # TODO: upgrade protos and Client to handle VCS-installed packages
-        if req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+')):
-            print("skipping unsupported VCS-installed package \"{}\"".format(req))
-            continue
+        elif req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+')):
+            unsupported_reason = "unsupported VCS-installed package \"{}\"".format(req)
         # TODO: follow references to other requirements files
-        if req.startswith('-r '):
-            print("skipping unsupported file reference \"{}\"".format(req))
-            continue
+        elif req.startswith('-r '):
+            unsupported_reason = "unsupported file reference \"{}\"".format(req)
         # non-PyPI-installable spaCy models
-        if SPACY_MODEL_REGEX.match(req):
-            print("skipping non-PyPI-installable spaCy model \"{}\"".format(req))
-            continue
+        elif SPACY_MODEL_REGEX.match(req):
+            unsupported_reason = "non-PyPI-installable spaCy model \"{}\"".format(req)
+
+        if unsupported_reason:
+            if ignore_unsupported:
+                print("skipping {}".format(unsupported_reason))
+                continue
+            else:
+                raise ValueError(unsupported_reason)
 
         supported_requirements.append(req)
 

@@ -87,6 +87,8 @@ def requirements_file_with_unsupported_lines():
 class TestUtils:
     def test_parse_pip_freeze(self):
         req_specs = _pip_requirements_utils.get_pip_freeze()
+        req_specs = _pip_requirements_utils.clean_reqs_file_lines(req_specs)
+
         parsed_req_specs = (
             (library, constraint, _pip_requirements_utils.parse_version(version))
             for library, constraint, version in map(

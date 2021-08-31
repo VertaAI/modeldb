@@ -30,6 +30,8 @@ class TestPipRequirementsUtils:
         assert not list(
             filter(
                 _pip_requirements_utils.SPACY_MODEL_REGEX.match,
-                _pip_requirements_utils.get_pip_freeze(),
+                _pip_requirements_utils.clean_reqs_file_lines(
+                    _pip_requirements_utils.get_pip_freeze(),
+                ),
             )
         )
