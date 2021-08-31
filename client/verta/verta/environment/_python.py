@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
-
 import copy
+import logging
 import os
 import sys
 
@@ -16,6 +15,9 @@ from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentS
 from .._internal_utils import _pip_requirements_utils
 
 from . import _environment
+
+
+logger = logging.getLogger(__name__)
 
 
 class Python(_environment._Environment):
@@ -89,6 +91,14 @@ class Python(_environment._Environment):
                     key=lambda req_spec_msg: req_spec_msg.library,
                 )
             )
+        if self._msg.python.raw_requirements:
+            lines.append("raw requirements:")
+            lines.extend(
+                map(
+                    "    {}".format,
+                    self._msg.python.raw_requirements.splitlines()
+                )
+            )
         if self._msg.python.constraints:
             lines.append("constraints:")
             lines.extend(
@@ -96,6 +106,14 @@ class Python(_environment._Environment):
                 for req_spec_msg in sorted(
                     self._msg.python.constraints,
                     key=lambda req_spec_msg: req_spec_msg.library,
+                )
+            )
+        if self._msg.python.raw_constraints:
+            lines.append("raw constraints:")
+            lines.extend(
+                map(
+                    "    {}".format,
+                    self._msg.python.raw_constraints.splitlines()
                 )
             )
         if self._msg.environment_variables:
@@ -202,27 +220,29 @@ class Python(_environment._Environment):
                 "`requirements` must be list of str,"
                 " not {}".format(type(requirements))
             )
+        requirements_copy = copy.copy(requirements)
 
-        requirements = copy.copy(requirements)
+        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements_copy)
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        try:
+            _pip_requirements_utils.must_all_valid_package_names(requirements_copy)
+            _pip_requirements_utils.strip_inexact_specifiers(requirements_copy)
+            _pip_requirements_utils.set_version_pins(requirements_copy)
+            _pip_requirements_utils.remove_public_version_identifier(requirements_copy)
 
-        # validate package names
-        for req in requirements:
-            if not _pip_requirements_utils.PKG_NAME_REGEX.match(req):
-                raise ValueError("'{}' does not appear to be a valid PyPI-installable package;"
-                                " please check its spelling,"
-                                " or file an issue if you believe it is in error".format(req))
-        _pip_requirements_utils.strip_inexact_specifiers(requirements)
-        _pip_requirements_utils.set_version_pins(requirements)
-        _pip_requirements_utils.remove_public_version_identifier(requirements)
-
-        self._msg.python.requirements.extend(
-            map(
-                self._req_spec_to_msg,
-                requirements,
-            ),
-        )
+            self._msg.python.requirements.extend(
+                map(
+                    self._req_spec_to_msg,
+                    requirements_copy,
+                ),
+            )
+        except:
+            logger.warning(
+                "failed to manually parse requirements;"
+                " falling back to capturing raw contents",
+                exc_info=True,
+            )
+            self._msg.python.raw_requirements = "\n".join(requirements)
 
     def _capture_constraints(self, constraints):
         if constraints is None:
@@ -234,15 +254,22 @@ class Python(_environment._Environment):
             raise TypeError(
                 "`constraints` must be list of str," " not {}".format(type(constraints))
             )
+        constraints_copy = copy.copy(constraints)
 
-        constraints = copy.copy(constraints)
-
-        self._msg.python.constraints.extend(
-            map(
-                self._req_spec_to_msg,
-                constraints,
-            ),
-        )
+        try:
+            self._msg.python.constraints.extend(
+                map(
+                    self._req_spec_to_msg,
+                    constraints_copy,
+                ),
+            )
+        except:
+            logger.warning(
+                "failed to manually parse constraints;"
+                " falling back to capturing raw contents",
+                exc_info=True,
+            )
+            self._msg.python.raw_constraints = "\n".join(constraints)
 
     @staticmethod
     def read_pip_file(filepath, skip_options=False):
@@ -279,7 +306,7 @@ class Python(_environment._Environment):
         """
         filepath = os.path.expanduser(filepath)
         with open(filepath, "r") as f:
-            requirements = f.readlines()
+            requirements = f.read().splitlines()
         if skip_options:
             requirements = _pip_requirements_utils.clean_reqs_file_lines(requirements)
 

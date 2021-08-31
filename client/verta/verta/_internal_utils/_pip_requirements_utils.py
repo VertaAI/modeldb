@@ -151,6 +151,30 @@ def parse_version(version):
     return major, minor, patch, suffix
 
 
+def must_all_valid_package_names(requirements):
+    """Assert that each line in `requirements` is for a valid pip package.
+
+    Parameters
+    ----------
+    requirements : list of str
+
+    Raises
+    ------
+    ValueError
+        If a line in `requirements` does not have a valid pip package name.
+
+    """
+    for req in requirements:
+        if not req:
+            continue  # allow empty lines
+        if not PKG_NAME_REGEX.match(req):
+            raise ValueError(
+                "'{}' does not appear to be a valid PyPI-installable package;"
+                " please check its spelling,"
+                " or file an issue if you believe it is in error".format(req)
+            )
+
+
 def strip_inexact_specifiers(requirements):
     """
     Removes any version specifier that is not ``==``, leaving just the package name.
