@@ -235,7 +235,7 @@ def set_version_pins(requirements):
             requirements[i] = req + "==" + ver
 
 
-def add_verta_and_cloudpickle(requirements):
+def pin_verta_and_cloudpickle(requirements):
     """
     Adds verta and cloudpickle to `requirements`, pinning their versions from the environment.
 
@@ -253,33 +253,41 @@ def add_verta_and_cloudpickle(requirements):
         conflicts with the version in the current environment.
 
     """
-    # add verta
-    verta_req = "verta=={}".format(__about__.__version__)
-    for req in requirements:
-        if req.startswith("verta"):  # if present, check version
-            our_ver = verta_req.split('==')[-1]
-            their_ver = req.split('==')[-1]
-            if our_ver != their_ver:  # versions conflict, so raise exception
-                raise ValueError("Client is running with verta v{}, but the provided requirements specify v{};"
-                                 " these must match".format(our_ver, their_ver))
-            else:  # versions match, so proceed
-                break
-    else:  # if not present, add
-        requirements.append(verta_req)
+    for i, req in enumerate(requirements):
+        if req.startswith("-e git+git@github.com:VertaAI/modeldb.git"):
+            # `pip install -e modeldb/client/verta` makes `pip freeze` return
+            # a requirement item that is unusable by `pip install`
+            # https://github.com/pypa/pip/issues/7554
+            # https://github.com/pypa/pip/issues/9625
+            # https://github.com/pypa/pip/pull/9436
+            # https://github.com/pypa/pip/pull/9822
+            requirements[i] = __about__.__title__
+            break
 
-    # add cloudpickle
-    cloudpickle_req = "cloudpickle=={}".format(cloudpickle.__version__)
-    for req in requirements:
-        if req.startswith("cloudpickle"):  # if present, check version
-            our_ver = cloudpickle_req.split('==')[-1]
-            their_ver = req.split('==')[-1]
-            if our_ver != their_ver:  # versions conflict, so raise exception
-                raise ValueError("Client is running with cloudpickle v{}, but the provided requirements specify v{};"
-                                 " these must match".format(our_ver, their_ver))
-            else:  # versions match, so proceed
-                break
-    else:  # if not present, add
-        requirements.append(cloudpickle_req)
+    for library, our_ver in [
+        (__about__.__title__, __about__.__version__),
+        (cloudpickle.__name__, cloudpickle.__version__),
+    ]:
+        pinned_library_req = "{}=={}".format(library, our_ver)
+        for i, req in enumerate(requirements):
+            if req.startswith(library):
+                if "==" in req:  # check version
+                    their_ver = req.split('==')[-1]
+                    if our_ver != their_ver:  # versions conflict: raise exception
+                        raise ValueError(
+                            "Client is running with {} v{}, but the provided requirements specify v{};"
+                            " these must match".format(library, our_ver, their_ver)
+                        )
+                    else:  # versions match, so proceed
+                        break
+                # TODO: check other operators (>=, >, ...)
+                else:  # no version pin: set
+                    # TODO: keep environment marker (split by ";")
+                    # TODO: keep comment (split by " #")
+                    requirements[i] = pinned_library_req
+                    break
+        else:  # not present: add
+            requirements.append(pinned_library_req)
 
 
 def remove_public_version_identifier(requirements):

@@ -205,6 +205,8 @@ class Python(_environment._Environment):
 
         requirements = copy.copy(requirements)
 
+        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+
         # validate package names
         for req in requirements:
             if not _pip_requirements_utils.PKG_NAME_REGEX.match(req):
@@ -214,7 +216,6 @@ class Python(_environment._Environment):
         _pip_requirements_utils.strip_inexact_specifiers(requirements)
         _pip_requirements_utils.set_version_pins(requirements)
         _pip_requirements_utils.remove_public_version_identifier(requirements)
-        _pip_requirements_utils.add_verta_and_cloudpickle(requirements)
 
         self._msg.python.requirements.extend(
             map(
