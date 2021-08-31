@@ -232,14 +232,15 @@ class Python(_environment._Environment):
         )
 
     @staticmethod
-    def read_pip_file(filepath):
+    def read_pip_file(filepath, skip_options=False):
         """Read a pip requirements or constraints file into a list.
 
         .. versionchanged:: 0.20.0
 
             This method now includes, rather than skipping, pip packages
             installed via version control systems, ``pip install`` options,
-            and other requirements file configurations.
+            and other requirements file configurations. The new `skip_options`
+            parameter can be set to ``True`` to restore the old behavior.
 
         Parameters
         ----------
@@ -266,16 +267,20 @@ class Python(_environment._Environment):
         filepath = os.path.expanduser(filepath)
         with open(filepath, "r") as f:
             requirements = f.readlines()
-        return _pip_requirements_utils.clean_reqs_file_lines(requirements)
+        if skip_options:
+            requirements = _pip_requirements_utils.clean_reqs_file_lines(requirements)
+
+        return requirements
 
     @staticmethod
-    def read_pip_environment():
+    def read_pip_environment(skip_options=False):
         """Read package versions from pip into a list.
 
         .. versionchanged:: 0.20.0
 
             This method now includes, rather than skipping, pip packages
-            installed via version control systems.
+            installed via version control systems. The new `skip_options`
+            parameter can be set to ``True`` to restore the old behavior.
 
         Returns
         -------
@@ -292,4 +297,7 @@ class Python(_environment._Environment):
 
         """
         requirements = _pip_requirements_utils.get_pip_freeze()
-        return _pip_requirements_utils.clean_reqs_file_lines(requirements)
+        if skip_options:
+            requirements = _pip_requirements_utils.clean_reqs_file_lines(requirements)
+
+        return requirements
