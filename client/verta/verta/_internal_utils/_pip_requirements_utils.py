@@ -279,8 +279,8 @@ def pin_verta_and_cloudpickle(requirements):
     """
     for i, req in enumerate(requirements):
         if req.startswith("-e git+git@github.com:VertaAI/modeldb.git"):
-            # `pip install -e modeldb/client/verta` makes `pip freeze` return
-            # a requirement item that is unusable by `pip install`
+            # `pip install -e modeldb/client/verta` can make `pip freeze` return
+            # this requirement item which is unusable by `pip install`
             # https://github.com/pypa/pip/issues/7554
             # https://github.com/pypa/pip/issues/9625
             # https://github.com/pypa/pip/pull/9436
