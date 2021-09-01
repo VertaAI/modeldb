@@ -174,6 +174,7 @@ message ModelVersion {
 
     //Requirement
     modeldb.versioning.EnvironmentBlob environment = 10;
+    DockerMetadata docker_metadata = 24;
 
     // Other artifacts
     repeated common.Artifact artifacts = 11;
@@ -202,8 +203,17 @@ message ModelVersion {
     repeated common.Artifact datasets = 20;
     map<string, modeldb.versioning.CodeBlob> code_blob_map = 21;
 
+    // Is true if the readme text has been updated at least once
+    bool readme_text_updated = 22;
+
     // Doc for version_number https://github.com/VertaAI/docs/pull/53
     uint64 version_number = 23;
+}
+
+message DockerMetadata {
+    uint32 request_port = 1;
+    string request_path = 2;
+    string health_path = 3;
 }
 
 message SetLockModelVersionRequest {
@@ -537,7 +547,7 @@ service RegistryService {
     };
 
     rpc logCodeBlobInModelVersion(LogCodeBlobInModelVersion) returns (LogCodeBlobInModelVersion.Response) {
-       option (google.api.http) = {
+        option (google.api.http) = {
             post: "/v1/registry/model_versions/{model_version_id}/logCodeBlobInModelVersion"
             body: "*"
         };
