@@ -850,7 +850,7 @@ public class RoleServiceUtils implements RoleService {
   private GeneratedMessageV3 getTeamByName(boolean retry, String orgId, String teamName) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       var getTeamByName = GetTeamByName.newBuilder().setTeamName(teamName).setOrgId(orgId).build();
-      GetTeamByName.Response getTeamByNameResponse =
+      var getTeamByNameResponse =
           authServiceChannel.getTeamServiceBlockingStub().getTeamByName(getTeamByName);
       return getTeamByNameResponse.getTeam();
     } catch (StatusRuntimeException ex) {
