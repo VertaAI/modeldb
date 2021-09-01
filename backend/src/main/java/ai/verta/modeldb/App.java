@@ -188,7 +188,7 @@ public class App implements ApplicationContextAware {
   public static void main(String[] args) {
     try {
       LOGGER.info("Backend server starting.");
-      final java.util.logging.Logger logger =
+      final var logger =
           java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
       logger.setLevel(Level.WARNING);
       // --------------- Start reading properties --------------------------
