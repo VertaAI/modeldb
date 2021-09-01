@@ -131,7 +131,6 @@ class TestPython:
         with caplog.at_level(logging.WARNING, logger="verta"):
             env = Python(requirements=reqs)
         assert "failed to manually parse requirements; falling back to capturing raw contents" in caplog.text
-        print(caplog.text)
         assert "does not appear to be a valid PyPI-installable package" in caplog.text
         assert env._msg.python.raw_requirements == requirements_file_with_unsupported_lines.read()
 
