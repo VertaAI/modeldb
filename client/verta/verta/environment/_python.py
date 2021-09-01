@@ -94,10 +94,7 @@ class Python(_environment._Environment):
         if self._msg.python.raw_requirements:
             lines.append("raw requirements:")
             lines.extend(
-                map(
-                    "    {}".format,
-                    self._msg.python.raw_requirements.splitlines()
-                )
+                map("    {}".format, self._msg.python.raw_requirements.splitlines())
             )
         if self._msg.python.constraints:
             lines.append("constraints:")
@@ -111,10 +108,7 @@ class Python(_environment._Environment):
         if self._msg.python.raw_constraints:
             lines.append("raw constraints:")
             lines.extend(
-                map(
-                    "    {}".format,
-                    self._msg.python.raw_constraints.splitlines()
-                )
+                map("    {}".format, self._msg.python.raw_constraints.splitlines())
             )
         if self._msg.environment_variables:
             lines.append("environment variables:")
