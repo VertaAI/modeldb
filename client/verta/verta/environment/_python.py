@@ -37,6 +37,8 @@ class Python(_environment._Environment):
 
     Attributes
     ----------
+    constraints : list of str
+        pip constraints.
     requirements : list of str
         pip requirements.
 
@@ -129,12 +131,32 @@ class Python(_environment._Environment):
         return "\n    ".join(lines)
 
     @property
+    def constraints(self):
+        if self._msg.python.constraints:
+            # parsed constraints
+            return sorted(
+                map(
+                    self._req_spec_msg_to_str,
+                    self._msg.python.constraints,
+                )
+            )
+        else:
+            # raw constraints
+            return self._msg.python.raw_constraints.splitlines()
+
+    @property
     def requirements(self):
-        sorted_req_specs = sorted(
-            self._msg.python.requirements,
-            key=lambda req_spec_msg: req_spec_msg.library,
-        )
-        return list(map(self._req_spec_msg_to_str, sorted_req_specs))
+        if self._msg.python.requirements:
+            # parsed requirements
+            return sorted(
+                map(
+                    self._req_spec_msg_to_str,
+                    self._msg.python.requirements,
+                )
+            )
+        else:
+            # raw requirements
+            return self._msg.python.raw_requirements.splitlines()
 
     @classmethod
     def _from_proto(cls, blob_msg):

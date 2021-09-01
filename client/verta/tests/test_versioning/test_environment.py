@@ -60,6 +60,35 @@ def requirements_file_with_unsupported_lines():
 
 
 class TestPython:
+    @staticmethod
+    def assert_parsed_reqs_match(parsed_reqs, original_reqs):
+        """Assert that requirements match as expected
+
+        ``pip freeze`` can return ``black==21.6b0`` while our parsing yields
+        ``black==21.6.0b0``, though these are equivalent.
+
+        Parameters
+        ----------
+        parsed_reqs : list of str
+            e.g. ``Python.requirements``
+        original_reqs : list of str
+            e.g. ``Python.read_pip_environment()``
+
+        """
+        parsed_reqs = set(parsed_reqs)
+        original_reqs = set(original_reqs)
+
+        parsed_mapping = {
+            req.split("==")[0]: Python._req_spec_to_msg(req)
+            for req in parsed_reqs
+        }
+        original_mapping = {
+            req.split("==")[0]: Python._req_spec_to_msg(req)
+            for req in original_reqs
+        }
+
+        assert parsed_mapping == original_mapping
+
     def test_py_ver(self):
         env = Python(requirements=[])
 
@@ -78,22 +107,29 @@ class TestPython:
             skip_options=True,
         )
         env = Python(requirements=reqs)
-        assert env._msg.python.requirements
+
+        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        self.assert_parsed_reqs_match(env.requirements, reqs)
 
     def test_reqs(self, requirements_file):
         reqs = Python.read_pip_file(requirements_file.name)
         env = Python(requirements=reqs)
-        assert env._msg.python.requirements
+
+        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        self.assert_parsed_reqs_match(env.requirements, reqs)
 
     def test_reqs_without_versions(self, requirements_file_without_versions):
         reqs = Python.read_pip_file(requirements_file_without_versions.name)
         env = Python(requirements=reqs)
-        assert env._msg.python.requirements
+
+        parsed_libraries = set(req.split("==")[0] for req in env.requirements)
+        assert parsed_libraries == set(reqs) | {"verta", "cloudpickle"}
 
     def test_constraints_from_file(self, requirements_file):
         reqs = Python.read_pip_file(requirements_file.name)
         env = Python(requirements=[], constraints=reqs)
-        assert env._msg.python.constraints
+
+        self.assert_parsed_reqs_match(env.constraints, reqs)
 
     def test_constraints_from_file_no_versions_error(
         self, requirements_file_without_versions, caplog
@@ -101,9 +137,12 @@ class TestPython:
         reqs = Python.read_pip_file(requirements_file_without_versions.name)
         with caplog.at_level(logging.WARNING, logger="verta"):
             env = Python(requirements=[], constraints=reqs)
+
         assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text
         assert "missing its version specifier" in caplog.text
+
         assert env._msg.python.raw_constraints == requirements_file_without_versions.read()
+        assert set(env.constraints) == set(reqs)
 
     def test_inject_verta_cloudpickle(self):
         env = Python(requirements=[])
@@ -130,10 +169,12 @@ class TestPython:
         reqs = Python.read_pip_file(requirements_file_with_unsupported_lines.name)
         with caplog.at_level(logging.WARNING, logger="verta"):
             env = Python(requirements=reqs)
+
         assert "failed to manually parse requirements; falling back to capturing raw contents" in caplog.text
-        print(caplog.text)
         assert "does not appear to be a valid PyPI-installable package" in caplog.text
+
         assert env._msg.python.raw_requirements == requirements_file_with_unsupported_lines.read()
+        assert set(env.requirements) == set(reqs)
 
     def test_no_autocapture(self):
         env_ver = Python(requirements=[], _autocapture=False)
