@@ -100,9 +100,10 @@ class TestPython:
     ):
         reqs = Python.read_pip_file(requirements_file_without_versions.name)
         with caplog.at_level(logging.WARNING, logger="verta"):
-            Python(requirements=[], constraints=reqs)
+            env = Python(requirements=[], constraints=reqs)
         assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text
         assert "missing its version specifier" in caplog.text
+        assert env._msg.python.raw_constraints == requirements_file_without_versions.read()
 
     def test_inject_verta_cloudpickle(self):
         env = Python(requirements=[])
@@ -122,6 +123,17 @@ class TestPython:
 
         # only has injected requirements
         assert requirements == {"verta", "cloudpickle"}
+
+    def test_reqs_raw_unsupported_lines(
+        self, requirements_file_with_unsupported_lines, caplog
+    ):
+        reqs = Python.read_pip_file(requirements_file_with_unsupported_lines.name)
+        with caplog.at_level(logging.WARNING, logger="verta"):
+            env = Python(requirements=reqs)
+        assert "failed to manually parse requirements; falling back to capturing raw contents" in caplog.text
+        print(caplog.text)
+        assert "does not appear to be a valid PyPI-installable package" in caplog.text
+        assert env._msg.python.raw_requirements == requirements_file_with_unsupported_lines.read()
 
     def test_no_autocapture(self):
         env_ver = Python(requirements=[], _autocapture=False)
