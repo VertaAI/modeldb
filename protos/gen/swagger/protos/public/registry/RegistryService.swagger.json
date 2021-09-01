@@ -1956,6 +1956,21 @@
     "registryDeleteRegisteredModelRequestResponse": {
       "type": "object"
     },
+    "registryDockerMetadata": {
+      "type": "object",
+      "properties": {
+        "request_port": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "request_path": {
+          "type": "string"
+        },
+        "health_path": {
+          "type": "string"
+        }
+      }
+    },
     "registryFindModelVersionRequest": {
       "type": "object",
       "properties": {
@@ -2226,6 +2241,9 @@
           "$ref": "#/definitions/versioningEnvironmentBlob",
           "title": "Requirement"
         },
+        "docker_metadata": {
+          "$ref": "#/definitions/registryDockerMetadata"
+        },
         "artifacts": {
           "type": "array",
           "items": {
@@ -2278,6 +2296,11 @@
           "additionalProperties": {
             "$ref": "#/definitions/versioningCodeBlob"
           }
+        },
+        "readme_text_updated": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Is true if the readme text has been updated at least once"
         },
         "version_number": {
           "type": "string",

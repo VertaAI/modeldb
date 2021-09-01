@@ -25,7 +25,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.registry',
   syntax='proto3',
   serialized_options=b'P\001Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry',
-  serialized_pb=b'\n\x1eregistry/RegistryService.proto\x12\x11\x61i.verta.registry\x1a\x1cgoogle/api/annotations.proto\x1a google/protobuf/field_mask.proto\x1a\x1a\x63ommon/CommonService.proto\x1a$modeldb/versioning/Environment.proto\x1a\x1dmodeldb/versioning/Code.proto\x1a\x1bregistry/StageService.proto\x1a\x16uac/Collaborator.proto\"\xa7\x04\n\x0fRegisteredModel\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x14\n\x0ctime_created\x18\x03 \x01(\x03\x12\x14\n\x0ctime_updated\x18\x04 \x01(\x03\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x0e\n\x06labels\x18\x06 \x03(\t\x12>\n\nvisibility\x18\x07 \x01(\x0e\x32*.ai.verta.common.VisibilityEnum.Visibility\x12\x14\n\x0cworkspace_id\x18\x08 \x01(\t\x12\x1c\n\x14workspace_service_id\x18\x0c \x01(\x04\x12\x13\n\x0breadme_text\x18\t \x01(\t\x12\r\n\x05owner\x18\n \x01(\t\x12-\n\nattributes\x18\x0b \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12@\n\x11\x63ustom_permission\x18\r \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x12=\n\x13resource_visibility\x18\x0e \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12,\n\tartifacts\x18\x0f \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12\x1b\n\x13readme_text_updated\x18\x10 \x01(\x08\x12\x16\n\x0eversion_number\x18\x11 \x01(\x04\"\xa0\x02\n\x1a\x46indRegisteredModelRequest\x12\x16\n\x0eworkspace_name\x18\x01 \x01(\t\x12\x32\n\npredicates\x18\x02 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a`\n\x08Response\x12=\n\x11registered_models\x18\x01 \x03(\x0b\x32\".ai.verta.registry.RegisteredModel\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xa3\x01\n\x19GetRegisteredModelRequest\x12<\n\x02id\x18\x01 \x01(\x0b\x32\x30.ai.verta.registry.RegisteredModelIdentification\x1aH\n\x08Response\x12<\n\x10registered_model\x18\x01 \x01(\x0b\x32\".ai.verta.registry.RegisteredModel\"`\n\x1eGetRegisteredModelCountRequest\x12\x12\n\nproject_id\x18\x01 \x01(\t\x1a*\n\x08Response\x12\x1e\n\x16registered_model_count\x18\x01 \x01(\x03\"J\n\"RegisteredModelNamedIdentification\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\"\x85\x01\n\x1dRegisteredModelIdentification\x12G\n\x08named_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.registry.RegisteredModelNamedIdentification\x12\x1b\n\x13registered_model_id\x18\x02 \x01(\x04\"\x8b\x02\n\x12SetRegisteredModel\x12<\n\x02id\x18\x01 \x01(\x0b\x32\x30.ai.verta.registry.RegisteredModelIdentification\x12<\n\x10registered_model\x18\x02 \x01(\x0b\x32\".ai.verta.registry.RegisteredModel\x12/\n\x0bupdate_mask\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.FieldMask\x1aH\n\x08Response\x12<\n\x10registered_model\x18\x01 \x01(\x0b\x32\".ai.verta.registry.RegisteredModel\"h\n\x1c\x44\x65leteRegisteredModelRequest\x12<\n\x02id\x18\x01 \x01(\x0b\x32\x30.ai.verta.registry.RegisteredModelIdentification\x1a\n\n\x08Response\"c\n\x19ModelVersionLockLevelEnum\"F\n\x15ModelVersionLockLevel\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04OPEN\x10\x01\x12\n\n\x06\x43LOSED\x10\x02\x12\n\n\x06REDACT\x10\x03\"\xe8\x06\n\x0cModelVersion\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x1b\n\x13registered_model_id\x18\x02 \x01(\x04\x12\x0f\n\x07version\x18\x03 \x01(\t\x12\x14\n\x0ctime_updated\x18\x04 \x01(\x03\x12\x14\n\x0ctime_created\x18\x05 \x01(\x03\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x12\x1b\n\x11\x65xperiment_run_id\x18\x07 \x01(\tH\x00\x12\x0e\n\x06labels\x18\x08 \x03(\t\x12(\n\x05model\x18\t \x01(\x0b\x32\x19.ai.verta.common.Artifact\x12\x41\n\x0b\x65nvironment\x18\n \x01(\x0b\x32,.ai.verta.modeldb.versioning.EnvironmentBlob\x12,\n\tartifacts\x18\x0b \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12\x36\n\x08\x61rchived\x18\x0c \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x13\n\x0breadme_text\x18\r \x01(\t\x12\x0c\n\x04\x61pis\x18\x0f \x03(\t\x12\r\n\x05owner\x18\x10 \x01(\t\x12-\n\nattributes\x18\x11 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x31\n\x05stage\x18\x12 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12V\n\nlock_level\x18\x13 \x01(\x0e\x32\x42.ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel\x12+\n\x08\x64\x61tasets\x18\x14 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12G\n\rcode_blob_map\x18\x15 \x03(\x0b\x32\x30.ai.verta.registry.ModelVersion.CodeBlobMapEntry\x12\x16\n\x0eversion_number\x18\x17 \x01(\x04\x1aY\n\x10\x43odeBlobMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x34\n\x05value\x18\x02 \x01(\x0b\x32%.ai.verta.modeldb.versioning.CodeBlob:\x02\x38\x01\x42\x08\n\x06source\"\xbb\x01\n\x1aSetLockModelVersionRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.registry.ModelVersionIdentification\x12V\n\nlock_level\x18\x02 \x01(\x0e\x32\x42.ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel\x1a\n\n\x08Response\"z\n\x1aModelVersionIdentification\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x42\n\x08model_id\x18\x02 \x01(\x0b\x32\x30.ai.verta.registry.RegisteredModelIdentification\"\x97\x01\n\x16GetModelVersionRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.registry.ModelVersionIdentification\x1a\x42\n\x08Response\x12\x36\n\rmodel_version\x18\x01 \x01(\x0b\x32\x1f.ai.verta.registry.ModelVersion\"\xbd\x02\n\x17\x46indModelVersionRequest\x12<\n\x02id\x18\x01 \x01(\x0b\x32\x30.ai.verta.registry.RegisteredModelIdentification\x12\x32\n\npredicates\x18\x02 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1aZ\n\x08Response\x12\x37\n\x0emodel_versions\x18\x01 \x03(\x0b\x32\x1f.ai.verta.registry.ModelVersion\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xf9\x01\n\x0fSetModelVersion\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.registry.ModelVersionIdentification\x12\x36\n\rmodel_version\x18\x02 \x01(\x0b\x32\x1f.ai.verta.registry.ModelVersion\x12/\n\x0bupdate_mask\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.FieldMask\x1a\x42\n\x08Response\x12\x36\n\rmodel_version\x18\x01 \x01(\x0b\x32\x1f.ai.verta.registry.ModelVersion\"b\n\x19\x44\x65leteModelVersionRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.registry.ModelVersionIdentification\x1a\n\n\x08Response\"\xd7\x02\n\x11GetUrlForArtifact\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x0e\n\x06method\x18\x03 \x01(\t\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x13\n\x0bpart_number\x18\x05 \x01(\x04\x1a\xae\x01\n\x08Response\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x1b\n\x13multipart_upload_ok\x18\x02 \x01(\x08\x12I\n\x06\x66ields\x18\x03 \x03(\x0b\x32\x39.ai.verta.registry.GetUrlForArtifact.Response.FieldsEntry\x1a-\n\x0b\x46ieldsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"}\n\x12\x43ommitArtifactPart\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x34\n\rartifact_part\x18\x03 \x01(\x0b\x32\x1d.ai.verta.common.ArtifactPart\x1a\n\n\x08Response\"\x85\x01\n\x19GetCommittedArtifactParts\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x41\n\x08Response\x12\x35\n\x0e\x61rtifact_parts\x18\x01 \x03(\x0b\x32\x1d.ai.verta.common.ArtifactPart\"L\n\x17\x43ommitMultipartArtifact\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response\"n\n\x19LogDatasetsInModelVersion\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12+\n\x08\x64\x61tasets\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x1a\n\n\x08Response\"\xf2\x01\n\x19LogCodeBlobInModelVersion\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12T\n\rcode_blob_map\x18\x02 \x03(\x0b\x32=.ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry\x1aY\n\x10\x43odeBlobMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x34\n\x05value\x18\x02 \x01(\x0b\x32%.ai.verta.modeldb.versioning.CodeBlob:\x02\x38\x01\x1a\n\n\x08Response\"r\n\x1bLogAttributesInModelVersion\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response2\x9c/\n\x0fRegistryService\x12\xf2\x01\n\x13\x46indRegisteredModel\x12-.ai.verta.registry.FindRegisteredModelRequest\x1a\x36.ai.verta.registry.FindRegisteredModelRequest.Response\"t\x82\xd3\xe4\x93\x02n\"?/v1/registry/workspaces/{workspace_name}/registered_models/find:\x01*Z(\"#/v1/registry/registered_models/find:\x01*\x12\x99\x02\n\x12GetRegisteredModel\x12,.ai.verta.registry.GetRegisteredModelRequest\x1a\x35.ai.verta.registry.GetRegisteredModelRequest.Response\"\x9d\x01\x82\xd3\xe4\x93\x02\x96\x01\x12Y/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}Z9\x12\x37/v1/registry/registered_models/{id.registered_model_id}\x12\xb6\x01\n\x17GetRegisteredModelCount\x12\x31.ai.verta.registry.GetRegisteredModelCountRequest\x1a:.ai.verta.registry.GetRegisteredModelCountRequest.Response\",\x82\xd3\xe4\x93\x02&\x12$/v1/registry/registered_models/count\x12\xd0\x01\n\x15\x43reateRegisteredModel\x12%.ai.verta.registry.SetRegisteredModel\x1a..ai.verta.registry.SetRegisteredModel.Response\"`\x82\xd3\xe4\x93\x02Z\"F/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models:\x10registered_model\x12\xa0\x05\n\x15UpdateRegisteredModel\x12%.ai.verta.registry.SetRegisteredModel\x1a..ai.verta.registry.SetRegisteredModel.Response\"\xaf\x04\x82\xd3\xe4\x93\x02\xa8\x04\x32Y/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}:\x10registered_modelZK27/v1/registry/registered_models/{id.registered_model_id}:\x10registered_modelZh2c/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/full_body:\x01*ZF2A/v1/registry/registered_models/{id.registered_model_id}/full_body:\x01*Zm\x1aY/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}:\x10registered_modelZK\x1a\x37/v1/registry/registered_models/{id.registered_model_id}:\x10registered_model\x12\xa2\x02\n\x15\x44\x65leteRegisteredModel\x12/.ai.verta.registry.DeleteRegisteredModelRequest\x1a\x38.ai.verta.registry.DeleteRegisteredModelRequest.Response\"\x9d\x01\x82\xd3\xe4\x93\x02\x96\x01*Y/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}Z9*7/v1/registry/registered_models/{id.registered_model_id}\x12\xb7\x03\n\x10\x46indModelVersion\x12*.ai.verta.registry.FindModelVersionRequest\x1a\x33.ai.verta.registry.FindModelVersionRequest.Response\"\xc1\x02\x82\xd3\xe4\x93\x02\xba\x02\"m/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/model_versions/find:\x01*ZP\"K/v1/registry/registered_models/{id.registered_model_id}/model_versions/find:\x01*ZM\"H/v1/registry/workspaces/{id.named_id.workspace_name}/model_versions/find:\x01*Z%\" /v1/registry/model_versions/find:\x01*\x12\xc2\x02\n\x0fGetModelVersion\x12).ai.verta.registry.GetModelVersionRequest\x1a\x32.ai.verta.registry.GetModelVersionRequest.Response\"\xcf\x01\x82\xd3\xe4\x93\x02\xc8\x01\x12\x90\x01/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}Z3\x12\x31/v1/registry/model_versions/{id.model_version_id}\x12\xdc\x02\n\x12\x43reateModelVersion\x12\".ai.verta.registry.SetModelVersion\x1a+.ai.verta.registry.SetModelVersion.Response\"\xf4\x01\x82\xd3\xe4\x93\x02\xed\x01\"z/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions:\rmodel_versionZ`\"O/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions:\rmodel_version\x12\xbf\x07\n\x12UpdateModelVersion\x12\".ai.verta.registry.SetModelVersion\x1a+.ai.verta.registry.SetModelVersion.Response\"\xd7\x06\x82\xd3\xe4\x93\x02\xd0\x06\x32\x90\x01/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}:\rmodel_versionZv2e/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}:\rmodel_versionZ\xa0\x01\x32\x9a\x01/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}/full_body:\x01*Zt2o/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}/full_body:\x01*Z\xa2\x01\x1a\x90\x01/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}:\rmodel_versionZv\x1a\x65/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}:\rmodel_version\x12\xbf\x01\n\x13SetLockModelVersion\x12-.ai.verta.registry.SetLockModelVersionRequest\x1a\x36.ai.verta.registry.SetLockModelVersionRequest.Response\"A\x82\xd3\xe4\x93\x02;\x1a\x36/v1/registry/model_versions/{id.model_version_id}/lock:\x01*\x12\xb4\x03\n\x12\x44\x65leteModelVersion\x12,.ai.verta.registry.DeleteModelVersionRequest\x1a\x35.ai.verta.registry.DeleteModelVersionRequest.Response\"\xb8\x02\x82\xd3\xe4\x93\x02\xb1\x02*\x90\x01/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}Zg*e/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}Z3*1/v1/registry/model_versions/{id.model_version_id}\x12\xb5\x01\n\x11getUrlForArtifact\x12$.ai.verta.registry.GetUrlForArtifact\x1a-.ai.verta.registry.GetUrlForArtifact.Response\"K\x82\xd3\xe4\x93\x02\x45\"@/v1/registry/model_versions/{model_version_id}/getUrlForArtifact:\x01*\x12\xb9\x01\n\x12\x63ommitArtifactPart\x12%.ai.verta.registry.CommitArtifactPart\x1a..ai.verta.registry.CommitArtifactPart.Response\"L\x82\xd3\xe4\x93\x02\x46\"A/v1/registry/model_versions/{model_version_id}/commitArtifactPart:\x01*\x12\xd2\x01\n\x19getCommittedArtifactParts\x12,.ai.verta.registry.GetCommittedArtifactParts\x1a\x35.ai.verta.registry.GetCommittedArtifactParts.Response\"P\x82\xd3\xe4\x93\x02J\x12H/v1/registry/model_versions/{model_version_id}/getCommittedArtifactParts\x12\xcd\x01\n\x17\x63ommitMultipartArtifact\x12*.ai.verta.registry.CommitMultipartArtifact\x1a\x33.ai.verta.registry.CommitMultipartArtifact.Response\"Q\x82\xd3\xe4\x93\x02K\"F/v1/registry/model_versions/{model_version_id}/commitMultipartArtifact:\x01*\x12\xc7\x01\n\x19logDatasetsInModelVersion\x12,.ai.verta.registry.LogDatasetsInModelVersion\x1a\x35.ai.verta.registry.LogDatasetsInModelVersion.Response\"E\x82\xd3\xe4\x93\x02?\":/v1/registry/model_versions/{model_version_id}/logDatasets:\x01*\x12\xd5\x01\n\x19logCodeBlobInModelVersion\x12,.ai.verta.registry.LogCodeBlobInModelVersion\x1a\x35.ai.verta.registry.LogCodeBlobInModelVersion.Response\"S\x82\xd3\xe4\x93\x02M\"H/v1/registry/model_versions/{model_version_id}/logCodeBlobInModelVersion:\x01*\x12\xcf\x01\n\x1blogAttributesInModelVersion\x12..ai.verta.registry.LogAttributesInModelVersion\x1a\x37.ai.verta.registry.LogAttributesInModelVersion.Response\"G\x82\xd3\xe4\x93\x02\x41\"</v1/registry/model_versions/{model_version_id}/logAttributes:\x01*BCP\x01Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registryb\x06proto3'
+  serialized_pb=b'\n\x1eregistry/RegistryService.proto\x12\x11\x61i.verta.registry\x1a\x1cgoogle/api/annotations.proto\x1a google/protobuf/field_mask.proto\x1a\x1a\x63ommon/CommonService.proto\x1a$modeldb/versioning/Environment.proto\x1a\x1dmodeldb/versioning/Code.proto\x1a\x1bregistry/StageService.proto\x1a\x16uac/Collaborator.proto\"\xa7\x04\n\x0fRegisteredModel\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x14\n\x0ctime_created\x18\x03 \x01(\x03\x12\x14\n\x0ctime_updated\x18\x04 \x01(\x03\x12\x13\n\x0b\x64\x65scription\x18\x05 \x01(\t\x12\x0e\n\x06labels\x18\x06 \x03(\t\x12>\n\nvisibility\x18\x07 \x01(\x0e\x32*.ai.verta.common.VisibilityEnum.Visibility\x12\x14\n\x0cworkspace_id\x18\x08 \x01(\t\x12\x1c\n\x14workspace_service_id\x18\x0c \x01(\x04\x12\x13\n\x0breadme_text\x18\t \x01(\t\x12\r\n\x05owner\x18\n \x01(\t\x12-\n\nattributes\x18\x0b \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12@\n\x11\x63ustom_permission\x18\r \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x12=\n\x13resource_visibility\x18\x0e \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12,\n\tartifacts\x18\x0f \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12\x1b\n\x13readme_text_updated\x18\x10 \x01(\x08\x12\x16\n\x0eversion_number\x18\x11 \x01(\x04\"\xa0\x02\n\x1a\x46indRegisteredModelRequest\x12\x16\n\x0eworkspace_name\x18\x01 \x01(\t\x12\x32\n\npredicates\x18\x02 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1a`\n\x08Response\x12=\n\x11registered_models\x18\x01 \x03(\x0b\x32\".ai.verta.registry.RegisteredModel\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xa3\x01\n\x19GetRegisteredModelRequest\x12<\n\x02id\x18\x01 \x01(\x0b\x32\x30.ai.verta.registry.RegisteredModelIdentification\x1aH\n\x08Response\x12<\n\x10registered_model\x18\x01 \x01(\x0b\x32\".ai.verta.registry.RegisteredModel\"`\n\x1eGetRegisteredModelCountRequest\x12\x12\n\nproject_id\x18\x01 \x01(\t\x1a*\n\x08Response\x12\x1e\n\x16registered_model_count\x18\x01 \x01(\x03\"J\n\"RegisteredModelNamedIdentification\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0eworkspace_name\x18\x02 \x01(\t\"\x85\x01\n\x1dRegisteredModelIdentification\x12G\n\x08named_id\x18\x01 \x01(\x0b\x32\x35.ai.verta.registry.RegisteredModelNamedIdentification\x12\x1b\n\x13registered_model_id\x18\x02 \x01(\x04\"\x8b\x02\n\x12SetRegisteredModel\x12<\n\x02id\x18\x01 \x01(\x0b\x32\x30.ai.verta.registry.RegisteredModelIdentification\x12<\n\x10registered_model\x18\x02 \x01(\x0b\x32\".ai.verta.registry.RegisteredModel\x12/\n\x0bupdate_mask\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.FieldMask\x1aH\n\x08Response\x12<\n\x10registered_model\x18\x01 \x01(\x0b\x32\".ai.verta.registry.RegisteredModel\"h\n\x1c\x44\x65leteRegisteredModelRequest\x12<\n\x02id\x18\x01 \x01(\x0b\x32\x30.ai.verta.registry.RegisteredModelIdentification\x1a\n\n\x08Response\"c\n\x19ModelVersionLockLevelEnum\"F\n\x15ModelVersionLockLevel\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04OPEN\x10\x01\x12\n\n\x06\x43LOSED\x10\x02\x12\n\n\x06REDACT\x10\x03\"\xc1\x07\n\x0cModelVersion\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x1b\n\x13registered_model_id\x18\x02 \x01(\x04\x12\x0f\n\x07version\x18\x03 \x01(\t\x12\x14\n\x0ctime_updated\x18\x04 \x01(\x03\x12\x14\n\x0ctime_created\x18\x05 \x01(\x03\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\x12\x1b\n\x11\x65xperiment_run_id\x18\x07 \x01(\tH\x00\x12\x0e\n\x06labels\x18\x08 \x03(\t\x12(\n\x05model\x18\t \x01(\x0b\x32\x19.ai.verta.common.Artifact\x12\x41\n\x0b\x65nvironment\x18\n \x01(\x0b\x32,.ai.verta.modeldb.versioning.EnvironmentBlob\x12:\n\x0f\x64ocker_metadata\x18\x18 \x01(\x0b\x32!.ai.verta.registry.DockerMetadata\x12,\n\tartifacts\x18\x0b \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12\x36\n\x08\x61rchived\x18\x0c \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x13\n\x0breadme_text\x18\r \x01(\t\x12\x0c\n\x04\x61pis\x18\x0f \x03(\t\x12\r\n\x05owner\x18\x10 \x01(\t\x12-\n\nattributes\x18\x11 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12\x31\n\x05stage\x18\x12 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12V\n\nlock_level\x18\x13 \x01(\x0e\x32\x42.ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel\x12+\n\x08\x64\x61tasets\x18\x14 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x12G\n\rcode_blob_map\x18\x15 \x03(\x0b\x32\x30.ai.verta.registry.ModelVersion.CodeBlobMapEntry\x12\x1b\n\x13readme_text_updated\x18\x16 \x01(\x08\x12\x16\n\x0eversion_number\x18\x17 \x01(\x04\x1aY\n\x10\x43odeBlobMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x34\n\x05value\x18\x02 \x01(\x0b\x32%.ai.verta.modeldb.versioning.CodeBlob:\x02\x38\x01\x42\x08\n\x06source\"Q\n\x0e\x44ockerMetadata\x12\x14\n\x0crequest_port\x18\x01 \x01(\r\x12\x14\n\x0crequest_path\x18\x02 \x01(\t\x12\x13\n\x0bhealth_path\x18\x03 \x01(\t\"\xbb\x01\n\x1aSetLockModelVersionRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.registry.ModelVersionIdentification\x12V\n\nlock_level\x18\x02 \x01(\x0e\x32\x42.ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel\x1a\n\n\x08Response\"z\n\x1aModelVersionIdentification\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x42\n\x08model_id\x18\x02 \x01(\x0b\x32\x30.ai.verta.registry.RegisteredModelIdentification\"\x97\x01\n\x16GetModelVersionRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.registry.ModelVersionIdentification\x1a\x42\n\x08Response\x12\x36\n\rmodel_version\x18\x01 \x01(\x0b\x32\x1f.ai.verta.registry.ModelVersion\"\xbd\x02\n\x17\x46indModelVersionRequest\x12<\n\x02id\x18\x01 \x01(\x0b\x32\x30.ai.verta.registry.RegisteredModelIdentification\x12\x32\n\npredicates\x18\x02 \x03(\x0b\x32\x1e.ai.verta.common.KeyValueQuery\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x12\x11\n\tascending\x18\x04 \x01(\x08\x12\x10\n\x08sort_key\x18\x05 \x01(\t\x1aZ\n\x08Response\x12\x37\n\x0emodel_versions\x18\x01 \x03(\x0b\x32\x1f.ai.verta.registry.ModelVersion\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xf9\x01\n\x0fSetModelVersion\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.registry.ModelVersionIdentification\x12\x36\n\rmodel_version\x18\x02 \x01(\x0b\x32\x1f.ai.verta.registry.ModelVersion\x12/\n\x0bupdate_mask\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.FieldMask\x1a\x42\n\x08Response\x12\x36\n\rmodel_version\x18\x01 \x01(\x0b\x32\x1f.ai.verta.registry.ModelVersion\"b\n\x19\x44\x65leteModelVersionRequest\x12\x39\n\x02id\x18\x01 \x01(\x0b\x32-.ai.verta.registry.ModelVersionIdentification\x1a\n\n\x08Response\"\xd7\x02\n\x11GetUrlForArtifact\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x0e\n\x06method\x18\x03 \x01(\t\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x13\n\x0bpart_number\x18\x05 \x01(\x04\x1a\xae\x01\n\x08Response\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x1b\n\x13multipart_upload_ok\x18\x02 \x01(\x08\x12I\n\x06\x66ields\x18\x03 \x03(\x0b\x32\x39.ai.verta.registry.GetUrlForArtifact.Response.FieldsEntry\x1a-\n\x0b\x46ieldsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"}\n\x12\x43ommitArtifactPart\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x34\n\rartifact_part\x18\x03 \x01(\x0b\x32\x1d.ai.verta.common.ArtifactPart\x1a\n\n\x08Response\"\x85\x01\n\x19GetCommittedArtifactParts\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x41\n\x08Response\x12\x35\n\x0e\x61rtifact_parts\x18\x01 \x03(\x0b\x32\x1d.ai.verta.common.ArtifactPart\"L\n\x17\x43ommitMultipartArtifact\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08Response\"n\n\x19LogDatasetsInModelVersion\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12+\n\x08\x64\x61tasets\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.Artifact\x1a\n\n\x08Response\"\xf2\x01\n\x19LogCodeBlobInModelVersion\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12T\n\rcode_blob_map\x18\x02 \x03(\x0b\x32=.ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry\x1aY\n\x10\x43odeBlobMapEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x34\n\x05value\x18\x02 \x01(\x0b\x32%.ai.verta.modeldb.versioning.CodeBlob:\x02\x38\x01\x1a\n\n\x08Response\"r\n\x1bLogAttributesInModelVersion\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12-\n\nattributes\x18\x02 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x1a\n\n\x08Response2\x9c/\n\x0fRegistryService\x12\xf2\x01\n\x13\x46indRegisteredModel\x12-.ai.verta.registry.FindRegisteredModelRequest\x1a\x36.ai.verta.registry.FindRegisteredModelRequest.Response\"t\x82\xd3\xe4\x93\x02n\"?/v1/registry/workspaces/{workspace_name}/registered_models/find:\x01*Z(\"#/v1/registry/registered_models/find:\x01*\x12\x99\x02\n\x12GetRegisteredModel\x12,.ai.verta.registry.GetRegisteredModelRequest\x1a\x35.ai.verta.registry.GetRegisteredModelRequest.Response\"\x9d\x01\x82\xd3\xe4\x93\x02\x96\x01\x12Y/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}Z9\x12\x37/v1/registry/registered_models/{id.registered_model_id}\x12\xb6\x01\n\x17GetRegisteredModelCount\x12\x31.ai.verta.registry.GetRegisteredModelCountRequest\x1a:.ai.verta.registry.GetRegisteredModelCountRequest.Response\",\x82\xd3\xe4\x93\x02&\x12$/v1/registry/registered_models/count\x12\xd0\x01\n\x15\x43reateRegisteredModel\x12%.ai.verta.registry.SetRegisteredModel\x1a..ai.verta.registry.SetRegisteredModel.Response\"`\x82\xd3\xe4\x93\x02Z\"F/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models:\x10registered_model\x12\xa0\x05\n\x15UpdateRegisteredModel\x12%.ai.verta.registry.SetRegisteredModel\x1a..ai.verta.registry.SetRegisteredModel.Response\"\xaf\x04\x82\xd3\xe4\x93\x02\xa8\x04\x32Y/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}:\x10registered_modelZK27/v1/registry/registered_models/{id.registered_model_id}:\x10registered_modelZh2c/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/full_body:\x01*ZF2A/v1/registry/registered_models/{id.registered_model_id}/full_body:\x01*Zm\x1aY/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}:\x10registered_modelZK\x1a\x37/v1/registry/registered_models/{id.registered_model_id}:\x10registered_model\x12\xa2\x02\n\x15\x44\x65leteRegisteredModel\x12/.ai.verta.registry.DeleteRegisteredModelRequest\x1a\x38.ai.verta.registry.DeleteRegisteredModelRequest.Response\"\x9d\x01\x82\xd3\xe4\x93\x02\x96\x01*Y/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}Z9*7/v1/registry/registered_models/{id.registered_model_id}\x12\xb7\x03\n\x10\x46indModelVersion\x12*.ai.verta.registry.FindModelVersionRequest\x1a\x33.ai.verta.registry.FindModelVersionRequest.Response\"\xc1\x02\x82\xd3\xe4\x93\x02\xba\x02\"m/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/model_versions/find:\x01*ZP\"K/v1/registry/registered_models/{id.registered_model_id}/model_versions/find:\x01*ZM\"H/v1/registry/workspaces/{id.named_id.workspace_name}/model_versions/find:\x01*Z%\" /v1/registry/model_versions/find:\x01*\x12\xc2\x02\n\x0fGetModelVersion\x12).ai.verta.registry.GetModelVersionRequest\x1a\x32.ai.verta.registry.GetModelVersionRequest.Response\"\xcf\x01\x82\xd3\xe4\x93\x02\xc8\x01\x12\x90\x01/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}Z3\x12\x31/v1/registry/model_versions/{id.model_version_id}\x12\xdc\x02\n\x12\x43reateModelVersion\x12\".ai.verta.registry.SetModelVersion\x1a+.ai.verta.registry.SetModelVersion.Response\"\xf4\x01\x82\xd3\xe4\x93\x02\xed\x01\"z/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions:\rmodel_versionZ`\"O/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions:\rmodel_version\x12\xbf\x07\n\x12UpdateModelVersion\x12\".ai.verta.registry.SetModelVersion\x1a+.ai.verta.registry.SetModelVersion.Response\"\xd7\x06\x82\xd3\xe4\x93\x02\xd0\x06\x32\x90\x01/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}:\rmodel_versionZv2e/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}:\rmodel_versionZ\xa0\x01\x32\x9a\x01/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}/full_body:\x01*Zt2o/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}/full_body:\x01*Z\xa2\x01\x1a\x90\x01/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}:\rmodel_versionZv\x1a\x65/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}:\rmodel_version\x12\xbf\x01\n\x13SetLockModelVersion\x12-.ai.verta.registry.SetLockModelVersionRequest\x1a\x36.ai.verta.registry.SetLockModelVersionRequest.Response\"A\x82\xd3\xe4\x93\x02;\x1a\x36/v1/registry/model_versions/{id.model_version_id}/lock:\x01*\x12\xb4\x03\n\x12\x44\x65leteModelVersion\x12,.ai.verta.registry.DeleteModelVersionRequest\x1a\x35.ai.verta.registry.DeleteModelVersionRequest.Response\"\xb8\x02\x82\xd3\xe4\x93\x02\xb1\x02*\x90\x01/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}Zg*e/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}Z3*1/v1/registry/model_versions/{id.model_version_id}\x12\xb5\x01\n\x11getUrlForArtifact\x12$.ai.verta.registry.GetUrlForArtifact\x1a-.ai.verta.registry.GetUrlForArtifact.Response\"K\x82\xd3\xe4\x93\x02\x45\"@/v1/registry/model_versions/{model_version_id}/getUrlForArtifact:\x01*\x12\xb9\x01\n\x12\x63ommitArtifactPart\x12%.ai.verta.registry.CommitArtifactPart\x1a..ai.verta.registry.CommitArtifactPart.Response\"L\x82\xd3\xe4\x93\x02\x46\"A/v1/registry/model_versions/{model_version_id}/commitArtifactPart:\x01*\x12\xd2\x01\n\x19getCommittedArtifactParts\x12,.ai.verta.registry.GetCommittedArtifactParts\x1a\x35.ai.verta.registry.GetCommittedArtifactParts.Response\"P\x82\xd3\xe4\x93\x02J\x12H/v1/registry/model_versions/{model_version_id}/getCommittedArtifactParts\x12\xcd\x01\n\x17\x63ommitMultipartArtifact\x12*.ai.verta.registry.CommitMultipartArtifact\x1a\x33.ai.verta.registry.CommitMultipartArtifact.Response\"Q\x82\xd3\xe4\x93\x02K\"F/v1/registry/model_versions/{model_version_id}/commitMultipartArtifact:\x01*\x12\xc7\x01\n\x19logDatasetsInModelVersion\x12,.ai.verta.registry.LogDatasetsInModelVersion\x1a\x35.ai.verta.registry.LogDatasetsInModelVersion.Response\"E\x82\xd3\xe4\x93\x02?\":/v1/registry/model_versions/{model_version_id}/logDatasets:\x01*\x12\xd5\x01\n\x19logCodeBlobInModelVersion\x12,.ai.verta.registry.LogCodeBlobInModelVersion\x1a\x35.ai.verta.registry.LogCodeBlobInModelVersion.Response\"S\x82\xd3\xe4\x93\x02M\"H/v1/registry/model_versions/{model_version_id}/logCodeBlobInModelVersion:\x01*\x12\xcf\x01\n\x1blogAttributesInModelVersion\x12..ai.verta.registry.LogAttributesInModelVersion\x1a\x37.ai.verta.registry.LogAttributesInModelVersion.Response\"G\x82\xd3\xe4\x93\x02\x41\"</v1/registry/model_versions/{model_version_id}/logAttributes:\x01*BCP\x01Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registryb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_field__mask__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,modeldb_dot_versioning_dot_Environment__pb2.DESCRIPTOR,modeldb_dot_versioning_dot_Code__pb2.DESCRIPTOR,registry_dot_StageService__pb2.DESCRIPTOR,uac_dot_Collaborator__pb2.DESCRIPTOR,])
 
@@ -686,8 +686,8 @@ _MODELVERSION_CODEBLOBMAPENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2839,
-  serialized_end=2928,
+  serialized_start=2928,
+  serialized_end=3017,
 )
 
 _MODELVERSION = _descriptor.Descriptor(
@@ -768,77 +768,91 @@ _MODELVERSION = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='artifacts', full_name='ai.verta.registry.ModelVersion.artifacts', index=10,
+      name='docker_metadata', full_name='ai.verta.registry.ModelVersion.docker_metadata', index=10,
+      number=24, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='artifacts', full_name='ai.verta.registry.ModelVersion.artifacts', index=11,
       number=11, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='archived', full_name='ai.verta.registry.ModelVersion.archived', index=11,
+      name='archived', full_name='ai.verta.registry.ModelVersion.archived', index=12,
       number=12, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='readme_text', full_name='ai.verta.registry.ModelVersion.readme_text', index=12,
+      name='readme_text', full_name='ai.verta.registry.ModelVersion.readme_text', index=13,
       number=13, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='apis', full_name='ai.verta.registry.ModelVersion.apis', index=13,
+      name='apis', full_name='ai.verta.registry.ModelVersion.apis', index=14,
       number=15, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='owner', full_name='ai.verta.registry.ModelVersion.owner', index=14,
+      name='owner', full_name='ai.verta.registry.ModelVersion.owner', index=15,
       number=16, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='attributes', full_name='ai.verta.registry.ModelVersion.attributes', index=15,
+      name='attributes', full_name='ai.verta.registry.ModelVersion.attributes', index=16,
       number=17, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='stage', full_name='ai.verta.registry.ModelVersion.stage', index=16,
+      name='stage', full_name='ai.verta.registry.ModelVersion.stage', index=17,
       number=18, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='lock_level', full_name='ai.verta.registry.ModelVersion.lock_level', index=17,
+      name='lock_level', full_name='ai.verta.registry.ModelVersion.lock_level', index=18,
       number=19, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='datasets', full_name='ai.verta.registry.ModelVersion.datasets', index=18,
+      name='datasets', full_name='ai.verta.registry.ModelVersion.datasets', index=19,
       number=20, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='code_blob_map', full_name='ai.verta.registry.ModelVersion.code_blob_map', index=19,
+      name='code_blob_map', full_name='ai.verta.registry.ModelVersion.code_blob_map', index=20,
       number=21, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='version_number', full_name='ai.verta.registry.ModelVersion.version_number', index=20,
+      name='readme_text_updated', full_name='ai.verta.registry.ModelVersion.readme_text_updated', index=21,
+      number=22, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='version_number', full_name='ai.verta.registry.ModelVersion.version_number', index=22,
       number=23, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -860,7 +874,52 @@ _MODELVERSION = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=2066,
-  serialized_end=2938,
+  serialized_end=3027,
+)
+
+
+_DOCKERMETADATA = _descriptor.Descriptor(
+  name='DockerMetadata',
+  full_name='ai.verta.registry.DockerMetadata',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='request_port', full_name='ai.verta.registry.DockerMetadata.request_port', index=0,
+      number=1, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='request_path', full_name='ai.verta.registry.DockerMetadata.request_path', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='health_path', full_name='ai.verta.registry.DockerMetadata.health_path', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=3029,
+  serialized_end=3110,
 )
 
 
@@ -920,8 +979,8 @@ _SETLOCKMODELVERSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2941,
-  serialized_end=3128,
+  serialized_start=3113,
+  serialized_end=3300,
 )
 
 
@@ -958,8 +1017,8 @@ _MODELVERSIONIDENTIFICATION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3130,
-  serialized_end=3252,
+  serialized_start=3302,
+  serialized_end=3424,
 )
 
 
@@ -989,8 +1048,8 @@ _GETMODELVERSIONREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3340,
-  serialized_end=3406,
+  serialized_start=3512,
+  serialized_end=3578,
 )
 
 _GETMODELVERSIONREQUEST = _descriptor.Descriptor(
@@ -1019,8 +1078,8 @@ _GETMODELVERSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3255,
-  serialized_end=3406,
+  serialized_start=3427,
+  serialized_end=3578,
 )
 
 
@@ -1057,8 +1116,8 @@ _FINDMODELVERSIONREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3636,
-  serialized_end=3726,
+  serialized_start=3808,
+  serialized_end=3898,
 )
 
 _FINDMODELVERSIONREQUEST = _descriptor.Descriptor(
@@ -1115,8 +1174,8 @@ _FINDMODELVERSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3409,
-  serialized_end=3726,
+  serialized_start=3581,
+  serialized_end=3898,
 )
 
 
@@ -1146,8 +1205,8 @@ _SETMODELVERSION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3340,
-  serialized_end=3406,
+  serialized_start=3512,
+  serialized_end=3578,
 )
 
 _SETMODELVERSION = _descriptor.Descriptor(
@@ -1190,8 +1249,8 @@ _SETMODELVERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3729,
-  serialized_end=3978,
+  serialized_start=3901,
+  serialized_end=4150,
 )
 
 
@@ -1244,8 +1303,8 @@ _DELETEMODELVERSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3980,
-  serialized_end=4078,
+  serialized_start=4152,
+  serialized_end=4250,
 )
 
 
@@ -1282,8 +1341,8 @@ _GETURLFORARTIFACT_RESPONSE_FIELDSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4379,
-  serialized_end=4424,
+  serialized_start=4551,
+  serialized_end=4596,
 )
 
 _GETURLFORARTIFACT_RESPONSE = _descriptor.Descriptor(
@@ -1326,8 +1385,8 @@ _GETURLFORARTIFACT_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4250,
-  serialized_end=4424,
+  serialized_start=4422,
+  serialized_end=4596,
 )
 
 _GETURLFORARTIFACT = _descriptor.Descriptor(
@@ -1384,8 +1443,8 @@ _GETURLFORARTIFACT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4081,
-  serialized_end=4424,
+  serialized_start=4253,
+  serialized_end=4596,
 )
 
 
@@ -1452,8 +1511,8 @@ _COMMITARTIFACTPART = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4426,
-  serialized_end=4551,
+  serialized_start=4598,
+  serialized_end=4723,
 )
 
 
@@ -1483,8 +1542,8 @@ _GETCOMMITTEDARTIFACTPARTS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4622,
-  serialized_end=4687,
+  serialized_start=4794,
+  serialized_end=4859,
 )
 
 _GETCOMMITTEDARTIFACTPARTS = _descriptor.Descriptor(
@@ -1520,8 +1579,8 @@ _GETCOMMITTEDARTIFACTPARTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4554,
-  serialized_end=4687,
+  serialized_start=4726,
+  serialized_end=4859,
 )
 
 
@@ -1581,8 +1640,8 @@ _COMMITMULTIPARTARTIFACT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4689,
-  serialized_end=4765,
+  serialized_start=4861,
+  serialized_end=4937,
 )
 
 
@@ -1642,8 +1701,8 @@ _LOGDATASETSINMODELVERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4767,
-  serialized_end=4877,
+  serialized_start=4939,
+  serialized_end=5049,
 )
 
 
@@ -1680,8 +1739,8 @@ _LOGCODEBLOBINMODELVERSION_CODEBLOBMAPENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2839,
-  serialized_end=2928,
+  serialized_start=2928,
+  serialized_end=3017,
 )
 
 _LOGCODEBLOBINMODELVERSION_RESPONSE = _descriptor.Descriptor(
@@ -1740,8 +1799,8 @@ _LOGCODEBLOBINMODELVERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=4880,
-  serialized_end=5122,
+  serialized_start=5052,
+  serialized_end=5294,
 )
 
 
@@ -1801,8 +1860,8 @@ _LOGATTRIBUTESINMODELVERSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=5124,
-  serialized_end=5238,
+  serialized_start=5296,
+  serialized_end=5410,
 )
 
 _REGISTEREDMODEL.fields_by_name['visibility'].enum_type = common_dot_CommonService__pb2._VISIBILITYENUM_VISIBILITY
@@ -1831,6 +1890,7 @@ _MODELVERSION_CODEBLOBMAPENTRY.fields_by_name['value'].message_type = modeldb_do
 _MODELVERSION_CODEBLOBMAPENTRY.containing_type = _MODELVERSION
 _MODELVERSION.fields_by_name['model'].message_type = common_dot_CommonService__pb2._ARTIFACT
 _MODELVERSION.fields_by_name['environment'].message_type = modeldb_dot_versioning_dot_Environment__pb2._ENVIRONMENTBLOB
+_MODELVERSION.fields_by_name['docker_metadata'].message_type = _DOCKERMETADATA
 _MODELVERSION.fields_by_name['artifacts'].message_type = common_dot_CommonService__pb2._ARTIFACT
 _MODELVERSION.fields_by_name['archived'].enum_type = common_dot_CommonService__pb2._TERNARYENUM_TERNARY
 _MODELVERSION.fields_by_name['attributes'].message_type = common_dot_CommonService__pb2._KEYVALUE
@@ -1887,6 +1947,7 @@ DESCRIPTOR.message_types_by_name['SetRegisteredModel'] = _SETREGISTEREDMODEL
 DESCRIPTOR.message_types_by_name['DeleteRegisteredModelRequest'] = _DELETEREGISTEREDMODELREQUEST
 DESCRIPTOR.message_types_by_name['ModelVersionLockLevelEnum'] = _MODELVERSIONLOCKLEVELENUM
 DESCRIPTOR.message_types_by_name['ModelVersion'] = _MODELVERSION
+DESCRIPTOR.message_types_by_name['DockerMetadata'] = _DOCKERMETADATA
 DESCRIPTOR.message_types_by_name['SetLockModelVersionRequest'] = _SETLOCKMODELVERSIONREQUEST
 DESCRIPTOR.message_types_by_name['ModelVersionIdentification'] = _MODELVERSIONIDENTIFICATION
 DESCRIPTOR.message_types_by_name['GetModelVersionRequest'] = _GETMODELVERSIONREQUEST
@@ -2019,6 +2080,13 @@ ModelVersion = _reflection.GeneratedProtocolMessageType('ModelVersion', (_messag
   })
 _sym_db.RegisterMessage(ModelVersion)
 _sym_db.RegisterMessage(ModelVersion.CodeBlobMapEntry)
+
+DockerMetadata = _reflection.GeneratedProtocolMessageType('DockerMetadata', (_message.Message,), {
+  'DESCRIPTOR' : _DOCKERMETADATA,
+  '__module__' : 'registry.RegistryService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.registry.DockerMetadata)
+  })
+_sym_db.RegisterMessage(DockerMetadata)
 
 SetLockModelVersionRequest = _reflection.GeneratedProtocolMessageType('SetLockModelVersionRequest', (_message.Message,), {
 
@@ -2235,8 +2303,8 @@ _REGISTRYSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=5241,
-  serialized_end=11285,
+  serialized_start=5413,
+  serialized_end=11457,
   methods=[
   _descriptor.MethodDescriptor(
     name='FindRegisteredModel',
