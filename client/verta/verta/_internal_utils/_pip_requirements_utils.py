@@ -288,6 +288,15 @@ def pin_verta_and_cloudpickle(requirements):
             requirements[i] = __about__.__title__
             break
 
+    # add if not present
+    for library in [
+        __about__.__title__,
+        cloudpickle.__name__,
+    ]:
+        if not any(req.startswith(library) for req in requirements):
+            requirements.append(library)
+
+    # pin version
     for library, our_ver in [
         (__about__.__title__, __about__.__version__),
         (cloudpickle.__name__, cloudpickle.__version__),
@@ -295,7 +304,7 @@ def pin_verta_and_cloudpickle(requirements):
         pinned_library_req = "{}=={}".format(library, our_ver)
         for i, req in enumerate(requirements):
             if req.startswith(library):
-                if "==" in req:  # check version
+                if "==" in req:  # version pin: check version
                     their_ver = req.split('==')[-1]
                     if our_ver != their_ver:  # versions conflict: raise exception
                         raise ValueError(
@@ -303,16 +312,65 @@ def pin_verta_and_cloudpickle(requirements):
                             " these must match".format(library, our_ver, their_ver)
                         )
                     else:  # versions match, so proceed
-                        break
+                        continue
                 # TODO: check other operators (>=, >, ...)
                 else:  # no version pin: set
-                    # TODO: keep environment marker (split by ";")
-                    # TODO: keep comment (split by " #")
-                    requirements[i] = pinned_library_req
-                    break
-        else:  # not present: add
-            requirements.append(pinned_library_req)
+                    requirements[i] = preserve_req_suffixes(
+                        req,
+                        pinned_library_req,
+                    )
+                    continue
 
+
+def preserve_req_suffixes(requirement, pinned_library_req):
+    """Swap in `pinned_library_req` while preserving `requirement`'s environment marker and comment.
+
+    Parameters
+    ----------
+    requirement : str
+        A line from a pip requirements file.
+    pinned_library_req : str
+        Library + version pin, e.g. ``"verta==0.20.0"``.
+
+    Returns
+    -------
+    str
+
+    Examples
+    --------
+    .. code-block:: python
+
+        assert preserve_req_suffixes(
+            'verta;python_version<"2.7"  # very important!',
+            "verta==0.20.0",
+        ) == 'verta==0.20.0;python_version<"2.7"  # very important!'
+
+        assert preserve_req_suffixes(
+            'verta;python_version<"2.7"',
+            "verta==0.20.0",
+        ) == 'verta==0.20.0;python_version<"2.7"'
+
+        assert preserve_req_suffixes(
+            'verta  # very important!',
+            "verta==0.20.0",
+        ) == "verta==0.20.0 # very important!"
+
+        assert preserve_req_suffixes(
+            'verta',
+            "verta==0.20.0",
+        ) == "verta==0.20.0"
+
+    """
+    for delimiter in [
+        ";",  # environment marker
+        " #",  # comment
+    ]:
+        if delimiter not in requirement:
+            continue
+        split_req = requirement.split(delimiter)
+        split_req[0] = pinned_library_req
+        return delimiter.join(split_req)
+    return pinned_library_req
 
 def remove_public_version_identifier(requirements):
     """Removes local version identifiers from version pins if present.
