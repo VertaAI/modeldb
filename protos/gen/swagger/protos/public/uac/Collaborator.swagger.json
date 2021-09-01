@@ -542,7 +542,8 @@
               "TEAM",
               "WORKSPACE",
               "USER",
-              "SERVICE_ACCOUNT"
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -667,7 +668,8 @@
               "TEAM",
               "WORKSPACE",
               "USER",
-              "SERVICE_ACCOUNT"
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -812,7 +814,8 @@
               "TEAM",
               "WORKSPACE",
               "USER",
-              "SERVICE_ACCOUNT"
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -1350,7 +1353,8 @@
         "UPDATE",
         "DELETE",
         "READ_SECRETS",
-        "CREATE_SERVICE_ACCOUNT"
+        "CREATE_SERVICE_ACCOUNT",
+        "CREATE_CONTAINER_REGISTRY"
       ],
       "default": "UNKNOWN"
     },
@@ -1363,7 +1367,8 @@
         "TEAM",
         "WORKSPACE",
         "USER",
-        "SERVICE_ACCOUNT"
+        "SERVICE_ACCOUNT",
+        "CONTAINER_REGISTRY_CONFIGURATION"
       ],
       "default": "UNKNOWN"
     },
