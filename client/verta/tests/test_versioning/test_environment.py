@@ -1,17 +1,11 @@
 # -*- coding: utf-8 -*-
 
-# for composite strategy
-# pylint: disable=no-value-for-parameter
-
 import logging
 import os
-import string
 import subprocess
 import sys
 import tempfile
 
-import hypothesis
-import hypothesis.strategies as st
 import pytest
 import six
 
@@ -21,25 +15,6 @@ from verta.environment import (
     Python,
 )
 from verta._internal_utils import _pip_requirements_utils
-
-
-@st.composite
-def versions(draw):
-    numbers = st.integers(min_value=0, max_value=(2 ** 31) - 1)
-
-    major = draw(numbers)
-    minor = draw(numbers)
-    patch = draw(numbers)
-
-    return ".".join(map(str, [major, minor, patch]))
-
-
-@st.composite
-def metadata(draw):
-    """The "cu102" in "torch==1.8.1+cu102"."""
-    # https://www.python.org/dev/peps/pep-0440/#local-version-identifiers
-    alphabet = string.ascii_letters + string.digits + ".-_"
-    return draw(st.text(alphabet=alphabet, min_size=1))
 
 
 @pytest.fixture
@@ -83,45 +58,6 @@ def requirements_file_with_unsupported_lines():
         tempf.seek(0)
 
         yield tempf
-
-
-class TestUtils:
-    def test_parse_pip_freeze(self):
-        req_specs = _pip_requirements_utils.get_pip_freeze()
-        req_specs = _pip_requirements_utils.clean_reqs_file_lines(req_specs)
-
-        parsed_req_specs = (
-            (library, constraint, _pip_requirements_utils.parse_version(version))
-            for library, constraint, version in map(
-                _pip_requirements_utils.parse_req_spec, req_specs
-            )
-        )
-
-        for library, constraint, parsed_version in parsed_req_specs:
-            assert library != ""
-            assert " " not in library
-
-            assert constraint in _pip_requirements_utils.VER_SPEC_PATTERN.strip(
-                "()"
-            ).split("|")
-
-            assert parsed_version[0] >= 0  # major
-            assert parsed_version[1] >= 0  # minor
-            assert parsed_version[2] >= 0  # patch
-            assert isinstance(parsed_version[3], six.string_types)  # suffix
-
-    @hypothesis.given(
-        version=versions(),
-        metadata=metadata(),
-    )
-    def test_remove_torch_metadata(self, version, metadata):
-        clean_requirement = "torch=={}".format(version)
-        requirement = "+".join([clean_requirement, metadata])
-
-        requirements = [requirement]
-        _pip_requirements_utils.remove_public_version_identifier(requirements)
-        assert requirements != [requirement]
-        assert requirements == [clean_requirement]
 
 
 class TestPython:
