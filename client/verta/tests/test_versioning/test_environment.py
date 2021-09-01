@@ -18,15 +18,14 @@ from verta._internal_utils import _pip_requirements_utils
 
 
 @pytest.fixture
-def requirements_file_without_versions():
+def requirements_file_without_versions(requirements_file):
+    requirements = requirements_file.read().splitlines()
+    stripped_requirements = [
+        line.split("==")[0] for line in requirements
+    ]
+
     with tempfile.NamedTemporaryFile("w+") as tempf:
-        # create requirements file from pip freeze
-        pip_freeze = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
-        pip_freeze = six.ensure_str(pip_freeze)
-        stripped_pip_freeze = "\n".join(
-            line.split("==")[0] for line in pip_freeze.splitlines()
-        )
-        tempf.write(stripped_pip_freeze)
+        tempf.write("\n".join(stripped_requirements))
         tempf.flush()  # flush object buffer
         os.fsync(tempf.fileno())  # flush OS buffer
         tempf.seek(0)
@@ -82,18 +81,12 @@ class TestPython:
         assert env._msg.python.requirements
 
     def test_reqs(self, requirements_file):
-        reqs = Python.read_pip_file(
-            requirements_file.name,
-            skip_options=True,
-        )
+        reqs = Python.read_pip_file(requirements_file.name)
         env = Python(requirements=reqs)
         assert env._msg.python.requirements
 
     def test_reqs_without_versions(self, requirements_file_without_versions):
-        reqs = Python.read_pip_file(
-            requirements_file_without_versions.name,
-            skip_options=True,
-        )
+        reqs = Python.read_pip_file(requirements_file_without_versions.name)
         env = Python(requirements=reqs)
         assert env._msg.python.requirements
 
@@ -119,6 +112,7 @@ class TestPython:
         assert "cloudpickle" in requirements
 
     def test_reqs_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
+        """Unsupported lines are filtered out with legacy `skip_options=True`"""
         reqs = Python.read_pip_file(
             requirements_file_with_unsupported_lines.name,
             skip_options=True,
