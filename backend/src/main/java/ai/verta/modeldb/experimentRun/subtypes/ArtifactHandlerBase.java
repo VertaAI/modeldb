@@ -2,9 +2,11 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.config.ArtifactStoreConfig;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import java.util.AbstractMap;
@@ -20,6 +22,7 @@ public class ArtifactHandlerBase {
   protected final String fieldType;
   protected final String entityName;
   protected final String entityIdReferenceColumn;
+  private final ArtifactStoreConfig artifactStoreConfig;
 
   protected String getTableName() {
     return "artifact";
@@ -31,6 +34,7 @@ public class ArtifactHandlerBase {
     this.jdbi = jdbi;
     this.fieldType = fieldType;
     this.entityName = entityName;
+    this.artifactStoreConfig = App.getInstance().config.artifactStoreConfig;
 
     switch (entityName) {
       case "ProjectEntity":
@@ -237,8 +241,7 @@ public class ArtifactHandlerBase {
                       for (final var artifact : artifacts) {
                         var storeTypePath =
                             !artifact.getPathOnly()
-                                ? App.getInstance().config.artifactStoreConfig.storeTypePathPrefix()
-                                    + artifact.getPath()
+                                ? artifactStoreConfig.storeTypePathPrefix() + artifact.getPath()
                                 : "";
                         handle
                             .createUpdate(
@@ -254,7 +257,9 @@ public class ArtifactHandlerBase {
                             .bind("path_only", artifact.getPathOnly())
                             .bind("linked_artifact_id", artifact.getLinkedArtifactId())
                             .bind("filename_extension", artifact.getFilenameExtension())
-                            .bind("upload_completed", artifact.getUploadCompleted())
+                            .bind(
+                                "upload_completed",
+                                !artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
                             .bind("store_type_path", storeTypePath)
                             .bind("entity_id", entityId)
                             .bind("field_type", fieldType)

@@ -2,6 +2,7 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.ModelDBConstants;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,10 +22,11 @@ public class ArtifactEntity {
 
   public ArtifactEntity(Object entity, String fieldType, Artifact artifact) {
     App app = App.getInstance();
+    var artifactStoreConfig = app.config.artifactStoreConfig;
     setKey(artifact.getKey());
     setPath(artifact.getPath());
     if (!artifact.getPathOnly()) {
-      setStore_type_path(app.config.artifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
+      setStore_type_path(artifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
     }
     setArtifact_type(artifact.getArtifactTypeValue());
     setPath_only(artifact.getPathOnly());
@@ -46,6 +48,7 @@ public class ArtifactEntity {
     }
 
     this.field_type = fieldType;
+    setUploadCompleted(!artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3));
   }
 
   @Id
