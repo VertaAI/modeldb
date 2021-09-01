@@ -10,8 +10,11 @@ import sys
 import hypothesis
 import hypothesis.strategies as st
 import pytest
+
+import cloudpickle
 import six
 
+import verta
 from verta._internal_utils import _pip_requirements_utils
 
 
@@ -98,3 +101,61 @@ class TestPipRequirementsUtils:
                 ),
             )
         )
+
+    def test_preserve_req_suffixes(self):
+        # NOTE: these cases should match the function's docstring's examples
+
+        assert _pip_requirements_utils.preserve_req_suffixes(
+            "verta;python_version>'2.7' and python_version<'3.9'  # very important!",
+            "verta==0.20.0",
+        ) == "verta==0.20.0;python_version>'2.7' and python_version<'3.9'  # very important!"
+
+        assert _pip_requirements_utils.preserve_req_suffixes(
+            "verta;python_version<='2.7'",
+            "verta==0.20.0",
+        ) == "verta==0.20.0;python_version<='2.7'"
+
+        assert _pip_requirements_utils.preserve_req_suffixes(
+            "verta  # very important!",
+            "verta==0.20.0",
+        ) == "verta==0.20.0 # very important!"
+
+        assert _pip_requirements_utils.preserve_req_suffixes(
+            "verta",
+            "verta==0.20.0",
+        ) == "verta==0.20.0"
+
+
+class TestPinVertaAndCloudpickle:
+    def test_preserve_req_suffixes(self):
+        # NOTE: the reqs here aren't technically valid themselves due to duplicates
+        verta_reqs_suffixes = [
+            ";python_version>'2.7' and python_version<3.9  # very important!",
+            ";python_version<='2.7'",
+            " # very important!",
+        ]
+        cloudpickle_reqs_suffixes = [
+            ";python_version>'2.7' and python_version<3.9  # very important!",
+            ";python_version<='2.7'",
+            "",
+        ]
+
+        input_verta_reqs = [
+            "verta" + suffix for suffix in verta_reqs_suffixes
+        ]
+        input_cloudpickle_reqs = [
+            "cloudpickle" + suffix for suffix in cloudpickle_reqs_suffixes
+        ]
+        reqs = input_verta_reqs + input_cloudpickle_reqs
+
+        expected_verta_reqs = [
+            "verta==" + verta.__version__ + suffix
+            for suffix in verta_reqs_suffixes
+        ]
+        expected_cloudpickle_reqs = [
+            "cloudpickle==" + cloudpickle.__version__ + suffix
+            for suffix in cloudpickle_reqs_suffixes
+        ]
+        expected_reqs = expected_verta_reqs + expected_cloudpickle_reqs
+        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        assert reqs == expected_reqs

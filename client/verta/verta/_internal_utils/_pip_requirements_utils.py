@@ -263,8 +263,8 @@ def pin_verta_and_cloudpickle(requirements):
     """
     Adds verta and cloudpickle to `requirements`, pinning their versions from the environment.
 
-    verta and cloudpickle are required for deployment, but a user might not have specified them in
-    their manual deployment requirements.
+    Model deserilization in most cases requires that ``verta`` and
+    ``cloudpickle`` have the same versions as when the model was serialized.
 
     Parameters
     ----------
@@ -341,22 +341,22 @@ def preserve_req_suffixes(requirement, pinned_library_req):
     .. code-block:: python
 
         assert preserve_req_suffixes(
-            'verta;python_version<"2.7"  # very important!',
+            "verta;python_version>'2.7' and python_version<'3.9'  # very important!",
             "verta==0.20.0",
-        ) == 'verta==0.20.0;python_version<"2.7"  # very important!'
+        ) == "verta==0.20.0;python_version>'2.7' and python_version<'3.9'  # very important!"
 
         assert preserve_req_suffixes(
-            'verta;python_version<"2.7"',
+            "verta;python_version<='2.7'",
             "verta==0.20.0",
-        ) == 'verta==0.20.0;python_version<"2.7"'
+        ) == "verta==0.20.0;python_version<='2.7'"
 
         assert preserve_req_suffixes(
-            'verta  # very important!',
+            "verta  # very important!",
             "verta==0.20.0",
         ) == "verta==0.20.0 # very important!"
 
         assert preserve_req_suffixes(
-            'verta',
+            "verta",
             "verta==0.20.0",
         ) == "verta==0.20.0"
 
