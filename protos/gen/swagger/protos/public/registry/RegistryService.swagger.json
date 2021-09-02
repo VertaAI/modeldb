@@ -466,6 +466,45 @@
         ]
       }
     },
+    "/registry/model_versions/{model_version_id}/logDockerMetadata": {
+      "post": {
+        "operationId": "RegistryService_logDockerMetadataInModelVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryLogDockerMetadataInModelVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryLogDockerMetadataInModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
     "/registry/registered_models/count": {
       "get": {
         "operationId": "RegistryService_GetRegisteredModelCount",
@@ -2190,6 +2229,21 @@
       }
     },
     "registryLogDatasetsInModelVersionResponse": {
+      "type": "object"
+    },
+    "registryLogDockerMetadataInModelVersion": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "docker_metadata": {
+          "$ref": "#/definitions/registryDockerMetadata"
+        }
+      }
+    },
+    "registryLogDockerMetadataInModelVersionResponse": {
       "type": "object"
     },
     "registryModelVersion": {
