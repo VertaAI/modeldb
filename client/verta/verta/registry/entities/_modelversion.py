@@ -324,17 +324,13 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         serialized_model, method, model_type = _artifact_utils.serialize_model(model)
 
-        try:
-            extension = _artifact_utils.get_file_ext(serialized_model)
-        except (TypeError, ValueError):
-            extension = _artifact_utils.ext_from_method(method)
-
         # Create artifact message and update ModelVersion's message:
         model_msg = self._create_artifact_msg(
             _artifact_utils.REGISTRY_MODEL_KEY,
             serialized_model,
             artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL,
-            extension=extension,
+            method=method,
+            framework=model_type,
         )
         model_version_update = self.ModelVersionMessage(model=model_msg)
         self._update(model_version_update)
@@ -471,14 +467,12 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 artifact = open(artifact, "rb")
         artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
-        if not _extension:
-            try:
-                _extension = _artifact_utils.get_file_ext(artifact_stream)
-            except (TypeError, ValueError):
-                _extension = _artifact_utils.ext_from_method(method)
-
         artifact_msg = self._create_artifact_msg(
-            key, artifact_stream, artifact_type=artifact_type, extension=_extension
+            key,
+            artifact_stream,
+            artifact_type=artifact_type,
+            method=method,
+            extension=_extension,
         )
         if same_key_ind == -1:
             self._msg.artifacts.append(artifact_msg)
@@ -744,8 +738,49 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         print("upload complete")
 
-    def _create_artifact_msg(self, key, artifact_stream, artifact_type, extension=None):
-        artifact_path = self._build_artifact_store_path(
+    @classmethod
+    def _create_artifact_msg(
+        cls,
+        key,
+        artifact_stream,
+        artifact_type,
+        method,
+        framework=None,
+        extension=None,
+    ):
+        """Build a ``CommonService_pb2.Artifact`` protobuf object.
+
+        Parameters
+        ----------
+        key : str
+            Artifact key.
+        artifact_stream : file-like
+            Artifact bytestream.
+        artifact_type : CommonService_pb2.ArtifactTypeEnum variant
+            Category to which the artifact belongs (e.g. MODEL, DATA).
+        method : str or None
+            Artifact serialization method returned by
+            ``_artifact_utils.ensure_bytestream()`` or
+            ``_artifact_utils.serialize_model()``.
+        framework : str, optional
+            Artifact framework (e.g. "torch", "sklearn") returned by
+            ``_artifact_utils.serialize_model()``.
+        extension : str, optional
+            File extension associated with `artifact_stream`. If not provided,
+            it will be determined from either `artifact_stream` or `method`.
+
+        Returns
+        -------
+        CommonService_pb2.Artifact
+
+        """
+        if not extension:
+            try:
+                extension = _artifact_utils.get_file_ext(artifact_stream)
+            except (TypeError, ValueError):
+                extension = _artifact_utils.ext_from_method(method)
+
+        artifact_path = cls._build_artifact_store_path(
             artifact_stream,
             key,
             extension,
@@ -760,6 +795,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             path_only=False,
             artifact_type=artifact_type,
             filename_extension=extension,
+            serialization=method,
+            artifact_subtype=framework,
         )
         return artifact_msg
 
