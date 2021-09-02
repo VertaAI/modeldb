@@ -353,6 +353,13 @@ message LogAttributesInModelVersion {
     message Response { }
 }
 
+message LogDockerMetadataInModelVersion {
+    uint64 model_version_id = 1;
+    DockerMetadata docker_metadata = 2;
+
+    message Response { }
+}
+
 service RegistryService {
    // CRUD for RegisteredModel
     rpc FindRegisteredModel(FindRegisteredModelRequest) returns (FindRegisteredModelRequest.Response) {
@@ -556,6 +563,13 @@ service RegistryService {
     rpc logAttributesInModelVersion(LogAttributesInModelVersion) returns (LogAttributesInModelVersion.Response) {
         option (google.api.http) = {
             post: "/v1/registry/model_versions/{model_version_id}/logAttributes"
+            body: "*"
+        };
+    };
+
+    rpc logDockerMetadataInModelVersion(LogDockerMetadataInModelVersion) returns (LogDockerMetadataInModelVersion.Response) {
+        option (google.api.http) = {
+            post: "/v1/registry/model_versions/{model_version_id}/logDockerMetadata"
             body: "*"
         };
     };
