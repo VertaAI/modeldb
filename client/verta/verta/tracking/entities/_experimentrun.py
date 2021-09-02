@@ -207,22 +207,11 @@ class ExperimentRun(_DeployableEntity):
         if extension is None:
             extension = _artifact_utils.ext_from_method(method)
 
-        # calculate checksum
-        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
-        artifact_stream.seek(0)
-
-        # determine basename
-        #     The key might already contain the file extension, thanks to our hard-coded deployment
-        #     keys e.g. "model.pkl" and "model_api.json".
-        if extension is None:
-            basename = key
-        elif key.endswith(os.extsep + extension):
-            basename = key
-        else:
-            basename = key + os.extsep + extension
-
-        # build upload path from checksum and basename
-        artifact_path = os.path.join(artifact_hash, basename)
+        artifact_path = self._build_artifact_store_path(
+            artifact_stream,
+            key,
+            extension,
+        )
 
         # TODO: incorporate into config
         VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR', "")

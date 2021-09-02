@@ -745,22 +745,11 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         print("upload complete")
 
     def _create_artifact_msg(self, key, artifact_stream, artifact_type, extension=None):
-        # calculate checksum
-        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
-        artifact_stream.seek(0)
-
-        # determine basename
-        #     The key might already contain the file extension, thanks to our hard-coded deployment
-        #     keys e.g. "model.pkl" and "model_api.json".
-        if extension is None:
-            basename = key
-        elif key.endswith(os.extsep + extension):
-            basename = key
-        else:
-            basename = key + os.extsep + extension
-
-        # build upload path from checksum and basename
-        artifact_path = os.path.join(artifact_hash, basename)
+        artifact_path = self._build_artifact_store_path(
+            artifact_stream,
+            key,
+            extension,
+        )
 
         # TODO: support VERTA_ARTIFACT_DIR
 

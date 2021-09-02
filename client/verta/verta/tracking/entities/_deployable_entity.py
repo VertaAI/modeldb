@@ -146,6 +146,39 @@ class _DeployableEntity(_ModelDBEntity):
         """
         raise NotImplementedError
 
+    @staticmethod
+    def _build_artifact_store_path(artifact_stream, key, ext=None):
+        """Build a path for Verta's backend artifact store to store `artifact_stream`.
+
+        Parameters
+        ----------
+        artifact_stream : file-like
+            Artifact bytes.
+        key : str
+            Artifact key.
+        ext : str, optional
+            File extension associated with `artifact_stream`.
+
+        Returns
+        -------
+        str
+            Artifact store path for `artifact_stream`
+
+        """
+        # calculate checksum
+        checksum = _artifact_utils.calc_sha256(artifact_stream)
+        artifact_stream.seek(0)
+
+        # determine "file"name
+        #     The key might already contain the file extension, thanks to our hard-coded deployment
+        #     keys e.g. "model.pkl" and "model_api.json".
+        if ext is None or key.endswith("." + ext):
+            filename = key
+        else:
+            filename = key + "." + ext
+
+        return checksum + "/" + filename
+
     def _cache_file(self, filename, contents):
         """
         Caches `contents` to `filename` within ``_CACHE_DIR``.
