@@ -2,6 +2,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -15,6 +16,9 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 public class ArtifactHandlerBase {
+  private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
+  private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
+  private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   protected final Executor executor;
   protected final FutureJdbi jdbi;
   protected final String fieldType;
@@ -58,14 +62,12 @@ public class ArtifactHandlerBase {
                     handle ->
                         handle
                             .createQuery(
-                                "select id from "
-                                    + getTableName()
-                                    + " where entity_name=:entity_name and field_type=:field_type and "
-                                    + entityIdReferenceColumn
-                                    + "=:entity_id and ar_key=:ar_key")
-                            .bind("entity_id", entityId)
-                            .bind("field_type", fieldType)
-                            .bind("entity_name", entityName)
+                                String.format(
+                                    "select id from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id and ar_key=:ar_key",
+                                    getTableName(), entityIdReferenceColumn))
+                            .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                             .bind("ar_key", key)
                             .mapTo(Long.class)
                             .findOne()),
@@ -77,7 +79,7 @@ public class ArtifactHandlerBase {
         InternalFuture.runAsync(
             () -> {
               if (entityId == null || entityId.isEmpty()) {
-                throw new InvalidArgumentException("Entity id is empty");
+                throw new InvalidArgumentException(ModelDBMessages.ENTITY_ID_IS_EMPTY_ERROR);
               }
             },
             executor);
@@ -86,11 +88,9 @@ public class ArtifactHandlerBase {
             jdbi.withHandle(
                 handle -> {
                   var queryStr =
-                      "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe from "
-                          + getTableName()
-                          + " where entity_name=:entity_name and field_type=:field_type and "
-                          + entityIdReferenceColumn
-                          + "=:entity_id";
+                      String.format(
+                          "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id",
+                          getTableName(), entityIdReferenceColumn);
 
                   if (maybeKey.isPresent()) {
                     queryStr = queryStr + " AND ar_key=:ar_key ";
@@ -99,9 +99,9 @@ public class ArtifactHandlerBase {
                   var query =
                       handle
                           .createQuery(queryStr)
-                          .bind("entity_id", entityId)
-                          .bind("field_type", fieldType)
-                          .bind("entity_name", entityName);
+                          .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                          .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                          .bind(ENTITY_NAME_QUERY_PARAM, entityName);
                   maybeKey.ifPresent(s -> query.bind("ar_key", s));
                   return query
                       .map(
@@ -123,26 +123,22 @@ public class ArtifactHandlerBase {
     return jdbi.withHandle(
             handle -> {
               var queryStr =
-                  "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, "
-                      + entityIdReferenceColumn
-                      + " as entity_id from "
-                      + getTableName()
-                      + " where entity_name=:entity_name and field_type=:field_type and "
-                      + entityIdReferenceColumn
-                      + " in (<entity_ids>)";
+                  String.format(
+                      "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, %s as entity_id from %s where entity_name=:entity_name and field_type=:field_type and %s in (<entity_ids>)",
+                      entityIdReferenceColumn, getTableName(), entityIdReferenceColumn);
 
               var query =
                   handle
                       .createQuery(queryStr)
                       .bindList("entity_ids", entityIds)
-                      .bind("field_type", fieldType)
-                      .bind("entity_name", entityName);
+                      .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                      .bind(ENTITY_NAME_QUERY_PARAM, entityName);
 
               return query
                   .map(
                       (rs, ctx) ->
                           new AbstractMap.SimpleEntry<>(
-                              rs.getString("entity_id"),
+                              rs.getString(ENTITY_ID_QUERY_PARAM),
                               Artifact.newBuilder()
                                   .setKey(rs.getString("k"))
                                   .setPath(rs.getString("p"))
@@ -162,7 +158,7 @@ public class ArtifactHandlerBase {
     return InternalFuture.runAsync(
             () -> {
               if (entityId == null || entityId.isEmpty()) {
-                throw new InvalidArgumentException("Entity id is empty");
+                throw new InvalidArgumentException(ModelDBMessages.ENTITY_ID_IS_EMPTY_ERROR);
               }
               for (final var artifact : artifacts) {
                 String errorMessage = null;
@@ -189,33 +185,29 @@ public class ArtifactHandlerBase {
                       if (overwrite) {
                         handle
                             .createUpdate(
-                                "delete from "
-                                    + getTableName()
-                                    + " where entity_name=:entity_name and field_type=:field_type and ar_key in (<keys>) and "
-                                    + entityIdReferenceColumn
-                                    + "=:entity_id")
+                                String.format(
+                                    "delete from %s where entity_name=:entity_name and field_type=:field_type and ar_key in (<keys>) and %s =:entity_id",
+                                    getTableName(), entityIdReferenceColumn))
                             .bindList(
                                 "keys",
                                 artifacts.stream()
                                     .map(Artifact::getKey)
                                     .collect(Collectors.toList()))
-                            .bind("field_type", fieldType)
-                            .bind("entity_name", entityName)
-                            .bind("entity_id", entityId)
+                            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                            .bind(ENTITY_ID_QUERY_PARAM, entityId)
                             .execute();
                       } else {
                         for (final var artifact : artifacts) {
                           handle
                               .createQuery(
-                                  "select id from "
-                                      + getTableName()
-                                      + " where entity_name=:entity_name and field_type=:field_type and ar_key=:key and "
-                                      + entityIdReferenceColumn
-                                      + "=:entity_id")
+                                  String.format(
+                                      "select id from %s where entity_name=:entity_name and field_type=:field_type and ar_key=:key and %s =:entity_id",
+                                      getTableName(), entityIdReferenceColumn))
                               .bind("key", artifact.getKey())
-                              .bind("field_type", fieldType)
-                              .bind("entity_name", entityName)
-                              .bind("entity_id", entityId)
+                              .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                              .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                              .bind(ENTITY_ID_QUERY_PARAM, entityId)
                               .mapTo(Long.class)
                               .findOne()
                               .ifPresent(
@@ -256,9 +248,9 @@ public class ArtifactHandlerBase {
                             .bind("linked_artifact_id", artifact.getLinkedArtifactId())
                             .bind("filename_extension", artifact.getFilenameExtension())
                             .bind("store_type_path", storeTypePath)
-                            .bind("entity_id", entityId)
-                            .bind("field_type", fieldType)
-                            .bind("entity_name", entityName)
+                            .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                             .execute();
                       }
                     }),
@@ -270,7 +262,7 @@ public class ArtifactHandlerBase {
         InternalFuture.runAsync(
             () -> {
               if (entityId == null || entityId.isEmpty()) {
-                throw new InvalidArgumentException("Entity id is empty");
+                throw new InvalidArgumentException(ModelDBMessages.ENTITY_ID_IS_EMPTY_ERROR);
               }
             },
             executor);
@@ -279,11 +271,9 @@ public class ArtifactHandlerBase {
             jdbi.useHandle(
                 handle -> {
                   var sql =
-                      "delete from "
-                          + getTableName()
-                          + " where entity_name=:entity_name and field_type=:field_type and "
-                          + entityIdReferenceColumn
-                          + "=:entity_id";
+                      String.format(
+                          "delete from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id",
+                          getTableName(), entityIdReferenceColumn);
 
                   if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
                     sql += " and ar_key in (<keys>)";
@@ -292,9 +282,9 @@ public class ArtifactHandlerBase {
                   var query =
                       handle
                           .createUpdate(sql)
-                          .bind("entity_id", entityId)
-                          .bind("field_type", fieldType)
-                          .bind("entity_name", entityName);
+                          .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                          .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                          .bind(ENTITY_NAME_QUERY_PARAM, entityName);
 
                   if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
                     query = query.bindList("keys", maybeKeys.get());

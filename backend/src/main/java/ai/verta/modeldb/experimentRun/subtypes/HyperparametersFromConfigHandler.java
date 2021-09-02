@@ -79,6 +79,9 @@ public class HyperparametersFromConfigHandler extends KeyValueHandler {
                           case STRING_VALUE:
                             valueBuilder.setStringValue(rs.getString("string_value"));
                             break;
+                          default:
+                            // Do nothing
+                            break;
                         }
 
                         KeyValue hyperparameter =

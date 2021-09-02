@@ -42,6 +42,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   private static final Logger LOGGER = LogManager.getLogger(DatasetDAORdbImpl.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
+  private static final String DATASET_ID_POST_QUERY_PARAM = " = :datasetId";
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
 
@@ -563,7 +564,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       var transaction = session.beginTransaction();
       var stringQueryBuilder = new StringBuilder("delete from TagsMapping tm WHERE ");
       if (deleteAll) {
-        stringQueryBuilder.append(" tm.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
+        stringQueryBuilder.append(
+            " tm.datasetEntity." + ModelDBConstants.ID + DATASET_ID_POST_QUERY_PARAM);
         var query =
             session
                 .createQuery(stringQueryBuilder.toString())
@@ -572,7 +574,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         query.executeUpdate();
       } else {
         stringQueryBuilder.append(" tm." + ModelDBConstants.TAGS + " in (:tags)");
-        stringQueryBuilder.append(" AND tm.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
+        stringQueryBuilder.append(
+            " AND tm.datasetEntity." + ModelDBConstants.ID + DATASET_ID_POST_QUERY_PARAM);
         var query =
             session
                 .createQuery(stringQueryBuilder.toString())
@@ -699,7 +702,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       var stringQueryBuilder = new StringBuilder("delete from AttributeEntity attr WHERE ");
       if (deleteAll) {
-        stringQueryBuilder.append(" attr.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
+        stringQueryBuilder.append(
+            " attr.datasetEntity." + ModelDBConstants.ID + DATASET_ID_POST_QUERY_PARAM);
         var query =
             session
                 .createQuery(stringQueryBuilder.toString())
@@ -709,7 +713,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       } else {
         stringQueryBuilder.append(" attr." + ModelDBConstants.KEY + " in (:keys)");
         stringQueryBuilder.append(
-            " AND attr.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
+            " AND attr.datasetEntity." + ModelDBConstants.ID + DATASET_ID_POST_QUERY_PARAM);
         var query =
             session
                 .createQuery(stringQueryBuilder.toString())

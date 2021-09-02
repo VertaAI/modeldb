@@ -4,6 +4,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.Value;
+import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -19,7 +20,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "observation")
-public class ObservationEntity {
+public class ObservationEntity implements Serializable {
 
   public ObservationEntity() {}
 

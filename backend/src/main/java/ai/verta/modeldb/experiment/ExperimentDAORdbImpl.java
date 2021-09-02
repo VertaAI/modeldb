@@ -542,7 +542,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           session
               .createQuery(DELETED_STATUS_EXPERIMENT_QUERY_STRING)
               .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
-      deletedExperimentQuery.setParameter("deleted", true);
+      deletedExperimentQuery.setParameter(ModelDBConstants.DELETED, true);
       deletedExperimentQuery.setParameter("experimentIds", accessibleExperimentIds);
       int updatedCount = deletedExperimentQuery.executeUpdate();
       LOGGER.debug(
@@ -591,7 +591,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         }
       }
       var query = session.createQuery(stringQueryBuilder.toString());
-      query.setParameter("deleted", false);
+      query.setParameter(ModelDBConstants.DELETED, false);
       for (Entry<String, Object> paramEntry : paramMap.entrySet()) {
         query.setParameter(paramEntry.getKey(), paramEntry.getValue());
       }
@@ -1020,7 +1020,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       var experimentQuery = session.createQuery(PROJ_IDS_BY_EXP_IDS_HQL);
       experimentQuery.setParameterList("experimentIds", experimentIds);
-      experimentQuery.setParameter("deleted", false);
+      experimentQuery.setParameter(ModelDBConstants.DELETED, false);
       List<ExperimentEntity> experimentEntities = experimentQuery.list();
 
       Map<String, String> projectIdFromExperimentMap = new HashMap<>();

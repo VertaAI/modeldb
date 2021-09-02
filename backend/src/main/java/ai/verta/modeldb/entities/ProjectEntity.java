@@ -12,6 +12,7 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
+import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;
 import org.hibernate.annotations.LazyCollection;
@@ -19,7 +20,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "project")
-public class ProjectEntity {
+public class ProjectEntity implements Serializable {
 
   public ProjectEntity() {}
 
@@ -394,6 +395,9 @@ public class ProjectEntity {
       case USER_ID:
         projectBuilder.setWorkspaceId(workspace.getUserId());
         projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+        break;
+      default:
+        // Do nothing
         break;
     }
 

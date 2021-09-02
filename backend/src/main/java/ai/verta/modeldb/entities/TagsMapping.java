@@ -1,5 +1,6 @@
 package ai.verta.modeldb.entities;
 
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -12,7 +13,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "tag_mapping")
-public class TagsMapping {
+public class TagsMapping implements Serializable {
 
   public TagsMapping() {}
 

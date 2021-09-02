@@ -21,6 +21,7 @@ import org.hibernate.LockMode;
 
 public class CodeVersionHandler {
   private static Logger LOGGER = LogManager.getLogger(CodeVersionHandler.class);
+  private static final String RUN_ID_QUERY_PARAM = "run_id";
 
   private final Executor executor;
   private final FutureJdbi jdbi;
@@ -38,7 +39,7 @@ public class CodeVersionHandler {
                 handle
                     .createQuery(
                         "select code_version_snapshot_id from experiment_run where id=:run_id")
-                    .bind("run_id", entityId)
+                    .bind(RUN_ID_QUERY_PARAM, entityId)
                     .mapTo(Long.class)
                     .findOne())
         .thenApply(
@@ -65,7 +66,7 @@ public class CodeVersionHandler {
                 handle
                     .createQuery(
                         "select code_version_snapshot_id from experiment_run where id=:run_id")
-                    .bind("run_id", request.getId())
+                    .bind(RUN_ID_QUERY_PARAM, request.getId())
                     .mapTo(Long.class)
                     .findOne())
         .thenAccept(
@@ -78,7 +79,7 @@ public class CodeVersionHandler {
                     session
                         .createSQLQuery(
                             "UPDATE experiment_run SET code_version_snapshot_id = null WHERE id=:run_id")
-                        .setParameter("run_id", request.getId())
+                        .setParameter(RUN_ID_QUERY_PARAM, request.getId())
                         .executeUpdate();
                     final CodeVersionEntity entity =
                         session.get(
@@ -117,7 +118,7 @@ public class CodeVersionHandler {
                             .createUpdate(
                                 "update experiment_run set code_version_snapshot_id=:code_id where id=:run_id")
                             .bind("code_id", snapshotId)
-                            .bind("run_id", request.getId())
+                            .bind(RUN_ID_QUERY_PARAM, request.getId())
                             .execute()),
             executor);
   }

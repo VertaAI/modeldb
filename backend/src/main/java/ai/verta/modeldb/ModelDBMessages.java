@@ -22,4 +22,11 @@ public abstract class ModelDBMessages {
   public static final String PROJECT_NOT_FOUND_FOR_ID = "Project not found for given ID";
   public static final String ARTIFACT_STORE_DISABLED_LOGS = "Artifact store is disabled";
   public static final String BUCKET_DOES_NOT_EXISTS = "Bucket does not exists";
+  public static final String ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID =
+      "Access is denied. Experiment not found for given id : ";
+  public static final String PERMISSION_DENIED = "Permission denied";
+  public static final String UNIMPLEMENTED = "Unimplemented";
+  public static final String ENTITY_ID_IS_EMPTY_ERROR = "Entity id is empty";
+  public static final String UNKNOWN_VALUE_TYPE_RECOGNIZED_ERROR =
+      "Unknown 'Value' type recognized";
 }
