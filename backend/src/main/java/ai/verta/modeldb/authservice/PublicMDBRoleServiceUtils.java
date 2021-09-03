@@ -198,7 +198,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   @Override
   public WorkspaceDTO getWorkspaceDTOByWorkspaceName(
       UserInfo currentLoginUserInfo, String workspaceName) {
-    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
+    var workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceName(workspaceName);
     return workspaceDTO;
   }
@@ -212,7 +212,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   @Override
   public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
-    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
+    var workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(workspaceId);
     workspaceDTO.setWorkspaceType(WorkspaceType.forNumber(workspaceType));
     return workspaceDTO;

@@ -39,7 +39,6 @@ public class DeleteEntitiesCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(DeleteEntitiesCron.class);
   private static final String DELETED_KEY = "deleted";
   private static final String REPO_ID_KEY = "repoId";
-  private static final String REPO_ID_QUERY_POST_APPENDER = " = :repoId ";
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
@@ -109,10 +108,7 @@ public class DeleteEntitiesCron extends TimerTask {
             projectIds, ModelDBServiceResourceTypes.PROJECT);
         var transaction = session.beginTransaction();
         var updateDeletedStatusExperimentQueryString =
-            new StringBuilder("UPDATE ExperimentEntity exp SET exp.deleted = :deleted WHERE exp.")
-                .append(ModelDBConstants.PROJECT_ID)
-                .append(" IN (:projectIds)")
-                .toString();
+            "UPDATE ExperimentEntity exp SET exp.deleted = :deleted WHERE exp.project_id IN (:projectIds)";
         var deletedExperimentQuery = session.createQuery(updateDeletedStatusExperimentQueryString);
         deletedExperimentQuery.setParameter(DELETED_KEY, true);
         deletedExperimentQuery.setParameter("projectIds", projectIds);
@@ -167,11 +163,7 @@ public class DeleteEntitiesCron extends TimerTask {
       try {
         var transaction = session.beginTransaction();
         var updateDeletedStatusExperimentRunQueryString =
-            new StringBuilder(
-                    "UPDATE ExperimentRunEntity expr SET expr.deleted = :deleted WHERE expr.")
-                .append(ModelDBConstants.EXPERIMENT_ID)
-                .append(" IN (:experimentIds)")
-                .toString();
+            "UPDATE ExperimentRunEntity expr SET expr.deleted = :deleted WHERE expr.experiment_id IN (:experimentIds)";
         var deletedExperimentRunQuery =
             session.createQuery(updateDeletedStatusExperimentRunQueryString);
         deletedExperimentRunQuery.setParameter(DELETED_KEY, true);
@@ -294,13 +286,7 @@ public class DeleteEntitiesCron extends TimerTask {
 
   private void removeEntityComments(Session session, List<String> entityIds, String entityName) {
     var commentDeleteHql =
-        new StringBuilder()
-            .append("From CommentEntity ce where ce.")
-            .append(ModelDBConstants.ENTITY_ID)
-            .append(" IN (:entityIds) AND ce.")
-            .append(ModelDBConstants.ENTITY_NAME)
-            .append(" =:entityName")
-            .toString();
+        "From CommentEntity ce where ce.entity_id IN (:entityIds) AND ce.entity_name =:entityName";
     var commentDeleteQuery = session.createQuery(commentDeleteHql);
     commentDeleteQuery.setParameterList("entityIds", entityIds);
     commentDeleteQuery.setParameter("entityName", entityName);
@@ -329,10 +315,7 @@ public class DeleteEntitiesCron extends TimerTask {
             datasetIds, ModelDBServiceResourceTypes.DATASET);
         var transaction = session.beginTransaction();
         var updateDeletedStatusDatasetVersionQueryString =
-            new StringBuilder("UPDATE DatasetVersionEntity dv SET dv.deleted = :deleted WHERE dv.")
-                .append(ModelDBConstants.DATASET_ID)
-                .append(" IN (:datasetIds)")
-                .toString();
+            "UPDATE DatasetVersionEntity dv SET dv.deleted = :deleted WHERE dv.dataset_id IN (:datasetIds)";
         var deletedDatasetVersionQuery =
             session.createQuery(updateDeletedStatusDatasetVersionQueryString);
         deletedDatasetVersionQuery.setParameter(DELETED_KEY, true);
@@ -412,11 +395,7 @@ public class DeleteEntitiesCron extends TimerTask {
 
           transaction = session.beginTransaction();
 
-          var deleteTagsHql =
-              new StringBuilder("DELETE " + TagsEntity.class.getSimpleName() + " te where te.id.")
-                  .append(ModelDBConstants.REPOSITORY_ID)
-                  .append(REPO_ID_QUERY_POST_APPENDER)
-                  .toString();
+          var deleteTagsHql = "DELETE TagsEntity te where te.id.repository_id = :repoId ";
           var deleteTagsQuery = session.createQuery(deleteTagsHql);
           deleteTagsQuery.setParameter(REPO_ID_KEY, repository.getId());
           deleteTagsQuery.executeUpdate();
@@ -425,12 +404,7 @@ public class DeleteEntitiesCron extends TimerTask {
               session, String.valueOf(repository.getId()), IDTypeEnum.IDType.VERSIONING_REPOSITORY);
 
           var getRepositoryBranchesHql =
-              new StringBuilder("From ")
-                  .append(BranchEntity.class.getSimpleName())
-                  .append(" br where br.id.")
-                  .append(ModelDBConstants.REPOSITORY_ID)
-                  .append(REPO_ID_QUERY_POST_APPENDER)
-                  .toString();
+              "From BranchEntity br where br.id.repository_id = :repoId ";
           var query = session.createQuery(getRepositoryBranchesHql);
           query.setParameter(REPO_ID_KEY, repository.getId());
           List<BranchEntity> branchEntities = query.list();
@@ -449,14 +423,9 @@ public class DeleteEntitiesCron extends TimerTask {
             deleteBranchQuery.executeUpdate();
           }
 
-          var commitQueryBuilder =
-              new StringBuilder(
-                  "SELECT cm FROM "
-                      + CommitEntity.class.getSimpleName()
-                      + " cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ");
-          Query<CommitEntity> commitEntityQuery =
-              session.createQuery(
-                  commitQueryBuilder.append(" ORDER BY cm.date_created DESC").toString());
+          var commitQuery =
+              "SELECT cm FROM CommitEntity cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ORDER BY cm.date_created DESC";
+          Query<CommitEntity> commitEntityQuery = session.createQuery(commitQuery);
           commitEntityQuery.setParameter(REPO_ID_KEY, repository.getId());
           List<CommitEntity> commitEntities = commitEntityQuery.list();
 
@@ -510,13 +479,7 @@ public class DeleteEntitiesCron extends TimerTask {
 
   public static void deleteLabels(Session session, Object entityHash, IDTypeEnum.IDType idType) {
     var deleteLabelsQueryString =
-        new StringBuilder("DELETE LabelsMappingEntity lm where lm.id.")
-            .append(ModelDBConstants.ENTITY_HASH)
-            .append(" = :entityHash ")
-            .append(" AND lm.id.")
-            .append(ModelDBConstants.ENTITY_TYPE)
-            .append(" = :entityType")
-            .toString();
+        "DELETE LabelsMappingEntity lm where lm.id.entity_hash = :entityHash AND lm.id.entity_type = :entityType";
     var deleteLabelsQuery =
         session
             .createQuery(deleteLabelsQueryString)
@@ -528,12 +491,7 @@ public class DeleteEntitiesCron extends TimerTask {
 
   public static void deleteAttribute(Session session, String entityHash) {
     var deleteAllAttributes =
-        new StringBuilder("delete from AttributeEntity at WHERE at.")
-            .append(ModelDBConstants.ENTITY_HASH)
-            .append(" = :entityHash")
-            .append(" AND at.entity_name ")
-            .append(" = :entityName")
-            .toString();
+        "delete from AttributeEntity at WHERE at.entity_hash = :entityHash AND at.entity_name = :entityName";
     var deleteLabelsQuery =
         session
             .createQuery(deleteAllAttributes)
@@ -545,10 +503,7 @@ public class DeleteEntitiesCron extends TimerTask {
 
   private static void deleteTagEntities(Session session, Long repoId, String commitHash) {
     String getTagsHql =
-        "From TagsEntity te where te.id."
-            + ModelDBConstants.REPOSITORY_ID
-            + REPO_ID_QUERY_POST_APPENDER
-            + " AND te.commit_hash = :commitHash";
+        "From TagsEntity te where te.id.repository_id = :repoId AND te.commit_hash = :commitHash";
     Query<TagsEntity> getTagsQuery = session.createQuery(getTagsHql, TagsEntity.class);
     getTagsQuery.setParameter(REPO_ID_KEY, repoId);
     getTagsQuery.setParameter("commitHash", commitHash);

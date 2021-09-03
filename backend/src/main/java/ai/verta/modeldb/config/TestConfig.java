@@ -37,9 +37,9 @@ public class TestConfig extends MDBConfig {
       entry.getValue().Validate(entry.getKey());
     }
 
-    if (mdbArtifactStoreConfig == null)
-      throw new InvalidConfigException("MDBArtifactStoreConfig", MISSING_REQUIRED);
-    mdbArtifactStoreConfig.Validate("MDBArtifactStoreConfig");
+    if (artifactStoreConfig == null)
+      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
+    artifactStoreConfig.Validate("artifactStoreConfig");
 
     if (trial != null) {
       trial.Validate("trial");

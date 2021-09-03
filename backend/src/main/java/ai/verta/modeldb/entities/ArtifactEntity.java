@@ -26,7 +26,7 @@ public class ArtifactEntity implements Serializable {
     setPath(artifact.getPath());
     if (!artifact.getPathOnly()) {
       setStore_type_path(
-          app.mdbConfig.mdbArtifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
+          app.mdbConfig.artifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
     }
     setArtifact_type(artifact.getArtifactTypeValue());
     setPath_only(artifact.getPathOnly());
