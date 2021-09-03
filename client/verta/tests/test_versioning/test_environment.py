@@ -107,6 +107,8 @@ class TestPython:
             skip_options=True,
         )
         env = Python(requirements=reqs)
+        assert env._msg.python.requirements
+        assert not env._msg.python.raw_requirements
 
         _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
         self.assert_parsed_reqs_match(env.requirements, reqs)
@@ -114,6 +116,8 @@ class TestPython:
     def test_reqs(self, requirements_file):
         reqs = Python.read_pip_file(requirements_file.name)
         env = Python(requirements=reqs)
+        assert env._msg.python.requirements
+        assert not env._msg.python.raw_requirements
 
         _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
         self.assert_parsed_reqs_match(env.requirements, reqs)
@@ -121,6 +125,8 @@ class TestPython:
     def test_reqs_without_versions(self, requirements_file_without_versions):
         reqs = Python.read_pip_file(requirements_file_without_versions.name)
         env = Python(requirements=reqs)
+        assert env._msg.python.requirements
+        assert not env._msg.python.raw_requirements
 
         parsed_libraries = set(req.split("==")[0] for req in env.requirements)
         assert parsed_libraries == set(reqs) | {"verta", "cloudpickle"}
@@ -128,6 +134,8 @@ class TestPython:
     def test_constraints_from_file(self, requirements_file):
         reqs = Python.read_pip_file(requirements_file.name)
         env = Python(requirements=[], constraints=reqs)
+        assert env._msg.python.constraints
+        assert not env._msg.python.raw_constraints
 
         self.assert_parsed_reqs_match(env.constraints, reqs)
 
@@ -140,6 +148,9 @@ class TestPython:
 
         assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text
         assert "missing its version specifier" in caplog.text
+
+        assert not env._msg.python.constraints
+        assert env._msg.python.raw_constraints
 
         assert env._msg.python.raw_constraints == requirements_file_without_versions.read()
         assert set(env.constraints) == set(reqs)
@@ -172,6 +183,9 @@ class TestPython:
 
         assert "failed to manually parse requirements; falling back to capturing raw contents" in caplog.text
         assert "does not appear to be a valid PyPI-installable package" in caplog.text
+
+        assert not env._msg.python.requirements
+        assert env._msg.python.raw_requirements
 
         assert env._msg.python.raw_requirements == requirements_file_with_unsupported_lines.read()
         assert set(env.requirements) == set(reqs)
