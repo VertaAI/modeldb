@@ -7,10 +7,13 @@ import sys
 import tempfile
 
 import pytest
+
+import cloudpickle
 import six
 
 from google.protobuf import json_format
 
+import verta
 from verta.environment import (
     Python,
 )
@@ -111,6 +114,20 @@ class TestPython:
 
         assert "verta" in requirements
         assert "cloudpickle" in requirements
+
+    def test_raw_inject_verrta_cloudpickle(self):
+        reqs = [
+            "# this file is empty"
+        ]
+        env = Python(requirements=reqs)
+
+        assert not env._msg.python.requirements
+        assert env._msg.python.raw_requirements
+
+        assert env._msg.python.raw_requirements.splitlines() == reqs + [
+            "verta=={}".format(verta.__version__),
+            "cloudpickle=={}".format(cloudpickle.__version__),
+        ]
 
     def test_reqs_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
         """Unsupported lines are filtered out with legacy `skip_options=True`"""

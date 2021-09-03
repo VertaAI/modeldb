@@ -214,11 +214,12 @@ class Python(_environment._Environment):
                 "`requirements` must be list of str,"
                 " not {}".format(type(requirements))
             )
-        requirements_copy = copy.copy(requirements)
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements_copy)
+        requirements = copy.copy(requirements)
+        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
 
         try:
+            requirements_copy = copy.copy(requirements)
             _pip_requirements_utils.must_all_valid_package_names(requirements_copy)
             _pip_requirements_utils.strip_inexact_specifiers(requirements_copy)
             _pip_requirements_utils.set_version_pins(requirements_copy)
@@ -248,13 +249,12 @@ class Python(_environment._Environment):
             raise TypeError(
                 "`constraints` must be list of str," " not {}".format(type(constraints))
             )
-        constraints_copy = copy.copy(constraints)
 
         try:
             self._msg.python.constraints.extend(
                 map(
                     self._req_spec_to_msg,
-                    constraints_copy,
+                    constraints,
                 ),
             )
         except:
