@@ -40,8 +40,7 @@ def requirements_file_without_versions(requirements_file):
 def requirements_file_with_unsupported_lines():
     with tempfile.NamedTemporaryFile("w+") as tempf:
         requirements = [
-            "",
-            "# this is a comment",
+            "verta;python_version>=2.7",
             "--no-binary :all:",
             "--only-binary :none:",
             "--require-hashes",
@@ -50,7 +49,7 @@ def requirements_file_with_unsupported_lines():
             "-c some_constraints.txt",
             "-f file://dummy",
             "-i https://pypi.org/simple",
-            "-e git+git@github.com:VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta",
+            "-e git+ssh://git@github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta",
             "-r more_requirements.txt",
             "en-core-web-sm==2.2.5",
         ]
@@ -117,7 +116,7 @@ class TestPython:
 
     def test_raw_inject_verrta_cloudpickle(self):
         reqs = [
-            "# this file is empty"
+            "-e client/verta"
         ]
         env = Python(requirements=reqs)
 
@@ -148,8 +147,19 @@ class TestPython:
         with caplog.at_level(logging.WARNING, logger="verta"):
             env = Python(requirements=reqs)
         assert "failed to manually parse requirements; falling back to capturing raw contents" in caplog.text
-        assert "does not appear to be a valid PyPI-installable package" in caplog.text
-        assert env._msg.python.raw_requirements == requirements_file_with_unsupported_lines.read()
+        caplog.clear()
+        assert env._msg.python.raw_requirements
+
+        # also verify each individual line
+        for req in reqs:
+            with caplog.at_level(logging.WARNING, logger="verta"):
+                env = Python(requirements=[req])
+            assert "failed to manually parse requirements; falling back to capturing raw contents" in caplog.text
+            caplog.clear()
+
+            expected_reqs = [req]
+            _pip_requirements_utils.pin_verta_and_cloudpickle(expected_reqs)
+            assert env._msg.python.raw_requirements.splitlines() == expected_reqs
 
     def test_no_autocapture(self):
         env_ver = Python(requirements=[], _autocapture=False)
