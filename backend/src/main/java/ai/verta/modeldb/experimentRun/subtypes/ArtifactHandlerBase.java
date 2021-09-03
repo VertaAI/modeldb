@@ -237,7 +237,7 @@ public class ArtifactHandlerBase {
                             !artifact.getPathOnly()
                                 ? App.getInstance()
                                         .mdbConfig
-                                        .mdbArtifactStoreConfig
+                                        .artifactStoreConfig
                                         .storeTypePathPrefix()
                                     + artifact.getPath()
                                 : "";

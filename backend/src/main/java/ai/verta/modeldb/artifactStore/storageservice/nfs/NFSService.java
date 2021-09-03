@@ -167,20 +167,20 @@ public class NFSService implements ArtifactStoreService {
       LOGGER.trace("NFSService - generatePresignedUrl - put url returned");
       return getUploadUrl(
           parameters,
-          mdbConfig.mdbArtifactStoreConfig.protocol,
-          mdbConfig.mdbArtifactStoreConfig.artifactEndpoint.getArtifact,
-          mdbConfig.mdbArtifactStoreConfig.pickArtifactStoreHostFromConfig,
-          mdbConfig.mdbArtifactStoreConfig.host);
+          mdbConfig.artifactStoreConfig.protocol,
+          mdbConfig.artifactStoreConfig.artifactEndpoint.getArtifact,
+          mdbConfig.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+          mdbConfig.artifactStoreConfig.host);
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("NFSService - generatePresignedUrl - get url returned");
       var filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
       parameters.put(ModelDBConstants.FILENAME, filename);
       return getDownloadUrl(
           parameters,
-          mdbConfig.mdbArtifactStoreConfig.protocol,
-          mdbConfig.mdbArtifactStoreConfig.artifactEndpoint.getArtifact,
-          mdbConfig.mdbArtifactStoreConfig.pickArtifactStoreHostFromConfig,
-          mdbConfig.mdbArtifactStoreConfig.host);
+          mdbConfig.artifactStoreConfig.protocol,
+          mdbConfig.artifactStoreConfig.artifactEndpoint.getArtifact,
+          mdbConfig.artifactStoreConfig.pickArtifactStoreHostFromConfig,
+          mdbConfig.artifactStoreConfig.host);
     } else {
       var errorMessage = "Unsupported HTTP Method for NFS Presigned URL";
       throw new InvalidArgumentException(errorMessage);

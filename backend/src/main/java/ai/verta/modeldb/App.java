@@ -199,7 +199,7 @@ public class App implements ApplicationContextAware {
       System.getProperties().put("server.port", config.springServer.port);
 
       // Initialize services that we depend on
-      var services = ServiceSet.fromConfig(config, config.mdbArtifactStoreConfig);
+      var services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
 
       // Initialize database configuration and maybe run migration
       if (migrate(config.database, config.migrations)) {
