@@ -529,12 +529,11 @@ def organization(client, created_entities):
 @pytest.fixture
 def requirements_file():
     """Create requirements file from pip freeze."""
-    pip_freeze_lines = _pip_requirements_utils.get_pip_freeze()
-    # remove invalid lines that pip freeze sometimes captures
-    pip_freeze_lines = list(filter(lambda line: "==" in line, pip_freeze_lines))
+    pip_freeze = _pip_requirements_utils.get_pip_freeze()
+    pip_freeze = _pip_requirements_utils.clean_reqs_file_lines(pip_freeze)
 
     with tempfile.NamedTemporaryFile("w+") as tempf:
-        tempf.write("\n".join(pip_freeze_lines))
+        tempf.write("\n".join(pip_freeze))
         tempf.flush()  # flush object buffer
         os.fsync(tempf.fileno())  # flush OS buffer
         tempf.seek(0)
