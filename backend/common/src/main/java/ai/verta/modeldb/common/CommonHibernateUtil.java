@@ -60,9 +60,10 @@ public abstract class CommonHibernateUtil {
   }
 
   public SessionFactory createOrGetSessionFactory(DatabaseConfig config) throws ModelDBException {
-    if (sessionFactory == null) {
+    if (sessionFactory != null) {
       return validateConnectionAndFetchExistingSessionFactory(sessionFactory);
     }
+
     LOGGER.info("Fetching sessionFactory");
     try {
 
