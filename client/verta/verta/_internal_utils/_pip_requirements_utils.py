@@ -438,7 +438,6 @@ def clean_reqs_file_lines(requirements, ignore_unsupported=True):
     requirements = [req for req in requirements if not req.startswith('#')]  # comment line
 
     # check for unsupported options
-    # TODO: add support in VR-12389
     supported_requirements = []
     for req in requirements:
         unsupported_reason = None
@@ -447,12 +446,13 @@ def clean_reqs_file_lines(requirements, ignore_unsupported=True):
         if req.startswith(('--', '-c ', '-f ', '-i ')):
             unsupported_reason = "unsupported option \"{}\"".format(req)
         # https://pip.pypa.io/en/stable/topics/vcs-support/
-        # TODO: upgrade protos and Client to handle VCS-installed packages
         elif req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+')):
             unsupported_reason = "unsupported VCS-installed package \"{}\"".format(req)
-        # TODO: follow references to other requirements files
         elif req.startswith('-r '):
             unsupported_reason = "unsupported file reference \"{}\"".format(req)
+        # https://www.python.org/dev/peps/pep-0508/#environment-markers
+        elif ";" in req:
+            unsupported_reason = "unsupported environment marker \"{}\"".format(req)
         # non-PyPI-installable spaCy models
         elif SPACY_MODEL_REGEX.match(req):
             unsupported_reason = "non-PyPI-installable spaCy model \"{}\"".format(req)

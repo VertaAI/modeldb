@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 class Python(_environment._Environment):
     """Capture metadata about Python, installed packages, and system environment variables.
 
+    .. note::
+
+        Comments and blank lines will not be captured during parsing.
+
     Parameters
     ----------
     requirements : list of str
@@ -242,6 +246,10 @@ class Python(_environment._Environment):
 
         try:
             requirements_copy = copy.copy(requirements)
+            requirements_copy = _pip_requirements_utils.clean_reqs_file_lines(
+                requirements_copy,
+                ignore_unsupported=False,
+            )
             _pip_requirements_utils.must_all_valid_package_names(requirements_copy)
             _pip_requirements_utils.strip_inexact_specifiers(requirements_copy)
             _pip_requirements_utils.set_version_pins(requirements_copy)
