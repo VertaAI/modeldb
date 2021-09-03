@@ -188,7 +188,7 @@ public class App implements ApplicationContextAware {
   public static void main(String[] args) {
     try {
       LOGGER.info("Backend server starting.");
-      final java.util.logging.Logger logger =
+      final var logger =
           java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
       logger.setLevel(Level.WARNING);
       // --------------- Start reading properties --------------------------
@@ -199,7 +199,7 @@ public class App implements ApplicationContextAware {
       System.getProperties().put("server.port", config.springServer.port);
 
       // Initialize services that we depend on
-      var services = ServiceSet.fromConfig(config, config.mdbArtifactStoreConfig);
+      var services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
 
       // Initialize database configuration and maybe run migration
       if (migrate(config.database, config.migrations)) {

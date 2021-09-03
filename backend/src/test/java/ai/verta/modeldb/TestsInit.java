@@ -81,7 +81,7 @@ public class TestsInit {
     testConfig = TestConfig.getInstance();
     handleExecutor = FutureGrpc.initializeExecutor(testConfig.grpcServer.threadCount);
     // Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, testConfig.mdbArtifactStoreConfig);
+    services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
     authService = services.authService;
     // Initialize data access
     DAOSet daos =

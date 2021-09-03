@@ -141,7 +141,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified
-        && mdbConfig.mdbArtifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)) {
+        && mdbConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {
