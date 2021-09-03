@@ -174,7 +174,7 @@ class TestPython:
         assert not env._msg.python.requirements
         assert env._msg.python.raw_requirements
 
-        assert env._msg.python.raw_requirements.splitlines() == reqs + [
+        assert env.requirements == reqs + [
             "verta=={}".format(verta.__version__),
             "cloudpickle=={}".format(cloudpickle.__version__),
         ]
