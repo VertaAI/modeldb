@@ -77,71 +77,39 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private final BlobDAO blobDAO;
   private final MetadataDAO metadataDAO;
   private static final String CHECK_EXP_RUN_EXISTS_AT_INSERT_HQL =
-      new StringBuilder(
-              "Select count(*) From ExperimentRunEntity ere where ere.name = :experimentRunName AND ere.project_id = :projectId AND ere.experiment_id = :experimentId AND ere.deleted = false")
-          .toString();
+      "Select count(*) From ExperimentRunEntity ere where ere.name = :experimentRunName AND ere.project_id = :projectId AND ere.experiment_id = :experimentId AND ere.deleted = false";
   private static final String CHECK_EXP_RUN_EXISTS_AT_UPDATE_HQL =
-      new StringBuilder(
-              "Select count(*) From ExperimentRunEntity ere where ere.id = :experimentRunId AND ere.deleted = false")
-          .toString();
+      "Select count(*) From ExperimentRunEntity ere where ere.id = :experimentRunId AND ere.deleted = false";
   private static final String GET_EXP_RUN_BY_IDS_HQL =
       "From ExperimentRunEntity exr where exr.id IN (:ids) AND exr.deleted = false ";
   private static final String DELETE_ALL_TAGS_HQL =
-      new StringBuilder(
-              "delete from TagsMapping tm WHERE tm.experimentRunEntity.id = :experimentRunId")
-          .toString();
+      "delete from TagsMapping tm WHERE tm.experimentRunEntity.id = :experimentRunId";
   private static final String DELETE_SELECTED_TAGS_HQL =
-      new StringBuilder(
-              "delete from TagsMapping tm WHERE tm.tags in (:tags) AND tm.experimentRunEntity.id = :experimentRunId")
-          .toString();
+      "delete from TagsMapping tm WHERE tm.tags in (:tags) AND tm.experimentRunEntity.id = :experimentRunId";
   private static final String DELETE_ALL_ARTIFACTS_HQL =
-      new StringBuilder(
-              "delete from ArtifactEntity ar WHERE ar.experimentRunEntity.id = :experimentRunId")
-          .toString();
+      "delete from ArtifactEntity ar WHERE ar.experimentRunEntity.id = :experimentRunId";
   private static final String DELETE_SELECTED_ARTIFACTS_HQL =
-      new StringBuilder(
-              "delete from ArtifactEntity ar WHERE ar.key in (:keys) AND ar.experimentRunEntity.id = :experimentRunId AND ar.field_type = :field_type")
-          .toString();
+      "delete from ArtifactEntity ar WHERE ar.key in (:keys) AND ar.experimentRunEntity.id = :experimentRunId AND ar.field_type = :field_type";
   private static final String GET_EXP_RUN_ATTRIBUTE_BY_KEYS_HQL =
-      new StringBuilder(
-              "From AttributeEntity attr where attr.key in (:keys) AND attr.experimentRunEntity.id = :experimentRunId AND attr.field_type = :fieldType")
-          .toString();
+      "From AttributeEntity attr where attr.key in (:keys) AND attr.experimentRunEntity.id = :experimentRunId AND attr.field_type = :fieldType";
   private static final String DELETE_ALL_EXP_RUN_ATTRIBUTES_HQL =
-      new StringBuilder(
-              "delete from AttributeEntity attr WHERE attr.experimentRunEntity.id = :experimentRunId AND attr.field_type = :fieldType")
-          .toString();
+      "delete from AttributeEntity attr WHERE attr.experimentRunEntity.id = :experimentRunId AND attr.field_type = :fieldType";
   private static final String DELETE_SELECTED_EXP_RUN_ATTRIBUTES_HQL =
-      new StringBuilder(
-              "delete from AttributeEntity attr WHERE attr.key in (:keys) AND attr.experimentRunEntity.id = :experimentRunId AND attr.field_type = :fieldType")
-          .toString();
+      "delete from AttributeEntity attr WHERE attr.key in (:keys) AND attr.experimentRunEntity.id = :experimentRunId AND attr.field_type = :fieldType";
   private static final String GET_EXPERIMENT_RUN_BY_PROJECT_ID_HQL =
-      new StringBuilder()
-          .append(
-              "From ExperimentRunEntity ere where ere.project_id IN (:projectIds) AND ere.deleted = false")
-          .toString();
+      "From ExperimentRunEntity ere where ere.project_id IN (:projectIds) AND ere.deleted = false";
   private static final String GET_EXPERIMENT_RUN_BY_EXPERIMENT_ID_HQL =
-      new StringBuilder()
-          .append(
-              "From ExperimentRunEntity ere where ere.experiment_id IN (:experimentIds) AND ere.deleted = false")
-          .toString();
+      "From ExperimentRunEntity ere where ere.experiment_id IN (:experimentIds) AND ere.deleted = false";
   private static final String DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING =
-      new StringBuilder(
-              "UPDATE ExperimentRunEntity expr SET expr.deleted = :deleted WHERE expr.id IN (:experimentRunIds)")
-          .toString();
+      "UPDATE ExperimentRunEntity expr SET expr.deleted = :deleted WHERE expr.id IN (:experimentRunIds)";
   private static final String DELETE_ALL_KEY_VALUES_HQL =
-      new StringBuilder(
-              "delete from KeyValueEntity kv WHERE kv.experimentRunEntity.id = :experimentRunId AND kv.field_type = :field_type")
-          .toString();
+      "delete from KeyValueEntity kv WHERE kv.experimentRunEntity.id = :experimentRunId AND kv.field_type = :field_type";
   private static final String DELETE_SELECTED_KEY_VALUES_HQL =
-      new StringBuilder(
-              "delete from KeyValueEntity kv WHERE kv.key in (:keys) AND kv.experimentRunEntity.id = :experimentRunId AND kv.field_type = :field_type")
-          .toString();
+      "delete from KeyValueEntity kv WHERE kv.key in (:keys) AND kv.experimentRunEntity.id = :experimentRunId AND kv.field_type = :field_type";
   private static final String GET_ALL_OBSERVATIONS_HQL =
-      new StringBuilder(
-              "FROM ObservationEntity oe WHERE oe.experimentRunEntity.id = :experimentRunId AND oe.field_type = :field_type")
-          .toString();
+      "FROM ObservationEntity oe WHERE oe.experimentRunEntity.id = :experimentRunId AND oe.field_type = :field_type";
 
-  private LoadingCache<String, ReadWriteLock> locks =
+  private final LoadingCache<String, ReadWriteLock> locks =
       CacheBuilder.newBuilder()
           .maximumSize(CACHE_SIZE)
           .expireAfterWrite(DURATION, TimeUnit.MINUTES)
