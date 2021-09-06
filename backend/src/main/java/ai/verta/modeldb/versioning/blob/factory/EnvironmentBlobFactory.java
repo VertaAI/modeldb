@@ -44,6 +44,9 @@ public class EnvironmentBlobFactory extends BlobFactory {
             environmentBlobEntity.getDockerEnvironmentBlobEntity().toProto();
         environmentBlobBuilder.setDocker(dockerEnvironmentBlobBuilder);
         break;
+      default:
+        // Do nothing
+        break;
     }
     for (EnvironmentCommandLineEntity environmentCommandLineEntity :
         environmentBlobEntity.getEnvironmentCommandLineEntities()) {

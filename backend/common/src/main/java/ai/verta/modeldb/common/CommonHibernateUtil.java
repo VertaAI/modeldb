@@ -45,8 +45,8 @@ public abstract class CommonHibernateUtil {
   private StandardServiceRegistry registry;
   private SessionFactory sessionFactory;
   private Boolean isReady = false;
-  protected static Config config;
-  protected static DatabaseConfig databaseConfig;
+  protected Config config;
+  protected DatabaseConfig databaseConfig;
   protected static Class<?>[] entities;
   protected static String liquibaseRootFilePath;
   // private HibernateStatisticsCollector hibernateStatisticsCollector;

@@ -16,63 +16,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
 public class MetadataDAORdbImpl implements MetadataDAO {
-  private static final Logger LOGGER = LogManager.getLogger(MetadataDAORdbImpl.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
 
   private static final String GET_LABELS_HQL =
-      new StringBuilder("From LabelsMappingEntity lm where lm.id.")
-          .append(ModelDBConstants.ENTITY_HASH)
-          .append(" = :entityHash ")
-          .append(" AND lm.id.")
-          .append(ModelDBConstants.ENTITY_TYPE)
-          .append(" = :entityType")
-          .append(" ORDER BY lm.id.label")
-          .toString();
-  private static final String GET_LABEL_IDS_HQL =
-      new StringBuilder("From LabelsMappingEntity lm where ").toString();
-  private static final String DELETE_LABELS_HQL =
-      new StringBuilder("DELETE From LabelsMappingEntity lm where lm.")
-          .append(ModelDBConstants.ENTITY_HASH)
-          .append(" = :entityHash ")
-          .append(" AND lm.")
-          .append(ModelDBConstants.ENTITY_TYPE)
-          .append(" = :entityType AND lm.")
-          .append(ModelDBConstants.LABEL)
-          .append(" IN (:labels)")
-          .toString();
+      "From LabelsMappingEntity lm where lm.id.entity_hash = :entityHash AND lm.id.entity_type = :entityType ORDER BY lm.id.label";
+  private static final String GET_LABEL_IDS_HQL = "From LabelsMappingEntity lm where ";
   private static final String GET_PROPERTY_HQL =
-      new StringBuilder("From MetadataPropertyMappingEntity pm where pm.id.")
-          .append("repositoryId")
-          .append(" = :repositoryId")
-          .append(" AND pm.id.")
-          .append("commitSha")
-          .append(" = :commitSha")
-          .append(" AND pm.id.")
-          .append("location")
-          .append(" = :location")
-          .append(" AND pm.id.")
-          .append("key")
-          .append(" = :key")
-          .toString();
+      "From MetadataPropertyMappingEntity pm where pm.id.repositoryId = :repositoryId AND pm.id.commitSha = :commitSha AND pm.id.location = :location AND pm.id.key = :key";
   private static final String GET_KEY_VALUE_PROPERTY_HQL =
-      new StringBuilder("From KeyValuePropertyMappingEntity kv where kv.id.")
-          .append(ModelDBConstants.ENTITY_HASH)
-          .append(" = :")
-          .append(ModelDBConstants.ENTITY_HASH)
-          .append(" AND kv.id.")
-          .append(ModelDBConstants.PROPERTY_NAME)
-          .append(" = :")
-          .append(ModelDBConstants.PROPERTY_NAME)
-          .toString();
+      "From KeyValuePropertyMappingEntity kv where kv.id.entity_hash = :entity_hash AND kv.id.property_name = :property_name";
 
   private String getEntityHash(IdentificationType id) {
     String entityHash;

@@ -41,6 +41,9 @@ public class CodeBlobFactory extends BlobFactory {
         codeBlobBuilder.setNotebook(
             builder.setGitRepo(notebookCodeBlobEntity.getGitCodeBlobEntity().toProto()).build());
         break;
+      default:
+        // Do nothing
+        break;
     }
     return Blob.newBuilder().setCode(codeBlobBuilder).build();
   }

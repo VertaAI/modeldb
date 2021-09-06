@@ -22,6 +22,8 @@ import org.hibernate.query.Query;
 
 public class DatasetBlobFactory extends BlobFactory {
 
+  private static final String BLOB_SHAS_QUERY_PARAM = "blobShas";
+
   DatasetBlobFactory(InternalFolderElementEntity internalFolderElementEntity) {
     super(
         internalFolderElementEntity.getElement_type(),
@@ -49,6 +51,9 @@ public class DatasetBlobFactory extends BlobFactory {
         }
         datasetBlobBuilder.setQuery(queryBlob);
         break;
+      default:
+        // Do nothing
+        break;
     }
     return Blob.newBuilder().setDataset(datasetBlobBuilder).build();
   }
@@ -58,7 +63,7 @@ public class DatasetBlobFactory extends BlobFactory {
         "From S3DatasetComponentBlobEntity s3 WHERE s3.id.s3_dataset_blob_id = :blobShas";
 
     Query<S3DatasetComponentBlobEntity> s3ComponentQuery = session.createQuery(s3ComponentQueryHQL);
-    s3ComponentQuery.setParameter("blobShas", blobHash);
+    s3ComponentQuery.setParameter(BLOB_SHAS_QUERY_PARAM, blobHash);
     List<S3DatasetComponentBlobEntity> datasetComponentBlobEntities = s3ComponentQuery.list();
 
     if (datasetComponentBlobEntities != null && datasetComponentBlobEntities.size() > 0) {
@@ -78,7 +83,7 @@ public class DatasetBlobFactory extends BlobFactory {
 
     Query<PathDatasetComponentBlobEntity> pathComponentQuery =
         session.createQuery(pathComponentQueryHQL);
-    pathComponentQuery.setParameter("blobShas", blobHash);
+    pathComponentQuery.setParameter(BLOB_SHAS_QUERY_PARAM, blobHash);
     List<PathDatasetComponentBlobEntity> pathDatasetComponentBlobEntities =
         pathComponentQuery.list();
 
@@ -99,7 +104,7 @@ public class DatasetBlobFactory extends BlobFactory {
 
     Query<QueryDatasetComponentBlobEntity> queryComponentQuery =
         session.createQuery(pathComponentQueryHQL);
-    queryComponentQuery.setParameter("blobShas", blobHash);
+    queryComponentQuery.setParameter(BLOB_SHAS_QUERY_PARAM, blobHash);
     List<QueryDatasetComponentBlobEntity> queryDatasetComponentBlobEntities =
         queryComponentQuery.list();
 

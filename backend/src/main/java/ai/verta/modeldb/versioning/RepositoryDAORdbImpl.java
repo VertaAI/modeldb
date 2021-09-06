@@ -12,7 +12,6 @@ import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
-import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.*;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -41,9 +40,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   private static final Logger LOGGER = LogManager.getLogger(RepositoryDAORdbImpl.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  private static final String GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
-  public static final String UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO =
+  private static final String UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO =
       "Unexpected error on repository entity conversion to proto";
+  private static final String REPOSITORY_ID_QUERY_PARAM = "repositoryId";
+  private static final String BRANCH_QUERY_PARAM = "branch";
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
   private final CommitDAO commitDAO;
@@ -51,155 +51,27 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   private static final String SHORT_NAME = "repo";
 
-  private static final String GET_REPOSITORY_COUNT_BY_NAME_PREFIX_HQL =
-      new StringBuilder("Select count(*) From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(" where ")
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.NAME)
-          .append(" = :repositoryName ")
-          .toString();
-
   private static final String GET_REPOSITORY_IDS_BY_NAME_HQL =
-      new StringBuilder("SELECT ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.ID)
-          .append(" FROM ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(" where ")
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.NAME)
-          .append(" = :repositoryName ")
-          .append(" AND ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.DELETED)
-          .append(" = false ")
-          .append(" AND ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.CREATED)
-          .append(" = true")
-          .toString();
+      "SELECT repo.id FROM RepositoryEntity repo where repo.name = :repositoryName AND repo.deleted = false AND repo.created = true";
 
   private static final String GET_TAG_HQL =
-      new StringBuilder("From ")
-          .append(TagsEntity.class.getSimpleName())
-          .append(" t ")
-          .append(" where ")
-          .append(" t.id.")
-          .append(ModelDBConstants.REPOSITORY_ID)
-          .append(" = :repositoryId ")
-          .append(" AND t.id.")
-          .append(ModelDBConstants.TAG)
-          .append(" = :tag ")
-          .toString();
+      "From TagsEntity t where t.id.repository_id = :repositoryId AND t.id.tag = :tag";
   private static final String GET_TAGS_HQL =
-      new StringBuilder("From TagsEntity te where te.id.")
-          .append(ModelDBConstants.REPOSITORY_ID)
-          .append(" = :repoId ")
-          .toString();
+      "From TagsEntity te where te.id.repository_id = :repoId ";
   public static final String CHECK_BRANCH_IN_REPOSITORY_HQL =
-      new StringBuilder("From ")
-          .append(BranchEntity.class.getSimpleName())
-          .append(" br ")
-          .append(" where ")
-          .append(" br.id.")
-          .append(ModelDBConstants.REPOSITORY_ID)
-          .append(" = :repositoryId ")
-          .append(" AND br.id.")
-          .append(ModelDBConstants.BRANCH)
-          .append(" = :branch ")
-          .toString();
+      "From BranchEntity br where br.id.repository_id = :repositoryId AND br.id.branch = :branch ";
   private static final String GET_REPOSITORY_BRANCHES_HQL =
-      new StringBuilder("From ")
-          .append(BranchEntity.class.getSimpleName())
-          .append(" br where br.id.")
-          .append(ModelDBConstants.REPOSITORY_ID)
-          .append(" = :repoId ")
-          .toString();
+      "From BranchEntity br where br.id.repository_id = :repoId ";
   private static final String DELETED_STATUS_REPOSITORY_QUERY_STRING =
-      new StringBuilder("UPDATE ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" rp ")
-          .append("SET rp.")
-          .append(ModelDBConstants.DELETED)
-          .append(" = :deleted ")
-          .append(" WHERE rp.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:repoIds)")
-          .toString();
+      "UPDATE RepositoryEntity rp SET rp.deleted = :deleted WHERE rp.id IN (:repoIds)";
   private static final String GET_REPOSITORY_BY_ID_HQL =
-      new StringBuilder("From ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(" where ")
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.ID)
-          .append(" = :repoId ")
-          .append(" AND ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.DELETED)
-          .append(" = false ")
-          .append(" AND ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.CREATED)
-          .append(" = true ")
-          .toString();
-  private static final String GET_REPOSITORY_ATTRIBUTES_QUERY =
-      new StringBuilder("From " + AttributeEntity.class.getSimpleName() + " attr where attr.")
-          .append(ModelDBConstants.KEY)
-          .append(" in (:keys) AND attr.repositoryEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :repoId AND attr.field_type = :fieldType")
-          .toString();
+      "From RepositoryEntity repo where repo.id = :repoId AND repo.deleted = false AND repo.created = true ";
   private static final String DELETE_ALL_REPOSITORY_ATTRIBUTES_HQL =
-      new StringBuilder("delete from AttributeEntity attr WHERE attr.repositoryEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :repoId")
-          .toString();
+      "delete from AttributeEntity attr WHERE attr.repositoryEntity.id = :repoId";
   private static final String DELETE_SELECTED_REPOSITORY_ATTRIBUTES_HQL =
-      new StringBuilder("delete from AttributeEntity attr WHERE attr.")
-          .append(ModelDBConstants.KEY)
-          .append(" in (:keys) AND attr.repositoryEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :repoId")
-          .toString();
+      "delete from AttributeEntity attr WHERE attr.key in (:keys) AND attr.repositoryEntity.id = :repoId ";
   private static final String GET_DELETED_REPOSITORY_IDS_BY_NAME_HQL =
-      new StringBuilder("SELECT ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.ID)
-          .append(" FROM ")
-          .append(RepositoryEntity.class.getSimpleName())
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(" where ")
-          .append(" ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.NAME)
-          .append(" = :name ")
-          .append(" AND ")
-          .append(SHORT_NAME)
-          .append(".")
-          .append(ModelDBConstants.DELETED)
-          .append(" = true ")
-          .toString();
+      "SELECT repo.id FROM RepositoryEntity repo where repo.name = :name AND repo.deleted = true ";
 
   public RepositoryDAORdbImpl(
       AuthService authService,
@@ -864,7 +736,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       }
 
       var query = session.createQuery(GET_TAG_HQL);
-      query.setParameter("repositoryId", repository.getId());
+      query.setParameter(REPOSITORY_ID_QUERY_PARAM, repository.getId());
       query.setParameter("tag", request.getTag());
       var tagsEntity = (TagsEntity) query.uniqueResult();
       if (tagsEntity != null) {
@@ -891,7 +763,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       RepositoryEntity repository = getRepositoryById(session, request.getRepositoryId());
 
       var query = session.createQuery(GET_TAG_HQL);
-      query.setParameter("repositoryId", repository.getId());
+      query.setParameter(REPOSITORY_ID_QUERY_PARAM, repository.getId());
       query.setParameter("tag", request.getTag());
       var tagsEntity = (TagsEntity) query.uniqueResult();
       if (tagsEntity == null) {
@@ -1010,8 +882,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         session
             .createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL)
             .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
-    query.setParameter("repositoryId", repository.getId());
-    query.setParameter("branch", branch);
+    query.setParameter(REPOSITORY_ID_QUERY_PARAM, repository.getId());
+    query.setParameter(BRANCH_QUERY_PARAM, branch);
     var branchEntity = (BranchEntity) query.uniqueResult();
     if (branchEntity != null) {
       if (branchEntity.getCommit_hash().equals(commitSHA)) return;
@@ -1026,8 +898,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public BranchEntity getBranchEntity(Session session, Long repoId, String branchName)
       throws ModelDBException {
     var query = session.createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL);
-    query.setParameter("repositoryId", repoId);
-    query.setParameter("branch", branchName);
+    query.setParameter(REPOSITORY_ID_QUERY_PARAM, repoId);
+    query.setParameter(BRANCH_QUERY_PARAM, branchName);
     var branchEntity = (BranchEntity) query.uniqueResult();
     if (branchEntity == null) {
       throw new ModelDBException(ModelDBConstants.BRANCH_NOT_FOUND, Code.NOT_FOUND);
@@ -1095,7 +967,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         session
             .createQuery(deleteBranchesHQLBuilder.toString())
             .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
-    deleteBranchQuery.setParameter("repositoryId", repoId);
+    deleteBranchQuery.setParameter(REPOSITORY_ID_QUERY_PARAM, repoId);
     deleteBranchQuery.setParameter("commitHash", commitHash);
     deleteBranchQuery.executeUpdate();
   }
@@ -1141,8 +1013,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
       if (!request.getBranch().isEmpty()) {
         var query = session.createQuery(CHECK_BRANCH_IN_REPOSITORY_HQL);
-        query.setParameter("repositoryId", repository.getId());
-        query.setParameter("branch", request.getBranch());
+        query.setParameter(REPOSITORY_ID_QUERY_PARAM, repository.getId());
+        query.setParameter(BRANCH_QUERY_PARAM, request.getBranch());
         var branchEntity = (BranchEntity) query.uniqueResult();
         if (branchEntity == null) {
           throw new ModelDBException(

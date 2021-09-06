@@ -29,7 +29,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 import org.hibernate.Session;
 
 public class EnvironmentContainer extends BlobContainer {
@@ -135,18 +134,8 @@ public class EnvironmentContainer extends BlobContainer {
   @Override
   public void processAttribute(
       Session session, Long repoId, String commitHash, boolean addAttribute)
-      throws ModelDBException {}
-
-  private static final String PATTERN = "[a-zA-Z0-9_-]+";
-
-  private void validateEnvironmentVariableName(String name) throws ModelDBException {
-    if (!Pattern.compile(PATTERN).matcher(name).matches()) {
-      throw new ModelDBException(
-          "Environment variable name: "
-              + name
-              + " should be not empty, should contain only alphanumeric or underscore",
-          Code.INVALID_ARGUMENT);
-    }
+      throws ModelDBException {
+    // attributes with environment not implemented
   }
 
   private String computeSHA(EnvironmentBlob blob) throws NoSuchAlgorithmException {

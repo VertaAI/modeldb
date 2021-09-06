@@ -226,7 +226,9 @@ public class ModelDBUtils {
               if (userInfoValue != null) {
                 collaborator1 = new CollaboratorUser(authService, userInfoValue);
               } else {
-                LOGGER.info("skipping " + collaborator.getVertaId() + " because it is not found");
+                LOGGER.info(
+                    String.format(
+                        "skipping %s because it is not found", collaborator.getVertaId()));
               }
               break;
             case ORGANIZATION:
@@ -252,11 +254,12 @@ public class ModelDBUtils {
         } catch (StatusRuntimeException ex) {
           if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
             LOGGER.info(
-                "skipping "
-                    + collaborator.getVertaId()
-                    + " because the current user doesn't have access to it");
+                String.format(
+                    "skipping %s because the current user doesn't have access to it",
+                    collaborator.getVertaId()));
           } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
-            LOGGER.info("skipping " + collaborator.getVertaId() + " because it is not found");
+            LOGGER.info(
+                String.format("skipping %s because it is not found", collaborator.getVertaId()));
           } else {
             LOGGER.debug(ex.getMessage(), ex);
             throw ex;

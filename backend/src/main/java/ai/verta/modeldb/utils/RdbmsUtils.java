@@ -39,8 +39,6 @@ import org.hibernate.query.Query;
 
 public class RdbmsUtils {
 
-  private RdbmsUtils() {}
-
   private static final Logger LOGGER = LogManager.getLogger(RdbmsUtils.class);
   private static final String MAX_EPOCH_NUMBER_SQL_1 =
       "select max(o.epoch_number) From (select keyvaluemapping_id, epoch_number from observation where experiment_run_id ='";
@@ -48,6 +46,7 @@ public class RdbmsUtils {
       "' and entity_name = 'ExperimentRunEntity') o, (select id from keyvalue where kv_key ='";
   private static final String MAX_EPOCH_NUMBER_SQL_3 =
       "' and  entity_name IS NULL) k where o.keyvaluemapping_id = k.id ";
+  private static final String AND_QUERY_OPERATOR = " AND ";
 
   public static JobEntity generateJobEntity(Job job) {
     return new JobEntity(job);
@@ -543,21 +542,21 @@ public class RdbmsUtils {
             .append(entityFieldEntry.getKey());
 
         if (index < whereClauseParam.size()) {
-          finalQueryBuilder.append(" AND ");
-          countQueryBuilder.append(" AND ");
+          finalQueryBuilder.append(AND_QUERY_OPERATOR);
+          countQueryBuilder.append(AND_QUERY_OPERATOR);
           index++;
         }
       }
     }
 
     finalQueryBuilder
-        .append(" AND ")
+        .append(AND_QUERY_OPERATOR)
         .append(alias)
         .append(".")
         .append(ModelDBConstants.DELETED)
         .append(" = false ");
     countQueryBuilder
-        .append(" AND ")
+        .append(AND_QUERY_OPERATOR)
         .append(alias)
         .append(".")
         .append(ModelDBConstants.DELETED)
@@ -810,7 +809,7 @@ public class RdbmsUtils {
     Expression<?> orderByExpression;
     switch (keys[0]) {
       case ModelDBConstants.ARTIFACTS:
-        LOGGER.debug("switch case : Artifacts");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_ARTIFACTS_DEBUG);
         Join<ExperimentRunEntity, ArtifactEntity> artifactEntityJoin =
             root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
         artifactEntityJoin.alias(parentFieldName + "_art");
@@ -828,7 +827,7 @@ public class RdbmsUtils {
         orderByExpression = artifactEntityJoin.get(ModelDBConstants.PATH);
         break;
       case ModelDBConstants.DATASETS:
-        LOGGER.debug("switch case : Datasets");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_DATASETS_DEBUG);
         Join<ExperimentRunEntity, ArtifactEntity> datasetEntityJoin =
             root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
         datasetEntityJoin.alias(parentFieldName + "_dts");
@@ -844,7 +843,7 @@ public class RdbmsUtils {
         orderByExpression = datasetEntityJoin.get(ModelDBConstants.PATH);
         break;
       case ModelDBConstants.ATTRIBUTES:
-        LOGGER.debug("switch case : Attributes");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_ATTRIBUTES_DEBUG);
         Join<ExperimentRunEntity, AttributeEntity> attributeEntityJoin =
             root.join(ModelDBConstants.ATTRIBUTE_MAPPING, JoinType.LEFT);
         attributeEntityJoin.alias(parentFieldName + "_attr");
@@ -862,7 +861,7 @@ public class RdbmsUtils {
         orderByExpression = attributeEntityJoin.get(ModelDBConstants.VALUE);
         break;
       case ModelDBConstants.HYPERPARAMETERS:
-        LOGGER.debug("switch case : Hyperparameters");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_HYPERPARAMETERS_DEBUG);
         Join<ExperimentRunEntity, KeyValueEntity> hyperparameterEntityJoin =
             root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
         hyperparameterEntityJoin.alias(parentFieldName + "_hypr");
@@ -880,7 +879,7 @@ public class RdbmsUtils {
         orderByExpression = hyperparameterEntityJoin.get(ModelDBConstants.VALUE);
         break;
       case ModelDBConstants.METRICS:
-        LOGGER.debug("switch case : Metrics");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_METRICS_DEBUG);
         Join<ExperimentRunEntity, KeyValueEntity> metricsEntityJoin =
             root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
         metricsEntityJoin.alias(parentFieldName + "_mtr");
@@ -896,7 +895,7 @@ public class RdbmsUtils {
         orderByExpression = metricsEntityJoin.get(ModelDBConstants.VALUE);
         break;
       case ModelDBConstants.OBSERVATIONS:
-        LOGGER.debug("switch case : Observation");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_OBSERVATION_DEBUG);
         if (keys.length > 2) {
           // If getting third level key like observation.attribute.attr_1 then it is not supported
           throw new InvalidArgumentException("Third level of sorting not supported");
@@ -957,7 +956,7 @@ public class RdbmsUtils {
         }
         break;
       case ModelDBConstants.FEATURES:
-        LOGGER.debug("switch case : Feature");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_FEATURE_DEBUG);
         Join<ExperimentRunEntity, FeatureEntity> featureEntityJoin =
             root.join(ModelDBConstants.FEATURES, JoinType.LEFT);
         featureEntityJoin.alias(parentFieldName + "_feature");
@@ -970,7 +969,7 @@ public class RdbmsUtils {
         orderByExpression = featureEntityJoin.get(ModelDBConstants.NAME);
         break;
       case ModelDBConstants.TAGS:
-        LOGGER.debug("switch case : tags");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_TAGS_DEBUG);
         Join<ExperimentRunEntity, TagsMapping> tagsEntityJoin =
             root.join(ModelDBConstants.TAGS, JoinType.LEFT);
         tagsEntityJoin.alias(parentFieldName + "_tags");
@@ -1019,7 +1018,7 @@ public class RdbmsUtils {
     List<Expression<?>> orderByExpressionList = new ArrayList<>();
     switch (keys[0]) {
       case ModelDBConstants.ARTIFACTS:
-        LOGGER.debug("switch case : Artifacts");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_ARTIFACTS_DEBUG);
         Join<ExperimentRunEntity, ArtifactEntity> artifactEntityJoin =
             root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
         artifactEntityJoin.alias(parentFieldName + "_art");
@@ -1037,7 +1036,7 @@ public class RdbmsUtils {
         orderByExpressionList.add(artifactEntityJoin.get(ModelDBConstants.PATH));
         break;
       case ModelDBConstants.DATASETS:
-        LOGGER.debug("switch case : Datasets");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_DATASETS_DEBUG);
         Join<ExperimentRunEntity, ArtifactEntity> datasetEntityJoin =
             root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
         datasetEntityJoin.alias(parentFieldName + "_dts");
@@ -1053,7 +1052,7 @@ public class RdbmsUtils {
         orderByExpressionList.add(datasetEntityJoin.get(ModelDBConstants.PATH));
         break;
       case ModelDBConstants.ATTRIBUTES:
-        LOGGER.debug("switch case : Attributes");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_ATTRIBUTES_DEBUG);
         Join<ExperimentRunEntity, AttributeEntity> attributeEntityJoin =
             root.join(ModelDBConstants.ATTRIBUTE_MAPPING, JoinType.LEFT);
         attributeEntityJoin.alias(parentFieldName + "_attr");
@@ -1071,7 +1070,7 @@ public class RdbmsUtils {
         orderByExpressionList.add(attributeEntityJoin.get(ModelDBConstants.VALUE));
         break;
       case ModelDBConstants.HYPERPARAMETERS:
-        LOGGER.debug("switch case : Hyperparameters");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_HYPERPARAMETERS_DEBUG);
         Join<ExperimentRunEntity, KeyValueEntity> hyperparameterEntityJoin =
             root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
         hyperparameterEntityJoin.alias(parentFieldName + "_hypr");
@@ -1106,7 +1105,7 @@ public class RdbmsUtils {
         }
         break;
       case ModelDBConstants.METRICS:
-        LOGGER.debug("switch case : Metrics");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_METRICS_DEBUG);
         Join<ExperimentRunEntity, KeyValueEntity> metricsEntityJoin =
             root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
         metricsEntityJoin.alias(parentFieldName + "_mtr");
@@ -1122,7 +1121,7 @@ public class RdbmsUtils {
         orderByExpressionList.add(metricsEntityJoin.get(ModelDBConstants.VALUE));
         break;
       case ModelDBConstants.OBSERVATIONS:
-        LOGGER.debug("switch case : Observation");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_OBSERVATION_DEBUG);
         if (keys.length > 2) {
           // If getting third level key like observation.attribute.attr_1 then it is not supported
           throw new InvalidArgumentException("Third level of sorting not supported");
@@ -1183,7 +1182,7 @@ public class RdbmsUtils {
         }
         break;
       case ModelDBConstants.FEATURES:
-        LOGGER.debug("switch case : Feature");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_FEATURE_DEBUG);
         Join<ExperimentRunEntity, FeatureEntity> featureEntityJoin =
             root.join(ModelDBConstants.FEATURES, JoinType.LEFT);
         featureEntityJoin.alias(parentFieldName + "_feature");
@@ -1196,7 +1195,7 @@ public class RdbmsUtils {
         orderByExpressionList.add(featureEntityJoin.get(ModelDBConstants.NAME));
         break;
       case ModelDBConstants.TAGS:
-        LOGGER.debug("switch case : tags");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_TAGS_DEBUG);
         Join<ExperimentRunEntity, TagsMapping> tagsEntityJoin =
             root.join(ModelDBConstants.TAGS, JoinType.LEFT);
         tagsEntityJoin.alias(parentFieldName + "_tags");
@@ -1383,7 +1382,7 @@ public class RdbmsUtils {
           Expression<String> parentPathFromChild;
           switch (names[0]) {
             case ModelDBConstants.ARTIFACTS:
-              LOGGER.debug("switch case : Artifacts");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_ARTIFACTS_DEBUG);
               Root<ArtifactEntity> artifactEntityRoot = subquery.from(ArtifactEntity.class);
               artifactEntityRoot.alias(entityName + "_" + ModelDBConstants.ARTIFACT_ALIAS + index);
               List<Predicate> artifactValuePredicates =
@@ -1407,7 +1406,7 @@ public class RdbmsUtils {
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
               break;
             case ModelDBConstants.DATASETS:
-              LOGGER.debug("switch case : Datasets");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_DATASETS_DEBUG);
               Root<ArtifactEntity> datasetEntityRoot = subquery.from(ArtifactEntity.class);
               datasetEntityRoot.alias(entityName + "_" + ModelDBConstants.DATASET_ALIAS + index);
               List<Predicate> datasetValuePredicates =
@@ -1431,7 +1430,7 @@ public class RdbmsUtils {
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
               break;
             case ModelDBConstants.ATTRIBUTES:
-              LOGGER.debug("switch case : Attributes");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_ATTRIBUTES_DEBUG);
               Root<AttributeEntity> attributeEntityRoot = subquery.from(AttributeEntity.class);
               attributeEntityRoot.alias(
                   entityName + "_" + ModelDBConstants.ATTRIBUTE_ALIAS + index);
@@ -1456,7 +1455,7 @@ public class RdbmsUtils {
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
               break;
             case ModelDBConstants.HYPERPARAMETERS:
-              LOGGER.debug("switch case : Hyperparameters");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_HYPERPARAMETERS_DEBUG);
               Subquery<String> subqueryMDB = criteriaQuery.subquery(String.class);
               Root<KeyValueEntity> hyperparameterEntityRoot =
                   subqueryMDB.from(KeyValueEntity.class);
@@ -1504,7 +1503,7 @@ public class RdbmsUtils {
               }
               break;
             case ModelDBConstants.METRICS:
-              LOGGER.debug("switch case : Metrics");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_METRICS_DEBUG);
               Root<KeyValueEntity> metricsEntityRoot = subquery.from(KeyValueEntity.class);
               metricsEntityRoot.alias(entityName + "_" + ModelDBConstants.METRICS_ALIAS + index);
               List<Predicate> metricsValuePredicates =
@@ -1528,7 +1527,7 @@ public class RdbmsUtils {
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
               break;
             case ModelDBConstants.OBSERVATIONS:
-              LOGGER.debug("switch case : Observation");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_OBSERVATION_DEBUG);
 
               if (names.length > 2) {
                 switch (names[1]) {
@@ -1615,7 +1614,7 @@ public class RdbmsUtils {
               }
               break;
             case ModelDBConstants.FEATURES:
-              LOGGER.debug("switch case : Feature");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_FEATURE_DEBUG);
               Root<FeatureEntity> featureEntityRoot = subquery.from(FeatureEntity.class);
               featureEntityRoot.alias(entityName + "_" + ModelDBConstants.FEATURE_ALIAS + index);
               var featureValuePredicate =
@@ -1634,7 +1633,7 @@ public class RdbmsUtils {
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
               break;
             case ModelDBConstants.TAGS:
-              LOGGER.debug("switch case : tags");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_TAGS_DEBUG);
               Predicate tagValuePredicate;
               if (entityName.equals(ModelDBConstants.REPOSITORY_ENTITY)) {
                 Subquery<Long> longSubquery = criteriaQuery.subquery(Long.class);
