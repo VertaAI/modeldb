@@ -21,11 +21,11 @@
     <properties>
         <hibernate.version>5.4.24.Final</hibernate.version>
         <log4j.version>2.14.1</log4j.version>
-        <grpc.version>1.31.0</grpc.version>
+        <grpc.version>1.35.0</grpc.version>
         <postgres.version>42.2.13</postgres.version>
-        <liquibase.version>3.8.0</liquibase.version>
+        <liquibase.version>3.8.1</liquibase.version>
         <prometheus.version>0.10.0</prometheus.version>
-        <protobuf.version>3.8.0</protobuf.version>
+        <protobuf.version>3.15.0</protobuf.version>
         <aws.version>1.12.1</aws.version>
 
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
@@ -96,13 +96,13 @@
         <dependency>
             <groupId>com.pholser</groupId>
             <artifactId>junit-quickcheck-core</artifactId>
-            <version>0.9.1</version>
+            <version>1.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.pholser/junit-quickcheck-generators -->
         <dependency>
             <groupId>com.pholser</groupId>
             <artifactId>junit-quickcheck-generators</artifactId>
-            <version>0.9.1</version>
+            <version>1.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.sonarsource.scanner.maven/sonar-maven-plugin -->
         <dependency>
