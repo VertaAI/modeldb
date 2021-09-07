@@ -738,68 +738,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         print("upload complete")
 
-    @classmethod
-    def _create_artifact_msg(
-        cls,
-        key,
-        artifact_stream,
-        artifact_type,
-        method,
-        framework=None,
-        extension=None,
-    ):
-        """Build a ``CommonService_pb2.Artifact`` protobuf object.
-
-        Parameters
-        ----------
-        key : str
-            Artifact key.
-        artifact_stream : file-like
-            Artifact bytestream.
-        artifact_type : CommonService_pb2.ArtifactTypeEnum variant
-            Category to which the artifact belongs (e.g. MODEL, DATA).
-        method : str or None
-            Artifact serialization method returned by
-            ``_artifact_utils.ensure_bytestream()`` or
-            ``_artifact_utils.serialize_model()``.
-        framework : str, optional
-            Artifact framework (e.g. "torch", "sklearn") returned by
-            ``_artifact_utils.serialize_model()``.
-        extension : str, optional
-            File extension associated with `artifact_stream`. If not provided,
-            it will be determined from either `artifact_stream` or `method`.
-
-        Returns
-        -------
-        CommonService_pb2.Artifact
-
-        """
-        if not extension:
-            try:
-                extension = _artifact_utils.get_file_ext(artifact_stream)
-            except (TypeError, ValueError):
-                extension = _artifact_utils.ext_from_method(method)
-
-        artifact_path = cls._build_artifact_store_path(
-            artifact_stream,
-            key,
-            extension,
-        )
-
-        # TODO: support VERTA_ARTIFACT_DIR
-
-        # log key to ModelDB
-        artifact_msg = _CommonCommonService.Artifact(
-            key=key,
-            path=artifact_path,
-            path_only=False,
-            artifact_type=artifact_type,
-            filename_extension=extension,
-            serialization=method,
-            artifact_subtype=framework,
-        )
-        return artifact_msg
-
     def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists
         self._get_artifact_msg(key)
