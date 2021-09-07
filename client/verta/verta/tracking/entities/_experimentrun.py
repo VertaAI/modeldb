@@ -235,14 +235,14 @@ class ExperimentRun(_DeployableEntity):
             print("    " + VERTA_ARTIFACT_DIR)
             artifact_path = os.path.join(
                 VERTA_ARTIFACT_DIR,
-                artifact_msg.artifact_path,
+                artifact_msg.path,
             )
             pathlib2.Path(artifact_path).parent.mkdir(
                 parents=True,
                 exist_ok=True,
             )
 
-            artifact_msg.artifact_path = artifact_path
+            artifact_msg.path = artifact_path
             artifact_msg.path_only = True
 
         # log key to ModelDB
