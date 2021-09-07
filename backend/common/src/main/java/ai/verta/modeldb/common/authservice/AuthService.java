@@ -32,7 +32,7 @@ public interface AuthService {
    */
   boolean isCurrentUser(String vertaID);
 
-  UserInfoPaginationDTO getFuzzyUserInfoList(String username_char);
+  UserInfoPaginationDTO getFuzzyUserInfoList(String usernameChar);
 
   Workspace workspaceIdByName(boolean retry, String workspaceName);
 

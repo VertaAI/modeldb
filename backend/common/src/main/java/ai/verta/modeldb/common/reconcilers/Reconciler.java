@@ -55,12 +55,12 @@ public abstract class Reconciler<T> {
         };
 
     var executorService = Executors.newSingleThreadScheduledExecutor();
-    executorService.scheduleAtFixedRate(runnable, 0, config.resyncPeriodSeconds, TimeUnit.SECONDS);
+    executorService.scheduleAtFixedRate(runnable, 0, config.getResyncPeriodSeconds(), TimeUnit.SECONDS);
   }
 
   private void startWorkers() {
-    var executorService = Executors.newFixedThreadPool(config.workerCount);
-    for (var i = 0; i < config.workerCount; i++) {
+    var executorService = Executors.newFixedThreadPool(config.getWorkerCount());
+    for (var i = 0; i < config.getWorkerCount(); i++) {
       Runnable runnable =
           () -> {
             while (true) {
@@ -124,7 +124,7 @@ public abstract class Reconciler<T> {
     try {
       while (elements.isEmpty()) notEmpty.await();
 
-      while (!elements.isEmpty() && ret.size() < config.batchSize) {
+      while (!elements.isEmpty() && ret.size() < config.getBatchSize()) {
         T obj = order.pop();
         elements.remove(obj);
         ret.add(obj);

@@ -1,6 +1,7 @@
 package ai.verta.modeldb.common.futures;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -28,11 +29,11 @@ public class BatchLoader<T, R> {
         localList = new ArrayList<T>(maxBatchSize);
       }
     }
-    if (localList.size() > 0) {
+    if (!localList.isEmpty()) {
       resultsList.add(processor.apply(localList));
     }
 
     return InternalFuture.sequence(resultsList, executor)
-        .thenApply(x -> x.stream().flatMap(y -> y.stream()).collect(Collectors.toList()), executor);
+        .thenApply(x -> x.stream().flatMap(Collection::stream).collect(Collectors.toList()), executor);
   }
 }

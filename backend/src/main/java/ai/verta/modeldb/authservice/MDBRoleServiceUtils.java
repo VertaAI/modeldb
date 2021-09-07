@@ -41,7 +41,7 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
   }
 
   private MDBRoleServiceUtils(Config config, AuthService authService, UAC uac) {
-    super(authService, config.grpcServer.requestTimeout, uac);
+    super(authService, config.getGrpcServer().getRequestTimeout(), uac);
   }
 
   @Override

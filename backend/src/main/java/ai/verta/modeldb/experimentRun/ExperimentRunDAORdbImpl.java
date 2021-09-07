@@ -258,7 +258,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       TrialUtils.validateMaxArtifactsForTrial(
           mdbConfig.trial, experimentRun.getArtifactsCount(), 0);
 
-      if (experimentRun.getDatasetsCount() > 0 && mdbConfig.populateConnectionsBasedOnPrivileges) {
+      if (experimentRun.getDatasetsCount() > 0
+          && mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
       }
 
@@ -490,7 +491,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private ExperimentRun populateFieldsBasedOnPrivileges(ExperimentRun experimentRun)
       throws ModelDBException {
-    if (mdbConfig.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       if (experimentRun.getDatasetsCount() > 0) {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, false);
       }
@@ -929,7 +930,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
-      if (mdbConfig.populateConnectionsBasedOnPrivileges) {
+      if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
         newDatasets = getPrivilegedDatasets(newDatasets, true);
       }
 
@@ -1421,7 +1422,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         LOGGER.trace("Converted from Hibernate to proto");
 
         List<String> selfAllowedRepositoryIds = new ArrayList<>();
-        if (mdbConfig.populateConnectionsBasedOnPrivileges) {
+        if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
           selfAllowedRepositoryIds =
               mdbRoleService.getSelfAllowedResources(
                   ModelDBServiceResourceTypes.REPOSITORY,
@@ -1471,7 +1472,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               experimentRun = ExperimentRun.newBuilder().setId(experimentRun.getId()).build();
               experimentRuns.add(experimentRun);
             } else {
-              if (mdbConfig.populateConnectionsBasedOnPrivileges) {
+              if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
                 if (experimentRun.getDatasetsCount() > 0) {
                   experimentRun =
                       filteredDatasetsBasedOnPrivileges(
@@ -1545,7 +1546,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     var queryBuilder =
         "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
-    if (mdbConfig.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
         return new HashMap<>();
       } else {
@@ -1556,7 +1557,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     var query = session.createQuery(queryBuilder);
     query.setParameter("hyperparameterType", HYPERPARAMETER);
     query.setParameterList("expRunIds", expRunIds);
-    if (mdbConfig.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       query.setParameterList(
           REPO_IDS_QUERY_PARAM,
           selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
@@ -1626,7 +1627,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             + " LEFT JOIN PathDatasetComponentBlobEntity pdcb ON ncb.path_dataset_blob_hash = pdcb.id.path_dataset_blob_id "
             + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
-    if (mdbConfig.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
         return new HashMap<>();
       } else {
@@ -1637,7 +1638,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     var query = session.createQuery(queryBuilder);
     query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
     query.setParameterList("expRunIds", expRunIds);
-    if (mdbConfig.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       query.setParameterList(
           REPO_IDS_QUERY_PARAM,
           selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
@@ -2188,7 +2189,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         var experimentRun = experimentRunObj.getProtoObject();
         if (experimentRun.getVersionedInputs() != null
             && experimentRun.getVersionedInputs().getRepositoryId() != 0
-            && mdbConfig.populateConnectionsBasedOnPrivileges) {
+            && mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
           experimentRun =
               checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
         }
@@ -2417,7 +2418,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified
-        && mdbConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)) {
+        && mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {

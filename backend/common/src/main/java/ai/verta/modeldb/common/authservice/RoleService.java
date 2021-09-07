@@ -55,7 +55,7 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   List<String> getWorkspaceRoleBindings(
-      String workspace_id,
+      String workspaceId,
       WorkspaceTypeEnum.WorkspaceType workspaceType,
       String resourceId,
       String adminRole,

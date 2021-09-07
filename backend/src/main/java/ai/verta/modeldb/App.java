@@ -125,7 +125,7 @@ public class App implements ApplicationContextAware {
     if (mdbConfig == null) {
       return new GracefulShutdown(30L);
     }
-    return new GracefulShutdown(mdbConfig.springServer.shutdownTimeout);
+    return new GracefulShutdown(mdbConfig.getSpringServer().getShutdownTimeout());
   }
 
   @Bean
@@ -152,7 +152,7 @@ public class App implements ApplicationContextAware {
   }
 
   public static boolean migrate(DatabaseConfig databaseConfig, List<MigrationConfig> migrations)
-      throws SQLException, LiquibaseException, ClassNotFoundException, InterruptedException {
+      throws SQLException, LiquibaseException, InterruptedException {
     var liquibaseMigration =
         Boolean.parseBoolean(
             Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
@@ -195,14 +195,15 @@ public class App implements ApplicationContextAware {
       var config = MDBConfig.getInstance();
 
       // Configure spring HTTP server
-      LOGGER.info("Configuring spring HTTP traffic on port: {}", config.springServer.port);
-      System.getProperties().put("server.port", config.springServer.port);
+      LOGGER.info(
+          "Configuring spring HTTP traffic on port: {}", config.getSpringServer().getPort());
+      System.getProperties().put("server.port", config.getSpringServer().getPort());
 
       // Initialize services that we depend on
       var services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
 
       // Initialize database configuration and maybe run migration
-      if (migrate(config.database, config.migrations)) {
+      if (migrate(config.getDatabase(), config.migrations)) {
         LOGGER.info("Migrations have completed.  System exiting.");
         initiateShutdown(0);
         return;
@@ -210,7 +211,8 @@ public class App implements ApplicationContextAware {
       LOGGER.info("Migrations are disabled, starting application.");
 
       // Initialize executor so we don't lose context using Futures
-      final var handleExecutor = FutureGrpc.initializeExecutor(config.grpcServer.threadCount);
+      final var handleExecutor =
+          FutureGrpc.initializeExecutor(config.getGrpcServer().getThreadCount());
 
       // Initialize data access
       var daos =
@@ -225,9 +227,9 @@ public class App implements ApplicationContextAware {
 
       // Initialize grpc server
       ServerBuilder<?> serverBuilder =
-          ServerBuilder.forPort(config.grpcServer.port).executor(handleExecutor);
-      if (config.grpcServer.maxInboundMessageSize != null) {
-        serverBuilder.maxInboundMessageSize(config.grpcServer.maxInboundMessageSize);
+          ServerBuilder.forPort(config.getGrpcServer().getPort()).executor(handleExecutor);
+      if (config.getGrpcServer().getMaxInboundMessageSize() != null) {
+        serverBuilder.maxInboundMessageSize(config.getGrpcServer().getMaxInboundMessageSize());
       }
 
       // Initialize health check
@@ -253,7 +255,7 @@ public class App implements ApplicationContextAware {
       server.start();
       healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
       up.inc();
-      LOGGER.info("Backend server started listening on {}", config.grpcServer.port);
+      LOGGER.info("Backend server started listening on {}", config.getGrpcServer().getPort());
 
       Runtime.getRuntime()
           .addShutdownHook(

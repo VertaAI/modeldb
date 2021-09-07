@@ -40,7 +40,7 @@ public class TelemetryUtils {
       LOGGER.info("Found value for telemetryInitialized : {}", telemetryInitialized);
 
       try (var connection = modelDBHibernateUtil.getConnection()) {
-        final var database = App.getInstance().mdbConfig.database;
+        final var database = App.getInstance().mdbConfig.getDatabase();
         final var existStatus =
             CommonHibernateUtil.tableExists(connection, database, "modeldb_deployment_info");
         if (!existStatus) {
@@ -66,7 +66,7 @@ public class TelemetryUtils {
           }
           LOGGER.info("Table modeldb_deployment_info created successfully");
         } else {
-          if (database.RdbConfiguration.isMysql()) {
+          if (database.getRdbConfiguration().isMysql()) {
             // UTF migration is only applied to mysql due to db-specific syntax
             try (var stmt = connection.createStatement()) {
               var updateStatements =

@@ -7,7 +7,7 @@ public interface CommonConstants {
   String UNSIGNED_USER = "unsigned_user";
   String INTERNAL_ERROR = "Internal server error";
   // Set to true to export the liquibase schema as sql statements
-  Boolean EXPORT_SCHEMA = false;
+  boolean EXPORT_SCHEMA = false;
   String USER_DIR = "user.dir";
   String DELETED = "deleted";
 

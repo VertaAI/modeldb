@@ -556,7 +556,10 @@ public class ModelDBUtils {
   public static Object retryOrThrowException(
       StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
     return CommonUtils.retryOrThrowException(
-        ex, retry, retryCallInterface, App.getInstance().mdbConfig.grpcServer.requestTimeout);
+        ex,
+        retry,
+        retryCallInterface,
+        App.getInstance().mdbConfig.getGrpcServer().getRequestTimeout());
   }
 
   public static ModelDBServiceResourceTypes getModelDBServiceResourceTypesFromRepository(

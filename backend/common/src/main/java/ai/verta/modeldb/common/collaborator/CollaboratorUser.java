@@ -9,6 +9,8 @@ import ai.verta.uac.UserInfo;
 import ai.verta.uac.VertaUserInfo;
 import com.google.protobuf.GeneratedMessageV3;
 
+import java.util.Objects;
+
 public class CollaboratorUser extends CollaboratorBase {
   private AuthService authService;
 
@@ -69,5 +71,19 @@ public class CollaboratorUser extends CollaboratorBase {
 
   private UserInfo getCollaborator() {
     return (UserInfo) collaborator;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof CollaboratorUser)) return false;
+    if (!super.equals(o)) return false;
+    CollaboratorUser that = (CollaboratorUser) o;
+    return Objects.equals(authService, that.authService);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(super.hashCode(), authService);
   }
 }

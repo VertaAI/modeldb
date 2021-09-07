@@ -5582,7 +5582,7 @@ public class ExperimentRunTest extends TestsInit {
         getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
         getVersionedInputResponse =
             experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
-        if (testConfig.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
           assertTrue(
               "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
               getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
@@ -6461,7 +6461,7 @@ public class ExperimentRunTest extends TestsInit {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        if (testConfig.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
           assertEquals(
               "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               1,
@@ -6506,7 +6506,7 @@ public class ExperimentRunTest extends TestsInit {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        if (testConfig.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
           assertEquals(
               "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               3,
@@ -7123,7 +7123,7 @@ public class ExperimentRunTest extends TestsInit {
         if (exprRun.getId().equals(experimentRun2.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-          if (testConfig.populateConnectionsBasedOnPrivileges) {
+          if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
             assertFalse(
                 "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
           } else {
@@ -7140,7 +7140,7 @@ public class ExperimentRunTest extends TestsInit {
         } else if (exprRun.getId().equals(experimentRun3.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
-          if (testConfig.populateConnectionsBasedOnPrivileges) {
+          if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
             assertFalse(
                 "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
           } else {
@@ -7163,7 +7163,7 @@ public class ExperimentRunTest extends TestsInit {
       ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
       String locationKey =
           ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-      if (testConfig.populateConnectionsBasedOnPrivileges) {
+      if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
         assertFalse("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
       } else {
         assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
@@ -7719,7 +7719,7 @@ public class ExperimentRunTest extends TestsInit {
             "ExperimentRun count not match with expected experimentRun count",
             1,
             response.getExperimentRunsCount());
-        if (testConfig.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
           assertEquals(
               "ExperimentRun not match with expected experimentRun",
               0,

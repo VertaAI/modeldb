@@ -57,9 +57,9 @@ public abstract class Connection {
     var devKeyHyphen = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
     var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-    authHeaders.put(emailKey, config.email);
-    authHeaders.put(devKey, config.devKey);
-    authHeaders.put(devKeyHyphen, config.devKey);
+    authHeaders.put(emailKey, config.getEmail());
+    authHeaders.put(devKey, config.getDevKey());
+    authHeaders.put(devKeyHyphen, config.getDevKey());
     authHeaders.put(sourceKey, "PythonClient");
 
     // Force using the ROOT context so that we must lose any context of the current execution

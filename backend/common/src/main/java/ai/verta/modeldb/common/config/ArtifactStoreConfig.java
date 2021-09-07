@@ -1,11 +1,40 @@
 package ai.verta.modeldb.common.config;
 
 public class ArtifactStoreConfig {
-  public String artifactStoreType;
-  public boolean pickArtifactStoreHostFromConfig = false;
-  public boolean enabled = true;
-  public String protocol = "https";
-  public String host = "";
-  public NFSConfig NFS;
-  public NFSEndpointConfig artifactEndpoint;
+  private String artifactStoreType;
+  private boolean pickArtifactStoreHostFromConfig = false;
+  private boolean enabled = true;
+  private String protocol = "https";
+  private String host = "";
+  @SuppressWarnings({"squid:S116"})
+  private NFSConfig NFS;
+  private NFSEndpointConfig artifactEndpoint;
+
+  public String getArtifactStoreType() {
+    return artifactStoreType;
+  }
+
+  public boolean isPickArtifactStoreHostFromConfig() {
+    return pickArtifactStoreHostFromConfig;
+  }
+
+  public boolean isEnabled() {
+    return enabled;
+  }
+
+  public String getProtocol() {
+    return protocol;
+  }
+
+  public String getHost() {
+    return host;
+  }
+
+  public NFSConfig getNFS() {
+    return NFS;
+  }
+
+  public NFSEndpointConfig getArtifactEndpoint() {
+    return artifactEndpoint;
+  }
 }
