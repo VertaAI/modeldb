@@ -41,8 +41,6 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
   private final ExperimentDAO experimentDAO;
   private final ProjectDAO projectDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
-  private static final String SERVICE_NAME =
-      String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.EXPERIMENT);
 
   public ExperimentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;

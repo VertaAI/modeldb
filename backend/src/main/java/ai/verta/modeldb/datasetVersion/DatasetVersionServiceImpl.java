@@ -69,8 +69,6 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private final BlobDAO blobDAO;
   private final MetadataDAO metadataDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
-  private static final String SERVICE_NAME =
-      String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.DATASET_VERSION);
   private final RoleService roleService;
 
   public DatasetVersionServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
@@ -92,7 +90,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             .setDatasetId(request.getDatasetId())
             .setDescription(request.getDescription())
             .addAllTags(request.getTagsList())
-            .addAllAttributes(request.getAttributesList());
+            .addAllAttributes(request.getAttributesList())
+            .setVersionNumber(1L);
 
     if (request.getTimeCreated() != 0L) {
       datasetVersionBuilder.setTimeLogged(request.getTimeCreated());

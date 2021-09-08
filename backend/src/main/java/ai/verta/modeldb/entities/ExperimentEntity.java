@@ -224,7 +224,7 @@ public class ExperimentEntity {
   }
 
   public void increaseVersionNumber() {
-    this.version_number = this.version_number + 1;
+    this.version_number = this.version_number + 1L;
   }
 
   public CodeVersionEntity getCode_version_snapshot() {

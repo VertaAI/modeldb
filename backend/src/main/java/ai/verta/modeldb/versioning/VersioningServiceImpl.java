@@ -2,7 +2,6 @@ package ai.verta.modeldb.versioning;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.DAOSet;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.RoleService;
@@ -41,8 +40,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   private final FileHasher fileHasher;
   private final Validator validator = new Validator();
   private final ArtifactStoreDAO artifactStoreDAO;
-  private static final String SERVICE_NAME =
-      String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.REPOSITORY_CAPS);
 
   public VersioningServiceImpl(ServiceSet serviceSet, DAOSet daoSet, FileHasher fileHasher) {
     this.authService = serviceSet.authService;
@@ -110,6 +107,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           ModelDBServiceResourceTypes.REPOSITORY, null, ModelDBServiceActions.CREATE);
       UserInfo userInfo = authService.getCurrentLoginUserInfo();
       SetRepository.Builder requestBuilder = request.toBuilder();
+      requestBuilder.setRepository(request.getRepository().toBuilder().setVersionNumber(1L));
       if (userInfo != null) {
         String vertaId = authService.getVertaIdFromUserInfo(userInfo);
         requestBuilder.setRepository(request.getRepository().toBuilder().setOwner(vertaId));
@@ -160,9 +158,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       DeleteRepositoryRequest request,
       StreamObserver<DeleteRepositoryRequest.Response> responseObserver) {
     try {
-      GetRepositoryRequest.Response repositoryResponse =
-          repositoryDAO.getRepository(
-              GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
       DeleteRepositoryRequest.Response response =
           repositoryDAO.deleteRepository(
               request,
@@ -182,11 +177,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void listCommits(
       ListCommitsRequest request, StreamObserver<ListCommitsRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       ListCommitsRequest.Response response =
           commitDAO.listCommits(
               request,
@@ -204,11 +194,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void getCommit(
       GetCommitRequest request, StreamObserver<GetCommitRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       Commit commit =
           commitDAO.getCommit(
               request.getCommitSha(),
@@ -239,11 +224,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       if (request.getCommit().getMessage().isEmpty()) {
         throw new ModelDBException("Commit message should not be empty", Code.INVALID_ARGUMENT);
       }
-      Repository repository1 =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
 
       List<BlobContainer> blobContainers;
       final RepositoryFunction repositoryFunction =
@@ -307,11 +287,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void deleteCommit(
       DeleteCommitRequest request, StreamObserver<DeleteCommitRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       commitDAO.deleteCommits(
           request.getRepositoryId(),
           Collections.singletonList(request.getCommitSha()),
@@ -334,11 +309,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
       }
 
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       ListCommitBlobsRequest.Response response =
           blobDAO.getCommitBlobsList(
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
@@ -361,11 +331,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
       }
 
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       GetCommitComponentRequest.Response response =
           blobDAO.getCommitComponent(
               (session) -> repositoryDAO.getRepositoryById(session, request.getRepositoryId()),
@@ -384,11 +349,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ComputeRepositoryDiffRequest request,
       StreamObserver<ComputeRepositoryDiffRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       ComputeRepositoryDiffRequest.Response response =
           blobDAO.computeRepositoryDiff(repositoryDAO, request);
       responseObserver.onNext(response);
@@ -405,11 +365,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       StreamObserver<ai.verta.modeldb.versioning.MergeRepositoryCommitsRequest.Response>
           responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       MergeRepositoryCommitsRequest.Response mergeResponse =
           blobDAO.mergeCommit(repositoryDAO, request);
       responseObserver.onNext(mergeResponse);
@@ -425,11 +380,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       RevertRepositoryCommitsRequest request,
       StreamObserver<RevertRepositoryCommitsRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       RevertRepositoryCommitsRequest.Response mergeResponse =
           blobDAO.revertCommit(repositoryDAO, request);
       responseObserver.onNext(mergeResponse);
@@ -444,11 +394,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void listBranches(
       ListBranchesRequest request, StreamObserver<ListBranchesRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       ListBranchesRequest.Response response = repositoryDAO.listBranches(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -462,11 +407,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void getBranch(
       GetBranchRequest request, StreamObserver<GetBranchRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       GetBranchRequest.Response response =
           repositoryDAO.getBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
       responseObserver.onNext(response);
@@ -480,11 +420,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void setBranch(
       SetBranchRequest request, StreamObserver<SetBranchRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       SetBranchRequest.Response response =
           repositoryDAO.setBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
       responseObserver.onNext(response);
@@ -502,11 +437,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         throw new ModelDBException(
             "Branch not found in the DeleteBranchRequest", Code.INVALID_ARGUMENT);
       }
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       DeleteBranchRequest.Response response = repositoryDAO.deleteBranch(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -521,11 +451,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       ListCommitsLogRequest request,
       StreamObserver<ListCommitsLogRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       ListCommitsLogRequest.Response response = repositoryDAO.listCommitsLog(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -539,11 +464,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void listTags(
       ListTagsRequest request, StreamObserver<ListTagsRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       ListTagsRequest.Response response = repositoryDAO.listTags(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -556,11 +476,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void getTag(
       GetTagRequest request, StreamObserver<GetTagRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       GetTagRequest.Response response = repositoryDAO.getTag(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -573,11 +488,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   public void setTag(
       SetTagRequest request, StreamObserver<SetTagRequest.Response> responseObserver) {
     try {
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       SetTagRequest.Response response = repositoryDAO.setTag(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -593,11 +503,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       if (request.getTag().isEmpty()) {
         throw new ModelDBException("Tag not found in the DeleteTagRequest", Code.INVALID_ARGUMENT);
       }
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       DeleteTagRequest.Response response = repositoryDAO.deleteTag(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -649,11 +554,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               (session, repository) ->
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
               request);
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -718,11 +618,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               request.getLocationList(),
               request.getPathDatasetComponentBlobPath(),
               request.getArtifactPart());
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -758,11 +653,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
                   commitDAO.getCommitEntity(session, request.getCommitSha(), repository),
               request.getLocationList(),
               request.getPathDatasetComponentBlobPath());
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -805,11 +695,6 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               request.getLocationList(),
               request.getPathDatasetComponentBlobPath(),
               artifactStoreDAO::commitMultipart);
-      Repository repository =
-          repositoryDAO
-              .getRepository(
-                  GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build())
-              .getRepository();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {

@@ -659,6 +659,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntity.setName(experimentRunName);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
+      experimentRunEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(experimentRunEntity);
       transaction.commit();
@@ -683,6 +684,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntity.setDescription(experimentRunDescription);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
+      experimentRunEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(experimentRunEntity);
       transaction.commit();
@@ -718,6 +720,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
+      experimentRunEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(experimentRunEntity);
       transaction.commit();
@@ -739,6 +742,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntity.setParent_id(parentExperimentRunId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
+      experimentRunEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.update(experimentRunEntity);
       transaction.commit();
@@ -775,6 +779,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             RdbmsUtils.convertTagListFromTagMappingList(experimentRunObj, newTags);
         experimentRunObj.getTags().addAll(newTagMappings);
         experimentRunObj.setDate_updated(currentTimestamp);
+        experimentRunObj.increaseVersionNumber();
         Transaction transaction = session.beginTransaction();
         session.saveOrUpdate(experimentRunObj);
         transaction.commit();
@@ -818,6 +823,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           session.get(ExperimentRunEntity.class, experimentRunId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunObj.setDate_updated(currentTimestamp);
+      experimentRunObj.increaseVersionNumber();
       session.update(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun tags deleted successfully");
@@ -854,6 +860,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setObservationMapping(newObservationList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      experimentRunEntityObj.increaseVersionNumber();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
     } catch (Exception ex) {
@@ -920,6 +927,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setKeyValueMapping(newMetricList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      experimentRunEntityObj.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
@@ -1018,6 +1026,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setArtifactMapping(newDatasetList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      experimentRunEntityObj.increaseVersionNumber();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
     } catch (Exception ex) {
@@ -1059,6 +1068,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setArtifactMapping(newArtifactList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      experimentRunEntityObj.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
@@ -1133,6 +1143,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       experimentRunObj.setDate_updated(currentTimestamp);
+      experimentRunObj.increaseVersionNumber();
       session.update(experimentRunObj);
       transaction.commit();
     } catch (Exception ex) {
@@ -1172,6 +1183,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setKeyValueMapping(newHyperparameterList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      experimentRunEntityObj.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
@@ -1232,6 +1244,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setAttributeMapping(newAttributeList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      experimentRunEntityObj.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
@@ -1848,6 +1861,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setAttributeMapping(newAttributeList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      experimentRunEntityObj.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
@@ -1887,6 +1901,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           session.get(ExperimentRunEntity.class, experimentRunId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunObj.setDate_updated(currentTimestamp);
+      experimentRunObj.increaseVersionNumber();
       session.update(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun Attributes deleted successfully");
@@ -1907,6 +1922,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunEntityObj.setJob_id(jobId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
+      experimentRunEntityObj.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
@@ -2210,6 +2226,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
+      runEntity.increaseVersionNumber();
       Transaction transaction = session.beginTransaction();
       session.saveOrUpdate(runEntity);
       transaction.commit();
@@ -2686,6 +2703,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           session.get(ExperimentRunEntity.class, experimentRunId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunObj.setDate_updated(currentTimestamp);
+      experimentRunObj.increaseVersionNumber();
       session.update(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun {} deleted successfully", fieldType);
@@ -2742,6 +2760,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       experimentRunObj.getObservationMapping().removeAll(removedObservationEntities);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunObj.setDate_updated(currentTimestamp);
+      experimentRunObj.increaseVersionNumber();
       session.update(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun {} deleted successfully", ModelDBConstants.OBSERVATIONS);

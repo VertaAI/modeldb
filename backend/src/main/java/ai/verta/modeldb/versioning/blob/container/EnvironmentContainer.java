@@ -67,6 +67,8 @@ public class EnvironmentContainer extends BlobContainer {
         pythonEnvironmentBlobEntity.setMajor(version.getMajor());
         pythonEnvironmentBlobEntity.setMinor(version.getMinor());
         pythonEnvironmentBlobEntity.setPatch(version.getPatch());
+        pythonEnvironmentBlobEntity.setRaw_requirements(python.getRawRequirements());
+        pythonEnvironmentBlobEntity.setRaw_constraints(python.getRawConstraints());
         if (!blobHashes.contains(pythonEnvironmentBlobEntity.getBlob_hash())) {
           entities.add(pythonEnvironmentBlobEntity);
           blobHashes.add(pythonEnvironmentBlobEntity.getBlob_hash());
@@ -188,6 +190,8 @@ public class EnvironmentContainer extends BlobContainer {
           appendVersion(sb, version1.toProto().build());
         }
       }
+    } else if (!blob.getRawRequirements().isEmpty()) {
+      sb.append(":raw_requirements:").append(blob.getRawRequirements());
     }
     List<AutogenPythonRequirementEnvironmentBlob> constraints = blobNew.getConstraints();
     if (constraints != null) {
@@ -202,6 +206,8 @@ public class EnvironmentContainer extends BlobContainer {
           appendVersion(sb, version1.toProto().build());
         }
       }
+    } else if (!blob.getRawConstraints().isEmpty()) {
+      sb.append(":raw_constraints:").append(blob.getRawConstraints());
     }
     return FileHasher.getSha(sb.toString());
   }

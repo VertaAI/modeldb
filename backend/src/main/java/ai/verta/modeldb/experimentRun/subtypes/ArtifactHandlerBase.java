@@ -90,7 +90,7 @@ public class ArtifactHandlerBase {
             jdbi.withHandle(
                 handle -> {
                   var queryStr =
-                      "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, upload_completed as uc from "
+                      "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, serialization as ser, artifact_subtype as ast, upload_completed as uc from "
                           + getTableName()
                           + " where entity_name=:entity_name and field_type=:field_type and "
                           + entityIdReferenceColumn
@@ -117,6 +117,8 @@ public class ArtifactHandlerBase {
                                   .setPathOnly(rs.getBoolean("po"))
                                   .setLinkedArtifactId(rs.getString("lai"))
                                   .setFilenameExtension(rs.getString("fe"))
+                                  .setSerialization(rs.getString("ser"))
+                                  .setArtifactSubtype(rs.getString("ast"))
                                   .setUploadCompleted(rs.getBoolean("uc"))
                                   .build())
                       .list();
@@ -128,7 +130,7 @@ public class ArtifactHandlerBase {
     return jdbi.withHandle(
             handle -> {
               var queryStr =
-                  "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, upload_completed as uc, "
+                  "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, serialization as ser, artifact_subtype as ast, upload_completed as uc, "
                       + entityIdReferenceColumn
                       + " as entity_id from "
                       + getTableName()
@@ -155,6 +157,8 @@ public class ArtifactHandlerBase {
                                   .setPathOnly(rs.getBoolean("po"))
                                   .setLinkedArtifactId(rs.getString("lai"))
                                   .setFilenameExtension(rs.getString("fe"))
+                                  .setSerialization(rs.getString("ser"))
+                                  .setArtifactSubtype(rs.getString("ast"))
                                   .setUploadCompleted(rs.getBoolean("uc"))
                                   .build()))
                   .list();
@@ -247,10 +251,10 @@ public class ArtifactHandlerBase {
                             .createUpdate(
                                 "insert into "
                                     + getTableName()
-                                    + " (entity_name, field_type, ar_key, ar_path, artifact_type, path_only, linked_artifact_id, filename_extension, store_type_path, upload_completed,"
+                                    + " (entity_name, field_type, ar_key, ar_path, artifact_type, path_only, linked_artifact_id, filename_extension, store_type_path, serialization, artifact_subtype, upload_completed, "
                                     + entityIdReferenceColumn
                                     + ") "
-                                    + "values (:entity_name, :field_type, :key, :path, :type,:path_only,:linked_artifact_id,:filename_extension,:store_type_path, :upload_completed, :entity_id)")
+                                    + "values (:entity_name, :field_type, :key, :path, :type,:path_only,:linked_artifact_id,:filename_extension,:store_type_path, :serialization, :artifact_subtype, :upload_completed, :entity_id)")
                             .bind("key", artifact.getKey())
                             .bind("path", artifact.getPath())
                             .bind("type", artifact.getArtifactTypeValue())
@@ -261,6 +265,8 @@ public class ArtifactHandlerBase {
                                 "upload_completed",
                                 !artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
                             .bind("store_type_path", storeTypePath)
+                            .bind("serialization", artifact.getSerialization())
+                            .bind("artifact_subtype", artifact.getArtifactSubtype())
                             .bind("entity_id", entityId)
                             .bind("field_type", fieldType)
                             .bind("entity_name", entityName)

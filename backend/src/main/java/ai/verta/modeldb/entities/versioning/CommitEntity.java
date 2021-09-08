@@ -35,6 +35,11 @@ public class CommitEntity {
     this.repository.add(repositoryEntity);
     this.author = internalCommit.getAuthor();
     this.rootSha = rootSha;
+    if (internalCommit.getVersionNumber() == 0) {
+      this.version_number = 1L;
+    } else {
+      this.version_number = internalCommit.getVersionNumber();
+    }
 
     if (parentCommits != null) {
       this.parent_commits.putAll(parentCommits);
@@ -81,6 +86,9 @@ public class CommitEntity {
 
   @ManyToMany(mappedBy = "parent_commits")
   private Set<CommitEntity> child_commits = new HashSet<>();
+
+  @Column(name = "version_number")
+  private Long version_number;
 
   public String getCommit_hash() {
     return commit_hash;
@@ -139,6 +147,14 @@ public class CommitEntity {
         .collect(Collectors.toList());
   }
 
+  public Long getVersion_number() {
+    return version_number;
+  }
+
+  public void increaseVersionNumber() {
+    this.version_number = this.version_number + 1L;
+  }
+
   public Commit toCommitProto() {
     Commit.Builder commitBuilder =
         Commit.newBuilder()
@@ -146,7 +162,8 @@ public class CommitEntity {
             .addAllParentShas(getParentCommitIds())
             .setDateCreated(this.date_created)
             .setMessage(this.message)
-            .setAuthor(this.author);
+            .setAuthor(this.author)
+            .setVersionNumber(this.version_number);
     if (this.date_updated != null) {
       commitBuilder.setDateUpdated(this.date_updated);
     }

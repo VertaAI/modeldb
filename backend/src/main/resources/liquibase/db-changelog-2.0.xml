@@ -861,4 +861,122 @@
         <tagDatabase tag="db_version_2.29"/>
     </changeSet>
 
+    <changeSet id="add-version-number-on-experiment-run" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment_run" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment_run">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="experiment_run" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.30" author="anandJ">
+        <tagDatabase tag="db_version_2.30"/>
+    </changeSet>
+
+    <changeSet id="add-version-number-on-repository" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="repository" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="repository">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="repository" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.31" author="anandJ">
+        <tagDatabase tag="db_version_2.31"/>
+    </changeSet>
+
+    <changeSet id="add-version-number-on-commit" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="commit" columnName="version_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="commit">
+            <column name="version_number" type="int8" defaultValue="1"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="commit" columnName="version_number"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.32" author="anandJ">
+        <tagDatabase tag="db_version_2.32"/>
+    </changeSet>
+
+    <changeSet id="add-raw_requirements-in-python_environment_blob" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="python_environment_blob" columnName="raw_requirements"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="python_environment_blob">
+            <column name="raw_requirements" type="TEXT" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="python_environment_blob" columnName="raw_requirements"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="add-raw_constraints-in-python_environment_blob" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="python_environment_blob" columnName="raw_constraints"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="python_environment_blob">
+            <column name="raw_constraints" type="TEXT" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="python_environment_blob" columnName="raw_constraints"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.33" author="anandJ">
+        <tagDatabase tag="db_version_2.33"/>
+    </changeSet>
+
+    <changeSet id="add-serialization-on-artifact" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="artifact" columnName="serialization"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="artifact">
+            <column name="serialization" type="TEXT" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="artifact" columnName="serialization"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="add-version-number-on-artifact" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="artifact" columnName="artifact_subtype"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="artifact">
+            <column name="artifact_subtype" type="varchar(255)" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="artifact" columnName="artifact_subtype"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.34" author="anandJ">
+        <tagDatabase tag="db_version_2.34"/>
+    </changeSet>
+
 </databaseChangeLog>

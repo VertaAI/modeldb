@@ -61,8 +61,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private final ProjectDAO projectDAO;
   private final ExperimentDAO experimentDAO;
   private final ExperimentRunDAO experimentRunDAO;
-  private static final String SERVICE_NAME =
-      String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.DATASET);
 
   public DatasetServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
@@ -120,7 +118,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             .setDatasetVisibility(request.getDatasetVisibility())
             .setVisibility(request.getVisibility())
             .setDatasetType(request.getDatasetType())
-            .setCustomPermission(request.getCustomPermission());
+            .setCustomPermission(request.getCustomPermission())
+            .setVersionNumber(1L);
 
     if (request.getTimeCreated() != 0L) {
       datasetBuilder

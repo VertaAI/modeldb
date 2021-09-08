@@ -5,7 +5,10 @@ from verta.external import six
 
 class KafkaSettings(object):
     """
-    A set of topics to be used with deployed endpoints.
+    A set of Kafka topics to be used with deployed endpoints.
+
+    For use during :class:`~verta.endpoint.Endpoint` creation or with
+    :meth:`Endpoint.update() <verta.endpoint.Endpoint.update>`.
 
     .. versionadded:: 0.19.0
 
