@@ -947,4 +947,36 @@
         <tagDatabase tag="db_version_2.33"/>
     </changeSet>
 
+    <changeSet id="add-serialization-on-artifact" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="artifact" columnName="serialization"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="artifact">
+            <column name="serialization" type="TEXT" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="artifact" columnName="serialization"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="add-version-number-on-artifact" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="artifact" columnName="artifact_subtype"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="artifact">
+            <column name="artifact_subtype" type="varchar(255)" value=""/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="artifact" columnName="artifact_subtype"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.34" author="anandJ">
+        <tagDatabase tag="db_version_2.34"/>
+    </changeSet>
+
 </databaseChangeLog>
