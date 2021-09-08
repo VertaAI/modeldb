@@ -50,8 +50,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   private final DatasetVersionDAO datasetVersionDAO;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
-  private static final String SERVICE_NAME =
-      String.format("%s.%s", ModelDBConstants.SERVICE_NAME, ModelDBConstants.EXPERIMENT_RUN);
 
   public ExperimentRunServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;

@@ -466,6 +466,45 @@
         ]
       }
     },
+    "/registry/model_versions/{model_version_id}/logDockerMetadata": {
+      "post": {
+        "operationId": "RegistryService_logDockerMetadataInModelVersion",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryLogDockerMetadataInModelVersionResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryLogDockerMetadataInModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
     "/registry/registered_models/count": {
       "get": {
         "operationId": "RegistryService_GetRegisteredModelCount",
@@ -1828,6 +1867,10 @@
         },
         "artifact_subtype": {
           "type": "string"
+        },
+        "upload_completed": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -1951,6 +1994,21 @@
     },
     "registryDeleteRegisteredModelRequestResponse": {
       "type": "object"
+    },
+    "registryDockerMetadata": {
+      "type": "object",
+      "properties": {
+        "request_port": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "request_path": {
+          "type": "string"
+        },
+        "health_path": {
+          "type": "string"
+        }
+      }
     },
     "registryFindModelVersionRequest": {
       "type": "object",
@@ -2173,6 +2231,21 @@
     "registryLogDatasetsInModelVersionResponse": {
       "type": "object"
     },
+    "registryLogDockerMetadataInModelVersion": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "docker_metadata": {
+          "$ref": "#/definitions/registryDockerMetadata"
+        }
+      }
+    },
+    "registryLogDockerMetadataInModelVersionResponse": {
+      "type": "object"
+    },
     "registryModelVersion": {
       "type": "object",
       "properties": {
@@ -2221,6 +2294,9 @@
         "environment": {
           "$ref": "#/definitions/versioningEnvironmentBlob",
           "title": "Requirement"
+        },
+        "docker_metadata": {
+          "$ref": "#/definitions/registryDockerMetadata"
         },
         "artifacts": {
           "type": "array",
@@ -2274,6 +2350,11 @@
           "additionalProperties": {
             "$ref": "#/definitions/versioningCodeBlob"
           }
+        },
+        "readme_text_updated": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Is true if the readme text has been updated at least once"
         },
         "version_number": {
           "type": "string",

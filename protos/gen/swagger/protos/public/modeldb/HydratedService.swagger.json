@@ -820,7 +820,8 @@
         "UPDATE",
         "DELETE",
         "READ_SECRETS",
-        "CREATE_SERVICE_ACCOUNT"
+        "CREATE_SERVICE_ACCOUNT",
+        "CREATE_CONTAINER_REGISTRY"
       ],
       "default": "UNKNOWN"
     },
@@ -1036,6 +1037,10 @@
         },
         "artifact_subtype": {
           "type": "string"
+        },
+        "upload_completed": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },

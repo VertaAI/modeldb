@@ -842,7 +842,7 @@ public class FutureExperimentRunDAO {
                           return jdbi.withHandle(
                                   handle -> {
                                     var sql =
-                                        "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id from experiment_run";
+                                        "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id, experiment_run.version_number from experiment_run";
 
                                     // Add the sorting tables
                                     for (final var item :
@@ -939,7 +939,10 @@ public class FutureExperimentRunDAO {
                                                           rs.getString(
                                                               "experiment_run.code_version"))
                                                       .setJobId(
-                                                          rs.getString("experiment_run.job_id"));
+                                                          rs.getString("experiment_run.job_id"))
+                                                      .setVersionNumber(
+                                                          rs.getLong(
+                                                              "experiment_run.version_number"));
 
                                               var environment =
                                                   rs.getString("experiment_run.environment");

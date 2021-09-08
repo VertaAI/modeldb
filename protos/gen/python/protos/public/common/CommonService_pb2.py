@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.common',
   syntax='proto3',
   serialized_options=b'P\001Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/common',
-  serialized_pb=b'\n\x1a\x63ommon/CommonService.proto\x12\x0f\x61i.verta.common\x1a\x1cgoogle/protobuf/struct.proto\":\n\x0bTernaryEnum\"+\n\x07Ternary\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04TRUE\x10\x01\x12\t\n\x05\x46\x41LSE\x10\x02\"|\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\"H\n\rValueTypeEnum\"7\n\tValueType\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x08\n\x04LIST\x10\x02\x12\x08\n\x04\x42LOB\x10\x03\"I\n\x14\x43ollaboratorTypeEnum\"1\n\x10\x43ollaboratorType\x12\r\n\tREAD_ONLY\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\"t\n#CollaboratorTypeEnumWithDefaultEnum\"M\n\x1f\x43ollaboratorTypeEnumWithDefault\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\x12\r\n\tREAD_ONLY\x10\x02\"R\n\x0c\x45ntitiesEnum\"B\n\rEntitiesTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04TEAM\x10\x02\x12\x08\n\x04USER\x10\x03\"\xba\x02\n\x13ModelDBResourceEnum\"\xa2\x02\n\x1bModelDBServiceResourceTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x0b\n\x07PROJECT\x10\x02\x12\x0e\n\nEXPERIMENT\x10\x03\x12\x12\n\x0e\x45XPERIMENT_RUN\x10\x04\x12\x0b\n\x07\x44\x41TASET\x10\x05\x12\x13\n\x0f\x44\x41TASET_VERSION\x10\x06\x12\r\n\tDASHBOARD\x10\x07\x12\x0e\n\nREPOSITORY\x10\x08\x12\x14\n\x10REGISTERED_MODEL\x10\t\x12\x1c\n\x18REGISTERED_MODEL_VERSION\x10\n\x12\x14\n\x10MONITORED_ENTITY\x10\x0b\x12\x18\n\x14NOTIFICATION_CHANNEL\x10\x0c\x12\x0c\n\x08\x45NDPOINT\x10\r\x12\t\n\x05\x42UILD\x10\x0e\"5\n\nPagination\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\"M\n\x11WorkspaceTypeEnum\"8\n\rWorkspaceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04USER\x10\x02\"\x82\x01\n\x10\x41rtifactTypeEnum\"n\n\x0c\x41rtifactType\x12\t\n\x05IMAGE\x10\x00\x12\t\n\x05MODEL\x10\x01\x12\x0f\n\x0bTENSORBOARD\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\x08\n\x04\x42LOB\x10\x04\x12\n\n\x06STRING\x10\x05\x12\x08\n\x04\x43ODE\x10\x06\x12\r\n\tCONTAINER\x10\x07\"\xe8\x01\n\x08\x41rtifact\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x11\n\tpath_only\x18\x03 \x01(\x08\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x1a\n\x12linked_artifact_id\x18\x05 \x01(\t\x12\x1a\n\x12\x66ilename_extension\x18\x06 \x01(\t\x12\x15\n\rserialization\x18\x07 \x01(\t\x12\x18\n\x10\x61rtifact_subtype\x18\x08 \x01(\t\"\xbb\x01\n\rKeyValueQuery\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12\x38\n\x08operator\x18\x04 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"1\n\x0c\x41rtifactPart\x12\x13\n\x0bpart_number\x18\x01 \x01(\x04\x12\x0c\n\x04\x65tag\x18\x02 \x01(\t\"r\n\x0cOperatorEnum\"b\n\x08Operator\x12\x06\n\x02\x45Q\x10\x00\x12\x06\n\x02NE\x10\x01\x12\x06\n\x02GT\x10\x02\x12\x07\n\x03GTE\x10\x03\x12\x06\n\x02LT\x10\x04\x12\x07\n\x03LTE\x10\x05\x12\x0b\n\x07\x43ONTAIN\x10\x06\x12\x0f\n\x0bNOT_CONTAIN\x10\x07\x12\x06\n\x02IN\x10\x08\"_\n\x0eVisibilityEnum\"M\n\nVisibility\x12\x0b\n\x07PRIVATE\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x15\n\x11ORG_SCOPED_PUBLIC\x10\x02\x12\x0f\n\x0bORG_DEFAULT\x10\x03\"\x93\x01\n\x0b\x43odeVersion\x12\x34\n\x0cgit_snapshot\x18\x01 \x01(\x0b\x32\x1c.ai.verta.common.GitSnapshotH\x00\x12\x31\n\x0c\x63ode_archive\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.ArtifactH\x00\x12\x13\n\x0b\x64\x61te_logged\x18\x03 \x01(\x04\x42\x06\n\x04\x63ode\"t\n\x0bGitSnapshot\x12\x11\n\tfilepaths\x18\x01 \x03(\t\x12\x0c\n\x04repo\x18\x02 \x01(\t\x12\x0c\n\x04hash\x18\x03 \x01(\t\x12\x36\n\x08is_dirty\x18\x04 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.TernaryBAP\x01Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/commonb\x06proto3'
+  serialized_pb=b'\n\x1a\x63ommon/CommonService.proto\x12\x0f\x61i.verta.common\x1a\x1cgoogle/protobuf/struct.proto\":\n\x0bTernaryEnum\"+\n\x07Ternary\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04TRUE\x10\x01\x12\t\n\x05\x46\x41LSE\x10\x02\"|\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\"H\n\rValueTypeEnum\"7\n\tValueType\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x08\n\x04LIST\x10\x02\x12\x08\n\x04\x42LOB\x10\x03\"I\n\x14\x43ollaboratorTypeEnum\"1\n\x10\x43ollaboratorType\x12\r\n\tREAD_ONLY\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\"t\n#CollaboratorTypeEnumWithDefaultEnum\"M\n\x1f\x43ollaboratorTypeEnumWithDefault\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\x12\r\n\tREAD_ONLY\x10\x02\"R\n\x0c\x45ntitiesEnum\"B\n\rEntitiesTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04TEAM\x10\x02\x12\x08\n\x04USER\x10\x03\"\xba\x02\n\x13ModelDBResourceEnum\"\xa2\x02\n\x1bModelDBServiceResourceTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x0b\n\x07PROJECT\x10\x02\x12\x0e\n\nEXPERIMENT\x10\x03\x12\x12\n\x0e\x45XPERIMENT_RUN\x10\x04\x12\x0b\n\x07\x44\x41TASET\x10\x05\x12\x13\n\x0f\x44\x41TASET_VERSION\x10\x06\x12\r\n\tDASHBOARD\x10\x07\x12\x0e\n\nREPOSITORY\x10\x08\x12\x14\n\x10REGISTERED_MODEL\x10\t\x12\x1c\n\x18REGISTERED_MODEL_VERSION\x10\n\x12\x14\n\x10MONITORED_ENTITY\x10\x0b\x12\x18\n\x14NOTIFICATION_CHANNEL\x10\x0c\x12\x0c\n\x08\x45NDPOINT\x10\r\x12\t\n\x05\x42UILD\x10\x0e\"5\n\nPagination\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\"M\n\x11WorkspaceTypeEnum\"8\n\rWorkspaceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04USER\x10\x02\"\x82\x01\n\x10\x41rtifactTypeEnum\"n\n\x0c\x41rtifactType\x12\t\n\x05IMAGE\x10\x00\x12\t\n\x05MODEL\x10\x01\x12\x0f\n\x0bTENSORBOARD\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\x08\n\x04\x42LOB\x10\x04\x12\n\n\x06STRING\x10\x05\x12\x08\n\x04\x43ODE\x10\x06\x12\r\n\tCONTAINER\x10\x07\"\x82\x02\n\x08\x41rtifact\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x11\n\tpath_only\x18\x03 \x01(\x08\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x1a\n\x12linked_artifact_id\x18\x05 \x01(\t\x12\x1a\n\x12\x66ilename_extension\x18\x06 \x01(\t\x12\x15\n\rserialization\x18\x07 \x01(\t\x12\x18\n\x10\x61rtifact_subtype\x18\x08 \x01(\t\x12\x18\n\x10upload_completed\x18\t \x01(\x08\"\xbb\x01\n\rKeyValueQuery\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12\x38\n\x08operator\x18\x04 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"1\n\x0c\x41rtifactPart\x12\x13\n\x0bpart_number\x18\x01 \x01(\x04\x12\x0c\n\x04\x65tag\x18\x02 \x01(\t\"r\n\x0cOperatorEnum\"b\n\x08Operator\x12\x06\n\x02\x45Q\x10\x00\x12\x06\n\x02NE\x10\x01\x12\x06\n\x02GT\x10\x02\x12\x07\n\x03GTE\x10\x03\x12\x06\n\x02LT\x10\x04\x12\x07\n\x03LTE\x10\x05\x12\x0b\n\x07\x43ONTAIN\x10\x06\x12\x0f\n\x0bNOT_CONTAIN\x10\x07\x12\x06\n\x02IN\x10\x08\"_\n\x0eVisibilityEnum\"M\n\nVisibility\x12\x0b\n\x07PRIVATE\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x15\n\x11ORG_SCOPED_PUBLIC\x10\x02\x12\x0f\n\x0bORG_DEFAULT\x10\x03\"\x93\x01\n\x0b\x43odeVersion\x12\x34\n\x0cgit_snapshot\x18\x01 \x01(\x0b\x32\x1c.ai.verta.common.GitSnapshotH\x00\x12\x31\n\x0c\x63ode_archive\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.ArtifactH\x00\x12\x13\n\x0b\x64\x61te_logged\x18\x03 \x01(\x04\x42\x06\n\x04\x63ode\"t\n\x0bGitSnapshot\x12\x11\n\tfilepaths\x18\x01 \x03(\t\x12\x0c\n\x04repo\x18\x02 \x01(\t\x12\x0c\n\x04hash\x18\x03 \x01(\t\x12\x36\n\x08is_dirty\x18\x04 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.TernaryBAP\x01Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/commonb\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
 
@@ -350,8 +350,8 @@ _OPERATORENUM_OPERATOR = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1690,
-  serialized_end=1788,
+  serialized_start=1716,
+  serialized_end=1814,
 )
 _sym_db.RegisterEnumDescriptor(_OPERATORENUM_OPERATOR)
 
@@ -380,8 +380,8 @@ _VISIBILITYENUM_VISIBILITY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1808,
-  serialized_end=1885,
+  serialized_start=1834,
+  serialized_end=1911,
 )
 _sym_db.RegisterEnumDescriptor(_VISIBILITYENUM_VISIBILITY)
 
@@ -732,6 +732,13 @@ _ARTIFACT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='upload_completed', full_name='ai.verta.common.Artifact.upload_completed', index=8,
+      number=9, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -745,7 +752,7 @@ _ARTIFACT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1199,
-  serialized_end=1431,
+  serialized_end=1457,
 )
 
 
@@ -796,8 +803,8 @@ _KEYVALUEQUERY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1434,
-  serialized_end=1621,
+  serialized_start=1460,
+  serialized_end=1647,
 )
 
 
@@ -834,8 +841,8 @@ _ARTIFACTPART = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1623,
-  serialized_end=1672,
+  serialized_start=1649,
+  serialized_end=1698,
 )
 
 
@@ -859,8 +866,8 @@ _OPERATORENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1674,
-  serialized_end=1788,
+  serialized_start=1700,
+  serialized_end=1814,
 )
 
 
@@ -884,8 +891,8 @@ _VISIBILITYENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1790,
-  serialized_end=1885,
+  serialized_start=1816,
+  serialized_end=1911,
 )
 
 
@@ -932,8 +939,8 @@ _CODEVERSION = _descriptor.Descriptor(
       name='code', full_name='ai.verta.common.CodeVersion.code',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1888,
-  serialized_end=2035,
+  serialized_start=1914,
+  serialized_end=2061,
 )
 
 
@@ -984,8 +991,8 @@ _GITSNAPSHOT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2037,
-  serialized_end=2153,
+  serialized_start=2063,
+  serialized_end=2179,
 )
 
 _TERNARYENUM_TERNARY.containing_type = _TERNARYENUM

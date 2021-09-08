@@ -155,7 +155,8 @@ public class CreateExperimentRunHandler {
             .addAllDatasets(request.getDatasetsList())
             .addAllMetrics(request.getMetricsList())
             .addAllObservations(request.getObservationsList())
-            .addAllFeatures(request.getFeaturesList());
+            .addAllFeatures(request.getFeaturesList())
+            .setVersionNumber(1L);
 
     var now = Calendar.getInstance().getTimeInMillis();
     if (request.getDateCreated() != 0L) {
@@ -198,6 +199,7 @@ public class CreateExperimentRunHandler {
     runValueMap.put("job_id", newExperimentRun.getJobId());
     runValueMap.put("parent_id", newExperimentRun.getParentId());
     runValueMap.put("owner", newExperimentRun.getOwner());
+    runValueMap.put("version_number", newExperimentRun.getVersionNumber());
 
     runValueMap.put("environment", null);
     runValueMap.put("deleted", false);
