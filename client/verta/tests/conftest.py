@@ -410,6 +410,28 @@ def client_3(host, port, email_3, dev_key_3, created_entities):
     return client
 
 
+@pytest.fixture(
+    params=verta.tracking.entities._deployable_entity._DeployableEntity.__subclasses__(),
+)
+def deployable_entity(request, client, created_entities):
+    cls = request.param
+    if cls is verta.tracking.entities.ExperimentRun:
+        proj = client.create_project()
+        created_entities.append(proj)
+        entity = client.create_experiment_run()
+    elif cls is verta.registry.entities.RegisteredModelVersion:
+        reg_model = client.create_registered_model()
+        created_entities.append(reg_model)
+        entity = reg_model.create_version()
+    else:
+        raise RuntimeError(
+            "_DeployableEntity appears to have a subclass {} that is not"
+            " accounted for in this fixture".format(cls)
+        )
+
+    return entity
+
+
 @pytest.fixture
 def experiment_run(client):
     proj = client.set_project()
