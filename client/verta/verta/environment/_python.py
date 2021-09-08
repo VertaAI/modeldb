@@ -259,10 +259,15 @@ class Python(_environment._Environment):
             )
 
         try:
+            constraints_copy = copy.copy(constraints)
+            constraints_copy = _pip_requirements_utils.clean_reqs_file_lines(
+                constraints_copy,
+                ignore_unsupported=False,
+            )
             self._msg.python.constraints.extend(
                 map(
                     self._req_spec_to_msg,
-                    constraints,
+                    constraints_copy,
                 ),
             )
         except:
