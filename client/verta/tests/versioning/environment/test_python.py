@@ -50,14 +50,43 @@ def assert_parsed_reqs_match(parsed_reqs, original_reqs):
 
 class TestObject:
     def test_repr(self):
-        """Tests that __repr__() executes without error"""
-        env_ver = Python(
-            requirements=["pytest=={}".format(pytest.__version__)],
-            constraints=["six=={}".format(six.__version__)],
-            env_vars=["HOME"],
+        requirements = ["pytest=={}".format(pytest.__version__)]
+        constraints = ["six=={}".format(six.__version__)]
+        env_vars = ["HOME"]
+
+        env = Python(
+            requirements=requirements,
+            constraints=constraints,
+            env_vars=env_vars,
         )
 
-        assert env_ver.__repr__()
+        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        for line in requirements:
+            assert line in repr(env)
+        for line in constraints:
+            assert line in repr(env)
+        for line in env_vars:
+            assert line in repr(env)
+
+    def test_raw_repr(self):
+        requirements = [
+            "-e git+https://github.com/matplotlib/matplotlib.git@master#egg=matplotlib",
+        ]
+        constraints = ["pytest > 6; python_version >= '2.7'"]
+
+        env = Python(
+            requirements=requirements,
+            constraints=constraints,
+        )
+
+        assert env._msg.python.raw_requirements
+        assert env._msg.python.raw_constraints
+
+        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        for line in requirements:
+            assert line in repr(env)
+        for line in constraints:
+            assert line in repr(env)
 
     def test_no_autocapture(self):
         env_ver = Python(requirements=[], _autocapture=False)
