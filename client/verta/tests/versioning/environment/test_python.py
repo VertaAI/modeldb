@@ -182,20 +182,8 @@ class TestRawRequirements:
     ):
         """Requirements with unsupported lines get logged raw."""
         reqs = Python.read_pip_file(requirements_file_with_unsupported_lines.name)
-        with caplog.at_level(logging.WARNING, logger="verta"):
-            env = Python(requirements=reqs)
 
-        assert "failed to manually parse requirements; falling back to capturing raw contents" in caplog.text
-        caplog.clear()
-
-        assert not env._msg.python.requirements
-        assert env._msg.python.raw_requirements
-
-        expected_reqs = copy.copy(reqs)
-        _pip_requirements_utils.pin_verta_and_cloudpickle(expected_reqs)
-        assert env.requirements == expected_reqs
-
-        # also verify each individual line
+        # each line gets logged raw
         for req in reqs:
             with caplog.at_level(logging.WARNING, logger="verta"):
                 env = Python(requirements=[req])
@@ -236,12 +224,32 @@ class TestParsedConstraints:
 
 
 class TestRawConstraints:
+    def test_unsupported_lines(
+        self, requirements_file_with_unsupported_lines, caplog
+    ):
+        """Constraints with unsupported lines get logged raw."""
+        constraints = Python.read_pip_file(requirements_file_with_unsupported_lines.name)
+
+        # each line gets logged raw
+        for constraint in constraints:
+            with caplog.at_level(logging.WARNING, logger="verta"):
+                env = Python(requirements=[], constraints=[constraint])
+
+            assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text
+            caplog.clear()
+
+            assert not env._msg.python.constraints
+            assert env._msg.python.raw_constraints
+
+            expected_constraints = [constraint]
+            assert env.constraints == expected_constraints
+
     def test_from_file_no_versions(
         self, requirements_file_without_versions, caplog
     ):
-        reqs = Python.read_pip_file(requirements_file_without_versions.name)
+        constraints = Python.read_pip_file(requirements_file_without_versions.name)
         with caplog.at_level(logging.WARNING, logger="verta"):
-            env = Python(requirements=[], constraints=reqs)
+            env = Python(requirements=[], constraints=constraints)
 
         assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text
         assert "missing its version specifier" in caplog.text
@@ -250,4 +258,4 @@ class TestRawConstraints:
         assert env._msg.python.raw_constraints
 
         assert env._msg.python.raw_constraints == requirements_file_without_versions.read()
-        assert set(env.constraints) == set(reqs)
+        assert set(env.constraints) == set(constraints)
