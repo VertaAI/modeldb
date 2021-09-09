@@ -84,11 +84,11 @@ class TestArtifacts:
 class TestImages:
     @staticmethod
     def matplotlib_to_pil(fig):
-        PIL = pytest.importorskip("PIL")
+        Image = pytest.importorskip("PIL.Image")
 
         bytestream = six.BytesIO()
         fig.savefig(bytestream)
-        return PIL.Image.open(bytestream)
+        return Image.open(bytestream)
 
     def test_log_path(self, experiment_run, strs):
         strs, holdout = strs[:-1], strs[-1]  # reserve last key
@@ -103,10 +103,10 @@ class TestImages:
             experiment_run.get_image(holdout)
 
     def test_upload_blank_warning(self, experiment_run, strs):
-        PIL = pytest.importorskip("PIL")
+        Image = pytest.importorskip("PIL.Image")
 
         key = strs[0]
-        img = PIL.Image.new('RGB', (64, 64), 'white')
+        img = Image.new('RGB', (64, 64), 'white')
 
         with pytest.warns(UserWarning):
             experiment_run.log_image(key, img)
@@ -140,12 +140,12 @@ class TestImages:
 
     def test_upload_pil(self, experiment_run, strs):
         np = pytest.importorskip("numpy")
-        PIL = pytest.importorskip("PIL")
-        import PIL.ImageDraw
+        Image = pytest.importorskip("PIL.Image")
+        ImageDraw = pytest.importorskip("PIL.ImageDraw")
 
         key = strs[0]
-        img = PIL.Image.new('RGB', (64, 64), 'gray')
-        PIL.ImageDraw.Draw(img).arc(np.r_[np.random.randint(32, size=(2)),
+        img = Image.new('RGB', (64, 64), 'gray')
+        ImageDraw.Draw(img).arc(np.r_[np.random.randint(32, size=(2)),
                                           np.random.randint(32, 64, size=(2))].tolist(),
                                     np.random.randint(360), np.random.randint(360),
                                     'white')
@@ -155,9 +155,9 @@ class TestImages:
                               np.asarray(img.getdata())))
 
     def test_conflict(self, experiment_run, strs):
-        PIL = pytest.importorskip("PIL")
+        Image = pytest.importorskip("PIL.Image")
 
-        images = dict(zip(strs, [PIL.Image.new('RGB', (64, 64), 'gray')]*3))
+        images = dict(zip(strs, [Image.new('RGB', (64, 64), 'gray')]*3))
 
         for key, image in six.viewitems(images):
             experiment_run.log_image(key, image)

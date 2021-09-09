@@ -1342,11 +1342,11 @@ class ExperimentRun(_DeployableEntity):
         if path_only:
             return image
         else:
-            PIL = importer.maybe_dependency("PIL")
-            if PIL is None:  # Pillow not installed
+            Image = importer.maybe_dependency("PIL.Image")
+            if Image is None:  # Pillow not installed
                 return six.BytesIO(image)
             try:
-                return PIL.Image.open(six.BytesIO(image))
+                return Image.open(six.BytesIO(image))
             except IOError:  # can't be handled by Pillow
                 return six.BytesIO(image)
 
