@@ -227,7 +227,7 @@ class TestRawRequirements:
             _pip_requirements_utils.pin_verta_and_cloudpickle(expected_reqs)
             assert env.requirements == expected_reqs
 
-    def test_inject_verrta_cloudpickle(self):
+    def test_inject_verta_cloudpickle(self):
         reqs = [
             "-e client/verta"
         ]
