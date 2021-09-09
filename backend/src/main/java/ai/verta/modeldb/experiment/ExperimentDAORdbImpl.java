@@ -654,9 +654,8 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           stringQueryBuilder.append(" AND ");
         }
       }
-      Query query =
-          session.createQuery(
-              stringQueryBuilder.toString() + " AND ee." + ModelDBConstants.DELETED + " = false ");
+      stringQueryBuilder.append(" AND ee.deleted = false ");
+      Query query = session.createQuery(stringQueryBuilder.toString());
       for (Entry<String, Object> paramEntry : paramMap.entrySet()) {
         query.setParameter(paramEntry.getKey(), paramEntry.getValue());
       }

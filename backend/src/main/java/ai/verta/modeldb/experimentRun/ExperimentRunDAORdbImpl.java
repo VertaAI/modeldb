@@ -2002,9 +2002,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           stringQueryBuilder.append(" AND ");
         }
       }
-      Query query =
-          session.createQuery(
-              stringQueryBuilder.toString() + " AND er." + ModelDBConstants.DELETED + " = false ");
+      stringQueryBuilder.append(" AND er.deleted = false ");
+      Query query = session.createQuery(stringQueryBuilder.toString());
       for (Map.Entry<String, Object> paramEntry : paramMap.entrySet()) {
         query.setParameter(paramEntry.getKey(), paramEntry.getValue());
       }

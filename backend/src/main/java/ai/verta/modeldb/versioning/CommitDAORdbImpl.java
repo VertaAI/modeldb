@@ -408,10 +408,15 @@ public class CommitDAORdbImpl implements CommitDAO {
 
     String order = ascending ? " ASC " : " DESC ";
 
-    Query<CommitEntity> commitEntityQuery =
-        session.createQuery(
-            "SELECT cm " + commitQueryBuilder.toString() + " ORDER BY cm.date_updated " + order);
-    Query countQuery = session.createQuery("SELECT count(cm) " + commitQueryBuilder.toString());
+    StringBuilder finalQueryBuilder =
+        new StringBuilder("SELECT cm ")
+            .append(commitQueryBuilder.toString())
+            .append(" ORDER BY cm.date_updated ")
+            .append(order);
+    Query<CommitEntity> commitEntityQuery = session.createQuery(finalQueryBuilder.toString());
+    StringBuilder finalCountBuilder =
+        new StringBuilder("SELECT count(cm) ").append(commitQueryBuilder);
+    Query countQuery = session.createQuery(finalCountBuilder.toString());
 
     commitEntityQuery.setParameter("repoId", repoId);
     countQuery.setParameter("repoId", repoId);
@@ -584,10 +589,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       for (String datasetVersionId : datasetVersionIds) {
         Query<CommitEntity> getCommitQuery =
             session.createQuery(
-                "From "
-                    + CommitEntity.class.getSimpleName()
-                    + " c WHERE c.commit_hash = :commitHash",
-                CommitEntity.class);
+                "From CommitEntity c WHERE c.commit_hash = :commitHash", CommitEntity.class);
         getCommitQuery.setParameter("commitHash", datasetVersionId);
         CommitEntity commitEntity = getCommitQuery.uniqueResult();
         if (commitEntity == null || commitEntity.getParent_commits().isEmpty()) {
@@ -694,10 +696,7 @@ public class CommitDAORdbImpl implements CommitDAO {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query<CommitEntity> getCommitQuery =
           session.createQuery(
-              "From "
-                  + CommitEntity.class.getSimpleName()
-                  + " c WHERE c.commit_hash IN (:commitHashes)",
-              CommitEntity.class);
+              "From CommitEntity c WHERE c.commit_hash IN (:commitHashes)", CommitEntity.class);
       getCommitQuery.setParameter("commitHashes", commitShas);
       List<CommitEntity> commitEntities = getCommitQuery.getResultList();
       if (commitEntities.isEmpty()) {
@@ -723,9 +722,7 @@ public class CommitDAORdbImpl implements CommitDAO {
               RepositoryEnums.RepositoryTypeEnum.REGULAR);
 
       String getBranchByCommitHQLBuilder =
-          "FROM "
-              + BranchEntity.class.getSimpleName()
-              + " br where br.id.repository_id = :repositoryId "
+          "FROM BranchEntity br where br.id.repository_id = :repositoryId "
               + " AND br.commit_hash IN (:commitHashes) ";
       Query<BranchEntity> getBranchByCommitQuery =
           session.createQuery(getBranchByCommitHQLBuilder, BranchEntity.class);

@@ -66,16 +66,15 @@ public class VersioningUtils {
     while (!childCommitSHAs.isEmpty()) {
       String childCommit = childCommitSHAs.remove(0);
       commitSHAs.add(childCommit);
+      StringBuilder childQuery =
+          new StringBuilder(GET_PARENT_COMMIT_SHA_PREFIX).append(childCommit).append("\'");
       @SuppressWarnings("unchecked")
-      Query<String> sqlQuery =
-          session.createSQLQuery(GET_PARENT_COMMIT_SHA_PREFIX + childCommit + "\'");
+      Query<String> sqlQuery = session.createSQLQuery(childQuery.toString());
       List<String> parentCommitSHAs = sqlQuery.list();
       childCommitSHAs.addAll(parentCommitSHAs);
     }
     String getChildCommits =
-        "FROM "
-            + CommitEntity.class.getSimpleName()
-            + " c WHERE c.commit_hash IN (:childCommitSHAs)  ORDER BY c.date_created DESC";
+        "FROM CommitEntity c WHERE c.commit_hash IN (:childCommitSHAs)  ORDER BY c.date_created DESC";
     @SuppressWarnings("unchecked")
     Query<CommitEntity> query = session.createQuery(getChildCommits);
     query.setParameterList("childCommitSHAs", commitSHAs);
@@ -218,9 +217,7 @@ public class VersioningUtils {
   public static Set<ArtifactPartEntity> getArtifactPartEntities(
       Session session, String artifactId, int artifactType) {
     String queryString =
-        "From "
-            + ArtifactPartEntity.class.getSimpleName()
-            + " arp WHERE arp.artifact_type = :artifactType AND arp.artifact_id = :artifactId";
+        "From ArtifactPartEntity arp WHERE arp.artifact_type = :artifactType AND arp.artifact_id = :artifactId";
     Query query = session.createQuery(queryString);
     query.setParameter("artifactType", artifactType);
     query.setParameter("artifactId", artifactId);

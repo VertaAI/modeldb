@@ -41,10 +41,7 @@ public class PopulateVersionMigration {
     Long count;
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String repoCountQueryStr =
-          "SELECT COUNT(r) FROM "
-              + RepositoryEntity.class.getSimpleName()
-              + " r "
-              + "WHERE r.deleted = false  AND r.datasetRepositoryMappingEntity IS NOT EMPTY ";
+          "SELECT COUNT(r) FROM RepositoryEntity r WHERE r.deleted = false  AND r.datasetRepositoryMappingEntity IS NOT EMPTY ";
       Query repoCountQuery = session.createQuery(repoCountQueryStr);
       count = (Long) repoCountQuery.getSingleResult();
     }
@@ -57,9 +54,7 @@ public class PopulateVersionMigration {
       try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         LOGGER.debug("starting DatasetVersion version migration");
         String repoQuery =
-            "SELECT r FROM "
-                + RepositoryEntity.class.getSimpleName()
-                + " r "
+            "SELECT r FROM RepositoryEntity r "
                 + "WHERE r.deleted = false  AND r.datasetRepositoryMappingEntity IS NOT EMPTY "
                 + "ORDER BY r.date_created";
         Query repoTypedQuery = session.createQuery(repoQuery);
@@ -77,9 +72,7 @@ public class PopulateVersionMigration {
 
           for (Long datasetId : datasetIds) {
             String commitCountQueryStr =
-                "SELECT count(c) FROM "
-                    + CommitEntity.class.getSimpleName()
-                    + " c "
+                "SELECT count(c) FROM CommitEntity c "
                     + "INNER JOIN c.repository r WHERE r.id = :datasetId  AND c.parent_commits IS NOT EMPTY ";
             Query commitCountQuery = session.createQuery(commitCountQueryStr);
             commitCountQuery.setParameter("datasetId", datasetId);
@@ -92,9 +85,7 @@ public class PopulateVersionMigration {
             long version = 0L;
             while (commitLowerBound < commitCount) {
               String commitQuery =
-                  "SELECT c FROM "
-                      + CommitEntity.class.getSimpleName()
-                      + " c "
+                  "SELECT c FROM CommitEntity c "
                       + "INNER JOIN c.repository r WHERE r.id = :datasetId  AND c.parent_commits IS NOT EMPTY "
                       + "ORDER BY c.date_created";
               Query commitTypedQuery = session.createQuery(commitQuery);

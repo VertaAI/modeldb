@@ -9,7 +9,6 @@ import ai.verta.modeldb.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.ExperimentEntity;
@@ -117,20 +116,13 @@ public class OwnerRoleBindingUtils {
                     experimentEntity.getId(),
                     ModelDBServiceResourceTypes.EXPERIMENT);
               } catch (Exception e) {
-                e.printStackTrace();
-                LOGGER.error(e.getMessage());
+                LOGGER.error(e.getMessage(), e);
               }
             } else {
-              LOGGER.info(
+              LOGGER.warn(
                   "Experiment owner not found from UAC response list : experimentId - {} & userId - {}",
                   experimentEntity.getId(),
                   experimentEntity.getOwner());
-              new ModelDBException(
-                      "Experiment owner not found from UAC response list : experimentId - "
-                          + experimentEntity.getId()
-                          + " & userId - "
-                          + experimentEntity.getOwner())
-                  .printStackTrace();
             }
           }
         } else {
@@ -200,20 +192,13 @@ public class OwnerRoleBindingUtils {
                   experimentRunEntity.getId(),
                   ModelDBServiceResourceTypes.EXPERIMENT_RUN);
             } catch (Exception e) {
-              e.printStackTrace();
-              LOGGER.error(e.getMessage());
+              LOGGER.error(e.getMessage(), e);
             }
           } else {
-            LOGGER.info(
+            LOGGER.warn(
                 "ExperimentRun owner not found from UAC response list : ExperimentRunId - {} & userId - {}",
                 experimentRunEntity.getId(),
                 experimentRunEntity.getOwner());
-            new ModelDBException(
-                    "ExperimentRun owner not found from UAC response list : ExperimentRunId - "
-                        + experimentRunEntity.getId()
-                        + " & userId - "
-                        + experimentRunEntity.getOwner())
-                .printStackTrace();
           }
         }
         LOGGER.debug("finished processing page lower boundary {}", lowerBound);
@@ -282,20 +267,13 @@ public class OwnerRoleBindingUtils {
                     datasetVersionEntity.getId(),
                     ModelDBServiceResourceTypes.DATASET_VERSION);
               } catch (Exception e) {
-                e.printStackTrace();
-                LOGGER.error(e.getMessage());
+                LOGGER.error(e.getMessage(), e);
               }
             } else {
-              LOGGER.info(
+              LOGGER.warn(
                   "DatasetVersion owner not found from UAC response list : DatasetVersionId - {} & userId - {}",
                   datasetVersionEntity.getId(),
                   datasetVersionEntity.getOwner());
-              new ModelDBException(
-                      "DatasetVersion owner not found from UAC response list : DatasetVersionId - "
-                          + datasetVersionEntity.getId()
-                          + " & userId - "
-                          + datasetVersionEntity.getOwner())
-                  .printStackTrace();
             }
           }
         } else {
@@ -369,20 +347,13 @@ public class OwnerRoleBindingUtils {
                     String.valueOf(repositoryEntity.getId()),
                     modelDBServiceResourceTypes);
               } catch (Exception e) {
-                e.printStackTrace();
-                LOGGER.error(e.getMessage());
+                LOGGER.error(e.getMessage(), e);
               }
             } else {
-              LOGGER.info(
+              LOGGER.warn(
                   "Repository owner not found from UAC response list : RepositoryId - {} & userId - {}",
                   repositoryEntity.getId(),
                   repositoryEntity.getOwner());
-              new ModelDBException(
-                      "Repository owner not found from UAC response list : RepositoryId - "
-                          + repositoryEntity.getId()
-                          + " & userId - "
-                          + repositoryEntity.getOwner())
-                  .printStackTrace();
             }
           }
         } else {
