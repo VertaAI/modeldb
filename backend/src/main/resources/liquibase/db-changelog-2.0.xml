@@ -987,12 +987,6 @@
             <column name="upload_completed" valueBoolean="true" />
             <where>field_type="artifacts" AND upload_completed = 0</where>
         </update>
-        <rollback>
-            <update tableName="artifact">
-                <column name="upload_completed" valueBoolean="false" />
-                <where>field_type="artifacts" AND upload_completed = 1</where>
-            </update>
-        </rollback>
     </changeSet>
 
     <changeSet id="db_version_2.35" author="anandJ">
