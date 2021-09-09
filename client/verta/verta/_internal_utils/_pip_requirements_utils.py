@@ -372,7 +372,7 @@ def preserve_req_suffixes(requirement, pinned_library_req):
         return delimiter.join(split_req)
     return pinned_library_req
 
-def remove_public_version_identifier(requirements):
+def remove_local_version_identifier(requirements):
     """Removes local version identifiers from version pins if present.
 
     PyTorch in particular adds local build information to its pip environment
@@ -392,7 +392,7 @@ def remove_public_version_identifier(requirements):
         before = ["torch==1.8.1+cu102"]
         after = ["torch==1.8.1"]
 
-        remove_public_version_identifier(before)
+        remove_local_version_identifier(before)
         assert before == after
 
     References
