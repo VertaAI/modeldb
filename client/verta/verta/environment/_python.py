@@ -41,6 +41,8 @@ class Python(_environment._Environment):
 
     Attributes
     ----------
+    constraints : list of str
+        pip constraints.
     requirements : list of str
         pip requirements.
 
@@ -86,34 +88,12 @@ class Python(_environment._Environment):
                     self._msg.python.version.patch,
                 )
             )
-        if self._msg.python.requirements:
+        if self._msg.python.requirements or self._msg.python.raw_requirements:
             lines.append("requirements:")
-            lines.extend(
-                "    {}".format(self._req_spec_msg_to_str(req_spec_msg))
-                for req_spec_msg in sorted(
-                    self._msg.python.requirements,
-                    key=lambda req_spec_msg: req_spec_msg.library,
-                )
-            )
-        if self._msg.python.raw_requirements:
-            lines.append("raw requirements:")
-            lines.extend(
-                map("    {}".format, self._msg.python.raw_requirements.splitlines())
-            )
-        if self._msg.python.constraints:
+            lines.extend(map("    {}".format, self.requirements))
+        if self._msg.python.constraints or self._msg.python.raw_constraints:
             lines.append("constraints:")
-            lines.extend(
-                "    {}".format(self._req_spec_msg_to_str(req_spec_msg))
-                for req_spec_msg in sorted(
-                    self._msg.python.constraints,
-                    key=lambda req_spec_msg: req_spec_msg.library,
-                )
-            )
-        if self._msg.python.raw_constraints:
-            lines.append("raw constraints:")
-            lines.extend(
-                map("    {}".format, self._msg.python.raw_constraints.splitlines())
-            )
+            lines.extend(map("    {}".format, self.constraints))
         if self._msg.environment_variables:
             lines.append("environment variables:")
             lines.extend(
@@ -133,12 +113,32 @@ class Python(_environment._Environment):
         return "\n    ".join(lines)
 
     @property
+    def constraints(self):
+        if self._msg.python.constraints:
+            # parsed constraints
+            return sorted(
+                map(
+                    self._req_spec_msg_to_str,
+                    self._msg.python.constraints,
+                )
+            )
+        else:
+            # raw constraints
+            return self._msg.python.raw_constraints.splitlines()
+
+    @property
     def requirements(self):
-        sorted_req_specs = sorted(
-            self._msg.python.requirements,
-            key=lambda req_spec_msg: req_spec_msg.library,
-        )
-        return list(map(self._req_spec_msg_to_str, sorted_req_specs))
+        if self._msg.python.requirements:
+            # parsed requirements
+            return sorted(
+                map(
+                    self._req_spec_msg_to_str,
+                    self._msg.python.requirements,
+                )
+            )
+        else:
+            # raw requirements
+            return self._msg.python.raw_requirements.splitlines()
 
     @classmethod
     def _from_proto(cls, blob_msg):
