@@ -114,7 +114,7 @@ class TestPython:
         assert "verta" in requirements
         assert "cloudpickle" in requirements
 
-    def test_raw_inject_verrta_cloudpickle(self):
+    def test_raw_inject_verta_cloudpickle(self):
         reqs = [
             "-e client/verta"
         ]
