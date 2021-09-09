@@ -9,7 +9,6 @@ import io.grpc.stub.StreamObserver;
 import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
 public class FutureGrpc {
