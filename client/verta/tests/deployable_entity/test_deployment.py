@@ -1,6 +1,4 @@
-import pytest
-
-import six
+# -*- coding: utf-8 -*-
 
 import glob
 import json
@@ -13,19 +11,18 @@ import time
 import zipfile
 import cloudpickle
 
-import requests
-
-import yaml
+import pytest
+import six
 
 import verta
 from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from verta._internal_utils import (
     _artifact_utils,
-    _histogram_utils,
     _utils,
 )
 from verta.endpoint.update import DirectUpdateStrategy
 from verta.environment import Python
+
 
 pytestmark = pytest.mark.not_oss
 

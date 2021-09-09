@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import os
-import pickle
-
 import pytest
 
 from verta._internal_utils import _artifact_utils
-
-from ... import utils
 
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module

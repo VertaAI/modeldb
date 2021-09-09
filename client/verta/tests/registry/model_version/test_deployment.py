@@ -1,31 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import filecmp
-import glob
 import json
-import pickle
 import os
-import shutil
-import sys
-import tarfile
-import tempfile
 import uuid
-import zipfile
 
-import cloudpickle
 import hypothesis
 import hypothesis.strategies as st
 import pytest
-import six
 
 from verta._protos.public.monitoring.DeploymentIntegration_pb2 import (
     FeatureDataInModelVersion,
 )
-from verta._internal_utils import _artifact_utils, _utils
+from verta._internal_utils import _utils
 from verta.data_types import _verta_data_type
-from verta.endpoint.update import DirectUpdateStrategy
-from verta.environment import Python
 from verta.monitoring import profiler
 from verta.registry.entities import RegisteredModelVersion
 from verta.tracking.entities import _deployable_entity

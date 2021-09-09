@@ -4,14 +4,9 @@ import os
 import tarfile
 
 import pytest
-
-import six
-
 import requests
-
 import yaml
 
-import verta
 from verta._internal_utils import (
     _artifact_utils,
     _utils,
