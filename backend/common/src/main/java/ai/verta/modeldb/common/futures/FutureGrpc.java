@@ -10,6 +10,7 @@ import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 
 public class FutureGrpc {
   // Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom
@@ -42,7 +43,11 @@ public class FutureGrpc {
 
   public static Executor initializeExecutor(Integer threadCount) {
     return FutureGrpc.makeCompatibleExecutor(
-        Executors.newFixedThreadPool(threadCount, Executors.defaultThreadFactory()));
+        new ForkJoinPool(
+            threadCount,
+            ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+            Thread.getDefaultUncaughtExceptionHandler(),
+            true));
   }
 
   // Callback for a ListenableFuture to satisfy a promise
