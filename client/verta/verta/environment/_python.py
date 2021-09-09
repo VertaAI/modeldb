@@ -231,7 +231,7 @@ class Python(_environment._Environment):
             _pip_requirements_utils.must_all_valid_package_names(requirements_copy)
             _pip_requirements_utils.strip_inexact_specifiers(requirements_copy)
             _pip_requirements_utils.set_version_pins(requirements_copy)
-            _pip_requirements_utils.remove_public_version_identifier(requirements_copy)
+            _pip_requirements_utils.remove_local_version_identifier(requirements_copy)
 
             self._msg.python.requirements.extend(
                 map(

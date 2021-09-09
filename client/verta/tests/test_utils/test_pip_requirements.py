@@ -71,7 +71,7 @@ class TestPipRequirementsUtils:
         requirement = "+".join([clean_requirement, metadata])
 
         requirements = [requirement]
-        _pip_requirements_utils.remove_public_version_identifier(requirements)
+        _pip_requirements_utils.remove_local_version_identifier(requirements)
         assert requirements != [requirement]
         assert requirements == [clean_requirement]
 
