@@ -15,7 +15,7 @@ from ..external import six
 from .. import __about__
 
 
-# for process_requirements()
+# for set_version_pins()
 PYPI_TO_IMPORT = {
     'scikit-learn': "sklearn",
     'tensorflow-gpu': "tensorflow",
@@ -44,12 +44,29 @@ SPACY_MODEL_REGEX = re.compile(SPACY_MODEL_PATTERN)
 
 
 def get_pip_freeze():
+    """Get pip requirement specifiers returned by ``pip freeze``.
+
+    .. versionchanged:: 0.19.2
+
+        See note below.
+
+    .. note::
+
+        This function returns the output of ``pip freeze`` as-is, which could
+        contain VCS-installed packages and spaCy-installed models (which are
+        not themselves pip-installable). The caller is responsible for any
+        necessary post-processing, e.g. calling :func:`clean_reqs_file_lines`.
+
+    Returns
+    -------
+    requirements : list of str
+        Requirement specifiers.
+
+    """
     pip_freeze = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
     pip_freeze = six.ensure_str(pip_freeze)
 
     req_specs = pip_freeze.splitlines()
-
-    req_specs = clean_reqs_file_lines(req_specs)
 
     return req_specs
 
@@ -134,35 +151,28 @@ def parse_version(version):
     return major, minor, patch, suffix
 
 
-def process_requirements(requirements):
-    """
-    Validates `requirements` against packages available in the current environment.
+def must_all_valid_package_names(requirements):
+    """Assert that each line in `requirements` is for a valid pip package.
 
     Parameters
     ----------
     requirements : list of str
-        PyPI package names.
 
     Raises
     ------
     ValueError
-        If a package's name is invalid for PyPI, or its exact version cannot be determined.
+        If a line in `requirements` does not have a valid pip package name.
 
     """
-    # validate package names
     for req in requirements:
+        if not req:
+            continue  # allow empty lines
         if not PKG_NAME_REGEX.match(req):
-            raise ValueError("'{}' does not appear to be a valid PyPI-installable package;"
-                             " please check its spelling,"
-                             " or file an issue if you believe it is in error".format(req))
-
-    strip_inexact_specifiers(requirements)
-
-    set_version_pins(requirements)
-
-    remove_public_version_identifier(requirements)
-
-    add_verta_and_cloudpickle(requirements)
+            raise ValueError(
+                "'{}' does not appear to be a valid PyPI-installable package;"
+                " please check its spelling,"
+                " or file an issue if you believe it is in error".format(req)
+            )
 
 
 def strip_inexact_specifiers(requirements):
@@ -217,7 +227,7 @@ def set_version_pins(requirements):
     pip_pkg_vers = dict(
         req_spec.split('==')
         for req_spec
-        in six.ensure_str(subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])).splitlines()
+        in get_pip_freeze()
         if '==' in req_spec
     )
 
@@ -249,12 +259,12 @@ def set_version_pins(requirements):
             requirements[i] = req + "==" + ver
 
 
-def add_verta_and_cloudpickle(requirements):
+def pin_verta_and_cloudpickle(requirements):
     """
     Adds verta and cloudpickle to `requirements`, pinning their versions from the environment.
 
-    verta and cloudpickle are required for deployment, but a user might not have specified them in
-    their manual deployment requirements.
+    Model deserilization in most cases requires that ``verta`` and
+    ``cloudpickle`` have the same versions as when the model was serialized.
 
     Parameters
     ----------
@@ -267,34 +277,100 @@ def add_verta_and_cloudpickle(requirements):
         conflicts with the version in the current environment.
 
     """
-    # add verta
-    verta_req = "verta=={}".format(__about__.__version__)
-    for req in requirements:
-        if req.startswith("verta"):  # if present, check version
-            our_ver = verta_req.split('==')[-1]
-            their_ver = req.split('==')[-1]
-            if our_ver != their_ver:  # versions conflict, so raise exception
-                raise ValueError("Client is running with verta v{}, but the provided requirements specify v{};"
-                                 " these must match".format(our_ver, their_ver))
-            else:  # versions match, so proceed
-                break
-    else:  # if not present, add
-        requirements.append(verta_req)
+    for i, req in enumerate(requirements):
+        if req.startswith("-e git+git@github.com:VertaAI/modeldb.git"):
+            # `pip install -e modeldb/client/verta` can make `pip freeze` return
+            # this requirement item which is unusable by `pip install`
+            # https://github.com/pypa/pip/issues/7554
+            # https://github.com/pypa/pip/issues/9625
+            # https://github.com/pypa/pip/pull/9436
+            # https://github.com/pypa/pip/pull/9822
+            requirements[i] = __about__.__title__
+            break
 
-    # add cloudpickle
-    cloudpickle_req = "cloudpickle=={}".format(cloudpickle.__version__)
-    for req in requirements:
-        if req.startswith("cloudpickle"):  # if present, check version
-            our_ver = cloudpickle_req.split('==')[-1]
-            their_ver = req.split('==')[-1]
-            if our_ver != their_ver:  # versions conflict, so raise exception
-                raise ValueError("Client is running with cloudpickle v{}, but the provided requirements specify v{};"
-                                 " these must match".format(our_ver, their_ver))
-            else:  # versions match, so proceed
-                break
-    else:  # if not present, add
-        requirements.append(cloudpickle_req)
+    # add if not present
+    for library in [
+        __about__.__title__,
+        cloudpickle.__name__,
+    ]:
+        if not any(req.startswith(library) for req in requirements):
+            requirements.append(library)
 
+    # pin version
+    for library, our_ver in [
+        (__about__.__title__, __about__.__version__),
+        (cloudpickle.__name__, cloudpickle.__version__),
+    ]:
+        pinned_library_req = "{}=={}".format(library, our_ver)
+        for i, req in enumerate(requirements):
+            if req.startswith(library):
+                if "==" in req:  # version pin: check version
+                    their_ver = req.split('==')[-1]
+                    if our_ver != their_ver:  # versions conflict: raise exception
+                        raise ValueError(
+                            "Client is running with {} v{}, but the provided requirements specify v{};"
+                            " these must match".format(library, our_ver, their_ver)
+                        )
+                    else:  # versions match, so proceed
+                        continue
+                # TODO: check other operators (>=, >, ...)
+                else:  # no version pin: set
+                    requirements[i] = preserve_req_suffixes(
+                        req,
+                        pinned_library_req,
+                    )
+                    continue
+
+
+def preserve_req_suffixes(requirement, pinned_library_req):
+    """Swap in `pinned_library_req` while preserving `requirement`'s environment marker and comment.
+
+    Parameters
+    ----------
+    requirement : str
+        A line from a pip requirements file.
+    pinned_library_req : str
+        Library + version pin, e.g. ``"verta==0.20.0"``.
+
+    Returns
+    -------
+    str
+
+    Examples
+    --------
+    .. code-block:: python
+
+        assert preserve_req_suffixes(
+            "verta;python_version>'2.7' and python_version<'3.9'  # very important!",
+            "verta==0.20.0",
+        ) == "verta==0.20.0;python_version>'2.7' and python_version<'3.9'  # very important!"
+
+        assert preserve_req_suffixes(
+            "verta;python_version<='2.7'",
+            "verta==0.20.0",
+        ) == "verta==0.20.0;python_version<='2.7'"
+
+        assert preserve_req_suffixes(
+            "verta  # very important!",
+            "verta==0.20.0",
+        ) == "verta==0.20.0 # very important!"
+
+        assert preserve_req_suffixes(
+            "verta",
+            "verta==0.20.0",
+        ) == "verta==0.20.0"
+
+    """
+    for delimiter in [
+        ";",  # environment marker
+        " #",  # comment
+    ]:
+        if delimiter not in requirement:
+            continue
+        split_req = requirement.split(delimiter)
+        split_req[0] = pinned_library_req
+        return delimiter.join(split_req)
+    return pinned_library_req
 
 def remove_public_version_identifier(requirements):
     """Removes local version identifiers from version pins if present.
@@ -332,7 +408,7 @@ def remove_public_version_identifier(requirements):
         ])
 
 
-def clean_reqs_file_lines(requirements):
+def clean_reqs_file_lines(requirements, ignore_unsupported=True):
     """
     Performs basic preprocessing on a requirements file's lines so it's easier to handle downstream.
 
@@ -340,11 +416,20 @@ def clean_reqs_file_lines(requirements):
     ----------
     requirements : list of str
         ``requirements_file.readlines()``.
+    ignore_unsupported : bool, default True
+        If ``True``, skip unsupported lines in the requirements file. If
+        ``False``, raise an exception instead.
 
     Returns
     -------
     cleaned_requirements : list of str
         Requirement specifiers.
+
+    Raises
+    ------
+    ValueError
+        If `ignore_unsupported` is ``False`` and an unsupported line is
+        present in `requirements`.
 
     """
     requirements = [req.strip() for req in requirements]
@@ -352,27 +437,32 @@ def clean_reqs_file_lines(requirements):
     requirements = [req for req in requirements if req]  # empty line
     requirements = [req for req in requirements if not req.startswith('#')]  # comment line
 
-    # remove unsupported options
-    # TODO: add support in VR-12389
+    # check for unsupported options
     supported_requirements = []
     for req in requirements:
-        # https://pip.pypa.io/en/stable/reference/pip_install/#requirements-file-format
+        unsupported_reason = None
+
+        # https://pip.pypa.io/en/stable/cli/pip_install/#requirements-file-format
         if req.startswith(('--', '-c ', '-f ', '-i ')):
-            print("skipping unsupported option \"{}\"".format(req))
-            continue
-        # https://pip.pypa.io/en/stable/reference/pip_install/#vcs-support
-        # TODO: upgrade protos and Client to handle VCS-installed packages
-        if req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+')):
-            print("skipping unsupported VCS-installed package \"{}\"".format(req))
-            continue
-        # TODO: follow references to other requirements files
-        if req.startswith('-r '):
-            print("skipping unsupported file reference \"{}\"".format(req))
-            continue
+            unsupported_reason = "unsupported option \"{}\"".format(req)
+        # https://pip.pypa.io/en/stable/topics/vcs-support/
+        elif req.startswith(('-e ', 'git:', 'git+', 'hg+', 'svn+', 'bzr+')):
+            unsupported_reason = "unsupported VCS-installed package \"{}\"".format(req)
+        elif req.startswith('-r '):
+            unsupported_reason = "unsupported file reference \"{}\"".format(req)
+        # https://www.python.org/dev/peps/pep-0508/#environment-markers
+        elif ";" in req:
+            unsupported_reason = "unsupported environment marker \"{}\"".format(req)
         # non-PyPI-installable spaCy models
-        if SPACY_MODEL_REGEX.match(req):
-            print("skipping non-PyPI-installable spaCy model \"{}\"".format(req))
-            continue
+        elif SPACY_MODEL_REGEX.match(req):
+            unsupported_reason = "non-PyPI-installable spaCy model \"{}\"".format(req)
+
+        if unsupported_reason:
+            if ignore_unsupported:
+                print("skipping {}".format(unsupported_reason))
+                continue
+            else:
+                raise ValueError(unsupported_reason)
 
         supported_requirements.append(req)
 

@@ -40,34 +40,6 @@ def model_packaging():
     }
 
 
-class TestLogModelForDeployment:
-    def test_model(self, experiment_run, model_for_deployment):
-        experiment_run.log_model_for_deployment(**model_for_deployment)
-        retrieved_model = experiment_run.get_model()
-
-        assert model_for_deployment['model'].get_params() == retrieved_model.get_params()
-
-    def test_model_api(self, experiment_run, model_for_deployment):
-        experiment_run.log_model_for_deployment(**model_for_deployment)
-        retrieved_model_api = verta.utils.ModelAPI.from_file(
-            experiment_run.get_artifact(_artifact_utils.MODEL_API_KEY))
-
-        assert all(item in six.viewitems(retrieved_model_api.to_dict())
-                   for item in six.viewitems(model_for_deployment['model_api'].to_dict()))
-
-    def test_reqs_on_disk(self, experiment_run, model_for_deployment, output_path):
-        requirements_file = output_path.format("requirements.txt")
-        with open(requirements_file, 'w') as f:
-            f.write(model_for_deployment['requirements'].read())
-        model_for_deployment['requirements'] = open(requirements_file, 'r')  # replace with on-disk file
-
-        experiment_run.log_model_for_deployment(**model_for_deployment)
-        retrieved_requirements = six.ensure_str(experiment_run.get_artifact("requirements.txt").read())
-
-        with open(requirements_file, 'r') as f:
-            assert set(f.read().split()) <= set(retrieved_requirements.split())
-
-
 class TestLogModel:
     def test_model(self, experiment_run, model_for_deployment):
         experiment_run.log_model(model_for_deployment['model'])
