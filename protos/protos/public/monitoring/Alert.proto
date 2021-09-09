@@ -147,6 +147,7 @@ message Alert {
         AlertReference alerter_reference = 13;
         AlertRange alerter_range = 14;
     }
+    uint64 version_number = 15;
 }
 
 message AlertFixed {

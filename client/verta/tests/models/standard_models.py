@@ -61,11 +61,37 @@ def decorated_verta_models():
 def incomplete_verta_models():
     models = []
 
-    models.extend([
-        VertaModelNoImpl,
-        VertaModelOnlyInit,
-        VertaModelOnlyPredict,
-    ])
+    models.extend(
+        [
+            VertaModelNoImpl,
+            VertaModelOnlyInit,
+            VertaModelOnlyPredict,
+        ]
+    )
+
+    return models
+
+
+def bad_init_verta_models():
+    models = []
+
+    class InsufficientInit(VertaModelBase):
+        def __init__(self):  # no `artifacts`
+            pass
+
+        def predict(self, input):
+            pass
+
+    models.append(InsufficientInit)
+
+    class MisnamedInit(VertaModelBase):
+        def __init__(self, relics):  # not `artifacts`
+            pass
+
+        def predict(self, input):
+            pass
+
+    models.append(MisnamedInit)
 
     return models
 

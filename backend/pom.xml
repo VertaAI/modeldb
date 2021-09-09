@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.8.RELEASE</version>
+        <version>2.3.0.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>ai.verta.modeldb</groupId>
@@ -19,14 +19,14 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <hibernate.version>5.4.17.Final</hibernate.version>
+        <hibernate.version>5.4.24.Final</hibernate.version>
         <log4j.version>2.14.1</log4j.version>
-        <grpc.version>1.28.1</grpc.version>
-        <postgres.version>42.2.6</postgres.version>
+        <grpc.version>1.31.0</grpc.version>
+        <postgres.version>42.2.13</postgres.version>
         <liquibase.version>3.8.0</liquibase.version>
         <prometheus.version>0.10.0</prometheus.version>
         <protobuf.version>3.8.0</protobuf.version>
-        <aws.version>1.11.878</aws.version>
+        <aws.version>1.12.1</aws.version>
 
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
         <sonar.jacoco.reportPaths>${project.build.directory}/coverage-reports/jacoco-ut.exec</sonar.jacoco.reportPaths>
@@ -45,7 +45,7 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
-            <version>1.21</version>
+            <version>1.26</version>
         </dependency>
 
         <!-- The main transport implementation based on Netty, for both the client
@@ -67,13 +67,6 @@
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
             <version>${grpc.version}</version>
-        </dependency>
-        <!-- API that is useful for testing gRPC. (https://grpc.io/grpc-java/javadoc/io/grpc/testing/package-summary.html) -->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-testing</artifactId>
-            <version>${grpc.version}</version>
-            <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.grpc/grpc-services -->
         <dependency>
@@ -115,7 +108,7 @@
         <dependency>
             <groupId>org.sonarsource.scanner.maven</groupId>
             <artifactId>sonar-maven-plugin</artifactId>
-            <version>3.6.0.1398</version>
+            <version>3.6.1.1688</version>
         </dependency>
 
         <!-- HibernateFinal 5.4.1 -->
@@ -171,7 +164,7 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-storage</artifactId>
-            <version>1.108.0</version>
+            <version>1.117.1</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
         <dependency>
@@ -289,7 +282,7 @@
                     <protocArtifact>com.google.protobuf:protoc:3.8.0:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
                     <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.16.1:exe:${os.detected.classifier}</pluginArtifact>
-                    <protoSourceRoot>src/main/proto/protos/public</protoSourceRoot>
+                    <protoSourceRoot>../protos/protos/public</protoSourceRoot>
                 </configuration>
                 <executions>
                     <execution>
