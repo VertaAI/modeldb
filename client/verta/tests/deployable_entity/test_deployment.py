@@ -5,6 +5,7 @@ import six
 import glob
 import json
 import os
+import pickle
 import shutil
 import sys
 import tarfile
@@ -402,317 +403,220 @@ class TestFetchArtifacts:
             experiment_run.fetch_artifacts(strs[1:])
 
 
-@pytest.mark.skip(reason="old deployment API is being phased out (VR-7935)")
-class TestDeploy:
-    def test_auto_path_auto_token_deploy(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
+class TestDeployability:
+    """Deployment-related functionality"""
 
-        status = experiment_run.deploy()
+    def test_log_environment(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
 
-        assert 'url' in status
-        assert 'token' in status
+        reqs = Python.read_pip_environment()
+        env = Python(requirements=reqs)
+        model_version.log_environment(env)
 
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
+        model_version = registered_model.get_version(id=model_version.id)
+        assert str(env) == str(model_version.get_environment())
 
-    def test_auto_path_given_token_deploy(self, experiment_run, model_for_deployment):
-        token = "coconut"
+        with pytest.raises(ValueError):
+            model_version.log_environment(env)
+        model_version.log_environment(env, overwrite=True)
+        assert str(env) == str(model_version.get_environment())
 
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
+    def test_del_environment(self, registered_model):
+        model_version = registered_model.get_or_create_version(name="my version")
 
-        status = experiment_run.deploy(token=token)
+        reqs = Python.read_pip_environment()
+        env = Python(requirements=reqs)
+        model_version.log_environment(env)
+        model_version.del_environment()
 
-        assert 'url' in status
-        assert status['token'] == token
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-    def test_auto_path_no_token_deploy(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
-
-        status = experiment_run.deploy(no_token=True)
-
-        assert 'url' in status
-        assert status['token'] is None
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-    def test_given_path_auto_token_deploy(self, experiment_run, model_for_deployment):
-        path = "banana"
-
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
-
-        status = experiment_run.deploy(path=path)
-
-        assert status['url'].endswith(path)
-        assert 'token' in status
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-    def test_given_path_given_token_deploy(self, experiment_run, model_for_deployment):
-        path, token = "banana", "coconut"
-
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
-
-        status = experiment_run.deploy(path=path, token=token)
-
-        assert status['url'].endswith(path)
-        assert status['token'] == token
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-    def test_given_path_no_token_deploy(self, experiment_run, model_for_deployment):
-        path = "banana"
-
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
-
-        status = experiment_run.deploy(path=path, no_token=True)
-
-        assert status['url'].endswith(path)
-        assert status['token'] is None
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-    def test_wait_deploy(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
-
-        status = experiment_run.deploy(wait=True)
-
-        assert 'url' in status
-        assert 'token' in status
-        assert status['status'] == "deployed"
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-    def test_already_deployed_deploy(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
-
-        experiment_run.deploy()
-
-        # should not raise error
-        experiment_run.deploy()
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-    def test_no_model_deploy_error(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
-
-        # delete model
-        response = _utils.make_request(
-            "DELETE",
-            "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(experiment_run._conn.scheme,
-                                                              experiment_run._conn.socket),
-            experiment_run._conn, json={'id': experiment_run.id, 'key': _artifact_utils.MODEL_KEY}
-        )
-        _utils.raise_for_http_error(response)
+        model_version = registered_model.get_version(id=model_version.id)
+        assert not model_version.has_environment
 
         with pytest.raises(RuntimeError) as excinfo:
-            experiment_run.deploy()
-        assert _artifact_utils.MODEL_KEY in str(excinfo.value)
+            model_version.get_environment()
 
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
+        assert "environment was not previously set" in str(excinfo.value)
+
+    def test_log_model(self, model_version):
+        np = pytest.importorskip("numpy")
+        sklearn = pytest.importorskip("sklearn")
+        from sklearn.linear_model import LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        original_coef = classifier.coef_
+        model_version.log_model(classifier)
+
+        # retrieve the classifier:
+        retrieved_classfier = model_version.get_model()
+        assert np.array_equal(retrieved_classfier.coef_, original_coef)
+
+        # check model api:
+        assert _artifact_utils.MODEL_API_KEY in model_version.get_artifact_keys()
+        for artifact in model_version._msg.artifacts:
+            if artifact.key == _artifact_utils.MODEL_API_KEY:
+                assert artifact.filename_extension == "json"
+
+        # overwrite should work:
+        new_classifier = LogisticRegression()
+        new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(new_classifier, overwrite=True)
+        retrieved_classfier = model_version.get_model()
+        assert np.array_equal(retrieved_classfier.coef_, new_classifier.coef_)
+
+        # when overwrite = false, overwriting should fail
+        with pytest.raises(ValueError) as excinfo:
+            model_version.log_model(new_classifier)
+
+        assert "model already exists" in str(excinfo.value)
+
+        # Check custom modules:
+        custom_module_filenames = {"__init__.py", "_verta_config.py"}
+        for path in sys.path:
+            # skip std libs and venvs
+            #     This logic is from verta.client._log_modules().
+            lib_python_str = os.path.join(os.sep, "lib", "python")
+            i = path.find(lib_python_str)
+            if i != -1 and glob.glob(os.path.join(path[:i], "bin", "python*")):
+                continue
+
+            for parent_dir, dirnames, filenames in os.walk(path):
+                # only Python files
+                filenames[:] = [
+                    filename
+                    for filename in filenames
+                    if filename.endswith((".py", ".pyc", ".pyo"))
+                ]
+
+                if not _utils.is_in_venv(path) and _utils.is_in_venv(parent_dir):
+                    continue
+                custom_module_filenames.update(map(os.path.basename, filenames))
+
+        custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        with zipfile.ZipFile(custom_modules, "r") as zipf:
+            assert custom_module_filenames == set(
+                map(os.path.basename, zipf.namelist())
+            )
+
+    def test_download_sklearn(self, model_version, in_tempdir):
+        LogisticRegression = pytest.importorskip(
+            "sklearn.linear_model"
+        ).LogisticRegression
+
+        upload_path = "model.pkl"
+        download_path = "retrieved_model.pkl"
+
+        model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
+        with open(upload_path, "wb") as f:
+            pickle.dump(model, f)
+
+        model_version.log_model(model, custom_modules=[])
+        returned_path = model_version.download_model(download_path)
+        assert returned_path == os.path.abspath(download_path)
+
+        with open(download_path, "rb") as f:
+            downloaded_model = pickle.load(f)
+
+        assert downloaded_model.get_params() == model.get_params()
+
+    def test_log_model_with_custom_modules(self, model_version, model_for_deployment):
+        custom_modules_dir = "."
+
+        model_version.log_model(
+            model_for_deployment["model"],
+            custom_modules=["."],
         )
 
-    def test_no_api_deploy_error(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
+        custom_module_filenames = {"__init__.py", "_verta_config.py"}
+        for parent_dir, dirnames, filenames in os.walk(custom_modules_dir):
+            # skip venvs
+            #     This logic is from _utils.find_filepaths().
+            exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
+            dirnames[:] = [
+                dirname
+                for dirname in dirnames
+                if not glob.glob(exec_path_glob.format(dirname))
+            ]
 
-        # delete model API
-        response = _utils.make_request(
-            "DELETE",
-            "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(experiment_run._conn.scheme,
-                                                              experiment_run._conn.socket),
-            experiment_run._conn, json={'id': experiment_run.id, 'key': _artifact_utils.MODEL_API_KEY}
-        )
-        _utils.raise_for_http_error(response)
+            custom_module_filenames.update(map(os.path.basename, filenames))
 
-        with pytest.raises(RuntimeError) as excinfo:
-            experiment_run.deploy()
-        assert _artifact_utils.MODEL_API_KEY in str(excinfo.value)
+        custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        with zipfile.ZipFile(custom_modules, "r") as zipf:
+            assert custom_module_filenames == set(
+                map(os.path.basename, zipf.namelist())
+            )
 
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-    def test_no_reqs_deploy_error(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-
-        with pytest.raises(RuntimeError) as excinfo:
-            experiment_run.deploy()
-        assert "requirements.txt" in str(excinfo.value)
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-    def test_deployment_failure_deploy_error(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python([]))
-
-        with pytest.raises(RuntimeError) as excinfo:
-            experiment_run.deploy(wait=True)
-        err_msg = str(excinfo.value).strip()
-        assert err_msg.startswith("model deployment is failing;")
-        assert "no error message available" not in err_msg
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-
-@pytest.mark.skip(reason="old deployment API is being phased out (VR-7935)")
-class TestUndeploy:
-    def test_undeploy(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
-
-        experiment_run.deploy(wait=True)
-
-        status = experiment_run.undeploy(wait=True)
-
-        assert status['status'] == "not deployed"
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-    def test_already_undeployed_undeploy(self, experiment_run):
-        # should not raise error
-        experiment_run.undeploy()
-
-
-@pytest.mark.skip(reason="old deployment API is being phased out (VR-7935)")
-class TestGetDeployedModel:
-    def test_get(self, experiment_run, model_for_deployment):
-        model = model_for_deployment['model'].fit(
-            model_for_deployment['train_features'],
-            model_for_deployment['train_targets'],
-        )
-
-        experiment_run.log_model(model, custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
-
-        experiment_run.deploy(wait=True)
-
-        deployed_model = experiment_run.get_deployed_model()
-        x = model_for_deployment['train_features'].iloc[1].values
-        deployed_model.predict([x])
-
-        deployed_model_curl = deployed_model.get_curl()
-        deployed_status = experiment_run.get_deployment_status()
-        assert deployed_status["url"] in deployed_model_curl
-        assert deployed_status["token"] in deployed_model_curl
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-    def test_not_deployed_get_error(self, experiment_run, model_for_deployment):
-        with pytest.raises(RuntimeError):
-            experiment_run.get_deployed_model()
-
-    def test_undeployed_get_error(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
-
-        experiment_run.deploy(wait=True)
-        experiment_run.undeploy(wait=True)
-
-        with pytest.raises(RuntimeError):
-            experiment_run.get_deployed_model()
-
-        conn = experiment_run._conn
-        requests.delete(
-            "{}://{}/api/v1/deployment/models/{}".format(conn.scheme, conn.socket, experiment_run.id),
-            headers=conn.auth,
-        )
-
-
-class TestGitOps:
-    def test_download_deployment_yaml(self, experiment_run, model_for_deployment, in_tempdir):
-        download_to_path = "deployment.yaml"
-
-        experiment_run.log_model(
-            model_for_deployment['model'],
-            custom_modules=[],
-            model_api=model_for_deployment['model_api'],
-        )
-        experiment_run.log_environment(Python(['scikit-learn']))
-
-        filepath = experiment_run.download_deployment_yaml(download_to_path)
-        assert filepath == os.path.abspath(download_to_path)
-
-        # can be loaded as YAML
-        with open(filepath, 'rb') as f:
-            model_deployment = yaml.safe_load(f)
-
-        assert model_deployment['kind'] == "ModelDeployment"
-        assert model_deployment['metadata']['name'] == experiment_run.id
-
-    def test_download_docker_context(self, experiment_run, model_for_deployment, in_tempdir):
+    def test_download_docker_context(
+        self, experiment_run, model_for_deployment, in_tempdir, registered_model
+    ):
         download_to_path = "context.tgz"
 
-        experiment_run.log_model(model_for_deployment['model'], custom_modules=[])
-        experiment_run.log_environment(Python(['scikit-learn']))
+        experiment_run.log_model(model_for_deployment["model"], custom_modules=[])
+        experiment_run.log_environment(Python(["scikit-learn"]))
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id,
+            name="From Run {}".format(experiment_run.id),
+        )
 
-        filepath = experiment_run.download_docker_context(download_to_path)
+        filepath = model_version.download_docker_context(download_to_path)
         assert filepath == os.path.abspath(download_to_path)
 
         # can be loaded as tgz
-        with tarfile.open(filepath, 'r:gz') as f:
+        with tarfile.open(filepath, "r:gz") as f:
             filepaths = set(f.getnames())
 
         assert "Dockerfile" in filepaths
+
+    def test_fetch_artifacts(self, model_version, strs, flat_dicts):
+        strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
+        for key, artifact in zip(strs, flat_dicts):
+            model_version.log_artifact(key, artifact)
+
+        try:
+            artifacts = model_version.fetch_artifacts(strs)
+
+            assert set(six.viewkeys(artifacts)) == set(strs)
+            assert all(
+                filepath.startswith(_CACHE_DIR)
+                for filepath in six.viewvalues(artifacts)
+            )
+
+            for key, filepath in six.viewitems(artifacts):
+                artifact_contents = model_version._get_artifact(key)
+                with open(filepath, "rb") as f:
+                    file_contents = f.read()
+
+                assert file_contents == artifact_contents
+        finally:
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+
+    def test_model_artifacts(self, model_version, endpoint, in_tempdir):
+        key = "foo"
+        val = {"a": 1}
+
+        class ModelWithDependency(object):
+            def __init__(self, artifacts):
+                with open(artifacts[key], "rb") as f:  # should not KeyError
+                    if cloudpickle.load(f) != val:
+                        raise ValueError  # should not ValueError
+
+            def predict(self, x):
+                return x
+
+        # first log junk artifact, to test `overwrite`
+        bad_key = "bar"
+        bad_val = {"b": 2}
+        model_version.log_artifact(bad_key, bad_val)
+        model_version.log_model(
+            ModelWithDependency, custom_modules=[], artifacts=[bad_key]
+        )
+
+        # log real artifact using `overwrite`
+        model_version.log_artifact(key, val)
+        model_version.log_model(
+            ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True
+        )
+        model_version.log_environment(Python([]))
+
+        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        assert val == endpoint.get_deployed_model().predict(val)
