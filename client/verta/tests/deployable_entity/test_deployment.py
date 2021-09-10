@@ -549,10 +549,6 @@ class TestDeployability:
 
         deployable_entity.log_model(model_for_deployment["model"], custom_modules=[])
         deployable_entity.log_environment(Python(["scikit-learn"]))
-        deployable_entity = registered_model.create_version_from_run(
-            run_id=deployable_entity.id,
-            name="From Run {}".format(deployable_entity.id),
-        )
 
         filepath = deployable_entity.download_docker_context(download_to_path)
         assert filepath == os.path.abspath(download_to_path)
