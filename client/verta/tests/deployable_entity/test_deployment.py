@@ -224,7 +224,12 @@ class TestFetchArtifacts:
                        for filepath in six.viewvalues(artifacts))
 
             for key, filepath in six.viewitems(artifacts):
-                artifact_contents, _ = deployable_entity._get_artifact(key)
+                artifact_contents = deployable_entity._get_artifact(key)
+                if type(artifact_contents) is tuple:
+                    # ER returns (contents, path_only)
+                    # TODO: ER & RMV _get_artifact() should return the same thing
+                    artifact_contents, _ = artifact_contents
+
                 with open(filepath, 'rb') as f:
                     file_contents = f.read()
 
