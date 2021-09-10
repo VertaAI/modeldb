@@ -464,7 +464,7 @@ class TestDeployability:
         with pytest.raises(ValueError) as excinfo:
             deployable_entity.log_model(new_classifier)
 
-        assert "model already exists" in str(excinfo.value)
+        assert "already exists" in str(excinfo.value)
 
         # Check custom modules:
         custom_module_filenames = {"__init__.py", "_verta_config.py"}
