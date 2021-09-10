@@ -189,16 +189,6 @@ class TestArtifacts:
             with pytest.raises(ValueError):
                 experiment_run.log_artifact(key, artifact)
 
-    def test_blocklisted_key_error(self, experiment_run, all_values):
-        all_values = (value  # log_artifact treats str value as filepath to open
-                      for value in all_values if not isinstance(value, str))
-
-        for key, artifact in zip(_artifact_utils.BLOCKLISTED_KEYS, all_values):
-            with pytest.raises(ValueError, match="please use a different key$"):
-                experiment_run.log_artifact(key, artifact)
-            with pytest.raises(ValueError, match="please use a different key$"):
-                experiment_run.log_artifact_path(key, artifact)
-
     def test_download(self, experiment_run, strs, in_tempdir, random_data):
         key = strs[0]
         filename = strs[1]
