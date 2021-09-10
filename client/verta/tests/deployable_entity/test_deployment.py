@@ -5,6 +5,7 @@ import six
 import glob
 import json
 import os
+import pickle
 import shutil
 import sys
 import tarfile
@@ -576,7 +577,7 @@ class TestDeployability:
 
             assert set(six.viewkeys(artifacts)) == set(strs)
             assert all(
-                filepath.startswith(_deployable_entity._CACHE_DIR)
+                filepath.startswith(_CACHE_DIR)
                 for filepath in six.viewvalues(artifacts)
             )
 
@@ -587,7 +588,7 @@ class TestDeployability:
 
                 assert file_contents == artifact_contents
         finally:
-            shutil.rmtree(_deployable_entity._CACHE_DIR, ignore_errors=True)
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_model_artifacts(self, model_version, endpoint, in_tempdir):
         key = "foo"
