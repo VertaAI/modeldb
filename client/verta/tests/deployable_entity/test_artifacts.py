@@ -20,7 +20,7 @@ from verta._internal_utils import (
     _request_utils,
     _utils,
 )
-from . import utils
+from .. import utils
 
 
 class TestUtils:
