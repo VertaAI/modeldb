@@ -45,6 +45,8 @@ class Python(_environment._Environment):
         pip constraints.
     requirements : list of str
         pip requirements.
+    apt_packages : list of str
+        Apt packages to be installed alongside a Python environment.
 
     Examples
     --------
@@ -52,12 +54,14 @@ class Python(_environment._Environment):
 
         from verta.environment import Python
         env1 = Python(requirements=Python.read_pip_environment())
+        env1.apt_packages = ["python3-opencv"]
 
         env2 = Python(requirements=Python.read_pip_file("../requirements.txt"))
 
         env3 = Python(
             requirements=["tensorflow"],
             env_vars=["CUDA_VISIBLE_DEVICES"],
+            apt_packages=["python3-opencv"]
         )
     """
 
