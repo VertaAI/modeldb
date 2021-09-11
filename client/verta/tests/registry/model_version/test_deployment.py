@@ -38,58 +38,6 @@ pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire 
 
 
 class TestArbitraryModels:
-    """Analogous to test_artifacts.TestArbitraryModels."""
-
-    @staticmethod
-    def _assert_no_deployment_artifacts(model_version):
-        artifact_keys = model_version.get_artifact_keys()
-        assert _artifact_utils.CUSTOM_MODULES_KEY not in artifact_keys
-        assert _artifact_utils.MODEL_API_KEY not in artifact_keys
-
-    def test_arbitrary_file(self, model_version, random_data):
-        with tempfile.NamedTemporaryFile() as f:
-            f.write(random_data)
-            f.seek(0)
-
-            model_version.log_model(f)
-
-        assert model_version.get_model().read() == random_data
-
-        self._assert_no_deployment_artifacts(model_version)
-
-    def test_arbitrary_directory(self, model_version, dir_and_files):
-        dirpath, filepaths = dir_and_files
-
-        model_version.log_model(dirpath)
-
-        with zipfile.ZipFile(model_version.get_model(), "r") as zipf:
-            assert set(zipf.namelist()) == filepaths
-
-        self._assert_no_deployment_artifacts(model_version)
-
-    def test_arbitrary_object(self, model_version):
-        model = {"a": 1}
-
-        model_version.log_model(model)
-
-        assert model_version.get_model() == model
-
-        self._assert_no_deployment_artifacts(model_version)
-
-    def test_download_arbitrary_directory(
-        self, model_version, dir_and_files, strs, in_tempdir
-    ):
-        """Model that was originally a dir is unpacked on download."""
-        dirpath, _ = dir_and_files
-        download_path = strs[0]
-
-        model_version.log_model(dirpath)
-        returned_path = model_version.download_model(download_path)
-        assert returned_path == os.path.abspath(download_path)
-
-        # contents match
-        utils.assert_dirs_match(dirpath, download_path)
-
     def test_from_run_download_arbitrary_directory(
         self,
         experiment_run,
@@ -111,27 +59,6 @@ class TestArbitraryModels:
         assert returned_path == os.path.abspath(download_path)
 
         utils.assert_dirs_match(dirpath, download_path)
-
-    def test_download_arbitrary_zip(
-        self, model_version, dir_and_files, strs, in_tempdir
-    ):
-        """Model that was originally a ZIP is not unpacked on download."""
-        model_dir, _ = dir_and_files
-        upload_path, download_path = strs[:2]
-
-        # zip `model_dir` into `upload_path`
-        with open(upload_path, "wb") as f:
-            shutil.copyfileobj(
-                _artifact_utils.zip_dir(model_dir),
-                f,
-            )
-
-        model_version.log_model(upload_path)
-        returned_path = model_version.download_model(download_path)
-        assert returned_path == os.path.abspath(download_path)
-
-        assert zipfile.is_zipfile(download_path)
-        assert filecmp.cmp(upload_path, download_path)
 
 
 class TestAutoMonitoring:
