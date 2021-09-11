@@ -550,7 +550,7 @@ class TestOverwrite:
         deployable_entity.log_model(model)
         deployable_entity.log_model(new_model, overwrite=True)
 
-        assert deployable_entity.get_artifact(_artifact_utils.MODEL_KEY) == new_model
+        assert deployable_entity.get_model() == new_model
 
     def test_setup_script(self, deployable_entity):
         setup_script = "import verta"
