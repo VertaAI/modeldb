@@ -3,6 +3,7 @@
 import glob
 import json
 import os
+import pickle
 import shutil
 import sys
 import tarfile
@@ -565,6 +566,30 @@ class TestDeployability:
             filepaths = set(f.getnames())
 
         assert "Dockerfile" in filepaths
+        
+        
+    def test_fetch_artifacts(self, model_version, strs, flat_dicts):
+        strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
+        for key, artifact in zip(strs, flat_dicts):
+            model_version.log_artifact(key, artifact)
+
+        try:
+            artifacts = model_version.fetch_artifacts(strs)
+
+            assert set(six.viewkeys(artifacts)) == set(strs)
+            assert all(
+                filepath.startswith(_CACHE_DIR)
+                for filepath in six.viewvalues(artifacts)
+            )
+
+            for key, filepath in six.viewitems(artifacts):
+                artifact_contents = model_version._get_artifact(key)
+                with open(filepath, "rb") as f:
+                    file_contents = f.read()
+
+                assert file_contents == artifact_contents
+        finally:
+            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
     def test_model_artifacts(self, deployable_entity, endpoint, in_tempdir):
         key = "foo"
