@@ -1,6 +1,4 @@
-import pytest
-
-import six
+# -*- coding: utf-8 -*-
 
 import glob
 import json
@@ -13,19 +11,18 @@ import time
 import zipfile
 import cloudpickle
 
-import requests
-
-import yaml
+import pytest
+import six
 
 import verta
 from verta.tracking.entities._deployable_entity import _CACHE_DIR
 from verta._internal_utils import (
     _artifact_utils,
-    _histogram_utils,
     _utils,
 )
 from verta.endpoint.update import DirectUpdateStrategy
 from verta.environment import Python
+
 
 pytestmark = pytest.mark.not_oss
 
@@ -41,15 +38,15 @@ def model_packaging():
 
 
 class TestLogModel:
-    def test_model(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'])
+    def test_model(self, deployable_entity, model_for_deployment):
+        deployable_entity.log_model(model_for_deployment['model'])
 
-        assert model_for_deployment['model'].get_params() == experiment_run.get_model().get_params()
+        assert model_for_deployment['model'].get_params() == deployable_entity.get_model().get_params()
 
-    def test_custom_modules(self, experiment_run, model_for_deployment):
+    def test_custom_modules(self, deployable_entity, model_for_deployment):
         custom_modules_dir = "."
 
-        experiment_run.log_model(
+        deployable_entity.log_model(
             model_for_deployment['model'],
             custom_modules=["."],
         )
@@ -63,12 +60,12 @@ class TestLogModel:
 
             custom_module_filenames.update(map(os.path.basename, filenames))
 
-        custom_modules = experiment_run.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        custom_modules = deployable_entity.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
         with zipfile.ZipFile(custom_modules, 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
-    def test_no_custom_modules(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'])
+    def test_no_custom_modules(self, deployable_entity, model_for_deployment):
+        deployable_entity.log_model(model_for_deployment['model'])
 
         custom_module_filenames = {"__init__.py", "_verta_config.py"}
         for path in sys.path:
@@ -87,12 +84,12 @@ class TestLogModel:
                     continue
                 custom_module_filenames.update(map(os.path.basename, filenames))
 
-        custom_modules = experiment_run.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        custom_modules = deployable_entity.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
         with zipfile.ZipFile(custom_modules, 'r') as zipf:
             assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
 
-    def test_model_api(self, experiment_run, model_for_deployment, model_packaging):
-        experiment_run.log_model(
+    def test_model_api(self, deployable_entity, model_for_deployment, model_packaging):
+        deployable_entity.log_model(
             model_for_deployment['model'],
             model_api=model_for_deployment['model_api'],
         )
@@ -102,45 +99,45 @@ class TestLogModel:
             'model_packaging': model_packaging,
         })
         assert model_api == json.loads(six.ensure_str(
-            experiment_run.get_artifact(_artifact_utils.MODEL_API_KEY).read()))
+            deployable_entity.get_artifact(_artifact_utils.MODEL_API_KEY).read()))
 
-    def test_no_model_api(self, experiment_run, model_for_deployment, model_packaging):
-        experiment_run.log_model(model_for_deployment['model'])
+    def test_no_model_api(self, deployable_entity, model_for_deployment, model_packaging):
+        deployable_entity.log_model(model_for_deployment['model'])
 
         model_api = {
             'version': "v1",
             'model_packaging': model_packaging,
         }
         assert model_api == json.loads(six.ensure_str(
-            experiment_run.get_artifact(_artifact_utils.MODEL_API_KEY).read()))
+            deployable_entity.get_artifact(_artifact_utils.MODEL_API_KEY).read()))
 
-    def test_model_class(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'].__class__)
+    def test_model_class(self, deployable_entity, model_for_deployment):
+        deployable_entity.log_model(model_for_deployment['model'].__class__)
 
-        assert model_for_deployment['model'].__class__ == experiment_run.get_model()
+        assert model_for_deployment['model'].__class__ == deployable_entity.get_model()
 
         retrieved_model_api = verta.utils.ModelAPI.from_file(
-            experiment_run.get_artifact(_artifact_utils.MODEL_API_KEY))
+            deployable_entity.get_artifact(_artifact_utils.MODEL_API_KEY))
         assert retrieved_model_api.to_dict()['model_packaging']['type'] == "class"
 
-    def test_artifacts(self, experiment_run, model_for_deployment, strs, flat_dicts):
+    def test_artifacts(self, deployable_entity, model_for_deployment, strs, flat_dicts):
         for key, artifact in zip(strs, flat_dicts):
-            experiment_run.log_artifact(key, artifact)
+            deployable_entity.log_artifact(key, artifact)
 
-        experiment_run.log_model(
+        deployable_entity.log_model(
             model_for_deployment['model'].__class__,
             artifacts=strs,
         )
 
-        assert experiment_run.get_attribute("verta_model_artifacts") == strs
+        assert deployable_entity.get_attribute("verta_model_artifacts") == strs
 
-    def test_no_artifacts(self, experiment_run, model_for_deployment):
-        experiment_run.log_model(model_for_deployment['model'].__class__)
+    def test_no_artifacts(self, deployable_entity, model_for_deployment):
+        deployable_entity.log_model(model_for_deployment['model'].__class__)
 
         with pytest.raises(KeyError):
-            experiment_run.get_attribute("verta_model_artifacts")
+            deployable_entity.get_attribute("verta_model_artifacts")
 
-    def test_wrong_type_artifacts_error(self, experiment_run, model_for_deployment, all_values):
+    def test_wrong_type_artifacts_error(self, deployable_entity, model_for_deployment, all_values):
         # remove Nones, because they're equivalent to unprovided
         all_values = [val for val in all_values
                       if val is not None]
@@ -150,43 +147,43 @@ class TestLogModel:
 
         for val in all_values:
             with pytest.raises(TypeError):
-                experiment_run.log_model(
+                deployable_entity.log_model(
                     model_for_deployment['model'].__class__,
                     artifacts=val,
                 )
 
-    def test_not_class_model_artifacts_error(self, experiment_run, model_for_deployment, strs, flat_dicts):
+    def test_not_class_model_artifacts_error(self, deployable_entity, model_for_deployment, strs, flat_dicts):
         for key, artifact in zip(strs, flat_dicts):
-            experiment_run.log_artifact(key, artifact)
+            deployable_entity.log_artifact(key, artifact)
 
         with pytest.raises(ValueError):
-            experiment_run.log_model(
+            deployable_entity.log_model(
                 model_for_deployment['model'],
                 artifacts=strs,
             )
 
-    def test_unlogged_keys_artifacts_error(self, experiment_run, model_for_deployment, strs, flat_dicts):
+    def test_unlogged_keys_artifacts_error(self, deployable_entity, model_for_deployment, strs, flat_dicts):
         with pytest.raises(ValueError):
-            experiment_run.log_model(
+            deployable_entity.log_model(
                 model_for_deployment['model'],
                 artifacts=[strs[0]],
             )
 
-        experiment_run.log_artifact(strs[0], flat_dicts[0])
+        deployable_entity.log_artifact(strs[0], flat_dicts[0])
 
         with pytest.raises(ValueError):
-            experiment_run.log_model(
+            deployable_entity.log_model(
                 model_for_deployment['model'],
                 artifacts=[strs[1]],
             )
 
         with pytest.raises(ValueError):
-            experiment_run.log_model(
+            deployable_entity.log_model(
                 model_for_deployment['model'],
                 artifacts=strs[1:],
             )
 
-    def test_overwrite_artifacts(self, experiment_run, endpoint, in_tempdir):
+    def test_overwrite_artifacts(self, deployable_entity, endpoint, in_tempdir):
         key = "foo"
         val = {'a': 1}
 
@@ -202,32 +199,32 @@ class TestLogModel:
         # first log junk artifact, to test `overwrite`
         bad_key = "bar"
         bad_val = {'b': 2}
-        experiment_run.log_artifact(bad_key, bad_val)
-        experiment_run.log_model(ModelWithDependency, custom_modules=[], artifacts=[bad_key])
+        deployable_entity.log_artifact(bad_key, bad_val)
+        deployable_entity.log_model(ModelWithDependency, custom_modules=[], artifacts=[bad_key])
 
         # log real artifact using `overwrite`
-        experiment_run.log_artifact(key, val)
-        experiment_run.log_model(ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True)
-        experiment_run.log_environment(Python([]))
+        deployable_entity.log_artifact(key, val)
+        deployable_entity.log_model(ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True)
+        deployable_entity.log_environment(Python([]))
 
-        endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
+        endpoint.update(deployable_entity, DirectUpdateStrategy(), wait=True)
         assert val == endpoint.get_deployed_model().predict(val)
 
 class TestFetchArtifacts:
-    def test_fetch_artifacts(self, experiment_run, strs, flat_dicts):
+    def test_fetch_artifacts(self, deployable_entity, strs, flat_dicts):
         strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
         for key, artifact in zip(strs, flat_dicts):
-            experiment_run.log_artifact(key, artifact)
+            deployable_entity.log_artifact(key, artifact)
 
         try:
-            artifacts = experiment_run.fetch_artifacts(strs)
+            artifacts = deployable_entity.fetch_artifacts(strs)
 
             assert set(six.viewkeys(artifacts)) == set(strs)
             assert all(filepath.startswith(_CACHE_DIR)
                        for filepath in six.viewvalues(artifacts))
 
             for key, filepath in six.viewitems(artifacts):
-                artifact_contents, _ = experiment_run._get_artifact(key)
+                artifact_contents, _ = deployable_entity._get_artifact(key)
                 with open(filepath, 'rb') as f:
                     file_contents = f.read()
 
@@ -235,30 +232,30 @@ class TestFetchArtifacts:
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
-    def test_cached_fetch_artifacts(self, experiment_run, strs, flat_dicts):
+    def test_cached_fetch_artifacts(self, deployable_entity, strs, flat_dicts):
         key = strs[0]
 
-        experiment_run.log_artifact(key, flat_dicts[0])
+        deployable_entity.log_artifact(key, flat_dicts[0])
 
         try:
-            filepath = experiment_run.fetch_artifacts([key])[key]
+            filepath = deployable_entity.fetch_artifacts([key])[key]
             last_modified = os.path.getmtime(filepath)
 
             time.sleep(3)
-            assert experiment_run.fetch_artifacts([key])[key] == filepath
+            assert deployable_entity.fetch_artifacts([key])[key] == filepath
 
             assert os.path.getmtime(filepath) == last_modified
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
-    def test_fetch_zip(self, experiment_run, strs, dir_and_files):
+    def test_fetch_zip(self, deployable_entity, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
         key = strs[0]
 
-        experiment_run.log_artifact(key, dirpath)
+        deployable_entity.log_artifact(key, dirpath)
 
         try:
-            dirpath = experiment_run.fetch_artifacts([key])[key]
+            dirpath = deployable_entity.fetch_artifacts([key])[key]
 
             assert dirpath.startswith(_CACHE_DIR)
 
@@ -273,24 +270,24 @@ class TestFetchArtifacts:
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
-    def test_cached_fetch_zip(self, experiment_run, strs, dir_and_files):
+    def test_cached_fetch_zip(self, deployable_entity, strs, dir_and_files):
         dirpath, _ = dir_and_files
         key = strs[0]
 
-        experiment_run.log_artifact(key, dirpath)
+        deployable_entity.log_artifact(key, dirpath)
 
         try:
-            dirpath = experiment_run.fetch_artifacts([key])[key]
+            dirpath = deployable_entity.fetch_artifacts([key])[key]
             last_modified = os.path.getmtime(dirpath)
 
             time.sleep(3)
-            assert experiment_run.fetch_artifacts([key])[key] == dirpath
+            assert deployable_entity.fetch_artifacts([key])[key] == dirpath
 
             assert os.path.getmtime(dirpath) == last_modified
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
-    def test_fetch_tgz(self, experiment_run, strs, dir_and_files):
+    def test_fetch_tgz(self, deployable_entity, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
         key = strs[0]
 
@@ -302,10 +299,10 @@ class TestFetchArtifacts:
             os.fsync(tempf.fileno())  # flush OS buffer
             tempf.seek(0)
 
-            experiment_run.log_artifact(key, tempf.name)
+            deployable_entity.log_artifact(key, tempf.name)
 
         try:
-            dirpath = experiment_run.fetch_artifacts([key])[key]
+            dirpath = deployable_entity.fetch_artifacts([key])[key]
 
             assert dirpath.startswith(_CACHE_DIR)
 
@@ -320,7 +317,7 @@ class TestFetchArtifacts:
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
-    def test_fetch_tar(self, experiment_run, strs, dir_and_files):
+    def test_fetch_tar(self, deployable_entity, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
         key = strs[0]
 
@@ -332,10 +329,10 @@ class TestFetchArtifacts:
             os.fsync(tempf.fileno())  # flush OS buffer
             tempf.seek(0)
 
-            experiment_run.log_artifact(key, tempf.name)
+            deployable_entity.log_artifact(key, tempf.name)
 
         try:
-            dirpath = experiment_run.fetch_artifacts([key])[key]
+            dirpath = deployable_entity.fetch_artifacts([key])[key]
 
             assert dirpath.startswith(_CACHE_DIR)
 
@@ -350,7 +347,7 @@ class TestFetchArtifacts:
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
-    def test_fetch_tar_gz(self, experiment_run, strs, dir_and_files):
+    def test_fetch_tar_gz(self, deployable_entity, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
         key = strs[0]
 
@@ -362,10 +359,10 @@ class TestFetchArtifacts:
             os.fsync(tempf.fileno())  # flush OS buffer
             tempf.seek(0)
 
-            experiment_run.log_artifact(key, tempf.name)
+            deployable_entity.log_artifact(key, tempf.name)
 
         try:
-            dirpath = experiment_run.fetch_artifacts([key])[key]
+            dirpath = deployable_entity.fetch_artifacts([key])[key]
 
             assert dirpath.startswith(_CACHE_DIR)
 
@@ -380,63 +377,63 @@ class TestFetchArtifacts:
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
-    def test_wrong_type_artifacts_error(self, experiment_run, all_values):
+    def test_wrong_type_artifacts_error(self, deployable_entity, all_values):
         # remove lists of strings and empty lists, because they're valid arguments
         all_values = [val for val in all_values
                       if not (isinstance(val, list) and all(isinstance(el, six.string_types) for el in val))]
 
         for val in all_values:
             with pytest.raises(TypeError):
-                experiment_run.fetch_artifacts(val)
+                deployable_entity.fetch_artifacts(val)
 
-    def test_unlogged_keys_artifacts_error(self, experiment_run, strs, flat_dicts):
+    def test_unlogged_keys_artifacts_error(self, deployable_entity, strs, flat_dicts):
         with pytest.raises(ValueError):
-            experiment_run.fetch_artifacts([strs[0]])
+            deployable_entity.fetch_artifacts([strs[0]])
 
-        experiment_run.log_artifact(strs[0], flat_dicts[0])
-
-        with pytest.raises(ValueError):
-            experiment_run.fetch_artifacts([strs[1]])
+        deployable_entity.log_artifact(strs[0], flat_dicts[0])
 
         with pytest.raises(ValueError):
-            experiment_run.fetch_artifacts(strs[1:])
+            deployable_entity.fetch_artifacts([strs[1]])
+
+        with pytest.raises(ValueError):
+            deployable_entity.fetch_artifacts(strs[1:])
 
 
 class TestDeployability:
     """Deployment-related functionality"""
 
     def test_log_environment(self, registered_model):
-        model_version = registered_model.get_or_create_version(name="my version")
+        deployable_entity = registered_model.get_or_create_version(name="my version")
 
         reqs = Python.read_pip_environment()
         env = Python(requirements=reqs)
-        model_version.log_environment(env)
+        deployable_entity.log_environment(env)
 
-        model_version = registered_model.get_version(id=model_version.id)
-        assert str(env) == str(model_version.get_environment())
+        deployable_entity = registered_model.get_version(id=deployable_entity.id)
+        assert str(env) == str(deployable_entity.get_environment())
 
         with pytest.raises(ValueError):
-            model_version.log_environment(env)
-        model_version.log_environment(env, overwrite=True)
-        assert str(env) == str(model_version.get_environment())
+            deployable_entity.log_environment(env)
+        deployable_entity.log_environment(env, overwrite=True)
+        assert str(env) == str(deployable_entity.get_environment())
 
     def test_del_environment(self, registered_model):
-        model_version = registered_model.get_or_create_version(name="my version")
+        deployable_entity = registered_model.get_or_create_version(name="my version")
 
         reqs = Python.read_pip_environment()
         env = Python(requirements=reqs)
-        model_version.log_environment(env)
-        model_version.del_environment()
+        deployable_entity.log_environment(env)
+        deployable_entity.del_environment()
 
-        model_version = registered_model.get_version(id=model_version.id)
-        assert not model_version.has_environment
+        deployable_entity = registered_model.get_version(id=deployable_entity.id)
+        assert not deployable_entity.has_environment
 
         with pytest.raises(RuntimeError) as excinfo:
-            model_version.get_environment()
+            deployable_entity.get_environment()
 
         assert "environment was not previously set" in str(excinfo.value)
 
-    def test_log_model(self, model_version):
+    def test_log_model(self, deployable_entity):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
         from sklearn.linear_model import LogisticRegression
@@ -444,28 +441,28 @@ class TestDeployability:
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
         original_coef = classifier.coef_
-        model_version.log_model(classifier)
+        deployable_entity.log_model(classifier)
 
         # retrieve the classifier:
-        retrieved_classfier = model_version.get_model()
+        retrieved_classfier = deployable_entity.get_model()
         assert np.array_equal(retrieved_classfier.coef_, original_coef)
 
         # check model api:
-        assert _artifact_utils.MODEL_API_KEY in model_version.get_artifact_keys()
-        for artifact in model_version._msg.artifacts:
+        assert _artifact_utils.MODEL_API_KEY in deployable_entity.get_artifact_keys()
+        for artifact in deployable_entity._msg.artifacts:
             if artifact.key == _artifact_utils.MODEL_API_KEY:
                 assert artifact.filename_extension == "json"
 
         # overwrite should work:
         new_classifier = LogisticRegression()
         new_classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_model(new_classifier, overwrite=True)
-        retrieved_classfier = model_version.get_model()
+        deployable_entity.log_model(new_classifier, overwrite=True)
+        retrieved_classfier = deployable_entity.get_model()
         assert np.array_equal(retrieved_classfier.coef_, new_classifier.coef_)
 
         # when overwrite = false, overwriting should fail
         with pytest.raises(ValueError) as excinfo:
-            model_version.log_model(new_classifier)
+            deployable_entity.log_model(new_classifier)
 
         assert "model already exists" in str(excinfo.value)
 
@@ -491,13 +488,13 @@ class TestDeployability:
                     continue
                 custom_module_filenames.update(map(os.path.basename, filenames))
 
-        custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        custom_modules = deployable_entity.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
         with zipfile.ZipFile(custom_modules, "r") as zipf:
             assert custom_module_filenames == set(
                 map(os.path.basename, zipf.namelist())
             )
 
-    def test_download_sklearn(self, model_version, in_tempdir):
+    def test_download_sklearn(self, deployable_entity, in_tempdir):
         LogisticRegression = pytest.importorskip(
             "sklearn.linear_model"
         ).LogisticRegression
@@ -509,8 +506,8 @@ class TestDeployability:
         with open(upload_path, "wb") as f:
             pickle.dump(model, f)
 
-        model_version.log_model(model, custom_modules=[])
-        returned_path = model_version.download_model(download_path)
+        deployable_entity.log_model(model, custom_modules=[])
+        returned_path = deployable_entity.download_model(download_path)
         assert returned_path == os.path.abspath(download_path)
 
         with open(download_path, "rb") as f:
@@ -518,10 +515,10 @@ class TestDeployability:
 
         assert downloaded_model.get_params() == model.get_params()
 
-    def test_log_model_with_custom_modules(self, model_version, model_for_deployment):
+    def test_log_model_with_custom_modules(self, deployable_entity, model_for_deployment):
         custom_modules_dir = "."
 
-        model_version.log_model(
+        deployable_entity.log_model(
             model_for_deployment["model"],
             custom_modules=["."],
         )
@@ -539,25 +536,25 @@ class TestDeployability:
 
             custom_module_filenames.update(map(os.path.basename, filenames))
 
-        custom_modules = model_version.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
+        custom_modules = deployable_entity.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
         with zipfile.ZipFile(custom_modules, "r") as zipf:
             assert custom_module_filenames == set(
                 map(os.path.basename, zipf.namelist())
             )
 
     def test_download_docker_context(
-        self, experiment_run, model_for_deployment, in_tempdir, registered_model
+        self, deployable_entity, model_for_deployment, in_tempdir, registered_model
     ):
         download_to_path = "context.tgz"
 
-        experiment_run.log_model(model_for_deployment["model"], custom_modules=[])
-        experiment_run.log_environment(Python(["scikit-learn"]))
-        model_version = registered_model.create_version_from_run(
-            run_id=experiment_run.id,
-            name="From Run {}".format(experiment_run.id),
+        deployable_entity.log_model(model_for_deployment["model"], custom_modules=[])
+        deployable_entity.log_environment(Python(["scikit-learn"]))
+        deployable_entity = registered_model.create_version_from_run(
+            run_id=deployable_entity.id,
+            name="From Run {}".format(deployable_entity.id),
         )
 
-        filepath = model_version.download_docker_context(download_to_path)
+        filepath = deployable_entity.download_docker_context(download_to_path)
         assert filepath == os.path.abspath(download_to_path)
 
         # can be loaded as tgz
@@ -566,13 +563,13 @@ class TestDeployability:
 
         assert "Dockerfile" in filepaths
 
-    def test_fetch_artifacts(self, model_version, strs, flat_dicts):
+    def test_fetch_artifacts(self, deployable_entity, strs, flat_dicts):
         strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
         for key, artifact in zip(strs, flat_dicts):
-            model_version.log_artifact(key, artifact)
+            deployable_entity.log_artifact(key, artifact)
 
         try:
-            artifacts = model_version.fetch_artifacts(strs)
+            artifacts = deployable_entity.fetch_artifacts(strs)
 
             assert set(six.viewkeys(artifacts)) == set(strs)
             assert all(
@@ -581,7 +578,7 @@ class TestDeployability:
             )
 
             for key, filepath in six.viewitems(artifacts):
-                artifact_contents = model_version._get_artifact(key)
+                artifact_contents = deployable_entity._get_artifact(key)
                 with open(filepath, "rb") as f:
                     file_contents = f.read()
 
@@ -589,7 +586,7 @@ class TestDeployability:
         finally:
             shutil.rmtree(_deployable_entity._CACHE_DIR, ignore_errors=True)
 
-    def test_model_artifacts(self, model_version, endpoint, in_tempdir):
+    def test_model_artifacts(self, deployable_entity, endpoint, in_tempdir):
         key = "foo"
         val = {"a": 1}
 
@@ -605,17 +602,17 @@ class TestDeployability:
         # first log junk artifact, to test `overwrite`
         bad_key = "bar"
         bad_val = {"b": 2}
-        model_version.log_artifact(bad_key, bad_val)
-        model_version.log_model(
+        deployable_entity.log_artifact(bad_key, bad_val)
+        deployable_entity.log_model(
             ModelWithDependency, custom_modules=[], artifacts=[bad_key]
         )
 
         # log real artifact using `overwrite`
-        model_version.log_artifact(key, val)
-        model_version.log_model(
+        deployable_entity.log_artifact(key, val)
+        deployable_entity.log_model(
             ModelWithDependency, custom_modules=[], artifacts=[key], overwrite=True
         )
-        model_version.log_environment(Python([]))
+        deployable_entity.log_environment(Python([]))
 
-        endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
+        endpoint.update(deployable_entity, DirectUpdateStrategy(), wait=True)
         assert val == endpoint.get_deployed_model().predict(val)
