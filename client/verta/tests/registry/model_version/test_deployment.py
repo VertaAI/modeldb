@@ -3,6 +3,7 @@
 import datetime
 import json
 import os
+import tarfile
 import uuid
 
 import hypothesis
@@ -14,6 +15,7 @@ from verta._protos.public.monitoring.DeploymentIntegration_pb2 import (
 )
 from verta._internal_utils import _utils
 from verta.data_types import _verta_data_type
+from verta.environment import Python
 from verta.monitoring import profiler
 from verta.registry.entities import RegisteredModelVersion
 from verta.tracking.entities import _deployable_entity
@@ -23,6 +25,34 @@ from ...monitoring import strategies
 
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
+
+
+class TestDeployability:
+    def test_from_run_download_docker_context(
+        self, experiment_run, model_for_deployment, in_tempdir, registered_model
+    ):
+        """deployable_entity/test_deployment.py::TestDeployability::test_download_docker_context
+
+        But through create_version_from_run().
+
+        """
+        download_to_path = "context.tgz"
+
+        experiment_run.log_model(model_for_deployment["model"], custom_modules=[])
+        experiment_run.log_environment(Python(["scikit-learn"]))
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id,
+            name="From Run {}".format(experiment_run.id),
+        )
+
+        filepath = model_version.download_docker_context(download_to_path)
+        assert filepath == os.path.abspath(download_to_path)
+
+        # can be loaded as tgz
+        with tarfile.open(filepath, "r:gz") as f:
+            filepaths = set(f.getnames())
+
+        assert "Dockerfile" in filepaths
 
 
 class TestArbitraryModels:
