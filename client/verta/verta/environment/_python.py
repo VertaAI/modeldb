@@ -36,6 +36,8 @@ class Python(_environment._Environment):
         captured.
     env_vars : list of str, optional
         Names of environment variables to capture. If not provided, nothing will be captured.
+    apt_packages : list of str, optional
+        Apt packages to be installed alongside a Python environment.
     _autocapture : bool, default True
         Whether to enable the automatic capturing behavior of parameters above.
 
@@ -45,6 +47,8 @@ class Python(_environment._Environment):
         pip constraints.
     requirements : list of str
         pip requirements.
+    apt_packages : list of str
+        Apt packages to be installed alongside a Python environment.
 
     Examples
     --------
@@ -52,12 +56,14 @@ class Python(_environment._Environment):
 
         from verta.environment import Python
         env1 = Python(requirements=Python.read_pip_environment())
+        env1.apt_packages = ["python3-opencv"]
 
         env2 = Python(requirements=Python.read_pip_file("../requirements.txt"))
 
         env3 = Python(
             requirements=["tensorflow"],
             env_vars=["CUDA_VISIBLE_DEVICES"],
+            apt_packages=["python3-opencv"]
         )
     """
 
@@ -231,7 +237,7 @@ class Python(_environment._Environment):
             _pip_requirements_utils.must_all_valid_package_names(requirements_copy)
             _pip_requirements_utils.strip_inexact_specifiers(requirements_copy)
             _pip_requirements_utils.set_version_pins(requirements_copy)
-            _pip_requirements_utils.remove_public_version_identifier(requirements_copy)
+            _pip_requirements_utils.remove_local_version_identifier(requirements_copy)
 
             self._msg.python.requirements.extend(
                 map(

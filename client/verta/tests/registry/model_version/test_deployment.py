@@ -183,9 +183,10 @@ class TestAutoMonitoring:
 
     @hypothesis.settings(deadline=None)  # building DataFrames can be slow
     @hypothesis.given(
-        df=strategies.dataframes(
-            min_rows=1, min_cols=2
-        ),  # pylint: disable=no-value-for-parameter
+        df=strategies.dataframes(  # pylint: disable=no-value-for-parameter
+            min_rows=1,
+            min_cols=2,
+        ),
     )
     def test_compute_training_data_profile(self, df):
         """Unit test for helper functions handling DFs of various sizes."""
@@ -200,9 +201,10 @@ class TestAutoMonitoring:
 
     @hypothesis.settings(deadline=None)  # building DataFrames can be slow
     @hypothesis.given(
-        df=strategies.dataframes(
-            min_rows=1, min_cols=2
-        ),  # pylint: disable=no-value-for-parameter
+        df=strategies.dataframes(  # pylint: disable=no-value-for-parameter
+            min_rows=1,
+            min_cols=2,
+        ),
     )
     def test_collect_feature_data_and_vis_attributes(self, df):
         """Unit test that attributes pre-logging are the correct format."""
