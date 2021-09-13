@@ -11,6 +11,70 @@
     "application/json"
   ],
   "paths": {
+    "/workspace/createOrUpdateContainerRegistryConfiguration": {
+      "post": {
+        "operationId": "WorkspaceService_createOrUpdateContainerRegistryConfiguration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
+            }
+          }
+        ],
+        "tags": [
+          "WorkspaceService"
+        ]
+      }
+    },
+    "/workspace/deleteContainerRegistryConfiguration": {
+      "post": {
+        "operationId": "WorkspaceService_deleteContainerRegistryConfiguration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
+            }
+          }
+        ],
+        "tags": [
+          "WorkspaceService"
+        ]
+      }
+    },
     "/workspace/getVisibleWorkspaces": {
       "get": {
         "operationId": "WorkspaceService_getVisibleWorkspaces",
@@ -180,6 +244,9 @@
         }
       }
     },
+    "uacEmpty": {
+      "type": "object"
+    },
     "uacWorkspace": {
       "type": "object",
       "properties": {
@@ -197,6 +264,30 @@
           "type": "string"
         },
         "org_name": {
+          "type": "string"
+        },
+        "container_registries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
+          }
+        }
+      }
+    },
+    "uacWorkspaceContainerRegistryConfiguration": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "base": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "secret_key": {
           "type": "string"
         }
       }

@@ -1192,15 +1192,15 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       while (!childCommitSHAs.isEmpty()) {
         String childCommit = childCommitSHAs.remove(0);
         commitSHAs.add(childCommit);
-        Query sqlQuery = session.createSQLQuery(getParentCommitsQuery + childCommit + "\'");
+        StringBuilder childQuery = new StringBuilder(getParentCommitsQuery);
+        childQuery.append(childCommit + "\'");
+        Query sqlQuery = session.createSQLQuery(childQuery.toString());
         List<String> parentCommitSHAs = sqlQuery.list();
         childCommitSHAs.addAll(parentCommitSHAs);
       }
 
       String getChildCommits =
-          "FROM "
-              + CommitEntity.class.getSimpleName()
-              + " c WHERE c.commit_hash IN (:childCommitSHAs)  ORDER BY c.date_created DESC";
+          "FROM CommitEntity c WHERE c.commit_hash IN (:childCommitSHAs)  ORDER BY c.date_created DESC";
       Query query = session.createQuery(getChildCommits);
       query.setParameterList("childCommitSHAs", commitSHAs);
       List<CommitEntity> commits = query.list();

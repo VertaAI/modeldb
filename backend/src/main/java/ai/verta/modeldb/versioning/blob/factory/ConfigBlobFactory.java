@@ -27,9 +27,7 @@ public class ConfigBlobFactory extends BlobFactory {
   @Override
   public Blob getBlob(Session session) throws ModelDBException {
     String configQuery =
-        "From "
-            + ConfigBlobEntity.class.getSimpleName()
-            + " where blob_hash = :blobHash ORDER BY config_seq_number ASC";
+        "From ConfigBlobEntity where blob_hash = :blobHash ORDER BY config_seq_number ASC";
     Query<ConfigBlobEntity> query = session.createQuery(configQuery);
     query.setParameter("blobHash", getElementSha());
     List<ConfigBlobEntity> configBlobEntities = query.list();
