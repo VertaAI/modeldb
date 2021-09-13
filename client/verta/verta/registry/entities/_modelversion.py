@@ -66,6 +66,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     """
 
+    _MODEL_KEY = _artifact_utils.REGISTRY_MODEL_KEY
+
     ModelVersionMessage = _RegistryService.ModelVersion
 
     def __init__(self, conn, conf, msg):
@@ -78,7 +80,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         msg = self._msg
         artifact_keys = self.get_artifact_keys()
         if self.has_model:
-            artifact_keys.append(_artifact_utils.REGISTRY_MODEL_KEY)
+            artifact_keys.append(self._MODEL_KEY)
 
         return "\n".join(
             (
@@ -265,7 +267,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def _get_artifact_msg(self, key):
         self._refresh_cache()
 
-        if key == _artifact_utils.REGISTRY_MODEL_KEY:
+        if key == self._MODEL_KEY:
             if not self.has_model:
                 raise KeyError("no model associated with this version")
             return self._msg.model
@@ -331,7 +333,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         # Create artifact message and update ModelVersion's message:
         model_msg = self._create_artifact_msg(
-            _artifact_utils.REGISTRY_MODEL_KEY,
+            self._MODEL_KEY,
             serialized_model,
             artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL,
             extension=extension,
@@ -341,7 +343,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         # Upload the artifact to ModelDB:
         self._upload_artifact(
-            _artifact_utils.REGISTRY_MODEL_KEY,
+            self._MODEL_KEY,
             serialized_model,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
@@ -387,14 +389,14 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         """
         model_artifact = self._get_artifact(
-            _artifact_utils.REGISTRY_MODEL_KEY,
+            self._MODEL_KEY,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
         return _artifact_utils.deserialize_model(model_artifact, error_ok=True)
 
     def download_model(self, download_to_path):
         return self.download_artifact(
-            _artifact_utils.REGISTRY_MODEL_KEY, download_to_path
+            self._MODEL_KEY, download_to_path
         )
 
     def del_model(self):
@@ -441,11 +443,11 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         # TODO: should validate keys, but can't here because this public
         #       method is also used to log internal artifacts
         # _artifact_utils.validate_key(key)
-        if key == _artifact_utils.REGISTRY_MODEL_KEY:
+        if key == self._MODEL_KEY:
             raise ValueError(
                 'the key "{}" is reserved for model;'
                 " consider using log_model() instead".format(
-                    _artifact_utils.REGISTRY_MODEL_KEY
+                    self._MODEL_KEY
                 )
             )
 
@@ -564,7 +566,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             Name of the artifact.
 
         """
-        if key == _artifact_utils.REGISTRY_MODEL_KEY:
+        if key == self._MODEL_KEY:
             raise ValueError(
                 "model can't be deleted through del_artifact(); consider using del_model() instead"
             )

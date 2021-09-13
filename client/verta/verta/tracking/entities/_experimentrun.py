@@ -62,6 +62,8 @@ class ExperimentRun(_DeployableEntity):
 
     """
 
+    _MODEL_KEY = _artifact_utils.MODEL_KEY
+
     def __init__(self, conn, conf, msg):
         super(ExperimentRun, self).__init__(conn, conf,
                                             _ExperimentRunService, "experiment-run", msg)
@@ -1233,7 +1235,7 @@ class ExperimentRun(_DeployableEntity):
                                _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
         # upload model
-        self._log_artifact(_artifact_utils.MODEL_KEY, serialized_model,
+        self._log_artifact(self._MODEL_KEY, serialized_model,
                            _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
 
     def get_model(self):
@@ -1246,7 +1248,7 @@ class ExperimentRun(_DeployableEntity):
             Model for deployment.
 
         """
-        model, _ = self._get_artifact(_artifact_utils.MODEL_KEY)
+        model, _ = self._get_artifact(self._MODEL_KEY)
         return _artifact_utils.deserialize_model(model, error_ok=True)
 
     def log_image(self, key, image, overwrite=False):
@@ -1543,7 +1545,7 @@ class ExperimentRun(_DeployableEntity):
         return download_to_path
 
     def download_model(self, download_to_path):
-        return self.download_artifact(_artifact_utils.MODEL_KEY, download_to_path)
+        return self.download_artifact(self._MODEL_KEY, download_to_path)
 
     def get_artifact_parts(self, key):
         endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(

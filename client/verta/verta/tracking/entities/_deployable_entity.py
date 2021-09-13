@@ -45,6 +45,9 @@ _TRAINING_DATA_ATTR_PREFIX = _INTERNAL_ATTR_PREFIX + "training_data_"
 
 @six.add_metaclass(abc.ABCMeta)
 class _DeployableEntity(_ModelDBEntity):
+
+    _MODEL_KEY = None
+
     @property
     def _histogram_endpoint(self):
         return "{}://{}/api/v1/monitoring/data/references/{}".format(
