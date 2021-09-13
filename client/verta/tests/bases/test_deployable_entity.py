@@ -60,9 +60,17 @@ class TestBuildArtifactStorePath:
 class TestCreateArtifactMsg:
     @hypothesis.given(
         artifact_bytes=st.binary(min_size=1),
-        key=st.text(st.characters(blacklist_characters="."), min_size=1),
+        key=st.text(
+            st.characters(
+                blacklist_categories=("Cs",),  # invalid UTF-8
+                blacklist_characters=".",
+            ),
+            min_size=1,
+        ),
         ext=st.text(
-            st.characters(whitelist_categories=("Lu", "Ll", "Nd")),
+            st.characters(
+                whitelist_categories=("Lu", "Ll", "Nd"),  # alphanumeric
+            ),
             min_size=1,
         ),
         artifact_type=st.sampled_from(
