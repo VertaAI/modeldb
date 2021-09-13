@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import os
-import pickle
-
 import pytest
 
 from verta._internal_utils import _artifact_utils
-
-from ... import utils
 
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
@@ -56,41 +51,6 @@ class TestArtifacts:
         # retrieve the artifact:
         retrieved_file = model_version.get_artifact("file")
         assert retrieved_file.getvalue() == FILE_CONTENTS
-
-    def test_download(self, model_version, strs, in_tempdir, random_data):
-        key = strs[0]
-        filename = strs[1]
-        new_filename = strs[2]
-        FILE_CONTENTS = random_data
-
-        # create file and upload as artifact
-        with open(filename, "wb") as f:
-            f.write(FILE_CONTENTS)
-        model_version.log_artifact(key, filename)
-        os.remove(filename)
-
-        # download artifact and verify contents
-        new_filepath = model_version.download_artifact(key, new_filename)
-        assert new_filepath == os.path.abspath(new_filename)
-        with open(new_filepath, "rb") as f:
-            assert f.read() == FILE_CONTENTS
-
-        # object as well
-        obj = {"some": ["arbitrary", "object"]}
-        model_version.log_artifact(key, obj, overwrite=True)
-        new_filepath = model_version.download_artifact(key, new_filename)
-        with open(new_filepath, "rb") as f:
-            assert pickle.load(f) == obj
-
-    def test_download_directory(self, model_version, strs, dir_and_files, in_tempdir):
-        key, download_path = strs[:2]
-        dirpath, _ = dir_and_files
-
-        model_version.log_artifact(key, dirpath)
-        retrieved_path = model_version.download_artifact(key, download_path)
-
-        # contents match
-        utils.assert_dirs_match(dirpath, retrieved_path)
 
     def test_wrong_key(self, model_version):
         with pytest.raises(KeyError) as excinfo:
