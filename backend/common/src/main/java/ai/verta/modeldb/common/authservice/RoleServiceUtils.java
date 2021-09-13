@@ -82,7 +82,7 @@ public class RoleServiceUtils implements RoleService {
       }
       SetResource.Response setResourcesResponse =
           authServiceChannel
-              .getCollaboratorServiceBlockingStub()
+              .getCollaboratorServiceBlockingStubForServiceUser()
               .setResource(setResourcesBuilder.build());
 
       LOGGER.trace("SetResources message sent.  Response: " + setResourcesResponse);
