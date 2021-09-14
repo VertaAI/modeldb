@@ -51,7 +51,7 @@ public class RoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
-      ResourceVisibility resourceVisibility) {
+      ResourceVisibility resourceVisibility, boolean isServiceUser) {
     try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.trace("Calling CollaboratorService to create resources");
       ResourceType modeldbServiceResourceType =
@@ -80,10 +80,11 @@ public class RoleServiceUtils implements RoleService {
         throw new IllegalArgumentException(
             "workspaceId and workspaceName are both empty.  One must be provided.");
       }
+
+      CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
+              blockingStub = isServiceUser? authServiceChannel.getCollaboratorServiceBlockingStubForServiceUser() : authServiceChannel.getCollaboratorServiceBlockingStub();
       SetResource.Response setResourcesResponse =
-          authServiceChannel
-              .getCollaboratorServiceBlockingStubForServiceUser()
-              .setResource(setResourcesBuilder.build());
+          blockingStub.setResource(setResourcesBuilder.build());
 
       LOGGER.trace("SetResources message sent.  Response: " + setResourcesResponse);
       return true;
