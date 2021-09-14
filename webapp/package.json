@@ -23,7 +23,7 @@
     "nodemon": "^1.18.10",
     "passport": "^0.4.0",
     "passport-auth0": "^1.1.0",
-    "set-value": "2.0.1"
+    "set-value": "4.0.1"
   },
   "devDependencies": {
     "prettier": "^1.16.4"
