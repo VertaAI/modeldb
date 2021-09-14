@@ -524,7 +524,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             Optional.empty(),
             modelDBServiceResourceTypes,
             repository.getCustomPermission(),
-            resourceVisibility);
+            resourceVisibility,
+            false);
         LOGGER.debug("Repository role bindings created successfully");
         Transaction transaction = session.beginTransaction();
         repositoryEntity.setCreated(true);
