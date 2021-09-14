@@ -19,7 +19,7 @@ class _Environment(_blob.Blob):
 
     """
 
-    def __init__(self, env_vars, autocapture, apt_packages=None):
+    def __init__(self, env_vars, autocapture):
         super(_Environment, self).__init__()
 
         # TODO: don't use proto to store data
@@ -29,20 +29,6 @@ class _Environment(_blob.Blob):
             self._capture_env_vars(env_vars)
         if autocapture:
             self._capture_cmd_line_args()
-        if apt_packages:
-            self.apt_packages = apt_packages
-
-    @property
-    def apt_packages(self):
-        return list(self._msg.apt.packages)
-
-    @apt_packages.setter
-    def apt_packages(self, packages):
-        if packages:
-            apt_blob = _EnvironmentService.AptEnvironmentBlob(packages=packages)
-            self._msg.apt.CopyFrom(apt_blob)
-        else:
-            self._msg.apt.Clear()
 
     def _as_env_proto(self):
         """Returns this environment blob as an environment protobuf message.
