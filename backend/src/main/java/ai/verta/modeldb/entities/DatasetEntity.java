@@ -14,7 +14,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import javax.persistence.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -221,8 +220,7 @@ public class DatasetEntity {
     this.deleted = deleted;
   }
 
-  public Dataset getProtoObject(RoleService roleService)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  public Dataset getProtoObject(RoleService roleService) throws InvalidProtocolBufferException {
     Dataset.Builder datasetBuilder =
         Dataset.newBuilder()
             .setId(getId())

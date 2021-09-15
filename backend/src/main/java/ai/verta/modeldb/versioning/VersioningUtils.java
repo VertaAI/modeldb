@@ -19,7 +19,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -255,7 +254,7 @@ public class VersioningUtils {
       String datasetId,
       String datasetVersionId,
       boolean checkWrite)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     RepositoryEntity repositoryEntity;
 
     RepositoryIdentification.Builder repositoryIdentification =

@@ -29,7 +29,6 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -935,8 +934,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     }
   }
 
-  private String getUrlForCode(GetUrlForArtifact request)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  private String getUrlForCode(GetUrlForArtifact request) throws InvalidProtocolBufferException {
     String s3Key = null;
     Experiment expr = experimentDAO.getExperiment(request.getId());
     if (expr.getCodeVersionSnapshot() != null

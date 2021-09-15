@@ -14,7 +14,6 @@ import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
 import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import javax.persistence.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
@@ -339,7 +338,7 @@ public class ProjectEntity {
       AuthService authService,
       Map<Long, Workspace> cacheWorkspaceMap,
       Map<String, GetResourcesResponseItem> getResourcesMap)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      throws InvalidProtocolBufferException {
     Project.Builder projectBuilder =
         Project.newBuilder()
             .setId(getId())

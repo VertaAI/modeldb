@@ -62,7 +62,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -132,7 +131,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       String commitHash,
       List<KeyValue> attributes,
       boolean addAttribute)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity;
 
@@ -179,7 +178,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       String commitHash,
       List<KeyValue> attributes,
       boolean addAttribute)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Blob.Builder blobBuilder = Blob.newBuilder();
       List<String> locations =
@@ -222,7 +221,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<String> attributesKeys,
       List<String> location,
       boolean deleteAll)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity;
 
@@ -279,7 +278,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<String> attributesKeys,
       List<String> location,
       boolean deleteAll)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       CommitEntity commitEntity =
@@ -325,7 +324,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       String commitHash,
       List<String> location,
       List<String> attributeKeysList)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CommitEntity commitEntity = null;
       RepositoryEntity repositoryEntity;
@@ -426,7 +425,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   @Override
   public GetCommitComponentRequest.Response getCommitComponent(
       RepositoryFunction repositoryFunction, String commitHash, ProtocolStringList locationList)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = repositoryFunction.apply(session);
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
@@ -513,7 +512,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       RepositoryEntity repositoryEntity,
       String commitHash,
       boolean checkWrite)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       if (repositoryEntity == null) {
         repositoryEntity =
@@ -836,7 +835,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   @Override
   public ListCommitBlobsRequest.Response getCommitBlobsList(
       RepositoryFunction repositoryFunction, String commitHash, List<String> locationList)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
@@ -875,8 +874,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public ComputeRepositoryDiffRequest.Response computeRepositoryDiff(
-      RepositoryDAO repositoryDAO, ComputeRepositoryDiffRequest request)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      RepositoryDAO repositoryDAO, ComputeRepositoryDiffRequest request) throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       // validating request
@@ -1042,7 +1040,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   @Override
   public MergeRepositoryCommitsRequest.Response mergeCommit(
       RepositoryDAO repositoryDAO, MergeRepositoryCommitsRequest request)
-      throws ModelDBException, NoSuchAlgorithmException, ExecutionException, InterruptedException {
+      throws ModelDBException, NoSuchAlgorithmException {
     // validating request
     LOGGER.debug("Validating MergeRepositoryCommitsRequest");
     validateDiffMergeRequest(
@@ -1251,7 +1249,7 @@ public class BlobDAORdbImpl implements BlobDAO {
   @Override
   public RevertRepositoryCommitsRequest.Response revertCommit(
       RepositoryDAO repositoryDAO, RevertRepositoryCommitsRequest request)
-      throws ModelDBException, NoSuchAlgorithmException, ExecutionException, InterruptedException {
+      throws ModelDBException, NoSuchAlgorithmException {
     // validating request
     LOGGER.debug("Validating RevertRepositoryCommitsRequest");
     if (request.getCommitToRevertSha().isEmpty()) {
@@ -1560,7 +1558,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       List<AutogenBlobDiff> diffs,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
@@ -1710,7 +1708,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       String datasetId,
       CommitFunction commitFunction,
       GetUrlForDatasetBlobVersioned request)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     GetUrlForBlobVersioned getUrlForBlobVersionedRequest =
         GetUrlForBlobVersioned.newBuilder()
             .setRepositoryId(
@@ -1747,7 +1745,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction,
       GetUrlForBlobVersioned request)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
       CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
