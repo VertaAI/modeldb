@@ -1693,8 +1693,6 @@ class ExperimentRun(_DeployableEntity):
             raise ValueError(
                 "environment already exists; consider setting overwrite=True")
 
-        # need to call .environment on the proto object because ._as_proto produces
-        # ai.verta.modeldb.versioning.Blob, not ai.verta.modeldb.versioning.EnvironmentBlob
         msg = _ExperimentRunService.LogEnvironment(
             id=self.id, environment=env._as_env_proto())
         response = self._conn.make_proto_request(
