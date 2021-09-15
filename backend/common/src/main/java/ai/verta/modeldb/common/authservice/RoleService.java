@@ -20,7 +20,8 @@ public interface RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
-      ResourceVisibility resourceVisibility);
+      ResourceVisibility resourceVisibility,
+      boolean isServiceUser);
 
   boolean deleteEntityResourcesWithServiceUser(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
