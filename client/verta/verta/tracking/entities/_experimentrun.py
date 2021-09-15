@@ -410,6 +410,21 @@ class ExperimentRun(_DeployableEntity):
 
         self._clear_cache()
 
+    def _get_artifact_msg(self, key):
+        # get key-path from ModelDB
+        msg = _CommonService.GetArtifacts(id=self.id, key=key)
+        endpoint = "/api/v1/modeldb/experiment-run/getArtifacts"
+        response = self._conn.make_proto_request("GET", endpoint, params=msg)
+        response = self._conn.must_proto_response(response, msg.Response)
+
+        artifact_msg = {
+            artifact.key: artifact for artifact in response.artifacts
+        }.get(key)
+
+        if artifact_msg is None:
+            raise KeyError("no artifact found with key {}".format(key))
+        return artifact_msg
+
     def _get_artifact(self, key):
         """
         Gets the artifact with name `key` from this Experiment Run.
@@ -430,22 +445,8 @@ class ExperimentRun(_DeployableEntity):
             True if the artifact was only logged as its filesystem path.
 
         """
-        # get key-path from ModelDB
-        Message = _CommonService.GetArtifacts
-        msg = Message(id=self.id, key=key)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(
-                                           self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
+        artifact = self._get_artifact_msg(key)
 
-        response_msg = _utils.json_to_proto(
-            _utils.body_to_json(response), Message.Response)
-        artifact = {
-            artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
-        if artifact is None:
-            raise KeyError("no artifact found with key {}".format(key))
         if artifact.path_only:
             return artifact.path, artifact.path_only
         else:
@@ -1492,23 +1493,7 @@ class ExperimentRun(_DeployableEntity):
     def download_artifact(self, key, download_to_path):
         download_to_path = os.path.abspath(download_to_path)
 
-        # get key-path from ModelDB
-        # TODO: consolidate the following ~12 lines with ExperimentRun._get_artifact()
-        Message = _CommonService.GetArtifacts
-        msg = Message(id=self.id, key=key)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(
-                                           self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(
-            _utils.body_to_json(response), Message.Response)
-        artifact = {
-            artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
-        if artifact is None:
-            raise KeyError("no artifact found with key {}".format(key))
+        artifact = self._get_artifact_msg(key)
 
         # create parent dirs
         pathlib2.Path(download_to_path).parent.mkdir(

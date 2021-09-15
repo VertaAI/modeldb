@@ -54,6 +54,22 @@ class _DeployableEntity(_ModelDBEntity):
         )
 
     @abc.abstractmethod
+    def _get_artifact_msg(self, key):
+        """Get Artifact protobuf with `key`.
+
+        Paramaters
+        ----------
+        key : str
+            Artifact key.
+
+        Returns
+        -------
+        common.CommonService_pb2.Artifact
+
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def _get_artifact(self, key):
         raise NotImplementedError
 
