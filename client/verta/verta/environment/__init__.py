@@ -4,10 +4,11 @@
 from verta._internal_utils import documentation
 
 from ._environment import _Environment
+from ._docker import Docker
 from ._python import Python
 
 
 documentation.reassign_module(
-    [Python],
+    [Docker, Python],
     module_name=__name__,
 )
