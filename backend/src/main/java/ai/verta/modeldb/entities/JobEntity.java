@@ -3,7 +3,6 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.Job;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -22,7 +21,7 @@ public class JobEntity {
 
   public JobEntity() {}
 
-  public JobEntity(Job job) throws InvalidProtocolBufferException {
+  public JobEntity(Job job) {
     setId(job.getId());
     setDescription(job.getDescription());
     setStart_time(job.getStartTime());
@@ -137,7 +136,7 @@ public class JobEntity {
     this.attributeMapping.addAll(attributeMapping);
   }
 
-  public Job getProtoObject() throws InvalidProtocolBufferException {
+  public Job getProtoObject() {
     return Job.newBuilder()
         .setId(getId())
         .setDescription(getDescription())

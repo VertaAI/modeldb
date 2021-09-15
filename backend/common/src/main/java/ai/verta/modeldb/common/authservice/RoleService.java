@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 public interface RoleService {
 
@@ -21,7 +20,8 @@ public interface RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
-      ResourceVisibility resourceVisibility);
+      ResourceVisibility resourceVisibility,
+      boolean isServiceUser);
 
   boolean deleteEntityResourcesWithServiceUser(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
@@ -32,16 +32,14 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   default GetResourcesResponseItem getEntityResource(
-      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes)
-      throws ExecutionException, InterruptedException {
+      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return getEntityResource(Optional.of(entityId), Optional.empty(), modelDBServiceResourceTypes);
   }
 
   List<GetResourcesResponseItem> getEntityResourcesByName(
       Optional<String> entityName,
       Optional<String> workspaceName,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes)
-      throws ExecutionException, InterruptedException;
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   GeneratedMessageV3 getOrgById(String orgId);
 

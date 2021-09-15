@@ -4,7 +4,6 @@ import ai.verta.common.CodeVersion;
 import ai.verta.common.GitSnapshot;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
@@ -15,7 +14,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -121,12 +119,7 @@ public class CodeVersionFromBlobHandler {
           codeBlobMap = new LinkedHashMap<>();
         }
         Location.Builder locationBuilder = Location.newBuilder();
-        try {
-          CommonUtils.getProtoObjectFromString(versioningLocation, locationBuilder);
-        } catch (InvalidProtocolBufferException ex) {
-          throw new InternalErrorException(
-              "Error getting while converting versioning location:" + ex.getMessage());
-        }
+        CommonUtils.getProtoObjectFromString(versioningLocation, locationBuilder);
         codeBlobMap.put(
             ModelDBUtils.getLocationWithSlashOperator(locationBuilder.getLocationList()),
             codeVersionBuilder.build());

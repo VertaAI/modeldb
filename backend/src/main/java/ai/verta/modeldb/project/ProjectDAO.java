@@ -11,9 +11,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public interface ProjectDAO {
 
@@ -24,35 +22,28 @@ public interface ProjectDAO {
    * @param userInfo : current login userInfo
    * @return Project
    */
-  Project insertProject(CreateProject createProjectRequest, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Project insertProject(CreateProject createProjectRequest, UserInfo userInfo);
 
   /**
    * @param projectId : project.id
    * @param projectDescription : updated project description from client request
    * @return {@link Project} : updated project
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Project updateProjectDescription(String projectId, String projectDescription)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Project updateProjectDescription(String projectId, String projectDescription);
 
   /**
    * @param projectId : project.id
    * @param projectReadme : updated project readme text from client request
    * @return {@link Project} : updated project
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Project updateProjectReadme(String projectId, String projectReadme)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Project updateProjectReadme(String projectId, String projectReadme);
 
   /**
    * @param projectId : project.id
    * @param updatedCodeVersion : updated project codeVersion snapshot from client request
    * @return {@link Project} : updated project
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Project logProjectCodeVersion(String projectId, CodeVersion updatedCodeVersion)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Project logProjectCodeVersion(String projectId, CodeVersion updatedCodeVersion);
 
   /**
    * Update Project Attributes in database using projectId.
@@ -63,8 +54,7 @@ public interface ProjectDAO {
    * @param String projectId, KeyValue attribute
    * @return Project updated Project entity
    */
-  Project updateProjectAttributes(String projectId, KeyValue attribute)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Project updateProjectAttributes(String projectId, KeyValue attribute);
 
   /**
    * Fetch Project Attributes from database using projectId.
@@ -73,11 +63,9 @@ public interface ProjectDAO {
    * @param attributeKeyList
    * @param String projectId
    * @return List<KeyValue> projectAttributes.
-   * @throws InvalidProtocolBufferException
    */
   List<KeyValue> getProjectAttributes(
-      String projectId, List<String> attributeKeyList, Boolean getAll)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      String projectId, List<String> attributeKeyList, Boolean getAll);
 
   /**
    * Delete the Projects in database using projectIds.
@@ -86,9 +74,8 @@ public interface ProjectDAO {
    *
    * @param projectIds : list of Project.id
    * @return {@link List} : deleted projectIds
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  List<String> deleteProjects(List<String> projectIds) throws InvalidProtocolBufferException;
+  List<String> deleteProjects(List<String> projectIds);
 
   /**
    * Fetch All the Project from database bases on user details.
@@ -101,7 +88,6 @@ public interface ProjectDAO {
    * @param projectVisibility : ProjectVisibility.PUBLIC, ProjectVisibility.PRIVATE
    * @return {@link ProjectPaginationDTO} : projectPaginationDTO contains the projectList &
    *     total_pages count
-   * @throws InvalidProtocolBufferException : InvalidProtocolBufferException
    */
   ProjectPaginationDTO getProjects(
       UserInfo userInfo,
@@ -109,18 +95,15 @@ public interface ProjectDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      ResourceVisibility projectVisibility)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      ResourceVisibility projectVisibility);
 
   /**
    * Update Project Tags in database using projectId.
    *
    * @param String projectId, List<String> tagsList
    * @return Project updated Project entity
-   * @throws InvalidProtocolBufferException
    */
-  Project addProjectTags(String projectId, List<String> tagsList)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Project addProjectTags(String projectId, List<String> tagsList);
 
   /**
    * Delete Project Tags in database using projectId.
@@ -129,10 +112,8 @@ public interface ProjectDAO {
    * @param deleteAll
    * @param String projectId
    * @return Project project
-   * @throws InvalidProtocolBufferException
    */
-  Project deleteProjectTags(String projectId, List<String> projectTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Project deleteProjectTags(String projectId, List<String> projectTagList, Boolean deleteAll);
 
   /**
    * Fetch the Projects based on key and value from database.
@@ -141,10 +122,8 @@ public interface ProjectDAO {
    * @param value : value is project.Id, project.name etc.
    * @param userInfo : current login user
    * @return {@link Project} : project based on search return project entity.
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  List<Project> getProjects(String key, String value, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  List<Project> getProjects(String key, String value, UserInfo userInfo);
 
   /**
    * Add attributes in database using projectId.
@@ -153,8 +132,7 @@ public interface ProjectDAO {
    * @param List<KeyValue> attributesList
    * @return Project --> updated Project entity
    */
-  Project addProjectAttributes(String projectId, List<KeyValue> attributesList)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Project addProjectAttributes(String projectId, List<KeyValue> attributesList);
 
   /**
    * Delete Project Attributes in database using projectId.
@@ -163,21 +141,17 @@ public interface ProjectDAO {
    * @param attributeKeyList
    * @param String projectId
    * @return Project project
-   * @throws InvalidProtocolBufferException
    */
   Project deleteProjectAttributes(
-      String projectId, List<String> attributeKeyList, Boolean deleteAll)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      String projectId, List<String> attributeKeyList, Boolean deleteAll);
 
   /**
    * Fetch Project Tags from database using projectId.
    *
    * @param String projectId
    * @return List<String> projectTags.
-   * @throws InvalidProtocolBufferException
    */
-  List<String> getProjectTags(String projectId)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  List<String> getProjectTags(String projectId);
 
   /**
    * Deep copy project in database. In current scope we deep copy associated Experiments and
@@ -186,9 +160,7 @@ public interface ProjectDAO {
    * @param Project project
    * @return Project
    */
-  Project deepCopyProjectForUser(String srcProjectID, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException;
+  Project deepCopyProjectForUser(String srcProjectID, UserInfo userInfo) throws ModelDBException;
 
   /**
    * Fetch the Projects corresponding to the id
@@ -196,8 +168,7 @@ public interface ProjectDAO {
    * @param id
    * @return Project
    */
-  Project getProjectByID(String id)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Project getProjectByID(String id);
 
   /**
    * Fetch count of experiment of project
@@ -222,11 +193,9 @@ public interface ProjectDAO {
    * @param projectShortName
    * @param userInfo
    * @return updated project
-   * @throws InvalidProtocolBufferException
    */
   Project setProjectShortName(String projectId, String projectShortName, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException;
+      throws ModelDBException;
 
   /**
    * Return public projects
@@ -234,11 +203,9 @@ public interface ProjectDAO {
    * @param hostUserInfo
    * @param currentLoginUserInfo
    * @return List<Project> public project list
-   * @throws InvalidProtocolBufferException
    */
   List<Project> getPublicProjects(
-      UserInfo hostUserInfo, UserInfo currentLoginUserInfo, String workspaceName)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      UserInfo hostUserInfo, UserInfo currentLoginUserInfo, String workspaceName);
 
   /**
    * Return list of projects based on FindProjects queryParameters
@@ -249,14 +216,12 @@ public interface ProjectDAO {
    * @param projectVisibility : projectVisibility.PUBLIC, projectVisibility.PRIVATE
    * @return {@link ProjectPaginationDTO} : projectPaginationDTO contains the list of projects based
    *     on filter queryParameters & total_pages count
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   ProjectPaginationDTO findProjects(
       FindProjects queryParameters,
       CollaboratorBase host,
       UserInfo currentLoginUserInfo,
-      ResourceVisibility projectVisibility)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      ResourceVisibility projectVisibility);
 
   /**
    * Project has artifacts field. Add new Artifact in that artifacts List.
@@ -264,20 +229,16 @@ public interface ProjectDAO {
    * @param projectId : project.id
    * @param artifacts : project.artifacts
    * @return {@link Project} : updated project
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Project logArtifacts(String projectId, List<Artifact> artifacts)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Project logArtifacts(String projectId, List<Artifact> artifacts);
 
   /**
    * Return List<Artifact> artifacts from Project entity.
    *
    * @param projectId : project.id
    * @return {@link List<Artifact>} : artifact list from project
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  List<Artifact> getProjectArtifacts(String projectId)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  List<Artifact> getProjectArtifacts(String projectId);
 
   /**
    * Deletes the artifact key associated with the experiment run
@@ -285,13 +246,11 @@ public interface ProjectDAO {
    * @param projectId : project.id
    * @param artifactKey : artifact.key
    * @return {@link Project} : updated project
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Project deleteArtifacts(String projectId, String artifactKey)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Project deleteArtifacts(String projectId, String artifactKey);
 
-  List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo)
-      throws InvalidProtocolBufferException;
+  List<String> getWorkspaceProjectIDs(String workspaceName, UserInfo currentLoginUserInfo);
+
   /**
    * Checks if project with the id exists with delete flag false
    *

@@ -3,7 +3,6 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -24,7 +23,7 @@ public class DatasetVersionEntity {
 
   public DatasetVersionEntity() {}
 
-  public DatasetVersionEntity(DatasetVersion datasetVersion) throws InvalidProtocolBufferException {
+  public DatasetVersionEntity(DatasetVersion datasetVersion) {
     setId(datasetVersion.getId());
     setParent_id(datasetVersion.getParentId());
     setDataset_id(datasetVersion.getDatasetId());
@@ -257,7 +256,7 @@ public class DatasetVersionEntity {
     this.deleted = deleted;
   }
 
-  public DatasetVersion getProtoObject() throws InvalidProtocolBufferException {
+  public DatasetVersion getProtoObject() {
     DatasetVersion.Builder datasetVersionBuilder =
         DatasetVersion.newBuilder()
             .setId(getId())
