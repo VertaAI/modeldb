@@ -20,8 +20,7 @@ from verta._internal_utils import (
     _histogram_utils,
     _utils,
 )
-
-from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta.environment import Python
 
 from verta.external import six
 
@@ -91,6 +90,22 @@ class _DeployableEntity(_ModelDBEntity):
 
         """
         raise NotImplementedError
+
+    def get_environment(self):
+        """Gets the logged environment.
+
+        Returns
+        -------
+        :mod:`~verta.environment`
+            Logged environment.
+
+        """
+        self._refresh_cache()
+        if not self.has_environment:
+            raise RuntimeError("environment was not previously set")
+
+        # TODO: rework to/from proto because this is not intuitive (VR-9924)
+        return Python._from_proto(self._msg)
 
     @abc.abstractmethod
     def log_model(
