@@ -104,13 +104,12 @@ class Python(_environment._Environment):
         if self._msg.python.constraints or self._msg.python.raw_constraints:
             lines.append("constraints:")
             lines.extend(map("    {}".format, self.constraints))
-        if self._msg.environment_variables:
+        if self.env_vars:
             lines.append("environment variables:")
             lines.extend(
-                "    {}={}".format(env_var_msg.name, env_var_msg.value)
-                for env_var_msg in sorted(
-                    self._msg.environment_variables,
-                    key=lambda env_var_msg: env_var_msg.name,
+                sorted(
+                    "    {}={}".format(name, value)
+                    for name, value in self.env_vars.items()
                 )
             )
         if self.apt_packages:
