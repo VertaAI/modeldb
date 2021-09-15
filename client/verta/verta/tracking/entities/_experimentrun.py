@@ -62,8 +62,6 @@ class ExperimentRun(_DeployableEntity):
 
     """
 
-    _MODEL_KEY = _artifact_utils.MODEL_KEY
-
     def __init__(self, conn, conf, msg):
         super(ExperimentRun, self).__init__(conn, conf,
                                             _ExperimentRunService, "experiment-run", msg)
@@ -103,6 +101,10 @@ class ExperimentRun(_DeployableEntity):
         self._hyperparameters = _utils.unravel_key_values(
             self._msg.hyperparameters)
         self._metrics = _utils.unravel_key_values(self._msg.metrics)
+
+    @property
+    def _MODEL_KEY(self):
+        return _artifact_utils.MODEL_KEY
 
     @property
     def workspace(self):

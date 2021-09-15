@@ -66,8 +66,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     """
 
-    _MODEL_KEY = _artifact_utils.REGISTRY_MODEL_KEY
-
     ModelVersionMessage = _RegistryService.ModelVersion
 
     def __init__(self, conn, conf, msg):
@@ -123,6 +121,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "artifact keys: {}".format(artifact_keys),
             )
         )
+
+    @property
+    def _MODEL_KEY(self):
+        return _artifact_utils.REGISTRY_MODEL_KEY
 
     @property
     def name(self):

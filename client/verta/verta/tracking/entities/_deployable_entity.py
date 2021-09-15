@@ -46,7 +46,16 @@ _TRAINING_DATA_ATTR_PREFIX = _INTERNAL_ATTR_PREFIX + "training_data_"
 @six.add_metaclass(abc.ABCMeta)
 class _DeployableEntity(_ModelDBEntity):
 
-    _MODEL_KEY = None
+    @abc.abstractproperty
+    def _MODEL_KEY(self):
+        """Artifact key used for models.
+
+        Returns
+        -------
+        str
+
+        """
+        raise NotImplementedError
 
     @property
     def _histogram_endpoint(self):
