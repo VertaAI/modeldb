@@ -17,6 +17,11 @@ class _Environment(_blob.Blob):
 
     Handles environment variables and command line arguments.
 
+    Attributes
+    ----------
+    env_vars : dict of str to str
+        Environment variables.
+
     """
 
     def __init__(self, env_vars, autocapture, apt_packages=None):
@@ -43,6 +48,10 @@ class _Environment(_blob.Blob):
             self._msg.apt.CopyFrom(apt_blob)
         else:
             self._msg.apt.Clear()
+
+    @property
+    def env_vars(self):
+        return {var.name: var.value for var in self._msg.environment_variables}
 
     def _as_env_proto(self):
         """Returns this environment blob as an environment protobuf message.

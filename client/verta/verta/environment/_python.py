@@ -49,6 +49,8 @@ class Python(_environment._Environment):
         pip requirements.
     apt_packages : list of str
         Apt packages to be installed alongside a Python environment.
+    env_vars : dict of str to str
+        Environment variables.
 
     Examples
     --------
