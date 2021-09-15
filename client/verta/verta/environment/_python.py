@@ -34,8 +34,10 @@ class Python(_environment._Environment):
     constraints : list of str, optional
         List of PyPI package names with version specifiers. If not provided, nothing will be
         captured.
-    env_vars : list of str, optional
-        Names of environment variables to capture. If not provided, nothing will be captured.
+    env_vars : list of str, or dict of str to str, optional
+        Environment variables. If a list of names is provided, the values will
+        be captured from the current environment. If not provided, nothing
+        will be captured.
     apt_packages : list of str, optional
         Apt packages to be installed alongside a Python environment.
     _autocapture : bool, default True
