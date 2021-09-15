@@ -188,6 +188,8 @@ public class ProjectTest extends TestsInit {
             .setPath("This is data artifact type in Google developer datasets")
             .setArtifactType(ArtifactType.MODEL)
             .setLinkedArtifactId(datasetVersion1.getId())
+            .setUploadCompleted(
+                !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
             .build());
     datasets.add(
         Artifact.newBuilder()
@@ -195,6 +197,8 @@ public class ProjectTest extends TestsInit {
             .setPath("This is data artifact type in Google Pay datasets")
             .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion1.getId())
+            .setUploadCompleted(
+                !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
             .build());
     CreateExperimentRun createExperimentRunRequest =
         ExperimentRunTest.getCreateExperimentRunRequest(
@@ -300,6 +304,8 @@ public class ProjectTest extends TestsInit {
             .setPath(
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Flh3.googleusercontent.com%2FFyZA5SbKPJA7Y3XCeb9-uGwow8pugxj77Z1xvs8vFS6EI3FABZDCDtA9ScqzHKjhU8av_Ck95ET-P_rPJCbC2v_OswCN8A%3Ds688&imgrefurl=https%3A%2F%2Fdevelopers.google.com%2F&docid=1MVaWrOPIjYeJM&tbnid=I7xZkRN5m6_z-M%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw..i&w=688&h=387&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw&iact=mrc&uact=8")
             .setArtifactType(ArtifactType.BLOB)
+            .setUploadCompleted(
+                !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
             .build());
     artifactList.add(
         Artifact.newBuilder()
@@ -307,6 +313,8 @@ public class ProjectTest extends TestsInit {
             .setPath(
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Fpay.google.com%2Fabout%2Fstatic%2Fimages%2Fsocial%2Fknowledge_graph_logo.png&imgrefurl=https%3A%2F%2Fpay.google.com%2Fabout%2F&docid=zmoE9BrSKYr4xM&tbnid=eCL1Y6f9xrPtDM%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg..i&w=1200&h=630&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg&iact=mrc&uact=8")
             .setArtifactType(ArtifactType.IMAGE)
+            .setUploadCompleted(
+                !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
             .build());
 
     return CreateProject.newBuilder()
@@ -2554,6 +2562,9 @@ public class ProjectTest extends TestsInit {
                               .setKey("code_version_image")
                               .setPath("https://xyz_path_string.com/image.png")
                               .setArtifactType(ArtifactType.CODE)
+                              .setUploadCompleted(
+                                  !testConfig.artifactStoreConfig.artifactStoreType.equals(
+                                      ModelDBConstants.S3))
                               .build())
                       .build())
               .build();
@@ -2616,6 +2627,9 @@ public class ProjectTest extends TestsInit {
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
                             .setArtifactType(ArtifactType.CODE)
+                            .setUploadCompleted(
+                                !testConfig.artifactStoreConfig.artifactStoreType.equals(
+                                    ModelDBConstants.S3))
                             .build())
                     .build())
             .build();
