@@ -7,10 +7,8 @@ import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import org.hibernate.Session;
 
 public interface DatasetDAO {
@@ -21,20 +19,16 @@ public interface DatasetDAO {
    * @param dataset : newDataset
    * @param userInfo : current login user
    * @return {@link Dataset} : dataset
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Dataset createDataset(Dataset dataset, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Dataset createDataset(Dataset dataset, UserInfo userInfo);
 
   /**
    * Get datasets matching the IDs
    *
    * @param sharedDatasetIds : dataset id list
    * @return {@link List<Dataset>} : dataset list
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  List<Dataset> getDatasetByIds(List<String> sharedDatasetIds)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  List<Dataset> getDatasetByIds(List<String> sharedDatasetIds);
 
   /**
    * Fetch all the dataset based on user details and filter parameters.
@@ -47,7 +41,6 @@ public interface DatasetDAO {
    * @param datasetVisibility : ResourceVisibility.PRIVATE, ResourceVisibility.PUBLIC
    * @return {@link DatasetPaginationDTO} : datasetPaginationDTO contains the experimentRunList &
    *     total_pages count
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
   DatasetPaginationDTO getDatasets(
       UserInfo userInfo,
@@ -55,8 +48,7 @@ public interface DatasetDAO {
       Integer pageLimit,
       Boolean order,
       String sortKey,
-      ResourceVisibility datasetVisibility)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      ResourceVisibility datasetVisibility);
 
   /**
    * Delete the Datasets in database using datasetIds.
@@ -64,17 +56,15 @@ public interface DatasetDAO {
    * @param datasetIds : list of dataset.id
    * @return {@link Boolean} : updated status
    */
-  Boolean deleteDatasets(List<String> datasetIds) throws InvalidProtocolBufferException;
+  Boolean deleteDatasets(List<String> datasetIds);
 
   /**
    * Get dataset with the matching ID.
    *
    * @param datasetId : id of the dataset to get
    * @return {@link Dataset} dataset with the matching id
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Dataset getDatasetById(String datasetId)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Dataset getDatasetById(String datasetId);
 
   DatasetEntity getDatasetEntity(Session session, String datasetId);
 
@@ -86,11 +76,9 @@ public interface DatasetDAO {
    * @param resourceVisibility : ResourceVisibility.PRIVATE, ResourceVisibility.PUBLIC
    * @return {@link DatasetPaginationDTO} : datasetPaginationDTO contains the list of datasets based
    *     on filter queryParameters & total_pages count
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   DatasetPaginationDTO findDatasets(
-      FindDatasets queryParameters, UserInfo userInfo, ResourceVisibility resourceVisibility)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      FindDatasets queryParameters, UserInfo userInfo, ResourceVisibility resourceVisibility);
 
   /**
    * Fetch the Dataset based on key and value from database.
@@ -99,10 +87,8 @@ public interface DatasetDAO {
    * @param value : value is dataset.Id, dataset.name etc.
    * @param userInfo : current login userInfo
    * @return Dataset dataset : based on search return dataset entity.
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  List<Dataset> getDatasets(String key, String value, UserInfo userInfo)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  List<Dataset> getDatasets(String key, String value, UserInfo userInfo);
 
   /**
    * Update dataset name
@@ -110,10 +96,8 @@ public interface DatasetDAO {
    * @param datasetId : dataset.id
    * @param datasetName : Dataset.name
    * @return {@link Dataset} : updated Dataset
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
-  Dataset updateDatasetName(String datasetId, String datasetName)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Dataset updateDatasetName(String datasetId, String datasetName);
 
   /**
    * Update dataset description
@@ -121,10 +105,8 @@ public interface DatasetDAO {
    * @param datasetId : dataset.id
    * @param datasetDescription : Dataset.description
    * @return {@link Dataset} : updated Dataset
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
-  Dataset updateDatasetDescription(String datasetId, String datasetDescription)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Dataset updateDatasetDescription(String datasetId, String datasetDescription);
 
   /**
    * Update Dataset Tags in database using datasetId.
@@ -132,20 +114,16 @@ public interface DatasetDAO {
    * @param datasetId : dataset.id
    * @param tagsList : List<String> new added tags
    * @return {@link Dataset} Dataset : updated Dataset entity
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Dataset addDatasetTags(String datasetId, List<String> tagsList)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Dataset addDatasetTags(String datasetId, List<String> tagsList);
 
   /**
    * Get dataset tags from database
    *
    * @param datasetId : dataset.id
    * @return {@link List<String>} dataset.tags
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
-  List<String> getDatasetTags(String datasetId)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  List<String> getDatasetTags(String datasetId);
 
   /**
    * Delete Dataset Tags in database using datasetId.
@@ -154,10 +132,8 @@ public interface DatasetDAO {
    * @param deleteAll : flag for identification of delete all tag
    * @param datasetId : dataset.id
    * @return Dataset : dataset
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  Dataset deleteDatasetTags(String datasetId, List<String> datasetTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Dataset deleteDatasetTags(String datasetId, List<String> datasetTagList, Boolean deleteAll);
 
   /**
    * Add attributes in database using datasetId
@@ -165,10 +141,8 @@ public interface DatasetDAO {
    * @param datasetId : dataset.id
    * @param attributesList : new attribute list
    * @return {@link Dataset} updatedDataset : updated Dataset entity
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
-  Dataset addDatasetAttributes(String datasetId, List<KeyValue> attributesList)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Dataset addDatasetAttributes(String datasetId, List<KeyValue> attributesList);
 
   /**
    * Update Dataset Attributes in database using datasetId.
@@ -179,10 +153,8 @@ public interface DatasetDAO {
    * @param datasetId : dataset.id
    * @param attribute : attribute for update
    * @return {@link Dataset} updatedDataset : updated Dataset entity
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
-  Dataset updateDatasetAttributes(String datasetId, KeyValue attribute)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+  Dataset updateDatasetAttributes(String datasetId, KeyValue attribute);
 
   /**
    * Fetch Dataset Attributes from database using datasetId.
@@ -191,11 +163,9 @@ public interface DatasetDAO {
    * @param attributeKeyList : attribute keys
    * @param getAll : flag
    * @return {@link List<KeyValue>} datasetAttributes
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
   List<KeyValue> getDatasetAttributes(
-      String datasetId, List<String> attributeKeyList, Boolean getAll)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      String datasetId, List<String> attributeKeyList, Boolean getAll);
 
   /**
    * Delete Dataset Attributes in database using datasetId.
@@ -204,11 +174,9 @@ public interface DatasetDAO {
    * @param attributeKeyList : attribute keys
    * @param deleteAll : flag
    * @return {@link Dataset} updatedDataset
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
   Dataset deleteDatasetAttributes(
-      String datasetId, List<String> attributeKeyList, Boolean deleteAll)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      String datasetId, List<String> attributeKeyList, Boolean deleteAll);
 
   /**
    * Getting all the owners with respected to dataset ids and returned by this method.
@@ -218,8 +186,7 @@ public interface DatasetDAO {
    */
   Map<String, String> getOwnersByDatasetIds(List<String> datasetIds);
 
-  List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo)
-      throws InvalidProtocolBufferException;
+  List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo);
 
   /**
    * Checks if dataset with the id exists with delete flag false

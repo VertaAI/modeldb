@@ -144,6 +144,10 @@ public abstract class CommonHibernateUtil {
           // registry so need to clean it as well.
           sessionFactory = null;
         }
+        if (e instanceof InterruptedException) {
+          // Restore interrupted state...
+          Thread.currentThread().interrupt();
+        }
         throw new ModelDBException(e.getMessage(), e);
       }
     } else {
@@ -203,6 +207,10 @@ public abstract class CommonHibernateUtil {
       LOGGER.warn(
           "CommonHibernateUtil validateConnectionAndFetchExistingSessionFactory() getting error ",
           ex);
+      if (ex instanceof InterruptedException) {
+        // Restore interrupted state...
+        Thread.currentThread().interrupt();
+      }
       throw new UnavailableException(ex.getMessage());
     }
   }

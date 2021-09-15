@@ -24,14 +24,12 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
 import java.math.BigInteger;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.*;
@@ -53,19 +51,17 @@ public class RdbmsUtils {
   private static final String MAX_EPOCH_NUMBER_SQL_3 =
       "' and  entity_name IS NULL) k where o.keyvaluemapping_id = k.id ";
 
-  public static JobEntity generateJobEntity(Job job) throws InvalidProtocolBufferException {
+  public static JobEntity generateJobEntity(Job job) {
     return new JobEntity(job);
   }
 
-  public static ProjectEntity generateProjectEntity(Project project)
-      throws InvalidProtocolBufferException {
+  public static ProjectEntity generateProjectEntity(Project project) {
     return new ProjectEntity(project);
   }
 
   // TODO: delete as it seems unused
   public static List<Project> convertProjectsFromProjectEntityList(
-      RoleService roleService, AuthService authService, List<ProjectEntity> projectEntityList)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      RoleService roleService, AuthService authService, List<ProjectEntity> projectEntityList) {
     List<Project> projects = new ArrayList<>();
     if (projectEntityList != null) {
       Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
@@ -79,13 +75,12 @@ public class RdbmsUtils {
     return projects;
   }
 
-  public static ExperimentEntity generateExperimentEntity(Experiment experiment)
-      throws InvalidProtocolBufferException {
+  public static ExperimentEntity generateExperimentEntity(Experiment experiment) {
     return new ExperimentEntity(experiment);
   }
 
   public static List<Experiment> convertExperimentsFromExperimentEntityList(
-      List<ExperimentEntity> experimentEntityList) throws InvalidProtocolBufferException {
+      List<ExperimentEntity> experimentEntityList) {
     List<Experiment> experiments = new ArrayList<>();
     if (experimentEntityList != null) {
       for (ExperimentEntity experimentEntity : experimentEntityList) {
@@ -96,7 +91,7 @@ public class RdbmsUtils {
   }
 
   public static List<ExperimentRun> convertExperimentRunsFromExperimentRunEntityList(
-      List<ExperimentRunEntity> experimentRunEntityList) throws InvalidProtocolBufferException {
+      List<ExperimentRunEntity> experimentRunEntityList) {
     List<ExperimentRun> experimentRuns = new ArrayList<>();
     if (experimentRunEntityList != null) {
       for (ExperimentRunEntity experimentRunEntity : experimentRunEntityList) {
@@ -106,19 +101,17 @@ public class RdbmsUtils {
     return experimentRuns;
   }
 
-  public static ExperimentRunEntity generateExperimentRunEntity(ExperimentRun experimentRun)
-      throws InvalidProtocolBufferException {
+  public static ExperimentRunEntity generateExperimentRunEntity(ExperimentRun experimentRun) {
     return new ExperimentRunEntity(experimentRun);
   }
 
   public static AttributeEntity generateAttributeEntity(
-      Object entity, String fieldType, KeyValue attribute) throws InvalidProtocolBufferException {
+      Object entity, String fieldType, KeyValue attribute) {
     return new AttributeEntity(entity, fieldType, attribute);
   }
 
   public static List<AttributeEntity> convertAttributesFromAttributeEntityList(
-      Object entity, String fieldType, List<KeyValue> attributes)
-      throws InvalidProtocolBufferException {
+      Object entity, String fieldType, List<KeyValue> attributes) {
     List<AttributeEntity> attributeList = new ArrayList<>();
     if (attributes != null) {
       for (KeyValue attribute : attributes) {
@@ -130,14 +123,14 @@ public class RdbmsUtils {
   }
 
   public static List<KeyValue> convertAttributeEntityListFromAttributes(
-      List<AttributeEntity> attributeEntityList) throws InvalidProtocolBufferException {
+      List<AttributeEntity> attributeEntityList) {
 
     LOGGER.trace("Converting AttributeEntityListFromAttributes ");
     List<KeyValue> attributeList = new ArrayList<>();
     if (attributeEntityList != null) {
       attributeList =
           attributeEntityList.stream()
-              .map(RdbmsUtils::getKeyValueFromAttributeEntity)
+              .map(AttributeEntity::getProtoObj)
               .sorted(Comparator.comparing(KeyValue::getKey))
               .collect(Collectors.toList());
     }
@@ -145,22 +138,13 @@ public class RdbmsUtils {
     return attributeList;
   }
 
-  private static KeyValue getKeyValueFromAttributeEntity(AttributeEntity attributeEntity) {
-    try {
-      return attributeEntity.getProtoObj();
-    } catch (InvalidProtocolBufferException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public static KeyValueEntity generateKeyValueEntity(
-      Object entity, String fieldType, KeyValue keyValue) throws InvalidProtocolBufferException {
+      Object entity, String fieldType, KeyValue keyValue) {
     return new KeyValueEntity(entity, fieldType, keyValue);
   }
 
   public static List<KeyValueEntity> convertKeyValuesFromKeyValueEntityList(
-      Object entity, String fieldType, List<KeyValue> keyValueList)
-      throws InvalidProtocolBufferException {
+      Object entity, String fieldType, List<KeyValue> keyValueList) {
     List<KeyValueEntity> attributeList = new ArrayList<>();
     if (keyValueList != null) {
       for (KeyValue keyValue : keyValueList) {
@@ -172,27 +156,19 @@ public class RdbmsUtils {
   }
 
   public static List<KeyValue> convertKeyValueEntityListFromKeyValues(
-      List<KeyValueEntity> keyValueEntityList) throws InvalidProtocolBufferException {
+      List<KeyValueEntity> keyValueEntityList) {
 
     LOGGER.trace("Converting KeyValueEntityListFromKeyValues ");
     List<KeyValue> attributeList = new ArrayList<>();
     if (keyValueEntityList != null) {
       attributeList =
           keyValueEntityList.stream()
-              .map(RdbmsUtils::getKeyValueFromKeyValueEntity)
+              .map(KeyValueEntity::getProtoKeyValue)
               .sorted(Comparator.comparing(KeyValue::getKey))
               .collect(Collectors.toList());
     }
     LOGGER.trace("Converted KeyValueEntityListFromKeyValues ");
     return attributeList;
-  }
-
-  private static KeyValue getKeyValueFromKeyValueEntity(KeyValueEntity keyValueEntity) {
-    try {
-      return keyValueEntity.getProtoKeyValue();
-    } catch (InvalidProtocolBufferException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   public static ArtifactEntity generateArtifactEntity(
@@ -228,8 +204,7 @@ public class RdbmsUtils {
       String fieldType,
       Observation observation,
       String entity_name,
-      String entity_id)
-      throws InvalidProtocolBufferException {
+      String entity_id) {
     if (session == null // request came from creating the entire ExperimentRun
         || observation.hasEpochNumber()) {
       if (observation.getEpochNumber().getKindCase() != KindCase.NUMBER_VALUE) {
@@ -273,8 +248,7 @@ public class RdbmsUtils {
       String fieldType,
       List<Observation> observationList,
       String entity_name,
-      String entity_id)
-      throws InvalidProtocolBufferException {
+      String entity_id) {
     LOGGER.trace("Converting ObservationsFromObservationEntityList");
     LOGGER.trace("fieldType {}", fieldType);
     List<ObservationEntity> observationEntityList = new ArrayList<>();
@@ -293,13 +267,13 @@ public class RdbmsUtils {
   }
 
   public static List<Observation> convertObservationEntityListFromObservations(
-      List<ObservationEntity> observationEntityList) throws InvalidProtocolBufferException {
+      List<ObservationEntity> observationEntityList) {
     List<Observation> observationList = new ArrayList<>();
     LOGGER.trace("Converting ObservationEntityListFromObservations");
     if (observationEntityList != null) {
       observationList =
           observationEntityList.stream()
-              .map(RdbmsUtils::getObservationFromObservationEntity)
+              .map(ObservationEntity::getProtoObject)
               .sorted(Comparator.comparing(RdbmsUtils::getObservationCompareKey))
               .collect(Collectors.toList());
     }
@@ -312,15 +286,6 @@ public class RdbmsUtils {
       return observation.getArtifact().getKey();
     } else {
       return observation.getAttribute().getKey();
-    }
-  }
-
-  private static Observation getObservationFromObservationEntity(
-      ObservationEntity observationEntity) {
-    try {
-      return observationEntity.getProtoObject();
-    } catch (InvalidProtocolBufferException e) {
-      throw new RuntimeException(e);
     }
   }
 
@@ -366,14 +331,12 @@ public class RdbmsUtils {
     return Collections.emptyList();
   }
 
-  public static DatasetEntity generateDatasetEntity(Dataset dataset)
-      throws InvalidProtocolBufferException {
+  public static DatasetEntity generateDatasetEntity(Dataset dataset) {
     return new DatasetEntity(dataset);
   }
 
   public static List<Dataset> convertDatasetsFromDatasetEntityList(
-      RoleService roleService, List<DatasetEntity> datasetEntityList)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+      RoleService roleService, List<DatasetEntity> datasetEntityList) {
     List<Dataset> datasets = new ArrayList<>();
     if (datasetEntityList != null) {
       for (DatasetEntity datasetEntity : datasetEntityList) {
@@ -393,13 +356,12 @@ public class RdbmsUtils {
     return new GitSnapshotEntity(fieldType, gitSnapshot);
   }
 
-  public static DatasetVersionEntity generateDatasetVersionEntity(DatasetVersion datasetVersion)
-      throws InvalidProtocolBufferException {
+  public static DatasetVersionEntity generateDatasetVersionEntity(DatasetVersion datasetVersion) {
     return new DatasetVersionEntity(datasetVersion);
   }
 
   public static List<DatasetVersion> convertDatasetVersionsFromDatasetVersionEntityList(
-      List<DatasetVersionEntity> datasetVersionEntityList) throws InvalidProtocolBufferException {
+      List<DatasetVersionEntity> datasetVersionEntityList) {
     List<DatasetVersion> datasetVersions = new ArrayList<>();
     if (datasetVersionEntityList != null) {
       for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntityList) {
@@ -420,8 +382,7 @@ public class RdbmsUtils {
   }
 
   public static QueryDatasetVersionInfoEntity generateQueryDatasetVersionInfoEntity(
-      String fieldType, QueryDatasetVersionInfo queryDatasetVersionInfo)
-      throws InvalidProtocolBufferException {
+      String fieldType, QueryDatasetVersionInfo queryDatasetVersionInfo) {
     return new QueryDatasetVersionInfoEntity(fieldType, queryDatasetVersionInfo);
   }
 
@@ -453,14 +414,12 @@ public class RdbmsUtils {
   }
 
   public static QueryParameterEntity generateQueryParameterEntity(
-      Object entity, String fieldType, QueryParameter queryParameter)
-      throws InvalidProtocolBufferException {
+      Object entity, String fieldType, QueryParameter queryParameter) {
     return new QueryParameterEntity(entity, fieldType, queryParameter);
   }
 
   public static List<QueryParameterEntity> convertQueryParametersFromQueryParameterEntityList(
-      Object entity, String fieldType, List<QueryParameter> queryParameterList)
-      throws InvalidProtocolBufferException {
+      Object entity, String fieldType, List<QueryParameter> queryParameterList) {
     List<QueryParameterEntity> queryParameterEntityList = new ArrayList<>();
     if (queryParameterList != null) {
       for (QueryParameter keyValue : queryParameterList) {
@@ -473,7 +432,7 @@ public class RdbmsUtils {
   }
 
   public static List<QueryParameter> convertQueryParameterEntityListFromQueryParameters(
-      List<QueryParameterEntity> queryParameterEntityList) throws InvalidProtocolBufferException {
+      List<QueryParameterEntity> queryParameterEntityList) {
     List<QueryParameter> queryParameterList = new ArrayList<>();
     if (queryParameterEntityList != null) {
       for (QueryParameterEntity queryParameterEntity : queryParameterEntityList) {
@@ -742,15 +701,13 @@ public class RdbmsUtils {
    * @param keyValueQuery : field contain the keyValue and operator for query which is set by
    *     frontend
    * @return {@link Predicate} : return predicate (where clause condition) for criteria query
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   public static Predicate getValuePredicate(
       CriteriaBuilder builder,
       String fieldName,
       Path valueExpression,
       KeyValueQuery keyValueQuery,
-      boolean stringColumn)
-      throws InvalidProtocolBufferException {
+      boolean stringColumn) {
 
     Value value = keyValueQuery.getValue();
     Operator operator = keyValueQuery.getOperator();
@@ -1274,15 +1231,13 @@ public class RdbmsUtils {
    * @param predicate : field contain the keyValue and operator for query which is set by frontend
    * @return {@link List<Predicate>} : which contain the where clause condition(predicate) created
    *     from KeyValueQuery base on artifact
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   private static List<Predicate> getArtifactTypePredicates(
       Path expression,
       CriteriaBuilder builder,
       String fieldType,
       String key,
-      KeyValueQuery predicate)
-      throws InvalidProtocolBufferException {
+      KeyValueQuery predicate) {
     List<Predicate> fieldPredicates = new ArrayList<>();
     Predicate fieldTypePredicate =
         builder.equal(expression.get(ModelDBConstants.FEILD_TYPE), fieldType);
@@ -1315,15 +1270,13 @@ public class RdbmsUtils {
    * @param predicate : field contain the keyValue and operator for query which is set by frontend
    * @return {@link List<Predicate>} : which contain the where clause condition(predicate) created
    *     from KeyValueQuery base on attributes
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   private static List<Predicate> getKeyValueTypePredicates(
       Path expression,
       CriteriaBuilder builder,
       String fieldType,
       String key,
-      KeyValueQuery predicate)
-      throws InvalidProtocolBufferException {
+      KeyValueQuery predicate) {
     List<Predicate> fieldPredicates = new ArrayList<>();
     Predicate fieldTypePredicate =
         builder.equal(expression.get(ModelDBConstants.FEILD_TYPE), fieldType);
@@ -1388,7 +1341,6 @@ public class RdbmsUtils {
    *     and set in criteria where clause. Ex: Root<ProjectEntity> projectRoot =
    *     criteriaQuery.from(ProjectEntity.class);
    * @return {@link List<Predicate>} : list for where clause condition for criteria query
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   public static List<Predicate> getQueryPredicatesFromPredicateList(
       String entityName,
@@ -1399,7 +1351,7 @@ public class RdbmsUtils {
       AuthService authService,
       RoleService roleService,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws ModelDBException {
     List<Predicate> finalPredicatesList = new ArrayList<>();
     if (!predicates.isEmpty()) {
       List<Predicate> keyValuePredicates = new ArrayList<>();
@@ -1884,8 +1836,7 @@ public class RdbmsUtils {
       List<Predicate> keyValuePredicates,
       KeyValueQuery predicate,
       String key,
-      Operator operator)
-      throws InvalidProtocolBufferException {
+      Operator operator) {
     Path expression;
     if (operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN)) {
       Predicate fuzzySearchPredicate =
@@ -2009,8 +1960,7 @@ public class RdbmsUtils {
       KeyValueQuery predicate,
       String[] names,
       Operator operator,
-      Subquery<String> subquery)
-      throws InvalidProtocolBufferException {
+      Subquery<String> subquery) {
     Root<HyperparameterElementMappingEntity> elementMappingEntityRoot =
         subquery.from(HyperparameterElementMappingEntity.class);
     elementMappingEntityRoot.alias(
@@ -2105,8 +2055,7 @@ public class RdbmsUtils {
       Session session,
       VersioningEntry versioningEntry,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
-      Object entity)
-      throws InvalidProtocolBufferException {
+      Object entity) {
     List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings = new ArrayList<>();
     if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
       versioningModeldbEntityMappings.add(
@@ -2150,8 +2099,7 @@ public class RdbmsUtils {
   }
 
   public static VersioningEntry getVersioningEntryFromList(
-      List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings)
-      throws InvalidProtocolBufferException {
+      List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings) {
     VersioningEntry.Builder versioningEntry = VersioningEntry.newBuilder();
     for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
         versioningModeldbEntityMappings) {

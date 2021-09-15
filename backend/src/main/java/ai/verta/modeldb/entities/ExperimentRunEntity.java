@@ -12,7 +12,6 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -41,7 +40,7 @@ public class ExperimentRunEntity {
 
   public ExperimentRunEntity() {}
 
-  public ExperimentRunEntity(ExperimentRun experimentRun) throws InvalidProtocolBufferException {
+  public ExperimentRunEntity(ExperimentRun experimentRun) {
     setId(experimentRun.getId());
     setProject_id(experimentRun.getProjectId());
     setExperiment_id(experimentRun.getExperimentId());
@@ -483,7 +482,7 @@ public class ExperimentRunEntity {
     this.version_number = this.version_number + 1L;
   }
 
-  public ExperimentRun getProtoObject() throws InvalidProtocolBufferException {
+  public ExperimentRun getProtoObject() {
     LOGGER.trace("starting conversion");
     if (keyValueEntityMap.size() == 0) {
       addKeyValueOnMap(keyValueMapping);

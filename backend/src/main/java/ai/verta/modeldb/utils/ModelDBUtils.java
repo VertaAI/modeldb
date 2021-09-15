@@ -74,16 +74,12 @@ public class ModelDBUtils {
     return prop;
   }
 
-  public static String getStringFromProtoObject(MessageOrBuilder object)
-      throws InvalidProtocolBufferException {
-    return JsonFormat.printer().preservingProtoFieldNames().print(object);
-  }
-
-  public static String getStringFromProtoObjectSilent(MessageOrBuilder object) {
+  public static String getStringFromProtoObject(MessageOrBuilder object) {
     try {
-      return getStringFromProtoObject(object);
-    } catch (InvalidProtocolBufferException e) {
-      throw new ModelDBException(e);
+      return JsonFormat.printer().preservingProtoFieldNames().print(object);
+    } catch (InvalidProtocolBufferException ex) {
+      LOGGER.warn("Error generating while convert MessageOrBuilder to string", ex);
+      throw new RuntimeException(ex);
     }
   }
 

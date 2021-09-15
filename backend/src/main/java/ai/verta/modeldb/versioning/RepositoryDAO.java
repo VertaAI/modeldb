@@ -13,10 +13,8 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import org.hibernate.Session;
 
 public interface RepositoryDAO {
@@ -24,8 +22,7 @@ public interface RepositoryDAO {
   GetRepositoryRequest.Response getRepository(GetRepositoryRequest request) throws Exception;
 
   RepositoryEntity getRepositoryById(
-      Session session, RepositoryIdentification id, boolean checkWrite)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      Session session, RepositoryIdentification id, boolean checkWrite) throws ModelDBException;
 
   RepositoryEntity getRepositoryById(
       Session session,
@@ -33,17 +30,16 @@ public interface RepositoryDAO {
       boolean checkWrite,
       boolean canNotOperateOnProtected,
       RepositoryEnums.RepositoryTypeEnum repositoryType)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   RepositoryEntity getRepositoryById(Session session, RepositoryIdentification id)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   RepositoryEntity getProtectedRepositoryById(RepositoryIdentification id, boolean checkWrite)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   SetRepository.Response setRepository(SetRepository request, UserInfo userInfo, boolean create)
-      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException,
-          ExecutionException, InterruptedException;
+      throws ModelDBException, NoSuchAlgorithmException;
 
   DeleteRepositoryRequest.Response deleteRepository(
       DeleteRepositoryRequest request,
@@ -51,7 +47,7 @@ public interface RepositoryDAO {
       ExperimentRunDAO experimentRunDAO,
       boolean canNotOperateOnProtected,
       RepositoryEnums.RepositoryTypeEnum repositoryType)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException;
@@ -61,31 +57,24 @@ public interface RepositoryDAO {
 
   Dataset createOrUpdateDataset(
       Dataset dataset, String workspaceName, boolean create, UserInfo userInfo)
-      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException,
-          ExecutionException, InterruptedException;
+      throws ModelDBException, NoSuchAlgorithmException;
 
   ListRepositoriesRequest.Response listRepositories(
-      ListRepositoriesRequest request, UserInfo userInfo)
-      throws ModelDBException, InvalidProtocolBufferException, ExecutionException,
-          InterruptedException;
+      ListRepositoriesRequest request, UserInfo userInfo) throws ModelDBException;
 
-  ListTagsRequest.Response listTags(ListTagsRequest request)
-      throws ModelDBException, ExecutionException, InterruptedException;
+  ListTagsRequest.Response listTags(ListTagsRequest request) throws ModelDBException;
 
-  SetTagRequest.Response setTag(SetTagRequest request)
-      throws ModelDBException, ExecutionException, InterruptedException;
+  SetTagRequest.Response setTag(SetTagRequest request) throws ModelDBException;
 
-  GetTagRequest.Response getTag(GetTagRequest request)
-      throws ModelDBException, ExecutionException, InterruptedException;
+  GetTagRequest.Response getTag(GetTagRequest request) throws ModelDBException;
 
-  DeleteTagRequest.Response deleteTag(DeleteTagRequest request)
-      throws ModelDBException, ExecutionException, InterruptedException;
+  DeleteTagRequest.Response deleteTag(DeleteTagRequest request) throws ModelDBException;
 
   SetBranchRequest.Response setBranch(
       SetBranchRequest request,
       boolean canNotOperateOnProtected,
       RepositoryEnums.RepositoryTypeEnum repositoryType)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   BranchEntity getBranchEntity(Session session, Long repoId, String branchName)
       throws ModelDBException;
@@ -94,26 +83,21 @@ public interface RepositoryDAO {
       GetBranchRequest request,
       boolean canNotOperateOnProtected,
       RepositoryEnums.RepositoryTypeEnum repositoryType)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
-  DeleteBranchRequest.Response deleteBranch(DeleteBranchRequest request)
-      throws ModelDBException, ExecutionException, InterruptedException;
+  DeleteBranchRequest.Response deleteBranch(DeleteBranchRequest request) throws ModelDBException;
 
   void deleteBranchByCommit(Session session, Long repoId, String commitHash);
 
-  ListBranchesRequest.Response listBranches(ListBranchesRequest request)
-      throws ModelDBException, ExecutionException, InterruptedException;
+  ListBranchesRequest.Response listBranches(ListBranchesRequest request) throws ModelDBException;
 
   ListCommitsLogRequest.Response listCommitsLog(ListCommitsLogRequest request)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
-  FindRepositories.Response findRepositories(FindRepositories request)
-      throws ModelDBException, InvalidProtocolBufferException, ExecutionException,
-          InterruptedException;
+  FindRepositories.Response findRepositories(FindRepositories request) throws ModelDBException;
 
   AddDatasetTags.Response addDatasetTags(MetadataDAO metadataDAO, String id, List<String> tags)
-      throws ModelDBException, InvalidProtocolBufferException, ExecutionException,
-          InterruptedException;
+      throws ModelDBException;
 
   void addRepositoryTags(
       MetadataDAO metadataDAO,
@@ -121,12 +105,11 @@ public interface RepositoryDAO {
       List<String> tags,
       boolean canNotOperateOnProtected,
       RepositoryEnums.RepositoryTypeEnum repositoryType)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   Dataset deleteDatasetTags(
       MetadataDAO metadataDAO, String id, List<String> tagsList, boolean deleteAll)
-      throws ModelDBException, InvalidProtocolBufferException, ExecutionException,
-          InterruptedException;
+      throws ModelDBException;
 
   void deleteRepositoryTags(
       MetadataDAO metadataDAO,
@@ -135,15 +118,13 @@ public interface RepositoryDAO {
       boolean deleteAll,
       boolean canNotOperateOnProtected,
       RepositoryEnums.RepositoryTypeEnum repositoryType)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 
   DatasetPaginationDTO findDatasets(
-      MetadataDAO metadataDAO, FindDatasets build, UserInfo userInfo, ResourceVisibility aPrivate)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException;
+      MetadataDAO metadataDAO, FindDatasets build, UserInfo userInfo, ResourceVisibility aPrivate);
 
   GetDatasetById.Response getDatasetById(MetadataDAO metadataDAO, String id)
-      throws ModelDBException, InvalidProtocolBufferException, ExecutionException,
-          InterruptedException;
+      throws ModelDBException;
 
   void deleteRepositoryAttributes(
       Long repositoryId,
@@ -151,5 +132,5 @@ public interface RepositoryDAO {
       boolean deleteAll,
       boolean canNotOperateOnProtected,
       RepositoryEnums.RepositoryTypeEnum repositoryType)
-      throws ModelDBException, ExecutionException, InterruptedException;
+      throws ModelDBException;
 }

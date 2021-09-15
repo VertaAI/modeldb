@@ -2,7 +2,6 @@ package ai.verta.modeldb.comment;
 
 import ai.verta.modeldb.Comment;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 
 public interface CommentDAO {
@@ -15,8 +14,7 @@ public interface CommentDAO {
    * @param Comment newComment
    * @return Comment comment --> return the comment
    */
-  Comment addComment(String entityType, String entityId, Comment newComment)
-      throws InvalidProtocolBufferException;
+  Comment addComment(String entityType, String entityId, Comment newComment);
 
   /**
    * Update comment in database and return the updated comment to client
@@ -26,8 +24,7 @@ public interface CommentDAO {
    * @param Comment updatedComment
    * @return Comment comment --> return the single updated comment
    */
-  Comment updateComment(String entityType, String entityId, Comment updatedComment)
-      throws InvalidProtocolBufferException;
+  Comment updateComment(String entityType, String entityId, Comment updatedComment);
 
   /**
    * Get All entity comments from database.
@@ -36,8 +33,7 @@ public interface CommentDAO {
    * @param String entityId --> like project.id, experiment.id, experimentRun.id etc.
    * @return List<Comment> commentList
    */
-  List<Comment> getComments(String entityType, String entityId)
-      throws InvalidProtocolBufferException;
+  List<Comment> getComments(String entityType, String entityId);
 
   /**
    * Delete the selected comment from EntityComment.
@@ -48,6 +44,5 @@ public interface CommentDAO {
    * @param UserInfo userInfo
    * @return Boolean deletedStatus
    */
-  Boolean deleteComment(String entityType, String entityId, String commentId, UserInfo userInfo)
-      throws InvalidProtocolBufferException;
+  Boolean deleteComment(String entityType, String entityId, String commentId, UserInfo userInfo);
 }

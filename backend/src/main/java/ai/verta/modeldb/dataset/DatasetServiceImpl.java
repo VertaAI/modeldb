@@ -46,7 +46,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -618,8 +617,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     }
   }
 
-  private void deleteRepositoriesByDatasetIds(List<String> datasetIds)
-      throws ModelDBException, ExecutionException, InterruptedException {
+  private void deleteRepositoriesByDatasetIds(List<String> datasetIds) throws ModelDBException {
     for (String datasetId : datasetIds) {
       repositoryDAO.deleteRepository(
           DeleteRepositoryRequest.newBuilder()
