@@ -289,6 +289,10 @@
         },
         "secret_key": {
           "type": "string"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
