@@ -5,6 +5,7 @@ from __future__ import print_function
 import os
 import sys
 
+import six
 from six.moves import collections_abc
 
 from verta.external import six
@@ -101,7 +102,9 @@ class _Environment(_blob.Blob):
             try:
                 env_vars_dict = {name: os.environ[name] for name in env_vars}
             except KeyError as e:
-                new_e = KeyError("'{}' not found in environment".format(e.args[0]))
+                new_e = KeyError("'{}' not found in environment".format(
+                    six.ensure_str(e.args[0]),
+                ))
                 six.raise_from(new_e, None)
 
         self._msg.environment_variables.extend(
