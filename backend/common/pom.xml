@@ -21,10 +21,10 @@
     <properties>
         <hibernate.version>5.4.24.Final</hibernate.version>
         <log4j.version>2.13.2</log4j.version>
-        <grpc.version>1.31.0</grpc.version>
+        <grpc.version>1.40.1</grpc.version>
         <postgres.version>42.2.13</postgres.version>
-        <liquibase.version>3.8.0</liquibase.version>
-        <protobuf.version>3.8.0</protobuf.version>
+        <liquibase.version>3.8.1</liquibase.version>
+        <protobuf.version>3.17.3</protobuf.version>
     </properties>
 
     <dependencies>
@@ -38,7 +38,7 @@
             and the server (https://grpc.io/grpc-java/javadoc/io/grpc/netty/package-summary.html) -->
         <dependency>
             <groupId>io.grpc</groupId>
-            <artifactId>grpc-netty</artifactId>
+            <artifactId>grpc-netty-shaded</artifactId>
             <version>${grpc.version}</version>
         </dependency>
         <!-- API for gRPC over Protocol Buffers, including tools for serializing
@@ -53,6 +53,12 @@
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
             <version>${grpc.version}</version>
+        </dependency>
+        <dependency> <!-- necessary for Java 9+ -->
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>annotations-api</artifactId>
+            <version>6.0.53</version>
+            <scope>provided</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.grpc/grpc-services -->
         <dependency>
@@ -168,7 +174,7 @@
             <extension>
                 <groupId>kr.motd.maven</groupId>
                 <artifactId>os-maven-plugin</artifactId>
-                <version>1.5.0.Final</version>
+                <version>1.6.2</version>
             </extension>
         </extensions>
         <plugins>
@@ -177,9 +183,9 @@
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.6.1</version>
                 <configuration>
-                    <protocArtifact>com.google.protobuf:protoc:3.8.0:exe:${os.detected.classifier}</protocArtifact>
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
                     <pluginId>grpc-java</pluginId>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.16.1:exe:${os.detected.classifier}</pluginArtifact>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
                     <protoSourceRoot>../../protos/protos/public</protoSourceRoot>
                 </configuration>
                 <executions>

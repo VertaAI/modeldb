@@ -253,7 +253,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           Optional.empty(),
           ModelDBServiceResourceTypes.PROJECT,
           project.getCustomPermission(),
-          resourceVisibility);
+          resourceVisibility,
+          false);
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
       projectEntity.setCreated(true);

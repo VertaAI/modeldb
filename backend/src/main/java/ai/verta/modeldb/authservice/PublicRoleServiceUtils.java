@@ -247,7 +247,8 @@ public class PublicRoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
-      ResourceVisibility resourceVisibility) {
+      ResourceVisibility resourceVisibility,
+      boolean isServiceUser) {
     return false;
   }
 
