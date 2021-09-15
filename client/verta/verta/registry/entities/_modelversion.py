@@ -324,17 +324,13 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         serialized_model, method, model_type = _artifact_utils.serialize_model(model)
 
-        try:
-            extension = _artifact_utils.get_file_ext(serialized_model)
-        except (TypeError, ValueError):
-            extension = _artifact_utils.ext_from_method(method)
-
         # Create artifact message and update ModelVersion's message:
         model_msg = self._create_artifact_msg(
             _artifact_utils.REGISTRY_MODEL_KEY,
             serialized_model,
             artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL,
-            extension=extension,
+            method=method,
+            framework=model_type,
         )
         model_version_update = self.ModelVersionMessage(model=model_msg)
         self._update(model_version_update)
@@ -471,14 +467,12 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 artifact = open(artifact, "rb")
         artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
-        if not _extension:
-            try:
-                _extension = _artifact_utils.get_file_ext(artifact_stream)
-            except (TypeError, ValueError):
-                _extension = _artifact_utils.ext_from_method(method)
-
         artifact_msg = self._create_artifact_msg(
-            key, artifact_stream, artifact_type=artifact_type, extension=_extension
+            key,
+            artifact_stream,
+            artifact_type=artifact_type,
+            method=method,
+            extension=_extension,
         )
         if same_key_ind == -1:
             self._msg.artifacts.append(artifact_msg)
@@ -743,36 +737,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             _utils.raise_for_http_error(response)
 
         print("upload complete")
-
-    def _create_artifact_msg(self, key, artifact_stream, artifact_type, extension=None):
-        # calculate checksum
-        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
-        artifact_stream.seek(0)
-
-        # determine basename
-        #     The key might already contain the file extension, thanks to our hard-coded deployment
-        #     keys e.g. "model.pkl" and "model_api.json".
-        if extension is None:
-            basename = key
-        elif key.endswith(os.extsep + extension):
-            basename = key
-        else:
-            basename = key + os.extsep + extension
-
-        # build upload path from checksum and basename
-        artifact_path = os.path.join(artifact_hash, basename)
-
-        # TODO: support VERTA_ARTIFACT_DIR
-
-        # log key to ModelDB
-        artifact_msg = _CommonCommonService.Artifact(
-            key=key,
-            path=artifact_path,
-            path_only=False,
-            artifact_type=artifact_type,
-            filename_extension=extension,
-        )
-        return artifact_msg
 
     def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists
