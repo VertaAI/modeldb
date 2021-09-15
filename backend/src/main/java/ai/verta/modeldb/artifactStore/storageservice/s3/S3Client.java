@@ -176,6 +176,8 @@ public class S3Client {
                   Thread.sleep(waitPeriod);
                 } catch (InterruptedException e) {
                   // Continue as this just refreshes the session earlier
+                  // Restore interrupted state...
+                  Thread.currentThread().interrupt();
                 }
 
                 LOGGER.debug("starting refresh");
@@ -188,6 +190,10 @@ public class S3Client {
                     initializeWithTemporaryCredentials(awsRegion);
                     return;
                   } catch (Exception ex) {
+                    if (ex instanceof InterruptedException) {
+                      // Restore interrupted state...
+                      Thread.currentThread().interrupt();
+                    }
                     LOGGER.warn("Failed to refresh S3 session: " + ex.getMessage());
                     continue;
                   }

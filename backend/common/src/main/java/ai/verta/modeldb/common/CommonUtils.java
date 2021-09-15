@@ -54,6 +54,8 @@ public class CommonUtils {
           Thread.sleep(requestTimeout * 1000);
           retry = false;
         } catch (InterruptedException e) {
+          // Restore interrupted state...
+          Thread.currentThread().interrupt();
           throw new InternalErrorException("Thread interrupted while UAC retrying call");
         }
         return retryCallInterface.retryCall(retry);

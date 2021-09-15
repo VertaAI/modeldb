@@ -1,13 +1,11 @@
 package ai.verta.modeldb.reconcilers;
 
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import java.util.AbstractMap;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -56,26 +54,22 @@ public class UpdateExperimentTimestampReconcile
             + updatedMaxDateMap.stream()
                 .map(AbstractMap.SimpleEntry::getKey)
                 .collect(Collectors.toList()));
-    try {
-      return futureJdbi
-          .useHandle(
-              handle -> {
-                var updateExperimentTimestampQuery =
-                    "UPDATE experiment SET date_updated = :updatedDate, version_number=(version_number + 1) WHERE id = :id";
+    return futureJdbi
+        .useHandle(
+            handle -> {
+              var updateExperimentTimestampQuery =
+                  "UPDATE experiment SET date_updated = :updatedDate, version_number=(version_number + 1) WHERE id = :id";
 
-                final var batch = handle.prepareBatch(updateExperimentTimestampQuery);
-                for (AbstractMap.SimpleEntry<String, Long> updatedRecord : updatedMaxDateMap) {
-                  var id = updatedRecord.getKey();
-                  long updatedDate = updatedRecord.getValue();
-                  batch.bind("id", id).bind("updatedDate", updatedDate).add();
-                }
+              final var batch = handle.prepareBatch(updateExperimentTimestampQuery);
+              for (AbstractMap.SimpleEntry<String, Long> updatedRecord : updatedMaxDateMap) {
+                var id = updatedRecord.getKey();
+                long updatedDate = updatedRecord.getValue();
+                batch.bind("id", id).bind("updatedDate", updatedDate).add();
+              }
 
-                batch.execute();
-              })
-          .thenApply(unused -> new ReconcileResult(), executor)
-          .get();
-    } catch (ExecutionException | InterruptedException ex) {
-      throw new ModelDBException(ex);
-    }
+              batch.execute();
+            })
+        .thenApply(unused -> new ReconcileResult(), executor)
+        .get();
   }
 }

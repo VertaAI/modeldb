@@ -17,7 +17,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
@@ -177,46 +177,46 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       Metadata requestHeaders) {
     List<GetCollaboratorResponseItem> getCollaboratorResponseList = new ArrayList<>();
 
+    // Run a task specified by a Supplier object asynchronously
+    CompletableFuture<Set<CollaboratorBase>> deployCollaboratorsFuture =
+        CompletableFuture.supplyAsync(
+            () ->
+                getCollaborators(
+                    authServiceChannel,
+                    resourceOwnerId,
+                    resourceId,
+                    modelDBServiceResourceTypes,
+                    ModelDBServiceActions.DEPLOY,
+                    requestHeaders));
+
+    CompletableFuture<Set<CollaboratorBase>> readOnlyCollaboratorsFuture =
+        CompletableFuture.supplyAsync(
+            () ->
+                getCollaborators(
+                    authServiceChannel,
+                    resourceOwnerId,
+                    resourceId,
+                    modelDBServiceResourceTypes,
+                    ModelDBServiceActions.READ,
+                    requestHeaders));
+
+    CompletableFuture<Set<CollaboratorBase>> readWriteCollaboratorsFuture =
+        CompletableFuture.supplyAsync(
+            () ->
+                getCollaborators(
+                    authServiceChannel,
+                    resourceOwnerId,
+                    resourceId,
+                    modelDBServiceResourceTypes,
+                    ModelDBServiceActions.UPDATE,
+                    requestHeaders));
+
+    CompletableFuture<Void> collaboratorCombineFuture =
+        CompletableFuture.allOf(
+            deployCollaboratorsFuture, readOnlyCollaboratorsFuture, readWriteCollaboratorsFuture);
+
+    // Wait for all task complete
     try {
-      // Run a task specified by a Supplier object asynchronously
-      CompletableFuture<Set<CollaboratorBase>> deployCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.DEPLOY,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> readOnlyCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.READ,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> readWriteCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.UPDATE,
-                      requestHeaders));
-
-      CompletableFuture<Void> collaboratorCombineFuture =
-          CompletableFuture.allOf(
-              deployCollaboratorsFuture, readOnlyCollaboratorsFuture, readWriteCollaboratorsFuture);
-
-      // Wait for all task complete
       collaboratorCombineFuture.get();
 
       Set<CollaboratorBase> deployCollaborators = deployCollaboratorsFuture.get();
@@ -262,8 +262,12 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
           getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
         }
       }
-    } catch (InterruptedException | ExecutionException ex) {
-      throw new InternalErrorException(ex.getMessage());
+    } catch (ExecutionException ex) {
+      throw new ModelDBException(ex);
+    } catch (InterruptedException ex) {
+      // Restore interrupted state...
+      Thread.currentThread().interrupt();
+      throw new ModelDBException(ex);
     }
     LOGGER.debug("Total Collaborators count: " + getCollaboratorResponseList.size());
     return getCollaboratorResponseList;

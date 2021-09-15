@@ -132,7 +132,8 @@ public abstract class Reconciler<T> {
         ret.add(obj);
       }
     } catch (InterruptedException ignored) {
-
+      // Restore interrupted state...
+      Thread.currentThread().interrupt();
     } finally {
       lock.unlock();
     }

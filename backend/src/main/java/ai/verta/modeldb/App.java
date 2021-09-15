@@ -260,27 +260,25 @@ public class App implements ApplicationContextAware {
           .addShutdownHook(
               new Thread(
                   () -> {
-                    int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-                    while (activeRequestCount > 0) {
-                      activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-                      System.err.println("Active Request Count in while: " + activeRequestCount);
-                      try {
-                        Thread.sleep(1000); // wait for 1s
-                      } catch (InterruptedException e) {
-                        LOGGER.error("Getting error while graceful shutdown", e);
-                      }
-                    }
-                    // Use stderr here since the logger may have been reset by its JVM shutdown
-                    // hook.
-                    System.err.println(
-                        "*** Shutting down gRPC server since JVM is shutting down ***");
-                    server.shutdown();
                     try {
+                      int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
+                      while (activeRequestCount > 0) {
+                        activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
+                        System.err.println("Active Request Count in while: " + activeRequestCount);
+                        Thread.sleep(1000); // wait for 1s
+                      }
+                      // Use stderr here since the logger may have been reset by its JVM shutdown
+                      // hook.
+                      System.err.println(
+                          "*** Shutting down gRPC server since JVM is shutting down ***");
+                      server.shutdown();
                       server.awaitTermination();
+                      System.err.println("*** Server Shutdown ***");
                     } catch (InterruptedException e) {
-                      LOGGER.error("Getting error while shutting down gRPC server", e);
+                      LOGGER.error("Getting error while graceful shutdown", e);
+                      // Restore interrupted state...
+                      Thread.currentThread().interrupt();
                     }
-                    System.err.println("*** Server Shutdown ***");
                   }));
 
       // ----------- Don't exit the main thread. Wait until server is terminated -----------
@@ -290,6 +288,8 @@ public class App implements ApplicationContextAware {
       LOGGER.error("Getting error while starting MDB service", ex);
       initiateShutdown(0);
       System.exit(1);
+      // Restore interrupted state...
+      Thread.currentThread().interrupt();
     }
   }
 

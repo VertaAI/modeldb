@@ -226,6 +226,8 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
           authServiceChannel.awaitTermination(30, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
           LOGGER.warn(ex.getMessage(), ex);
+          // Restore interrupted state...
+          Thread.currentThread().interrupt();
           throw new InternalErrorException(
               "AuthService channel termination error: " + ex.getMessage());
         }
