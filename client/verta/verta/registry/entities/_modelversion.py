@@ -128,13 +128,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         return self._msg.version
 
     @property
-    def has_environment(self):
-        self._refresh_cache()
-        return self._msg.environment.HasField(
-            "python"
-        ) or self._msg.environment.HasField("docker")
-
-    @property
     def has_model(self):
         self._refresh_cache()
         return bool(self._msg.model) and bool(self._msg.model.key)

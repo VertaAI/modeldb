@@ -53,6 +53,11 @@ class _DeployableEntity(_ModelDBEntity):
             self.id,
         )
 
+    @property
+    def has_environment(self):
+        self._refresh_cache()
+        return True if self._msg.environment.WhichOneof("content") else False
+
     @abc.abstractmethod
     def _get_artifact_msg(self, key):
         """Get Artifact protobuf with `key`.

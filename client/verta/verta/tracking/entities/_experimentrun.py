@@ -126,11 +126,6 @@ class ExperimentRun(_DeployableEntity):
         self._refresh_cache()
         return self._msg.name
 
-    @property
-    def has_environment(self):
-        self._refresh_cache()
-        return self._msg.environment.HasField("python") or self._msg.environment.HasField("docker")
-
     @classmethod
     def _generate_default_name(cls):
         return "Run {}".format(_utils.generate_default_name())
