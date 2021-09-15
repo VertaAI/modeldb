@@ -585,17 +585,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._update(self._msg, method="PUT")
 
     def log_environment(self, env, overwrite=False):
-        """
-        Logs an environment to this Model Version.
-
-        Parameters
-        ----------
-        env : :class:`~verta.environment.Python`
-            Environment to log.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing artifact with key `key`.
-
-        """
         if not isinstance(env, _Environment):
             raise TypeError(
                 "`env` must be of type Environment, not {}".format(type(env))

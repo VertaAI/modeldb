@@ -1656,19 +1656,6 @@ class ExperimentRun(_DeployableEntity):
         return _utils.unravel_observations(self._msg.observations)
 
     def log_environment(self, env, overwrite=False):
-        """
-        Logs a Python environment to this Experiment Run.
-
-        .. versionadded:: 0.17.1
-
-        Parameters
-        ----------
-        env : :class:`~verta.environment.Python`
-            Environment to log.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing artifact with key `key`.
-
-        """
         if not isinstance(env, Python):
             raise TypeError(
                 "`env` must be of type Python, not {}".format(type(env)))

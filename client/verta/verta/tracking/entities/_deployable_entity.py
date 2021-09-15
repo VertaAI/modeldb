@@ -74,6 +74,20 @@ class _DeployableEntity(_ModelDBEntity):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def log_environment(self, env, overwrite=False):
+        """Log an environment.
+
+        Parameters
+        ----------
+        env : :mod:`~verta.environment`
+            Environment to log.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
+
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def log_model(
         self,
         model,
