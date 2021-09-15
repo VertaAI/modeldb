@@ -167,7 +167,6 @@ class _DeployableEntity(_ModelDBEntity):
         """
         # calculate checksum
         checksum = _artifact_utils.calc_sha256(artifact_stream)
-        artifact_stream.seek(0)
 
         # determine "file"name
         #     The key might already contain the file extension, thanks to our hard-coded deployment
