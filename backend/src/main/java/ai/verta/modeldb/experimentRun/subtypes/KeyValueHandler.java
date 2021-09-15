@@ -3,13 +3,11 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;
 import java.util.HashSet;
@@ -75,21 +73,15 @@ public class KeyValueHandler {
               .bind("field_type", fieldType)
               .bind("entity_name", entityName)
               .map(
-                  (rs, ctx) -> {
-                    try {
-                      return KeyValue.newBuilder()
+                  (rs, ctx) ->
+                      KeyValue.newBuilder()
                           .setKey(rs.getString("k"))
                           .setValue(
                               (Value.Builder)
                                   CommonUtils.getProtoObjectFromString(
                                       rs.getString("v"), Value.newBuilder()))
                           .setValueTypeValue(rs.getInt("t"))
-                          .build();
-                    } catch (InvalidProtocolBufferException e) {
-                      LOGGER.error("Error generating builder for {}", rs.getString("v"));
-                      throw new ModelDBException(e);
-                    }
-                  })
+                          .build())
               .list();
         });
   }
@@ -110,9 +102,8 @@ public class KeyValueHandler {
                     .bind("field_type", fieldType)
                     .bind("entity_name", entityName)
                     .map(
-                        (rs, ctx) -> {
-                          try {
-                            return new AbstractMap.SimpleEntry<>(
+                        (rs, ctx) ->
+                            new AbstractMap.SimpleEntry<>(
                                 rs.getString("entity_id"),
                                 KeyValue.newBuilder()
                                     .setKey(rs.getString("k"))
@@ -121,12 +112,7 @@ public class KeyValueHandler {
                                             CommonUtils.getProtoObjectFromString(
                                                 rs.getString("v"), Value.newBuilder()))
                                     .setValueTypeValue(rs.getInt("t"))
-                                    .build());
-                          } catch (InvalidProtocolBufferException e) {
-                            LOGGER.error("Error generating builder for {}", rs.getString("v"));
-                            throw new ModelDBException(e);
-                          }
-                        })
+                                    .build()))
                     .list())
         .thenApply(MapSubtypes::from, executor);
   }
@@ -187,8 +173,7 @@ public class KeyValueHandler {
             executor);
   }
 
-  private void insertKeyValue(String entityId, Handle handle, KeyValue kv)
-      throws InvalidProtocolBufferException {
+  private void insertKeyValue(String entityId, Handle handle, KeyValue kv) {
     handle
         .createUpdate(
             "insert into "

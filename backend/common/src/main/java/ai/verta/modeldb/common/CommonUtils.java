@@ -30,10 +30,15 @@ public class CommonUtils {
     return filePath;
   }
 
-  public static Message.Builder getProtoObjectFromString(String jsonString, Message.Builder builder)
-      throws InvalidProtocolBufferException {
-    JsonFormat.parser().merge(jsonString, builder);
-    return builder;
+  public static Message.Builder getProtoObjectFromString(
+      String jsonString, Message.Builder builder) {
+    try {
+      JsonFormat.parser().merge(jsonString, builder);
+      return builder;
+    } catch (InvalidProtocolBufferException ex) {
+      LOGGER.warn("Error generating builder for {}", jsonString, ex);
+      throw new RuntimeException(ex);
+    }
   }
 
   public interface RetryCallInterface<T> {

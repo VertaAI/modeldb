@@ -21,7 +21,6 @@ import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -450,34 +449,27 @@ public class VersionInputHandler {
                     .bind("entityType", entity_type)
                     .map(
                         (rs, ctx) -> {
-                          try {
-                            // Preparing VersionedInput (VersioningEntry) from the mapping table
-                            // based on run ids but
-                            // here we have store multiple locations key for single version key see
-                            // line 299 loop so
-                            // we are creating SimpleEntry based on each location key.
-                            VersioningEntry.Builder versioningEntryBuilder =
-                                VersioningEntry.newBuilder()
-                                    .setRepositoryId(rs.getLong("repository_id"))
-                                    .setCommit(rs.getString("commit"));
+                          // Preparing VersionedInput (VersioningEntry) from the mapping table
+                          // based on run ids but
+                          // here we have store multiple locations key for single version key see
+                          // line 299 loop so
+                          // we are creating SimpleEntry based on each location key.
+                          VersioningEntry.Builder versioningEntryBuilder =
+                              VersioningEntry.newBuilder()
+                                  .setRepositoryId(rs.getLong("repository_id"))
+                                  .setCommit(rs.getString("commit"));
 
-                            if (rs.getString("versioning_key") != null
-                                && !rs.getString("versioning_key").isEmpty()) {
-                              Location.Builder locationBuilder = Location.newBuilder();
-                              CommonUtils.getProtoObjectFromString(
-                                  rs.getString("versioning_location"), locationBuilder);
-                              versioningEntryBuilder.putKeyLocationMap(
-                                  rs.getString("versioning_key"), locationBuilder.build());
-                            }
-
-                            return new AbstractMap.SimpleEntry<>(
-                                rs.getString("experiment_run_id"), versioningEntryBuilder.build());
-                          } catch (InvalidProtocolBufferException e) {
-                            LOGGER.error(
-                                "Error generating builder for {}",
-                                rs.getString("versioning_location"));
-                            throw new ModelDBException(e);
+                          if (rs.getString("versioning_key") != null
+                              && !rs.getString("versioning_key").isEmpty()) {
+                            Location.Builder locationBuilder = Location.newBuilder();
+                            CommonUtils.getProtoObjectFromString(
+                                rs.getString("versioning_location"), locationBuilder);
+                            versioningEntryBuilder.putKeyLocationMap(
+                                rs.getString("versioning_key"), locationBuilder.build());
                           }
+
+                          return new AbstractMap.SimpleEntry<>(
+                              rs.getString("experiment_run_id"), versioningEntryBuilder.build());
                         })
                     .list())
         .thenCompose(

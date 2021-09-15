@@ -60,7 +60,6 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.ArrayList;
@@ -1071,7 +1070,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     }
   }
 
-  private String getUrlForCode(GetUrlForArtifact request) throws InvalidProtocolBufferException {
+  private String getUrlForCode(GetUrlForArtifact request) {
     String s3Key = null;
     Project proj = projectDAO.getProjectByID(request.getId());
     if (proj.getCodeVersionSnapshot() != null

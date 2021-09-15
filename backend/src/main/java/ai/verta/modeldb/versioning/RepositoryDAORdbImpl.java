@@ -23,7 +23,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -312,26 +311,19 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                       new ModelDBException(
                           "Couldn't find repository by id " + id.getRepoId(), Code.NOT_FOUND));
     }
-    try {
-      if (canNotOperateOnProtected && repository.isProtected()) {
-        throw new ModelDBException(
-            "Can't access repository because it's protected", Code.PERMISSION_DENIED);
-      }
+    if (canNotOperateOnProtected && repository.isProtected()) {
+      throw new ModelDBException(
+          "Can't access repository because it's protected", Code.PERMISSION_DENIED);
+    }
 
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-          ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
-      if (checkWrite) {
-        roleService.validateEntityUserWithUserInfo(
-            modelDBServiceResourceTypes,
-            repository.getId().toString(),
-            ModelDBServiceActions.UPDATE);
-      } else {
-        roleService.validateEntityUserWithUserInfo(
-            modelDBServiceResourceTypes, repository.getId().toString(), ModelDBServiceActions.READ);
-      }
-    } catch (InvalidProtocolBufferException e) {
-      LOGGER.info(e.getMessage());
-      throw new ModelDBException("Unexpected error", e);
+    ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+        ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
+    if (checkWrite) {
+      roleService.validateEntityUserWithUserInfo(
+          modelDBServiceResourceTypes, repository.getId().toString(), ModelDBServiceActions.UPDATE);
+    } else {
+      roleService.validateEntityUserWithUserInfo(
+          modelDBServiceResourceTypes, repository.getId().toString(), ModelDBServiceActions.READ);
     }
     return repository;
   }
@@ -398,7 +390,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public SetRepository.Response setRepository(
       SetRepository request, UserInfo userInfo, boolean create)
-      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException {
+      throws ModelDBException, NoSuchAlgorithmException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository =
           setRepository(
@@ -432,7 +424,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       UserInfo userInfo,
       boolean create,
       RepositoryTypeEnum repositoryType)
-      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
+      throws ModelDBException, NoSuchAlgorithmException {
 
     if (workspaceName == null && repoId.hasNamedId()) {
       workspaceName = repoId.getNamedId().getWorkspaceName();
@@ -631,7 +623,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public Dataset createOrUpdateDataset(
       Dataset dataset, String workspaceName, boolean create, UserInfo userInfo)
-      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
+      throws ModelDBException, NoSuchAlgorithmException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryIdentification.Builder repositoryIdBuilder = RepositoryIdentification.newBuilder();
       if (dataset.getId().isEmpty()) {
@@ -663,7 +655,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       String workspaceName,
       boolean create,
       UserInfo userInfo)
-      throws NoSuchAlgorithmException, ModelDBException, InvalidProtocolBufferException {
+      throws NoSuchAlgorithmException, ModelDBException {
     Repository.Builder datasetRepositoryBuilder =
         Repository.newBuilder()
             .setRepositoryVisibility(
@@ -703,7 +695,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       RepositoryEntity repositoryEntity,
       Map<Long, Workspace> cacheWorkspaceMap,
       Map<String, GetResourcesResponseItem> getResourcesMap)
-      throws ModelDBException, InvalidProtocolBufferException {
+      throws ModelDBException {
 
     Repository repository =
         repositoryEntity.toProto(roleService, authService, cacheWorkspaceMap, getResourcesMap);
@@ -746,8 +738,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public ListRepositoriesRequest.Response listRepositories(
-      ListRepositoriesRequest request, UserInfo currentLoginUserInfo)
-      throws ModelDBException, InvalidProtocolBufferException {
+      ListRepositoriesRequest request, UserInfo currentLoginUserInfo) throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
       // Using FROM and JOIN
@@ -1210,7 +1201,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public FindRepositories.Response findRepositories(FindRepositories request)
-      throws ModelDBException, InvalidProtocolBufferException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       try {
@@ -1338,8 +1329,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public AddDatasetTags.Response addDatasetTags(
-      MetadataDAO metadataDAO, String id, List<String> tags)
-      throws ModelDBException, InvalidProtocolBufferException {
+      MetadataDAO metadataDAO, String id, List<String> tags) throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(id)).build();
@@ -1410,8 +1400,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       MetadataDAO metadataDAO,
       FindDatasets queryParameters,
       UserInfo currentLoginUserInfo,
-      ResourceVisibility resourceVisibility)
-      throws InvalidProtocolBufferException {
+      ResourceVisibility resourceVisibility) {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       CriteriaBuilder builder = session.getCriteriaBuilder();
       // Using FROM and JOIN
@@ -1601,7 +1590,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public Dataset deleteDatasetTags(
       MetadataDAO metadataDAO, String id, List<String> tagsList, boolean deleteAll)
-      throws ModelDBException, InvalidProtocolBufferException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryIdentification repositoryIdentification =
           RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(id)).build();
@@ -1670,7 +1659,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public GetDatasetById.Response getDatasetById(MetadataDAO metadataDAO, String id)
-      throws ModelDBException, InvalidProtocolBufferException {
+      throws ModelDBException {
     try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity =
           getRepositoryById(
@@ -1731,7 +1720,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           convertToDataset(
               session, metadataDAO, repositoryEntity, cacheWorkspaceMap, getResourcesMap),
           repositoryEntity.toProto(roleService, authService, cacheWorkspaceMap, getResourcesMap));
-    } catch (InvalidProtocolBufferException | ModelDBException e) {
+    } catch (ModelDBException e) {
       LOGGER.warn(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
       throw new InternalErrorException(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
     }

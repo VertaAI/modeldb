@@ -39,7 +39,6 @@ import ai.verta.modeldb.versioning.blob.factory.BlobFactory;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 import com.amazonaws.services.s3.model.PartETag;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.Status;
 import java.security.NoSuchAlgorithmException;
@@ -1674,14 +1673,9 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
       Function<RepositoryEntity, Repository> toProto =
-          (repositoryEntity) -> {
-            try {
-              return repositoryEntity.toProto(
+          (repositoryEntity) ->
+              repositoryEntity.toProto(
                   roleService, authService, cacheWorkspaceMap, new HashMap<>());
-            } catch (InvalidProtocolBufferException e) {
-              throw new ModelDBException(e);
-            }
-          };
       repositories.addAll(
           commitPaginationDTO.getCommitEntities().stream()
               .flatMap(commitEntity -> commitEntity.getRepository().stream())

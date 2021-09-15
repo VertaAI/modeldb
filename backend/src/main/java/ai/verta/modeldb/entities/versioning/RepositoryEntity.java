@@ -19,7 +19,6 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
 import com.google.api.client.util.Objects;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.*;
 import javax.persistence.*;
 import org.hibernate.annotations.LazyCollection;
@@ -31,8 +30,7 @@ public class RepositoryEntity {
 
   public RepositoryEntity() {}
 
-  public RepositoryEntity(Repository repository, RepositoryTypeEnum repositoryTypeEnum)
-      throws InvalidProtocolBufferException {
+  public RepositoryEntity(Repository repository, RepositoryTypeEnum repositoryTypeEnum) {
     this.name = ModelDBUtils.checkEntityNameLength(repository.getName());
     this.description = repository.getDescription();
     if (repository.getDateCreated() != 0L) {
@@ -210,8 +208,7 @@ public class RepositoryEntity {
       RoleService roleService,
       AuthService authService,
       Map<Long, Workspace> cacheWorkspaceMap,
-      Map<String, GetResourcesResponseItem> getResourcesMap)
-      throws InvalidProtocolBufferException {
+      Map<String, GetResourcesResponseItem> getResourcesMap) {
     final Builder builder = Repository.newBuilder().setId(this.id);
     builder
         .setName(this.name)
@@ -285,7 +282,7 @@ public class RepositoryEntity {
     return builder.build();
   }
 
-  public void update(Repository repository) throws InvalidProtocolBufferException {
+  public void update(Repository repository) {
     this.name = ModelDBUtils.checkEntityNameLength(repository.getName());
     this.description = repository.getDescription();
     this.repositoryVisibility = repository.getVisibility();
@@ -306,7 +303,7 @@ public class RepositoryEntity {
     return repository_visibility;
   }
 
-  private void updateAttribute(List<KeyValue> attributes) throws InvalidProtocolBufferException {
+  private void updateAttribute(List<KeyValue> attributes) {
     if (attributes != null && !attributes.isEmpty()) {
       for (KeyValue attribute : attributes) {
         AttributeEntity updatedAttributeObj =

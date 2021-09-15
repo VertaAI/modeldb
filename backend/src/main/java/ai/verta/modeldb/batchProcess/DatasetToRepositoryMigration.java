@@ -32,7 +32,6 @@ import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.Role;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.math.BigInteger;
@@ -264,7 +263,7 @@ public class DatasetToRepositoryMigration {
 
   private static void createRepository(
       Session session, DatasetEntity datasetEntity, UserInfo userInfoValue)
-      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException {
+      throws ModelDBException, NoSuchAlgorithmException {
     String datasetId = datasetEntity.getId();
     Dataset newDataset = datasetEntity.getProtoObject(roleService).toBuilder().setId("").build();
     Dataset dataset;

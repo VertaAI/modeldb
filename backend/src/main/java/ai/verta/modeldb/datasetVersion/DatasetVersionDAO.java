@@ -7,7 +7,6 @@ import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.List;
 import org.hibernate.Session;
 
@@ -24,7 +23,6 @@ public interface DatasetVersionDAO {
    * @param sortKey : sory key like dataset.name, dataset.attribute etc.
    * @param currentLoginUser: current login user
    * @return {@link DatasetVersionDTO} : DatasetVersionDTO
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   DatasetVersionDTO getDatasetVersions(
       DatasetDAO datasetDAO,
@@ -34,7 +32,7 @@ public interface DatasetVersionDAO {
       boolean isAscending,
       String sortKey,
       UserInfo currentLoginUser)
-      throws InvalidProtocolBufferException, PermissionDeniedException;
+      throws PermissionDeniedException;
 
   /**
    * Delete all datasetVersions with dataset ids matching the ids in request.
@@ -50,7 +48,7 @@ public interface DatasetVersionDAO {
    * @param datasetVersionId : datasetVersion.id
    * @return {@link DatasetVersion} : datasetVersion object
    */
-  DatasetVersion getDatasetVersion(String datasetVersionId) throws InvalidProtocolBufferException;
+  DatasetVersion getDatasetVersion(String datasetVersionId);
 
   /**
    * Get a path for generating a pre-signed URL for a datasetVersion of type {@link RawDatasetInfo}
@@ -59,16 +57,13 @@ public interface DatasetVersionDAO {
    * @param method :
    * @return {@link String} : datasetVersion url
    */
-  String getUrlForDatasetVersion(String datasetVersionId, String method)
-      throws InvalidProtocolBufferException;
+  String getUrlForDatasetVersion(String datasetVersionId, String method);
 
   /**
    * @param datasetVersionIds : list of datasetVersion ids
    * @return : datasetVersion list
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  List<DatasetVersion> getDatasetVersionsByBatchIds(List<String> datasetVersionIds)
-      throws InvalidProtocolBufferException;
+  List<DatasetVersion> getDatasetVersionsByBatchIds(List<String> datasetVersionIds);
 
   /**
    * Return list of datasetVersions based on FindDatasetVersions queryParameters
@@ -78,11 +73,10 @@ public interface DatasetVersionDAO {
    * @param userInfo : userInfo
    * @return {@link DatasetVersionDTO} : datasetVersionDTO contains the list of datasetVersions
    *     based on filter queryParameters & total_pages count
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   DatasetVersionDTO findDatasetVersions(
       DatasetDAO datasetDAO, FindDatasetVersions queryParameters, UserInfo userInfo)
-      throws InvalidProtocolBufferException, PermissionDeniedException;
+      throws PermissionDeniedException;
 
   /**
    * Update DatasetVersion description in database using datasetVersionId.
@@ -92,8 +86,7 @@ public interface DatasetVersionDAO {
    * @return {@link DatasetVersion} : DatasetVersion updated DatasetVersion entity
    */
   DatasetVersion updateDatasetVersionDescription(
-      String datasetVersionId, String datasetVersionDescription)
-      throws InvalidProtocolBufferException;
+      String datasetVersionId, String datasetVersionDescription);
 
   /**
    * Update DatasetVersion Tags in database using datasetVersionId.
@@ -101,10 +94,8 @@ public interface DatasetVersionDAO {
    * @param datasetVersionId : datasetVersion.id
    * @param tagsList : List<String> new added tags
    * @return {@link DatasetVersion} DatasetVersion : updated DatasetVersion entity
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
-  DatasetVersion addDatasetVersionTags(String datasetVersionId, List<String> tagsList)
-      throws InvalidProtocolBufferException;
+  DatasetVersion addDatasetVersionTags(String datasetVersionId, List<String> tagsList);
 
   /**
    * Delete DatasetVersion Tags in database using datasetVersionId.
@@ -113,11 +104,9 @@ public interface DatasetVersionDAO {
    * @param deleteAll : flag for identification of delete all tag
    * @param datasetVersionId : datasetVersion.id
    * @return DatasetVersion : datasetVersion
-   * @throws InvalidProtocolBufferException InvalidProtocolBufferException
    */
   DatasetVersion deleteDatasetVersionTags(
-      String datasetVersionId, List<String> datasetVersionTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException;
+      String datasetVersionId, List<String> datasetVersionTagList, Boolean deleteAll);
 
   /**
    * Add attributes in database using datasetVersionId
@@ -125,10 +114,9 @@ public interface DatasetVersionDAO {
    * @param datasetVersionId : datasetVersion.id
    * @param attributesList : new attribute list
    * @return {@link DatasetVersion} updatedDatasetVersion : updated DatasetVersion entity
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
-  DatasetVersion addDatasetVersionAttributes(String datasetVersionId, List<KeyValue> attributesList)
-      throws InvalidProtocolBufferException;
+  DatasetVersion addDatasetVersionAttributes(
+      String datasetVersionId, List<KeyValue> attributesList);
 
   /**
    * Update DatasetVersion Attributes in database using datasetVersionId.
@@ -139,10 +127,8 @@ public interface DatasetVersionDAO {
    * @param datasetVersionId : datasetVersion.id
    * @param attribute : attribute for update
    * @return {@link DatasetVersion} updatedDatasetVersion : updated DatasetVersion entity
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
-  DatasetVersion updateDatasetVersionAttributes(String datasetVersionId, KeyValue attribute)
-      throws InvalidProtocolBufferException;
+  DatasetVersion updateDatasetVersionAttributes(String datasetVersionId, KeyValue attribute);
 
   /**
    * Fetch DatasetVersion Attributes from database using datasetVersionId.
@@ -151,11 +137,9 @@ public interface DatasetVersionDAO {
    * @param attributeKeyList : attribute keys
    * @param getAll : flag
    * @return {@link List<KeyValue>} datasetVersionAttributes
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
   List<KeyValue> getDatasetVersionAttributes(
-      String datasetVersionId, List<String> attributeKeyList, Boolean getAll)
-      throws InvalidProtocolBufferException;
+      String datasetVersionId, List<String> attributeKeyList, Boolean getAll);
 
   /**
    * Delete DatasetVersion Attributes in database using datasetVersionId.
@@ -164,11 +148,9 @@ public interface DatasetVersionDAO {
    * @param attributeKeyList : attribute keys
    * @param deleteAll : flag
    * @return {@link DatasetVersion} updatedDatasetVersion
-   * @throws InvalidProtocolBufferException invalidProtocolBufferException
    */
   DatasetVersion deleteDatasetVersionAttributes(
-      String datasetVersionId, List<String> attributeKeyList, Boolean deleteAll)
-      throws InvalidProtocolBufferException;
+      String datasetVersionId, List<String> attributeKeyList, Boolean deleteAll);
 
   boolean isDatasetVersionExists(Session session, String id);
 }

@@ -16,7 +16,6 @@ import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.uac.UserInfo;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSSessionCredentials;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -55,7 +54,7 @@ public class TrialUtils {
       ExperimentRunDAO experimentRunDAO,
       String projectId,
       UserInfo userInfo)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws ModelDBException {
     if (config != null) {
       Project project = projectDAO.getProjectByID(projectId);
       if (project.getWorkspaceId() != null && !project.getWorkspaceId().isEmpty()) {

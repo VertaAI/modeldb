@@ -13,7 +13,6 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import org.hibernate.Session;
@@ -40,7 +39,7 @@ public interface RepositoryDAO {
       throws ModelDBException;
 
   SetRepository.Response setRepository(SetRepository request, UserInfo userInfo, boolean create)
-      throws ModelDBException, InvalidProtocolBufferException, NoSuchAlgorithmException;
+      throws ModelDBException, NoSuchAlgorithmException;
 
   DeleteRepositoryRequest.Response deleteRepository(
       DeleteRepositoryRequest request,
@@ -58,11 +57,10 @@ public interface RepositoryDAO {
 
   Dataset createOrUpdateDataset(
       Dataset dataset, String workspaceName, boolean create, UserInfo userInfo)
-      throws ModelDBException, NoSuchAlgorithmException, InvalidProtocolBufferException;
+      throws ModelDBException, NoSuchAlgorithmException;
 
   ListRepositoriesRequest.Response listRepositories(
-      ListRepositoriesRequest request, UserInfo userInfo)
-      throws ModelDBException, InvalidProtocolBufferException;
+      ListRepositoriesRequest request, UserInfo userInfo) throws ModelDBException;
 
   ListTagsRequest.Response listTags(ListTagsRequest request) throws ModelDBException;
 
@@ -96,11 +94,10 @@ public interface RepositoryDAO {
   ListCommitsLogRequest.Response listCommitsLog(ListCommitsLogRequest request)
       throws ModelDBException;
 
-  FindRepositories.Response findRepositories(FindRepositories request)
-      throws ModelDBException, InvalidProtocolBufferException;
+  FindRepositories.Response findRepositories(FindRepositories request) throws ModelDBException;
 
   AddDatasetTags.Response addDatasetTags(MetadataDAO metadataDAO, String id, List<String> tags)
-      throws ModelDBException, InvalidProtocolBufferException;
+      throws ModelDBException;
 
   void addRepositoryTags(
       MetadataDAO metadataDAO,
@@ -112,7 +109,7 @@ public interface RepositoryDAO {
 
   Dataset deleteDatasetTags(
       MetadataDAO metadataDAO, String id, List<String> tagsList, boolean deleteAll)
-      throws ModelDBException, InvalidProtocolBufferException;
+      throws ModelDBException;
 
   void deleteRepositoryTags(
       MetadataDAO metadataDAO,
@@ -124,11 +121,10 @@ public interface RepositoryDAO {
       throws ModelDBException;
 
   DatasetPaginationDTO findDatasets(
-      MetadataDAO metadataDAO, FindDatasets build, UserInfo userInfo, ResourceVisibility aPrivate)
-      throws InvalidProtocolBufferException;
+      MetadataDAO metadataDAO, FindDatasets build, UserInfo userInfo, ResourceVisibility aPrivate);
 
   GetDatasetById.Response getDatasetById(MetadataDAO metadataDAO, String id)
-      throws ModelDBException, InvalidProtocolBufferException;
+      throws ModelDBException;
 
   void deleteRepositoryAttributes(
       Long repositoryId,

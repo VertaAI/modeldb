@@ -15,7 +15,6 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.S3KeyFunction;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.VersioningUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -192,14 +191,10 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                             throw new InvalidArgumentException(
                                 "Key " + request.getKey() + " not logged");
                           }
-                          try {
-                            return new AbstractMap.SimpleEntry<>(
-                                datasetVersionDAO.getUrlForDatasetVersion(
-                                    artifacts.get(0).getLinkedArtifactId(), request.getMethod()),
-                                null);
-                          } catch (InvalidProtocolBufferException e) {
-                            throw new ModelDBException(e);
-                          }
+                          return new AbstractMap.SimpleEntry<>(
+                              datasetVersionDAO.getUrlForDatasetVersion(
+                                  artifacts.get(0).getLinkedArtifactId(), request.getMethod()),
+                              null);
                         },
                         executor),
             executor);

@@ -49,7 +49,6 @@ import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
@@ -202,8 +201,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   }
 
   private DatasetVersionDTO getDatasetVersionDTOByDatasetId(
-      String datasetId, int pageNumber, int pageLimit, boolean ascending)
-      throws InvalidProtocolBufferException, ModelDBException {
+      String datasetId, int pageNumber, int pageLimit, boolean ascending) throws ModelDBException {
 
     /*Get Data*/
     RepositoryIdentification repositoryIdentification =

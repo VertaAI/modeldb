@@ -27,7 +27,6 @@ import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
@@ -62,7 +61,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     this.repositoryDAO = daoSet.repositoryDAO;
   }
 
-  private void validateExperimentEntity(String experimentId) throws InvalidProtocolBufferException {
+  private void validateExperimentEntity(String experimentId) {
     experimentDAO.getExperiment(experimentId);
   }
 
@@ -990,7 +989,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   }
 
   private Map.Entry<String, String> getUrlForData(GetUrlForArtifact request)
-      throws InvalidProtocolBufferException, ModelDBException {
+      throws ModelDBException {
 
     assert (request.getArtifactType().equals(ArtifactType.DATA));
     assert (!request.getId().isEmpty());
@@ -1015,8 +1014,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         s3Key -> artifactStoreDAO.initializeMultipart(s3Key));
   }
 
-  private String getUrlForCode(GetUrlForArtifact request)
-      throws InvalidProtocolBufferException, ModelDBException {
+  private String getUrlForCode(GetUrlForArtifact request) throws ModelDBException {
     ExperimentRun exprRun = experimentRunDAO.getExperimentRun(request.getId());
     String s3Key = null;
     /*If code version is not logged at a lower level we check for code at the higher level

@@ -15,7 +15,6 @@ import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ResourceVisibility;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -194,13 +193,9 @@ public class VersioningUtils {
       List<String> locations,
       List<String> attributeKeysList)
       throws ModelDBException {
-    try {
-      List<AttributeEntity> attributeEntities =
-          getAttributeEntities(session, repoId, commitHash, locations, attributeKeysList);
-      return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
-    } catch (InvalidProtocolBufferException e) {
-      throw new ModelDBException(e);
-    }
+    List<AttributeEntity> attributeEntities =
+        getAttributeEntities(session, repoId, commitHash, locations, attributeKeysList);
+    return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
   }
 
   public static void saveArtifactPartEntity(
