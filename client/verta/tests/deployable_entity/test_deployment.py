@@ -407,39 +407,43 @@ class TestFetchArtifacts:
             deployable_entity.fetch_artifacts(strs[1:])
 
 
-class TestDeployability:
-    """Deployment-related functionality"""
+class TestEnvironment:
 
-    def test_log_environment(self, registered_model):
-        deployable_entity = registered_model.get_or_create_version(name="my version")
+    def test_log_environment(self, deployable_entity):
+        reqs = Python.read_pip_environment()
+        env = Python(requirements=reqs)
 
+        deployable_entity.log_environment(env)
+        assert env == deployable_entity.get_environment()
+
+    def test_overwrite_environment(self, deployable_entity):
         reqs = Python.read_pip_environment()
         env = Python(requirements=reqs)
         deployable_entity.log_environment(env)
 
-        deployable_entity = registered_model.get_version(id=deployable_entity.id)
-        assert str(env) == str(deployable_entity.get_environment())
-
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="environment already exists"):
             deployable_entity.log_environment(env)
+
         deployable_entity.log_environment(env, overwrite=True)
-        assert str(env) == str(deployable_entity.get_environment())
+        assert env == deployable_entity.get_environment()
 
-    def test_del_environment(self, registered_model):
-        deployable_entity = registered_model.get_or_create_version(name="my version")
-
+    def test_del_environment(self, deployable_entity):
         reqs = Python.read_pip_environment()
         env = Python(requirements=reqs)
         deployable_entity.log_environment(env)
-        deployable_entity.del_environment()
 
-        deployable_entity = registered_model.get_version(id=deployable_entity.id)
+        deployable_entity.del_environment()
         assert not deployable_entity.has_environment
 
-        with pytest.raises(RuntimeError) as excinfo:
+        with pytest.raises(
+            RuntimeError,
+            match="environment was not previously set",
+        ):
             deployable_entity.get_environment()
 
-        assert "environment was not previously set" in str(excinfo.value)
+
+class TestDeployability:
+    """Deployment-related functionality"""
 
     def test_log_model(self, deployable_entity):
         np = pytest.importorskip("numpy")
@@ -566,8 +570,8 @@ class TestDeployability:
             filepaths = set(f.getnames())
 
         assert "Dockerfile" in filepaths
-        
-        
+
+
     def test_fetch_artifacts(self, model_version, strs, flat_dicts):
         strs, flat_dicts = strs[:3], flat_dicts[:3]  # all 12 is excessive for a test
         for key, artifact in zip(strs, flat_dicts):
