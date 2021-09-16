@@ -605,7 +605,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       List<GetResourcesResponseItem> responseItems =
           roleService.getResourceItems(
-              null, new HashSet<>(request.getIdsList()), ModelDBServiceResourceTypes.DATASET);
+              null,
+              new HashSet<>(request.getIdsList()),
+              ModelDBServiceResourceTypes.DATASET,
+              false);
       deleteRepositoriesByDatasetIds(request.getIdsList());
       DeleteDatasets.Response response =
           DeleteDatasets.Response.newBuilder().setStatus(true).build();

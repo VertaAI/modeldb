@@ -206,7 +206,7 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+  public WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(workspaceId);
@@ -259,7 +259,8 @@ public class PublicRoleServiceUtils implements RoleService {
   public List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,
       Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      boolean isServiceUser) {
     return Collections.emptyList();
   }
 
