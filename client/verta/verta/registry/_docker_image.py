@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from verta.external import six
+
+from verta._protos.public.registry import RegistryService_pb2
+
 from verta import environment
 from verta._internal_utils import arg_handler
-from verta._protos.public.registry import RegistryService_pb2
 
 
 class DockerImage(object):
@@ -70,6 +73,31 @@ class DockerImage(object):
             env_vars=env_vars,
         )
 
+    def __repr__(self):
+        lines = ["Docker Image"]
+        lines.extend(
+            [
+                "port: {}".format(self.port),
+                "request path: {}".format(self.request_path),
+                "health path: {}".format(self.health_path),
+                "repository: {}".format(self.repository),
+            ]
+        )
+        if self.tag:
+            lines.append("tag: {}".format(six.ensure_str(self.tag)))
+        if self.sha:
+            lines.append("sha: {}".format(six.ensure_str(self.sha)))
+        if self.env_vars:
+            lines.append("environment variables:")
+            lines.extend(
+                sorted(
+                    "    {}={}".format(name, value)
+                    for name, value in self.env_vars.items()
+                )
+            )
+
+        return "\n    ".join(lines)
+
     @property
     def port(self):
         return self._port
@@ -107,7 +135,7 @@ class DockerImage(object):
             repository=model_ver_msg.environment.docker.repository,
             tag=model_ver_msg.environment.docker.tag,
             sha=model_ver_msg.environment.docker.sha,
-            env_vars=model_ver_msg.environment.env_vars,
+            env_vars=model_ver_msg.environment.environment_variables,
         )
 
     def _as_model_ver_proto(self):
