@@ -79,9 +79,6 @@ class _Environment(_blob.Blob):
         --------
         .. code-block:: python
 
-            from verta.environment import Python
-
-            env = Python(requirements=["verta"])
             print(env.env_vars)
             # {}
 
