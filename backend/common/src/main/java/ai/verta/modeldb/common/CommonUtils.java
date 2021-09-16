@@ -85,6 +85,14 @@ public class CommonUtils {
       CompletionException ex = (CompletionException) e;
       return logError(ex.getCause(), defaultInstance);
     } else {
+      if (e == null) {
+        var status1 =
+            Status.newBuilder()
+                .setCode(Code.INTERNAL_VALUE)
+                .setMessage("Exception found null")
+                .build();
+        return StatusProto.toStatusRuntimeException(status1);
+      }
       Throwable throwable = findRootCause(e);
       // Condition 'throwable != null' covered by below condition 'throwable instanceof
       // SocketException'

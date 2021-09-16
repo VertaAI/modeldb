@@ -170,13 +170,14 @@ public abstract class CommonHibernateUtil {
 
   public static void changeCharsetToUtf(JdbcConnection jdbcCon)
       throws DatabaseException, SQLException {
-    Statement stmt = jdbcCon.createStatement();
-    String dbName = jdbcCon.getCatalog();
-    String sql =
-        String.format(
-            "ALTER DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
-    int result = stmt.executeUpdate(sql);
-    LOGGER.info("ALTER charset execute result: {}", result);
+    try (var stmt = jdbcCon.createStatement()) {
+      String dbName = jdbcCon.getCatalog();
+      String sql =
+          String.format(
+              "ALTER DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
+      int result = stmt.executeUpdate(sql);
+      LOGGER.info("ALTER charset execute result: {}", result);
+    }
   }
 
   public SessionFactory getSessionFactory() {
@@ -270,56 +271,55 @@ public abstract class CommonHibernateUtil {
       }
 
       JdbcConnection jdbcCon = new JdbcConnection(con);
+      try (var stmt = jdbcCon.createStatement()) {
 
-      Statement stmt = jdbcCon.createStatement();
+        String sql = "SELECT * FROM database_change_log_lock WHERE ID = 1";
+        ResultSet rs = stmt.executeQuery(sql);
 
-      String sql = "SELECT * FROM database_change_log_lock WHERE ID = 1";
-      ResultSet rs = stmt.executeQuery(sql);
+        long lastLockAcquireTimestamp = 0L;
+        boolean locked = false;
+        // Extract data from result set
+        while (rs.next()) {
+          // Retrieve by column name
+          int id = rs.getInt("id");
+          locked = rs.getBoolean("locked");
+          Timestamp lockGrantedTimeStamp = rs.getTimestamp("lockgranted", Calendar.getInstance());
+          String lockedBy = rs.getString("lockedby");
 
-      long lastLockAcquireTimestamp = 0L;
-      boolean locked = false;
-      // Extract data from result set
-      while (rs.next()) {
-        // Retrieve by column name
-        int id = rs.getInt("id");
-        locked = rs.getBoolean("locked");
-        Timestamp lockGrantedTimeStamp = rs.getTimestamp("lockgranted", Calendar.getInstance());
-        String lockedBy = rs.getString("lockedby");
+          // Display values
+          LOGGER.debug(
+              "Id: {}, Locked: {}, LockGrantedTimeStamp: {}, LockedBy: {}",
+              id,
+              locked,
+              lockGrantedTimeStamp,
+              lockedBy);
 
-        // Display values
-        LOGGER.debug(
-            "Id: {}, Locked: {}, LockGrantedTimeStamp: {}, LockedBy: {}",
-            id,
-            locked,
-            lockGrantedTimeStamp,
-            lockedBy);
-
-        if (lockGrantedTimeStamp != null) {
-          lastLockAcquireTimestamp = lockGrantedTimeStamp.getTime();
+          if (lockGrantedTimeStamp != null) {
+            lastLockAcquireTimestamp = lockGrantedTimeStamp.getTime();
+          }
+          LOGGER.debug("database locked by Liquibase: {}", locked);
         }
-        LOGGER.debug("database locked by Liquibase: {}", locked);
-      }
-      rs.close();
-      stmt.close();
+        rs.close();
 
-      Calendar currentCalender = Calendar.getInstance();
-      long currentLockedTimeDiffSecond =
-          (currentCalender.getTimeInMillis() - lastLockAcquireTimestamp) / 1000;
-      LOGGER.debug(
-          "current liquibase locked time difference in second: {}", currentLockedTimeDiffSecond);
-      if (lastLockAcquireTimestamp != 0
-          && currentLockedTimeDiffSecond > config.liquibaseLockThreshold) {
-        // Initialize Liquibase and run the update
-        Database database =
-            DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
-        LockServiceFactory.getInstance().getLockService(database).forceReleaseLock();
-        locked = false;
-        LOGGER.debug("Release database lock executing query from backend");
-      }
+        Calendar currentCalender = Calendar.getInstance();
+        long currentLockedTimeDiffSecond =
+            (currentCalender.getTimeInMillis() - lastLockAcquireTimestamp) / 1000;
+        LOGGER.debug(
+            "current liquibase locked time difference in second: {}", currentLockedTimeDiffSecond);
+        if (lastLockAcquireTimestamp != 0
+            && currentLockedTimeDiffSecond > config.liquibaseLockThreshold) {
+          // Initialize Liquibase and run the update
+          Database database =
+              DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
+          LockServiceFactory.getInstance().getLockService(database).forceReleaseLock();
+          locked = false;
+          LOGGER.debug("Release database lock executing query from backend");
+        }
 
-      if (locked) {
-        Thread.sleep(config.liquibaseLockThreshold * 1000); // liquibaseLockThreshold = second
-        releaseLiquibaseLock(config);
+        if (locked) {
+          Thread.sleep(config.liquibaseLockThreshold * 1000); // liquibaseLockThreshold = second
+          releaseLiquibaseLock(config);
+        }
       }
     } catch (InterruptedException e) {
       LOGGER.error(e.getMessage(), e);
@@ -455,30 +455,30 @@ public abstract class CommonHibernateUtil {
 
       JdbcConnection jdbcCon = new JdbcConnection(con);
 
-      Statement stmt = jdbcCon.createStatement();
+      try (var stmt = jdbcCon.createStatement()) {
 
-      StringBuilder sql =
-          new StringBuilder("SELECT * FROM migration_status ms WHERE ms.migration_name = '")
-              .append(migrationName)
-              .append("'");
-      ResultSet rs = stmt.executeQuery(sql.toString());
+        StringBuilder sql =
+            new StringBuilder("SELECT * FROM migration_status ms WHERE ms.migration_name = '")
+                .append(migrationName)
+                .append("'");
+        ResultSet rs = stmt.executeQuery(sql.toString());
 
-      boolean locked = false;
-      // Extract data from result set
-      while (rs.next()) {
-        // Retrieve by column name
-        int id = rs.getInt("id");
-        locked = rs.getBoolean("status");
-        String migrationNameDB = rs.getString("migration_name");
+        boolean locked = false;
+        // Extract data from result set
+        while (rs.next()) {
+          // Retrieve by column name
+          int id = rs.getInt("id");
+          locked = rs.getBoolean("status");
+          String migrationNameDB = rs.getString("migration_name");
 
-        // Display values
-        LOGGER.debug("Id: {}, Locked: {}, migration_name: {}", id, locked, migrationNameDB);
-        LOGGER.debug("migration {} locked: {}", migrationNameDB, locked);
+          // Display values
+          LOGGER.debug("Id: {}, Locked: {}, migration_name: {}", id, locked, migrationNameDB);
+          LOGGER.debug("migration {} locked: {}", migrationNameDB, locked);
+        }
+        rs.close();
+
+        return locked;
       }
-      rs.close();
-      stmt.close();
-
-      return locked;
     } catch (DatabaseException e) {
       LOGGER.error(e.getMessage(), e);
       throw e;
@@ -492,15 +492,15 @@ public abstract class CommonHibernateUtil {
 
       JdbcConnection jdbcCon = new JdbcConnection(con);
 
-      Statement stmt = jdbcCon.createStatement();
+      try (var stmt = jdbcCon.createStatement()) {
 
-      StringBuilder sql =
-          new StringBuilder("INSERT INTO migration_status (migration_name, status) VALUES ('")
-              .append(migrationName)
-              .append("', 1);");
-      int updatedRowCount = stmt.executeUpdate(sql.toString());
-      stmt.close();
-      LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);
+        StringBuilder sql =
+            new StringBuilder("INSERT INTO migration_status (migration_name, status) VALUES ('")
+                .append(migrationName)
+                .append("', 1);");
+        int updatedRowCount = stmt.executeUpdate(sql.toString());
+        LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);
+      }
     } catch (DatabaseException e) {
       LOGGER.error(e.getMessage(), e);
       throw e;
@@ -544,23 +544,25 @@ public abstract class CommonHibernateUtil {
     properties.put("sslMode", rdb.sslMode);
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
     LOGGER.info("Connecting to DB server url " + dbUrl);
-    Connection connection = DriverManager.getConnection(dbUrl, properties);
-    ResultSet resultSet = connection.getMetaData().getCatalogs();
+    try (var connection = DriverManager.getConnection(dbUrl, properties)) {
+      ResultSet resultSet = connection.getMetaData().getCatalogs();
 
-    while (resultSet.next()) {
-      String databaseNameRes = resultSet.getString(1);
-      if (rdb.RdbDatabaseName.equals(databaseNameRes)) {
-        System.out.println("the database " + rdb.RdbDatabaseName + " exists");
-        return;
+      while (resultSet.next()) {
+        String databaseNameRes = resultSet.getString(1);
+        if (rdb.RdbDatabaseName.equals(databaseNameRes)) {
+          System.out.println("the database " + rdb.RdbDatabaseName + " exists");
+          return;
+        }
+      }
+
+      var dbName = RdbConfig.buildDatabaseName(rdb);
+
+      System.out.println("the database " + rdb.RdbDatabaseName + " does not exists");
+      try (var statement = connection.createStatement()) {
+        StringBuilder queryBuilder = new StringBuilder("CREATE DATABASE " + dbName);
+        statement.executeUpdate(queryBuilder.toString());
+        System.out.println("the database " + rdb.RdbDatabaseName + " created successfully");
       }
     }
-
-    var dbName = RdbConfig.buildDatabaseName(rdb);
-
-    System.out.println("the database " + rdb.RdbDatabaseName + " does not exists");
-    Statement statement = connection.createStatement();
-    StringBuilder queryBuilder = new StringBuilder("CREATE DATABASE " + dbName);
-    statement.executeUpdate(queryBuilder.toString());
-    System.out.println("the database " + rdb.RdbDatabaseName + " created successfully");
   }
 }
