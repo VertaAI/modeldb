@@ -20,11 +20,11 @@ class Docker(_environment._Environment):
     Parameters
     ----------
     repository : str
-        Image repository
+        Image repository.
     tag : str, optional
-        Image tag.
+        Image tag. Either this or `sha` must be provided.
     sha : str, optional
-        Image ID.
+        Image ID. Either this or `tag` must be provided.
     env_vars : list of str, or dict of str to str, optional
         Environment variables. If a list of names is provided, the values will
         be captured from the current environment. If not provided, nothing
