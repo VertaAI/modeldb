@@ -92,7 +92,7 @@ class _DeployableEntity(_ModelDBEntity):
         raise NotImplementedError
 
     def get_environment(self):
-        """Gets the logged environment.
+        """Get the logged environment.
 
         Returns
         -------
