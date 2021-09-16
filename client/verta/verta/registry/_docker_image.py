@@ -83,6 +83,7 @@ class DockerImage(object):
                 "repository: {}".format(self.repository),
             ]
         )
+        # TODO: consolidate the following lines with Docker.__repr__()
         if self.tag:
             lines.append("tag: {}".format(six.ensure_str(self.tag)))
         if self.sha:
@@ -135,7 +136,11 @@ class DockerImage(object):
             repository=model_ver_msg.environment.docker.repository,
             tag=model_ver_msg.environment.docker.tag,
             sha=model_ver_msg.environment.docker.sha,
-            env_vars=model_ver_msg.environment.environment_variables,
+            env_vars={
+                var.name: var.value
+                for var
+                in model_ver_msg.environment.environment_variables
+            },
         )
 
     def _as_model_ver_proto(self):

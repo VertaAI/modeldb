@@ -38,7 +38,7 @@ from verta.environment import _Environment, Python
 from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
-from .. import _docker_image, lock
+from .. import lock, DockerImage
 
 
 logger = logging.getLogger(__name__)
@@ -279,13 +279,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def log_docker(
         self,
-        port,
-        request_path,
-        health_path,
-        repository,
-        tag=None,
-        sha=None,
-        env_vars=None,
+        docker_image,
         overwrite=False,
     ):
         """Log Docker image information for deployment.
@@ -298,22 +292,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         Parameters
         ----------
-        port : int
-            Container port for access.
-        request_path : str
-            URL path for routing predictions.
-        health_path : str
-            URL path for container health checks.
-        repository : str
-            Image repository.
-        tag : str, optional
-            Image tag. Either this or `sha` must be provided.
-        sha : str, optional
-            Image ID. Either this or `tag` must be provided.
-        env_vars : list of str, or dict of str to str, optional
-            Environment variables. If a list of names is provided, the values will
-            be captured from the current environment. If not provided, nothing
-            will be captured.
+        docker_image : :class:`~verta.registry.DockerImage`
+            Docker image information.
         overwrite : bool, default False
             Whether to allow overwriting existing Docker image information.
 
@@ -321,18 +301,28 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         --------
         .. code-block:: python
 
+            from verta.registry import DockerImage
+
             model_ver.log_docker(
-                port=5000,
-                request_path="/predict_json",
-                health_path="/health",
+                DockerImage(
+                    port=5000,
+                    request_path="/predict_json",
+                    health_path="/health",
 
-                repository="012345678901.dkr.ecr.apne2-az1.amazonaws.com/models/example",
-                tag="example",
+                    repository="012345678901.dkr.ecr.apne2-az1.amazonaws.com/models/example",
+                    tag="example",
 
-                env_vars={"CUDA_VISIBLE_DEVICES": "0,1"},
+                    env_vars={"CUDA_VISIBLE_DEVICES": "0,1"},
+                )
             )
 
         """
+        if not isinstance(docker_image, DockerImage):
+            raise TypeError(
+                "`docker_image` must be type verta.registry.DockerImage,"
+                " not {}".format(type(docker_image))
+            )
+
         if not overwrite:
             self._refresh_cache()
             if self._msg.docker_metadata.request_port:
@@ -345,16 +335,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                     "environment already exists;"
                     " consider setting overwrite=True"
                 )
-
-        docker_image = _docker_image.DockerImage(
-            port=port,
-            request_path=request_path,
-            health_path=health_path,
-            repository=repository,
-            tag=tag,
-            sha=sha,
-            env_vars=env_vars,
-        )
 
         if overwrite:
             self._fetch_with_no_cache()
@@ -372,7 +352,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         Returns
         -------
-        :class:`~verta.registry._docker_image.DockerImage`
+        :class:`~verta.registry.DockerImage`
 
         """
         self._refresh_cache()
@@ -381,7 +361,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "Docker image information has not been logged"
             )
 
-        return _docker_image.DockerImage._from_model_ver_proto(self._msg)
+        return DockerImage._from_model_ver_proto(self._msg)
 
     def log_model(
         self,
