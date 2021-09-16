@@ -392,7 +392,6 @@ class _ModelDBEntity(object):
             extension = 'zip'
 
             artifact_hash = _artifact_utils.calc_sha256(zipstream)
-            zipstream.seek(0)
             basename = key + os.extsep + extension
             artifact_path = os.path.join(artifact_hash, basename)
 

@@ -18,7 +18,7 @@ import requests
 
 import verta
 from verta import Client
-from verta._internal_utils import _utils
+from verta._internal_utils import _utils, _pip_requirements_utils
 
 import hypothesis
 import pytest
@@ -528,11 +528,12 @@ def organization(client, created_entities):
 
 @pytest.fixture
 def requirements_file():
+    """Create requirements file from pip freeze."""
+    pip_freeze = _pip_requirements_utils.get_pip_freeze()
+    pip_freeze = _pip_requirements_utils.clean_reqs_file_lines(pip_freeze)
+
     with tempfile.NamedTemporaryFile("w+") as tempf:
-        # create requirements file from pip freeze
-        pip_freeze = subprocess.check_output([sys.executable, "-m", "pip", "freeze"])
-        pip_freeze = six.ensure_str(pip_freeze)
-        tempf.write(pip_freeze)
+        tempf.write("\n".join(pip_freeze))
         tempf.flush()  # flush object buffer
         os.fsync(tempf.fileno())  # flush OS buffer
         tempf.seek(0)
