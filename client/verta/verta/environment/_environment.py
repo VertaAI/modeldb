@@ -22,7 +22,7 @@ class _Environment(_blob.Blob):
 
     Attributes
     ----------
-    env_vars : dict of str to str
+    env_vars : dict of str to str, or None
         Environment variables.
 
     """
@@ -54,7 +54,9 @@ class _Environment(_blob.Blob):
 
     @property
     def env_vars(self):
-        return {var.name: var.value for var in self._msg.environment_variables}
+        return {
+            var.name: var.value for var in self._msg.environment_variables
+        } or None
 
     def _as_env_proto(self):
         """Returns this environment blob as an environment protobuf message.

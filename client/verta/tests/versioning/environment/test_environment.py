@@ -21,6 +21,17 @@ class Environment(_Environment):
 
 
 class TestEnvironmentVariables:
+    @pytest.mark.parametrize(
+        "env_vars", [None, [], {}],
+    )
+    def test_empty(self, env_vars):
+        env = Environment(
+            env_vars=env_vars,
+            autocapture=False,
+        )
+
+        assert env.env_vars is None
+
     @hypothesis.given(
         env_vars=st.dictionaries(
             keys=st.text(min_size=1),
