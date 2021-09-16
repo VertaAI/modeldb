@@ -27,12 +27,13 @@ from verta._internal_utils import (
     _artifact_utils,
     _request_utils,
     _utils,
+    arg_handler,
     importer,
     time_utils,
 )
 from verta import utils
 
-from verta import _blob, code, data_types
+from verta import _blob, code, data_types, environment
 from verta.environment import _Environment, Python
 from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
@@ -275,6 +276,106 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 return artifact_msg
 
         raise KeyError("no artifact found with key {}".format(key))
+
+    def log_docker(
+        self,
+        port,
+        request_path,
+        health_path,
+        repository,
+        tag=None,
+        sha=None,
+        env_vars=None,
+        overwrite=False,
+    ):
+        """Log a Docker image for deployment.
+
+        .. versionadded:: 0.20.0
+
+        .. note::
+
+            This method cannot be used alongside :meth:`log_environment`.
+
+        Parameters
+        ----------
+        port : int
+            Container port for access.
+        request_path : str
+            URL path for routing predictions.
+        health_path : str
+            URL path for container health checks.
+        repository : str
+            Image repository.
+        tag : str, optional
+            Image tag. Either this or `sha` must be provided.
+        sha : str, optional
+            Image ID. Either this or `tag` must be provided.
+        env_vars : list of str, or dict of str to str, optional
+            Environment variables. If a list of names is provided, the values will
+            be captured from the current environment. If not provided, nothing
+            will be captured.
+        overwrite : bool, default False
+            Whether to allow overwriting existing Docker image information.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            model_ver.log_docker(
+                port=5000,
+                request_path="/predict_json",
+                health_path="/health",
+
+                repository="012345678901.dkr.ecr.apne2-az1.amazonaws.com/models/example",
+                tag="example",
+
+                env_vars={"CUDA_VISIBLE_DEVICES": "0,1"},
+            )
+
+        """
+        if not overwrite:
+            self._refresh_cache()
+            if self._msg.docker_metadata.request_port:
+                raise ValueError(
+                    "Docker image information already exists;"
+                    " consider setting overwrite=True"
+                )
+            if self.has_environment:
+                raise ValueError(
+                    "environment already exists;"
+                    " consider setting overwrite=True"
+                )
+
+        port = int(port)
+        request_path = arg_handler.prepend_slash(request_path)
+        health_path = arg_handler.prepend_slash(health_path)
+        docker_env = environment.Docker(
+            repository=repository,
+            tag=tag,
+            sha=sha,
+            env_vars=env_vars,
+        )
+
+        msg = self.ModelVersionMessage(
+            docker_metadata=_RegistryService.DockerMetadata(
+                request_port=port,
+                request_path=request_path,
+                health_path=health_path,
+            ),
+            environment=docker_env._as_env_proto()
+        )
+        if overwrite:
+            self._fetch_with_no_cache()
+            self._msg.docker_metadata.Clear()
+            self._msg.environment.Clear()
+            self._msg.MergeFrom(msg)
+            self._update(self._msg, method="PUT")
+        else:
+            self._update(
+                msg,
+                method="PATCH",
+                update_mask={"paths": ["docker_metadata", "environment"]},
+            )
 
     def log_model(
         self,
