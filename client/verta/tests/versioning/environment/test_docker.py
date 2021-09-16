@@ -62,8 +62,8 @@ class TestObject:
         env = Docker(repository=repository, tag=tag, sha=sha)
 
         assert env.repository == repository
-        assert env.tag == tag or None
-        assert env.sha == sha or None
+        assert env.tag == tag
+        assert env.sha == sha
 
 
 class TestProto:
@@ -87,8 +87,8 @@ class TestProto:
         env = Docker._from_proto(msg)
 
         assert env.repository == repository
-        assert env.tag == tag or None
-        assert env.sha == sha or None
+        assert env.tag == tag
+        assert env.sha == sha
 
     @hypothesis.given(
         repository=st.text(min_size=1),
