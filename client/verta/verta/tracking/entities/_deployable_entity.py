@@ -104,7 +104,6 @@ class _DeployableEntity(_ModelDBEntity):
         if not self.has_environment:
             raise RuntimeError("environment was not previously set")
 
-        # TODO: rework to/from proto because this is not intuitive (VR-9924)
         return _Environment._from_env_proto(self._msg.environment)
 
     @abc.abstractmethod
