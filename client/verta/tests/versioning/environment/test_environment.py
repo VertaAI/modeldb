@@ -8,6 +8,8 @@ import pytest
 
 from verta.environment import _Environment
 
+from ... import strategies
+
 
 class Environment(_Environment):
     """A minimal concrete class."""
@@ -33,32 +35,19 @@ class TestEnvironmentVariables:
         assert env.env_vars is None
 
     @hypothesis.given(
-        env_vars=st.dictionaries(
-            keys=st.text(min_size=1),
-            values=st.text(min_size=1),
-        ),
+        # pylint: disable=no-value-for-parameter
+        env_vars=strategies.env_vars(),
     )
-    def test_provided_values(self, env_vars):
+    def test_env_vars(self, env_vars):
         env = Environment(
             env_vars=env_vars,
             autocapture=False,
         )
 
-        assert env.env_vars == env_vars
+        if isinstance(env_vars, list):
+            env_vars = {name: os.environ[name] for name in env_vars}
 
-    @hypothesis.given(
-        names=st.lists(st.sampled_from(sorted(os.environ.keys()))),
-    )
-    def test_capture_values(self, names):
-        env = Environment(
-            env_vars=names,
-            autocapture=False,
-        )
-
-        assert env.env_vars == {
-            name: os.environ[name]
-            for name in names
-        }
+        assert env.env_vars == (env_vars or None)
 
     @hypothesis.given(
         env_vars=st.dictionaries(
@@ -79,7 +68,7 @@ class TestEnvironmentVariables:
             for name in names
         }
         expected_env_vars.update(env_vars)
-        assert env.env_vars == expected_env_vars
+        assert env.env_vars == (expected_env_vars or None)
 
     @hypothesis.given(name=st.text(min_size=1))
     def test_not_found_error(self, name):
