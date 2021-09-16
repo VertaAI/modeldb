@@ -38,7 +38,7 @@ from verta.environment import _Environment, Python
 from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
-from .. import lock
+from .. import _docker_image, lock
 
 
 logger = logging.getLogger(__name__)
@@ -288,7 +288,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         env_vars=None,
         overwrite=False,
     ):
-        """Log a Docker image for deployment.
+        """Log Docker image information for deployment.
 
         .. versionadded:: 0.20.0
 
@@ -346,36 +346,42 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                     " consider setting overwrite=True"
                 )
 
-        port = int(port)
-        request_path = arg_handler.prepend_slash(request_path)
-        health_path = arg_handler.prepend_slash(health_path)
-        docker_env = environment.Docker(
+        docker_image = _docker_image.DockerImage(
+            port=port,
+            request_path=request_path,
+            health_path=health_path,
             repository=repository,
             tag=tag,
             sha=sha,
             env_vars=env_vars,
         )
 
-        msg = self.ModelVersionMessage(
-            docker_metadata=_RegistryService.DockerMetadata(
-                request_port=port,
-                request_path=request_path,
-                health_path=health_path,
-            ),
-            environment=docker_env._as_env_proto()
-        )
         if overwrite:
             self._fetch_with_no_cache()
-            self._msg.docker_metadata.Clear()
-            self._msg.environment.Clear()
-            self._msg.MergeFrom(msg)
+            docker_image._merge_into_model_ver_proto(self._msg)
             self._update(self._msg, method="PUT")
         else:
             self._update(
-                msg,
+                docker_image._as_model_ver_proto(),
                 method="PATCH",
                 update_mask={"paths": ["docker_metadata", "environment"]},
             )
+
+    def get_docker(self):
+        """Get logged Docker image information.
+
+        Returns
+        -------
+        :class:`~verta.registry._docker_image.DockerImage`
+
+        """
+        self._refresh_cache()
+        if not self._msg.docker_metadata.request_port:
+            raise ValueError(
+                "Docker image information has not been logged"
+            )
+
+        return _docker_image.DockerImage._from_model_ver_proto(self._msg)
 
     def log_model(
         self,
