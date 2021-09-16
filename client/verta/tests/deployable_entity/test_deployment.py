@@ -409,28 +409,21 @@ class TestFetchArtifacts:
 
 class TestEnvironment:
 
-    def test_log_environment(self, deployable_entity):
-        reqs = Python.read_pip_environment()
-        env = Python(requirements=reqs)
+    def test_log_environment(self, deployable_entity, environment):
+        deployable_entity.log_environment(environment)
+        assert environment == deployable_entity.get_environment()
 
-        deployable_entity.log_environment(env)
-        assert env == deployable_entity.get_environment()
-
-    def test_overwrite_environment(self, deployable_entity):
-        reqs = Python.read_pip_environment()
-        env = Python(requirements=reqs)
-        deployable_entity.log_environment(env)
+    def test_overwrite_environment(self, deployable_entity, environment):
+        deployable_entity.log_environment(environment)
 
         with pytest.raises(ValueError, match="environment already exists"):
-            deployable_entity.log_environment(env)
+            deployable_entity.log_environment(environment)
 
-        deployable_entity.log_environment(env, overwrite=True)
-        assert env == deployable_entity.get_environment()
+        deployable_entity.log_environment(environment, overwrite=True)
+        assert environment == deployable_entity.get_environment()
 
-    def test_del_environment(self, deployable_entity):
-        reqs = Python.read_pip_environment()
-        env = Python(requirements=reqs)
-        deployable_entity.log_environment(env)
+    def test_del_environment(self, deployable_entity, environment):
+        deployable_entity.log_environment(environment)
 
         deployable_entity.del_environment()
         assert not deployable_entity.has_environment
