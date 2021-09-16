@@ -8,6 +8,7 @@ import sys
 from verta.external import six
 from verta import _blob
 
+from .._protos.public.modeldb.versioning import VersioningService_pb2
 from .._protos.public.modeldb.versioning import Environment_pb2 as _EnvironmentService
 
 
@@ -44,12 +45,36 @@ class _Environment(_blob.Blob):
         else:
             self._msg.apt.Clear()
 
-    def _as_env_proto(self):
-        """Returns this environment blob as an environment protobuf message.
+    @classmethod
+    def _from_env_proto(cls, env_msg):
+        """Returns `env_msg` as a client environment object.
+
+        Parameters
+        ----------
+        env_msg : versioning.Environment_pb2.EnvironmentBlob
+            Environment protobuf.
 
         Returns
         -------
-        env_msg : _EnvironmentService.EnvironmentBlob
+        :mod:`~verta.environment`
+            Environment object.
+
+        """
+        for subcls in cls.__subclasses__():
+            env_type = env_msg.WhichOneof("content")
+            if env_type == subcls.__name__.lower():
+                return subcls._from_proto(
+                    VersioningService_pb2.Blob(environment=env_msg)
+                )
+
+        raise ValueError("environment {} not recognized".format(env_type))
+
+    def _as_env_proto(self):
+        """Returns this object as an environment protobuf message.
+
+        Returns
+        -------
+        env_msg : versioning.Environment_pb2.EnvironmentBlob
 
         """
         return self._msg

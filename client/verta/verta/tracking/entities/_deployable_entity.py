@@ -20,7 +20,7 @@ from verta._internal_utils import (
     _histogram_utils,
     _utils,
 )
-from verta.environment import Python
+from verta.environment import _Environment
 
 from verta.external import six
 
@@ -105,7 +105,7 @@ class _DeployableEntity(_ModelDBEntity):
             raise RuntimeError("environment was not previously set")
 
         # TODO: rework to/from proto because this is not intuitive (VR-9924)
-        return Python._from_proto(self._msg)
+        return _Environment._from_env_proto(self._msg.environment)
 
     @abc.abstractmethod
     def log_model(
