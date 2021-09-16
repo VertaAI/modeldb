@@ -94,3 +94,22 @@ def maybe(fn, val):
         return fn(val)
     else:
         return None
+
+
+def prepend_slash(path):
+    """Prepends ``"/"`` to `path` if it doesn't already start with one.
+
+    Parameters
+    ----------
+    path : str
+        Request path
+
+    Returns
+    -------
+    str
+        `path` prepended with ``"/"`` if it wasn't already.
+
+    """
+    if path.startswith("/"):
+        return path
+    return "/" + path

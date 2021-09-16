@@ -9,7 +9,7 @@ import yaml
 from verta.external import six
 
 from verta.deployment import DeployedModel
-from verta._internal_utils import _utils
+from verta._internal_utils import _utils, arg_handler
 from verta.tracking.entities import ExperimentRun
 from verta.registry.entities import RegisteredModelVersion
 from verta.visibility import _visibility
@@ -139,8 +139,7 @@ class Endpoint(object):
         public_within_org=None,
         visibility=None,
     ):
-        if not path.startswith("/"):
-            path = "/" + path
+        path = arg_handler.prepend_slash(path)
         (
             visibility,
             public_within_org,
