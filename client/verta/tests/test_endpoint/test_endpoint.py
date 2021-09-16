@@ -24,6 +24,22 @@ pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire 
 
 
 class TestEndpoint:
+    def test_path_prepend_slash(self, client, created_entities):
+        # without slash
+        path = _utils.generate_default_name()
+        endpoint = client.create_endpoint(path)
+        created_entities.append(endpoint)
+
+        expected_path = "/" + path
+        assert endpoint.path == expected_path
+
+        # with slash
+        path = "/" + _utils.generate_default_name()
+        endpoint = client.create_endpoint(path)
+        created_entities.append(endpoint)
+
+        assert endpoint.path == path
+
     def test_create(self, client, created_entities):
         name = _utils.generate_default_name()
         endpoint = client.set_endpoint(name)
