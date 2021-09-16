@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -42,7 +41,7 @@ public abstract class Config {
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
     try {
-      Yaml yaml = new Yaml(new Constructor(configType));
+      var yaml = new Yaml(new Constructor(configType));
       String filePath = System.getenv(configFile);
       filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
       InputStream inputStream = new FileInputStream(filePath);
@@ -119,8 +118,8 @@ public abstract class Config {
   }
 
   public FutureJdbi initializeFutureJdbi(DatabaseConfig databaseConfig, String poolName) {
-    final Jdbi jdbi = initializeJdbi(databaseConfig, poolName);
-    final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);
+    final var jdbi = initializeJdbi(databaseConfig, poolName);
+    final var dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);
     return new FutureJdbi(jdbi, dbExecutor);
   }
 
@@ -137,7 +136,7 @@ public abstract class Config {
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);
 
-    final Jdbi jdbi =
+    final var jdbi =
         Jdbi.create(hikariDataSource).setSqlLogger(new OpentracingSqlLogger(GlobalTracer.get()));
 
     return jdbi;

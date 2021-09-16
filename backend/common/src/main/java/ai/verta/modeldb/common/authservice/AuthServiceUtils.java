@@ -30,9 +30,9 @@ public class AuthServiceUtils implements AuthService {
   }
 
   private UserInfo getCurrentLoginUserInfo(boolean retry) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
-      UserInfo userInfo =
+      var userInfo =
           authServiceChannel.getUacServiceBlockingStub().getCurrentUser(Empty.newBuilder().build());
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
@@ -54,12 +54,11 @@ public class AuthServiceUtils implements AuthService {
   }
 
   private UserInfo getUnsignedUser(boolean retry) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
-      GetUser getUserRequest =
-          GetUser.newBuilder().setUsername(CommonConstants.UNSIGNED_USER).build();
+      var getUserRequest = GetUser.newBuilder().setUsername(CommonConstants.UNSIGNED_USER).build();
       // Get the user info by vertaId form the AuthService
-      UserInfo userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
+      var userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
@@ -81,7 +80,7 @@ public class AuthServiceUtils implements AuthService {
 
   private UserInfo getUserInfo(
       boolean retry, String vertaId, CommonConstants.UserIdentifier vertaIdentifier) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetUser getUserRequest;
       if (vertaIdentifier == CommonConstants.UserIdentifier.EMAIL_ID) {
         getUserRequest = GetUser.newBuilder().setEmail(vertaId).build();
@@ -93,7 +92,7 @@ public class AuthServiceUtils implements AuthService {
 
       LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
       // Get the user info by vertaId form the AuthService
-      UserInfo userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
+      var userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
@@ -126,8 +125,8 @@ public class AuthServiceUtils implements AuthService {
 
   private Map<String, UserInfo> getUserInfoFromAuthServer(
       boolean retry, Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      GetUsers.Builder getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+      var getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
       if (emailIdList != null && !emailIdList.isEmpty()) {
         getUserRequestBuilder.addAllEmails(emailIdList);
       }
@@ -138,7 +137,7 @@ public class AuthServiceUtils implements AuthService {
       LOGGER.trace("email Id List : {}", emailIdList);
       LOGGER.trace("username Id List : {}", usernameList);
       // Get the user info from the Context
-      GetUsers.Response response =
+      var response =
           authServiceChannel.getUacServiceBlockingStub().getUsers(getUserRequestBuilder.build());
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       List<UserInfo> userInfoList = response.getUserInfosList();
@@ -200,24 +199,23 @@ public class AuthServiceUtils implements AuthService {
 
   private UserInfoPaginationDTO getFuzzyUserInfoList(boolean retry, String usernameChar) {
     if (usernameChar.isEmpty()) {
-      UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
+      var paginationDTO = new UserInfoPaginationDTO();
       paginationDTO.setUserInfoList(Collections.emptyList());
       paginationDTO.setTotalRecords(0L);
       return paginationDTO;
     }
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      GetUsersFuzzy.Builder getUserRequestBuilder =
-          GetUsersFuzzy.newBuilder().setUsername(usernameChar);
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+      var getUserRequestBuilder = GetUsersFuzzy.newBuilder().setUsername(usernameChar);
 
       LOGGER.trace("usernameChar : {}", usernameChar);
       // Get the user info from the Context
-      GetUsersFuzzy.Response response =
+      var response =
           authServiceChannel
               .getUacServiceBlockingStub()
               .getUsersFuzzy(getUserRequestBuilder.build());
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
-      UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
+      var paginationDTO = new UserInfoPaginationDTO();
       paginationDTO.setUserInfoList(response.getUserInfosList());
       paginationDTO.setTotalRecords(response.getTotalRecords());
       return paginationDTO;
@@ -234,13 +232,13 @@ public class AuthServiceUtils implements AuthService {
 
   @Override
   public Workspace workspaceIdByName(boolean retry, String workspaceName) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetWorkspaceByName.Builder getWorkspaceByName =
           GetWorkspaceByName.newBuilder().setName(workspaceName);
 
       LOGGER.trace("workspace : {}", workspaceName);
       // Get the user info from the Context
-      Workspace workspace =
+      var workspace =
           authServiceChannel
               .getWorkspaceServiceBlockingStub()
               .getWorkspaceByName(getWorkspaceByName.build());
@@ -258,12 +256,12 @@ public class AuthServiceUtils implements AuthService {
 
   @Override
   public Workspace workspaceById(boolean retry, Long workspaceId) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetWorkspaceById.Builder getWorkspaceById = GetWorkspaceById.newBuilder().setId(workspaceId);
 
       LOGGER.trace("get workspaceById: ID : {}", workspaceId);
       // Get the user info from the Context
-      Workspace workspace =
+      var workspace =
           authServiceChannel
               .getWorkspaceServiceBlockingStub()
               .getWorkspaceById(getWorkspaceById.build());

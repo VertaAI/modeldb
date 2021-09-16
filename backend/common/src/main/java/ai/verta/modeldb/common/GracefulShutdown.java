@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.apache.catalina.connector.Connector;
@@ -29,10 +28,10 @@ public class GracefulShutdown
   @Override
   public void onApplicationEvent(ContextClosedEvent event) {
     this.connector.pause();
-    Executor executor = this.connector.getProtocolHandler().getExecutor();
+    var executor = this.connector.getProtocolHandler().getExecutor();
     if (executor instanceof ThreadPoolExecutor) {
       try {
-        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
+        var threadPoolExecutor = (ThreadPoolExecutor) executor;
         int nfsActiveRequestCount = threadPoolExecutor.getActiveCount();
 
         while (nfsActiveRequestCount > 0) {

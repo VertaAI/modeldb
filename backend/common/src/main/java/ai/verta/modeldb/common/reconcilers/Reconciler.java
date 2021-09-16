@@ -60,7 +60,7 @@ public abstract class Reconciler<T> {
 
   private void startWorkers() {
     var executorService = Executors.newFixedThreadPool(config.workerCount);
-    for (int i = 0; i < config.workerCount; i++) {
+    for (var i = 0; i < config.workerCount; i++) {
       Runnable runnable =
           () -> {
             while (true) {

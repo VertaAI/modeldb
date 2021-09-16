@@ -17,7 +17,6 @@ import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.configuration.GlobalConfiguration;
 import liquibase.configuration.LiquibaseConfiguration;
-import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.DatabaseException;
@@ -27,7 +26,6 @@ import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.FileSystemResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -106,7 +104,7 @@ public abstract class CommonHibernateUtil {
         StandardServiceRegistryBuilder registryBuilder =
             new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
         registry = registryBuilder.build();
-        MetadataSources metaDataSrc = new MetadataSources(registry);
+        var metaDataSrc = new MetadataSources(registry);
         for (Class<?> entity : entities) {
           metaDataSrc.addAnnotatedClass(entity);
         }
@@ -172,7 +170,7 @@ public abstract class CommonHibernateUtil {
       throws DatabaseException, SQLException {
     try (var stmt = jdbcCon.createStatement()) {
       String dbName = jdbcCon.getCatalog();
-      String sql =
+      var sql =
           String.format(
               "ALTER DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
       int result = stmt.executeUpdate(sql);
@@ -217,9 +215,9 @@ public abstract class CommonHibernateUtil {
   }
 
   public void checkDBConnectionInLoop(boolean isStartUpTime) throws InterruptedException {
-    int loopBackTime = 5;
-    int loopIndex = 0;
-    boolean dbConnectionLive = false;
+    var loopBackTime = 5;
+    var loopIndex = 0;
+    var dbConnectionLive = false;
     while (!dbConnectionLive) {
       if (loopIndex < 10 || isStartUpTime) {
         Thread.sleep(loopBackTime);
@@ -262,29 +260,29 @@ public abstract class CommonHibernateUtil {
   public void releaseLiquibaseLock(DatabaseConfig config)
       throws LiquibaseException, SQLException, InterruptedException, ClassNotFoundException {
     // Get database connection
-    try (Connection con = getDBConnection(config.RdbConfiguration)) {
-      boolean existsStatus = tableExists(con, config, "database_change_log_lock");
+    try (var con = getDBConnection(config.RdbConfiguration)) {
+      var existsStatus = tableExists(con, config, "database_change_log_lock");
       if (!existsStatus) {
         LOGGER.info("Table database_change_log_lock does not exists in DB");
         LOGGER.info("Proceeding with liquibase assuming it has never been run");
         return;
       }
 
-      JdbcConnection jdbcCon = new JdbcConnection(con);
+      var jdbcCon = new JdbcConnection(con);
       try (var stmt = jdbcCon.createStatement()) {
 
-        String sql = "SELECT * FROM database_change_log_lock WHERE ID = 1";
+        var sql = "SELECT * FROM database_change_log_lock WHERE ID = 1";
         ResultSet rs = stmt.executeQuery(sql);
 
-        long lastLockAcquireTimestamp = 0L;
-        boolean locked = false;
+        var lastLockAcquireTimestamp = 0L;
+        var locked = false;
         // Extract data from result set
         while (rs.next()) {
           // Retrieve by column name
-          int id = rs.getInt("id");
+          var id = rs.getInt("id");
           locked = rs.getBoolean("locked");
-          Timestamp lockGrantedTimeStamp = rs.getTimestamp("lockgranted", Calendar.getInstance());
-          String lockedBy = rs.getString("lockedby");
+          var lockGrantedTimeStamp = rs.getTimestamp("lockgranted", Calendar.getInstance());
+          var lockedBy = rs.getString("lockedby");
 
           // Display values
           LOGGER.debug(
@@ -301,7 +299,7 @@ public abstract class CommonHibernateUtil {
         }
         rs.close();
 
-        Calendar currentCalender = Calendar.getInstance();
+        var currentCalender = Calendar.getInstance();
         long currentLockedTimeDiffSecond =
             (currentCalender.getTimeInMillis() - lastLockAcquireTimestamp) / 1000;
         LOGGER.debug(
@@ -309,8 +307,7 @@ public abstract class CommonHibernateUtil {
         if (lastLockAcquireTimestamp != 0
             && currentLockedTimeDiffSecond > config.liquibaseLockThreshold) {
           // Initialize Liquibase and run the update
-          Database database =
-              DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
+          var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
           LockServiceFactory.getInstance().getLockService(database).forceReleaseLock();
           locked = false;
           LOGGER.debug("Release database lock executing query from backend");
@@ -333,8 +330,8 @@ public abstract class CommonHibernateUtil {
     RdbConfig rdb = config.RdbConfiguration;
 
     // Get database connection
-    try (Connection con = getDBConnection(rdb)) {
-      JdbcConnection jdbcCon = new JdbcConnection(con);
+    try (var con = getDBConnection(rdb)) {
+      var jdbcCon = new JdbcConnection(con);
       if (config.RdbConfiguration.isMysql()) {
         changeCharsetToUtf(jdbcCon);
       }
@@ -345,12 +342,12 @@ public abstract class CommonHibernateUtil {
       liquibaseConfiguration.setDatabaseChangeLogLockWaitTime(1L);
 
       // Initialize Liquibase and run the update
-      Database database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
+      var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
       String rootPath = System.getProperty(CommonConstants.userDir);
       rootPath = rootPath + liquibaseRootPath;
-      Liquibase liquibase = new Liquibase(rootPath, new FileSystemResourceAccessor(), database);
+      var liquibase = new Liquibase(rootPath, new FileSystemResourceAccessor(), database);
 
-      boolean liquibaseExecuted = false;
+      var liquibaseExecuted = false;
       while (!liquibaseExecuted) {
         try {
           if (changeSetToRevertUntilTag == null || changeSetToRevertUntilTag.isEmpty()) {
@@ -378,7 +375,7 @@ public abstract class CommonHibernateUtil {
   }
 
   public boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
-    try (Connection con = getDBConnection(rdb)) {
+    try (var con = getDBConnection(rdb)) {
       return con.isValid(timeout);
     } catch (Exception ex) {
       LOGGER.warn("CommonHibernateUtil checkDBConnection() got error ", ex);
@@ -388,8 +385,8 @@ public abstract class CommonHibernateUtil {
 
   public boolean ping() {
     if (sessionFactory != null) {
-      try (Session session = sessionFactory.openSession()) {
-        final boolean[] valid = {false};
+      try (var session = sessionFactory.openSession()) {
+        final var valid = new boolean[] {false};
         session.doWork(
             connection -> {
               if (connection.isValid(databaseConfig.timeout)) {
@@ -424,10 +421,10 @@ public abstract class CommonHibernateUtil {
 
   public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
       throws SQLException {
-    boolean tExists = false;
+    var tExists = false;
     try (ResultSet rs = getTableBasedOnDialect(conn, tableName, config.RdbConfiguration)) {
       while (rs.next()) {
-        String tName = rs.getString("TABLE_NAME");
+        var tName = rs.getString("TABLE_NAME");
         if (tName != null && tName.equals(tableName)) {
           tExists = true;
           break;
@@ -450,25 +447,25 @@ public abstract class CommonHibernateUtil {
   protected boolean checkMigrationLockedStatus(String migrationName, RdbConfig rdb)
       throws SQLException, DatabaseException, ClassNotFoundException {
     // Get database connection
-    try (Connection con = getDBConnection(rdb)) {
+    try (var con = getDBConnection(rdb)) {
 
-      JdbcConnection jdbcCon = new JdbcConnection(con);
+      var jdbcCon = new JdbcConnection(con);
 
       try (var stmt = jdbcCon.createStatement()) {
 
-        StringBuilder sql =
+        var sql =
             new StringBuilder("SELECT * FROM migration_status ms WHERE ms.migration_name = '")
                 .append(migrationName)
                 .append("'");
         ResultSet rs = stmt.executeQuery(sql.toString());
 
-        boolean locked = false;
+        var locked = false;
         // Extract data from result set
         while (rs.next()) {
           // Retrieve by column name
-          int id = rs.getInt("id");
+          var id = rs.getInt("id");
           locked = rs.getBoolean("status");
-          String migrationNameDB = rs.getString("migration_name");
+          var migrationNameDB = rs.getString("migration_name");
 
           // Display values
           LOGGER.debug("Id: {}, Locked: {}, migration_name: {}", id, locked, migrationNameDB);
@@ -487,13 +484,13 @@ public abstract class CommonHibernateUtil {
   protected void lockedMigration(String migrationName, RdbConfig rdb)
       throws SQLException, DatabaseException, ClassNotFoundException {
     // Get database connection
-    try (Connection con = getDBConnection(rdb)) {
+    try (var con = getDBConnection(rdb)) {
 
-      JdbcConnection jdbcCon = new JdbcConnection(con);
+      var jdbcCon = new JdbcConnection(con);
 
       try (var stmt = jdbcCon.createStatement()) {
 
-        StringBuilder sql =
+        var sql =
             new StringBuilder("INSERT INTO migration_status (migration_name, status) VALUES ('")
                 .append(migrationName)
                 .append("', 1);");
@@ -537,17 +534,17 @@ public abstract class CommonHibernateUtil {
 
   public void createDBIfNotExists(RdbConfig rdb) throws SQLException {
     LOGGER.info("Checking DB: {}", rdb.RdbUrl);
-    Properties properties = new Properties();
+    var properties = new Properties();
     properties.put("user", rdb.RdbUsername);
     properties.put("password", rdb.RdbPassword);
     properties.put("sslMode", rdb.sslMode);
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
     LOGGER.info("Connecting to DB server url: {} ", dbUrl);
     try (var connection = DriverManager.getConnection(dbUrl, properties)) {
-      ResultSet resultSet = connection.getMetaData().getCatalogs();
+      var resultSet = connection.getMetaData().getCatalogs();
 
       while (resultSet.next()) {
-        String databaseNameRes = resultSet.getString(1);
+        var databaseNameRes = resultSet.getString(1);
         if (rdb.RdbDatabaseName.equals(databaseNameRes)) {
           LOGGER.info("the database {} exists", rdb.RdbDatabaseName);
           return;
@@ -558,7 +555,7 @@ public abstract class CommonHibernateUtil {
 
       LOGGER.info("the database {} does not exists", rdb.RdbDatabaseName);
       try (var statement = connection.createStatement()) {
-        StringBuilder queryBuilder = new StringBuilder("CREATE DATABASE " + dbName);
+        var queryBuilder = new StringBuilder("CREATE DATABASE " + dbName);
         statement.executeUpdate(queryBuilder.toString());
         LOGGER.info("the database {} created successfully", rdb.RdbDatabaseName);
       }
