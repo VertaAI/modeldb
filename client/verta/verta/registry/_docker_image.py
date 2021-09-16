@@ -48,7 +48,7 @@ class DockerImage(object):
         Image tag.
     sha : str or None
         Image ID.
-    env_vars : dict of str to str
+    env_vars : dict of str to str, or None
         Environment variables.
 
     """
