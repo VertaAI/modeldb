@@ -585,6 +585,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._update(self._msg, method="PUT")
         self._upload_artifact(key, artifact_stream, artifact_type=artifact_type)
 
+    # TODO: Fix for VR-12591
     def get_artifact(self, key):
         """
         Gets the artifact with name `key` from this Model Version.
@@ -627,6 +628,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         return artifact_stream
 
+    # TODO: Fix for VR-12591
     def download_artifact(self, key, download_to_path):
         download_to_path = os.path.abspath(download_to_path)
         artifact = self._get_artifact_msg(key)
@@ -814,6 +816,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         print("upload complete")
 
+    # TODO: Fix for VR-12591
     def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists
         self._get_artifact_msg(key)

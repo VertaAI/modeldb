@@ -172,6 +172,7 @@ class _DeployableEntity(_ModelDBEntity):
         """
         raise NotImplementedError
 
+    # TODO: Fix for VR-12591
     @abc.abstractmethod
     def download_artifact(self, key, download_to_path):
         """Downloads the artifact with name `key` to path `download_to_path`.
@@ -387,6 +388,7 @@ class _DeployableEntity(_ModelDBEntity):
         path = os.path.join(_CACHE_DIR, name)
         return path if os.path.exists(path) else None
 
+    # TODO: Fix for VR-12591
     def fetch_artifacts(self, keys):
         """
         Downloads artifacts that are associated with a Standard Verta Model.

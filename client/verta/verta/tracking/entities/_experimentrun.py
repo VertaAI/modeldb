@@ -429,6 +429,7 @@ class ExperimentRun(_DeployableEntity):
             raise KeyError("no artifact found with key {}".format(key))
         return artifact_msg
 
+    # TODO: Fix for VR-12591
     def _get_artifact(self, key):
         """
         Gets the artifact with name `key` from this Experiment Run.
@@ -1435,6 +1436,7 @@ class ExperimentRun(_DeployableEntity):
         self._log_artifact_path(
             key, artifact_path, _CommonCommonService.ArtifactTypeEnum.BLOB, overwrite=overwrite)
 
+    # TODO: Fix for VR-12591
     def get_artifact(self, key):
         """
         Gets the artifact with name `key` from this Experiment Run.
@@ -1501,6 +1503,7 @@ class ExperimentRun(_DeployableEntity):
         self._refresh_cache()
         return list(map(lambda artifact: artifact.key, self._msg.artifacts))
 
+    # TODO: Fix for VR-12591
     def download_artifact(self, key, download_to_path):
         download_to_path = os.path.abspath(download_to_path)
 
@@ -1541,6 +1544,7 @@ class ExperimentRun(_DeployableEntity):
     def download_model(self, download_to_path):
         return self.download_artifact(self._MODEL_KEY, download_to_path)
 
+    # TODO: Fix for VR-12591 ???
     def get_artifact_parts(self, key):
         endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
             self._conn.scheme,
