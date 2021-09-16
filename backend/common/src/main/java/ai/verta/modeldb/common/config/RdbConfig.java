@@ -63,7 +63,7 @@ public class RdbConfig {
             + rdb.sslEnabled
             + "&sslMode="
             + rdb.sslMode;
-    LOGGER.trace("Using db URL " + url);
+    LOGGER.trace("Using db URL: {}", url);
     return url;
   }
 
@@ -78,7 +78,7 @@ public class RdbConfig {
             + rdb.sslEnabled
             + "&sslMode="
             + rdb.sslMode;
-    LOGGER.info("Using db URL " + url);
+    LOGGER.info("Using db URL: ", url);
     return url;
   }
 

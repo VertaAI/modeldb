@@ -6,9 +6,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -56,12 +54,12 @@ public abstract class Reconciler<T> {
           }
         };
 
-    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    executor.scheduleAtFixedRate(runnable, 0, config.resyncPeriodSeconds, TimeUnit.SECONDS);
+    var executorService = Executors.newSingleThreadScheduledExecutor();
+    executorService.scheduleAtFixedRate(runnable, 0, config.resyncPeriodSeconds, TimeUnit.SECONDS);
   }
 
   private void startWorkers() {
-    ExecutorService executor = Executors.newFixedThreadPool(config.workerCount);
+    var executorService = Executors.newFixedThreadPool(config.workerCount);
     for (int i = 0; i < config.workerCount; i++) {
       Runnable runnable =
           () -> {
@@ -103,7 +101,7 @@ public abstract class Reconciler<T> {
               }
             }
           };
-      executor.execute(runnable);
+      executorService.execute(runnable);
     }
   }
 

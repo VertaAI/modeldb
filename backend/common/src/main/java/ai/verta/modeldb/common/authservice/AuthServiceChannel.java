@@ -17,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthServiceChannel.class);
-  private final ManagedChannel authServiceChannel;
+  private final ManagedChannel authChannel;
   private RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub;
   private RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStubForServiceUser;
   private AuthzServiceGrpc.AuthzServiceBlockingStub authzServiceBlockingStub;
@@ -38,7 +38,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
     int port = config.authService.port;
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
     if (host != null && port != 0) { // AuthService not available.
-      authServiceChannel =
+      authChannel =
           ManagedChannelBuilder.forTarget(host + CommonConstants.STRING_COLON + port)
               .usePlaintext()
               .build();
@@ -87,7 +87,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   private void initUACServiceStubChannel() {
-    uacServiceBlockingStub = attachInterceptors(UACServiceGrpc.newBlockingStub(authServiceChannel));
+    uacServiceBlockingStub = attachInterceptors(UACServiceGrpc.newBlockingStub(authChannel));
   }
 
   public UACServiceGrpc.UACServiceBlockingStub getUacServiceBlockingStub() {
@@ -98,8 +98,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   private void initRoleServiceStubChannel() {
-    roleServiceBlockingStub =
-        attachInterceptors(RoleServiceGrpc.newBlockingStub(authServiceChannel));
+    roleServiceBlockingStub = attachInterceptors(RoleServiceGrpc.newBlockingStub(authChannel));
   }
 
   public RoleServiceGrpc.RoleServiceBlockingStub getRoleServiceBlockingStub() {
@@ -111,7 +110,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private void initRoleServiceStubChannelForServiceUser() {
     roleServiceBlockingStubForServiceUser =
-        attachInterceptorsForServiceUser(RoleServiceGrpc.newBlockingStub(authServiceChannel));
+        attachInterceptorsForServiceUser(RoleServiceGrpc.newBlockingStub(authChannel));
   }
 
   public RoleServiceGrpc.RoleServiceBlockingStub getRoleServiceBlockingStubForServiceUser() {
@@ -124,7 +123,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   private void initAuthzServiceStubChannel(Metadata requestHeaders) {
     authzServiceBlockingStub =
         attachInterceptorsWithRequestHeaders(
-            AuthzServiceGrpc.newBlockingStub(authServiceChannel), requestHeaders);
+            AuthzServiceGrpc.newBlockingStub(authChannel), requestHeaders);
   }
 
   public AuthzServiceGrpc.AuthzServiceBlockingStub getAuthzServiceBlockingStub(
@@ -136,8 +135,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   private void initAuthzServiceStubChannel() {
-    authzServiceBlockingStub =
-        attachInterceptors(AuthzServiceGrpc.newBlockingStub(authServiceChannel));
+    authzServiceBlockingStub = attachInterceptors(AuthzServiceGrpc.newBlockingStub(authChannel));
   }
 
   public AuthzServiceGrpc.AuthzServiceBlockingStub getAuthzServiceBlockingStub() {
@@ -148,8 +146,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   private void initTeamServiceStubChannel() {
-    teamServiceBlockingStub =
-        attachInterceptors(TeamServiceGrpc.newBlockingStub(authServiceChannel));
+    teamServiceBlockingStub = attachInterceptors(TeamServiceGrpc.newBlockingStub(authChannel));
   }
 
   public TeamServiceGrpc.TeamServiceBlockingStub getTeamServiceBlockingStub() {
@@ -161,7 +158,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private void initOrganizationServiceStubChannel() {
     organizationServiceBlockingStub =
-        attachInterceptors(OrganizationServiceGrpc.newBlockingStub(authServiceChannel));
+        attachInterceptors(OrganizationServiceGrpc.newBlockingStub(authChannel));
   }
 
   public OrganizationServiceGrpc.OrganizationServiceBlockingStub
@@ -174,7 +171,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private void initWorkspaceServiceStubChannel() {
     workspaceServiceBlockingStub =
-        attachInterceptors(WorkspaceServiceGrpc.newBlockingStub(authServiceChannel));
+        attachInterceptors(WorkspaceServiceGrpc.newBlockingStub(authChannel));
   }
 
   public WorkspaceServiceGrpc.WorkspaceServiceBlockingStub getWorkspaceServiceBlockingStub() {
@@ -186,13 +183,12 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private void initCollaboratorServiceStubChannel() {
     collaboratorServiceBlockingStub =
-        attachInterceptors(CollaboratorServiceGrpc.newBlockingStub(authServiceChannel));
+        attachInterceptors(CollaboratorServiceGrpc.newBlockingStub(authChannel));
   }
 
   private void initCollaboratorServiceStubChannelForServiceUser() {
     collaboratorServiceBlockingStubForServiceUser =
-        attachInterceptorsForServiceUser(
-            CollaboratorServiceGrpc.newBlockingStub(authServiceChannel));
+        attachInterceptorsForServiceUser(CollaboratorServiceGrpc.newBlockingStub(authChannel));
   }
 
   public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
@@ -214,16 +210,16 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   @Override
   public void close() throws StatusRuntimeException {
     try {
-      if (authServiceChannel != null) {
-        authServiceChannel.shutdown();
+      if (authChannel != null) {
+        authChannel.shutdown();
       }
     } catch (Exception ex) {
       throw new InternalErrorException(
           CommonMessages.AUTH_SERVICE_CHANNEL_CLOSE_ERROR + ex.getMessage());
     } finally {
-      if (authServiceChannel != null && !authServiceChannel.isShutdown()) {
+      if (authChannel != null && !authChannel.isShutdown()) {
         try {
-          authServiceChannel.awaitTermination(30, TimeUnit.SECONDS);
+          authChannel.awaitTermination(30, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
           LOGGER.warn(ex.getMessage(), ex);
           // Restore interrupted state...

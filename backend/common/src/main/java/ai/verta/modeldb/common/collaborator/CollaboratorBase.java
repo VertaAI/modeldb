@@ -10,7 +10,7 @@ import java.util.Objects;
 public abstract class CollaboratorBase {
   GeneratedMessageV3 collaborator;
 
-  public CollaboratorBase(GeneratedMessageV3 collaborator) {
+  protected CollaboratorBase(GeneratedMessageV3 collaborator) {
     this.collaborator = collaborator;
   }
 

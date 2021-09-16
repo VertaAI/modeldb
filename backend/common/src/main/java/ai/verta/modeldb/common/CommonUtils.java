@@ -30,6 +30,7 @@ public class CommonUtils {
     return filePath;
   }
 
+  @SuppressWarnings({"squid:S112"})
   public static Message.Builder getProtoObjectFromString(
       String jsonString, Message.Builder builder) {
     try {
@@ -99,7 +100,7 @@ public class CommonUtils {
       StackTraceElement[] stack = e.getStackTrace();
       if (throwable instanceof SocketException) {
         String errorMessage = "Database Connection not found: ";
-        LOGGER.info(errorMessage + "{}", e.getMessage());
+        LOGGER.info("{} {}", errorMessage, e.getMessage());
         status =
             Status.newBuilder()
                 .setCode(Code.UNAVAILABLE_VALUE)
@@ -107,7 +108,7 @@ public class CommonUtils {
                 .build();
       } else if (e instanceof LockAcquisitionException) {
         String errorMessage = "Encountered deadlock in database connection.";
-        LOGGER.info(errorMessage + "{}", e.getMessage());
+        LOGGER.info(" {} {}", errorMessage, e.getMessage());
         status =
             Status.newBuilder()
                 .setCode(Code.ABORTED_VALUE)
@@ -134,12 +135,12 @@ public class CommonUtils {
       boolean isLongStack = stack.length > STACKTRACE_LENGTH;
       if (isLongStack) {
         for (; n < STACKTRACE_LENGTH + 1; ++n) {
-          LOGGER.warn("{}: {}", n, stack[n].toString());
+          LOGGER.warn("{}: {}", n, stack[n]);
         }
       }
       for (; n < stack.length; ++n) {
         if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
-          LOGGER.warn("{}: {}", n, stack[n].toString());
+          LOGGER.warn("{}: {}", n, stack[n]);
         }
       }
       statusRuntimeException = StatusProto.toStatusRuntimeException(status);
