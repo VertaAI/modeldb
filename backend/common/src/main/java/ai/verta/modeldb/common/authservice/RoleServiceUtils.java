@@ -86,8 +86,7 @@ public class RoleServiceUtils implements RoleService {
           isServiceUser
               ? authServiceChannel.getCollaboratorServiceBlockingStubForServiceUser()
               : authServiceChannel.getCollaboratorServiceBlockingStub();
-      var setResourcesResponse =
-          blockingStub.setResource(setResourcesBuilder.build());
+      var setResourcesResponse = blockingStub.setResource(setResourcesBuilder.build());
 
       LOGGER.trace("SetResources message sent.  Response: {}", setResourcesResponse);
       return true;
