@@ -116,6 +116,18 @@ class DockerImage(object):
 
         return "\n    ".join(lines)
 
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return self._as_model_ver_proto() == other._as_model_ver_proto()
+
+    def __ne__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+
+        return not self.__eq__(other)
+
     @property
     def port(self):
         return self._port
