@@ -81,10 +81,6 @@ public class RoleServiceUtils implements RoleService {
         throw new IllegalArgumentException(
             "workspaceId and workspaceName are both empty.  One must be provided.");
       }
-      var setResourcesResponse =
-          authServiceChannel
-              .getCollaboratorServiceBlockingStub()
-              .setResource(setResourcesBuilder.build());
 
       var blockingStub =
           isServiceUser

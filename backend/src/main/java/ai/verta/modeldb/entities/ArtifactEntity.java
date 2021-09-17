@@ -22,7 +22,7 @@ public class ArtifactEntity {
 
   public ArtifactEntity(Object entity, String fieldType, Artifact artifact) {
     var app = App.getInstance();
-    var artifactStoreConfig = app.config.artifactStoreConfig;
+    var artifactStoreConfig = app.mdbConfig.artifactStoreConfig;
     setKey(artifact.getKey());
     setPath(artifact.getPath());
     if (!artifact.getPathOnly()) {
