@@ -7,7 +7,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
@@ -28,7 +28,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
 
   private final CodeVersionHandler codeVersionHandler;
   private final DatasetHandler datasetHandler;
-  private final Config config = App.getInstance().config;
+  private final MDBConfig mdbConfig = App.getInstance().mdbConfig;
 
   private final ArtifactStoreDAO artifactStoreDAO;
   private final DatasetVersionDAO datasetVersionDAO;
@@ -141,7 +141,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified
-        && config.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)) {
+        && mdbConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {

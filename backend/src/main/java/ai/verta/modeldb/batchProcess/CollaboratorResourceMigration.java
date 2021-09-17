@@ -7,9 +7,9 @@ import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
+import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.dto.WorkspaceDTO;
@@ -41,18 +41,18 @@ public class CollaboratorResourceMigration {
   private static final String REPOSITORY_GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
   private static AuthService authService;
   private static UAC uac;
-  private static RoleService roleService;
+  private static MDBRoleService mdbRoleService;
   private static int paginationSize;
 
   public CollaboratorResourceMigration() {}
 
   public static void execute() {
-    var config = App.getInstance().config;
+    var config = App.getInstance().mdbConfig;
     CollaboratorResourceMigration.paginationSize = 100;
     if (config.hasAuth()) {
       uac = UAC.FromConfig(config);
-      authService = AuthServiceUtils.FromConfig(config, uac);
-      roleService = RoleServiceUtils.FromConfig(config, authService, uac);
+      authService = MDBAuthServiceUtils.FromConfig(config, uac);
+      mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found, OSS setup found");
       return;
@@ -120,7 +120,7 @@ public class CollaboratorResourceMigration {
           }
           try {
             workspaceDTO =
-                roleService.getWorkspaceDTOByWorkspaceIdForServiceUser(
+                mdbRoleService.getWorkspaceDTOByWorkspaceIdForServiceUser(
                     userInfoMap.get(project.getOwner()),
                     project.getWorkspace(),
                     project.getWorkspace_type());
@@ -141,7 +141,7 @@ public class CollaboratorResourceMigration {
           // if projectVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
           // ignore the CollaboratorType
           try {
-            roleService.createWorkspacePermissions(
+            mdbRoleService.createWorkspacePermissions(
                 Optional.empty(),
                 Optional.of(workspaceDTO.getWorkspaceName()),
                 project.getId(),
@@ -167,14 +167,14 @@ public class CollaboratorResourceMigration {
           migrated = true;
         } else {
           List<GetResourcesResponseItem> resources =
-              roleService.getResourceItems(
+              mdbRoleService.getResourceItems(
                   null,
                   Collections.singleton(project.getId()),
                   ModelDBServiceResourceTypes.PROJECT,
                   true);
           if (!resources.isEmpty()) {
             GetResourcesResponseItem resourceDetails = resources.get(0);
-            roleService.createWorkspacePermissions(
+            mdbRoleService.createWorkspacePermissions(
                 Optional.of(resourceDetails.getWorkspaceId()),
                 Optional.empty(),
                 project.getId(),
@@ -268,7 +268,7 @@ public class CollaboratorResourceMigration {
           }
           try {
             workspaceDTO =
-                roleService.getWorkspaceDTOByWorkspaceIdForServiceUser(
+                mdbRoleService.getWorkspaceDTOByWorkspaceIdForServiceUser(
                     userInfoMap.get(repository.getOwner()),
                     repository.getWorkspace_id(),
                     repository.getWorkspace_type());
@@ -289,7 +289,7 @@ public class CollaboratorResourceMigration {
           // if repositoryVisibility is not equals to ResourceVisibility.ORG_SCOPED_PUBLIC then
           // ignore the CollaboratorType
           try {
-            roleService.createWorkspacePermissions(
+            mdbRoleService.createWorkspacePermissions(
                 Optional.empty(),
                 Optional.of(workspaceDTO.getWorkspaceName()),
                 String.valueOf(repository.getId()),
@@ -322,10 +322,10 @@ public class CollaboratorResourceMigration {
             newVisibilityRepositoryIds.add(String.valueOf(repository.getId()));
           }
           List<GetResourcesResponseItem> responseRepositoryItems =
-              roleService.getResourceItems(
+              mdbRoleService.getResourceItems(
                   null, newVisibilityRepositoryIds, ModelDBServiceResourceTypes.REPOSITORY, true);
           List<GetResourcesResponseItem> responseDatasetItems =
-              roleService.getResourceItems(
+              mdbRoleService.getResourceItems(
                   null, newVisibilityDatasetIds, ModelDBServiceResourceTypes.DATASET, true);
           Set<GetResourcesResponseItem> responseItems = new HashSet<>(responseRepositoryItems);
           responseItems.addAll(responseDatasetItems);
@@ -335,7 +335,7 @@ public class CollaboratorResourceMigration {
           if (responseItemMap.containsKey(String.valueOf(repository.getId()))) {
             GetResourcesResponseItem resourceDetails =
                 responseItemMap.get(String.valueOf(repository.getId()));
-            roleService.createWorkspacePermissions(
+            mdbRoleService.createWorkspacePermissions(
                 Optional.of(resourceDetails.getWorkspaceId()),
                 Optional.empty(),
                 String.valueOf(repository.getId()),
@@ -421,7 +421,7 @@ public class CollaboratorResourceMigration {
 
     // Remove all role bindings
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
+      mdbRoleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 
@@ -431,7 +431,7 @@ public class CollaboratorResourceMigration {
       String projectId = project.getId();
 
       String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
+          mdbRoleService.buildRoleBindingName(
               ModelDBConstants.ROLE_PROJECT_OWNER,
               project.getId(),
               project.getOwner(),
@@ -442,7 +442,7 @@ public class CollaboratorResourceMigration {
 
       // Delete workspace based roleBindings
       List<String> workspaceRoleBindingNames =
-          roleService.getWorkspaceRoleBindings(
+          mdbRoleService.getWorkspaceRoleBindings(
               project.getWorkspace(),
               WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type()),
               projectId,
@@ -458,7 +458,7 @@ public class CollaboratorResourceMigration {
     final List<String> roleBindingNames = Collections.synchronizedList(new ArrayList<>());
     for (RepositoryEntity repositoryEntity : allowedResources) {
       String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
+          mdbRoleService.buildRoleBindingName(
               ModelDBConstants.ROLE_REPOSITORY_OWNER,
               String.valueOf(repositoryEntity.getId()),
               repositoryEntity.getOwner(),
@@ -469,7 +469,7 @@ public class CollaboratorResourceMigration {
 
       // Delete workspace based roleBindings
       List<String> repoOrgWorkspaceRoleBindings =
-          roleService.getWorkspaceRoleBindings(
+          mdbRoleService.getWorkspaceRoleBindings(
               repositoryEntity.getWorkspace_id(),
               WorkspaceTypeEnum.WorkspaceType.forNumber(repositoryEntity.getWorkspace_type()),
               String.valueOf(repositoryEntity.getId()),
@@ -486,7 +486,7 @@ public class CollaboratorResourceMigration {
 
     // Remove all role bindings
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
+      mdbRoleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 }

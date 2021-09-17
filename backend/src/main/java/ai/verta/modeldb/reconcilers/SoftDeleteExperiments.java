@@ -2,7 +2,7 @@ package ai.verta.modeldb.reconcilers;
 
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -22,12 +22,15 @@ public class SoftDeleteExperiments extends Reconciler<String> {
   private static final Logger LOGGER = LogManager.getLogger(SoftDeleteExperiments.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
   public SoftDeleteExperiments(
-      ReconcilerConfig config, RoleService roleService, FutureJdbi futureJdbi, Executor executor) {
+      ReconcilerConfig config,
+      MDBRoleService mdbRoleService,
+      FutureJdbi futureJdbi,
+      Executor executor) {
     super(config, LOGGER, futureJdbi, executor, false);
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
   }
 
   @Override
@@ -93,7 +96,7 @@ public class SoftDeleteExperiments extends Reconciler<String> {
       List<String> roleBindingNames = new LinkedList<>();
       for (ExperimentEntity experimentEntity : experimentEntities) {
         String ownerRoleBindingName =
-            roleService.buildRoleBindingName(
+            mdbRoleService.buildRoleBindingName(
                 ModelDBConstants.ROLE_EXPERIMENT_OWNER,
                 experimentEntity.getId(),
                 experimentEntity.getOwner(),
@@ -103,7 +106,7 @@ public class SoftDeleteExperiments extends Reconciler<String> {
         }
       }
       if (!roleBindingNames.isEmpty()) {
-        roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
+        mdbRoleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
       }
     }
   }

@@ -13,7 +13,7 @@ import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -88,7 +88,7 @@ public class App implements ApplicationContextAware {
   private static final Logger LOGGER = LogManager.getLogger(App.class);
 
   private static App app = null;
-  public Config config;
+  public MDBConfig mdbConfig;
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -123,10 +123,10 @@ public class App implements ApplicationContextAware {
 
   @Bean
   public GracefulShutdown gracefulShutdown() {
-    if (config == null) {
+    if (mdbConfig == null) {
       return new GracefulShutdown(30L);
     }
-    return new GracefulShutdown(config.springServer.shutdownTimeout);
+    return new GracefulShutdown(mdbConfig.springServer.shutdownTimeout);
   }
 
   @Bean
@@ -159,7 +159,7 @@ public class App implements ApplicationContextAware {
             Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
                 .orElse("false"));
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-    modelDBHibernateUtil.initializedConfigAndDatabase(App.getInstance().config, databaseConfig);
+    modelDBHibernateUtil.initializedConfigAndDatabase(App.getInstance().mdbConfig, databaseConfig);
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
       modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
@@ -193,7 +193,7 @@ public class App implements ApplicationContextAware {
           java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
       logger.setLevel(Level.WARNING);
       // --------------- Start reading properties --------------------------
-      var config = Config.getInstance();
+      var config = MDBConfig.getInstance();
 
       // Configure spring HTTP server
       LOGGER.info("Configuring spring HTTP traffic on port: {}", config.springServer.port);
@@ -322,13 +322,13 @@ public class App implements ApplicationContextAware {
     serverBuilder.addService(bindableService);
   }
 
-  public static void initializeTelemetryBasedOnConfig(Config config)
+  public static void initializeTelemetryBasedOnConfig(MDBConfig mdbConfig)
       throws FileNotFoundException, InvalidConfigException {
-    if (!config.telemetry.opt_out) {
+    if (!mdbConfig.telemetry.opt_out) {
       // creating an instance of task to be scheduled
-      TimerTask task = new TelemetryCron(config.telemetry.consumer);
+      TimerTask task = new TelemetryCron(mdbConfig.telemetry.consumer);
       ModelDBUtils.scheduleTask(
-          task, config.telemetry.frequency, config.telemetry.frequency, TimeUnit.HOURS);
+          task, mdbConfig.telemetry.frequency, mdbConfig.telemetry.frequency, TimeUnit.HOURS);
       LOGGER.info("Telemetry scheduled successfully");
     } else {
       LOGGER.info("Telemetry opt out by user");

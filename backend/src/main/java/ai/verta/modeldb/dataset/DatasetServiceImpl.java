@@ -10,7 +10,7 @@ import ai.verta.modeldb.*;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
 import ai.verta.modeldb.GetAllDatasets.Response;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -52,14 +52,14 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private final CommitDAO commitDAO;
   private final MetadataDAO metadataDAO;
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final ProjectDAO projectDAO;
   private final ExperimentDAO experimentDAO;
   private final ExperimentRunDAO experimentRunDAO;
 
   public DatasetServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
-    this.roleService = serviceSet.roleService;
+    this.mdbRoleService = serviceSet.mdbRoleService;
     this.projectDAO = daoSet.projectDAO;
     this.experimentDAO = daoSet.experimentDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
@@ -77,7 +77,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   public void createDataset(
       CreateDataset request, StreamObserver<CreateDataset.Response> responseObserver) {
     try {
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, null, ModelDBServiceActions.CREATE);
 
       var dataset = getDatasetFromRequest(request);
@@ -180,7 +180,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       GetResourcesResponseItem entityResource =
-          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.DATASET);
+          mdbRoleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.DATASET);
       deleteRepositoriesByDatasetIds(Collections.singletonList(request.getId()));
       var response = DeleteDataset.Response.newBuilder().setStatus(true).build();
       responseObserver.onNext(response);
@@ -205,7 +205,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.READ);
 
       final var response = repositoryDAO.getDatasetById(metadataDAO, request.getId());
@@ -317,7 +317,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
@@ -348,7 +348,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
@@ -390,7 +390,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       var response =
@@ -437,7 +437,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       var updatedDataset =
@@ -473,7 +473,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
@@ -515,7 +515,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
@@ -557,7 +557,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       repositoryDAO.deleteRepositoryAttributes(
@@ -590,7 +590,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
+          mdbRoleService.getResourceItems(
               null,
               new HashSet<>(request.getIdsList()),
               ModelDBServiceResourceTypes.DATASET,
@@ -629,7 +629,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
       // Get the user info from the Context
       var userInfo = authService.getCurrentLoginUserInfo();
@@ -729,7 +729,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
 
       // Get the user info from the Context

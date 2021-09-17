@@ -103,7 +103,8 @@ public class TestsInit {
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(services.authService, services.mdbRoleService, 1000);
 
     if (testConfig.authService != null) {
       ManagedChannel authServiceChannel =

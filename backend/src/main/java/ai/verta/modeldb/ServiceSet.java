@@ -3,14 +3,14 @@ package ai.verta.modeldb;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
+import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.ArtifactStoreConfig;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBArtifactStoreConfig;
+import ai.verta.modeldb.config.MDBConfig;
 import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,22 +22,22 @@ public class ServiceSet {
   public ArtifactStoreService artifactStoreService = null;
   public AuthService authService;
   public UAC uac;
-  public RoleService roleService;
+  public MDBRoleService mdbRoleService;
   public App app;
 
-  public static ServiceSet fromConfig(Config config, ArtifactStoreConfig artifactStoreConfig)
-      throws IOException {
+  public static ServiceSet fromConfig(
+      MDBConfig mdbConfig, MDBArtifactStoreConfig mdbArtifactStoreConfig) throws IOException {
     var set = new ServiceSet();
-    set.uac = UAC.FromConfig(config);
-    set.authService = AuthServiceUtils.FromConfig(config, set.uac);
-    set.roleService = RoleServiceUtils.FromConfig(config, set.authService, set.uac);
+    set.uac = UAC.FromConfig(mdbConfig);
+    set.authService = MDBAuthServiceUtils.FromConfig(mdbConfig, set.uac);
+    set.mdbRoleService = MDBRoleServiceUtils.FromConfig(mdbConfig, set.authService, set.uac);
 
     // Initialize App.java singleton instance
     set.app = App.getInstance();
-    set.app.config = config;
+    set.app.mdbConfig = mdbConfig;
 
-    if (artifactStoreConfig.enabled) {
-      set.artifactStoreService = initializeArtifactStore(artifactStoreConfig);
+    if (mdbArtifactStoreConfig.enabled) {
+      set.artifactStoreService = initializeArtifactStore(mdbArtifactStoreConfig);
     } else {
       System.getProperties().put("scan.packages", "dummyPackageName");
       SpringApplication.run(App.class);
@@ -47,45 +47,47 @@ public class ServiceSet {
   }
 
   private static ArtifactStoreService initializeArtifactStore(
-      ArtifactStoreConfig artifactStoreConfig) throws ModelDBException, IOException {
+      MDBArtifactStoreConfig mdbArtifactStoreConfig) throws ModelDBException, IOException {
     // ------------- Start Initialize Cloud storage base on configuration ------------------
     ArtifactStoreService artifactStoreService;
 
-    if (artifactStoreConfig.artifactEndpoint != null) {
-      System.getProperties()
-          .put(
-              "artifactEndpoint.storeArtifact", artifactStoreConfig.artifactEndpoint.storeArtifact);
-      System.getProperties()
-          .put("artifactEndpoint.getArtifact", artifactStoreConfig.artifactEndpoint.getArtifact);
-    }
-
-    if (artifactStoreConfig.NFS != null && artifactStoreConfig.NFS.artifactEndpoint != null) {
+    if (mdbArtifactStoreConfig.artifactEndpoint != null) {
       System.getProperties()
           .put(
               "artifactEndpoint.storeArtifact",
-              artifactStoreConfig.NFS.artifactEndpoint.storeArtifact);
+              mdbArtifactStoreConfig.artifactEndpoint.storeArtifact);
       System.getProperties()
-          .put(
-              "artifactEndpoint.getArtifact", artifactStoreConfig.NFS.artifactEndpoint.getArtifact);
+          .put("artifactEndpoint.getArtifact", mdbArtifactStoreConfig.artifactEndpoint.getArtifact);
     }
 
-    switch (artifactStoreConfig.artifactStoreType) {
+    if (mdbArtifactStoreConfig.NFS != null && mdbArtifactStoreConfig.NFS.artifactEndpoint != null) {
+      System.getProperties()
+          .put(
+              "artifactEndpoint.storeArtifact",
+              mdbArtifactStoreConfig.NFS.artifactEndpoint.storeArtifact);
+      System.getProperties()
+          .put(
+              "artifactEndpoint.getArtifact",
+              mdbArtifactStoreConfig.NFS.artifactEndpoint.getArtifact);
+    }
+
+    switch (mdbArtifactStoreConfig.artifactStoreType) {
       case "S3":
-        if (!artifactStoreConfig.S3.s3presignedURLEnabled) {
+        if (!mdbArtifactStoreConfig.S3.s3presignedURLEnabled) {
           System.setProperty(
-              ModelDBConstants.CLOUD_BUCKET_NAME, artifactStoreConfig.S3.cloudBucketName);
+              ModelDBConstants.CLOUD_BUCKET_NAME, mdbArtifactStoreConfig.S3.cloudBucketName);
           System.getProperties()
               .put("scan.packages", "ai.verta.modeldb.artifactStore.storageservice.s3");
           SpringApplication.run(App.class);
           artifactStoreService = App.getInstance().applicationContext.getBean(S3Service.class);
         } else {
-          artifactStoreService = new S3Service(artifactStoreConfig.S3.cloudBucketName);
+          artifactStoreService = new S3Service(mdbArtifactStoreConfig.S3.cloudBucketName);
           System.getProperties().put("scan.packages", "dummyPackageName");
           SpringApplication.run(App.class);
         }
         break;
       case "NFS":
-        String rootDir = artifactStoreConfig.NFS.nfsRootPath;
+        String rootDir = mdbArtifactStoreConfig.NFS.nfsRootPath;
         LOGGER.trace("NFS server root path {}", rootDir);
 
         System.getProperties().put("file.upload-dir", rootDir);

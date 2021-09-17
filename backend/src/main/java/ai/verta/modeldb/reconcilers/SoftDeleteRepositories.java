@@ -2,7 +2,7 @@ package ai.verta.modeldb.reconcilers;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -34,17 +34,17 @@ public class SoftDeleteRepositories extends Reconciler<String> {
   private static final Logger LOGGER = LogManager.getLogger(SoftDeleteRepositories.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final boolean isDataset;
 
   public SoftDeleteRepositories(
       ReconcilerConfig config,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       boolean isDataset,
       FutureJdbi futureJdbi,
       Executor executor) {
     super(config, LOGGER, futureJdbi, executor, true);
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
     this.isDataset = isDataset;
   }
 
@@ -76,10 +76,10 @@ public class SoftDeleteRepositories extends Reconciler<String> {
     LOGGER.debug("Reconciling repositories " + ids.toString());
 
     if (isDataset) {
-      roleService.deleteEntityResourcesWithServiceUser(
+      mdbRoleService.deleteEntityResourcesWithServiceUser(
           new ArrayList<>(ids), ModelDBServiceResourceTypes.DATASET);
     } else {
-      roleService.deleteEntityResourcesWithServiceUser(
+      mdbRoleService.deleteEntityResourcesWithServiceUser(
           new ArrayList<>(ids), ModelDBServiceResourceTypes.REPOSITORY);
     }
 
@@ -106,7 +106,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
         try {
           var modelDBServiceResourceTypes =
               ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
-          roleService.deleteEntityResourcesWithServiceUser(
+          mdbRoleService.deleteEntityResourcesWithServiceUser(
               Collections.singletonList(String.valueOf(repository.getId())),
               modelDBServiceResourceTypes);
 

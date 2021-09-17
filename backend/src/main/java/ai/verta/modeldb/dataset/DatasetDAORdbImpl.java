@@ -10,7 +10,7 @@ import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -44,7 +44,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       ModelDBHibernateUtil.getInstance();
   public static final String GLOBAL_SHARING = "_DATASET_GLOBAL_SHARING";
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
   // Queries
   private static final String GET_DATASET_BY_IDS_QUERY =
@@ -80,9 +80,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   private static final String NON_DELETED_DATASET_IDS_BY_IDS =
       NON_DELETED_DATASET_IDS + " AND d.id in (:" + ModelDBConstants.DATASET_IDS + ")";
 
-  public DatasetDAORdbImpl(AuthService authService, RoleService roleService) {
+  public DatasetDAORdbImpl(AuthService authService, MDBRoleService mdbRoleService) {
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
   }
 
   private void checkDatasetAlreadyExist(Dataset dataset) {
@@ -126,7 +126,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         resourceVisibility =
             ModelDBUtils.getResourceVisibility(Optional.empty(), dataset.getDatasetVisibility());
       }
-      roleService.createWorkspacePermissions(
+      mdbRoleService.createWorkspacePermissions(
           Optional.of(dataset.getWorkspaceServiceId()),
           Optional.empty(),
           dataset.getId(),
@@ -138,7 +138,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           false);
       LOGGER.debug("Dataset role bindings created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
-      return datasetEntity.getProtoObject(roleService);
+      return datasetEntity.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return createDataset(dataset, userInfo);
@@ -153,7 +153,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<DatasetEntity> datasetEntities = getDatasetEntityList(session, sharedDatasetIds);
       LOGGER.debug("Got Dataset by Ids successfully");
-      return RdbmsUtils.convertDatasetsFromDatasetEntityList(roleService, datasetEntities);
+      return RdbmsUtils.convertDatasetsFromDatasetEntityList(mdbRoleService, datasetEntities);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getDatasetByIds(sharedDatasetIds);
@@ -192,7 +192,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Boolean deleteDatasets(List<String> datasetIds) {
     // Get self allowed resources id where user has delete permission
     List<String> allowedDatasetIds =
-        roleService.getAccessibleResourceIdsByActions(
+        mdbRoleService.getAccessibleResourceIdsByActions(
             ModelDBServiceResourceTypes.DATASET,
             ModelDBActionEnum.ModelDBServiceActions.DELETE,
             datasetIds);
@@ -226,7 +226,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Dataset getDatasetById(String datasetId) {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       var datasetObj = getDatasetEntity(session, datasetId);
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getDatasetById(datasetId);
@@ -254,13 +254,13 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       List<String> accessibleDatasetIds =
-          roleService.getAccessibleResourceIds(
+          mdbRoleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
               ModelDBServiceResourceTypes.DATASET,
               queryParameters.getDatasetIdsList());
 
-      if (accessibleDatasetIds.isEmpty() && roleService.IsImplemented()) {
+      if (accessibleDatasetIds.isEmpty() && mdbRoleService.IsImplemented()) {
         LOGGER.debug("Accessible Dataset Ids not found, size 0");
         var datasetPaginationDTO = new DatasetPaginationDTO();
         datasetPaginationDTO.setDatasets(Collections.emptyList());
@@ -279,7 +279,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       for (KeyValueQuery predicate : predicates) {
         // Validate if current user has access to the entity or not where predicate key has an id
         RdbmsUtils.validatePredicates(
-            ModelDBConstants.DATASETS, accessibleDatasetIds, predicate, roleService);
+            ModelDBConstants.DATASETS, accessibleDatasetIds, predicate, mdbRoleService);
       }
 
       String workspaceName = queryParameters.getWorkspaceName();
@@ -288,7 +288,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           && !workspaceName.isEmpty()
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         accessibleDatasetIds =
-            roleService.getSelfDirectlyAllowedResources(
+            mdbRoleService.getSelfDirectlyAllowedResources(
                 ModelDBServiceResourceTypes.DATASET, ModelDBActionEnum.ModelDBServiceActions.READ);
         if (queryParameters.getDatasetIdsList() != null
             && !queryParameters.getDatasetIdsList().isEmpty()) {
@@ -303,7 +303,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         }
 
         List<String> orgIds =
-            roleService.listMyOrganizations().stream()
+            mdbRoleService.listMyOrganizations().stream()
                 .map(Organization::getId)
                 .collect(Collectors.toList());
         if (!orgIds.isEmpty()) {
@@ -319,7 +319,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         if (datasetVisibility.equals(ResourceVisibility.PRIVATE)) {
           List<KeyValueQuery> workspacePredicates =
               ModelDBUtils.getKeyValueQueriesByWorkspace(
-                  roleService, currentLoginUserInfo, workspaceName);
+                  mdbRoleService, currentLoginUserInfo, workspaceName);
           if (workspacePredicates.size() > 0) {
             var privateWorkspacePredicate =
                 builder.equal(
@@ -353,7 +353,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
                 criteriaQuery,
                 datasetRoot,
                 authService,
-                roleService,
+                mdbRoleService,
                 ModelDBServiceResourceTypes.DATASET);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
@@ -404,7 +404,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       List<DatasetEntity> datasetEntities = query.list();
       LOGGER.debug("Datasets result count : {}", datasetEntities.size());
       if (!datasetEntities.isEmpty()) {
-        datasetList = RdbmsUtils.convertDatasetsFromDatasetEntityList(roleService, datasetEntities);
+        datasetList =
+            RdbmsUtils.convertDatasetsFromDatasetEntityList(mdbRoleService, datasetEntities);
       }
 
       Set<String> datasetIdsSet = new HashSet<>();
@@ -475,7 +476,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.update(datasetObj);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateDatasetName(datasetId, datasetName);
@@ -496,7 +497,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.update(datasetObj);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateDatasetDescription(datasetId, datasetDescription);
@@ -516,7 +517,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         throw new NotFoundException(errorMessage);
       }
       List<String> newTags = new ArrayList<>();
-      var existingProtoDatasetObj = datasetObj.getProtoObject(roleService);
+      var existingProtoDatasetObj = datasetObj.getProtoObject(mdbRoleService);
       for (String tag : tagsList) {
         if (!existingProtoDatasetObj.getTagsList().contains(tag)) {
           newTags.add(tag);
@@ -532,7 +533,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         transaction.commit();
       }
       LOGGER.debug("Dataset tags added successfully");
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addDatasetTags(datasetId, tagsList);
@@ -547,7 +548,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       LOGGER.debug("Got Dataset");
-      return datasetObj.getProtoObject(roleService).getTagsList();
+      return datasetObj.getProtoObject(mdbRoleService).getTagsList();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getDatasetTags(datasetId);
@@ -588,7 +589,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.update(datasetObj);
       transaction.commit();
       LOGGER.debug("Dataset tags deleted successfully");
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteDatasetTags(datasetId, datasetTagList, deleteAll);
@@ -611,7 +612,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.saveOrUpdate(datasetObj);
       transaction.commit();
       LOGGER.debug("Dataset attributes added successfully");
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addDatasetAttributes(datasetId, attributesList);
@@ -656,7 +657,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       var transaction = session.beginTransaction();
       session.saveOrUpdate(datasetObj);
       transaction.commit();
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateDatasetAttributes(datasetId, attribute);
@@ -672,7 +673,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       if (getAll) {
         DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
-        return datasetObj.getProtoObject(roleService).getAttributesList();
+        return datasetObj.getProtoObject(mdbRoleService).getAttributesList();
       } else {
         var query = session.createQuery(GET_DATASET_ATTRIBUTES_QUERY);
         query.setParameterList("keys", attributeKeyList);
@@ -723,7 +724,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
       session.update(datasetObj);
       transaction.commit();
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteDatasetAttributes(datasetId, attributeKeyList, deleteAll);
@@ -758,7 +759,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo) {
-    if (!roleService.IsImplemented()) {
+    if (!mdbRoleService.IsImplemented()) {
       try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         return session.createQuery(NON_DELETED_DATASET_IDS).list();
       }
@@ -767,7 +768,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       // get list of accessible datasets
       @SuppressWarnings("unchecked")
       List<String> accessibleDatasetIds =
-          roleService.getAccessibleResourceIds(
+          mdbRoleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
               ModelDBServiceResourceTypes.DATASET,
@@ -780,7 +781,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         LOGGER.debug("Workspace and current login user match");
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
-            roleService.getResourceItems(
+            mdbRoleService.getResourceItems(
                 null, Collections.emptySet(), ModelDBServiceResourceTypes.DATASET, false);
         accessibleResourceIds.addAll(
             accessibleAllWorkspaceItems.stream()
@@ -790,7 +791,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         // get list of accessible datasets
         accessibleResourceIds =
             ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
-                roleService,
+                mdbRoleService,
                 accessibleResourceIds,
                 workspaceName,
                 currentLoginUserInfo,

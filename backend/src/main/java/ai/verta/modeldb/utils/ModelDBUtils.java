@@ -12,7 +12,7 @@ import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
@@ -199,17 +199,17 @@ public class ModelDBUtils {
    */
   public static List<CollaboratorUserInfo> getHydratedCollaboratorUserInfo(
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       List<GetCollaboratorResponseItem> collaboratorList,
       Map<String, UserInfo> userInfoMap) {
 
     return getHydratedCollaboratorUserInfoByAuthz(
-        authService, roleService, collaboratorList, userInfoMap);
+        authService, mdbRoleService, collaboratorList, userInfoMap);
   }
 
   private static List<CollaboratorUserInfo> getHydratedCollaboratorUserInfoByAuthz(
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       List<GetCollaboratorResponseItem> collaboratorList,
       Map<String, UserInfo> userInfoMap) {
 
@@ -230,10 +230,10 @@ public class ModelDBUtils {
               }
               break;
             case ORGANIZATION:
-              collaborator1 = new CollaboratorOrg(collaborator.getVertaId(), roleService);
+              collaborator1 = new CollaboratorOrg(collaborator.getVertaId(), mdbRoleService);
               break;
             case TEAM:
-              collaborator1 = new CollaboratorTeam(collaborator.getVertaId(), roleService);
+              collaborator1 = new CollaboratorTeam(collaborator.getVertaId(), mdbRoleService);
               break;
             default:
               throw new InternalErrorException(CommonConstants.INTERNAL_ERROR);
@@ -326,8 +326,8 @@ public class ModelDBUtils {
   }
 
   public static List<KeyValueQuery> getKeyValueQueriesByWorkspace(
-      RoleService roleService, UserInfo userInfo, String workspaceName) {
-    var workspaceDTO = roleService.getWorkspaceDTOByWorkspaceName(userInfo, workspaceName);
+      MDBRoleService mdbRoleService, UserInfo userInfo, String workspaceName) {
+    var workspaceDTO = mdbRoleService.getWorkspaceDTOByWorkspaceName(userInfo, workspaceName);
     return getKeyValueQueriesByWorkspaceDTO(workspaceDTO);
   }
 
@@ -421,13 +421,13 @@ public class ModelDBUtils {
   }
 
   public static void checkIfEntityAlreadyExists(
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       Workspace workspace,
       String name,
       List<String> projectEntityIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     List<GetResourcesResponseItem> responseItems =
-        roleService.getResourceItems(
+        mdbRoleService.getResourceItems(
             workspace, new HashSet<>(projectEntityIds), modelDBServiceResourceTypes, false);
     for (GetResourcesResponseItem item : responseItems) {
       if (workspace.getId() == item.getWorkspaceId()) {
@@ -440,14 +440,14 @@ public class ModelDBUtils {
   }
 
   public static Set<String> filterWorkspaceOnlyAccessibleIds(
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       Set<String> accessibleAllWorkspaceProjectIds,
       String workspaceName,
       UserInfo userInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    var workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+    var workspace = mdbRoleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
     List<GetResourcesResponseItem> items =
-        roleService.getResourceItems(
+        mdbRoleService.getResourceItems(
             workspace, accessibleAllWorkspaceProjectIds, modelDBServiceResourceTypes, false);
     return items.stream().map(GetResourcesResponseItem::getResourceId).collect(Collectors.toSet());
   }
@@ -553,7 +553,7 @@ public class ModelDBUtils {
   public static Object retryOrThrowException(
       StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
     return CommonUtils.retryOrThrowException(
-        ex, retry, retryCallInterface, App.getInstance().config.grpcServer.requestTimeout);
+        ex, retry, retryCallInterface, App.getInstance().mdbConfig.grpcServer.requestTimeout);
   }
 
   public static ModelDBServiceResourceTypes getModelDBServiceResourceTypesFromRepository(

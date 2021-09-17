@@ -7,7 +7,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.HttpCodeToGRPCCode;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBConfig;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.s3.model.PartETag;
@@ -23,12 +23,12 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
   private static final Logger LOGGER = LogManager.getLogger(ArtifactStoreDAORdbImpl.class);
   private ArtifactStoreService artifactStoreService;
   private final App app;
-  private final Config config;
+  private final MDBConfig mdbConfig;
 
-  public ArtifactStoreDAORdbImpl(ArtifactStoreService artifactStoreService, Config config) {
+  public ArtifactStoreDAORdbImpl(ArtifactStoreService artifactStoreService, MDBConfig mdbConfig) {
     this.artifactStoreService = artifactStoreService;
     this.app = App.getInstance();
-    this.config = config;
+    this.mdbConfig = mdbConfig;
   }
 
   @Override
@@ -41,7 +41,7 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
   public Response getUrlForArtifactMultipart(
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
     try {
-      if (config.trial != null) {
+      if (mdbConfig.trial != null) {
         return artifactStoreService.generatePresignedUrlForTrial(
             s3Key, method, partNumber, uploadId);
       } else {
@@ -49,7 +49,7 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
             artifactStoreService.generatePresignedUrl(s3Key, method, partNumber, uploadId);
         return GetUrlForArtifact.Response.newBuilder()
             .setMultipartUploadOk(
-                config.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)
+                mdbConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)
                     && uploadId != null)
             .setUrl(presignedUrl)
             .build();

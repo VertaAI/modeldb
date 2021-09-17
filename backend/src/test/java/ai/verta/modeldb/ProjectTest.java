@@ -1258,7 +1258,7 @@ public class ProjectTest extends TestsInit {
 
       if (testConfig.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
-            CollaboratorTest.addCollaboratorRequestProject(
+            CollaboratorUtils.addCollaboratorRequestProject(
                 project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
 
         AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
@@ -1374,7 +1374,7 @@ public class ProjectTest extends TestsInit {
           project.getName());
 
       AddCollaboratorRequest addCollaboratorRequest =
-          CollaboratorTest.addCollaboratorRequestProject(
+          CollaboratorUtils.addCollaboratorRequestProject(
               project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
 
       AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
@@ -2122,7 +2122,7 @@ public class ProjectTest extends TestsInit {
         // For Collaborator1
         if (testConfig.hasAuth()) {
           AddCollaboratorRequest addCollaboratorRequest =
-              CollaboratorTest.addCollaboratorRequestProjectInterceptor(
+              CollaboratorUtils.addCollaboratorRequestProjectInterceptor(
                   project, CollaboratorType.READ_WRITE, authClientInterceptor);
           collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
           LOGGER.info("\n Collaborator1 added successfully \n");
@@ -2296,7 +2296,7 @@ public class ProjectTest extends TestsInit {
           // For Collaborator1
           if (testConfig.hasAuth()) {
             AddCollaboratorRequest addCollaboratorRequest =
-                CollaboratorTest.addCollaboratorRequestProjectInterceptor(
+                CollaboratorUtils.addCollaboratorRequestProjectInterceptor(
                     project, CollaboratorType.READ_WRITE, authClientInterceptor);
             collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
             LOGGER.info("\n Collaborator1 added successfully \n");

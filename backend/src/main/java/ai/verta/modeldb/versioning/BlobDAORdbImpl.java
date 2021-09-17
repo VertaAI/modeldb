@@ -7,7 +7,7 @@ import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
@@ -75,11 +75,11 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   public static final String TREE = "TREE";
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
-  public BlobDAORdbImpl(AuthService authService, RoleService roleService) {
+  public BlobDAORdbImpl(AuthService authService, MDBRoleService mdbRoleService) {
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
   }
 
   /**
@@ -1665,7 +1665,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       Function<RepositoryEntity, Repository> toProto =
           (repositoryEntity) ->
               repositoryEntity.toProto(
-                  roleService, authService, cacheWorkspaceMap, new HashMap<>());
+                  mdbRoleService, authService, cacheWorkspaceMap, new HashMap<>());
       repositories.addAll(
           commitPaginationDTO.getCommitEntities().stream()
               .flatMap(commitEntity -> commitEntity.getRepository().stream())

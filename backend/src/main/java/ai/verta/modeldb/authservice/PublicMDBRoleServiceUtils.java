@@ -28,18 +28,18 @@ import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Metadata;
 import java.util.*;
 
-public class PublicRoleServiceUtils implements RoleService {
+public class PublicMDBRoleServiceUtils implements MDBRoleService {
 
   private ProjectDAO projectDAO;
   private DatasetDAO datasetDAO;
 
-  public PublicRoleServiceUtils(AuthService authService) {
+  public PublicMDBRoleServiceUtils(AuthService authService) {
     MetadataDAO metadataDAO = new MetadataDAORdbImpl();
     CommitDAO commitDAO = new CommitDAORdbImpl(authService, this);
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, this);
     ExperimentRunDAO experimentRunDAO =
         new ExperimentRunDAORdbImpl(
-            App.getInstance().config,
+            App.getInstance().mdbConfig,
             authService,
             this,
             new RepositoryDAORdbImpl(authService, this, commitDAO, metadataDAO),

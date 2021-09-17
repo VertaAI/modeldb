@@ -6,7 +6,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.config.ArtifactStoreConfig;
+import ai.verta.modeldb.config.MDBArtifactStoreConfig;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import java.util.AbstractMap;
@@ -22,7 +22,7 @@ public class ArtifactHandlerBase {
   protected final String fieldType;
   protected final String entityName;
   protected final String entityIdReferenceColumn;
-  private final ArtifactStoreConfig artifactStoreConfig;
+  private final MDBArtifactStoreConfig artifactStoreConfig;
 
   protected String getTableName() {
     return "artifact";
@@ -34,7 +34,7 @@ public class ArtifactHandlerBase {
     this.jdbi = jdbi;
     this.fieldType = fieldType;
     this.entityName = entityName;
-    this.artifactStoreConfig = App.getInstance().config.artifactStoreConfig;
+    this.artifactStoreConfig = App.getInstance().mdbConfig.artifactStoreConfig;
 
     switch (entityName) {
       case "ProjectEntity":

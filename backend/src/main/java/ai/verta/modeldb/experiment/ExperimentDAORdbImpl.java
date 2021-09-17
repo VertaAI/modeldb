@@ -6,7 +6,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
@@ -36,7 +36,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
   private static final String CHECK_ENTITY_PREFIX =
       "Select count(*) From ExperimentEntity ee where ee.";
@@ -133,14 +133,14 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     List<String> allowedProjectIds;
     // Validate if current user has access to the entity or not
     if (projectIdSet.size() == 1) {
-      roleService.isSelfAllowed(
+      mdbRoleService.isSelfAllowed(
           ModelDBServiceResourceTypes.PROJECT,
           modelDBServiceActions,
           new ArrayList<>(projectIdSet).get(0));
       accessibleExperimentIds.addAll(requestedExperimentIds);
     } else {
       allowedProjectIds =
-          roleService.getSelfAllowedResources(
+          mdbRoleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.PROJECT, modelDBServiceActions);
       // Validate if current user has access to the entity or not
       allowedProjectIds.retainAll(projectIdSet);
@@ -153,9 +153,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
     return accessibleExperimentIds;
   }
 
-  public ExperimentDAORdbImpl(AuthService authService, RoleService roleService) {
+  public ExperimentDAORdbImpl(AuthService authService, MDBRoleService mdbRoleService) {
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
   }
 
   private void checkIfEntityAlreadyExists(Experiment experiment, Boolean isInsert) {
@@ -218,7 +218,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
   }
 
   private void createRoleBindingsForExperiment(Experiment experiment, UserInfo userInfo) {
-    roleService.createRoleBinding(
+    mdbRoleService.createRoleBinding(
         ModelDBConstants.ROLE_EXPERIMENT_OWNER,
         new CollaboratorUser(authService, userInfo),
         experiment.getId(),
@@ -769,7 +769,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           accessibleExperimentIds.addAll(accessibleExperimentId);
           // Validate if current user has access to the entity or not where predicate key has an id
           RdbmsUtils.validatePredicates(
-              ModelDBConstants.EXPERIMENTS, accessibleExperimentIds, predicate, roleService);
+              ModelDBConstants.EXPERIMENTS, accessibleExperimentIds, predicate, mdbRoleService);
         }
       }
 
@@ -835,7 +835,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
                 criteriaQuery,
                 experimentRoot,
                 authService,
-                roleService,
+                mdbRoleService,
                 ModelDBServiceResourceTypes.EXPERIMENT);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);

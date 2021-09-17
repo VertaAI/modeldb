@@ -8,7 +8,7 @@ import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -41,7 +41,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
   private static final String CHECK_DATASET_VERSION_EXISTS_BY_ID_HQL =
       new StringBuilder(
@@ -93,9 +93,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(" IN (:datasetIds)")
           .toString();
 
-  public DatasetVersionDAORdbImpl(AuthService authService, RoleService roleService) {
+  public DatasetVersionDAORdbImpl(AuthService authService, MDBRoleService mdbRoleService) {
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
   }
 
   @Override
@@ -219,14 +219,14 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     List<String> allowedDatasetIds;
     // Validate if current user has access to the entity or not
     if (datasetIdSet.size() == 1) {
-      roleService.isSelfAllowed(
+      mdbRoleService.isSelfAllowed(
           ModelDBServiceResourceTypes.DATASET,
           modelDBServiceActions,
           new ArrayList<>(datasetIdSet).get(0));
       accessibleDatasetVersionIds.addAll(requestedDatasetVersionIds);
     } else {
       allowedDatasetIds =
-          roleService.getSelfAllowedResources(
+          mdbRoleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.DATASET, modelDBServiceActions);
       // Validate if current user has access to the entity or not
       allowedDatasetIds.retainAll(datasetIdSet);
@@ -270,7 +270,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
               ModelDBConstants.DATASETS_VERSIONS,
               accessibleDatasetVersionIds,
               predicate,
-              roleService);
+              mdbRoleService);
         }
       }
 
@@ -338,7 +338,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
                 criteriaQuery,
                 datasetVersionRoot,
                 authService,
-                roleService,
+                mdbRoleService,
                 ModelDBServiceResourceTypes.DATASET_VERSION);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
@@ -411,7 +411,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
             for (DatasetVersion datasetVersion : datasetVersionList) {
               if (datasetVersion.getId().equals(datasetVersionId)) {
                 // Validate if current user has access to the entity or not
-                roleService.validateEntityUserWithUserInfo(
+                mdbRoleService.validateEntityUserWithUserInfo(
                     ModelDBServiceResourceTypes.DATASET,
                     datasetVersion.getDatasetId(),
                     ModelDBServiceActions.READ);

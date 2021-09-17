@@ -8,7 +8,7 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestConfig extends Config {
+public class TestConfig extends MDBConfig {
   private static TestConfig config = null;
 
   public Map<String, ServiceUserConfig> testUsers = new HashMap<>();
@@ -22,7 +22,7 @@ public class TestConfig extends Config {
   }
 
   public void Validate() throws InvalidConfigException {
-    if (database == null) throw new InvalidConfigException("database", TestConfig.MISSING_REQUIRED);
+    if (database == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
     database.Validate("database");
 
     if (service_user != null) {
@@ -30,7 +30,7 @@ public class TestConfig extends Config {
     }
 
     if (config.hasAuth() && testUsers == null) {
-      throw new InvalidConfigException("testUsers", TestConfig.MISSING_REQUIRED);
+      throw new InvalidConfigException("testUsers", MISSING_REQUIRED);
     }
 
     for (Map.Entry<String, ServiceUserConfig> entry : testUsers.entrySet()) {

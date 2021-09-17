@@ -1,6 +1,6 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInterceptor;
+import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectInterceptor;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
@@ -5682,13 +5682,13 @@ public class ExperimentRunTest extends TestsInit {
 
     if (testConfig.hasAuth()) {
       AddCollaboratorRequest addCollaboratorRequest =
-          CollaboratorTest.addCollaboratorRequestProject(
+          CollaboratorUtils.addCollaboratorRequestProject(
               project, authClientInterceptor.getClient2Email(), CollaboratorType.READ_WRITE);
       collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("\n Collaborator1 added in project successfully \n");
 
       addCollaboratorRequest =
-          CollaboratorTest.addCollaboratorRequestUser(
+          CollaboratorUtils.addCollaboratorRequestUser(
               String.valueOf(repoId),
               authClientInterceptor.getClient2Email(),
               CollaboratorType.READ_WRITE,

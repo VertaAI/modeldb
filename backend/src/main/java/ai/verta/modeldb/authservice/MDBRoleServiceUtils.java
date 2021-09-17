@@ -11,6 +11,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.authservice.AuthServiceChannel;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
@@ -31,17 +32,15 @@ import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleServiceUtils
-    implements RoleService {
-  private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
+public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleService {
+  private static final Logger LOGGER = LogManager.getLogger(MDBRoleServiceUtils.class);
 
-  public static ai.verta.modeldb.authservice.RoleService FromConfig(
-      Config config, AuthService authService, UAC uac) {
-    if (!config.hasAuth()) return new PublicRoleServiceUtils(authService);
-    else return new RoleServiceUtils(config, authService, uac);
+  public static MDBRoleService FromConfig(Config config, AuthService authService, UAC uac) {
+    if (!config.hasAuth()) return new PublicMDBRoleServiceUtils(authService);
+    else return new MDBRoleServiceUtils(config, authService, uac);
   }
 
-  private RoleServiceUtils(Config config, AuthService authService, UAC uac) {
+  private MDBRoleServiceUtils(Config config, AuthService authService, UAC uac) {
     super(authService, config.grpcServer.requestTimeout, uac);
   }
 

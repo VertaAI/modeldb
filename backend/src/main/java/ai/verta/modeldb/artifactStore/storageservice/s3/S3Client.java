@@ -45,7 +45,7 @@ public class S3Client {
 
   public S3Client(String cloudBucketName) throws IOException, ModelDBException {
     app = App.getInstance();
-    config = app.config.artifactStoreConfig.S3;
+    config = app.mdbConfig.artifactStoreConfig.S3;
     String cloudAccessKey = config.cloudAccessKey;
     String cloudSecretKey = config.cloudSecretKey;
     String minioEndpoint = config.minioEndpoint;

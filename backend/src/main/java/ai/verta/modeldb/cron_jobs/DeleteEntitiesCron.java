@@ -2,7 +2,7 @@ package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.DatasetEntity;
@@ -39,13 +39,13 @@ public class DeleteEntitiesCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(DeleteEntitiesCron.class);
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final Integer recordUpdateLimit;
 
   public DeleteEntitiesCron(
-      AuthService authService, RoleService roleService, Integer recordUpdateLimit) {
+      AuthService authService, MDBRoleService mdbRoleService, Integer recordUpdateLimit) {
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
     this.recordUpdateLimit = recordUpdateLimit;
   }
 
@@ -114,7 +114,7 @@ public class DeleteEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteEntityResourcesWithServiceUser(
+        mdbRoleService.deleteEntityResourcesWithServiceUser(
             projectIds, ModelDBServiceResourceTypes.PROJECT);
         var transaction = session.beginTransaction();
         var updateDeletedStatusExperimentQueryString =
@@ -230,7 +230,7 @@ public class DeleteEntitiesCron extends TimerTask {
     List<String> roleBindingNames = new LinkedList<>();
     for (ExperimentEntity experimentEntity : experimentEntities) {
       String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
+          mdbRoleService.buildRoleBindingName(
               ModelDBConstants.ROLE_EXPERIMENT_OWNER,
               experimentEntity.getId(),
               experimentEntity.getOwner(),
@@ -240,7 +240,7 @@ public class DeleteEntitiesCron extends TimerTask {
       }
     }
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
+      mdbRoleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 
@@ -312,7 +312,7 @@ public class DeleteEntitiesCron extends TimerTask {
     List<String> roleBindingNames = new LinkedList<>();
     for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
       String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
+          mdbRoleService.buildRoleBindingName(
               ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
               experimentRunEntity.getId(),
               experimentRunEntity.getOwner(),
@@ -322,7 +322,7 @@ public class DeleteEntitiesCron extends TimerTask {
       }
     }
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
+      mdbRoleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 
@@ -370,7 +370,7 @@ public class DeleteEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteEntityResourcesWithServiceUser(
+        mdbRoleService.deleteEntityResourcesWithServiceUser(
             datasetIds, ModelDBServiceResourceTypes.DATASET);
         var transaction = session.beginTransaction();
         var updateDeletedStatusDatasetVersionQueryString =
@@ -429,7 +429,7 @@ public class DeleteEntitiesCron extends TimerTask {
 
     if (!datasetVersionEntities.isEmpty()) {
       try {
-        roleService.deleteEntityResourcesWithServiceUser(
+        mdbRoleService.deleteEntityResourcesWithServiceUser(
             datasetVersionEntities.stream()
                 .map(DatasetVersionEntity::getId)
                 .collect(Collectors.toList()),
@@ -479,7 +479,7 @@ public class DeleteEntitiesCron extends TimerTask {
         try {
           var modelDBServiceResourceTypes =
               ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
-          roleService.deleteEntityResourcesWithServiceUser(
+          mdbRoleService.deleteEntityResourcesWithServiceUser(
               Collections.singletonList(String.valueOf(repository.getId())),
               modelDBServiceResourceTypes);
 

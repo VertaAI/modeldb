@@ -5,7 +5,7 @@ import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -333,7 +333,7 @@ public class ProjectEntity {
   }
 
   public Project getProtoObject(
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       AuthService authService,
       Map<Long, Workspace> cacheWorkspaceMap,
       Map<String, GetResourcesResponseItem> getResourcesMap) {
@@ -367,7 +367,7 @@ public class ProjectEntity {
       projectResource = getResourcesMap.get(this.id);
     } else {
       projectResource =
-          roleService.getEntityResource(
+          mdbRoleService.getEntityResource(
               Optional.of(this.id), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       if (getResourcesMap == null) {
         getResourcesMap = new HashMap<>();
