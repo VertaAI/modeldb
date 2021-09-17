@@ -177,18 +177,8 @@ class TestProto:
             var.name: var.value for var in msg.environment.environment_variables
         } == (env_vars or {})
 
-    def test_merge_proto(self, model_version):
+    def test_merge_proto(self, model_version, docker_image):
         model_version._fetch_with_no_cache()
-        docker_image = DockerImage(
-            port=5000,
-            request_path="/predict_json",
-            health_path="/health",
-
-            repository="012345678901.dkr.ecr.apne2-az1.amazonaws.com/models/example",
-            tag="example",
-
-            env_vars={"CUDA_VISIBLE_DEVICES": "0,1"},
-        )
 
         expected_msg = RegistryService_pb2.ModelVersion()
         expected_msg.MergeFrom(model_version._msg)
