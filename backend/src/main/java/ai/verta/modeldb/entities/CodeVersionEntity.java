@@ -86,7 +86,7 @@ public class CodeVersionEntity {
   }
 
   public CodeVersion getProtoObject() {
-    CodeVersion.Builder codeVersionBuilder = CodeVersion.newBuilder().setDateLogged(date_logged);
+    var codeVersionBuilder = CodeVersion.newBuilder().setDateLogged(date_logged);
     if (git_snapshot != null) {
       codeVersionBuilder.setGitSnapshot(git_snapshot.getProtoObject());
     } else if (code_archive != null) {

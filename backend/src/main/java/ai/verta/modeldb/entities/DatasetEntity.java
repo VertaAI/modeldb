@@ -220,7 +220,7 @@ public class DatasetEntity {
   }
 
   public Dataset getProtoObject(RoleService roleService) {
-    Dataset.Builder datasetBuilder =
+    var datasetBuilder =
         Dataset.newBuilder()
             .setId(getId())
             .setName(getName())

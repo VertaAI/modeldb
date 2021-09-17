@@ -53,13 +53,13 @@ public class MonitoringInterceptor implements ServerInterceptor {
       ServerCall<R, S> call, Metadata requestHeaders, ServerCallHandler<R, S> next) {
     String methodName = call.getMethodDescriptor().getFullMethodName();
 
-    Context context = Context.current().withValue(METHOD_NAME, methodName);
+    var context = Context.current().withValue(METHOD_NAME, methodName);
     ServerCall.Listener<R> delegate = Contexts.interceptCall(context, call, requestHeaders, next);
     ACTIVE_REQUEST_COUNT.incrementAndGet();
     LOGGER.trace("Active Request count {}", ACTIVE_REQUEST_COUNT.get());
 
     qpsCountRequests.labels(methodName).inc();
-    final Histogram.Timer timer = requestLatency.labels(methodName).startTimer();
+    final var timer = requestLatency.labels(methodName).startTimer();
     return new ForwardingServerCallListener.SimpleForwardingServerCallListener<R>(delegate) {
 
       @Override
@@ -110,7 +110,7 @@ public class MonitoringInterceptor implements ServerInterceptor {
 
   private static void checkForErrors(Throwable ex, String methodName) {
     if (ex instanceof StatusRuntimeException) {
-      Status status = Status.fromThrowable(ex);
+      var status = Status.fromThrowable(ex);
       registerFailedRequestCount(status, methodName);
     } else {
       failed_5XX_Requests.labels(methodName).inc();

@@ -337,7 +337,7 @@ public class ProjectEntity {
       AuthService authService,
       Map<Long, Workspace> cacheWorkspaceMap,
       Map<String, GetResourcesResponseItem> getResourcesMap) {
-    Project.Builder projectBuilder =
+    var projectBuilder =
         Project.newBuilder()
             .setId(getId())
             .setName(getName())

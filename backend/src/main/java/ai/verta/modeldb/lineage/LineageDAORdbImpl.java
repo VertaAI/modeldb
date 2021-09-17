@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
-import org.hibernate.query.Query;
 
 public class LineageDAORdbImpl implements LineageDAO {
 
@@ -37,7 +36,7 @@ public class LineageDAORdbImpl implements LineageDAO {
   @Override
   public Response addLineage(AddLineage addLineage, IsExistsPredicate isExistsPredicate)
       throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       validate(addLineage.getInputList(), addLineage.getOutputList());
       validateExistence(
           addLineage.getInputList(), addLineage.getOutputList(), isExistsPredicate, session);
@@ -60,7 +59,7 @@ public class LineageDAORdbImpl implements LineageDAO {
 
   @Override
   public DeleteLineage.Response deleteLineage(DeleteLineage deleteLineage) throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       validate(deleteLineage.getInputList(), deleteLineage.getOutputList());
       session.beginTransaction();
       for (LineageEntry input : deleteLineage.getInputList()) {
@@ -134,7 +133,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       throws ModelDBException {
     if (!isExistsResourcePredicate.test(
         session, lineageEntry.getExternalId(), lineageEntry.getType())) {
-      final String message = "External resource with a specified id does not exists";
+      final var message = "External resource with a specified id does not exists";
       LOGGER.info(message);
       throw new ModelDBException(message, Code.INVALID_ARGUMENT);
     }
@@ -142,8 +141,8 @@ public class LineageDAORdbImpl implements LineageDAO {
 
   @Override
   public FindAllInputs.Response findAllInputs(FindAllInputs findAllInputs) throws ModelDBException {
-    FindAllInputs.Response.Builder response = FindAllInputs.Response.newBuilder();
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    var response = FindAllInputs.Response.newBuilder();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       for (LineageEntry output : findAllInputs.getItemsList()) {
         validate(output);
         response.addInputs(
@@ -162,8 +161,8 @@ public class LineageDAORdbImpl implements LineageDAO {
   @Override
   public FindAllOutputs.Response findAllOutputs(FindAllOutputs findAllOutputs)
       throws ModelDBException {
-    FindAllOutputs.Response.Builder response = FindAllOutputs.Response.newBuilder();
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    var response = FindAllOutputs.Response.newBuilder();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       for (LineageEntry input : findAllOutputs.getItemsList()) {
         validate(input);
         response.addOutputs(
@@ -182,8 +181,8 @@ public class LineageDAORdbImpl implements LineageDAO {
   @Override
   public FindAllInputsOutputs.Response findAllInputsOutputs(
       FindAllInputsOutputs findAllInputsOutputs) throws ModelDBException {
-    FindAllInputsOutputs.Response.Builder response = FindAllInputsOutputs.Response.newBuilder();
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    var response = FindAllInputsOutputs.Response.newBuilder();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       for (LineageEntry inputoutput : findAllInputsOutputs.getItemsList()) {
         validate(inputoutput);
         final List<LineageEntry> inputs = getInputsByOutput(session, inputoutput);
@@ -215,14 +214,14 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private void saveOrUpdate(Session session, LineageEntry input, LineageEntry output) {
-    LineageEntity lineageEntity = new LineageEntity(input, output);
+    var lineageEntity = new LineageEntity(input, output);
     session.buildLockRequest(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     session.saveOrUpdate(lineageEntity);
   }
 
   private Optional<LineageEntity> getExisting(
       Session session, LineageEntry input, LineageEntry output) {
-    Query query =
+    var query =
         session.createQuery(
             "from LineageEntity where inputExternalId = :inputExternalId "
                 + " and inputType = :inputType "
@@ -236,14 +235,14 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private List<LineageEntry> getOutputsByInput(Session session, LineageEntry input) {
-    Query query =
+    var query =
         session.createQuery(
             "from LineageEntity where inputExternalId = :inputExternalId and inputType = :inputType ");
     query.setParameter("inputExternalId", input.getExternalId());
     query.setParameter("inputType", input.getTypeValue());
     List<LineageEntry> result = new LinkedList<>();
     for (Object r : query.getResultList()) {
-      LineageEntity lineageEntity = (LineageEntity) r;
+      var lineageEntity = (LineageEntity) r;
       result.add(
           LineageEntry.newBuilder()
               .setTypeValue(lineageEntity.getOutputType())
@@ -254,14 +253,14 @@ public class LineageDAORdbImpl implements LineageDAO {
   }
 
   private List<LineageEntry> getInputsByOutput(Session session, LineageEntry output) {
-    Query query =
+    var query =
         session.createQuery(
             "from LineageEntity where outputExternalId = :outputExternalId and outputType = :outputType");
     query.setParameter("outputExternalId", output.getExternalId());
     query.setParameter("outputType", output.getTypeValue());
     List<LineageEntry> result = new LinkedList<>();
     for (Object r : query.getResultList()) {
-      LineageEntity lineageEntity = (LineageEntity) r;
+      var lineageEntity = (LineageEntity) r;
       result.add(
           LineageEntry.newBuilder()
               .setTypeValue(lineageEntity.getInputType())

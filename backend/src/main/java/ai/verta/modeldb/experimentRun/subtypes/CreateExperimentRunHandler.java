@@ -137,7 +137,7 @@ public class CreateExperimentRunHandler {
       request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
     }
 
-    ExperimentRun.Builder experimentRunBuilder =
+    var experimentRunBuilder =
         ExperimentRun.newBuilder()
             .setId(UUID.randomUUID().toString())
             .setProjectId(request.getProjectId())
@@ -207,7 +207,7 @@ public class CreateExperimentRunHandler {
 
     // Created comma separated field names from keys of above map
     String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
-    String commaFields = String.join(",", fieldsArr);
+    var commaFields = String.join(",", fieldsArr);
 
     StringBuilder queryStrBuilder =
         new StringBuilder("insert into experiment_run ( ").append(commaFields).append(") values (");
@@ -217,7 +217,7 @@ public class CreateExperimentRunHandler {
     // keys of
     // above the map
     // Ex: VALUES (:project_id, :experiment_id, :name) etc.
-    String bindArguments =
+    var bindArguments =
         String.join(",", Arrays.stream(fieldsArr).map(s -> ":" + s).toArray(String[]::new));
 
     queryStrBuilder.append(bindArguments);

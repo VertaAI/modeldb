@@ -71,13 +71,13 @@ public class ConflictGenerator {
       throw new ModelDBException("different size of diff not expected", Code.INTERNAL);
     }
 
-    AutogenBlobDiff a = AutogenBlobDiff.fromProto(locSpecificBlobDiffA.get(0));
-    AutogenBlobDiff b = AutogenBlobDiff.fromProto(locSpecificBlobDiffB.get(0));
-    AutogenBlob c = AutogenBlob.fromProto(parentBlob);
+    var a = AutogenBlobDiff.fromProto(locSpecificBlobDiffA.get(0));
+    var b = AutogenBlobDiff.fromProto(locSpecificBlobDiffB.get(0));
+    var c = AutogenBlob.fromProto(parentBlob);
     if (locSpecificBlobDiffA.get(0).getContentCase()
         == locSpecificBlobDiffB.get(0).getContentCase()) {
-      AutogenBlobDiff diff0 = AutogenBlobDiff.fromProto(blobDiff);
-      AutogenBlobDiff diff1 = AutogenBlobDiff.fromProto(blobDiff);
+      var diff0 = AutogenBlobDiff.fromProto(blobDiff);
+      var diff1 = AutogenBlobDiff.fromProto(blobDiff);
       switch (locSpecificBlobDiffA.get(0).getContentCase()) {
         case CODE:
           List<AutogenCodeDiff> diffs = getCodeConflictBlob(a.getCode(), b.getCode(), c.getCode());
@@ -135,7 +135,7 @@ public class ConflictGenerator {
       AutogenBlob c,
       BlobDiff blobDiff)
       throws ModelDBException {
-    AutogenBlobDiff diff = AutogenBlobDiff.fromProto(blobDiff);
+    var diff = AutogenBlobDiff.fromProto(blobDiff);
     switch (locSpecificBlobDiffList.get(0).getContentCase()) {
       case CODE:
         return diff.setCode(getCodeConflictBlob(a.getCode(), b.getCode(), c.getCode()).get(0))
@@ -548,7 +548,7 @@ public class ConflictGenerator {
   private static AutogenGitCodeDiff getGitDiff(
       AutogenGitCodeDiff a, AutogenGitCodeDiff b, AutogenGitCodeBlob c) {
     if ((a == null && b == null) || (a != null && a.equals(b))) return null;
-    AutogenGitCodeDiff ret = new AutogenGitCodeDiff();
+    var ret = new AutogenGitCodeDiff();
     return ret.setA(a == null ? null : a.getB())
         .setB(b == null ? null : b.getB())
         .setC(c)

@@ -83,9 +83,8 @@ public class HyperparameterSetConfigBlobEntity {
   }
 
   public HyperparameterSetConfigBlob toProto() throws ModelDBException {
-    HyperparameterSetConfigBlob.Builder builder =
-        HyperparameterSetConfigBlob.newBuilder().setName(this.name);
-    ValueCase valueCase = ValueCase.forNumber(this.value_type);
+    var builder = HyperparameterSetConfigBlob.newBuilder().setName(this.name);
+    var valueCase = ValueCase.forNumber(this.value_type);
     if (valueCase == null) {
       throw new ModelDBException(
           "Invalid value found for HyperparameterSetConfigBlob", Code.INVALID_ARGUMENT);

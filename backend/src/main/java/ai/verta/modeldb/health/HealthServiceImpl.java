@@ -59,7 +59,7 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
   @Override
   public void check(
       HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver) {
-    ServingStatus status = getServingStatus(request);
+    var status = getServingStatus(request);
     if (status == null) {
       responseObserver.onError(
           new StatusException(
@@ -109,7 +109,7 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
   public ResponseEntity<String> check(@PathVariable("service") String service) {
     LOGGER.trace("Spring custom health check called");
     HealthCheckRequest request = HealthCheckRequest.newBuilder().setService(service).build();
-    ServingStatus status = getServingStatus(request);
+    var status = getServingStatus(request);
     if (status == null) {
       LOGGER.error("Spring custom health check returned with unknown service");
       throw new ResponseStatusException(

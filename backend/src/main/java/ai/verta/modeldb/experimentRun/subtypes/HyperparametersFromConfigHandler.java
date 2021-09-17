@@ -65,8 +65,8 @@ public class HyperparametersFromConfigHandler extends KeyValueHandler {
               return query
                   .map(
                       (rs, ctx) -> {
-                        Value.Builder valueBuilder = Value.newBuilder();
-                        HyperparameterValuesConfigBlob.ValueCase valueCase =
+                        var valueBuilder = Value.newBuilder();
+                        var valueCase =
                             HyperparameterValuesConfigBlob.ValueCase.forNumber(
                                 rs.getInt("value_type"));
                         switch (valueCase) {

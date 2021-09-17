@@ -185,7 +185,7 @@ public class KeyValueEntity {
   }
 
   public KeyValue getProtoKeyValue() {
-    Value.Builder valueBuilder = Value.newBuilder();
+    var valueBuilder = Value.newBuilder();
     valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(value, valueBuilder);
     return KeyValue.newBuilder()
         .setKey(key)

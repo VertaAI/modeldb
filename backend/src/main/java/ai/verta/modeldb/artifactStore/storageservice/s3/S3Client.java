@@ -16,7 +16,6 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityRequest;
 import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityResult;
-import com.amazonaws.services.securitytoken.model.Credentials;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -82,7 +81,7 @@ public class S3Client {
   private void initializeMinioClient(
       String cloudAccessKey, String cloudSecretKey, Regions awsRegion, String minioEndpoint) {
     awsCredentials = new BasicAWSCredentials(cloudAccessKey, cloudSecretKey);
-    ClientConfiguration clientConfiguration = new ClientConfiguration();
+    var clientConfiguration = new ClientConfiguration();
     clientConfiguration.setSignerOverride("VertaSignOverrideS3Signer");
     SignerFactory.registerSigner("VertaSignOverrideS3Signer", SignOverrideS3Signer.class);
 
@@ -117,7 +116,7 @@ public class S3Client {
 
       String roleArn = System.getenv(ModelDBConstants.AWS_ROLE_ARN);
 
-      String token =
+      var token =
           new String(
               Files.readAllBytes(
                   Paths.get(
@@ -140,7 +139,7 @@ public class S3Client {
       AssumeRoleWithWebIdentityResult roleResponse =
           stsClient.assumeRoleWithWebIdentity(roleRequest);
 
-      Credentials credentials = roleResponse.getCredentials();
+      var credentials = roleResponse.getCredentials();
 
       // Extract the session credentials
       awsCredentials =
@@ -162,7 +161,7 @@ public class S3Client {
       // Start a thread that will refresh the token. It will just retry for as long as we get an
       // exception and die right after.
       LOGGER.debug("scheduling refresh");
-      Thread thread =
+      var thread =
           new Thread(
               () -> {
                 Long now = System.currentTimeMillis();

@@ -67,7 +67,7 @@ public class HyperparameterElementConfigBlobEntity {
   }
 
   public HyperparameterValuesConfigBlob toProto() {
-    HyperparameterValuesConfigBlob.Builder builder = HyperparameterValuesConfigBlob.newBuilder();
+    var builder = HyperparameterValuesConfigBlob.newBuilder();
     if (this.int_value != null) {
       builder.setIntValue(this.int_value);
     }

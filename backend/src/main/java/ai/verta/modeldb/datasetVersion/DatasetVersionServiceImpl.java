@@ -34,7 +34,6 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
@@ -43,7 +42,6 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.CommitDAO;
-import ai.verta.modeldb.versioning.CreateCommitRequest;
 import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
@@ -82,7 +80,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private DatasetVersion getDatasetVersionFromRequest(
       AuthService authService, CreateDatasetVersion request, UserInfo userInfo)
       throws ModelDBException {
-    DatasetVersion.Builder datasetVersionBuilder =
+    var datasetVersionBuilder =
         DatasetVersion.newBuilder()
             .setVersion(request.getVersion())
             .setDatasetId(request.getDatasetId())
@@ -138,17 +136,17 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
 
       /*Get the user info from the Context*/
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      DatasetVersion datasetVersion = getDatasetVersionFromRequest(authService, request, userInfo);
+      var userInfo = authService.getCurrentLoginUserInfo();
+      var datasetVersion = getDatasetVersionFromRequest(authService, request, userInfo);
 
-      RepositoryIdentification repositoryIdentification =
+      var repositoryIdentification =
           RepositoryIdentification.newBuilder()
               .setRepoId(Long.parseLong(request.getDatasetId()))
               .build();
 
-      RepositoryEntity repositoryEntity =
+      var repositoryEntity =
           repositoryDAO.getProtectedRepositoryById(repositoryIdentification, true);
-      CreateCommitRequest.Response createCommitResponse =
+      var createCommitResponse =
           commitDAO.setCommitFromDatasetVersion(
               datasetVersion, repositoryDAO, blobDAO, metadataDAO, repositoryEntity);
       datasetVersion =
@@ -158,7 +156,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               repositoryEntity,
               createCommitResponse.getCommit().getCommitSha(),
               true);
-      CreateDatasetVersion.Response response =
+      var response =
           CreateDatasetVersion.Response.newBuilder().setDatasetVersion(datasetVersion).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -179,13 +177,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       if (request.getDatasetId().isEmpty()) {
         throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
-      DatasetVersionDTO datasetVersionDTO =
+      var datasetVersionDTO =
           getDatasetVersionDTOByDatasetId(
               request.getDatasetId(),
               request.getPageNumber(),
               request.getPageLimit(),
               request.getAscending());
-      final GetAllDatasetVersionsByDatasetId.Response response =
+      final var response =
           GetAllDatasetVersionsByDatasetId.Response.newBuilder()
               .addAllDatasetVersions(datasetVersionDTO.getDatasetVersions())
               .setTotalRecords(datasetVersionDTO.getTotalRecords())
@@ -204,16 +202,16 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       String datasetId, int pageNumber, int pageLimit, boolean ascending) throws ModelDBException {
 
     /*Get Data*/
-    RepositoryIdentification repositoryIdentification =
+    var repositoryIdentification =
         RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(datasetId)).build();
     ListCommitsRequest.Builder listCommitsRequest =
         ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
     if (pageLimit > 0 && pageNumber > 0) {
-      Pagination pagination =
+      var pagination =
           Pagination.newBuilder().setPageLimit(pageLimit).setPageNumber(pageNumber).build();
       listCommitsRequest.setPagination(pagination);
     }
-    ListCommitsRequest.Response listCommitsResponse =
+    var listCommitsResponse =
         commitDAO.listCommits(
             listCommitsRequest.build(),
             (session ->
@@ -228,13 +226,13 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     long totalRecords = listCommitsResponse.getTotalRecords();
     totalRecords = totalRecords > 0 ? totalRecords - 1 : totalRecords;
 
-    RepositoryEntity repositoryEntity =
+    var repositoryEntity =
         repositoryDAO.getProtectedRepositoryById(repositoryIdentification, false);
     List<DatasetVersion> datasetVersions =
         new ArrayList<>(
             convertRepoDatasetVersions(repositoryEntity, listCommitsResponse.getCommitsList()));
 
-    DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
+    var datasetVersionDTO = new DatasetVersionDTO();
     datasetVersionDTO.setDatasetVersions(datasetVersions);
     datasetVersionDTO.setTotalRecords(totalRecords);
     return datasetVersionDTO;
@@ -276,7 +274,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
                   .build(),
           Collections.singletonList(request.getId()),
           repositoryDAO);
-      DeleteDatasetVersion.Response response = DeleteDatasetVersion.Response.getDefaultInstance();
+      var response = DeleteDatasetVersion.Response.getDefaultInstance();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -297,7 +295,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw new InvalidArgumentException(ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST);
       }
 
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
 
       FindRepositoriesBlobs.Builder findRepositoriesBlobs =
           FindRepositoriesBlobs.newBuilder()
@@ -306,7 +304,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               .setPageNumber(1);
       String sortKey =
           request.getSortKey().isEmpty() ? ModelDBConstants.DATE_CREATED : request.getSortKey();
-      CommitPaginationDTO commitPaginationDTO =
+      var commitPaginationDTO =
           commitDAO.findCommits(
               findRepositoriesBlobs.build(),
               currentLoginUserInfo,
@@ -322,7 +320,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
       RepositoryEntity repositoryEntity = null;
       if (!request.getDatasetId().isEmpty()) {
-        RepositoryIdentification repositoryIdentification =
+        var repositoryIdentification =
             RepositoryIdentification.newBuilder()
                 .setRepoId(Long.parseLong(request.getDatasetId()))
                 .build();
@@ -337,8 +335,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw new NotFoundException(
             "No datasetVersion found for dataset '" + request.getDatasetId() + "'");
       }
-      final DatasetVersion datasetVersion = datasetVersions.get(0);
-      final GetLatestDatasetVersionByDatasetId.Response response =
+      final var datasetVersion = datasetVersions.get(0);
+      final var response =
           GetLatestDatasetVersionByDatasetId.Response.newBuilder()
               .setDatasetVersion(datasetVersion)
               .build();
@@ -358,7 +356,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   public void findDatasetVersions(
       FindDatasetVersions request, StreamObserver<FindDatasetVersions.Response> responseObserver) {
     try {
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       FindRepositoriesBlobs.Builder findRepositoriesBlobs =
           FindRepositoriesBlobs.newBuilder()
               .addAllCommits(request.getDatasetVersionIdsList())
@@ -369,7 +367,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       if (!request.getDatasetId().isEmpty()) {
         findRepositoriesBlobs.addRepoIds(Long.parseLong(request.getDatasetId()));
       }
-      CommitPaginationDTO commitPaginationDTO =
+      var commitPaginationDTO =
           commitDAO.findCommits(
               findRepositoriesBlobs.build(),
               currentLoginUserInfo,
@@ -381,7 +379,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
       RepositoryEntity repositoryEntity = null;
       if (!request.getDatasetId().isEmpty()) {
-        RepositoryIdentification repositoryIdentification =
+        var repositoryIdentification =
             RepositoryIdentification.newBuilder()
                 .setRepoId(Long.parseLong(request.getDatasetId()))
                 .build();
@@ -391,7 +389,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       List<DatasetVersion> datasetVersions =
           new ArrayList<>(
               convertRepoDatasetVersions(repositoryEntity, commitPaginationDTO.getCommits()));
-      final FindDatasetVersions.Response response =
+      final var response =
           FindDatasetVersions.Response.newBuilder()
               .addAllDatasetVersions(datasetVersions)
               .setTotalRecords(commitPaginationDTO.getTotalRecords())
@@ -416,7 +414,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST, Code.INVALID_ARGUMENT);
       }
 
-      DatasetVersion datasetVersion =
+      var datasetVersion =
           commitDAO.updateDatasetVersionDescription(
               repositoryDAO,
               blobDAO,
@@ -424,7 +422,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getDatasetId(),
               request.getId(),
               request.getDescription());
-      UpdateDatasetVersionDescription.Response response =
+      var response =
           UpdateDatasetVersionDescription.Response.newBuilder()
               .setDatasetVersion(datasetVersion)
               .build();
@@ -457,7 +455,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      DatasetVersion datasetVersion =
+      var datasetVersion =
           commitDAO.addDeleteDatasetVersionTags(
               repositoryDAO,
               blobDAO,
@@ -467,7 +465,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getId(),
               request.getTagsList(),
               false);
-      AddDatasetVersionTags.Response response =
+      var response =
           AddDatasetVersionTags.Response.newBuilder().setDatasetVersion(datasetVersion).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -498,7 +496,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      DatasetVersion datasetVersion =
+      var datasetVersion =
           commitDAO.addDeleteDatasetVersionTags(
               repositoryDAO,
               blobDAO,
@@ -508,7 +506,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getId(),
               request.getTagsList(),
               request.getDeleteAll());
-      DeleteDatasetVersionTags.Response response =
+      var response =
           DeleteDatasetVersionTags.Response.newBuilder().setDatasetVersion(datasetVersion).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -539,7 +537,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      DatasetVersion updatedDatasetVersion =
+      var updatedDatasetVersion =
           blobDAO.addUpdateDatasetVersionAttributes(
               repositoryDAO,
               commitDAO,
@@ -548,7 +546,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getId(),
               request.getAttributesList(),
               true);
-      AddDatasetVersionAttributes.Response response =
+      var response =
           AddDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
               .build();
@@ -581,7 +579,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      DatasetVersion updatedDatasetVersion =
+      var updatedDatasetVersion =
           blobDAO.addUpdateDatasetVersionAttributes(
               repositoryDAO,
               commitDAO,
@@ -590,7 +588,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getId(),
               Collections.singletonList(request.getAttribute()),
               false);
-      UpdateDatasetVersionAttributes.Response response =
+      var response =
           UpdateDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
               .build();
@@ -634,7 +632,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION),
               request.getAttributeKeysList());
 
-      final GetDatasetVersionAttributes.Response response =
+      final var response =
           GetDatasetVersionAttributes.Response.newBuilder().addAllAttributes(attributes).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -668,7 +666,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      DatasetVersion updatedDatasetVersion =
+      var updatedDatasetVersion =
           blobDAO.deleteDatasetVersionAttributes(
               repositoryDAO,
               commitDAO,
@@ -678,7 +676,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getAttributeKeysList(),
               Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION),
               request.getDeleteAll());
-      DeleteDatasetVersionAttributes.Response response =
+      var response =
           DeleteDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
               .build();
@@ -709,7 +707,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
                   .build(),
           request.getIdsList(),
           repositoryDAO);
-      DeleteDatasetVersions.Response response = DeleteDatasetVersions.Response.getDefaultInstance();
+      var response = DeleteDatasetVersions.Response.getDefaultInstance();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -727,7 +725,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       // Validate request parameters
       validateGetUrlForVersionedDatasetBlobRequest(request);
 
-      GetUrlForDatasetBlobVersioned.Response response =
+      var response =
           blobDAO.getUrlForVersionedDatasetBlob(
               artifactStoreDAO,
               repositoryDAO,
@@ -781,8 +779,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           (session, repository) ->
               commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
           request);
-      CommitVersionedDatasetBlobArtifactPart.Response response =
-          CommitVersionedDatasetBlobArtifactPart.Response.newBuilder().build();
+      var response = CommitVersionedDatasetBlobArtifactPart.Response.newBuilder().build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -798,7 +795,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       GetCommittedVersionedDatasetBlobArtifactParts request,
       StreamObserver<GetCommittedVersionedDatasetBlobArtifactParts.Response> responseObserver) {
     try {
-      GetCommittedVersionedDatasetBlobArtifactParts.Response response =
+      var response =
           blobDAO.getCommittedVersionedDatasetBlobArtifactParts(
               repositoryDAO,
               request.getDatasetId(),
@@ -821,8 +818,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       StreamObserver<CommitMultipartVersionedDatasetBlobArtifact.Response> responseObserver) {
     try {
       if (request.getPathDatasetComponentBlobPath().isEmpty()) {
-        String errorMessage =
-            "Path not found in CommitMultipartVersionedDatasetBlobArtifact request";
+        var errorMessage = "Path not found in CommitMultipartVersionedDatasetBlobArtifact request";
         throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
 
@@ -833,8 +829,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               commitDAO.getCommitEntity(session, request.getDatasetVersionId(), repository),
           request,
           artifactStoreDAO::commitMultipart);
-      CommitMultipartVersionedDatasetBlobArtifact.Response response =
-          CommitMultipartVersionedDatasetBlobArtifact.Response.newBuilder().build();
+      var response = CommitMultipartVersionedDatasetBlobArtifact.Response.newBuilder().build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -851,11 +846,11 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       StreamObserver<GetDatasetVersionById.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
-        String errorMessage = "DatasetVersion id not found in GetDatasetVersionById request";
+        var errorMessage = "DatasetVersion id not found in GetDatasetVersionById request";
         throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
 
-      final GetDatasetVersionById.Response response =
+      final var response =
           GetDatasetVersionById.Response.newBuilder()
               .setDatasetVersion(
                   commitDAO.getDatasetVersionById(

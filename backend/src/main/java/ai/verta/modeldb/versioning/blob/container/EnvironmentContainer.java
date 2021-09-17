@@ -47,7 +47,7 @@ public class EnvironmentContainer extends BlobContainer {
   public void process(
       Session session, TreeElem rootTree, FileHasher fileHasher, Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException {
-    EnvironmentBlobEntity environmentBlobEntity = new EnvironmentBlobEntity();
+    var environmentBlobEntity = new EnvironmentBlobEntity();
     String blobHash = computeSHA(environment);
 
     String blobType;
@@ -60,7 +60,7 @@ public class EnvironmentContainer extends BlobContainer {
         final String pythonBlobHash = computeSHA(python);
         environmentBlobEntity.setBlob_hash(FileHasher.getSha((blobHash + pythonBlobHash)));
         environmentBlobEntity.setEnvironment_type(PYTHON_ENV_TYPE);
-        PythonEnvironmentBlobEntity pythonEnvironmentBlobEntity = new PythonEnvironmentBlobEntity();
+        var pythonEnvironmentBlobEntity = new PythonEnvironmentBlobEntity();
         environmentBlobEntity.setPythonEnvironmentBlobEntity(pythonEnvironmentBlobEntity);
         pythonEnvironmentBlobEntity.setBlob_hash(pythonBlobHash);
         final VersionEnvironmentBlob version = python.getVersion();
@@ -75,14 +75,14 @@ public class EnvironmentContainer extends BlobContainer {
 
           for (PythonRequirementEnvironmentBlob pythonRequirementEnvironmentBlob :
               python.getRequirementsList()) {
-            PythonEnvironmentRequirementBlobEntity pythonEnvironmentRequirementBlobEntity =
+            var pythonEnvironmentRequirementBlobEntity =
                 new PythonEnvironmentRequirementBlobEntity(
                     pythonRequirementEnvironmentBlob, pythonEnvironmentBlobEntity, true);
             entities.add(pythonEnvironmentRequirementBlobEntity);
           }
           for (PythonRequirementEnvironmentBlob pythonRequirementEnvironmentBlob :
               python.getConstraintsList()) {
-            PythonEnvironmentRequirementBlobEntity pythonEnvironmentRequirementBlobEntity =
+            var pythonEnvironmentRequirementBlobEntity =
                 new PythonEnvironmentRequirementBlobEntity(
                     pythonRequirementEnvironmentBlob, pythonEnvironmentBlobEntity, false);
             entities.add(pythonEnvironmentRequirementBlobEntity);
@@ -95,7 +95,7 @@ public class EnvironmentContainer extends BlobContainer {
         final String dockerBlobHash = computeSHA(docker);
         environmentBlobEntity.setBlob_hash(FileHasher.getSha((blobHash + dockerBlobHash)));
         environmentBlobEntity.setEnvironment_type(DOCKER_ENV_TYPE);
-        DockerEnvironmentBlobEntity dockerEnvironmentBlobEntity =
+        var dockerEnvironmentBlobEntity =
             new DockerEnvironmentBlobEntity(dockerBlobHash, environment.getDocker());
         environmentBlobEntity.setDockerEnvironmentBlobEntity(dockerEnvironmentBlobEntity);
         if (!blobHashes.contains(dockerBlobHash)) {
@@ -112,15 +112,14 @@ public class EnvironmentContainer extends BlobContainer {
 
       for (EnvironmentVariablesBlob environmentVariablesBlob :
           environment.getEnvironmentVariablesList()) {
-        EnvironmentVariablesEntity environmentVariablesBlobEntity =
+        var environmentVariablesBlobEntity =
             new EnvironmentVariablesEntity(environmentVariablesBlob);
         environmentVariablesBlobEntity.setEnvironmentBlobEntity(environmentBlobEntity);
         entities.add(environmentVariablesBlobEntity);
       }
-      int count = 0;
+      var count = 0;
       for (String command : environment.getCommandLineList()) {
-        EnvironmentCommandLineEntity environmentCommandLineEntity =
-            new EnvironmentCommandLineEntity(count++, command);
+        var environmentCommandLineEntity = new EnvironmentCommandLineEntity(count++, command);
         environmentCommandLineEntity.setEnvironmentBlobEntity(environmentBlobEntity);
         entities.add(environmentCommandLineEntity);
       }
@@ -151,7 +150,7 @@ public class EnvironmentContainer extends BlobContainer {
   }
 
   private String computeSHA(EnvironmentBlob blob) throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     List<AutogenEnvironmentVariablesBlob> environmentVariables =
         AutogenEnvironmentBlob.fromProto(blob).getEnvironmentVariables();
     if (environmentVariables != null) {
@@ -171,11 +170,11 @@ public class EnvironmentContainer extends BlobContainer {
   }
 
   private String computeSHA(PythonEnvironmentBlob blob) throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     final VersionEnvironmentBlob version = blob.getVersion();
     sb.append("python:");
     appendVersion(sb, version);
-    AutogenPythonEnvironmentBlob blobNew = AutogenPythonEnvironmentBlob.fromProto(blob);
+    var blobNew = AutogenPythonEnvironmentBlob.fromProto(blob);
     List<AutogenPythonRequirementEnvironmentBlob> requirements = blobNew.getRequirements();
     if (requirements != null) {
       sb.append(":requirements:");
@@ -213,7 +212,7 @@ public class EnvironmentContainer extends BlobContainer {
   }
 
   private String computeSHA(DockerEnvironmentBlob blob) throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     sb.append("docker:repository")
         .append(blob.getRepository())
         .append(":sha:")

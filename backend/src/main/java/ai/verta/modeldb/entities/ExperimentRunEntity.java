@@ -3,14 +3,12 @@ package ai.verta.modeldb.entities;
 import ai.verta.common.CodeVersion;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
-import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -88,7 +86,7 @@ public class ExperimentRunEntity {
     }
 
     if (experimentRun.getEnvironment().hasPython() || experimentRun.getEnvironment().hasDocker()) {
-      EnvironmentBlob environmentBlob = sortPythonEnvironmentBlob(experimentRun.getEnvironment());
+      var environmentBlob = sortPythonEnvironmentBlob(experimentRun.getEnvironment());
       this.environment = ModelDBUtils.getStringFromProtoObject(environmentBlob);
     }
 
@@ -521,7 +519,7 @@ public class ExperimentRunEntity {
                 && observationEntityMap.containsKey(ModelDBConstants.OBSERVATIONS))
             ? observationEntityMap.get(ModelDBConstants.OBSERVATIONS)
             : Collections.emptyList();
-    ExperimentRun.Builder experimentRunBuilder =
+    var experimentRunBuilder =
         ExperimentRun.newBuilder()
             .setId(id)
             .setProjectId(project_id)
@@ -556,12 +554,12 @@ public class ExperimentRunEntity {
       experimentRunBuilder.setCodeVersionSnapshot(code_version_snapshot.getProtoObject());
     }
     if (versioned_inputs != null && versioned_inputs.size() > 0) {
-      VersioningEntry versioningEntry = RdbmsUtils.getVersioningEntryFromList(versioned_inputs);
+      var versioningEntry = RdbmsUtils.getVersioningEntryFromList(versioned_inputs);
       experimentRunBuilder.setVersionedInputs(versioningEntry);
     }
 
     if (this.environment != null && !this.environment.isEmpty()) {
-      EnvironmentBlob.Builder environmentBlobBuilder = EnvironmentBlob.newBuilder();
+      var environmentBlobBuilder = EnvironmentBlob.newBuilder();
       CommonUtils.getProtoObjectFromString(this.environment, environmentBlobBuilder);
       experimentRunBuilder.setEnvironment(environmentBlobBuilder.build());
     }
@@ -578,9 +576,9 @@ public class ExperimentRunEntity {
   }
 
   public EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {
-    EnvironmentBlob.Builder builder = environmentBlob.toBuilder();
+    var builder = environmentBlob.toBuilder();
     if (builder.hasPython()) {
-      PythonEnvironmentBlob.Builder pythonEnvironmentBlobBuilder = builder.getPython().toBuilder();
+      var pythonEnvironmentBlobBuilder = builder.getPython().toBuilder();
 
       // Compare requirementEnvironmentBlobs
       List<PythonRequirementEnvironmentBlob> requirementEnvironmentBlobs =

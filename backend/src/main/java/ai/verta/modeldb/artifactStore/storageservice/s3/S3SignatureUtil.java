@@ -35,7 +35,7 @@ public class S3SignatureUtil extends AWS4Signer {
   }
 
   private byte[] hmacSha256(byte[] key, String data) throws Exception {
-    Mac mac = Mac.getInstance(SigningAlgorithm.HmacSHA256.name());
+    var mac = Mac.getInstance(SigningAlgorithm.HmacSHA256.name());
     mac.init(new SecretKeySpec(key, SigningAlgorithm.HmacSHA256.name()));
     return mac.doFinal(data.getBytes(UTF_8));
   }

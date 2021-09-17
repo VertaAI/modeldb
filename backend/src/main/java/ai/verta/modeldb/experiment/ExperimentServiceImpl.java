@@ -2,7 +2,6 @@ package ai.verta.modeldb.experiment;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
-import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
@@ -15,7 +14,6 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
@@ -73,7 +71,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
      * Create Experiment entity from given CreateExperiment request. generate UUID and put as id in
      * Experiment for uniqueness.
      */
-    Experiment.Builder experimentBuilder =
+    var experimentBuilder =
         Experiment.newBuilder()
             .setId(UUID.randomUUID().toString())
             .setProjectId(request.getProjectId())
@@ -112,9 +110,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
-      Experiment experiment = getExperimentFromRequest(request, userInfo);
+      var experiment = getExperimentFromRequest(request, userInfo);
 
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
@@ -123,8 +121,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.UPDATE);
 
       experiment = experimentDAO.insertExperiment(experiment, userInfo);
-      CreateExperiment.Response response =
-          CreateExperiment.Response.newBuilder().setExperiment(experiment).build();
+      var response = CreateExperiment.Response.newBuilder().setExperiment(experiment).build();
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -141,12 +138,12 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       if (request.getProjectId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetExperimentsInProject request";
+        var errorMessage = "Project ID not found in GetExperimentsInProject request";
         throw new InvalidArgumentException(errorMessage);
       }
 
       if (!projectDAO.projectExistsInDB(request.getProjectId())) {
-        String errorMessage = "Project ID not found.";
+        var errorMessage = "Project ID not found.";
         throw new NotFoundException(errorMessage);
       }
 
@@ -154,7 +151,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
-      ExperimentPaginationDTO experimentPaginationDTO =
+      var experimentPaginationDTO =
           experimentDAO.getExperimentsInProject(
               projectDAO,
               request.getProjectId(),
@@ -163,7 +160,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               request.getAscending(),
               request.getSortKey());
       List<Experiment> experiments = experimentPaginationDTO.getExperiments();
-      GetExperimentsInProject.Response response =
+      var response =
           GetExperimentsInProject.Response.newBuilder()
               .addAllExperiments(experiments)
               .setTotalRecords(experimentPaginationDTO.getTotalRecords())
@@ -183,19 +180,18 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in GetExperimentById request";
+        var errorMessage = "Experiment ID not found in GetExperimentById request";
         throw new InvalidArgumentException(errorMessage);
       }
 
-      Experiment experiment = experimentDAO.getExperiment(request.getId());
+      var experiment = experimentDAO.getExperiment(request.getId());
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
           experiment.getProjectId(),
           ModelDBServiceActions.READ);
 
-      GetExperimentById.Response response =
-          GetExperimentById.Response.newBuilder().setExperiment(experiment).build();
+      var response = GetExperimentById.Response.newBuilder().setExperiment(experiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -228,8 +224,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
       List<KeyValue> keyValue = new ArrayList<>();
-      Value projectIdValue = Value.newBuilder().setStringValue(request.getProjectId()).build();
-      Value nameValue = Value.newBuilder().setStringValue(request.getName()).build();
+      var projectIdValue = Value.newBuilder().setStringValue(request.getProjectId()).build();
+      var nameValue = Value.newBuilder().setStringValue(request.getName()).build();
       keyValue.add(
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.PROJECT_ID)
@@ -248,7 +244,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             "Multiple experiments with name " + nameValue + " found in project " + projectIdValue;
         throw new ModelDBException(errorMessage, Code.INTERNAL);
       }
-      GetExperimentByName.Response response =
+      var response =
           GetExperimentByName.Response.newBuilder().setExperiment(experiments.get(0)).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -271,8 +267,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<UpdateExperimentNameOrDescription.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
-        String errorMessage =
-            "Experiment ID not found in UpdateExperimentNameOrDescription request";
+        var errorMessage = "Experiment ID not found in UpdateExperimentNameOrDescription request";
         throw new InvalidArgumentException(errorMessage);
       } else if (request.getName().isEmpty()) {
         request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
@@ -297,7 +292,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
       }
 
-      UpdateExperimentNameOrDescription.Response response =
+      var response =
           UpdateExperimentNameOrDescription.Response.newBuilder()
               .setExperiment(updatedExperiment)
               .build();
@@ -336,11 +331,11 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.updateExperimentName(
               request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
 
-      UpdateExperimentName.Response response =
+      var response =
           UpdateExperimentName.Response.newBuilder().setExperiment(updatedExperiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -375,9 +370,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
-      UpdateExperimentDescription.Response response =
+      var response =
           UpdateExperimentDescription.Response.newBuilder()
               .setExperiment(updatedExperiment)
               .build();
@@ -416,10 +411,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.addExperimentTags(
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
-      AddExperimentTags.Response response =
+      var response =
           AddExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -455,11 +450,11 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.addExperimentTags(
               request.getId(),
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
-      AddExperimentTag.Response response =
+      var response =
           AddExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -474,7 +469,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       GetTags request, StreamObserver<GetTags.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in GetTags request";
+        var errorMessage = "Experiment ID not found in GetTags request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -486,7 +481,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<String> experimentTags = experimentDAO.getExperimentTags(request.getId());
-      GetTags.Response response = GetTags.Response.newBuilder().addAllTags(experimentTags).build();
+      var response = GetTags.Response.newBuilder().addAllTags(experimentTags).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -521,10 +516,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.deleteExperimentTags(
               request.getId(), request.getTagsList(), request.getDeleteAll());
-      DeleteExperimentTags.Response response =
+      var response =
           DeleteExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -560,10 +555,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.deleteExperimentTags(
               request.getId(), Collections.singletonList(request.getTag()), false);
-      DeleteExperimentTag.Response response =
+      var response =
           DeleteExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -580,7 +575,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in AddAttributes request";
+        var errorMessage = "Experiment ID not found in AddAttributes request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -597,7 +592,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       experimentDAO.addExperimentAttributes(
           request.getId(), Collections.singletonList(request.getAttribute()));
-      AddAttributes.Response response = AddAttributes.Response.newBuilder().setStatus(true).build();
+      var response = AddAttributes.Response.newBuilder().setStatus(true).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -633,9 +628,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment experiment =
+      var experiment =
           experimentDAO.addExperimentAttributes(request.getId(), request.getAttributesList());
-      AddExperimentAttributes.Response response =
+      var response =
           AddExperimentAttributes.Response.newBuilder().setExperiment(experiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -680,8 +675,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       List<KeyValue> attributes =
           experimentDAO.getExperimentAttributes(
               request.getId(), request.getAttributeKeysList(), request.getGetAll());
-      GetAttributes.Response response =
-          GetAttributes.Response.newBuilder().addAllAttributes(attributes).build();
+      var response = GetAttributes.Response.newBuilder().addAllAttributes(attributes).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -718,10 +712,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.deleteExperimentAttributes(
               request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
-      DeleteExperimentAttributes.Response response =
+      var response =
           DeleteExperimentAttributes.Response.newBuilder().setExperiment(updatedExperiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -738,7 +732,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in DeleteExperiment request";
+        var errorMessage = "Experiment ID not found in DeleteExperiment request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -752,7 +746,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       List<String> deletedIds =
           experimentDAO.deleteExperiments(Collections.singletonList(request.getId()));
-      DeleteExperiment.Response response =
+      var response =
           DeleteExperiment.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -783,7 +777,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       /*User validation*/
-      Experiment existingExperiment = experimentDAO.getExperiment(request.getId());
+      var existingExperiment = experimentDAO.getExperiment(request.getId());
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
@@ -801,7 +795,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         errorMessage = "Code version already logged for experiment " + existingExperiment.getId();
         throw new AlreadyExistsException(errorMessage);
       }
-      LogExperimentCodeVersion.Response response =
+      var response =
           LogExperimentCodeVersion.Response.newBuilder().setExperiment(updatedExperiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -819,12 +813,12 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in GetExperimentCodeVersion request";
+        var errorMessage = "Experiment ID not found in GetExperimentCodeVersion request";
         throw new InvalidArgumentException(errorMessage);
       }
 
       /*User validation*/
-      Experiment existingExperiment = experimentDAO.getExperiment(request.getId());
+      var existingExperiment = experimentDAO.getExperiment(request.getId());
       // Validate if current user has access to the entity or not
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
@@ -832,9 +826,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceActions.READ);
 
       /*Get code version*/
-      CodeVersion codeVersion = existingExperiment.getCodeVersionSnapshot();
+      var codeVersion = existingExperiment.getCodeVersionSnapshot();
 
-      GetExperimentCodeVersion.Response response =
+      var response =
           GetExperimentCodeVersion.Response.newBuilder().setCodeVersion(codeVersion).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -858,11 +852,10 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             ModelDBServiceActions.READ);
       }
 
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      ExperimentPaginationDTO experimentPaginationDTO =
-          experimentDAO.findExperiments(projectDAO, userInfo, request);
+      var userInfo = authService.getCurrentLoginUserInfo();
+      var experimentPaginationDTO = experimentDAO.findExperiments(projectDAO, userInfo, request);
       List<Experiment> experiments = experimentPaginationDTO.getExperiments();
-      FindExperiments.Response response =
+      var response =
           FindExperiments.Response.newBuilder()
               .addAllExperiments(experiments)
               .setTotalRecords(experimentPaginationDTO.getTotalRecords())
@@ -923,8 +916,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       if (s3Key == null) {
         throw new NotFoundException(errorMessage);
       }
-      GetUrlForArtifact.Response response =
-          artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
+      var response = artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -935,12 +927,12 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
   private String getUrlForCode(GetUrlForArtifact request) {
     String s3Key = null;
-    Experiment expr = experimentDAO.getExperiment(request.getId());
+    var expr = experimentDAO.getExperiment(request.getId());
     if (expr.getCodeVersionSnapshot() != null
         && expr.getCodeVersionSnapshot().getCodeArchive() != null) {
       s3Key = expr.getCodeVersionSnapshot().getCodeArchive().getPath();
     } else {
-      Project proj = projectDAO.getProjectByID(expr.getProjectId());
+      var proj = projectDAO.getProjectByID(expr.getProjectId());
       if (proj.getCodeVersionSnapshot() != null
           && proj.getCodeVersionSnapshot().getCodeArchive() != null) {
         s3Key = proj.getCodeVersionSnapshot().getCodeArchive().getPath();
@@ -982,8 +974,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       List<Artifact> artifactList =
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
 
-      Experiment updatedExperiment = experimentDAO.logArtifacts(request.getId(), artifactList);
-      LogExperimentArtifacts.Response response =
+      var updatedExperiment = experimentDAO.logArtifacts(request.getId(), artifactList);
+      var response =
           LogExperimentArtifacts.Response.newBuilder().setExperiment(updatedExperiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -1000,7 +992,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in GetArtifacts request";
+        var errorMessage = "Experiment ID not found in GetArtifacts request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -1016,8 +1008,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<Artifact> artifactList = experimentDAO.getExperimentArtifacts(request.getId());
-      GetArtifacts.Response response =
-          GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build();
+      var response = GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1051,9 +1042,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       roleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
-          experimentDAO.deleteArtifacts(request.getId(), request.getKey());
-      DeleteExperimentArtifact.Response response =
+      var updatedExperiment = experimentDAO.deleteArtifacts(request.getId(), request.getKey());
+      var response =
           DeleteExperimentArtifact.Response.newBuilder().setExperiment(updatedExperiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -1081,7 +1071,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               ModelDBServiceResourceTypes.PROJECT,
               false);
       List<String> deletedIds = experimentDAO.deleteExperiments(request.getIdsList());
-      DeleteExperiments.Response response =
+      var response =
           DeleteExperiments.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();

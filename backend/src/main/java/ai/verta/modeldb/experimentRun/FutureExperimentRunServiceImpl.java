@@ -74,7 +74,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
           InternalFuture.runAsync(
               () -> {
                 if (request.getProjectId().isEmpty()) {
-                  String errorMessage = "Project ID not present";
+                  var errorMessage = "Project ID not present";
                   throw new InvalidArgumentException(errorMessage);
                 }
               },
@@ -126,7 +126,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
           InternalFuture.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
-                  String errorMessage = "ExperimentRun ID not present";
+                  var errorMessage = "ExperimentRun ID not present";
                   throw new InvalidArgumentException(errorMessage);
                 }
               },
@@ -170,10 +170,10 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
           InternalFuture.runAsync(
               () -> {
                 if (request.getName().isEmpty()) {
-                  String errorMessage = "ExperimentRun name not present";
+                  var errorMessage = "ExperimentRun name not present";
                   throw new InvalidArgumentException(errorMessage);
                 } else if (request.getExperimentId().isEmpty()) {
-                  String errorMessage = "Experiment ID not present";
+                  var errorMessage = "Experiment ID not present";
                   throw new InvalidArgumentException(errorMessage);
                 }
               },
@@ -984,8 +984,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .getVersionedInputs(request)
               .thenApply(
                   versionedInputs -> {
-                    GetVersionedInput.Response.Builder builder =
-                        GetVersionedInput.Response.newBuilder();
+                    var builder = GetVersionedInput.Response.newBuilder();
                     if (versionedInputs != null) {
                       builder.setVersionedInputs(versionedInputs);
                     }
