@@ -360,7 +360,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             !repositoryIds.isEmpty()
                 ? repositoryIds.stream().map(String::valueOf).collect(Collectors.toSet())
                 : Collections.emptySet(),
-            modelDBServiceResourceTypes);
+            modelDBServiceResourceTypes,
+            false);
     Set<Long> repoIds =
         accessibleAllWorkspaceItems.stream()
             .filter(
@@ -751,7 +752,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             roleService.getResourceItems(
-                null, Collections.emptySet(), ModelDBServiceResourceTypes.REPOSITORY);
+                null, Collections.emptySet(), ModelDBServiceResourceTypes.REPOSITORY, false);
         accessibleResourceIds =
             accessibleAllWorkspaceItems.stream()
                 .peek(
@@ -773,7 +774,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             roleService.getWorkspaceByWorkspaceName(currentLoginUserInfo, workspaceName);
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             roleService.getResourceItems(
-                workspace, Collections.emptySet(), ModelDBServiceResourceTypes.REPOSITORY);
+                workspace, Collections.emptySet(), ModelDBServiceResourceTypes.REPOSITORY, false);
         accessibleResourceIds =
             accessibleAllWorkspaceItems.stream()
                 .peek(
@@ -1218,7 +1219,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               roleService.getResourceItems(
                   null,
                   accessibleResourceIdsWithCollaborator,
-                  ModelDBServiceResourceTypes.REPOSITORY);
+                  ModelDBServiceResourceTypes.REPOSITORY,
+                  false);
           accessibleResourceIdsWithCollaborator =
               accessibleAllWorkspaceItems.stream()
                   .peek(
@@ -1243,7 +1245,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               roleService.getResourceItems(
                   workspace,
                   accessibleResourceIdsWithCollaborator,
-                  ModelDBServiceResourceTypes.REPOSITORY);
+                  ModelDBServiceResourceTypes.REPOSITORY,
+                  false);
           accessibleResourceIdsWithCollaborator =
               accessibleAllWorkspaceItems.stream()
                   .peek(
@@ -1414,7 +1417,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 !queryParameters.getDatasetIdsList().isEmpty()
                     ? new HashSet<>(queryParameters.getDatasetIdsList())
                     : Collections.emptySet(),
-                ModelDBServiceResourceTypes.DATASET);
+                ModelDBServiceResourceTypes.DATASET,
+                false);
         accessibleDatasetIds =
             accessibleAllWorkspaceItems.stream()
                 .peek(
@@ -1443,7 +1447,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 !queryParameters.getDatasetIdsList().isEmpty()
                     ? new HashSet<>(queryParameters.getDatasetIdsList())
                     : Collections.emptySet(),
-                ModelDBServiceResourceTypes.DATASET);
+                ModelDBServiceResourceTypes.DATASET,
+                false);
         accessibleDatasetIds =
             accessibleAllWorkspaceItems.stream()
                 .peek(

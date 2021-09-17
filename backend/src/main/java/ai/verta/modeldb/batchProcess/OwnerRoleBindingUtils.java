@@ -101,7 +101,7 @@ public class OwnerRoleBindingUtils {
 
           // Fetch the experiment owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
+              authService.getUserInfoFromAuthServer(userIds, null, null, true);
           for (ExperimentEntity experimentEntity : experimentEntities) {
             var userInfoValue = userInfoMap.get(experimentEntity.getOwner());
             if (userInfoValue != null) {
@@ -177,7 +177,7 @@ public class OwnerRoleBindingUtils {
           continue;
         }
         Map<String, UserInfo> userInfoMap =
-            authService.getUserInfoFromAuthServer(userIds, null, null);
+            authService.getUserInfoFromAuthServer(userIds, null, null, true);
         for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
           var userInfoValue = userInfoMap.get(experimentRunEntity.getOwner());
           if (userInfoValue != null) {
@@ -252,7 +252,7 @@ public class OwnerRoleBindingUtils {
           }
           // Fetch the DatasetVersion owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
+              authService.getUserInfoFromAuthServer(userIds, null, null, true);
           for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
             var userInfoValue = userInfoMap.get(datasetVersionEntity.getOwner());
             if (userInfoValue != null) {
@@ -330,7 +330,7 @@ public class OwnerRoleBindingUtils {
           }
           // Fetch the Repository owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
+              authService.getUserInfoFromAuthServer(userIds, null, null, true);
           for (RepositoryEntity repositoryEntity : repositoryEntities) {
             var userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
             if (userInfoValue != null) {

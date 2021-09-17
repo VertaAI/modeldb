@@ -1068,7 +1068,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           roleService.getResourceItems(
               null,
               new HashSet<>(projectIdFromExperimentMap.values()),
-              ModelDBServiceResourceTypes.PROJECT);
+              ModelDBServiceResourceTypes.PROJECT,
+              false);
       List<String> deletedIds = experimentDAO.deleteExperiments(request.getIdsList());
       var response =
           DeleteExperiments.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();

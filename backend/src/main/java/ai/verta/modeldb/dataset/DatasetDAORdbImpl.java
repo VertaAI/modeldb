@@ -781,7 +781,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         LOGGER.debug("Workspace and current login user match");
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             roleService.getResourceItems(
-                null, Collections.emptySet(), ModelDBServiceResourceTypes.DATASET);
+                null, Collections.emptySet(), ModelDBServiceResourceTypes.DATASET, false);
         accessibleResourceIds.addAll(
             accessibleAllWorkspaceItems.stream()
                 .map(GetResourcesResponseItem::getResourceId)

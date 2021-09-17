@@ -147,7 +147,7 @@ public class DatasetToRepositoryMigration {
           // Fetch the Dataset owners userInfo
           Map<String, UserInfo> userInfoMap = new HashMap<>();
           if (!userIds.isEmpty()) {
-            userInfoMap = authService.getUserInfoFromAuthServer(userIds, null, null);
+            userInfoMap = authService.getUserInfoFromAuthServer(userIds, null, null, true);
           }
           LOGGER.debug("Resolved owners in the batch from uac ");
 

@@ -253,14 +253,17 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public GeneratedMessageV3 getOrgById(String orgId) {
-    return getOrgById(true, orgId);
+    return getOrgById(true, orgId, false);
   }
 
-  private GeneratedMessageV3 getOrgById(boolean retry, String orgId) {
+  protected GeneratedMessageV3 getOrgById(boolean retry, String orgId, boolean isServiceUser) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetOrganizationById getOrgById = GetOrganizationById.newBuilder().setOrgId(orgId).build();
-      var getOrgByIdResponse =
-          authServiceChannel.getOrganizationServiceBlockingStub().getOrganizationById(getOrgById);
+      var blockingStub =
+          isServiceUser
+              ? authServiceChannel.getOrganizationServiceBlockingStubForServiceUser()
+              : authServiceChannel.getOrganizationServiceBlockingStub();
+      var getOrgByIdResponse = blockingStub.getOrganizationById(getOrgById);
       return getOrgByIdResponse.getOrganization();
     } catch (StatusRuntimeException ex) {
       return (GeneratedMessageV3)
@@ -268,7 +271,7 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
-                  (retry1) -> getOrgById(retry1, orgId),
+                  (retry1) -> getOrgById(retry1, orgId, isServiceUser),
               timeout);
     }
   }
@@ -286,7 +289,8 @@ public class RoleServiceUtils implements RoleService {
   public List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,
       Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      boolean isServiceUser) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       var resourceType =
           ResourceType.newBuilder()
@@ -305,8 +309,11 @@ public class RoleServiceUtils implements RoleService {
       if (workspace != null) {
         builder.setWorkspaceId(workspace.getId());
       }
-      final var response =
-          authServiceChannel.getCollaboratorServiceBlockingStub().getResources(builder.build());
+      var blockingStub =
+          isServiceUser
+              ? authServiceChannel.getCollaboratorServiceBlockingStubForServiceUser()
+              : authServiceChannel.getCollaboratorServiceBlockingStub();
+      final var response = blockingStub.getResources(builder.build());
       return response.getItemList();
     } catch (StatusRuntimeException ex) {
       LOGGER.trace(ex);

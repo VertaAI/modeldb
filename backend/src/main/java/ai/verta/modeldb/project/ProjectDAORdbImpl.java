@@ -878,7 +878,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 !queryParameters.getProjectIdsList().isEmpty()
                     ? new HashSet<>(queryParameters.getProjectIdsList())
                     : Collections.emptySet(),
-                ModelDBServiceResourceTypes.PROJECT);
+                ModelDBServiceResourceTypes.PROJECT,
+                false);
         accessibleProjectIds =
             accessibleAllWorkspaceItems.stream()
                 .peek(
@@ -908,7 +909,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                   !queryParameters.getProjectIdsList().isEmpty()
                       ? new HashSet<>(queryParameters.getProjectIdsList())
                       : Collections.emptySet(),
-                  ModelDBServiceResourceTypes.PROJECT);
+                  ModelDBServiceResourceTypes.PROJECT,
+                  false);
           accessibleProjectIds =
               accessibleAllWorkspaceItems.stream()
                   .peek(
@@ -1167,7 +1169,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         LOGGER.debug("Workspace and current login user match");
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             roleService.getResourceItems(
-                null, Collections.emptySet(), ModelDBServiceResourceTypes.PROJECT);
+                null, Collections.emptySet(), ModelDBServiceResourceTypes.PROJECT, false);
         accessibleResourceIds.addAll(
             accessibleAllWorkspaceItems.stream()
                 .map(GetResourcesResponseItem::getResourceId)

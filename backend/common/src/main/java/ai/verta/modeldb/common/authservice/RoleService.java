@@ -48,7 +48,8 @@ public interface RoleService {
   List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,
       Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      boolean isServiceUser);
 
   List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
       Workspace workspace,
