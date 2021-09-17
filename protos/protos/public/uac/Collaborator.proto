@@ -301,6 +301,25 @@ service CollaboratorService {
         };
     };
 
+    rpc addOrUpdateEndpointCollaboratorCommonService (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
+        option (google.api.http) = {
+            post: "/v1/collaborator/addOrUpdateEndpointCollaboratorCommonService"
+            body: "*"
+        };
+    };
+
+    rpc removeEndpointCollaboratorCommonService (RemoveCollaborator) returns (RemoveCollaborator.Response){
+        option (google.api.http) = {
+            delete: "/v1/collaborator/removeEndpointCollaboratorCommonService"
+        };
+    };
+
+    rpc getEndpointCollaboratorsCommonService (GetCollaborator) returns (GetCollaborator.Response){
+        option (google.api.http) = {
+            get: "/v1/collaborator/getEndpointCollaboratorsCommonService"
+        };
+    };
+
     rpc addOrUpdateRegisteredModelCollaborator (AddCollaboratorRequest) returns (AddCollaboratorRequest.Response){
         option (google.api.http) = {
             post: "/v1/collaborator/addOrUpdateRegisteredModelCollaborator"

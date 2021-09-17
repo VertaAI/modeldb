@@ -51,7 +51,8 @@ public class RoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
-      ResourceVisibility resourceVisibility) {
+      ResourceVisibility resourceVisibility,
+      boolean isServiceUser) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.trace("Calling CollaboratorService to create resources");
       var modeldbServiceResourceType =
@@ -80,10 +81,12 @@ public class RoleServiceUtils implements RoleService {
         throw new IllegalArgumentException(
             "workspaceId and workspaceName are both empty.  One must be provided.");
       }
-      var setResourcesResponse =
-          authServiceChannel
-              .getCollaboratorServiceBlockingStub()
-              .setResource(setResourcesBuilder.build());
+
+      var blockingStub =
+          isServiceUser
+              ? authServiceChannel.getCollaboratorServiceBlockingStubForServiceUser()
+              : authServiceChannel.getCollaboratorServiceBlockingStub();
+      var setResourcesResponse = blockingStub.setResource(setResourcesBuilder.build());
 
       LOGGER.trace("SetResources message sent.  Response: {}", setResourcesResponse);
       return true;
@@ -850,7 +853,7 @@ public class RoleServiceUtils implements RoleService {
   private GeneratedMessageV3 getTeamByName(boolean retry, String orgId, String teamName) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       var getTeamByName = GetTeamByName.newBuilder().setTeamName(teamName).setOrgId(orgId).build();
-      GetTeamByName.Response getTeamByNameResponse =
+      var getTeamByNameResponse =
           authServiceChannel.getTeamServiceBlockingStub().getTeamByName(getTeamByName);
       return getTeamByNameResponse.getTeam();
     } catch (StatusRuntimeException ex) {

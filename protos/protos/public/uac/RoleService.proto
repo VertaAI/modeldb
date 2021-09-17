@@ -45,6 +45,8 @@ message AuthzActionEnum {
         UPDATE = 6;
         DELETE = 7;
         READ_SECRETS = 8;
+        CREATE_SERVICE_ACCOUNT = 9;
+        CREATE_CONTAINER_REGISTRY = 10;
     }
 
 };
@@ -64,6 +66,8 @@ message ModelDBActionEnum {
         UNLOCK = 10;
         UPDATE_REDACT = 11;
         ALERTER = 12;
+        PREDICT = 13;
+        CONTROL = 14;
     }
 };
 
@@ -110,6 +114,7 @@ message AuthzResourceEnum {
         WORKSPACE = 4;
         USER = 5;
         SERVICE_ACCOUNT = 6;
+        CONTAINER_REGISTRY_CONFIGURATION = 7;
     }
 };
 

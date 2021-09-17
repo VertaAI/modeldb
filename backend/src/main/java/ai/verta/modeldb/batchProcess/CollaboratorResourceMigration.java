@@ -154,7 +154,8 @@ public class CollaboratorResourceMigration {
                 getResourceVisibility(
                     Optional.ofNullable(
                         WorkspaceTypeEnum.WorkspaceType.forNumber(project.getWorkspace_type())),
-                    VisibilityEnum.Visibility.forNumber(project.getProject_visibility())));
+                    VisibilityEnum.Visibility.forNumber(project.getProject_visibility())),
+                true);
           } catch (StatusRuntimeException ex) {
             if (ex.getStatus().getCode() == Status.Code.ALREADY_EXISTS) {
               LOGGER.info(
@@ -180,7 +181,8 @@ public class CollaboratorResourceMigration {
                 Optional.of(resourceDetails.getOwnerId()),
                 ModelDBServiceResourceTypes.PROJECT,
                 resourceDetails.getCustomPermission(),
-                resourceDetails.getVisibility());
+                resourceDetails.getVisibility(),
+                true);
             migrated = true;
           }
         }
@@ -299,7 +301,8 @@ public class CollaboratorResourceMigration {
                 getResourceVisibility(
                     Optional.ofNullable(
                         WorkspaceTypeEnum.WorkspaceType.forNumber(repository.getWorkspace_type())),
-                    VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())));
+                    VisibilityEnum.Visibility.forNumber(repository.getRepository_visibility())),
+                true);
           } catch (StatusRuntimeException ex) {
             if (ex.getStatus().getCode() == Status.Code.ALREADY_EXISTS) {
               LOGGER.info(
@@ -339,7 +342,8 @@ public class CollaboratorResourceMigration {
                 Optional.of(resourceDetails.getOwnerId()),
                 modelDBServiceResourceTypes,
                 resourceDetails.getCustomPermission(),
-                resourceDetails.getVisibility());
+                resourceDetails.getVisibility(),
+                true);
             migrated = true;
           }
         }

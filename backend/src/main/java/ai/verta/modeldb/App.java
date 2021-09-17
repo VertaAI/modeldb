@@ -285,7 +285,7 @@ public class App implements ApplicationContextAware {
     } catch (Exception ex) {
       LOGGER.error("Getting error while starting MDB service", ex);
       initiateShutdown(0);
-      System.exit(0);
+      System.exit(1);
       // Restore interrupted state...
       Thread.currentThread().interrupt();
     }
