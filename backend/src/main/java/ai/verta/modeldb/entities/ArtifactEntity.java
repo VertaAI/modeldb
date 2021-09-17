@@ -2,6 +2,7 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.ModelDBConstants;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,16 +22,18 @@ public class ArtifactEntity {
 
   public ArtifactEntity(Object entity, String fieldType, Artifact artifact) {
     var app = App.getInstance();
+    var artifactStoreConfig = app.config.artifactStoreConfig;
     setKey(artifact.getKey());
     setPath(artifact.getPath());
     if (!artifact.getPathOnly()) {
-      setStore_type_path(
-          app.mdbConfig.artifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
+      setStore_type_path(artifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
     }
     setArtifact_type(artifact.getArtifactTypeValue());
     setPath_only(artifact.getPathOnly());
     setLinked_artifact_id(artifact.getLinkedArtifactId());
     setFilename_extension(artifact.getFilenameExtension());
+    this.serialization = artifact.getSerialization();
+    this.artifact_subtype = artifact.getArtifactSubtype();
 
     if (entity instanceof ProjectEntity) {
       setProjectEntity(entity);
@@ -47,6 +50,7 @@ public class ArtifactEntity {
     }
 
     this.field_type = fieldType;
+    setUploadCompleted(!artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3));
   }
 
   @Id
@@ -80,6 +84,12 @@ public class ArtifactEntity {
 
   @Column(name = "upload_completed")
   private boolean uploadCompleted;
+
+  @Column(name = "serialization", columnDefinition = "TEXT")
+  private String serialization;
+
+  @Column(name = "artifact_subtype")
+  private String artifact_subtype;
 
   @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   @JoinColumn(name = "project_id")
@@ -218,6 +228,9 @@ public class ArtifactEntity {
         .setPathOnly(path_only)
         .setLinkedArtifactId(linked_artifact_id)
         .setFilenameExtension(filename_extension)
+        .setSerialization(serialization)
+        .setArtifactSubtype(artifact_subtype)
+        .setUploadCompleted(this.uploadCompleted)
         .build();
   }
 }

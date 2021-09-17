@@ -270,7 +270,7 @@ public class FindRepositoriesQuery {
         }
         Map<String, UserInfo> userInfoMap =
             authService.getUserInfoFromAuthServer(
-                new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList());
+                new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList(), false);
         userInfoList = new ArrayList<>(userInfoMap.values());
       }
 

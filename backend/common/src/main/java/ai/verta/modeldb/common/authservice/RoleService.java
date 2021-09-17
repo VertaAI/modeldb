@@ -20,7 +20,8 @@ public interface RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
-      ResourceVisibility resourceVisibility);
+      ResourceVisibility resourceVisibility,
+      boolean isServiceUser);
 
   boolean deleteEntityResourcesWithServiceUser(
       List<String> entityIds, ModelDBServiceResourceTypes modelDBServiceResourceTypes);
@@ -47,7 +48,8 @@ public interface RoleService {
   List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,
       Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      boolean isServiceUser);
 
   List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
       Workspace workspace,

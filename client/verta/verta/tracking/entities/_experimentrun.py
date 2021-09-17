@@ -103,6 +103,10 @@ class ExperimentRun(_DeployableEntity):
         self._metrics = _utils.unravel_key_values(self._msg.metrics)
 
     @property
+    def _MODEL_KEY(self):
+        return _artifact_utils.MODEL_KEY
+
+    @property
     def workspace(self):
         self._refresh_cache()
         proj_id = self._msg.project_id
@@ -170,7 +174,16 @@ class ExperimentRun(_DeployableEntity):
         print("created new ExperimentRun: {}".format(expt_run.name))
         return expt_run
 
-    def _log_artifact(self, key, artifact, artifact_type, extension=None, method=None, overwrite=False):
+    def _log_artifact(
+        self,
+        key,
+        artifact,
+        artifact_type,
+        extension=None,
+        method=None,
+        framework=None,
+        overwrite=False,
+    ):
         """
         Logs an artifact to this Experiment Run.
 
@@ -189,7 +202,11 @@ class ExperimentRun(_DeployableEntity):
         extension : str, optional
             Filename extension associated with the artifact.
         method : str, optional
-            Serialization method used to produce the bytestream, if `artifact` was already serialized by verta.
+            Serialization method used to produce the bytestream, if `artifact`
+            was already serialized by Verta.
+        framework : str, optional
+            Framework with which the artifact was created. This is
+            `model_type` returned by `_artifact_utils.serialize_model()`
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
 
@@ -204,44 +221,36 @@ class ExperimentRun(_DeployableEntity):
             artifact_stream, method = _artifact_utils.ensure_bytestream(
                 artifact)
 
-        if extension is None:
-            extension = _artifact_utils.ext_from_method(method)
+        artifact_msg = self._create_artifact_msg(
+            key,
+            artifact_stream,
+            artifact_type=artifact_type,
+            method=method,
+            framework=framework,
+            extension=extension,
+        )
 
-        # calculate checksum
-        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
-        artifact_stream.seek(0)
-
-        # determine basename
-        #     The key might already contain the file extension, thanks to our hard-coded deployment
-        #     keys e.g. "model.pkl" and "model_api.json".
-        if extension is None:
-            basename = key
-        elif key.endswith(os.extsep + extension):
-            basename = key
-        else:
-            basename = key + os.extsep + extension
-
-        # build upload path from checksum and basename
-        artifact_path = os.path.join(artifact_hash, basename)
-
+        # augment artifact_path and path_only based on VERTA_ARTIFACT_DIR
         # TODO: incorporate into config
         VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR', "")
         VERTA_ARTIFACT_DIR = os.path.expanduser(VERTA_ARTIFACT_DIR)
         if VERTA_ARTIFACT_DIR:
             print("set artifact directory from environment:")
             print("    " + VERTA_ARTIFACT_DIR)
-            artifact_path = os.path.join(VERTA_ARTIFACT_DIR, artifact_path)
+            artifact_path = os.path.join(
+                VERTA_ARTIFACT_DIR,
+                artifact_msg.path,
+            )
             pathlib2.Path(artifact_path).parent.mkdir(
-                parents=True, exist_ok=True)
+                parents=True,
+                exist_ok=True,
+            )
+
+            artifact_msg.path = artifact_path
+            artifact_msg.path_only = True
 
         # log key to ModelDB
-        Message = _ExperimentRunService.LogArtifact
-        artifact_msg = _CommonCommonService.Artifact(key=key,
-                                                     path=artifact_path,
-                                                     path_only=True if VERTA_ARTIFACT_DIR else False,
-                                                     artifact_type=artifact_type,
-                                                     filename_extension=extension)
-        msg = Message(id=self.id, artifact=artifact_msg)
+        msg = _ExperimentRunService.LogArtifact(id=self.id, artifact=artifact_msg)
         data = _utils.proto_to_json(msg)
         if overwrite:
             response = _utils.make_request("DELETE",
@@ -410,6 +419,21 @@ class ExperimentRun(_DeployableEntity):
 
         self._clear_cache()
 
+    def _get_artifact_msg(self, key):
+        # get key-path from ModelDB
+        msg = _CommonService.GetArtifacts(id=self.id, key=key)
+        endpoint = "/api/v1/modeldb/experiment-run/getArtifacts"
+        response = self._conn.make_proto_request("GET", endpoint, params=msg)
+        response = self._conn.must_proto_response(response, msg.Response)
+
+        artifact_msg = {
+            artifact.key: artifact for artifact in response.artifacts
+        }.get(key)
+
+        if artifact_msg is None:
+            raise KeyError("no artifact found with key {}".format(key))
+        return artifact_msg
+
     def _get_artifact(self, key):
         """
         Gets the artifact with name `key` from this Experiment Run.
@@ -430,22 +454,8 @@ class ExperimentRun(_DeployableEntity):
             True if the artifact was only logged as its filesystem path.
 
         """
-        # get key-path from ModelDB
-        Message = _CommonService.GetArtifacts
-        msg = Message(id=self.id, key=key)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(
-                                           self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
+        artifact = self._get_artifact_msg(key)
 
-        response_msg = _utils.json_to_proto(
-            _utils.body_to_json(response), Message.Response)
-        artifact = {
-            artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
-        if artifact is None:
-            raise KeyError("no artifact found with key {}".format(key))
         if artifact.path_only:
             return artifact.path, artifact.path_only
         else:
@@ -1158,125 +1168,6 @@ class ExperimentRun(_DeployableEntity):
         """
         return self.get_dataset(key)
 
-    def log_model_for_deployment(self, model, model_api, requirements, train_features=None, train_targets=None):
-        """
-        Logs a model artifact, a model API, requirements, and a dataset CSV to deploy on Verta.
-
-        .. deprecated:: 0.13.13
-           This function has been superseded by :meth:`log_model` and
-           :meth:`log_requirements`; consider using them instead.
-
-        Parameters
-        ----------
-        model : str or file-like or object
-            Model or some representation thereof.
-                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
-                  and uploaded as an artifact.
-                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
-                - Otherwise, the object will be serialized and uploaded as an artifact.
-        model_api : str or file-like
-            Model API, specifying model deployment and predictions.
-                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
-                  and uploaded as an artifact.
-                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
-        requirements : str or file-like
-            pip requirements file specifying packages necessary to deploy the model.
-                - If str, then it will be interpreted as a filesystem path, its contents read as bytes,
-                  and uploaded as an artifact.
-                - If file-like, then the contents will be read as bytes and uploaded as an artifact.
-        train_features : pd.DataFrame, optional
-            pandas DataFrame representing features of the training data. If provided, `train_targets`
-            must also be provided.
-        train_targets : pd.DataFrame, optional
-            pandas DataFrame representing targets of the training data. If provided, `train_features`
-            must also be provided.
-
-        Warnings
-        --------
-        Due to the way deployment currently works, `train_features` and `train_targets` will be joined
-        together and then converted into a CSV. Retrieving the dataset through the Client will return
-        a file-like bytestream of this CSV that can be passed directly into `pd.read_csv()
-        <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html>`_.
-
-        """
-        if sum(arg is None for arg in (train_features, train_targets)) == 1:
-            raise ValueError(
-                "`train_features` and `train_targets` must be provided together")
-
-        # open files
-        if isinstance(model_api, six.string_types):
-            model_api = open(model_api, 'rb')
-        if isinstance(requirements, six.string_types):
-            requirements = open(requirements, 'rb')
-
-        # prehandle model
-        if self._conf.debug:
-            if not hasattr(model, 'read'):
-                print("[DEBUG] model is type: {}".format(model.__class__))
-        # reset cursor to beginning in case user forgot
-        _artifact_utils.reset_stream(model)
-        # obtain serialized model and info
-        try:
-            model_extension = _artifact_utils.get_file_ext(model)
-        except (TypeError, ValueError):
-            model_extension = None
-        # serialize model
-        _utils.THREAD_LOCALS.active_experiment_run = self
-        try:
-            model, method, model_type = _artifact_utils.serialize_model(model)
-        finally:
-            _utils.THREAD_LOCALS.active_experiment_run = None
-        if model_extension is None:
-            model_extension = _artifact_utils.ext_from_method(method)
-
-        # prehandle model_api
-        # reset cursor to beginning in case user forgot
-        _artifact_utils.reset_stream(model_api)
-        model_api = utils.ModelAPI.from_file(model_api)
-        if 'model_packaging' not in model_api:
-            # add model serialization info to model_api
-            model_api['model_packaging'] = {
-                'python_version': _utils.get_python_version(),
-                'type': model_type,
-                'deserialization': method,
-            }
-        if self._conf.debug:
-            print("[DEBUG] model API is:")
-            pprint.pprint(model_api.to_dict())
-
-        # handle requirements
-        # reset cursor to beginning in case user forgot
-        _artifact_utils.reset_stream(requirements)
-        # get list repr of reqs
-        req_deps = six.ensure_str(requirements.read()).splitlines()
-        # reset cursor to beginning as a courtesy
-        _artifact_utils.reset_stream(requirements)
-        try:
-            self.log_requirements(req_deps)
-        except ValueError as e:
-            if "artifact with key requirements.txt already exists" in e.args[0]:
-                print("requirements.txt already logged; skipping")
-            else:
-                six.raise_from(e, None)
-
-        # prehandle train_features and train_targets
-        if train_features is not None and train_targets is not None:
-            stringstream = six.StringIO()
-            train_df = train_features.join(train_targets)
-            train_df.to_csv(stringstream, index=False)  # write as CSV
-            stringstream.seek(0)
-            train_data = stringstream
-        else:
-            train_data = None
-
-        self._log_artifact(
-            _artifact_utils.MODEL_KEY, model, _CommonCommonService.ArtifactTypeEnum.MODEL, model_extension, method)
-        self._log_artifact(_artifact_utils.MODEL_API_KEY, model_api,
-                           _CommonCommonService.ArtifactTypeEnum.BLOB, 'json')
-        if train_data is not None:
-            self._log_artifact("train_data", train_data,
-                               _CommonCommonService.ArtifactTypeEnum.DATA, 'csv')
-
     def log_tf_saved_model(self, export_dir):
         tempf = _artifact_utils.zip_dir(export_dir)
 
@@ -1352,8 +1243,15 @@ class ExperimentRun(_DeployableEntity):
                                _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
         # upload model
-        self._log_artifact(_artifact_utils.MODEL_KEY, serialized_model,
-                           _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
+        self._log_artifact(
+            self._MODEL_KEY,
+            serialized_model,
+            _CommonCommonService.ArtifactTypeEnum.MODEL,
+            extension,
+            method,
+            model_type,
+            overwrite=overwrite,
+        )
 
     def get_model(self):
         """
@@ -1365,7 +1263,7 @@ class ExperimentRun(_DeployableEntity):
             Model for deployment.
 
         """
-        model, _ = self._get_artifact(_artifact_utils.MODEL_KEY)
+        model, _ = self._get_artifact(self._MODEL_KEY)
         return _artifact_utils.deserialize_model(model, error_ok=True)
 
     def log_image(self, key, image, overwrite=False):
@@ -1461,11 +1359,11 @@ class ExperimentRun(_DeployableEntity):
         if path_only:
             return image
         else:
-            PIL = importer.maybe_dependency("PIL")
-            if PIL is None:  # Pillow not installed
+            Image = importer.maybe_dependency("PIL.Image")
+            if Image is None:  # Pillow not installed
                 return six.BytesIO(image)
             try:
-                return PIL.Image.open(six.BytesIO(image))
+                return Image.open(six.BytesIO(image))
             except IOError:  # can't be handled by Pillow
                 return six.BytesIO(image)
 
@@ -1611,23 +1509,7 @@ class ExperimentRun(_DeployableEntity):
     def download_artifact(self, key, download_to_path):
         download_to_path = os.path.abspath(download_to_path)
 
-        # get key-path from ModelDB
-        # TODO: consolidate the following ~12 lines with ExperimentRun._get_artifact()
-        Message = _CommonService.GetArtifacts
-        msg = Message(id=self.id, key=key)
-        data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       "{}://{}/api/v1/modeldb/experiment-run/getArtifacts".format(
-                                           self._conn.scheme, self._conn.socket),
-                                       self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        response_msg = _utils.json_to_proto(
-            _utils.body_to_json(response), Message.Response)
-        artifact = {
-            artifact.key: artifact for artifact in response_msg.artifacts}.get(key)
-        if artifact is None:
-            raise KeyError("no artifact found with key {}".format(key))
+        artifact = self._get_artifact_msg(key)
 
         # create parent dirs
         pathlib2.Path(download_to_path).parent.mkdir(
@@ -1662,7 +1544,7 @@ class ExperimentRun(_DeployableEntity):
         return download_to_path
 
     def download_model(self, download_to_path):
-        return self.download_artifact(_artifact_utils.MODEL_KEY, download_to_path)
+        return self.download_artifact(self._MODEL_KEY, download_to_path)
 
     def get_artifact_parts(self, key):
         endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
@@ -1788,95 +1670,6 @@ class ExperimentRun(_DeployableEntity):
         """
         self._refresh_cache()
         return _utils.unravel_observations(self._msg.observations)
-
-    def log_requirements(self, requirements, overwrite=False):
-        """
-        Logs a pip requirements file for Verta model deployment.
-
-        .. deprecated:: 0.18.0
-            This method is deprecated and will be removed in an upcoming
-            version; consider using :meth:`log_environment` instead.
-
-        .. versionadded:: 0.13.13
-
-        Parameters
-        ----------
-        requirements : str or list of str
-            PyPI-installable packages necessary to deploy the model.
-                - If str, then it will be interpreted as a filesystem path to a requirements file
-                  for upload.
-                - If list of str, then it will be interpreted as a list of PyPI package names.
-        overwrite : bool, default False
-            Whether to allow overwriting existing requirements.
-
-        Raises
-        ------
-        ValueError
-            If a package's name is invalid for PyPI, or its exact version cannot be determined.
-
-        Examples
-        --------
-        From a file:
-
-        .. code-block:: python
-
-            run.log_requirements("../requirements.txt")
-            # upload complete (requirements.txt)
-            print(run.get_artifact("requirements.txt").read().decode())
-            # cloudpickle==1.2.1
-            # jupyter==1.0.0
-            # matplotlib==3.1.1
-            # pandas==0.25.0
-            # scikit-learn==0.21.3
-            # verta==0.13.13
-
-        From a list of package names:
-
-        .. code-block:: python
-
-            run.log_requirements(['verta', 'cloudpickle', 'scikit-learn'])
-            # upload complete (requirements.txt)
-            print(run.get_artifact("requirements.txt").read().decode())
-            # verta==0.13.13
-            # cloudpickle==1.2.1
-            # scikit-learn==0.21.3
-
-        """
-        warnings.warn(
-            "this method is deprecated and will be removed in an upcoming"
-            " version; consider using `log_environment()` instead",
-            category=FutureWarning,
-        )
-
-        if isinstance(requirements, six.string_types):
-            with open(requirements, 'r') as f:
-                requirements = _pip_requirements_utils.clean_reqs_file_lines(
-                    f.readlines())
-        elif (isinstance(requirements, list)
-              and all(isinstance(req, six.string_types) for req in requirements)):
-            requirements = copy.copy(requirements)
-        else:
-            raise TypeError("`requirements` must be either str or list of str, not {}".format(
-                type(requirements)))
-
-        _pip_requirements_utils.process_requirements(requirements)
-
-        if self._conf.debug:
-            print("[DEBUG] requirements are:")
-            print(requirements)
-        python_env = Python(copy.copy(requirements))
-        requirements = six.BytesIO(six.ensure_binary(
-            '\n'.join(requirements)))  # as file-like
-        self._log_artifact("requirements.txt", requirements,
-                           _CommonCommonService.ArtifactTypeEnum.BLOB, 'txt', overwrite=overwrite)
-        try:
-            self.log_environment(python_env, overwrite=overwrite)
-        except ValueError as ve:
-            six.raise_from(ve, None)
-        except TypeError as te:
-            six.raise_from(te, None)
-        except requests.HTTPError as he:
-            pass  # Note: HTTP errors are silently ignored for compatibility with older services
 
     def log_environment(self, env, overwrite=False):
         """

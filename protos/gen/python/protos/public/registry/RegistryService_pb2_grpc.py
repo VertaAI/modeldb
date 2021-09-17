@@ -109,6 +109,11 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.Response.FromString,
         )
+    self.logDockerMetadataInModelVersion = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/logDockerMetadataInModelVersion',
+        request_serializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.Response.FromString,
+        )
 
 
 class RegistryServiceServicer(object):
@@ -248,6 +253,13 @@ class RegistryServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def logDockerMetadataInModelVersion(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_RegistryServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -345,6 +357,11 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           servicer.logAttributesInModelVersion,
           request_deserializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.FromString,
           response_serializer=registry_dot_RegistryService__pb2.LogAttributesInModelVersion.Response.SerializeToString,
+      ),
+      'logDockerMetadataInModelVersion': grpc.unary_unary_rpc_method_handler(
+          servicer.logDockerMetadataInModelVersion,
+          request_deserializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

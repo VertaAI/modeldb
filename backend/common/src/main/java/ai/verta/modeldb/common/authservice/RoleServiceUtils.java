@@ -51,7 +51,8 @@ public class RoleServiceUtils implements RoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
-      ResourceVisibility resourceVisibility) {
+      ResourceVisibility resourceVisibility,
+      boolean isServiceUser) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.trace("Calling CollaboratorService to create resources");
       var modeldbServiceResourceType =
@@ -84,6 +85,12 @@ public class RoleServiceUtils implements RoleService {
           authServiceChannel
               .getCollaboratorServiceBlockingStub()
               .setResource(setResourcesBuilder.build());
+
+      var blockingStub =
+          isServiceUser
+              ? authServiceChannel.getCollaboratorServiceBlockingStubForServiceUser()
+              : authServiceChannel.getCollaboratorServiceBlockingStub();
+      var setResourcesResponse = blockingStub.setResource(setResourcesBuilder.build());
 
       LOGGER.trace("SetResources message sent.  Response: {}", setResourcesResponse);
       return true;
@@ -250,14 +257,17 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public GeneratedMessageV3 getOrgById(String orgId) {
-    return getOrgById(true, orgId);
+    return getOrgById(true, orgId, false);
   }
 
-  private GeneratedMessageV3 getOrgById(boolean retry, String orgId) {
+  protected GeneratedMessageV3 getOrgById(boolean retry, String orgId, boolean isServiceUser) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetOrganizationById getOrgById = GetOrganizationById.newBuilder().setOrgId(orgId).build();
-      var getOrgByIdResponse =
-          authServiceChannel.getOrganizationServiceBlockingStub().getOrganizationById(getOrgById);
+      var blockingStub =
+          isServiceUser
+              ? authServiceChannel.getOrganizationServiceBlockingStubForServiceUser()
+              : authServiceChannel.getOrganizationServiceBlockingStub();
+      var getOrgByIdResponse = blockingStub.getOrganizationById(getOrgById);
       return getOrgByIdResponse.getOrganization();
     } catch (StatusRuntimeException ex) {
       return (GeneratedMessageV3)
@@ -265,7 +275,7 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
-                  (retry1) -> getOrgById(retry1, orgId),
+                  (retry1) -> getOrgById(retry1, orgId, isServiceUser),
               timeout);
     }
   }
@@ -283,7 +293,8 @@ public class RoleServiceUtils implements RoleService {
   public List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,
       Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      boolean isServiceUser) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       var resourceType =
           ResourceType.newBuilder()
@@ -302,8 +313,11 @@ public class RoleServiceUtils implements RoleService {
       if (workspace != null) {
         builder.setWorkspaceId(workspace.getId());
       }
-      final var response =
-          authServiceChannel.getCollaboratorServiceBlockingStub().getResources(builder.build());
+      var blockingStub =
+          isServiceUser
+              ? authServiceChannel.getCollaboratorServiceBlockingStubForServiceUser()
+              : authServiceChannel.getCollaboratorServiceBlockingStub();
+      final var response = blockingStub.getResources(builder.build());
       return response.getItemList();
     } catch (StatusRuntimeException ex) {
       LOGGER.trace(ex);
@@ -850,7 +864,7 @@ public class RoleServiceUtils implements RoleService {
   private GeneratedMessageV3 getTeamByName(boolean retry, String orgId, String teamName) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       var getTeamByName = GetTeamByName.newBuilder().setTeamName(teamName).setOrgId(orgId).build();
-      GetTeamByName.Response getTeamByNameResponse =
+      var getTeamByNameResponse =
           authServiceChannel.getTeamServiceBlockingStub().getTeamByName(getTeamByName);
       return getTeamByNameResponse.getTeam();
     } catch (StatusRuntimeException ex) {
