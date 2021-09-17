@@ -92,7 +92,7 @@ public class OwnerRoleBindingRepositoryUtils {
           }
           // Fetch the Repository owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
+              authService.getUserInfoFromAuthServer(userIds, null, null, true);
           for (RepositoryEntity repositoryEntity : repositoryEntities) {
             UserInfo userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
             if (userInfoValue != null) {

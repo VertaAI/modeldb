@@ -62,7 +62,7 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
    */
   Workspace getWorkspaceByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
 
-  WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+  WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
 
   boolean checkConnectionsBasedOnPrivileges(

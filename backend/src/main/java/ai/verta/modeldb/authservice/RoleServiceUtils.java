@@ -407,22 +407,19 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
    * workspace.
    */
   @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+  public WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
     WorkspaceDTO workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(workspaceId);
 
     switch (workspaceType) {
       case WorkspaceType.ORGANIZATION_VALUE:
-        Organization organization = (Organization) getOrgById(workspaceId);
+        Organization organization = (Organization) getOrgById(true, workspaceId, true);
         workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
         workspaceDTO.setWorkspaceName(organization.getName());
         return workspaceDTO;
       case WorkspaceType.USER_VALUE:
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
-        if (currentLoginUserInfo == null) {
-          currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-        }
         if (workspaceId.equalsIgnoreCase(
             authService.getVertaIdFromUserInfo(currentLoginUserInfo))) {
           workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));

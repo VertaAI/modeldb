@@ -112,7 +112,7 @@ public class CollaboratorResourceMigration {
             try {
               userInfoMap.putAll(
                   authService.getUserInfoFromAuthServer(
-                      Collections.singleton(project.getOwner()), null, null));
+                      Collections.singleton(project.getOwner()), null, null, true));
             } catch (StatusRuntimeException ex) {
               if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
                 LOGGER.warn("Failed to get user info (skipping) : " + ex.toString());
@@ -123,7 +123,7 @@ public class CollaboratorResourceMigration {
           }
           try {
             workspaceDTO =
-                roleService.getWorkspaceDTOByWorkspaceId(
+                roleService.getWorkspaceDTOByWorkspaceIdForServiceUser(
                     userInfoMap.get(project.getOwner()),
                     project.getWorkspace(),
                     project.getWorkspace_type());
@@ -173,7 +173,8 @@ public class CollaboratorResourceMigration {
               roleService.getResourceItems(
                   null,
                   Collections.singleton(project.getId()),
-                  ModelDBServiceResourceTypes.PROJECT);
+                  ModelDBServiceResourceTypes.PROJECT,
+                  true);
           if (!resources.isEmpty()) {
             GetResourcesResponseItem resourceDetails = resources.get(0);
             roleService.createWorkspacePermissions(
@@ -259,7 +260,7 @@ public class CollaboratorResourceMigration {
             try {
               userInfoMap.putAll(
                   authService.getUserInfoFromAuthServer(
-                      Collections.singleton(repository.getOwner()), null, null));
+                      Collections.singleton(repository.getOwner()), null, null, true));
             } catch (StatusRuntimeException ex) {
               if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
                 LOGGER.warn("Failed to get user info (skipping) : " + ex.toString());
@@ -270,7 +271,7 @@ public class CollaboratorResourceMigration {
           }
           try {
             workspaceDTO =
-                roleService.getWorkspaceDTOByWorkspaceId(
+                roleService.getWorkspaceDTOByWorkspaceIdForServiceUser(
                     userInfoMap.get(repository.getOwner()),
                     repository.getWorkspace_id(),
                     repository.getWorkspace_type());
@@ -325,10 +326,10 @@ public class CollaboratorResourceMigration {
           }
           List<GetResourcesResponseItem> responseRepositoryItems =
               roleService.getResourceItems(
-                  null, newVisibilityRepositoryIds, ModelDBServiceResourceTypes.REPOSITORY);
+                  null, newVisibilityRepositoryIds, ModelDBServiceResourceTypes.REPOSITORY, true);
           List<GetResourcesResponseItem> responseDatasetItems =
               roleService.getResourceItems(
-                  null, newVisibilityDatasetIds, ModelDBServiceResourceTypes.DATASET);
+                  null, newVisibilityDatasetIds, ModelDBServiceResourceTypes.DATASET, true);
           Set<GetResourcesResponseItem> responseItems = new HashSet<>(responseRepositoryItems);
           responseItems.addAll(responseDatasetItems);
           Map<String, GetResourcesResponseItem> responseItemMap =

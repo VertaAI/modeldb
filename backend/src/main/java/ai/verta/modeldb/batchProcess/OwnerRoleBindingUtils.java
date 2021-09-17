@@ -105,7 +105,7 @@ public class OwnerRoleBindingUtils {
 
           // Fetch the experiment owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
+              authService.getUserInfoFromAuthServer(userIds, null, null, true);
           for (ExperimentEntity experimentEntity : experimentEntities) {
             UserInfo userInfoValue = userInfoMap.get(experimentEntity.getOwner());
             if (userInfoValue != null) {
@@ -181,7 +181,7 @@ public class OwnerRoleBindingUtils {
           continue;
         }
         Map<String, UserInfo> userInfoMap =
-            authService.getUserInfoFromAuthServer(userIds, null, null);
+            authService.getUserInfoFromAuthServer(userIds, null, null, true);
         for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
           UserInfo userInfoValue = userInfoMap.get(experimentRunEntity.getOwner());
           if (userInfoValue != null) {
@@ -256,7 +256,7 @@ public class OwnerRoleBindingUtils {
           }
           // Fetch the DatasetVersion owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
+              authService.getUserInfoFromAuthServer(userIds, null, null, true);
           for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
             UserInfo userInfoValue = userInfoMap.get(datasetVersionEntity.getOwner());
             if (userInfoValue != null) {
@@ -334,7 +334,7 @@ public class OwnerRoleBindingUtils {
           }
           // Fetch the Repository owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
+              authService.getUserInfoFromAuthServer(userIds, null, null, true);
           for (RepositoryEntity repositoryEntity : repositoryEntities) {
             UserInfo userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
             if (userInfoValue != null) {
