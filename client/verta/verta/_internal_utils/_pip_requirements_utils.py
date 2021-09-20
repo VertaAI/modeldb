@@ -277,49 +277,72 @@ def pin_verta_and_cloudpickle(requirements):
         conflicts with the version in the current environment.
 
     """
+    # replace VCS-installed verta (`pip install -e verta`) with "verta"
     for i, req in enumerate(requirements):
-        if req.startswith("-e git+git@github.com:VertaAI/modeldb.git"):
-            # `pip install -e modeldb/client/verta` can make `pip freeze` return
-            # this requirement item which is unusable by `pip install`
-            # https://github.com/pypa/pip/issues/7554
-            # https://github.com/pypa/pip/issues/9625
-            # https://github.com/pypa/pip/pull/9436
-            # https://github.com/pypa/pip/pull/9822
+        if "VertaAI/modeldb.git" in req and "#egg=verta" in req:
+            # git+git is not installable
+            #     https://github.com/pypa/pip/issues/7554
+            #     https://github.com/pypa/pip/issues/9625
+            #     https://github.com/pypa/pip/pull/9436
+            #     https://github.com/pypa/pip/pull/9822
+            # git+ssh is not installable without ssh credentials
+            # TODO: maybe allow git+https because it's usable
             requirements[i] = __about__.__title__
-            break
+            continue
+
+    # inject verta
+    inject_requirement(requirements, __about__.__title__, __about__.__version__)
+
+    # inject cloudpickle
+    inject_requirement(requirements, cloudpickle.__name__, cloudpickle.__version__)
+
+
+def inject_requirement(requirements, library, version):
+    """Injects `library` pinned to `version` into `requirements` in-place.
+
+    If `library` is already in `requirements` and has a version pin, this
+    function asserts that the pinned version matches the the current
+    environment's version.
+
+    If `library` is already in `requirements` without a version pin, it will
+    be pinned to the current environment's version.
+
+    Parameters
+    ----------
+    requirements : list of str
+        pip requirements.
+    library : str
+        Python library, e.g. "verta".
+    version : str
+        Desired version number, e.g. "0.20.0".
+
+    """
+    pinned_library_req = "{}=={}".format(library, version)
 
     # add if not present
-    for library in [
-        __about__.__title__,
-        cloudpickle.__name__,
-    ]:
-        if not any(req.startswith(library) for req in requirements):
-            requirements.append(library)
+    if not any(req.startswith(library) for req in requirements):
+        requirements.append(pinned_library_req)
+        return
 
     # pin version
-    for library, our_ver in [
-        (__about__.__title__, __about__.__version__),
-        (cloudpickle.__name__, cloudpickle.__version__),
-    ]:
-        pinned_library_req = "{}=={}".format(library, our_ver)
-        for i, req in enumerate(requirements):
-            if req.startswith(library):
-                if "==" in req:  # version pin: check version
-                    their_ver = req.split('==')[-1]
-                    if our_ver != their_ver:  # versions conflict: raise exception
-                        raise ValueError(
-                            "Client is running with {} v{}, but the provided requirements specify v{};"
-                            " these must match".format(library, our_ver, their_ver)
-                        )
-                    else:  # versions match, so proceed
-                        continue
-                # TODO: check other operators (>=, >, ...)
-                else:  # no version pin: set
-                    requirements[i] = preserve_req_suffixes(
-                        req,
-                        pinned_library_req,
+    for i, req in enumerate(requirements):
+        if req.startswith(library):
+            if "==" in req:  # version pin: check version
+                their_ver = req.split('==')[-1]
+                if version != their_ver:  # versions conflict: raise exception
+                    raise ValueError(
+                        "Client is running with {} v{}, but the provided requirements specify v{};"
+                        " these must match".format(library, version, their_ver)
                     )
+                else:  # versions match: no action needed
                     continue
+            # TODO: check other operators (>=, >, ...)
+            else:  # no version pin: set
+                requirements[i] = preserve_req_suffixes(
+                    req,
+                    pinned_library_req,
+                )
+                continue
 
 
 def preserve_req_suffixes(requirement, pinned_library_req):
