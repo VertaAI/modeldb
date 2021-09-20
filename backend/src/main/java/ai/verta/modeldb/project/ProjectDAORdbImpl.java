@@ -246,7 +246,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
           Optional.empty(),
           ModelDBServiceResourceTypes.PROJECT,
           project.getCustomPermission(),
-          resourceVisibility);
+          resourceVisibility,
+          false);
       LOGGER.debug("Project role bindings created successfully");
       transaction = session.beginTransaction();
       projectEntity.setCreated(true);
@@ -882,7 +883,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                 !queryParameters.getProjectIdsList().isEmpty()
                     ? new HashSet<>(queryParameters.getProjectIdsList())
                     : Collections.emptySet(),
-                ModelDBServiceResourceTypes.PROJECT);
+                ModelDBServiceResourceTypes.PROJECT,
+                false);
         accessibleProjectIds =
             accessibleAllWorkspaceItems.stream()
                 .peek(
@@ -912,7 +914,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                   !queryParameters.getProjectIdsList().isEmpty()
                       ? new HashSet<>(queryParameters.getProjectIdsList())
                       : Collections.emptySet(),
-                  ModelDBServiceResourceTypes.PROJECT);
+                  ModelDBServiceResourceTypes.PROJECT,
+                  false);
           accessibleProjectIds =
               accessibleAllWorkspaceItems.stream()
                   .peek(
@@ -1173,7 +1176,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
         LOGGER.debug("Workspace and current login user match");
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             mdbRoleService.getResourceItems(
-                null, Collections.emptySet(), ModelDBServiceResourceTypes.PROJECT);
+                null, Collections.emptySet(), ModelDBServiceResourceTypes.PROJECT, false);
         accessibleResourceIds.addAll(
             accessibleAllWorkspaceItems.stream()
                 .map(GetResourcesResponseItem::getResourceId)

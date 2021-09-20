@@ -202,4 +202,21 @@ public class CommonUtils {
     }
     return rootCause;
   }
+
+  public static void printStackTrace(Logger logger, Exception e) {
+    StackTraceElement[] stack = e.getStackTrace();
+    logger.error("Stacktrace with {} elements for {}", stack.length, e);
+    int n = 0;
+    boolean isLongStack = stack.length > STACKTRACE_LENGTH;
+    if (isLongStack) {
+      for (; n < STACKTRACE_LENGTH + 1; ++n) {
+        logger.warn("{}: {}", n, stack[n].toString());
+      }
+    }
+    for (; n < stack.length; ++n) {
+      if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
+        logger.warn("{}: {}", n, stack[n].toString());
+      }
+    }
+  }
 }

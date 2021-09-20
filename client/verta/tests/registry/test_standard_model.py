@@ -21,6 +21,7 @@ from ..strategies import json_strategy
 verta_models = standard_models.verta_models()
 decorated_verta_models = standard_models.decorated_verta_models()
 incomplete_verta_models = standard_models.incomplete_verta_models()
+bad_init_verta_models = standard_models.bad_init_verta_models()
 keras_models = standard_models.keras_models()
 unsupported_keras_models = standard_models.unsupported_keras_models()
 sklearn_models = standard_models.sklearn_models()
@@ -106,6 +107,17 @@ class TestModelValidator:
             r"^model must finish implementing the following methods of VertaModelBase: "
         )
         msg_match += re.escape(str(list(sorted(model.__abstractmethods__))))
+        with pytest.raises(TypeError, match=msg_match):
+            model_validator.must_verta(model)
+
+    @pytest.mark.parametrize(
+        "model",
+        bad_init_verta_models,
+    )
+    def test_bad_init_verta(self, model):
+        msg_match = "^" + re.escape(
+            "model __init__() parameters must be named ('self', 'artifacts'), not "
+        )
         with pytest.raises(TypeError, match=msg_match):
             model_validator.must_verta(model)
 
@@ -242,7 +254,7 @@ class TestStandardModels:
 
     @pytest.mark.parametrize(
         "model",
-        incomplete_verta_models,
+        incomplete_verta_models + bad_init_verta_models,
     )
     def test_incomplete_verta(self, registered_model, model):
         with pytest.raises(TypeError):

@@ -1323,7 +1323,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               !queryParameters.getProjectId().isEmpty()
                   ? new HashSet<>(Collections.singletonList(queryParameters.getProjectId()))
                   : Collections.emptySet(),
-              ModelDBServiceResourceTypes.PROJECT);
+              ModelDBServiceResourceTypes.PROJECT,
+              false);
       Set<String> accessibleProjectIds =
           accessibleProjectResourceByWorkspace.stream()
               .map(GetResourcesResponseItem::getResourceId)

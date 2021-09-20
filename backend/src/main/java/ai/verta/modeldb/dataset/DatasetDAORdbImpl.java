@@ -133,7 +133,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           Optional.empty(),
           ModelDBServiceResourceTypes.DATASET,
           dataset.getCustomPermission(),
-          resourceVisibility);
+          resourceVisibility,
+          false);
       LOGGER.debug("Dataset role bindings created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
       return datasetEntity.getProtoObject(mdbRoleService);
@@ -780,7 +781,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         LOGGER.debug("Workspace and current login user match");
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             mdbRoleService.getResourceItems(
-                null, Collections.emptySet(), ModelDBServiceResourceTypes.DATASET);
+                null, Collections.emptySet(), ModelDBServiceResourceTypes.DATASET, false);
         accessibleResourceIds.addAll(
             accessibleAllWorkspaceItems.stream()
                 .map(GetResourcesResponseItem::getResourceId)
