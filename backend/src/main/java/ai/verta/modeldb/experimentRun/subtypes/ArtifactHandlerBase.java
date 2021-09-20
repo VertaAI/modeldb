@@ -131,7 +131,7 @@ public class ArtifactHandlerBase {
             handle -> {
               var queryStr =
                   String.format(
-                      "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, %s as entity_id from %s where entity_name=:entity_name and field_type=:field_type and %s in (<entity_ids>)",
+                      "select ar_key as k, ar_path as p, artifact_type as at, path_only as po, linked_artifact_id as lai, filename_extension as fe, serialization as ser, artifact_subtype as ast, upload_completed as uc, %s as entity_id from %s where entity_name=:entity_name and field_type=:field_type and %s in (<entity_ids>)",
                       entityIdReferenceColumn, getTableName(), entityIdReferenceColumn);
 
               var query =
