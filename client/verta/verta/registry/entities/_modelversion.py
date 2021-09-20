@@ -280,6 +280,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def log_docker(
         self,
         docker_image,
+        model_api=None,
         overwrite=False,
     ):
         """Log Docker image information for deployment.
@@ -294,6 +295,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         ----------
         docker_image : :class:`~verta.registry.DockerImage`
             Docker image information.
+        model_api : :class:`~verta.utils.ModelAPI`, optional
+            Model API specifying the model's expected input and output
         overwrite : bool, default False
             Whether to allow overwriting existing Docker image information.
 
@@ -322,7 +325,14 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "`docker_image` must be type verta.registry.DockerImage,"
                 " not {}".format(type(docker_image))
             )
+        if model_api and not isinstance(model_api, utils.ModelAPI):
+            raise ValueError(
+                "`model_api` must be `verta.utils.ModelAPI`, not {}".format(
+                    type(model_api)
+                )
+            )
 
+        # check for conflict
         if not overwrite:
             self._refresh_cache()
             if self._msg.docker_metadata.request_port:
@@ -336,6 +346,16 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                     " consider setting overwrite=True"
                 )
 
+        # log model API (first, in case there's a conflict)
+        if model_api:
+            self.log_artifact(
+                _artifact_utils.MODEL_API_KEY,
+                model_api,
+                overwrite,
+                "json",
+            )
+
+        # log docker
         if overwrite:
             self._fetch_with_no_cache()
             docker_image._merge_into_model_ver_proto(self._msg)
