@@ -17,8 +17,6 @@ import javax.persistence.Table;
 @Table(name = "python_environment_requirements_blob")
 public class PythonEnvironmentRequirementBlobEntity implements Serializable {
 
-  public PythonEnvironmentRequirementBlobEntity() {}
-
   public PythonEnvironmentRequirementBlobEntity(
       PythonRequirementEnvironmentBlob pythonRequirementEnvironmentBlob,
       PythonEnvironmentBlobEntity pythonEnvironmentBlobEntity,

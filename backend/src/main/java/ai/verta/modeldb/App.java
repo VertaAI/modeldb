@@ -289,6 +289,8 @@ public class App implements ApplicationContextAware {
       System.exit(1);
       // Restore interrupted state...
       Thread.currentThread().interrupt();
+      // Restore interrupted state...
+      Thread.currentThread().interrupt();
     }
   }
 

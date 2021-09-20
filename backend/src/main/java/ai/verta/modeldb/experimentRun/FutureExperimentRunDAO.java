@@ -45,6 +45,7 @@ import ai.verta.modeldb.LogMetrics;
 import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.UpdateExperimentRunDescription;
 import ai.verta.modeldb.VersioningEntry;
@@ -123,6 +124,7 @@ import org.apache.logging.log4j.Logger;
 
 public class FutureExperimentRunDAO {
   private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
+  private static final String EXPERIMENT_RUN_ENTITY_NAME = "ExperimentRunEntity";
 
   private final Executor executor;
   private final FutureJdbi jdbi;
@@ -166,31 +168,31 @@ public class FutureExperimentRunDAO {
     this.config = config;
     this.trialConfig = trialConfig;
 
-    attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
+    attributeHandler = new AttributeHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     hyperparametersHandler =
-        new KeyValueHandler(executor, jdbi, "hyperparameters", "ExperimentRunEntity");
-    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", "ExperimentRunEntity");
+        new KeyValueHandler(executor, jdbi, "hyperparameters", EXPERIMENT_RUN_ENTITY_NAME);
+    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", EXPERIMENT_RUN_ENTITY_NAME);
     observationHandler = new ObservationHandler(executor, jdbi);
-    tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
+    tagsHandler = new TagsHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     codeVersionHandler = new CodeVersionHandler(executor, jdbi);
-    datasetHandler = new DatasetHandler(executor, jdbi, "ExperimentRunEntity");
+    datasetHandler = new DatasetHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     artifactHandler =
         new ArtifactHandler(
             executor,
             jdbi,
-            "ExperimentRunEntity",
+            EXPERIMENT_RUN_ENTITY_NAME,
             codeVersionHandler,
             datasetHandler,
             artifactStoreDAO,
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
-    featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
-    environmentHandler = new EnvironmentHandler(executor, jdbi, "ExperimentRunEntity");
+    featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
+    environmentHandler = new EnvironmentHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     privilegedDatasetsHandler = new FilterPrivilegedDatasetsHandler(executor, jdbi);
     versionInputHandler =
         new VersionInputHandler(
-            executor, jdbi, "ExperimentRunEntity", repositoryDAO, commitDAO, blobDAO);
+            executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME, repositoryDAO, commitDAO, blobDAO);
     privilegedVersionedInputsHandler = new FilterPrivilegedVersionedInputsHandler(executor, jdbi);
     createExperimentRunHandler =
         new CreateExperimentRunHandler(
@@ -210,7 +212,7 @@ public class FutureExperimentRunDAO {
             versionInputHandler);
     hyperparametersFromConfigHandler =
         new HyperparametersFromConfigHandler(
-            executor, jdbi, "hyperparameters", "ExperimentRunEntity");
+            executor, jdbi, "hyperparameters", EXPERIMENT_RUN_ENTITY_NAME);
     codeVersionFromBlobHandler =
         new CodeVersionFromBlobHandler(executor, jdbi, config.populateConnectionsBasedOnPrivileges);
   }
@@ -517,7 +519,7 @@ public class FutureExperimentRunDAO {
                   .thenAccept(
                       allowed -> {
                         if (!allowed) {
-                          throw new PermissionDeniedException("Permission denied");
+                          throw new PermissionDeniedException(ModelDBMessages.PERMISSION_DENIED);
                         }
                       },
                       executor);
@@ -527,7 +529,7 @@ public class FutureExperimentRunDAO {
                   .thenAccept(
                       allowed -> {
                         if (!allowed) {
-                          throw new PermissionDeniedException("Permission denied");
+                          throw new PermissionDeniedException(ModelDBMessages.PERMISSION_DENIED);
                         }
                       },
                       executor);
@@ -1484,7 +1486,7 @@ public class FutureExperimentRunDAO {
         .thenAccept(
             allowed -> {
               if (!allowed) {
-                throw new PermissionDeniedException("Permission denied");
+                throw new PermissionDeniedException(ModelDBMessages.PERMISSION_DENIED);
               }
             },
             executor)

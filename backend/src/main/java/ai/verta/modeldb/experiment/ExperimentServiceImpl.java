@@ -583,7 +583,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
         throw new PermissionDeniedException(
-            "Access is denied. Experiment not found for given id : " + request.getId());
+            ModelDBMessages.ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID + request.getId());
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
@@ -665,7 +665,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
         throw new PermissionDeniedException(
-            "Access is denied. Experiment not found for given id : " + request.getId());
+            ModelDBMessages.ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID + request.getId());
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
@@ -740,7 +740,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
         throw new PermissionDeniedException(
-            "Access is denied. Experiment not found for given id : " + request.getId());
+            ModelDBMessages.ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID + request.getId());
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
 
@@ -963,7 +963,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
         throw new PermissionDeniedException(
-            "Access is denied. Experiment not found for given id : " + request.getId());
+            ModelDBMessages.ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID + request.getId());
       }
 
       String projectId = projectIdFromExperimentMap.get(request.getId());
@@ -1000,7 +1000,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
         throw new PermissionDeniedException(
-            "Access is denied. Experiment not found for given id : " + request.getId());
+            ModelDBMessages.ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID + request.getId());
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not

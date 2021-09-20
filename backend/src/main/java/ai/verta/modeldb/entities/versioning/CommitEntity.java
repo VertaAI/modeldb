@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.modeldb.versioning.Commit;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,7 +21,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "\"commit\"")
-public class CommitEntity {
+public class CommitEntity implements Serializable {
   public CommitEntity() {}
 
   public CommitEntity(

@@ -5,6 +5,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
+import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,7 +21,7 @@ import org.apache.logging.log4j.Logger;
 
 @Entity
 @Table(name = "keyvalue")
-public class KeyValueEntity {
+public class KeyValueEntity implements Serializable {
 
   private static Logger LOGGER = LogManager.getLogger(KeyValueEntity.class);
 

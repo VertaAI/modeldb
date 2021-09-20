@@ -17,6 +17,7 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
 import com.google.api.client.util.Objects;
+import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;
 import org.hibernate.annotations.LazyCollection;
@@ -24,7 +25,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "repository")
-public class RepositoryEntity {
+public class RepositoryEntity implements Serializable {
 
   public RepositoryEntity() {}
 
@@ -270,6 +271,9 @@ public class RepositoryEntity {
       case USER_ID:
         builder.setWorkspaceId(workspace.getUserId());
         builder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+        break;
+      default:
+        // Do nothing
         break;
     }
 

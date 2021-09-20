@@ -8,6 +8,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
+import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -23,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 @Entity
 @Table(name = "attribute")
-public class AttributeEntity {
+public class AttributeEntity implements Serializable {
 
   private static Logger LOGGER = LogManager.getLogger(AttributeEntity.class);
 

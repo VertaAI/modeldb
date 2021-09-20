@@ -220,7 +220,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       UpdateExperimentRunName request,
       StreamObserver<UpdateExperimentRunName.Response> responseObserver) {
     responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+        Status.UNIMPLEMENTED.withDescription(ModelDBMessages.UNIMPLEMENTED).asRuntimeException());
   }
 
   @Override
@@ -893,7 +893,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   public void sortExperimentRuns(
       SortExperimentRuns request, StreamObserver<SortExperimentRuns.Response> responseObserver) {
     responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+        Status.UNIMPLEMENTED.withDescription(ModelDBMessages.UNIMPLEMENTED).asRuntimeException());
   }
 
   @Override
@@ -901,19 +901,19 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       TopExperimentRunsSelector request,
       StreamObserver<TopExperimentRunsSelector.Response> responseObserver) {
     responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+        Status.UNIMPLEMENTED.withDescription(ModelDBMessages.UNIMPLEMENTED).asRuntimeException());
   }
 
   @Override
   public void logJobId(LogJobId request, StreamObserver<LogJobId.Response> responseObserver) {
     responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+        Status.UNIMPLEMENTED.withDescription(ModelDBMessages.UNIMPLEMENTED).asRuntimeException());
   }
 
   @Override
   public void getJobId(GetJobId request, StreamObserver<GetJobId.Response> responseObserver) {
     responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+        Status.UNIMPLEMENTED.withDescription(ModelDBMessages.UNIMPLEMENTED).asRuntimeException());
   }
 
   @Override
@@ -921,7 +921,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       GetChildrenExperimentRuns request,
       StreamObserver<GetChildrenExperimentRuns.Response> responseObserver) {
     responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+        Status.UNIMPLEMENTED.withDescription(ModelDBMessages.UNIMPLEMENTED).asRuntimeException());
   }
 
   @Override
@@ -929,7 +929,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       SetParentExperimentRunId request,
       StreamObserver<SetParentExperimentRunId.Response> responseObserver) {
     responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+        Status.UNIMPLEMENTED.withDescription(ModelDBMessages.UNIMPLEMENTED).asRuntimeException());
   }
 
   @Override
@@ -1002,7 +1002,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       ListCommitExperimentRunsRequest request,
       StreamObserver<ListCommitExperimentRunsRequest.Response> responseObserver) {
     responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+        Status.UNIMPLEMENTED.withDescription(ModelDBMessages.UNIMPLEMENTED).asRuntimeException());
   }
 
   @Override
@@ -1010,7 +1010,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       ListBlobExperimentRunsRequest request,
       StreamObserver<ListBlobExperimentRunsRequest.Response> responseObserver) {
     responseObserver.onError(
-        Status.UNIMPLEMENTED.withDescription("Unimplemented").asRuntimeException());
+        Status.UNIMPLEMENTED.withDescription(ModelDBMessages.UNIMPLEMENTED).asRuntimeException());
   }
 
   @Override

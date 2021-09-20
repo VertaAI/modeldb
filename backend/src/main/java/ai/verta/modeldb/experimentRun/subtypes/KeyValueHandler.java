@@ -21,6 +21,12 @@ import org.jdbi.v3.core.Handle;
 
 public class KeyValueHandler {
   private static Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
+  private static final String ENTITY_ID_PARAM_QUERY = "entity_id";
+  private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
+  private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
+  private static final String KEY_QUERY_PARAM = "key";
+  private static final String VALUE_QUERY_PARAM = "value";
+  private static final String TYPE_QUERY_PARAM = "type";
 
   private final Executor executor;
   private final FutureJdbi jdbi;
@@ -55,11 +61,9 @@ public class KeyValueHandler {
     return jdbi.withHandle(
         handle -> {
           var queryString =
-              "select kv_key as k, kv_value as v, value_type as t from "
-                  + getTableName()
-                  + " where entity_name=:entity_name and field_type=:field_type and "
-                  + entityIdReferenceColumn
-                  + "=:entity_id";
+              String.format(
+                  "select kv_key as k, kv_value as v, value_type as t from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id",
+                  getTableName(), entityIdReferenceColumn);
 
           if (!attrKeys.isEmpty() && !getAll) {
             queryString += " AND kv_key IN (<keys>)";
@@ -69,9 +73,9 @@ public class KeyValueHandler {
             query.bindList("keys", attrKeys);
           }
           return query
-              .bind("entity_id", entityId)
-              .bind("field_type", fieldType)
-              .bind("entity_name", entityName)
+              .bind(ENTITY_ID_PARAM_QUERY, entityId)
+              .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+              .bind(ENTITY_NAME_QUERY_PARAM, entityName)
               .map(
                   (rs, ctx) ->
                       KeyValue.newBuilder()
@@ -91,20 +95,16 @@ public class KeyValueHandler {
             handle ->
                 handle
                     .createQuery(
-                        "select kv_key as k, kv_value as v, value_type as t, "
-                            + entityIdReferenceColumn
-                            + " as entity_id from "
-                            + getTableName()
-                            + " where entity_name=:entity_name and field_type=:field_type and "
-                            + entityIdReferenceColumn
-                            + " in (<entity_ids>)")
+                        String.format(
+                            "select kv_key as k, kv_value as v, value_type as t, %s as entity_id from %s where entity_name=:entity_name and field_type=:field_type and %s in (<entity_ids>)",
+                            entityIdReferenceColumn, getTableName(), entityIdReferenceColumn))
                     .bindList("entity_ids", entityIds)
-                    .bind("field_type", fieldType)
-                    .bind("entity_name", entityName)
+                    .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                    .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                     .map(
                         (rs, ctx) ->
                             new AbstractMap.SimpleEntry<>(
-                                rs.getString("entity_id"),
+                                rs.getString(ENTITY_ID_PARAM_QUERY),
                                 KeyValue.newBuilder()
                                     .setKey(rs.getString("k"))
                                     .setValue(
@@ -142,15 +142,13 @@ public class KeyValueHandler {
                       for (final var kv : kvs) {
                         handle
                             .createQuery(
-                                "select id from "
-                                    + getTableName()
-                                    + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and "
-                                    + entityIdReferenceColumn
-                                    + "=:entity_id")
-                            .bind("key", kv.getKey())
-                            .bind("field_type", fieldType)
-                            .bind("entity_name", entityName)
-                            .bind("entity_id", entityId)
+                                String.format(
+                                    "select id from %s where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
+                                    getTableName(), entityIdReferenceColumn))
+                            .bind(KEY_QUERY_PARAM, kv.getKey())
+                            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                            .bind(ENTITY_ID_PARAM_QUERY, entityId)
                             .mapTo(Long.class)
                             .findOne()
                             .ifPresent(
@@ -183,12 +181,12 @@ public class KeyValueHandler {
             + "values (:entity_name, :field_type, :key, :value, :type, :entity_id)";
     try (var queryHandler = handle.createUpdate(queryString)) {
       queryHandler
-          .bind("key", kv.getKey())
-          .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
-          .bind("type", kv.getValueTypeValue())
-          .bind("entity_id", entityId)
-          .bind("field_type", fieldType)
-          .bind("entity_name", entityName)
+          .bind(KEY_QUERY_PARAM, kv.getKey())
+          .bind(VALUE_QUERY_PARAM, ModelDBUtils.getStringFromProtoObject(kv.getValue()))
+          .bind(TYPE_QUERY_PARAM, kv.getValueTypeValue())
+          .bind(ENTITY_ID_PARAM_QUERY, entityId)
+          .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
           .execute();
     }
   }
@@ -197,11 +195,9 @@ public class KeyValueHandler {
     return jdbi.useHandle(
         handle -> {
           var sql =
-              "delete from "
-                  + getTableName()
-                  + " where entity_name=:entity_name and field_type=:field_type and "
-                  + entityIdReferenceColumn
-                  + "=:entity_id";
+              String.format(
+                  "delete from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id",
+                  getTableName(), entityIdReferenceColumn);
 
           if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
             sql += " and kv_key in (<keys>)";
@@ -210,9 +206,9 @@ public class KeyValueHandler {
           var query =
               handle
                   .createUpdate(sql)
-                  .bind("entity_id", entityId)
-                  .bind("field_type", fieldType)
-                  .bind("entity_name", entityName);
+                  .bind(ENTITY_ID_PARAM_QUERY, entityId)
+                  .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                  .bind(ENTITY_NAME_QUERY_PARAM, entityName);
 
           if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
             query = query.bindList("keys", maybeKeys.get());
@@ -249,18 +245,18 @@ public class KeyValueHandler {
                           if (exists) {
                             handle
                                 .createUpdate(
-                                    "Update "
-                                        + getTableName()
-                                        + " SET kv_key=:key, kv_value=:value, value_type=:type "
-                                        + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and "
-                                        + entityIdReferenceColumn
-                                        + "=:entity_id")
-                                .bind("key", kv.getKey())
-                                .bind("value", ModelDBUtils.getStringFromProtoObject(kv.getValue()))
-                                .bind("type", kv.getValueTypeValue())
-                                .bind("entity_id", entityId)
-                                .bind("field_type", fieldType)
-                                .bind("entity_name", entityName)
+                                    String.format(
+                                        "Update %s SET kv_key=:key, kv_value=:value, value_type=:type "
+                                            + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
+                                        getTableName(), entityIdReferenceColumn))
+                                .bind(KEY_QUERY_PARAM, kv.getKey())
+                                .bind(
+                                    VALUE_QUERY_PARAM,
+                                    ModelDBUtils.getStringFromProtoObject(kv.getValue()))
+                                .bind(TYPE_QUERY_PARAM, kv.getValueTypeValue())
+                                .bind(ENTITY_ID_PARAM_QUERY, entityId)
+                                .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                                .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                                 .execute();
                           } else {
                             insertKeyValue(entityId, handle, kv);
@@ -276,15 +272,13 @@ public class KeyValueHandler {
             handle ->
                 handle
                     .createQuery(
-                        "select id from "
-                            + getTableName()
-                            + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and "
-                            + entityIdReferenceColumn
-                            + "=:entity_id")
-                    .bind("key", kv.getKey())
-                    .bind("field_type", fieldType)
-                    .bind("entity_name", entityName)
-                    .bind("entity_id", entityId)
+                        String.format(
+                            "select id from %s where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
+                            getTableName(), entityIdReferenceColumn))
+                    .bind(KEY_QUERY_PARAM, kv.getKey())
+                    .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                    .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                    .bind(ENTITY_ID_PARAM_QUERY, entityId)
                     .mapTo(Long.class)
                     .findOne())
         .thenApply(count -> (count.isPresent() && count.get() > 0), executor);

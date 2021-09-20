@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,7 +17,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "artifact")
-public class ArtifactEntity {
+public class ArtifactEntity implements Serializable {
 
   public ArtifactEntity() {}
 
