@@ -210,7 +210,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+  public WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
     var workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(workspaceId);
@@ -248,7 +248,8 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
       Optional<Long> ownerId,
       ModelDBServiceResourceTypes resourceType,
       CollaboratorPermissions permissions,
-      ResourceVisibility resourceVisibility) {
+      ResourceVisibility resourceVisibility,
+      boolean isServiceUser) {
     return false;
   }
 
@@ -262,7 +263,8 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   public List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,
       Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      boolean isServiceUser) {
     return Collections.emptyList();
   }
 

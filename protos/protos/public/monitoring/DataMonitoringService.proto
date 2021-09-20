@@ -160,6 +160,7 @@ message MonitoredEntity {
   // The next field only makes sense when visibility == ORG_CUSTOM
   // They will be empty otherwise
   uac.CollaboratorPermissions custom_permission = 11;
+  uint64 version_number = 12;
 }
 
 message CreateMonitoredEntityRequest {
