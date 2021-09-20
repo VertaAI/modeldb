@@ -19,6 +19,12 @@ from verta._internal_utils import _pip_requirements_utils
 
 
 @st.composite
+def libraries(draw):
+    alphabet = string.ascii_letters + string.digits + "-_"
+    return draw(st.text(alphabet=alphabet, min_size=1))
+
+
+@st.composite
 def versions(draw):
     numbers = st.integers(min_value=0, max_value=(2 ** 31) - 1)
 
@@ -127,6 +133,27 @@ class TestPipRequirementsUtils:
 
 
 class TestPinVertaAndCloudpickle:
+    @hypothesis.given(
+        library=libraries(),
+        version=versions(),
+        other_library=libraries(),
+    )
+    def test_inject_requirement(self, library, version, other_library):
+        hypothesis.assume(library != other_library)
+        pinned_library_req = "{}=={}".format(library, version)
+
+        requirements = []
+        _pip_requirements_utils.inject_requirement(requirements, library, version)
+        assert requirements == [pinned_library_req]
+
+        requirements = [library]
+        _pip_requirements_utils.inject_requirement(requirements, library, version)
+        assert requirements == [pinned_library_req]
+
+        requirements = [other_library]
+        _pip_requirements_utils.inject_requirement(requirements, library, version)
+        assert requirements == [other_library, pinned_library_req]
+
     def test_preserve_req_suffixes(self):
         # NOTE: the reqs here aren't technically valid themselves due to duplicates
         verta_reqs_suffixes = [
