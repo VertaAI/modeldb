@@ -74,6 +74,9 @@ public class BlobDAORdbImpl implements BlobDAO {
       ModelDBHibernateUtil.getInstance();
 
   public static final String TREE = "TREE";
+  private static final String FOLDER_HASH_QUERY_PARAM = "folderHash";
+  private static final String INTERNAL_PATH_QUERY_PARAM = "internalPath";
+  private static final String COMPUTE_SHA_QUERY_PARAM = "computeSha";
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
 
@@ -133,14 +136,15 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (repoId == null) {
         var commitEntity = session.get(CommitEntity.class, commitHash);
         if (commitEntity == null) {
-          throw new ModelDBException("DatasetVersion not found", Status.Code.NOT_FOUND);
+          throw new ModelDBException(
+              ModelDBMessages.DATASET_VERSION_NOT_FOUND_ERROR, Status.Code.NOT_FOUND);
         }
 
         if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
           throw new ModelDBException(
-              "DatasetVersion '"
-                  + commitEntity.getCommit_hash()
-                  + "' associated with multiple datasets",
+              String.format(
+                  "DatasetVersion '%s' associated with multiple datasets",
+                  commitEntity.getCommit_hash()),
               Status.Code.INTERNAL);
         }
         assert commitEntity.getRepository() != null;
@@ -222,14 +226,15 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (repoId == null) {
         var commitEntity = session.get(CommitEntity.class, commitHash);
         if (commitEntity == null) {
-          throw new ModelDBException("DatasetVersion not found", Status.Code.NOT_FOUND);
+          throw new ModelDBException(
+              ModelDBMessages.DATASET_VERSION_NOT_FOUND_ERROR, Status.Code.NOT_FOUND);
         }
 
         if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
           throw new ModelDBException(
-              "DatasetVersion '"
-                  + commitEntity.getCommit_hash()
-                  + "' associated with multiple datasets",
+              String.format(
+                  "DatasetVersion '%s' associated with multiple datasets",
+                  commitEntity.getCommit_hash()),
               Status.Code.INTERNAL);
         }
         assert commitEntity.getRepository() != null;
@@ -325,14 +330,15 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (repoId == null) {
         commitEntity = session.get(CommitEntity.class, commitHash);
         if (commitEntity == null) {
-          throw new ModelDBException("DatasetVersion not found", Status.Code.NOT_FOUND);
+          throw new ModelDBException(
+              ModelDBMessages.DATASET_VERSION_NOT_FOUND_ERROR, Status.Code.NOT_FOUND);
         }
 
         if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
           throw new ModelDBException(
-              "DatasetVersion '"
-                  + commitEntity.getCommit_hash()
-                  + "' associated with multiple datasets",
+              String.format(
+                  "DatasetVersion '%s' associated with multiple datasets",
+                  commitEntity.getCommit_hash()),
               Status.Code.INTERNAL);
         }
         assert commitEntity.getRepository() != null;
@@ -455,7 +461,7 @@ public class BlobDAORdbImpl implements BlobDAO {
           "From InternalFolderElementEntity parentIfe WHERE parentIfe.element_name = :location AND parentIfe.folder_hash = :folderHash";
       Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL);
       fetchTreeQuery.setParameter("location", folderLocation);
-      fetchTreeQuery.setParameter("folderHash", folderHash);
+      fetchTreeQuery.setParameter(FOLDER_HASH_QUERY_PARAM, folderHash);
       InternalFolderElementEntity elementEntity = fetchTreeQuery.uniqueResult();
 
       if (elementEntity == null) {
@@ -465,7 +471,7 @@ public class BlobDAORdbImpl implements BlobDAO {
             index,
             folderLocation);
         throw new ModelDBException(
-            "No such folder found : " + folderLocation, Status.Code.NOT_FOUND);
+            String.format("No such folder found : %s", folderLocation), Status.Code.NOT_FOUND);
       }
       if (elementEntity.getElement_type().equals(TREE)) {
         folderHash = elementEntity.getElement_sha();
@@ -488,7 +494,8 @@ public class BlobDAORdbImpl implements BlobDAO {
               .build();
         } else {
           throw new ModelDBException(
-              "No such folder found : " + locationList.get(index + 1), Status.Code.NOT_FOUND);
+              String.format("No such folder found : %s", locationList.get(index + 1)),
+              Status.Code.NOT_FOUND);
         }
       }
     }
@@ -643,7 +650,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
     Query<InternalFolderElementEntity> fetchTreeQuery =
         session.createQuery(folderQueryHQLBuilder.toString());
-    fetchTreeQuery.setParameter("folderHash", parentFolderHash);
+    fetchTreeQuery.setParameter(FOLDER_HASH_QUERY_PARAM, parentFolderHash);
     if (elementName != null && !elementName.isEmpty()) {
       fetchTreeQuery.setParameter("elementName", elementName);
     }
@@ -664,7 +671,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     var folderQueryHQL =
         "From InternalFolderElementEntity parentIfe WHERE parentIfe.folder_hash = :folderHash";
     Query<InternalFolderElementEntity> fetchTreeQuery = session.createQuery(folderQueryHQL);
-    fetchTreeQuery.setParameter("folderHash", parentFolderHash);
+    fetchTreeQuery.setParameter(FOLDER_HASH_QUERY_PARAM, parentFolderHash);
     List<InternalFolderElementEntity> childElementFolders = fetchTreeQuery.list();
 
     Map<String, Map.Entry<BlobExpanded, String>> childBlobExpandedMap = new LinkedHashMap<>();
@@ -776,7 +783,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (parentLocation
           != null) { // = null mainly is supporting the call on init commit which is an empty commit
         throw new ModelDBException(
-            "No such folder found : " + parentLocation, Status.Code.NOT_FOUND);
+            String.format("No such folder found : %s", parentLocation), Status.Code.NOT_FOUND);
       }
     }
 
@@ -810,8 +817,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
     Comparator<Map.Entry<String, Map.Entry<BlobExpanded, String>>> locationComparator =
         Comparator.comparing(
-            (Map.Entry<String, Map.Entry<BlobExpanded, String>> o) ->
-                o.getKey().replaceAll("#", ""));
+            (Map.Entry<String, Map.Entry<BlobExpanded, String>> o) -> o.getKey().replace("#", ""));
 
     finalLocationBlobMap =
         finalLocationBlobMap.entrySet().stream()
@@ -909,25 +915,29 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       if (internalCommitA == null) {
         throw new ModelDBException(
-            "No such commit OR branch found : " + errorNameA, Status.Code.NOT_FOUND);
+            String.format("No such commit OR branch found : %s", errorNameA),
+            Status.Code.NOT_FOUND);
       }
 
       if (internalCommitB == null) {
         throw new ModelDBException(
-            "No such commit OR branch found : " + errorNameB, Status.Code.NOT_FOUND);
+            String.format("No such commit OR branch found : %s", errorNameB),
+            Status.Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
           session, internalCommitA.getCommit_hash(), repositoryEntity.getId())) {
         throw new ModelDBException(
-            "No such commit found in the repository : " + internalCommitA.getCommit_hash(),
+            String.format(
+                "No such commit found in the repository : %s", internalCommitA.getCommit_hash()),
             Status.Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
           session, internalCommitB.getCommit_hash(), repositoryEntity.getId())) {
         throw new ModelDBException(
-            "No such commit found in the repository : " + internalCommitB.getCommit_hash(),
+            String.format(
+                "No such commit found in the repository : %s", internalCommitB.getCommit_hash()),
             Status.Code.NOT_FOUND);
       }
 
@@ -1097,25 +1107,29 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       if (internalCommitA == null) {
         throw new ModelDBException(
-            "No such commit OR branch found : " + branchOrCommitA, Status.Code.NOT_FOUND);
+            String.format("No such commit OR branch found : %s", branchOrCommitA),
+            Status.Code.NOT_FOUND);
       }
 
       if (internalCommitB == null) {
         throw new ModelDBException(
-            "No such commit OR branch found : " + branchOrCommitB, Status.Code.NOT_FOUND);
+            String.format("No such commit OR branch found : %s", branchOrCommitB),
+            Status.Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
           readSession, internalCommitA.getCommit_hash(), repositoryEntity.getId())) {
         throw new ModelDBException(
-            "No such commit found in the repository : " + internalCommitA.getCommit_hash(),
+            String.format(
+                "No such commit found in the repository : %s", internalCommitA.getCommit_hash()),
             Status.Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
           readSession, internalCommitB.getCommit_hash(), repositoryEntity.getId())) {
         throw new ModelDBException(
-            "No such commit found in the repository : " + internalCommitB.getCommit_hash(),
+            String.format(
+                "No such commit found in the repository : %s", internalCommitB.getCommit_hash()),
             Status.Code.NOT_FOUND);
       }
 
@@ -1744,7 +1758,8 @@ public class BlobDAORdbImpl implements BlobDAO {
       var locationKey = String.join("#", request.getLocationList());
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
-            "Blob Location '" + request.getLocationList() + "' not found in commit blobs",
+            String.format(
+                "Blob Location '%s' not found in commit blobs", request.getLocationList()),
             Status.Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
@@ -1767,8 +1782,8 @@ public class BlobDAORdbImpl implements BlobDAO {
         getDatasetComponentBlob(blob, request.getPathDatasetComponentBlobPath());
 
     if (blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
-      String internalPath = componentWithSHAMap.get("internalPath");
-      String computeSha = componentWithSHAMap.get("computeSha");
+      String internalPath = componentWithSHAMap.get(INTERNAL_PATH_QUERY_PARAM);
+      String computeSha = componentWithSHAMap.get(COMPUTE_SHA_QUERY_PARAM);
       Map.Entry<String, String> s3KeyUploadId =
           getS3PathAndMultipartUploadId(
               session,
@@ -1828,8 +1843,8 @@ public class BlobDAORdbImpl implements BlobDAO {
             }
             Map<String, String> componentWithSHAMap = new HashMap<>();
             componentWithSHAMap.put(
-                "internalPath", pathDatasetComponentBlob.getInternalVersionedPath());
-            componentWithSHAMap.put("computeSha", computeSha);
+                INTERNAL_PATH_QUERY_PARAM, pathDatasetComponentBlob.getInternalVersionedPath());
+            componentWithSHAMap.put(COMPUTE_SHA_QUERY_PARAM, computeSha);
             return componentWithSHAMap;
           }
           break;
@@ -1853,10 +1868,14 @@ public class BlobDAORdbImpl implements BlobDAO {
             }
             Map<String, String> componentWithSHAMap = new HashMap<>();
             componentWithSHAMap.put(
-                "internalPath", s3PathComponentBlob.get().getPath().getInternalVersionedPath());
-            componentWithSHAMap.put("computeSha", computeS3Sha);
+                INTERNAL_PATH_QUERY_PARAM,
+                s3PathComponentBlob.get().getPath().getInternalVersionedPath());
+            componentWithSHAMap.put(COMPUTE_SHA_QUERY_PARAM, computeS3Sha);
             return componentWithSHAMap;
           }
+          break;
+        default:
+          // Do nothing
           break;
       }
     } else {
@@ -1994,14 +2013,14 @@ public class BlobDAORdbImpl implements BlobDAO {
       var locationKey = String.join("#", location);
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
-            "Blob Location '" + location + "' not found in commit blobs",
+            String.format("Blob Location '%s' not found in commit blobs", location),
             Status.Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
 
       Map<String, String> componentWithSHAMap =
           getDatasetComponentBlob(blobExpandedMap.getKey().getBlob(), pathDatasetComponentBlobPath);
-      String computeSha = componentWithSHAMap.get("computeSha");
+      String computeSha = componentWithSHAMap.get(COMPUTE_SHA_QUERY_PARAM);
 
       VersioningUtils.saveArtifactPartEntity(
           artifactPart, session, computeSha, ArtifactPartEntity.VERSION_BLOB_ARTIFACT);
@@ -2053,13 +2072,13 @@ public class BlobDAORdbImpl implements BlobDAO {
       var locationKey = String.join("#", location);
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
-            "Blob Location '" + location + "' not found in commit blobs",
+            String.format("Blob Location '%s' not found in commit blobs", location),
             Status.Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
       Map<String, String> componentWithSHAMap =
           getDatasetComponentBlob(blobExpandedMap.getKey().getBlob(), pathDatasetComponentBlobPath);
-      String computeSha = componentWithSHAMap.get("computeSha");
+      String computeSha = componentWithSHAMap.get(COMPUTE_SHA_QUERY_PARAM);
 
       Set<ArtifactPartEntity> artifactPartEntities =
           VersioningUtils.getArtifactPartEntities(
@@ -2115,15 +2134,15 @@ public class BlobDAORdbImpl implements BlobDAO {
       var locationKey = String.join("#", location);
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
-            "Blob Location '" + location + "' not found in commit blobs",
+            String.format("Blob Location '%s' not found in commit blobs", location),
             Status.Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
       var blob = blobExpandedMap.getKey().getBlob();
       Map<String, String> componentWithSHAMap =
           getDatasetComponentBlob(blob, pathDatasetComponentBlobPath);
-      String internalPath = componentWithSHAMap.get("internalPath");
-      String computeSha = componentWithSHAMap.get("computeSha");
+      String internalPath = componentWithSHAMap.get(INTERNAL_PATH_QUERY_PARAM);
+      String computeSha = componentWithSHAMap.get(COMPUTE_SHA_QUERY_PARAM);
 
       if (!blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
         throw new ModelDBException(

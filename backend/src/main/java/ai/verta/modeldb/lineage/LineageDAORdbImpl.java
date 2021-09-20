@@ -31,8 +31,6 @@ public class LineageDAORdbImpl implements LineageDAO {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
 
-  public LineageDAORdbImpl() {}
-
   @Override
   public Response addLineage(AddLineage addLineage, IsExistsPredicate isExistsPredicate)
       throws ModelDBException {

@@ -29,4 +29,22 @@ public abstract class ModelDBMessages {
   public static final String ENTITY_ID_IS_EMPTY_ERROR = "Entity id is empty";
   public static final String UNKNOWN_VALUE_TYPE_RECOGNIZED_ERROR =
       "Unknown 'Value' type recognized";
+  public static final String ITEMS_NOT_SPECIFIED_ERROR = "Items not specified";
+  public static final String ACTIVE_REQUEST_COUNT_TRACE = "Active Request count {}";
+  public static final String PROJECT_ID_NOT_PRESENT_ERROR = "Project ID not present";
+  public static final String PROJECT_NOT_FOUND_FOR_GIVEN_ID_ERROR =
+      "Project not found for given ID: ";
+  public static final String ERROR_WHILE_INSERTION_ENTRY_ON_MODEL_DB_DEPLOYMENT_INFO_ERROR =
+      "Error while insertion entry on ModelDB deployment info : {}";
+  public static final String ERROR_WHILE_GETTING_DB_CONNECTION_ERROR =
+      "Error while getting DB connection : {}";
+  public static final String SWITCH_CASE_ARTIFACTS_DEBUG = "switch case : Artifacts";
+  public static final String SWITCH_CASE_DATASETS_DEBUG = "switch case : Datasets";
+  public static final String SWITCH_CASE_ATTRIBUTES_DEBUG = "switch case : Attributes";
+  public static final String SWITCH_CASE_HYPERPARAMETERS_DEBUG = "switch case : Hyperparameters";
+  public static final String SWITCH_CASE_METRICS_DEBUG = "switch case : Metrics";
+  public static final String SWITCH_CASE_OBSERVATION_DEBUG = "switch case : Observation";
+  public static final String SWITCH_CASE_FEATURE_DEBUG = "switch case : Feature";
+  public static final String SWITCH_CASE_TAGS_DEBUG = "switch case : tags";
+  public static final String DATASET_VERSION_NOT_FOUND_ERROR = "DatasetVersion not found";
 }

@@ -26,6 +26,7 @@ public class ConfigContainer extends BlobContainer {
 
   private final ConfigBlob config;
   private static final Logger LOGGER = LogManager.getLogger(ConfigContainer.class);
+  private static final String NAME_COMMON_FIELD = "name:";
 
   public ConfigContainer(BlobExpanded blobExpanded) {
     super(blobExpanded);
@@ -146,13 +147,15 @@ public class ConfigContainer extends BlobContainer {
   @Override
   public void processAttribute(
       Session session, Long repoId, String commitHash, boolean addAttribute)
-      throws ModelDBException {}
+      throws ModelDBException {
+    // attributes with config not implemented
+  }
 
   private String computeContinuousSHA(
       String name,
       Map<String, HyperparameterElementConfigBlobEntity> hyperparameterElementConfigBlobEntityMap)
       throws NoSuchAlgorithmException {
-    var sb = new StringBuilder("name:" + name);
+    var sb = new StringBuilder(NAME_COMMON_FIELD + name);
     for (HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntity :
         hyperparameterElementConfigBlobEntityMap.values()) {
       sb.append(":entry:").append(hyperparameterElementConfigBlobEntity.getBlobHash());
@@ -199,7 +202,7 @@ public class ConfigContainer extends BlobContainer {
       HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntityStep)
       throws NoSuchAlgorithmException {
     final String payload =
-        "name:"
+        NAME_COMMON_FIELD
             + name
             + ":begin:"
             + hyperparameterElementConfigBlobEntityBegin.getBlobHash()
@@ -217,7 +220,8 @@ public class ConfigContainer extends BlobContainer {
       Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException {
     final String blobHash =
-        FileHasher.getSha("name:" + name + ":value:" + computeSHA(hyperparameterValuesConfigBlob));
+        FileHasher.getSha(
+            NAME_COMMON_FIELD + name + ":value:" + computeSHA(hyperparameterValuesConfigBlob));
     HyperparameterElementConfigBlobEntity entity =
         session.get(HyperparameterElementConfigBlobEntity.class, blobHash);
     if (entity == null) {

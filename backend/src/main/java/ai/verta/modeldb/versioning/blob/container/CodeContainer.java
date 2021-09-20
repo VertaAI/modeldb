@@ -65,7 +65,9 @@ public class CodeContainer extends BlobContainer {
   @Override
   public void processAttribute(
       Session session, Long repoId, String commitHash, boolean addAttribute)
-      throws ModelDBException {}
+      throws ModelDBException {
+    // attributes with code not implemented
+  }
 
   private GitCodeBlobEntity saveBlob(
       Session session, GitCodeBlob gitCodeBlob, Set<String> blobHashes)

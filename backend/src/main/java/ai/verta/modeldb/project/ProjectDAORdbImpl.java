@@ -49,102 +49,36 @@ public class ProjectDAORdbImpl implements ProjectDAO {
   private final MDBRoleService mdbRoleService;
 
   private static final String GET_PROJECT_ATTR_BY_KEYS_HQL =
-      new StringBuilder("From AttributeEntity kv where kv.")
-          .append(ModelDBConstants.KEY)
-          .append(" in (:keys) AND kv.projectEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :projectId AND kv.field_type = :fieldType")
-          .toString();
+      "From AttributeEntity kv where kv.key in (:keys) AND kv.projectEntity.id = :projectId AND kv.field_type = :fieldType";
   private static final String DELETE_ALL_PROJECT_TAGS_HQL =
-      new StringBuilder("delete from TagsMapping tm WHERE tm.projectEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :projectId")
-          .toString();
+      "delete from TagsMapping tm WHERE tm.projectEntity.id = :projectId";
   private static final String DELETE_SELECTED_PROJECT_TAGS_HQL =
-      new StringBuilder("delete from TagsMapping tm WHERE tm.")
-          .append(ModelDBConstants.TAGS)
-          .append(" in (:tags) AND tm.projectEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :projectId")
-          .toString();
+      "delete from TagsMapping tm WHERE tm.tags in (:tags) AND tm.projectEntity.id = :projectId";
   private static final String DELETE_ALL_PROJECT_ATTRIBUTES_HQL =
-      new StringBuilder("delete from AttributeEntity attr WHERE attr.projectEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :projectId")
-          .toString();
+      "delete from AttributeEntity attr WHERE attr.projectEntity.id = :projectId";
   private static final String DELETE_SELECTED_PROJECT_ATTRIBUTES_HQL =
-      new StringBuilder("delete from AttributeEntity attr WHERE attr.")
-          .append(ModelDBConstants.KEY)
-          .append(" in (:keys) AND attr.projectEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :projectId")
-          .toString();
+      "delete from AttributeEntity attr WHERE attr.key in (:keys) AND attr.projectEntity.id = :projectId";
   private static final String GET_PROJECT_EXPERIMENTS_COUNT_HQL =
-      new StringBuilder("SELECT COUNT(*) FROM ExperimentEntity ee WHERE ee.")
-          .append(ModelDBConstants.PROJECT_ID)
-          .append(" IN (:")
-          .append(ModelDBConstants.PROJECT_IDS)
-          .append(")")
-          .toString();
+      "SELECT COUNT(*) FROM ExperimentEntity ee WHERE ee.project_id IN (:project_ids)";
   private static final String GET_PROJECT_EXPERIMENT_RUNS_COUNT_HQL =
-      new StringBuilder("SELECT COUNT(*) FROM ExperimentRunEntity ere WHERE ere.")
-          .append(ModelDBConstants.PROJECT_ID)
-          .append(" IN (:")
-          .append(ModelDBConstants.PROJECT_IDS)
-          .append(")")
-          .toString();
+      "SELECT COUNT(*) FROM ExperimentRunEntity ere WHERE ere.project_id IN (:project_ids)";
   private static final String GET_PROJECT_BY_ID_HQL =
-      "From ProjectEntity p where p.id = :id AND p."
-          + ModelDBConstants.DELETED
-          + " = false AND p."
-          + ModelDBConstants.CREATED
-          + " = true";
+      "From ProjectEntity p where p.id = :id AND p.deleted = false AND p.created = true";
   private static final String COUNT_PROJECT_BY_ID_HQL = "Select Count(id) " + GET_PROJECT_BY_ID_HQL;
   private static final String NON_DELETED_PROJECT_IDS =
-      "select p.id  From ProjectEntity p where p."
-          + ModelDBConstants.DELETED
-          + " = false AND p."
-          + ModelDBConstants.CREATED
-          + " = true";
+      "select p.id  From ProjectEntity p where p.deleted = false AND p.created = true";
   private static final String NON_DELETED_PROJECT_IDS_BY_IDS =
-      NON_DELETED_PROJECT_IDS + " AND p.id in (:" + ModelDBConstants.PROJECT_IDS + ")";
+      NON_DELETED_PROJECT_IDS + " AND p.id in (:project_ids)";
   private static final String GET_PROJECT_BY_SHORT_NAME_HQL =
-      new StringBuilder("From ProjectEntity p where p.deleted = false AND p.")
-          .append(ModelDBConstants.SHORT_NAME)
-          .append(" = :projectShortName ")
-          .append("AND p.id IN (:projectIds)")
-          .toString();
+      "From ProjectEntity p where p.deleted = false AND p.short_name = :projectShortName AND p.id IN (:projectIds)";
   private static final String DELETE_ALL_ARTIFACTS_HQL =
-      new StringBuilder("delete from ArtifactEntity ar WHERE ar.projectEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :projectId")
-          .toString();
+      "delete from ArtifactEntity ar WHERE ar.projectEntity.id = :projectId";
   private static final String DELETE_SELECTED_ARTIFACT_BY_KEYS_HQL =
-      new StringBuilder("delete from ArtifactEntity ar WHERE ar.")
-          .append(ModelDBConstants.KEY)
-          .append(" in (:keys) AND ar.projectEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :projectId")
-          .toString();
+      "delete from ArtifactEntity ar WHERE ar.key in (:keys) AND ar.projectEntity.id = :projectId";
   private static final String DELETED_STATUS_PROJECT_QUERY_STRING =
-      new StringBuilder("UPDATE ")
-          .append(ProjectEntity.class.getSimpleName())
-          .append(" pr ")
-          .append("SET pr.")
-          .append(ModelDBConstants.DELETED)
-          .append(" = :deleted ")
-          .append(" WHERE pr.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:projectIds)")
-          .toString();
+      "UPDATE ProjectEntity pr SET pr.deleted = :deleted WHERE pr.id IN (:projectIds)";
   private static final String GET_DELETED_PROJECTS_IDS_BY_NAME_HQL =
-      new StringBuilder("SELECT p.id From ProjectEntity p where p.")
-          .append(ModelDBConstants.NAME)
-          .append(" = :projectName ")
-          .append(" AND p.")
-          .append(ModelDBConstants.DELETED)
-          .append(" = true")
-          .toString();
+      "SELECT p.id From ProjectEntity p where p.name = :projectName AND p.deleted = true";
 
   public ProjectDAORdbImpl(
       AuthService authService,
@@ -407,7 +341,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       if (getAll) {
         ProjectEntity projectObj = session.get(ProjectEntity.class, projectId);
         if (projectObj == null) {
-          String errorMessage = "Project not found for given ID: " + projectId;
+          String errorMessage = ModelDBMessages.PROJECT_NOT_FOUND_FOR_GIVEN_ID_ERROR + projectId;
           throw new NotFoundException(errorMessage);
         }
         return projectObj
@@ -1047,7 +981,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       query.setParameter("id", projectId);
       var projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
-        String errorMessage = "Project not found for given ID: " + projectId;
+        String errorMessage = ModelDBMessages.PROJECT_NOT_FOUND_FOR_GIVEN_ID_ERROR + projectId;
         throw new NotFoundException(errorMessage);
       }
 
@@ -1094,7 +1028,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       query.setParameter("id", projectId);
       var projectEntity = (ProjectEntity) query.uniqueResult();
       if (projectEntity == null) {
-        String errorMessage = "Project not found for given ID: " + projectId;
+        String errorMessage = ModelDBMessages.PROJECT_NOT_FOUND_FOR_GIVEN_ID_ERROR + projectId;
         throw new NotFoundException(errorMessage);
       }
       var project =

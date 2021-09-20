@@ -263,6 +263,9 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
               LOGGER.debug("Migration already locked");
             }
             break;
+          default:
+            // Do nothing
+            break;
         }
       }
     }

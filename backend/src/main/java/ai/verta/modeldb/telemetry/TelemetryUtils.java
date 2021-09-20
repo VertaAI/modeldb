@@ -3,10 +3,11 @@ package ai.verta.modeldb.telemetry;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.common.CommonHibernateUtil;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import java.io.FileNotFoundException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,11 +20,11 @@ public class TelemetryUtils {
   private static final Logger LOGGER = LogManager.getLogger(TelemetryUtils.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  private boolean telemetryInitialized = false;
+  private static boolean telemetryInitialized = false;
   public static String telemetryUniqueIdentifier = null;
   private String consumer = ModelDBConstants.TELEMETRY_CONSUMER_URL;
 
-  public TelemetryUtils(String consumer) throws FileNotFoundException, InvalidConfigException {
+  public TelemetryUtils(String consumer) throws InvalidConfigException {
     if (consumer != null && !consumer.isEmpty()) {
       this.consumer = consumer;
     }
@@ -34,14 +35,14 @@ public class TelemetryUtils {
     return consumer;
   }
 
-  public void initializeTelemetry() throws FileNotFoundException, InvalidConfigException {
+  private static void initializeTelemetry() throws InvalidConfigException {
     if (!telemetryInitialized) {
       LOGGER.info("Found value for telemetryInitialized : {}", telemetryInitialized);
 
       try (var connection = modelDBHibernateUtil.getConnection()) {
         final var database = App.getInstance().mdbConfig.database;
         final var existStatus =
-            ModelDBHibernateUtil.tableExists(connection, database, "modeldb_deployment_info");
+            CommonHibernateUtil.tableExists(connection, database, "modeldb_deployment_info");
         if (!existStatus) {
           LOGGER.warn("modeldb_deployment_info table not found");
           LOGGER.info("Table modeldb_deployment_info creating");
@@ -58,7 +59,9 @@ public class TelemetryUtils {
                 "modeldb_deployment_info & telemetry_information table created successfully");
           } catch (Exception e) {
             LOGGER.error(
-                "Error while insertion entry on ModelDB deployment info : {}", e.getMessage(), e);
+                ModelDBMessages.ERROR_WHILE_INSERTION_ENTRY_ON_MODEL_DB_DEPLOYMENT_INFO_ERROR,
+                e.getMessage(),
+                e);
             throw e;
           }
           LOGGER.info("Table modeldb_deployment_info created successfully");
@@ -95,7 +98,7 @@ public class TelemetryUtils {
         telemetryInitialized = true;
         LOGGER.info("Set value for telemetryInitialized : {}", telemetryInitialized);
       } catch (SQLException e) {
-        LOGGER.error("Error while getting DB connection : {}", e.getMessage(), e);
+        LOGGER.error(ModelDBMessages.ERROR_WHILE_GETTING_DB_CONNECTION_ERROR, e.getMessage(), e);
       }
     }
   }
@@ -117,15 +120,16 @@ public class TelemetryUtils {
         LOGGER.info("Telemetry ID Record inserted");
       } catch (Exception e) {
         LOGGER.error(
-            "Error while insertion entry on ModelDB deployment info : {}", e.getMessage(), e);
+            ModelDBMessages.ERROR_WHILE_INSERTION_ENTRY_ON_MODEL_DB_DEPLOYMENT_INFO_ERROR,
+            e.getMessage(),
+            e);
       } finally {
-        if (connection != null && !connection.getAutoCommit()) {
+        if (!connection.getAutoCommit()) {
           connection.commit();
-          connection.close();
         }
       }
     } catch (SQLException e) {
-      LOGGER.error("Error while getting DB connection : {}", e.getMessage(), e);
+      LOGGER.error(ModelDBMessages.ERROR_WHILE_GETTING_DB_CONNECTION_ERROR, e.getMessage(), e);
     }
   }
 
@@ -137,7 +141,7 @@ public class TelemetryUtils {
       LOGGER.info("Record deleted successfully : {}", deletedRows);
       if (!connection.getAutoCommit()) connection.commit();
     } catch (SQLException e) {
-      LOGGER.error("Error while getting DB connection : {}", e.getMessage(), e);
+      LOGGER.error(ModelDBMessages.ERROR_WHILE_GETTING_DB_CONNECTION_ERROR, e.getMessage(), e);
     }
   }
 
@@ -154,14 +158,16 @@ public class TelemetryUtils {
         LOGGER.info("Record inserted successfully");
       } catch (Exception e) {
         LOGGER.error(
-            "Error while insertion entry on ModelDB deployment info : {}", e.getMessage(), e);
+            ModelDBMessages.ERROR_WHILE_INSERTION_ENTRY_ON_MODEL_DB_DEPLOYMENT_INFO_ERROR,
+            e.getMessage(),
+            e);
       } finally {
         if (connection != null && !connection.getAutoCommit()) {
           connection.commit();
         }
       }
     } catch (SQLException e) {
-      LOGGER.error("Error while getting DB connection : {}", e.getMessage(), e);
+      LOGGER.error(ModelDBMessages.ERROR_WHILE_GETTING_DB_CONNECTION_ERROR, e.getMessage(), e);
     }
   }
 }

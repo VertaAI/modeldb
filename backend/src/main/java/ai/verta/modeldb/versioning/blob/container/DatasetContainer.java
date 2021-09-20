@@ -19,6 +19,7 @@ import org.hibernate.Session;
 
 public class DatasetContainer extends BlobContainer {
 
+  private static final String COMPONENT_COMMON_FIELD = ":component:";
   private final DatasetBlob dataset;
 
   public DatasetContainer(BlobExpanded blobExpanded) {
@@ -186,7 +187,7 @@ public class DatasetContainer extends BlobContainer {
     var sb = new StringBuilder();
     sb.append("s3");
     for (Map.Entry<String, AutogenS3DatasetComponentBlob> component : componentHashes.entrySet()) {
-      sb.append(":component:").append(component.getKey());
+      sb.append(COMPONENT_COMMON_FIELD).append(component.getKey());
     }
     return FileHasher.getSha(sb.toString());
   }
@@ -197,7 +198,7 @@ public class DatasetContainer extends BlobContainer {
     sb.append("path");
     for (Map.Entry<String, AutogenPathDatasetComponentBlob> component :
         componentHashes.entrySet()) {
-      sb.append(":component:").append(component.getKey());
+      sb.append(COMPONENT_COMMON_FIELD).append(component.getKey());
     }
     return FileHasher.getSha(sb.toString());
   }
@@ -223,7 +224,7 @@ public class DatasetContainer extends BlobContainer {
     sb.append("query");
     for (Map.Entry<String, AutogenQueryDatasetComponentBlob> component :
         componentHashes.entrySet()) {
-      sb.append(":component:").append(component.getKey());
+      sb.append(COMPONENT_COMMON_FIELD).append(component.getKey());
     }
     return FileHasher.getSha(sb.toString());
   }
