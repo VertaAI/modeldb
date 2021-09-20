@@ -12,7 +12,7 @@ import org.springframework.context.event.ContextClosedEvent;
 public class GracefulShutdown
     implements TomcatConnectorCustomizer, ApplicationListener<ContextClosedEvent> {
 
-  private volatile Connector connector;
+  private Connector connector;
   private long shutdownTimeout;
   private static final Logger LOGGER = LogManager.getLogger(GracefulShutdown.class);
 

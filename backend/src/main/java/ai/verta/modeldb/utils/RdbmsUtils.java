@@ -2172,7 +2172,8 @@ public class RdbmsUtils {
       Object value,
       Map<String, Object> parametersMap) {
     @SuppressWarnings("squid:S2245")
-    long timestamp = index0 + new Random(System.nanoTime()).nextInt(Integer.MAX_VALUE);
+    long timestamp =
+        (long) index0 + (long) new Random(System.nanoTime()).nextInt(Integer.MAX_VALUE);
     String key;
     switch (operator.ordinal()) {
       case OperatorEnum.Operator.GT_VALUE:

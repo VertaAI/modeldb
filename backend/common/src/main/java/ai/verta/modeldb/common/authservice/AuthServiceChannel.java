@@ -233,6 +233,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
     return collaboratorServiceBlockingStubForServiceUser;
   }
 
+  @SuppressWarnings({"squid:S1163", "squid:S1143"})
   @Override
   public void close() throws StatusRuntimeException {
     try {

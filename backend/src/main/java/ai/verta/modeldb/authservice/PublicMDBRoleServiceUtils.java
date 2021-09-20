@@ -72,13 +72,17 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
       String roleName,
       CollaboratorBase collaborator,
       String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    // Do nothing
+  }
 
   @Override
   public void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
-      String resourceId) {}
+      String resourceId) {
+    // Do nothing
+  }
 
   @Override
   public Map<String, Actions> getSelfAllowedActionsBatch(

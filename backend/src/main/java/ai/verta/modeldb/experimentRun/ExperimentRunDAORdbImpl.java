@@ -191,6 +191,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 }
               });
 
+  @SuppressWarnings({"squid:S2222"})
   protected AutoCloseable acquireReadLock(String lockKey) throws ExecutionException {
     LOGGER.debug("acquireReadLock for key: {}", lockKey);
     ReadWriteLock lock = locks.get(lockKey);
@@ -199,6 +200,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     return readLock::unlock;
   }
 
+  @SuppressWarnings({"squid:S2222"})
   protected AutoCloseable acquireWriteLock(String lockKey) throws ExecutionException {
     LOGGER.debug("acquireWriteLock for key: {}", lockKey);
     ReadWriteLock lock = locks.get(lockKey);

@@ -23,7 +23,6 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
@@ -31,7 +30,6 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 public class SoftDeleteRepositories extends Reconciler<String> {
-  private static final Logger LOGGER = LogManager.getLogger(SoftDeleteRepositories.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final MDBRoleService mdbRoleService;
@@ -43,7 +41,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
       boolean isDataset,
       FutureJdbi futureJdbi,
       Executor executor) {
-    super(config, LOGGER, futureJdbi, executor, true);
+    super(config, LogManager.getLogger(SoftDeleteRepositories.class), futureJdbi, executor, true);
     this.mdbRoleService = mdbRoleService;
     this.isDataset = isDataset;
   }
@@ -73,7 +71,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
 
   @Override
   protected ReconcileResult reconcile(Set<String> ids) {
-    LOGGER.debug("Reconciling repositories " + ids.toString());
+    logger.debug("Reconciling repositories " + ids.toString());
 
     if (isDataset) {
       mdbRoleService.deleteEntityResourcesWithServiceUser(
@@ -91,7 +89,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
   }
 
   private void deleteRepositories(Session session, Set<String> ids) {
-    LOGGER.trace("Repository deleting");
+    logger.trace("Repository deleting");
     var repositoriesQueryString =
         String.format("from %s where id in (:ids)", RepositoryEntity.class.getSimpleName());
 
@@ -191,20 +189,20 @@ public class SoftDeleteRepositories extends Reconciler<String> {
           session.delete(repository);
           transaction.commit();
         } catch (OptimisticLockException ex) {
-          LOGGER.error(
+          logger.error(
               "SoftDeleteRepositories : deleteRepositories : Exception: {}", ex.getMessage());
           if (transaction != null && transaction.getStatus().canRollback()) {
             transaction.rollback();
           }
         } catch (Exception ex) {
-          LOGGER.error("SoftDeleteRepositories : deleteRepositories : Exception: ", ex);
+          logger.error("SoftDeleteRepositories : deleteRepositories : Exception: ", ex);
           if (transaction != null && transaction.getStatus().canRollback()) {
             transaction.rollback();
           }
         }
       }
     }
-    LOGGER.trace(
+    logger.trace(
         "Repository Deleted successfully : Deleted repositories count {}",
         repositoryEntities.size());
   }

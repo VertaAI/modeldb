@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 public abstract class Reconciler<T> {
-  final Logger logger;
+  protected final Logger logger;
   protected final HashSet<T> elements = new HashSet<>();
   protected final LinkedList<T> order = new LinkedList<>();
   final Lock lock = new ReentrantLock();

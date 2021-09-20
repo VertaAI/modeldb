@@ -31,8 +31,8 @@ import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.exception.JDBCConnectionException;
 import org.hibernate.hikaricp.internal.HikariCPConnectionProvider;
@@ -60,96 +60,96 @@ public abstract class CommonHibernateUtil {
   }
 
   public SessionFactory createOrGetSessionFactory(DatabaseConfig config) throws ModelDBException {
-    if (sessionFactory == null) {
-      LOGGER.info("Fetching sessionFactory");
-      try {
-
-        final var rdb = config.RdbConfiguration;
-        final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
-        final var idleTimeoutMillis = Integer.parseInt(config.connectionTimeout) * 1000;
-        final var connectionTimeoutMillis = 30000;
-        final var connectionMaxLifetimeMillis = idleTimeoutMillis - 5000;
-        final var url = RdbConfig.buildDatabaseConnectionString(rdb);
-        final var connectionProviderClass = HikariCPConnectionProvider.class.getName();
-        final var datasourceClass = getDatasourceClass(rdb);
-
-        // Hibernate settings equivalent to hibernate.cfg.xml's properties
-        final var configuration =
-            new Configuration()
-                .setProperty("hibernate.hbm2ddl.auto", "validate")
-                .setProperty("hibernate.dialect", rdb.RdbDialect)
-                .setProperty("hibernate.connection.provider_class", connectionProviderClass)
-                .setProperty("hibernate.hikari.dataSourceClassName", datasourceClass)
-                .setProperty("hibernate.hikari.dataSource.url", url)
-                .setProperty("hibernate.hikari.dataSource.user", rdb.RdbUsername)
-                .setProperty("hibernate.hikari.dataSource.password", rdb.RdbPassword)
-                .setProperty("hibernate.hikari.idleTimeout", String.valueOf(idleTimeoutMillis))
-                .setProperty(
-                    "hibernate.hikari.connectionTimeout", String.valueOf(connectionTimeoutMillis))
-                .setProperty("hibernate.hikari.minimumIdle", config.minConnectionPoolSize)
-                .setProperty("hibernate.hikari.maximumPoolSize", config.maxConnectionPoolSize)
-                .setProperty(
-                    "hibernate.hikari.maxLifetime", String.valueOf(connectionMaxLifetimeMillis))
-                .setProperty("hibernate.hikari.poolName", "hibernate")
-                .setProperty("hibernate.hikari.registerMbeans", "true")
-                .setProperty("hibernate.generate_statistics", "true")
-                .setProperty("hibernate.jmx.enabled", "true")
-                .setProperty("hibernate.hbm2ddl.auto", "none")
-                .setProperty(Environment.QUERY_PLAN_CACHE_MAX_SIZE, String.valueOf(200))
-                .setProperty(
-                    Environment.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE, String.valueOf(20));
-
-        LOGGER.trace("connectionString {}", connectionString);
-        // Create registry builder
-        StandardServiceRegistryBuilder registryBuilder =
-            new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
-        registry = registryBuilder.build();
-        var metaDataSrc = new MetadataSources(registry);
-        for (Class<?> entity : entities) {
-          metaDataSrc.addAnnotatedClass(entity);
-        }
-
-        // Check DB is up or not
-        boolean dbConnectionStatus = checkDBConnection(rdb, config.timeout);
-        if (!dbConnectionStatus) {
-          checkDBConnectionInLoop(true);
-        }
-
-        // Create session factory and validate entity
-        sessionFactory = metaDataSrc.buildMetadata().buildSessionFactory();
-        // Enable JMX metrics collection from hibernate
-        // FIXME: Identify right way for how to re-initialize hibernateStatisticsCollector
-        /*if (hibernateStatisticsCollector != null) {
-          hibernateStatisticsCollector.add(sessionFactory, "hibernate");
-        } else {
-          hibernateStatisticsCollector = new HibernateStatisticsCollector(sessionFactory, "hibernate").register();
-        }*/
-
-        // Export schema
-        if (CommonConstants.EXPORT_SCHEMA) {
-          exportSchema(metaDataSrc.buildMetadata());
-        }
-
-        LOGGER.info(CommonMessages.READY_STATUS, isReady);
-        isReady = true;
-        return sessionFactory;
-      } catch (Exception e) {
-        LOGGER.warn(
-            "CommonHibernateUtil getSessionFactory() getting error : {}", e.getMessage(), e);
-        if (registry != null) {
-          StandardServiceRegistryBuilder.destroy(registry);
-          // If registry will destroy then session factory also useless and have stale reference of
-          // registry so need to clean it as well.
-          sessionFactory = null;
-        }
-        if (e instanceof InterruptedException) {
-          // Restore interrupted state...
-          Thread.currentThread().interrupt();
-        }
-        throw new ModelDBException(e.getMessage(), e);
-      }
-    } else {
+    if (sessionFactory != null) {
       return validateConnectionAndFetchExistingSessionFactory(sessionFactory);
+    }
+
+    LOGGER.info("Fetching sessionFactory");
+    try {
+
+      final var rdb = config.RdbConfiguration;
+      final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
+      final var idleTimeoutMillis = Integer.parseInt(config.connectionTimeout) * 1000;
+      final var connectionTimeoutMillis = 30000;
+      final var connectionMaxLifetimeMillis = idleTimeoutMillis - 5000;
+      final var url = RdbConfig.buildDatabaseConnectionString(rdb);
+      final var connectionProviderClass = HikariCPConnectionProvider.class.getName();
+      final var datasourceClass = getDatasourceClass(rdb);
+
+      // Hibernate settings equivalent to hibernate.cfg.xml's properties
+      final var configuration =
+          new Configuration()
+              .setProperty("hibernate.hbm2ddl.auto", "validate")
+              .setProperty("hibernate.dialect", rdb.RdbDialect)
+              .setProperty("hibernate.connection.provider_class", connectionProviderClass)
+              .setProperty("hibernate.hikari.dataSourceClassName", datasourceClass)
+              .setProperty("hibernate.hikari.dataSource.url", url)
+              .setProperty("hibernate.hikari.dataSource.user", rdb.RdbUsername)
+              .setProperty("hibernate.hikari.dataSource.password", rdb.RdbPassword)
+              .setProperty("hibernate.hikari.idleTimeout", String.valueOf(idleTimeoutMillis))
+              .setProperty(
+                  "hibernate.hikari.connectionTimeout", String.valueOf(connectionTimeoutMillis))
+              .setProperty("hibernate.hikari.minimumIdle", config.minConnectionPoolSize)
+              .setProperty("hibernate.hikari.maximumPoolSize", config.maxConnectionPoolSize)
+              .setProperty(
+                  "hibernate.hikari.maxLifetime", String.valueOf(connectionMaxLifetimeMillis))
+              .setProperty("hibernate.hikari.poolName", "hibernate")
+              .setProperty("hibernate.hikari.registerMbeans", "true")
+              .setProperty("hibernate.generate_statistics", "true")
+              .setProperty("hibernate.jmx.enabled", "true")
+              .setProperty("hibernate.hbm2ddl.auto", "none")
+              .setProperty(AvailableSettings.QUERY_PLAN_CACHE_MAX_SIZE, String.valueOf(200))
+              .setProperty(
+                  AvailableSettings.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE,
+                  String.valueOf(20));
+
+      LOGGER.trace("connectionString {}", connectionString);
+      // Create registry builder
+      StandardServiceRegistryBuilder registryBuilder =
+          new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
+      registry = registryBuilder.build();
+      var metaDataSrc = new MetadataSources(registry);
+      for (Class<?> entity : entities) {
+        metaDataSrc.addAnnotatedClass(entity);
+      }
+
+      // Check DB is up or not
+      boolean dbConnectionStatus = checkDBConnection(rdb, config.timeout);
+      if (!dbConnectionStatus) {
+        checkDBConnectionInLoop(true);
+      }
+
+      // Create session factory and validate entity
+      sessionFactory = metaDataSrc.buildMetadata().buildSessionFactory();
+      // Enable JMX metrics collection from hibernate
+      // FIXME: Identify right way for how to re-initialize hibernateStatisticsCollector
+      /*if (hibernateStatisticsCollector != null) {
+        hibernateStatisticsCollector.add(sessionFactory, "hibernate");
+      } else {
+        hibernateStatisticsCollector = new HibernateStatisticsCollector(sessionFactory, "hibernate").register();
+      }*/
+
+      // Export schema
+      if (CommonConstants.EXPORT_SCHEMA) {
+        exportSchema(metaDataSrc.buildMetadata());
+      }
+
+      LOGGER.info(CommonMessages.READY_STATUS, isReady);
+      isReady = true;
+      return sessionFactory;
+    } catch (Exception e) {
+      LOGGER.warn("CommonHibernateUtil getSessionFactory() getting error : {}", e.getMessage(), e);
+      if (registry != null) {
+        StandardServiceRegistryBuilder.destroy(registry);
+        // If registry will destroy then session factory also useless and have stale reference of
+        // registry so need to clean it as well.
+        sessionFactory = null;
+      }
+      if (e instanceof InterruptedException) {
+        // Restore interrupted state...
+        Thread.currentThread().interrupt();
+      }
+      throw new ModelDBException(e.getMessage(), e);
     }
   }
 
@@ -243,7 +243,7 @@ public abstract class CommonHibernateUtil {
   }
 
   private void exportSchema(Metadata buildMetadata) {
-    String rootPath = System.getProperty(CommonConstants.userDir);
+    String rootPath = System.getProperty(CommonConstants.USER_DIR);
     rootPath = rootPath + "\\src\\main\\resources\\liquibase\\hibernate-base-db-schema.sql";
     new SchemaExport()
         .setDelimiter(";")
@@ -314,7 +314,8 @@ public abstract class CommonHibernateUtil {
         }
 
         if (locked) {
-          Thread.sleep(config.liquibaseLockThreshold * 1000); // liquibaseLockThreshold = second
+          Thread.sleep(
+              config.liquibaseLockThreshold.longValue() * 1000L); // liquibaseLockThreshold = second
           releaseLiquibaseLock(config);
         }
       }
@@ -343,7 +344,7 @@ public abstract class CommonHibernateUtil {
 
       // Initialize Liquibase and run the update
       var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
-      String rootPath = System.getProperty(CommonConstants.userDir);
+      String rootPath = System.getProperty(CommonConstants.USER_DIR);
       rootPath = rootPath + liquibaseRootPath;
       var liquibase = new Liquibase(rootPath, new FileSystemResourceAccessor(), database);
 

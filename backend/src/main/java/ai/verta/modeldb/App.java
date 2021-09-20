@@ -107,7 +107,7 @@ public class App implements ApplicationContextAware {
   }
 
   // Export all JMX metrics to Prometheus
-  private static final String rules = "---\n" + "rules:\n" + "  - pattern: \".*\"";
+  private static final String JMX_RULES = "---\n" + "rules:\n" + "  - pattern: \".*\"";
   private static final AtomicBoolean metricsInitialized = new AtomicBoolean(false);
 
   @Bean
@@ -116,7 +116,7 @@ public class App implements ApplicationContextAware {
     if (!metricsInitialized.getAndSet(true)) {
       DefaultExports.initialize();
       new BuildInfoCollector().register();
-      new JmxCollector(rules).register();
+      new JmxCollector(JMX_RULES).register();
     }
     return new ServletRegistrationBean<>(new MetricsServlet(), "/metrics");
   }

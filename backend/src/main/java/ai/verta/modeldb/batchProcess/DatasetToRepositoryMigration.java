@@ -45,6 +45,11 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 
 public class DatasetToRepositoryMigration {
+
+  private static final String STARTED = "started";
+  private static final String DATASET_ID_KEY = "datasetId";
+  private static final String STATUS_KEY = "status";
+
   private DatasetToRepositoryMigration() {}
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetToRepositoryMigration.class);
@@ -128,7 +133,7 @@ public class DatasetToRepositoryMigration {
         CriteriaQuery<DatasetEntity> selectQuery =
             criteriaQuery
                 .select(root)
-                .where(criteriaBuilder.equal(root.get("deleted"), false))
+                .where(criteriaBuilder.equal(root.get(ModelDBConstants.DELETED), false))
                 .orderBy(criteriaBuilder.asc(root.get("time_created")));
 
         TypedQuery<DatasetEntity> typedQuery = session.createQuery(selectQuery);
@@ -159,7 +164,7 @@ public class DatasetToRepositoryMigration {
                 LOGGER.debug("Dataset {} already migrated, continuing", datasetEntity.getId());
               } else {
                 try {
-                  if (checkDatasetMigrationStatus(session, datasetEntity.getId(), "started")) {
+                  if (checkDatasetMigrationStatus(session, datasetEntity.getId(), STARTED)) {
                     LOGGER.debug("Rolling back Dataset migration {}", datasetEntity.getId());
                     deleteAlreadyMigratedEntities(datasetEntity);
                   }
@@ -197,7 +202,7 @@ public class DatasetToRepositoryMigration {
     LOGGER.debug("Dataset {} already started", datasetEntity.getId());
     try (var innerSession = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Long repoId =
-          getRepoIdFromDatasetMigrationStatus(innerSession, datasetEntity.getId(), "started");
+          getRepoIdFromDatasetMigrationStatus(innerSession, datasetEntity.getId(), STARTED);
       repositoryDAO.deleteRepositories(
           innerSession, experimentRunDAO, Collections.singletonList(String.valueOf(repoId)));
       updateDatasetMigrationStatus(datasetEntity.getId(), repoId, "deleted");
@@ -211,8 +216,8 @@ public class DatasetToRepositoryMigration {
     var updateStatusToStarted =
         "select COUNT(*) FROM dataset_migration_status WHERE status = :status AND dataset_id = :datasetId";
     Query query = session.createSQLQuery(updateStatusToStarted);
-    query.setParameter("datasetId", datasetId);
-    query.setParameter("status", status);
+    query.setParameter(DATASET_ID_KEY, datasetId);
+    query.setParameter(STATUS_KEY, status);
     BigInteger existsCount = (BigInteger) query.uniqueResult();
     return existsCount.longValue() > 0;
   }
@@ -222,8 +227,8 @@ public class DatasetToRepositoryMigration {
     var updateStatusToStarted =
         "select repo_id FROM dataset_migration_status WHERE status = :status AND dataset_id = :datasetId";
     Query query = session.createSQLQuery(updateStatusToStarted);
-    query.setParameter("datasetId", datasetId);
-    query.setParameter("status", status);
+    query.setParameter(DATASET_ID_KEY, datasetId);
+    query.setParameter(STATUS_KEY, status);
     BigInteger repoId = (BigInteger) query.uniqueResult();
     return repoId.longValue();
   }
@@ -233,9 +238,9 @@ public class DatasetToRepositoryMigration {
       var updateStatusToStarted =
           "INSERT dataset_migration_status VALUES(:datasetId, :repoId, :status)";
       Query query = session.createSQLQuery(updateStatusToStarted);
-      query.setParameter("datasetId", datasetId);
+      query.setParameter(DATASET_ID_KEY, datasetId);
       query.setParameter("repoId", repoId);
-      query.setParameter("status", status);
+      query.setParameter(STATUS_KEY, status);
       session.beginTransaction();
       int insertedCount = query.executeUpdate();
       session.getTransaction().commit();
@@ -248,9 +253,9 @@ public class DatasetToRepositoryMigration {
       var updateStatusToStarted =
           "UPDATE dataset_migration_status SET status = :status WHERE dataset_id = :datasetId AND repo_id = :repoId";
       Query query = session.createSQLQuery(updateStatusToStarted);
-      query.setParameter("datasetId", datasetId);
+      query.setParameter(DATASET_ID_KEY, datasetId);
       query.setParameter("repoId", repoId);
-      query.setParameter("status", status);
+      query.setParameter(STATUS_KEY, status);
       session.beginTransaction();
       int updatedCount = query.executeUpdate();
       session.getTransaction().commit();
@@ -269,7 +274,7 @@ public class DatasetToRepositoryMigration {
       dataset =
           repositoryDAO.createOrUpdateDataset(
               newDataset, authService.getUsernameFromUserInfo(userInfoValue), true, userInfoValue);
-      markStartedDatasetMigration(datasetId, Long.parseLong(dataset.getId()), "started");
+      markStartedDatasetMigration(datasetId, Long.parseLong(dataset.getId()), STARTED);
       LOGGER.debug("Adding repository collaborattor for dataset {}", datasetEntity.getId());
       migrateDatasetCollaborators(datasetId, dataset);
     } catch (Exception e) {
@@ -352,7 +357,7 @@ public class DatasetToRepositoryMigration {
     var countQuery =
         "SELECT COUNT(dv) FROM DatasetVersionEntity dv WHERE dv.dataset_id = :datasetId";
     var query = session.createQuery(countQuery);
-    query.setParameter("datasetId", datasetId);
+    query.setParameter(DATASET_ID_KEY, datasetId);
     Long count = (Long) query.uniqueResult();
 
     var lowerBound = 0;

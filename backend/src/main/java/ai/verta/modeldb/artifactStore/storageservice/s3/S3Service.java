@@ -3,6 +3,7 @@ package ai.verta.modeldb.artifactStore.storageservice.s3;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.HttpCodeToGRPCCode;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -84,7 +85,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
+      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
     }
     var initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(bucketName, s3Key);
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
@@ -151,7 +152,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
+      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
     }
 
     HttpMethod reqMethod;
@@ -190,7 +191,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
+      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
     }
     var completeMultipartUploadRequest =
         new CompleteMultipartUploadRequest(bucketName, s3Key, uploadId, partETags);
@@ -213,7 +214,7 @@ public class S3Service implements ArtifactStoreService {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       Boolean exist = doesBucketExist(bucketName);
       if (!exist) {
-        throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
+        throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
       }
 
       // Validate Artifact size for trial case
@@ -348,7 +349,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public InputStream downloadFileFromStorage(String key) throws ModelDBException {
     if (!doesBucketExist(bucketName)) {
-      throw new ModelDBException("Bucket does not exists", Code.UNAVAILABLE);
+      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
     }
 
     return downloadFileFromStorage(bucketName, key);
