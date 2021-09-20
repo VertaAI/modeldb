@@ -35,7 +35,6 @@ def requirements_file_with_unsupported_lines():
             "-c some_constraints.txt",
             "-f file://dummy",
             "-i https://pypi.org/simple",
-            "-e git+ssh://git@github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta",
             "-r more_requirements.txt",
             "en-core-web-sm==2.2.5",
         ]
