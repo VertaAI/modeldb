@@ -109,7 +109,7 @@ public class ConfigContainer extends BlobContainer {
                   .reduce((s, s2) -> s + ":" + s2)
                   .orElseThrow(() -> new ModelDBException("Empty set found"));
           LOGGER.debug(
-              "MDBConfig container: hyperparameterElementConfigBlobEntitySet string: {}",
+              "Config container: hyperparameterElementConfigBlobEntitySet string: {}",
               hecbesString);
           break;
         default:

@@ -4,6 +4,7 @@ import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.GracefulShutdown;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.DatabaseConfig;
@@ -283,9 +284,9 @@ public class App implements ApplicationContextAware {
       server.awaitTermination();
       up.dec();
     } catch (Exception ex) {
-      LOGGER.error("Getting error while starting MDB service", ex);
+      CommonUtils.printStackTrace(LOGGER, ex);
       initiateShutdown(0);
-      System.exit(0);
+      System.exit(1);
       // Restore interrupted state...
       Thread.currentThread().interrupt();
     }

@@ -431,7 +431,7 @@ public class ModelDBUtils {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     List<GetResourcesResponseItem> responseItems =
         mdbRoleService.getResourceItems(
-            workspace, new HashSet<>(projectEntityIds), modelDBServiceResourceTypes);
+            workspace, new HashSet<>(projectEntityIds), modelDBServiceResourceTypes, false);
     for (GetResourcesResponseItem item : responseItems) {
       if (workspace.getId() == item.getWorkspaceId()) {
         // Throw error if it is an insert request and project with same name already exists
@@ -451,7 +451,7 @@ public class ModelDBUtils {
     var workspace = mdbRoleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
     List<GetResourcesResponseItem> items =
         mdbRoleService.getResourceItems(
-            workspace, accessibleAllWorkspaceProjectIds, modelDBServiceResourceTypes);
+            workspace, accessibleAllWorkspaceProjectIds, modelDBServiceResourceTypes, false);
     return items.stream().map(GetResourcesResponseItem::getResourceId).collect(Collectors.toSet());
   }
 

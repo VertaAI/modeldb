@@ -110,6 +110,21 @@ class CollaboratorServiceStub(object):
         request_serializer=uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
         response_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
         )
+    self.addOrUpdateEndpointCollaboratorCommonService = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/addOrUpdateEndpointCollaboratorCommonService',
+        request_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.FromString,
+        )
+    self.removeEndpointCollaboratorCommonService = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/removeEndpointCollaboratorCommonService',
+        request_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.FromString,
+        )
+    self.getEndpointCollaboratorsCommonService = channel.unary_unary(
+        '/ai.verta.uac.CollaboratorService/getEndpointCollaboratorsCommonService',
+        request_serializer=uac_dot_Collaborator__pb2.GetCollaborator.SerializeToString,
+        response_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.FromString,
+        )
     self.addOrUpdateRegisteredModelCollaborator = channel.unary_unary(
         '/ai.verta.uac.CollaboratorService/addOrUpdateRegisteredModelCollaborator',
         request_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.SerializeToString,
@@ -280,6 +295,27 @@ class CollaboratorServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def addOrUpdateEndpointCollaboratorCommonService(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def removeEndpointCollaboratorCommonService(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getEndpointCollaboratorsCommonService(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def addOrUpdateRegisteredModelCollaborator(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -417,6 +453,21 @@ def add_CollaboratorServiceServicer_to_server(servicer, server):
       ),
       'getEndpointCollaborators': grpc.unary_unary_rpc_method_handler(
           servicer.getEndpointCollaborators,
+          request_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
+      ),
+      'addOrUpdateEndpointCollaboratorCommonService': grpc.unary_unary_rpc_method_handler(
+          servicer.addOrUpdateEndpointCollaboratorCommonService,
+          request_deserializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.AddCollaboratorRequest.Response.SerializeToString,
+      ),
+      'removeEndpointCollaboratorCommonService': grpc.unary_unary_rpc_method_handler(
+          servicer.removeEndpointCollaboratorCommonService,
+          request_deserializer=uac_dot_Collaborator__pb2.RemoveCollaborator.FromString,
+          response_serializer=uac_dot_Collaborator__pb2.RemoveCollaborator.Response.SerializeToString,
+      ),
+      'getEndpointCollaboratorsCommonService': grpc.unary_unary_rpc_method_handler(
+          servicer.getEndpointCollaboratorsCommonService,
           request_deserializer=uac_dot_Collaborator__pb2.GetCollaborator.FromString,
           response_serializer=uac_dot_Collaborator__pb2.GetCollaborator.Response.SerializeToString,
       ),

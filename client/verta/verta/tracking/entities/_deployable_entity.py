@@ -45,6 +45,18 @@ _TRAINING_DATA_ATTR_PREFIX = _INTERNAL_ATTR_PREFIX + "training_data_"
 
 @six.add_metaclass(abc.ABCMeta)
 class _DeployableEntity(_ModelDBEntity):
+
+    @abc.abstractproperty
+    def _MODEL_KEY(self):
+        """Artifact key used for models.
+
+        Returns
+        -------
+        str
+
+        """
+        raise NotImplementedError
+
     @property
     def _histogram_endpoint(self):
         return "{}://{}/api/v1/monitoring/data/references/{}".format(
@@ -52,6 +64,22 @@ class _DeployableEntity(_ModelDBEntity):
             self._conn.socket,
             self.id,
         )
+
+    @abc.abstractmethod
+    def _get_artifact_msg(self, key):
+        """Get Artifact protobuf with `key`.
+
+        Paramaters
+        ----------
+        key : str
+            Artifact key.
+
+        Returns
+        -------
+        common.CommonService_pb2.Artifact
+
+        """
+        raise NotImplementedError
 
     @abc.abstractmethod
     def _get_artifact(self, key):
@@ -145,6 +173,99 @@ class _DeployableEntity(_ModelDBEntity):
 
         """
         raise NotImplementedError
+
+    @staticmethod
+    def _build_artifact_store_path(artifact_stream, key, ext=None):
+        """Build a path for Verta's backend artifact store to store `artifact_stream`.
+
+        Parameters
+        ----------
+        artifact_stream : file-like
+            Artifact bytes.
+        key : str
+            Artifact key.
+        ext : str, optional
+            File extension associated with `artifact_stream`.
+
+        Returns
+        -------
+        str
+            Artifact store path for `artifact_stream`
+
+        """
+        # calculate checksum
+        checksum = _artifact_utils.calc_sha256(artifact_stream)
+
+        # determine "file"name
+        #     The key might already contain the file extension, thanks to our hard-coded deployment
+        #     keys e.g. "model.pkl" and "model_api.json".
+        if ext is None or key.endswith("." + ext):
+            filename = key
+        else:
+            filename = key + "." + ext
+
+        return checksum + "/" + filename
+
+    @classmethod
+    def _create_artifact_msg(
+        cls,
+        key,
+        artifact_stream,
+        artifact_type,
+        method,
+        framework=None,
+        extension=None,
+    ):
+        """Build a ``CommonService_pb2.Artifact`` protobuf object.
+
+        Parameters
+        ----------
+        key : str
+            Artifact key.
+        artifact_stream : file-like
+            Artifact bytestream.
+        artifact_type : CommonService_pb2.ArtifactTypeEnum variant
+            Category to which the artifact belongs (e.g. MODEL, DATA).
+        method : str or None
+            Artifact serialization method returned by
+            ``_artifact_utils.ensure_bytestream()`` or
+            ``_artifact_utils.serialize_model()``.
+        framework : str, optional
+            Artifact framework (e.g. "torch", "sklearn") returned by
+            ``_artifact_utils.serialize_model()``.
+        extension : str, optional
+            File extension associated with `artifact_stream`. If not provided,
+            it will be determined from either `artifact_stream` or `method`.
+
+        Returns
+        -------
+        CommonService_pb2.Artifact
+
+        """
+        if not extension:
+            try:
+                extension = _artifact_utils.get_file_ext(artifact_stream)
+            except (TypeError, ValueError):
+                extension = _artifact_utils.ext_from_method(method)
+
+        artifact_path = cls._build_artifact_store_path(
+            artifact_stream,
+            key,
+            extension,
+        )
+
+        # TODO: support VERTA_ARTIFACT_DIR like in ER._create_artifact_msg()
+
+        artifact_msg = _CommonCommonService.Artifact(
+            key=key,
+            path=artifact_path,
+            path_only=False,
+            artifact_type=artifact_type,
+            filename_extension=extension,
+            serialization=method,
+            artifact_subtype=framework,
+        )
+        return artifact_msg
 
     def _cache_file(self, filename, contents):
         """
