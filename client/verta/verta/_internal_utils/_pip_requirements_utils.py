@@ -277,7 +277,7 @@ def pin_verta_and_cloudpickle(requirements):
         conflicts with the version in the current environment.
 
     """
-    # replace VCS-installed verta (`pip install -e verta`) with "verta"
+    # replace git-installed verta (`pip install -e verta`) with "verta"
     for i, req in enumerate(requirements):
         if "VertaAI/modeldb.git" in req and "#egg=verta" in req:
             # git+git is not installable
