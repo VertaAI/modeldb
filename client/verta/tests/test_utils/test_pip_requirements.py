@@ -139,7 +139,11 @@ class TestPinVertaAndCloudpickle:
         other_library=libraries(),
     )
     def test_inject_requirement(self, library, version, other_library):
-        hypothesis.assume(library != other_library)
+        # limitation of current implementation
+        # uses startswith() to avoid dealing with the ==, etc. operators
+        # which is fine since this is only used for verta & cloudpickle
+        hypothesis.assume(not other_library.startswith(library))
+
         pinned_library_req = "{}=={}".format(library, version)
 
         requirements = []
