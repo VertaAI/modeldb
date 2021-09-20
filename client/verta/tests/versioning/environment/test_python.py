@@ -198,7 +198,7 @@ class TestParsedRequirements:
         assert requirement.split("+")[0] in env_ver.requirements
 
     def test_inject_verta_cloudpickle(self):
-        env = Python(requirements=[])
+        env = Python(requirements=["pytest"])
         requirements = {req.library for req in env._msg.python.requirements}
 
         assert "verta" in requirements
@@ -229,7 +229,7 @@ class TestRawRequirements:
 
     def test_inject_verta_cloudpickle(self):
         reqs = [
-            "-e client/verta"
+            "--no-binary :all:",
         ]
         env = Python(requirements=reqs)
 
@@ -288,3 +288,21 @@ class TestRawConstraints:
 
         assert env._msg.python.raw_constraints == requirements_file_without_versions.read()
         assert set(env.constraints) == set(constraints)
+
+
+class TestVCSInstalledVerta:
+    @pytest.mark.parametrize(
+        "requirements",
+        [
+            ["-e git+git@github.com:VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
+            ["-e git+https://github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
+            ["-e git+ssh://git@github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
+        ],
+    )
+    def test_vcs_installed_verta(self, requirements):
+        vcs_verta_req = requirements[0]
+        pinned_verta_req = "verta=={}".format(verta.__version__)
+
+        env = Python(requirements=requirements)
+        assert vcs_verta_req not in env.requirements
+        assert pinned_verta_req in env.requirements
