@@ -79,8 +79,13 @@ class Python(_environment._Environment):
         apt_packages=None,
         _autocapture=True,
     ):
-        super(Python, self).__init__(env_vars, _autocapture, apt_packages=apt_packages)
+        super(Python, self).__init__(
+            env_vars=env_vars,
+            autocapture=_autocapture,
+        )
 
+        if apt_packages:
+            self.apt_packages = apt_packages
         if _autocapture:
             self._capture_python_version()
         if requirements or _autocapture:
@@ -89,7 +94,7 @@ class Python(_environment._Environment):
             self._capture_constraints(constraints)
 
     def __repr__(self):
-        lines = ["Python Version"]
+        lines = ["Python Environment"]
         if self._msg.python.version.major:
             lines.append(
                 "Python {}.{}.{}".format(
@@ -120,6 +125,18 @@ class Python(_environment._Environment):
             lines.extend("    {}".format(arg) for arg in self._msg.command_line)
 
         return "\n    ".join(lines)
+
+    @property
+    def apt_packages(self):
+        return list(self._msg.apt.packages)
+
+    @apt_packages.setter
+    def apt_packages(self, packages):
+        if packages:
+            apt_blob = _EnvironmentService.AptEnvironmentBlob(packages=packages)
+            self._msg.apt.CopyFrom(apt_blob)
+        else:
+            self._msg.apt.Clear()
 
     @property
     def constraints(self):
