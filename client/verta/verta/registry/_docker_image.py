@@ -81,8 +81,8 @@ class DockerImage(object):
         env_vars=None,
     ):
         self._port = int(port)
-        self._request_path = arg_handler.prepend_slash(request_path)
-        self._health_path = arg_handler.prepend_slash(health_path)
+        self._request_path = arg_handler.ensure_starts_with_slash(request_path)
+        self._health_path = arg_handler.ensure_starts_with_slash(health_path)
         self._docker_env = environment.Docker(
             repository=repository,
             tag=tag,
