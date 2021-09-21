@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import json
+
 import pytest
 
 from verta.environment import Python
 from verta.registry import DockerImage
+from verta.utils import ModelAPI
+from verta._internal_utils import _artifact_utils
 
 
 class TestDocker:
@@ -45,3 +49,21 @@ class TestDocker:
         assert new_docker_image != docker_image
         model_version.log_docker(new_docker_image, overwrite=True)
         assert model_version.get_docker() == new_docker_image
+
+
+class TestModelApi:
+    def test_log(self, model_version, docker_image):
+        model_api = ModelAPI([[1, 2, 3]], [1])
+        model_version.log_docker(docker_image, model_api=model_api)
+
+        retrieved_model_api = model_version.get_artifact(_artifact_utils.MODEL_API_KEY)
+        assert json.load(retrieved_model_api) == model_api.to_dict()
+
+    def test_no_log(self, model_version, docker_image):
+        model_version.log_docker(docker_image)
+
+        with pytest.raises(
+            KeyError,
+            match="no artifact found with key {}".format(_artifact_utils.MODEL_API_KEY),
+        ):
+            model_version.get_artifact(_artifact_utils.MODEL_API_KEY)
