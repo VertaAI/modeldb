@@ -87,6 +87,7 @@ import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
@@ -1526,6 +1527,21 @@ public class FutureExperimentRunDAO {
         .thenCompose(unused -> createExperimentRunHandler.convertCreateRequest(request), executor)
         .thenCompose(
             experimentRun ->
+                findExperimentRuns(
+                        FindExperimentRuns.newBuilder()
+                            .setIdsOnly(true)
+                            .setProjectId(experimentRun.getProjectId())
+                            .build())
+                    .thenApply(
+                        runsResponse -> {
+                          TrialUtils.validateExperimentRunPerWorkspaceForTrial(
+                              trialConfig, Long.valueOf(runsResponse.getTotalRecords()).intValue());
+                          return experimentRun;
+                        },
+                        executor),
+            executor)
+        .thenCompose(
+            experimentRun ->
                 createExperimentRunHandler
                     .insertExperimentRun(experimentRun)
                     .thenApply(
@@ -1785,6 +1801,22 @@ public class FutureExperimentRunDAO {
                           var srcExperimentRun = findExperimentRuns.getExperimentRuns(0);
                           return srcExperimentRun.toBuilder().clone();
                         },
+                        executor)
+                    .thenCompose(
+                        experimentRun ->
+                            findExperimentRuns(
+                                    FindExperimentRuns.newBuilder()
+                                        .setIdsOnly(true)
+                                        .setProjectId(experimentRun.getProjectId())
+                                        .build())
+                                .thenApply(
+                                    runsResponse -> {
+                                      TrialUtils.validateExperimentRunPerWorkspaceForTrial(
+                                          trialConfig,
+                                          Long.valueOf(runsResponse.getTotalRecords()).intValue());
+                                      return experimentRun;
+                                    },
+                                    executor),
                         executor)
                     .thenCompose(
                         cloneExperimentRunBuilder ->
