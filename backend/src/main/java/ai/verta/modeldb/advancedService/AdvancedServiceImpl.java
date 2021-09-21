@@ -114,7 +114,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     LOGGER.trace("getHydratedProjects emailIds : {}", emailIds);
 
     Map<String, UserInfo> userInfoMap =
-        authService.getUserInfoFromAuthServer(vertaIds, emailIds, null);
+        authService.getUserInfoFromAuthServer(vertaIds, emailIds, null, false);
 
     Map<String, Actions> selfAllowedActions =
         mdbRoleService.getSelfAllowedActionsBatch(resourceIds, ModelDBServiceResourceTypes.PROJECT);
@@ -343,7 +343,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
     // Fetch the experimentRun owners userInfo
     Map<String, UserInfo> userInfoMap =
-        authService.getUserInfoFromAuthServer(vertaIdList, null, null);
+        authService.getUserInfoFromAuthServer(vertaIdList, null, null, false);
 
     List<HydratedExperimentRun> hydratedExperimentRuns = new LinkedList<>();
     LOGGER.trace("hydrating experiments");
@@ -622,7 +622,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
     // Fetch the experiment owners userInfo
     Map<String, UserInfo> userInfoMap =
-        authService.getUserInfoFromAuthServer(vertaIdList, null, null);
+        authService.getUserInfoFromAuthServer(vertaIdList, null, null, false);
 
     String currentUserVertaID =
         authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo());
@@ -776,7 +776,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     LOGGER.trace("getHydratedDatasets emailIds : {}", emailIds.size());
 
     Map<String, UserInfo> userInfoMap =
-        authService.getUserInfoFromAuthServer(vertaIds, emailIds, null);
+        authService.getUserInfoFromAuthServer(vertaIds, emailIds, null, false);
 
     LOGGER.trace("Got results from UAC : {}", userInfoMap.size());
 

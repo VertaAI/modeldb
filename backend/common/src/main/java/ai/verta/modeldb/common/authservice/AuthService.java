@@ -16,7 +16,10 @@ public interface AuthService {
   UserInfo getUserInfo(String vertaId, CommonConstants.UserIdentifier vertaIdentifier);
 
   Map<String, UserInfo> getUserInfoFromAuthServer(
-      Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList);
+      Set<String> vertaIdList,
+      Set<String> emailIdList,
+      List<String> usernameList,
+      boolean isServiceUser);
 
   String getVertaIdFromUserInfo(UserInfo userInfo);
 

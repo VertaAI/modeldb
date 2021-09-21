@@ -119,12 +119,19 @@ public class AuthServiceUtils implements AuthService {
    */
   @Override
   public Map<String, UserInfo> getUserInfoFromAuthServer(
-      Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
-    return getUserInfoFromAuthServer(true, vertaIdList, emailIdList, usernameList);
+      Set<String> vertaIdList,
+      Set<String> emailIdList,
+      List<String> usernameList,
+      boolean isServiceUser) {
+    return getUserInfoFromAuthServer(true, vertaIdList, emailIdList, usernameList, isServiceUser);
   }
 
   private Map<String, UserInfo> getUserInfoFromAuthServer(
-      boolean retry, Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
+      boolean retry,
+      Set<String> vertaIdList,
+      Set<String> emailIdList,
+      List<String> usernameList,
+      boolean isServiceUser) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       var getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
       if (emailIdList != null && !emailIdList.isEmpty()) {
@@ -137,8 +144,11 @@ public class AuthServiceUtils implements AuthService {
       LOGGER.trace("email Id List : {}", emailIdList);
       LOGGER.trace("username Id List : {}", usernameList);
       // Get the user info from the Context
-      var response =
-          authServiceChannel.getUacServiceBlockingStub().getUsers(getUserRequestBuilder.build());
+      var blockingStub =
+          isServiceUser
+              ? authServiceChannel.getUacServiceBlockingStubForServiceUser()
+              : authServiceChannel.getUacServiceBlockingStub();
+      var response = blockingStub.getUsers(getUserRequestBuilder.build());
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       List<UserInfo> userInfoList = response.getUserInfosList();
 
@@ -154,7 +164,8 @@ public class AuthServiceUtils implements AuthService {
               retry,
               (RetryCallInterface<Map<String, UserInfo>>)
                   retry1 ->
-                      getUserInfoFromAuthServer(retry1, vertaIdList, emailIdList, usernameList),
+                      getUserInfoFromAuthServer(
+                          retry1, vertaIdList, emailIdList, usernameList, isServiceUser),
               timeout);
     }
   }

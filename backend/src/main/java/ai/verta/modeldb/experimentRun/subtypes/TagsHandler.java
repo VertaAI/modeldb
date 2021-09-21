@@ -124,7 +124,7 @@ public class TagsHandler {
         handle -> {
           var sql =
               String.format(
-                  "delete from tag_mapping " + "where entity_name=:entity_name and %s =:entity_id",
+                  "delete from tag_mapping where entity_name=:entity_name and %s =:entity_id",
                   entityIdReferenceColumn);
 
           if (maybeTags.isPresent()) {

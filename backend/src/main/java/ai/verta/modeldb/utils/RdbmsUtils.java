@@ -1811,7 +1811,8 @@ public class RdbmsUtils {
           authService.getUserInfoFromAuthServer(
               new HashSet<>(Collections.singleton(ownerId)),
               Collections.emptySet(),
-              Collections.emptyList());
+              Collections.emptyList(),
+              false);
       Set<String> resourceIdSet =
           getResourceIdsFromUserWorkspaces(
               authService,
@@ -1930,7 +1931,8 @@ public class RdbmsUtils {
                   .setId(authService.getWorkspaceIdFromUserInfo(userInfo))
                   .build(),
               Collections.emptySet(),
-              modelDBServiceResourceTypes);
+              modelDBServiceResourceTypes,
+              false);
       resourceIdsSet.addAll(
           accessibleAllWorkspaceItems.stream()
               .map(GetResourcesResponseItem::getResourceId)

@@ -22,8 +22,11 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   private RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStubForServiceUser;
   private AuthzServiceGrpc.AuthzServiceBlockingStub authzServiceBlockingStub;
   private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStub;
+  private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStubForServiceUser;
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
+  private OrganizationServiceGrpc.OrganizationServiceBlockingStub
+      organizationServiceBlockingStubForServiceUser;
   private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStub;
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
@@ -93,6 +96,18 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
       initUACServiceStubChannel();
     }
     return uacServiceBlockingStub;
+  }
+
+  private void initUACServiceStubChannelForServiceUser() {
+    uacServiceBlockingStubForServiceUser =
+        attachInterceptorsForServiceUser(UACServiceGrpc.newBlockingStub(authChannel));
+  }
+
+  public UACServiceGrpc.UACServiceBlockingStub getUacServiceBlockingStubForServiceUser() {
+    if (uacServiceBlockingStubForServiceUser == null) {
+      initUACServiceStubChannelForServiceUser();
+    }
+    return uacServiceBlockingStubForServiceUser;
   }
 
   private void initRoleServiceStubChannel() {
@@ -165,6 +180,19 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
       initOrganizationServiceStubChannel();
     }
     return organizationServiceBlockingStub;
+  }
+
+  private void initOrganizationServiceStubChannelForServiceUser() {
+    organizationServiceBlockingStubForServiceUser =
+        attachInterceptorsForServiceUser(OrganizationServiceGrpc.newBlockingStub(authChannel));
+  }
+
+  public OrganizationServiceGrpc.OrganizationServiceBlockingStub
+      getOrganizationServiceBlockingStubForServiceUser() {
+    if (organizationServiceBlockingStubForServiceUser == null) {
+      initOrganizationServiceStubChannelForServiceUser();
+    }
+    return organizationServiceBlockingStubForServiceUser;
   }
 
   private void initWorkspaceServiceStubChannel() {

@@ -1366,6 +1366,8 @@ public class DatasetTest extends TestsInit {
               .setPath("This is new added data artifact type in Google Pay datasets")
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion2.getId())
+              .setUploadCompleted(
+                  !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1393,6 +1395,8 @@ public class DatasetTest extends TestsInit {
               .setPath("This is new added data artifact type in Google Pay datasets")
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion1.getId())
+              .setUploadCompleted(
+                  !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
               .build();
 
       logDatasetRequest =
@@ -1567,6 +1571,8 @@ public class DatasetTest extends TestsInit {
               .setPath("This is new added data artifact type in Google Pay datasets")
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion2.getId())
+              .setUploadCompleted(
+                  !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1594,6 +1600,8 @@ public class DatasetTest extends TestsInit {
               .setPath("This is new added data artifact type in Google Pay datasets")
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion1.getId())
+              .setUploadCompleted(
+                  !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
               .build();
 
       logDatasetRequest =
