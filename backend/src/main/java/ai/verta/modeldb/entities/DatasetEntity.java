@@ -5,11 +5,12 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +20,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "dataset")
-public class DatasetEntity {
+public class DatasetEntity implements Serializable {
 
   public DatasetEntity() {}
 
@@ -219,8 +220,8 @@ public class DatasetEntity {
     this.deleted = deleted;
   }
 
-  public Dataset getProtoObject(RoleService roleService) {
-    Dataset.Builder datasetBuilder =
+  public Dataset getProtoObject(MDBRoleService mdbRoleService) {
+    var datasetBuilder =
         Dataset.newBuilder()
             .setId(getId())
             .setName(getName())
@@ -236,7 +237,7 @@ public class DatasetEntity {
             .setWorkspaceTypeValue(getWorkspace_type());
 
     GetResourcesResponseItem repositoryResource =
-        roleService.getEntityResource(
+        mdbRoleService.getEntityResource(
             Optional.ofNullable(String.valueOf(this.id)),
             Optional.empty(),
             ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);

@@ -5,6 +5,9 @@ from __future__ import print_function
 import os
 import sys
 
+import six
+from six.moves import collections_abc
+
 from verta.external import six
 from verta import _blob
 
@@ -18,6 +21,11 @@ class _Environment(_blob.Blob):
 
     Handles environment variables and command line arguments.
 
+    Attributes
+    ----------
+    env_vars : dict of str to str, or None
+        Environment variables.
+
     """
 
     def __init__(self, env_vars, autocapture, apt_packages=None):
@@ -26,8 +34,8 @@ class _Environment(_blob.Blob):
         # TODO: don't use proto to store data
         self._msg = _EnvironmentService.EnvironmentBlob()
 
-        if env_vars is not None:
-            self._capture_env_vars(env_vars)
+        if env_vars:
+            self.add_env_vars(env_vars)
         if autocapture:
             self._capture_cmd_line_args()
         if apt_packages:
@@ -44,6 +52,12 @@ class _Environment(_blob.Blob):
             self._msg.apt.CopyFrom(apt_blob)
         else:
             self._msg.apt.Clear()
+
+    @property
+    def env_vars(self):
+        return {
+            var.name: var.value for var in self._msg.environment_variables
+        } or None
 
     @classmethod
     def _from_env_proto(cls, env_msg):
@@ -79,15 +93,43 @@ class _Environment(_blob.Blob):
         """
         return self._msg
 
-    def _capture_env_vars(self, env_vars):
-        if env_vars is None:
-            return
+    def add_env_vars(self, env_vars):
+        """Add environment variables.
 
-        try:
-            env_vars_dict = {name: os.environ[name] for name in env_vars}
-        except KeyError as e:
-            new_e = KeyError("'{}' not found in environment".format(e.args[0]))
-            six.raise_from(new_e, None)
+        Parameters
+        ----------
+        env_vars : list of str, or dict of str to str
+            Environment variables. If a list of names is provided, the values will
+            be captured from the current environment.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            print(env.env_vars)
+            # {}
+
+            env.add_env_vars(["VERTA_HOST"])
+            print(env.env_vars)
+            # {'VERTA_HOST': 'app.verta.ai'}
+
+            env.add_env_vars({"CUDA_VISIBLE_DEVICES": "0,1"})
+            print(env.env_vars)
+            # {'VERTA_HOST': 'app.verta.ai', 'CUDA_VISIBLE_DEVICES': '0,1'}
+
+        """
+        if isinstance(env_vars, collections_abc.Mapping):
+            # as mapping
+            env_vars_dict = dict(env_vars)
+        else:
+            # as sequence
+            try:
+                env_vars_dict = {name: os.environ[name] for name in env_vars}
+            except KeyError as e:
+                new_e = KeyError("'{}' not found in environment".format(
+                    six.ensure_str(e.args[0]),
+                ))
+                six.raise_from(new_e, None)
 
         self._msg.environment_variables.extend(
             _EnvironmentService.EnvironmentVariablesBlob(name=name, value=value)

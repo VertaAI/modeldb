@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import java.io.Serializable;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -18,7 +19,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "path_dataset_version_info")
-public class PathDatasetVersionInfoEntity {
+public class PathDatasetVersionInfoEntity implements Serializable {
 
   public PathDatasetVersionInfoEntity() {}
 

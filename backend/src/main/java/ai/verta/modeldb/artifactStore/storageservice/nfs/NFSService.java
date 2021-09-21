@@ -5,7 +5,7 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.services.s3.model.PartETag;
@@ -35,7 +35,7 @@ public class NFSService implements ArtifactStoreService {
   private static final Logger LOGGER = LogManager.getLogger(NFSService.class);
   private final Path fileStorageLocation;
   private final App app = App.getInstance();
-  private final Config config = app.config;
+  private final MDBConfig mdbConfig = app.mdbConfig;
 
   /**
    * Create NFS service bean by springBoot and create root folder if not exists
@@ -58,8 +58,7 @@ public class NFSService implements ArtifactStoreService {
         LOGGER.trace("NFS root directory already exists");
       }
     } catch (Exception ex) {
-      String errorMessage =
-          "Could not create the directory where the uploaded files will be stored.";
+      var errorMessage = "Could not create the directory where the uploaded files will be stored.";
       LOGGER.warn(errorMessage, ex);
       throw new ModelDBException(errorMessage, ex);
     }
@@ -80,21 +79,22 @@ public class NFSService implements ArtifactStoreService {
     LOGGER.trace("NFSService - storeFile called");
 
     // Validate Artifact size for trial case
-    TrialUtils.validateArtifactSizeForTrial(config.trial, artifactPath, request.getContentLength());
+    TrialUtils.validateArtifactSizeForTrial(
+        mdbConfig.trial, artifactPath, request.getContentLength());
 
     try {
-      String cleanArtifactPath = StringUtils.cleanPath(Objects.requireNonNull(artifactPath));
+      var cleanArtifactPath = StringUtils.cleanPath(Objects.requireNonNull(artifactPath));
       String[] folders = cleanArtifactPath.split("/");
 
-      StringBuilder folderPath = new StringBuilder();
-      for (int i = 0; i < folders.length - 1; i++) {
+      var folderPath = new StringBuilder();
+      for (var i = 0; i < folders.length - 1; i++) {
         folderPath.append(folders[i]);
         folderPath.append(File.separator);
       }
       LOGGER.trace("NFSService - storeFile - folder path : {}", folderPath.toString());
 
       // Copy file to the target location (Replacing existing file with the same name)
-      File foldersExists =
+      var foldersExists =
           new File(this.fileStorageLocation + File.separator + folderPath.toString());
       if (!foldersExists.exists()) {
         boolean folderCreatingStatus = foldersExists.mkdirs();
@@ -105,8 +105,7 @@ public class NFSService implements ArtifactStoreService {
       }
       LOGGER.trace("NFSService - storeFile -  folders found : {}", foldersExists.getAbsolutePath());
 
-      File destinationFile =
-          new File(this.fileStorageLocation + File.separator + cleanArtifactPath);
+      var destinationFile = new File(this.fileStorageLocation + File.separator + cleanArtifactPath);
       if (!destinationFile.exists()) {
         boolean destFileCreatingStatus = destinationFile.createNewFile();
         LOGGER.trace(
@@ -115,7 +114,7 @@ public class NFSService implements ArtifactStoreService {
             destinationFile.getAbsolutePath());
       }
       LOGGER.trace("NFSService - storeFile -  file found : {}", foldersExists.getAbsolutePath());
-      FileOutputStream fileOutputStream = new FileOutputStream(destinationFile);
+      var fileOutputStream = new FileOutputStream(destinationFile);
       IOUtils.copy(uploadedFileInputStream, fileOutputStream);
       fileOutputStream.close();
       uploadedFileInputStream.close();
@@ -125,7 +124,7 @@ public class NFSService implements ArtifactStoreService {
       LOGGER.trace("NFSService - storeFile returned");
       return destinationFile.getName();
     } catch (IOException ex) {
-      String errorMessage = "Could not store file. Please try again!";
+      var errorMessage = "Could not store file. Please try again!";
       LOGGER.warn(errorMessage, ex);
       throw new ModelDBException(errorMessage, ex);
     }
@@ -141,7 +140,7 @@ public class NFSService implements ArtifactStoreService {
   Resource loadFileAsResource(String artifactPath) throws ModelDBException {
     LOGGER.trace("NFSService - loadFileAsResource called");
     try {
-      Path filePath = this.fileStorageLocation.resolve(artifactPath).normalize();
+      var filePath = this.fileStorageLocation.resolve(artifactPath).normalize();
       Resource resource = new UrlResource(filePath.toUri());
       if (resource.exists()) {
         LOGGER.trace("NFSService - loadFileAsResource - resource exists");
@@ -168,22 +167,22 @@ public class NFSService implements ArtifactStoreService {
       LOGGER.trace("NFSService - generatePresignedUrl - put url returned");
       return getUploadUrl(
           parameters,
-          config.artifactStoreConfig.protocol,
-          config.artifactStoreConfig.artifactEndpoint.getArtifact,
-          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
-          config.artifactStoreConfig.host);
+          mdbConfig.artifactStoreConfig.getProtocol(),
+          mdbConfig.artifactStoreConfig.getArtifactEndpoint().getGetArtifact(),
+          mdbConfig.artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
+          mdbConfig.artifactStoreConfig.getHost());
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
       LOGGER.trace("NFSService - generatePresignedUrl - get url returned");
-      String filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
+      var filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
       parameters.put(ModelDBConstants.FILENAME, filename);
       return getDownloadUrl(
           parameters,
-          config.artifactStoreConfig.protocol,
-          config.artifactStoreConfig.artifactEndpoint.getArtifact,
-          config.artifactStoreConfig.pickArtifactStoreHostFromConfig,
-          config.artifactStoreConfig.host);
+          mdbConfig.artifactStoreConfig.getProtocol(),
+          mdbConfig.artifactStoreConfig.getArtifactEndpoint().getGetArtifact(),
+          mdbConfig.artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
+          mdbConfig.artifactStoreConfig.getHost());
     } else {
-      String errorMessage = "Unsupported HTTP Method for NFS Presigned URL";
+      var errorMessage = "Unsupported HTTP Method for NFS Presigned URL";
       throw new InvalidArgumentException(errorMessage);
     }
   }
@@ -219,11 +218,11 @@ public class NFSService implements ArtifactStoreService {
   public InputStream downloadFileFromStorage(String artifactPath) throws ModelDBException {
 
     try {
-      Path filePath = this.fileStorageLocation.resolve(artifactPath).normalize();
+      var filePath = this.fileStorageLocation.resolve(artifactPath).normalize();
       Resource resource = new UrlResource(filePath.toUri());
       if (resource.exists()) {
         LOGGER.info("file exist in NFS storage");
-        InputStream fileInputStream = resource.getInputStream();
+        var fileInputStream = resource.getInputStream();
         LOGGER.info("file fetched successfully from storage");
         return fileInputStream;
       }

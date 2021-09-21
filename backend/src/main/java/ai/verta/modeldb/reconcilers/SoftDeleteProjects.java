@@ -1,7 +1,7 @@
 package ai.verta.modeldb.reconcilers;
 
 import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -15,61 +15,59 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 
 public class SoftDeleteProjects extends Reconciler<String> {
-  private static final Logger LOGGER = LogManager.getLogger(SoftDeleteProjects.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
   public SoftDeleteProjects(
-      ReconcilerConfig config, RoleService roleService, FutureJdbi futureJdbi, Executor executor) {
-    super(config, LOGGER, futureJdbi, executor, false);
-    this.roleService = roleService;
+      ReconcilerConfig config,
+      MDBRoleService mdbRoleService,
+      FutureJdbi futureJdbi,
+      Executor executor) {
+    super(config, LogManager.getLogger(SoftDeleteProjects.class), futureJdbi, executor, false);
+    this.mdbRoleService = mdbRoleService;
   }
 
   @Override
   public void resync() {
-    String queryString =
+    var queryString =
         String.format(
             "select id from %s where deleted=:deleted OR (created=:created AND date_created < :dateCreated) ",
             ProjectEntity.class.getSimpleName());
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query deletedQuery = session.createQuery(queryString);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var deletedQuery = session.createQuery(queryString);
       deletedQuery.setParameter("deleted", true);
       deletedQuery.setParameter("created", false);
       deletedQuery.setParameter("dateCreated", new Date().getTime() - 60000L); // before 1 min
-      deletedQuery.setMaxResults(config.maxSync);
+      deletedQuery.setMaxResults(config.getMaxSync());
       deletedQuery.stream().forEach(id -> this.insert((String) id));
     }
   }
 
   @Override
   protected ReconcileResult reconcile(Set<String> ids) {
-    LOGGER.debug("Reconciling projects " + ids.toString());
+    logger.debug("Reconciling projects " + ids.toString());
 
-    roleService.deleteEntityResourcesWithServiceUser(
+    mdbRoleService.deleteEntityResourcesWithServiceUser(
         new ArrayList<>(ids), ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      String projectsQueryString =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var projectsQueryString =
           String.format("from %s where id in (:ids)", ProjectEntity.class.getSimpleName());
 
-      Query projectDeleteQuery = session.createQuery(projectsQueryString);
+      var projectDeleteQuery = session.createQuery(projectsQueryString);
       projectDeleteQuery.setParameter("ids", ids);
       List<ProjectEntity> projectEntities = projectDeleteQuery.list();
 
-      Transaction transaction = session.beginTransaction();
-      String updateDeletedChildren =
+      var transaction = session.beginTransaction();
+      var updateDeletedChildren =
           String.format(
               "UPDATE %s SET deleted=:deleted WHERE project_id IN (:ids)",
               ExperimentEntity.class.getSimpleName());
-      Query updateDeletedChildrenQuery = session.createQuery(updateDeletedChildren);
+      var updateDeletedChildrenQuery = session.createQuery(updateDeletedChildren);
       updateDeletedChildrenQuery.setParameter("deleted", true);
       updateDeletedChildrenQuery.setParameter("ids", ids);
       updateDeletedChildrenQuery.executeUpdate();

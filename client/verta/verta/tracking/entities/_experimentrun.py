@@ -103,6 +103,10 @@ class ExperimentRun(_DeployableEntity):
         self._metrics = _utils.unravel_key_values(self._msg.metrics)
 
     @property
+    def _MODEL_KEY(self):
+        return _artifact_utils.MODEL_KEY
+
+    @property
     def workspace(self):
         self._refresh_cache()
         proj_id = self._msg.project_id
@@ -165,7 +169,16 @@ class ExperimentRun(_DeployableEntity):
         print("created new ExperimentRun: {}".format(expt_run.name))
         return expt_run
 
-    def _log_artifact(self, key, artifact, artifact_type, extension=None, method=None, overwrite=False):
+    def _log_artifact(
+        self,
+        key,
+        artifact,
+        artifact_type,
+        extension=None,
+        method=None,
+        framework=None,
+        overwrite=False,
+    ):
         """
         Logs an artifact to this Experiment Run.
 
@@ -184,7 +197,11 @@ class ExperimentRun(_DeployableEntity):
         extension : str, optional
             Filename extension associated with the artifact.
         method : str, optional
-            Serialization method used to produce the bytestream, if `artifact` was already serialized by verta.
+            Serialization method used to produce the bytestream, if `artifact`
+            was already serialized by Verta.
+        framework : str, optional
+            Framework with which the artifact was created. This is
+            `model_type` returned by `_artifact_utils.serialize_model()`
         overwrite : bool, default False
             Whether to allow overwriting an existing artifact with key `key`.
 
@@ -199,44 +216,36 @@ class ExperimentRun(_DeployableEntity):
             artifact_stream, method = _artifact_utils.ensure_bytestream(
                 artifact)
 
-        if extension is None:
-            extension = _artifact_utils.ext_from_method(method)
+        artifact_msg = self._create_artifact_msg(
+            key,
+            artifact_stream,
+            artifact_type=artifact_type,
+            method=method,
+            framework=framework,
+            extension=extension,
+        )
 
-        # calculate checksum
-        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
-        artifact_stream.seek(0)
-
-        # determine basename
-        #     The key might already contain the file extension, thanks to our hard-coded deployment
-        #     keys e.g. "model.pkl" and "model_api.json".
-        if extension is None:
-            basename = key
-        elif key.endswith(os.extsep + extension):
-            basename = key
-        else:
-            basename = key + os.extsep + extension
-
-        # build upload path from checksum and basename
-        artifact_path = os.path.join(artifact_hash, basename)
-
+        # augment artifact_path and path_only based on VERTA_ARTIFACT_DIR
         # TODO: incorporate into config
         VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR', "")
         VERTA_ARTIFACT_DIR = os.path.expanduser(VERTA_ARTIFACT_DIR)
         if VERTA_ARTIFACT_DIR:
             print("set artifact directory from environment:")
             print("    " + VERTA_ARTIFACT_DIR)
-            artifact_path = os.path.join(VERTA_ARTIFACT_DIR, artifact_path)
+            artifact_path = os.path.join(
+                VERTA_ARTIFACT_DIR,
+                artifact_msg.path,
+            )
             pathlib2.Path(artifact_path).parent.mkdir(
-                parents=True, exist_ok=True)
+                parents=True,
+                exist_ok=True,
+            )
+
+            artifact_msg.path = artifact_path
+            artifact_msg.path_only = True
 
         # log key to ModelDB
-        Message = _ExperimentRunService.LogArtifact
-        artifact_msg = _CommonCommonService.Artifact(key=key,
-                                                     path=artifact_path,
-                                                     path_only=True if VERTA_ARTIFACT_DIR else False,
-                                                     artifact_type=artifact_type,
-                                                     filename_extension=extension)
-        msg = Message(id=self.id, artifact=artifact_msg)
+        msg = _ExperimentRunService.LogArtifact(id=self.id, artifact=artifact_msg)
         data = _utils.proto_to_json(msg)
         if overwrite:
             response = _utils.make_request("DELETE",
@@ -1229,8 +1238,15 @@ class ExperimentRun(_DeployableEntity):
                                _CommonCommonService.ArtifactTypeEnum.BLOB, 'zip', overwrite=overwrite)
 
         # upload model
-        self._log_artifact(_artifact_utils.MODEL_KEY, serialized_model,
-                           _CommonCommonService.ArtifactTypeEnum.MODEL, extension, method, overwrite=overwrite)
+        self._log_artifact(
+            self._MODEL_KEY,
+            serialized_model,
+            _CommonCommonService.ArtifactTypeEnum.MODEL,
+            extension,
+            method,
+            model_type,
+            overwrite=overwrite,
+        )
 
     def get_model(self):
         """
@@ -1242,7 +1258,7 @@ class ExperimentRun(_DeployableEntity):
             Model for deployment.
 
         """
-        model, _ = self._get_artifact(_artifact_utils.MODEL_KEY)
+        model, _ = self._get_artifact(self._MODEL_KEY)
         return _artifact_utils.deserialize_model(model, error_ok=True)
 
     def log_image(self, key, image, overwrite=False):
@@ -1523,7 +1539,7 @@ class ExperimentRun(_DeployableEntity):
         return download_to_path
 
     def download_model(self, download_to_path):
-        return self.download_artifact(_artifact_utils.MODEL_KEY, download_to_path)
+        return self.download_artifact(self._MODEL_KEY, download_to_path)
 
     def get_artifact_parts(self, key):
         endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
@@ -1660,8 +1676,6 @@ class ExperimentRun(_DeployableEntity):
             raise ValueError(
                 "environment already exists; consider setting overwrite=True")
 
-        # need to call .environment on the proto object because ._as_proto produces
-        # ai.verta.modeldb.versioning.Blob, not ai.verta.modeldb.versioning.EnvironmentBlob
         msg = _ExperimentRunService.LogEnvironment(
             id=self.id, environment=env._as_env_proto())
         response = self._conn.make_proto_request(

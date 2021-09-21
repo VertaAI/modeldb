@@ -78,7 +78,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         msg = self._msg
         artifact_keys = self.get_artifact_keys()
         if self.has_model:
-            artifact_keys.append(_artifact_utils.REGISTRY_MODEL_KEY)
+            artifact_keys.append(self._MODEL_KEY)
 
         return "\n".join(
             (
@@ -121,6 +121,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "artifact keys: {}".format(artifact_keys),
             )
         )
+
+    @property
+    def _MODEL_KEY(self):
+        return _artifact_utils.REGISTRY_MODEL_KEY
 
     @property
     def name(self):
@@ -258,7 +262,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def _get_artifact_msg(self, key):
         self._refresh_cache()
 
-        if key == _artifact_utils.REGISTRY_MODEL_KEY:
+        if key == self._MODEL_KEY:
             if not self.has_model:
                 raise KeyError("no model associated with this version")
             return self._msg.model
@@ -317,24 +321,20 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         serialized_model, method, model_type = _artifact_utils.serialize_model(model)
 
-        try:
-            extension = _artifact_utils.get_file_ext(serialized_model)
-        except (TypeError, ValueError):
-            extension = _artifact_utils.ext_from_method(method)
-
         # Create artifact message and update ModelVersion's message:
         model_msg = self._create_artifact_msg(
-            _artifact_utils.REGISTRY_MODEL_KEY,
+            self._MODEL_KEY,
             serialized_model,
             artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL,
-            extension=extension,
+            method=method,
+            framework=model_type,
         )
         model_version_update = self.ModelVersionMessage(model=model_msg)
         self._update(model_version_update)
 
         # Upload the artifact to ModelDB:
         self._upload_artifact(
-            _artifact_utils.REGISTRY_MODEL_KEY,
+            self._MODEL_KEY,
             serialized_model,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
@@ -380,14 +380,14 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         """
         model_artifact = self._get_artifact(
-            _artifact_utils.REGISTRY_MODEL_KEY,
+            self._MODEL_KEY,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
         return _artifact_utils.deserialize_model(model_artifact, error_ok=True)
 
     def download_model(self, download_to_path):
         return self.download_artifact(
-            _artifact_utils.REGISTRY_MODEL_KEY, download_to_path
+            self._MODEL_KEY, download_to_path
         )
 
     def del_model(self):
@@ -434,11 +434,11 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         # TODO: should validate keys, but can't here because this public
         #       method is also used to log internal artifacts
         # _artifact_utils.validate_key(key)
-        if key == _artifact_utils.REGISTRY_MODEL_KEY:
+        if key == self._MODEL_KEY:
             raise ValueError(
                 'the key "{}" is reserved for model;'
                 " consider using log_model() instead".format(
-                    _artifact_utils.REGISTRY_MODEL_KEY
+                    self._MODEL_KEY
                 )
             )
 
@@ -464,14 +464,12 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 artifact = open(artifact, "rb")
         artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
-        if not _extension:
-            try:
-                _extension = _artifact_utils.get_file_ext(artifact_stream)
-            except (TypeError, ValueError):
-                _extension = _artifact_utils.ext_from_method(method)
-
         artifact_msg = self._create_artifact_msg(
-            key, artifact_stream, artifact_type=artifact_type, extension=_extension
+            key,
+            artifact_stream,
+            artifact_type=artifact_type,
+            method=method,
+            extension=_extension,
         )
         if same_key_ind == -1:
             self._msg.artifacts.append(artifact_msg)
@@ -557,7 +555,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             Name of the artifact.
 
         """
-        if key == _artifact_utils.REGISTRY_MODEL_KEY:
+        if key == self._MODEL_KEY:
             raise ValueError(
                 "model can't be deleted through del_artifact(); consider using del_model() instead"
             )
@@ -709,36 +707,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             _utils.raise_for_http_error(response)
 
         print("upload complete")
-
-    def _create_artifact_msg(self, key, artifact_stream, artifact_type, extension=None):
-        # calculate checksum
-        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
-        artifact_stream.seek(0)
-
-        # determine basename
-        #     The key might already contain the file extension, thanks to our hard-coded deployment
-        #     keys e.g. "model.pkl" and "model_api.json".
-        if extension is None:
-            basename = key
-        elif key.endswith(os.extsep + extension):
-            basename = key
-        else:
-            basename = key + os.extsep + extension
-
-        # build upload path from checksum and basename
-        artifact_path = os.path.join(artifact_hash, basename)
-
-        # TODO: support VERTA_ARTIFACT_DIR
-
-        # log key to ModelDB
-        artifact_msg = _CommonCommonService.Artifact(
-            key=key,
-            path=artifact_path,
-            path_only=False,
-            artifact_type=artifact_type,
-            filename_extension=extension,
-        )
-        return artifact_msg
 
     def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists

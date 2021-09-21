@@ -8,7 +8,7 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TestConfig extends Config {
+public class TestConfig extends MDBConfig {
   private static TestConfig config = null;
 
   public Map<String, ServiceUserConfig> testUsers = new HashMap<>();
@@ -22,15 +22,15 @@ public class TestConfig extends Config {
   }
 
   public void Validate() throws InvalidConfigException {
-    if (database == null) throw new InvalidConfigException("database", TestConfig.MISSING_REQUIRED);
-    database.Validate("database");
+    if (getDatabase() == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
+    getDatabase().Validate("database");
 
-    if (service_user != null) {
-      service_user.Validate("service_user");
+    if (getService_user() != null) {
+      getService_user().Validate("service_user");
     }
 
     if (config.hasAuth() && testUsers == null) {
-      throw new InvalidConfigException("testUsers", TestConfig.MISSING_REQUIRED);
+      throw new InvalidConfigException("testUsers", MISSING_REQUIRED);
     }
 
     for (Map.Entry<String, ServiceUserConfig> entry : testUsers.entrySet()) {
@@ -53,18 +53,18 @@ public class TestConfig extends Config {
   }
 
   public boolean hasAuth() {
-    return authService != null;
+    return getAuthService() != null;
   }
 
   @Override
   public boolean hasServiceAccount() {
-    return service_user != null;
+    return getService_user() != null;
   }
 
   public FutureJdbi getJdbi() {
     if (this.jdbi == null) {
       // Initialize HikariCP and jdbi
-      final var databaseConfig = config.database;
+      final var databaseConfig = config.getDatabase();
       this.jdbi = initializeFutureJdbi(databaseConfig, "modeldb-test");
     }
     return this.jdbi;

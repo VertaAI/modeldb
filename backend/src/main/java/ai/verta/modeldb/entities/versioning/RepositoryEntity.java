@@ -1,11 +1,10 @@
 package ai.verta.modeldb.entities.versioning;
 
 import ai.verta.common.KeyValue;
-import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryModifierEnum;
@@ -13,12 +12,12 @@ import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.Repository;
-import ai.verta.modeldb.versioning.Repository.Builder;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
 import com.google.api.client.util.Objects;
+import java.io.Serializable;
 import java.util.*;
 import javax.persistence.*;
 import org.hibernate.annotations.LazyCollection;
@@ -26,7 +25,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "repository")
-public class RepositoryEntity {
+public class RepositoryEntity implements Serializable {
 
   public RepositoryEntity() {}
 
@@ -205,11 +204,11 @@ public class RepositoryEntity {
   }
 
   public Repository toProto(
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       AuthService authService,
       Map<Long, Workspace> cacheWorkspaceMap,
       Map<String, GetResourcesResponseItem> getResourcesMap) {
-    final Builder builder = Repository.newBuilder().setId(this.id);
+    final var builder = Repository.newBuilder().setId(this.id);
     builder
         .setName(this.name)
         .setDateCreated(this.date_created)
@@ -218,7 +217,7 @@ public class RepositoryEntity {
             RdbmsUtils.convertAttributeEntityListFromAttributes(getAttributeMapping()))
         .setVersionNumber(this.version_number);
 
-    ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+    var modelDBServiceResourceTypes =
         ModelDBUtils.getModelDBServiceResourceTypesFromRepository(this);
 
     GetResourcesResponseItem responseItem;
@@ -228,7 +227,7 @@ public class RepositoryEntity {
       responseItem = getResourcesMap.get(String.valueOf(this.id));
     } else {
       responseItem =
-          roleService.getEntityResource(
+          mdbRoleService.getEntityResource(
               Optional.of(String.valueOf(this.id)), Optional.empty(), modelDBServiceResourceTypes);
       if (getResourcesMap == null) {
         getResourcesMap = new HashMap<>();
@@ -242,7 +241,7 @@ public class RepositoryEntity {
 
     RepositoryVisibility visibility;
     if (isDataset()) {
-      DatasetVisibility datasetVisibility =
+      var datasetVisibility =
           (DatasetVisibility)
               ModelDBUtils.getOldVisibility(
                   modelDBServiceResourceTypes, responseItem.getVisibility());
@@ -272,6 +271,9 @@ public class RepositoryEntity {
       case USER_ID:
         builder.setWorkspaceId(workspace.getUserId());
         builder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+        break;
+      default:
+        // Do nothing
         break;
     }
 
@@ -306,12 +308,12 @@ public class RepositoryEntity {
   private void updateAttribute(List<KeyValue> attributes) {
     if (attributes != null && !attributes.isEmpty()) {
       for (KeyValue attribute : attributes) {
-        AttributeEntity updatedAttributeObj =
+        var updatedAttributeObj =
             RdbmsUtils.generateAttributeEntity(this, ModelDBConstants.ATTRIBUTES, attribute);
 
         List<AttributeEntity> existingAttributes = this.getAttributeMapping();
         if (!existingAttributes.isEmpty()) {
-          boolean doesExist = false;
+          var doesExist = false;
           for (AttributeEntity existingAttribute : existingAttributes) {
             if (existingAttribute.getKey().equals(attribute.getKey())) {
               existingAttribute.setKey(updatedAttributeObj.getKey());

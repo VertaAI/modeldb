@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 public abstract class Connection {
   private final Optional<TracingClientInterceptor> tracingClientInterceptor;
 
-  public Connection(Config config) {
+  protected Connection(Config config) {
     tracingClientInterceptor = config.getTracingClientInterceptor();
   }
 
@@ -30,7 +30,7 @@ public abstract class Connection {
   }
 
   public static <T> T withContextCredentials(ServiceUserConfig config, Supplier<T> supplier) {
-    Context previous = inplaceSetContextCredentials(config);
+    var previous = inplaceSetContextCredentials(config);
 
     try {
       return supplier.get();
@@ -40,7 +40,7 @@ public abstract class Connection {
   }
 
   public static void withContextCredentials(ServiceUserConfig config, Runnable run) {
-    Context previous = inplaceSetContextCredentials(config);
+    var previous = inplaceSetContextCredentials(config);
 
     try {
       run.run();
@@ -51,18 +51,16 @@ public abstract class Connection {
 
   // DO NOT use outside of tests as this causes nasty grpc error messages
   public static Context inplaceSetContextCredentials(ServiceUserConfig config) {
-    final Metadata authHeaders = new Metadata();
-    Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-    Metadata.Key<String> dev_key =
-        Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
-    Metadata.Key<String> dev_key_hyphen =
-        Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
-    Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+    final var authHeaders = new Metadata();
+    var emailKey = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
+    var devKey = Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+    var devKeyHyphen = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+    var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-    authHeaders.put(email_key, config.email);
-    authHeaders.put(dev_key, config.devKey);
-    authHeaders.put(dev_key_hyphen, config.devKey);
-    authHeaders.put(source_key, "PythonClient");
+    authHeaders.put(emailKey, config.getEmail());
+    authHeaders.put(devKey, config.getDevKey());
+    authHeaders.put(devKeyHyphen, config.getDevKey());
+    authHeaders.put(sourceKey, "PythonClient");
 
     // Force using the ROOT context so that we must lose any context of the current execution
     return Context.ROOT.withValue(MetadataForwarder.METADATA_INFO, authHeaders).attach();

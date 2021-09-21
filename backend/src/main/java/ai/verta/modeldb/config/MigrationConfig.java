@@ -1,5 +1,6 @@
 package ai.verta.modeldb.config;
 
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 
 public class MigrationConfig {

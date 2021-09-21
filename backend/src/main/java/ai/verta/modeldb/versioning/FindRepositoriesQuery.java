@@ -4,9 +4,8 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -55,7 +54,7 @@ public class FindRepositoriesQuery {
 
     final Session session;
     final AuthService authService;
-    final RoleService roleService;
+    final MDBRoleService mdbRoleService;
     String countQueryString;
     Map<String, Object> parametersMap = new HashMap<>();
 
@@ -66,10 +65,10 @@ public class FindRepositoriesQuery {
     private Integer pageLimit = 0;
 
     public FindRepositoriesHQLQueryBuilder(
-        Session session, AuthService authService, RoleService roleService) {
+        Session session, AuthService authService, MDBRoleService mdbRoleService) {
       this.session = session;
       this.authService = authService;
-      this.roleService = roleService;
+      this.mdbRoleService = mdbRoleService;
     }
 
     public FindRepositoriesHQLQueryBuilder setRepoIds(List<Long> repoIds) {
@@ -101,7 +100,7 @@ public class FindRepositoriesQuery {
     }
 
     public Query buildQuery() throws ModelDBException {
-      Query query = session.createQuery(getHQLQueryString());
+      var query = session.createQuery(getHQLQueryString());
       RdbmsUtils.setParameterInQuery(query, parametersMap);
 
       if (this.pageNumber != null
@@ -119,20 +118,20 @@ public class FindRepositoriesQuery {
     }
 
     public Query buildCountQuery() {
-      Query query = session.createQuery(this.countQueryString);
+      var query = session.createQuery(this.countQueryString);
       RdbmsUtils.setParameterInQuery(query, parametersMap);
       return query;
     }
 
     private String getHQLQueryString() throws ModelDBException {
-      String alias = " repo";
+      var alias = " repo";
       StringBuilder queryBuilder =
           new StringBuilder(" FROM ").append(RepositoryEntity.class.getSimpleName()).append(alias);
 
-      StringBuilder joinClause = new StringBuilder();
+      var joinClause = new StringBuilder();
       Map<String, String> joinAliasMap = new HashMap<>();
       if (this.predicates != null && !this.predicates.isEmpty()) {
-        final int[] index = {0};
+        final var index = new int[] {0};
         this.predicates.forEach(
             keyValueQuery -> {
               if (keyValueQuery.getKey().contains(ModelDBConstants.LABEL)) {
@@ -149,7 +148,7 @@ public class FindRepositoriesQuery {
                     .append(" ")
                     .append(joinAlias)
                     .append(" ON ");
-                String[] joinClauses = new String[2];
+                var joinClauses = new String[2];
                 joinClauses[0] =
                     joinAlias
                         + ".id.entity_hash = CAST("
@@ -170,21 +169,21 @@ public class FindRepositoriesQuery {
 
       List<String> whereClauseList = new ArrayList<>();
       if (this.predicates != null && !this.predicates.isEmpty()) {
-        for (int index = 0; index < this.predicates.size(); index++) {
-          KeyValueQuery keyValueQuery = this.predicates.get(index);
+        for (var index = 0; index < this.predicates.size(); index++) {
+          var keyValueQuery = this.predicates.get(index);
           if (keyValueQuery.getKey().contains(ModelDBConstants.LABEL)) {
             String joinAlias = joinAliasMap.get(keyValueQuery.getKey() + index);
-            StringBuilder joinStringBuilder = new StringBuilder(joinAlias).append(".id.label ");
+            var joinStringBuilder = new StringBuilder(joinAlias).append(".id.label ");
             VersioningUtils.setQueryParameters(
                 index, joinStringBuilder, keyValueQuery, parametersMap);
             whereClauseList.add(joinStringBuilder.toString());
           } else if (keyValueQuery.getKey().contains(ModelDBConstants.OWNER)) {
-            StringBuilder predicateStringBuilder =
+            var predicateStringBuilder =
                 new StringBuilder(alias).append(".").append(ModelDBConstants.ID);
             setOwnerPredicate(index, keyValueQuery, predicateStringBuilder);
             whereClauseList.add(predicateStringBuilder.toString());
           } else {
-            StringBuilder predicateStringBuilder = new StringBuilder();
+            var predicateStringBuilder = new StringBuilder();
             predicateStringBuilder
                 .append("lower(")
                 .append(alias)
@@ -209,7 +208,7 @@ public class FindRepositoriesQuery {
               + ".repositoryAccessModifier = "
               + RepositoryEnums.RepositoryModifierEnum.REGULAR.ordinal());
 
-      StringBuilder whereClause = new StringBuilder();
+      var whereClause = new StringBuilder();
       whereClause.append(
           VersioningUtils.setPredicatesWithQueryOperator(
               "AND", whereClauseList.toArray(new String[0])));
@@ -222,7 +221,7 @@ public class FindRepositoriesQuery {
               .append(ModelDBConstants.DATE_UPDATED)
               .append(" DESC");
 
-      StringBuilder finalQueryBuilder = new StringBuilder();
+      var finalQueryBuilder = new StringBuilder();
       if (!joinClause.toString().isEmpty()) {
         finalQueryBuilder.append("SELECT ").append(alias).append(" ");
       }
@@ -234,7 +233,7 @@ public class FindRepositoriesQuery {
       finalQueryBuilder.append(orderClause);
 
       // Build count query
-      StringBuilder countQueryBuilder = new StringBuilder();
+      var countQueryBuilder = new StringBuilder();
       if (!joinClause.toString().isEmpty()) {
         countQueryBuilder.append("SELECT COUNT(").append(alias).append(") ");
       } else {
@@ -254,15 +253,15 @@ public class FindRepositoriesQuery {
     private void setOwnerPredicate(
         int index, KeyValueQuery keyValueQuery, StringBuilder predicateStringBuilder)
         throws ModelDBException {
-      OperatorEnum.Operator operator = keyValueQuery.getOperator();
+      var operator = keyValueQuery.getOperator();
       List<UserInfo> userInfoList;
       if (operator.equals(OperatorEnum.Operator.CONTAIN)
           || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-        UserInfoPaginationDTO userInfoPaginationDTO =
+        var userInfoPaginationDTO =
             authService.getFuzzyUserInfoList(keyValueQuery.getValue().getStringValue());
         userInfoList = userInfoPaginationDTO.getUserInfoList();
       } else {
-        String ownerIdsArrString = keyValueQuery.getValue().getStringValue();
+        var ownerIdsArrString = keyValueQuery.getValue().getStringValue();
         List<String> ownerIds = new ArrayList<>();
         if (operator.equals(OperatorEnum.Operator.IN)) {
           ownerIds = Arrays.asList(ownerIdsArrString.split(","));
@@ -271,7 +270,7 @@ public class FindRepositoriesQuery {
         }
         Map<String, UserInfo> userInfoMap =
             authService.getUserInfoFromAuthServer(
-                new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList());
+                new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList(), false);
         userInfoList = new ArrayList<>(userInfoMap.values());
       }
 
@@ -279,7 +278,7 @@ public class FindRepositoriesQuery {
         Set<String> repositoryIdSet =
             RdbmsUtils.getResourceIdsFromUserWorkspaces(
                 authService,
-                roleService,
+                mdbRoleService,
                 ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
                 userInfoList);
         List<Long> resourcesIds =

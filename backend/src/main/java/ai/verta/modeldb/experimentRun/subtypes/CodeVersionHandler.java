@@ -18,11 +18,10 @@ import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 public class CodeVersionHandler {
   private static Logger LOGGER = LogManager.getLogger(CodeVersionHandler.class);
+  private static final String RUN_ID_QUERY_PARAM = "run_id";
 
   private final Executor executor;
   private final FutureJdbi jdbi;
@@ -40,15 +39,14 @@ public class CodeVersionHandler {
                 handle
                     .createQuery(
                         "select code_version_snapshot_id from experiment_run where id=:run_id")
-                    .bind("run_id", entityId)
+                    .bind(RUN_ID_QUERY_PARAM, entityId)
                     .mapTo(Long.class)
                     .findOne())
         .thenApply(
             maybeSnapshotId ->
                 maybeSnapshotId.map(
                     snapshotId -> {
-                      try (Session session =
-                          modelDBHibernateUtil.getSessionFactory().openSession()) {
+                      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
                         final CodeVersionEntity entity =
                             session.get(
                                 CodeVersionEntity.class,
@@ -68,7 +66,7 @@ public class CodeVersionHandler {
                 handle
                     .createQuery(
                         "select code_version_snapshot_id from experiment_run where id=:run_id")
-                    .bind("run_id", request.getId())
+                    .bind(RUN_ID_QUERY_PARAM, request.getId())
                     .mapTo(Long.class)
                     .findOne())
         .thenAccept(
@@ -76,12 +74,12 @@ public class CodeVersionHandler {
             maybeSnapshotId -> {
               if (maybeSnapshotId.isPresent()) {
                 if (request.getOverwrite()) {
-                  try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                    Transaction transaction = session.beginTransaction();
+                  try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                    var transaction = session.beginTransaction();
                     session
                         .createSQLQuery(
                             "UPDATE experiment_run SET code_version_snapshot_id = null WHERE id=:run_id")
-                        .setParameter("run_id", request.getId())
+                        .setParameter(RUN_ID_QUERY_PARAM, request.getId())
                         .executeUpdate();
                     final CodeVersionEntity entity =
                         session.get(
@@ -100,11 +98,11 @@ public class CodeVersionHandler {
         .thenApply(
             // Create the new snapshot using hibernate
             unused -> {
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
                 final var snapshot =
                     RdbmsUtils.generateCodeVersionEntity(
                         ModelDBConstants.CODE_VERSION, request.getCodeVersion());
-                Transaction transaction = session.beginTransaction();
+                var transaction = session.beginTransaction();
                 session.saveOrUpdate(snapshot);
                 transaction.commit();
                 return snapshot.getId();
@@ -120,7 +118,7 @@ public class CodeVersionHandler {
                             .createUpdate(
                                 "update experiment_run set code_version_snapshot_id=:code_id where id=:run_id")
                             .bind("code_id", snapshotId)
-                            .bind("run_id", request.getId())
+                            .bind(RUN_ID_QUERY_PARAM, request.getId())
                             .execute()),
             executor);
   }
@@ -142,7 +140,7 @@ public class CodeVersionHandler {
               Map<String, CodeVersion> codeVersionMap = new HashMap<>();
               for (AbstractMap.SimpleEntry<String, Long> entry : maybeSnapshotIds) {
                 if (entry.getValue() != null && entry.getValue() != 0) {
-                  try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                  try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
                     final CodeVersionEntity entity =
                         session.get(
                             CodeVersionEntity.class, entry.getValue(), LockMode.PESSIMISTIC_WRITE);

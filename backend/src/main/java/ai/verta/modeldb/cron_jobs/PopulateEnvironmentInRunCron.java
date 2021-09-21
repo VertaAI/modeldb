@@ -5,7 +5,7 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -29,14 +29,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.TimerTask;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 
 public class PopulateEnvironmentInRunCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(PopulateEnvironmentInRunCron.class);
@@ -45,8 +42,8 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
   private final Integer recordUpdateLimit;
 
   public PopulateEnvironmentInRunCron(
-      ArtifactStoreService artifactStoreService, Integer recordUpdateLimit, Config config) {
-    this.artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService, config);
+      ArtifactStoreService artifactStoreService, Integer recordUpdateLimit, MDBConfig mdbConfig) {
+    this.artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService, mdbConfig);
     this.recordUpdateLimit = recordUpdateLimit;
   }
 
@@ -55,7 +52,7 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
   public void run() {
     LOGGER.info("PopulateEnvironmentInRunCron wakeup");
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       // Update experimentRun
       updateExperimentRuns(session);
     } catch (Exception ex) {
@@ -76,7 +73,7 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
   private void updateExperimentRuns(Session session) {
     LOGGER.trace("ExperimentRun updating");
 
-    String getExperimentRunQueryString =
+    var getExperimentRunQueryString =
         new StringBuilder("SELECT expr FROM ")
             .append(ExperimentRunEntity.class.getSimpleName())
             .append(" expr LEFT JOIN ArtifactEntity ar ")
@@ -89,7 +86,7 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
             .append(" AND expr.environment IS NULL")
             .toString();
 
-    Query getExperimentRunQuery = session.createQuery(getExperimentRunQueryString);
+    var getExperimentRunQuery = session.createQuery(getExperimentRunQueryString);
     getExperimentRunQuery.setParameter("deleted", false);
     getExperimentRunQuery.setParameter("fieldType", ModelDBConstants.ARTIFACTS);
     getExperimentRunQuery.setParameter(
@@ -109,21 +106,20 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
                   ? experimentRunEntity.getArtifactEntityMap().get(ModelDBConstants.ARTIFACTS)
                   : Collections.emptyList();
           if (!experimentRunArtifacts.isEmpty()) {
-            PythonEnvironmentBlob.Builder pythonEnvironmentBuilder =
-                PythonEnvironmentBlob.newBuilder();
+            var pythonEnvironmentBuilder = PythonEnvironmentBlob.newBuilder();
             createPythonEnvironmentFromArtifacts(
                 artifactStoreDAO, experimentRunArtifacts, pythonEnvironmentBuilder);
 
             if (pythonEnvironmentBuilder.getConstraintsCount() > 0
                 || pythonEnvironmentBuilder.hasVersion()) {
-              EnvironmentBlob.Builder environmentBlobBuilder = EnvironmentBlob.newBuilder();
+              var environmentBlobBuilder = EnvironmentBlob.newBuilder();
               environmentBlobBuilder.setPython(pythonEnvironmentBuilder.build());
               experimentRunEntity.setEnvironment(
                   ModelDBUtils.getStringFromProtoObject(environmentBlobBuilder.build()));
             }
 
             try {
-              Transaction transaction = session.beginTransaction();
+              var transaction = session.beginTransaction();
               session.update(experimentRunEntity);
               transaction.commit();
               experimentRunIds.add(experimentRunEntity.getId());
@@ -164,15 +160,14 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
       PythonEnvironmentBlob.Builder pythonEnvironmentBuilder,
       ArtifactEntity artifact)
       throws ModelDBException {
-    InputStream inputStream = artifactStoreDAO.downloadArtifact(artifact.getPath());
+    var inputStream = artifactStoreDAO.downloadArtifact(artifact.getPath());
 
-    try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
-      Pattern pattern = Pattern.compile(ModelDBConstants.VER_SPEC_PATTERN);
+    try (var br = new BufferedReader(new InputStreamReader(inputStream))) {
+      var pattern = Pattern.compile(ModelDBConstants.VER_SPEC_PATTERN);
       String line;
       while ((line = br.readLine()) != null) {
-        Matcher matcher = pattern.matcher(line);
-        PythonRequirementEnvironmentBlob.Builder requirementEnvironmentBlob =
-            PythonRequirementEnvironmentBlob.newBuilder();
+        var matcher = pattern.matcher(line);
+        var requirementEnvironmentBlob = PythonRequirementEnvironmentBlob.newBuilder();
         if (matcher.find()) {
           String[] requirementArr = pattern.split(line);
           requirementEnvironmentBlob.setLibrary(requirementArr[0]);
@@ -190,9 +185,9 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
   }
 
   public VersionEnvironmentBlob getVersionEnvironmentBlob(String version) {
-    VersionEnvironmentBlob.Builder versionBuilder = VersionEnvironmentBlob.newBuilder();
+    var versionBuilder = VersionEnvironmentBlob.newBuilder();
     String[] versionArr = version.split("\\.");
-    int validVersionLength = 0;
+    var validVersionLength = 0;
     if (versionArr.length > 0) {
       String majorStr = versionArr[0];
       try {
@@ -275,7 +270,7 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
       PythonEnvironmentBlob.Builder pythonEnvironmentBuilder,
       ArtifactEntity artifact)
       throws ModelDBException {
-    InputStream inputStream = artifactStoreDAO.downloadArtifact(artifact.getPath());
+    var inputStream = artifactStoreDAO.downloadArtifact(artifact.getPath());
 
     addVersionInPythonEnvironmentBlob(pythonEnvironmentBuilder, inputStream);
   }
@@ -284,24 +279,24 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
       PythonEnvironmentBlob.Builder pythonEnvironmentBuilder, InputStream inputStream)
       throws ModelDBException {
 
-    try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
-      StringBuilder sb = new StringBuilder();
+    try (var bufferedReader = new BufferedReader(new InputStreamReader(inputStream))) {
+      var sb = new StringBuilder();
       String line;
       while ((line = bufferedReader.readLine()) != null) {
         sb.append(line);
       }
 
-      Gson gson = new Gson();
-      JsonObject jsonObject = gson.fromJson(sb.toString(), JsonObject.class);
+      var gson = new Gson();
+      var jsonObject = gson.fromJson(sb.toString(), JsonObject.class);
       if (jsonObject.has("model_packaging")) {
-        JsonObject modelPackagingObject = jsonObject.get("model_packaging").getAsJsonObject();
+        var modelPackagingObject = jsonObject.get("model_packaging").getAsJsonObject();
         if (modelPackagingObject.has("python_version")) {
-          String version = modelPackagingObject.get("python_version").getAsString();
+          var version = modelPackagingObject.get("python_version").getAsString();
           pythonEnvironmentBuilder.setVersion(getVersionEnvironmentBlob(version));
         }
       }
     } catch (JsonSyntaxException | MalformedJsonException e) {
-      String errorMessage = "model_api.json file could not be parsed";
+      var errorMessage = "model_api.json file could not be parsed";
       LOGGER.info(errorMessage);
       throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
     } catch (Exception e) {

@@ -10,7 +10,7 @@ import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.FindDatasets;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -35,7 +35,6 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 public class DatasetDAORdbImpl implements DatasetDAO {
@@ -43,9 +42,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   private static final Logger LOGGER = LogManager.getLogger(DatasetDAORdbImpl.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  public static final String GLOBAL_SHARING = "_DATASET_GLOBAL_SHARING";
+  private static final String DATASET_ID_POST_QUERY_PARAM = " = :datasetId";
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
   // Queries
   private static final String GET_DATASET_BY_IDS_QUERY =
@@ -81,13 +80,13 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   private static final String NON_DELETED_DATASET_IDS_BY_IDS =
       NON_DELETED_DATASET_IDS + " AND d.id in (:" + ModelDBConstants.DATASET_IDS + ")";
 
-  public DatasetDAORdbImpl(AuthService authService, RoleService roleService) {
+  public DatasetDAORdbImpl(AuthService authService, MDBRoleService mdbRoleService) {
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
   }
 
   private void checkDatasetAlreadyExist(Dataset dataset) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       // TODO: this entire DAO will removed after merging of the PR:
       // https://github.com/VertaAI/modeldb/pull/1846
       /*modelDBHibernateUtil.checkIfEntityAlreadyExists(
@@ -115,19 +114,19 @@ public class DatasetDAORdbImpl implements DatasetDAO {
     // Check entity already exists
     checkDatasetAlreadyExist(dataset);
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetEntity = RdbmsUtils.generateDatasetEntity(dataset);
-      Transaction transaction = session.beginTransaction();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var datasetEntity = RdbmsUtils.generateDatasetEntity(dataset);
+      var transaction = session.beginTransaction();
       session.save(datasetEntity);
       transaction.commit();
       LOGGER.debug("Dataset created successfully");
 
-      ResourceVisibility resourceVisibility = dataset.getVisibility();
+      var resourceVisibility = dataset.getVisibility();
       if (dataset.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
         resourceVisibility =
             ModelDBUtils.getResourceVisibility(Optional.empty(), dataset.getDatasetVisibility());
       }
-      roleService.createWorkspacePermissions(
+      mdbRoleService.createWorkspacePermissions(
           Optional.of(dataset.getWorkspaceServiceId()),
           Optional.empty(),
           dataset.getId(),
@@ -139,7 +138,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           false);
       LOGGER.debug("Dataset role bindings created successfully");
       TelemetryUtils.insertModelDBDeploymentInfo();
-      return datasetEntity.getProtoObject(roleService);
+      return datasetEntity.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return createDataset(dataset, userInfo);
@@ -151,10 +150,10 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public List<Dataset> getDatasetByIds(List<String> sharedDatasetIds) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<DatasetEntity> datasetEntities = getDatasetEntityList(session, sharedDatasetIds);
       LOGGER.debug("Got Dataset by Ids successfully");
-      return RdbmsUtils.convertDatasetsFromDatasetEntityList(roleService, datasetEntities);
+      return RdbmsUtils.convertDatasetsFromDatasetEntityList(mdbRoleService, datasetEntities);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getDatasetByIds(sharedDatasetIds);
@@ -166,7 +165,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @SuppressWarnings("unchecked")
   private List<DatasetEntity> getDatasetEntityList(Session session, List<String> datasetIds) {
-    Query query = session.createQuery(GET_DATASET_BY_IDS_QUERY);
+    var query = session.createQuery(GET_DATASET_BY_IDS_QUERY);
     query.setParameterList("ids", datasetIds);
     return query.list();
   }
@@ -179,7 +178,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       Boolean order,
       String sortKey,
       ResourceVisibility datasetVisibility) {
-    FindDatasets findDatasets =
+    var findDatasets =
         FindDatasets.newBuilder()
             .setPageNumber(pageNumber)
             .setPageLimit(pageLimit)
@@ -193,7 +192,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   public Boolean deleteDatasets(List<String> datasetIds) {
     // Get self allowed resources id where user has delete permission
     List<String> allowedDatasetIds =
-        roleService.getAccessibleResourceIdsByActions(
+        mdbRoleService.getAccessibleResourceIdsByActions(
             ModelDBServiceResourceTypes.DATASET,
             ModelDBActionEnum.ModelDBServiceActions.DELETE,
             datasetIds);
@@ -201,9 +200,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       throw new PermissionDeniedException("Access Denied for given dataset Ids : " + datasetIds);
     }
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      Query deletedDatasetsQuery =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
+      var deletedDatasetsQuery =
           session
               .createQuery(DELETED_STATUS_DATASET_QUERY_STRING)
               .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -225,9 +224,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset getDatasetById(String datasetId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      DatasetEntity datasetObj = getDatasetEntity(session, datasetId);
-      return datasetObj.getProtoObject(roleService);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var datasetObj = getDatasetEntity(session, datasetId);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getDatasetById(datasetId);
@@ -252,24 +251,24 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       FindDatasets queryParameters,
       UserInfo currentLoginUserInfo,
       ResourceVisibility datasetVisibility) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       List<String> accessibleDatasetIds =
-          roleService.getAccessibleResourceIds(
+          mdbRoleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
               ModelDBServiceResourceTypes.DATASET,
               queryParameters.getDatasetIdsList());
 
-      if (accessibleDatasetIds.isEmpty() && roleService.IsImplemented()) {
+      if (accessibleDatasetIds.isEmpty() && mdbRoleService.IsImplemented()) {
         LOGGER.debug("Accessible Dataset Ids not found, size 0");
-        DatasetPaginationDTO datasetPaginationDTO = new DatasetPaginationDTO();
+        var datasetPaginationDTO = new DatasetPaginationDTO();
         datasetPaginationDTO.setDatasets(Collections.emptyList());
         datasetPaginationDTO.setTotalRecords(0L);
         return datasetPaginationDTO;
       }
 
-      CriteriaBuilder builder = session.getCriteriaBuilder();
+      var builder = session.getCriteriaBuilder();
       // Using FROM and JOIN
       CriteriaQuery<DatasetEntity> criteriaQuery = builder.createQuery(DatasetEntity.class);
       Root<DatasetEntity> datasetRoot = criteriaQuery.from(DatasetEntity.class);
@@ -280,7 +279,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       for (KeyValueQuery predicate : predicates) {
         // Validate if current user has access to the entity or not where predicate key has an id
         RdbmsUtils.validatePredicates(
-            ModelDBConstants.DATASETS, accessibleDatasetIds, predicate, roleService);
+            ModelDBConstants.DATASETS, accessibleDatasetIds, predicate, mdbRoleService);
       }
 
       String workspaceName = queryParameters.getWorkspaceName();
@@ -289,7 +288,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           && !workspaceName.isEmpty()
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         accessibleDatasetIds =
-            roleService.getSelfDirectlyAllowedResources(
+            mdbRoleService.getSelfDirectlyAllowedResources(
                 ModelDBServiceResourceTypes.DATASET, ModelDBActionEnum.ModelDBServiceActions.READ);
         if (queryParameters.getDatasetIdsList() != null
             && !queryParameters.getDatasetIdsList().isEmpty()) {
@@ -297,14 +296,14 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         }
         // user is in his workspace and has no datasets, return empty
         if (accessibleDatasetIds.isEmpty()) {
-          DatasetPaginationDTO datasetPaginationDTO = new DatasetPaginationDTO();
+          var datasetPaginationDTO = new DatasetPaginationDTO();
           datasetPaginationDTO.setDatasets(Collections.emptyList());
           datasetPaginationDTO.setTotalRecords(0L);
           return datasetPaginationDTO;
         }
 
         List<String> orgIds =
-            roleService.listMyOrganizations().stream()
+            mdbRoleService.listMyOrganizations().stream()
                 .map(Organization::getId)
                 .collect(Collectors.toList());
         if (!orgIds.isEmpty()) {
@@ -320,17 +319,17 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         if (datasetVisibility.equals(ResourceVisibility.PRIVATE)) {
           List<KeyValueQuery> workspacePredicates =
               ModelDBUtils.getKeyValueQueriesByWorkspace(
-                  roleService, currentLoginUserInfo, workspaceName);
+                  mdbRoleService, currentLoginUserInfo, workspaceName);
           if (workspacePredicates.size() > 0) {
-            Predicate privateWorkspacePredicate =
+            var privateWorkspacePredicate =
                 builder.equal(
                     datasetRoot.get(ModelDBConstants.WORKSPACE),
                     workspacePredicates.get(0).getValue().getStringValue());
-            Predicate privateWorkspaceTypePredicate =
+            var privateWorkspaceTypePredicate =
                 builder.equal(
                     datasetRoot.get(ModelDBConstants.WORKSPACE_TYPE),
                     workspacePredicates.get(1).getValue().getNumberValue());
-            Predicate privatePredicate =
+            var privatePredicate =
                 builder.and(privateWorkspacePredicate, privateWorkspaceTypePredicate);
 
             finalPredicatesList.add(privatePredicate);
@@ -340,11 +339,11 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       if (!accessibleDatasetIds.isEmpty()) {
         Expression<String> exp = datasetRoot.get(ModelDBConstants.ID);
-        Predicate predicate2 = exp.in(accessibleDatasetIds);
+        var predicate2 = exp.in(accessibleDatasetIds);
         finalPredicatesList.add(predicate2);
       }
 
-      String entityName = "datasetEntity";
+      var entityName = "datasetEntity";
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
@@ -354,7 +353,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
                 criteriaQuery,
                 datasetRoot,
                 authService,
-                roleService,
+                mdbRoleService,
                 ModelDBServiceResourceTypes.DATASET);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
@@ -363,7 +362,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
           LOGGER.info(ex.getMessage());
-          DatasetPaginationDTO datasetPaginationDTO = new DatasetPaginationDTO();
+          var datasetPaginationDTO = new DatasetPaginationDTO();
           datasetPaginationDTO.setDatasets(Collections.emptyList());
           datasetPaginationDTO.setTotalRecords(0L);
           return datasetPaginationDTO;
@@ -378,21 +377,21 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         sortBy = ModelDBConstants.TIME_UPDATED;
       }
 
-      Order orderBy =
+      var orderBy =
           RdbmsUtils.getOrderBasedOnSortKey(
               sortBy, queryParameters.getAscending(), builder, datasetRoot, entityName);
 
-      Predicate[] predicateArr = new Predicate[finalPredicatesList.size()];
-      for (int index = 0; index < finalPredicatesList.size(); index++) {
+      var predicateArr = new Predicate[finalPredicatesList.size()];
+      for (var index = 0; index < finalPredicatesList.size(); index++) {
         predicateArr[index] = finalPredicatesList.get(index);
       }
 
-      Predicate predicateWhereCause = builder.and(predicateArr);
+      var predicateWhereCause = builder.and(predicateArr);
       criteriaQuery.select(datasetRoot);
       criteriaQuery.where(predicateWhereCause);
       criteriaQuery.orderBy(orderBy);
 
-      Query query = session.createQuery(criteriaQuery);
+      var query = session.createQuery(criteriaQuery);
       LOGGER.debug("Datasets final query : {}", query.getQueryString());
       if (queryParameters.getPageNumber() != 0 && queryParameters.getPageLimit() != 0) {
         // Calculate number of documents to skip
@@ -405,7 +404,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       List<DatasetEntity> datasetEntities = query.list();
       LOGGER.debug("Datasets result count : {}", datasetEntities.size());
       if (!datasetEntities.isEmpty()) {
-        datasetList = RdbmsUtils.convertDatasetsFromDatasetEntityList(roleService, datasetEntities);
+        datasetList =
+            RdbmsUtils.convertDatasetsFromDatasetEntityList(mdbRoleService, datasetEntities);
       }
 
       Set<String> datasetIdsSet = new HashSet<>();
@@ -425,7 +425,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       long totalRecords = RdbmsUtils.count(session, datasetRoot, criteriaQuery);
       LOGGER.debug("Datasets total records count : {}", totalRecords);
 
-      DatasetPaginationDTO datasetPaginationDTO = new DatasetPaginationDTO();
+      var datasetPaginationDTO = new DatasetPaginationDTO();
       datasetPaginationDTO.setDatasets(datasets);
       datasetPaginationDTO.setTotalRecords(totalRecords);
       return datasetPaginationDTO;
@@ -440,7 +440,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public List<Dataset> getDatasets(String key, String value, UserInfo userInfo) {
-    FindDatasets findDatasets =
+    var findDatasets =
         FindDatasets.newBuilder()
             .addPredicates(
                 KeyValueQuery.newBuilder()
@@ -450,19 +450,18 @@ public class DatasetDAORdbImpl implements DatasetDAO {
                     .setValueType(ValueTypeEnum.ValueType.STRING)
                     .build())
             .build();
-    DatasetPaginationDTO datasetPaginationDTO =
-        findDatasets(findDatasets, userInfo, ResourceVisibility.PRIVATE);
+    var datasetPaginationDTO = findDatasets(findDatasets, userInfo, ResourceVisibility.PRIVATE);
     LOGGER.debug("Datasets size is {}", datasetPaginationDTO.getDatasets().size());
     return datasetPaginationDTO.getDatasets();
   }
 
   @Override
   public Dataset updateDatasetName(String datasetId, String datasetName) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
 
-      Dataset dataset =
+      var dataset =
           Dataset.newBuilder()
               .setName(datasetName)
               .setWorkspaceId(datasetObj.getWorkspace())
@@ -473,11 +472,11 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       datasetObj.setName(datasetName);
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.update(datasetObj);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateDatasetName(datasetId, datasetName);
@@ -489,16 +488,16 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset updateDatasetDescription(String datasetId, String datasetDescription) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.load(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       datasetObj.setDescription(datasetDescription);
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.update(datasetObj);
       transaction.commit();
       LOGGER.debug(ModelDBMessages.DATASET_UPDATE_SUCCESSFULLY_MSG);
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateDatasetDescription(datasetId, datasetDescription);
@@ -510,15 +509,15 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset addDatasetTags(String datasetId, List<String> tagsList) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       if (datasetObj == null) {
-        String errorMessage = "Dataset not found for given ID";
+        var errorMessage = "Dataset not found for given ID";
         throw new NotFoundException(errorMessage);
       }
       List<String> newTags = new ArrayList<>();
-      Dataset existingProtoDatasetObj = datasetObj.getProtoObject(roleService);
+      var existingProtoDatasetObj = datasetObj.getProtoObject(mdbRoleService);
       for (String tag : tagsList) {
         if (!existingProtoDatasetObj.getTagsList().contains(tag)) {
           newTags.add(tag);
@@ -529,12 +528,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
             RdbmsUtils.convertTagListFromTagMappingList(datasetObj, newTags);
         datasetObj.getTags().addAll(newTagMappings);
         datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
-        Transaction transaction = session.beginTransaction();
+        var transaction = session.beginTransaction();
         session.saveOrUpdate(datasetObj);
         transaction.commit();
       }
       LOGGER.debug("Dataset tags added successfully");
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addDatasetTags(datasetId, tagsList);
@@ -546,10 +545,10 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public List<String> getDatasetTags(String datasetId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
       LOGGER.debug("Got Dataset");
-      return datasetObj.getProtoObject(roleService).getTagsList();
+      return datasetObj.getProtoObject(mdbRoleService).getTagsList();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getDatasetTags(datasetId);
@@ -562,12 +561,13 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   @Override
   public Dataset deleteDatasetTags(
       String datasetId, List<String> datasetTagList, Boolean deleteAll) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      StringBuilder stringQueryBuilder = new StringBuilder("delete from TagsMapping tm WHERE ");
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
+      var stringQueryBuilder = new StringBuilder("delete from TagsMapping tm WHERE ");
       if (deleteAll) {
-        stringQueryBuilder.append(" tm.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
-        Query query =
+        stringQueryBuilder.append(
+            " tm.datasetEntity." + ModelDBConstants.ID + DATASET_ID_POST_QUERY_PARAM);
+        var query =
             session
                 .createQuery(stringQueryBuilder.toString())
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -575,8 +575,9 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         query.executeUpdate();
       } else {
         stringQueryBuilder.append(" tm." + ModelDBConstants.TAGS + " in (:tags)");
-        stringQueryBuilder.append(" AND tm.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
-        Query query =
+        stringQueryBuilder.append(
+            " AND tm.datasetEntity." + ModelDBConstants.ID + DATASET_ID_POST_QUERY_PARAM);
+        var query =
             session
                 .createQuery(stringQueryBuilder.toString())
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -590,7 +591,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       session.update(datasetObj);
       transaction.commit();
       LOGGER.debug("Dataset tags deleted successfully");
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteDatasetTags(datasetId, datasetTagList, deleteAll);
@@ -602,18 +603,18 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset addDatasetAttributes(String datasetId, List<KeyValue> attributesList) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       datasetObj.setAttributeMapping(
           RdbmsUtils.convertAttributesFromAttributeEntityList(
               datasetObj, ModelDBConstants.ATTRIBUTES, attributesList));
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(datasetObj);
       transaction.commit();
       LOGGER.debug("Dataset attributes added successfully");
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return addDatasetAttributes(datasetId, attributesList);
@@ -625,20 +626,20 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Dataset updateDatasetAttributes(String datasetId, KeyValue attribute) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetEntity datasetObj =
           session.get(DatasetEntity.class, datasetId, LockMode.PESSIMISTIC_WRITE);
       if (datasetObj == null) {
-        String errorMessage = "Dataset not found for given ID";
+        var errorMessage = "Dataset not found for given ID";
         throw new NotFoundException(errorMessage);
       }
 
-      AttributeEntity updatedAttributeObj =
+      var updatedAttributeObj =
           RdbmsUtils.generateAttributeEntity(datasetObj, ModelDBConstants.ATTRIBUTES, attribute);
 
       List<AttributeEntity> existingAttributes = datasetObj.getAttributeMapping();
       if (!existingAttributes.isEmpty()) {
-        boolean doesExist = false;
+        var doesExist = false;
         for (AttributeEntity existingAttribute : existingAttributes) {
           if (existingAttribute.getKey().equals(attribute.getKey())) {
             existingAttribute.setKey(updatedAttributeObj.getKey());
@@ -655,10 +656,10 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         datasetObj.setAttributeMapping(Collections.singletonList(updatedAttributeObj));
       }
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(datasetObj);
       transaction.commit();
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return updateDatasetAttributes(datasetId, attribute);
@@ -671,12 +672,12 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   @Override
   public List<KeyValue> getDatasetAttributes(
       String datasetId, List<String> attributeKeyList, Boolean getAll) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       if (getAll) {
         DatasetEntity datasetObj = session.get(DatasetEntity.class, datasetId);
-        return datasetObj.getProtoObject(roleService).getAttributesList();
+        return datasetObj.getProtoObject(mdbRoleService).getAttributesList();
       } else {
-        Query query = session.createQuery(GET_DATASET_ATTRIBUTES_QUERY);
+        var query = session.createQuery(GET_DATASET_ATTRIBUTES_QUERY);
         query.setParameterList("keys", attributeKeyList);
         query.setParameter(ModelDBConstants.DATASET_ID_STR, datasetId);
         query.setParameter("fieldType", ModelDBConstants.ATTRIBUTES);
@@ -697,14 +698,14 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   @Override
   public Dataset deleteDatasetAttributes(
       String datasetId, List<String> attributeKeyList, Boolean deleteAll) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
 
-      StringBuilder stringQueryBuilder =
-          new StringBuilder("delete from AttributeEntity attr WHERE ");
+      var stringQueryBuilder = new StringBuilder("delete from AttributeEntity attr WHERE ");
       if (deleteAll) {
-        stringQueryBuilder.append(" attr.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
-        Query query =
+        stringQueryBuilder.append(
+            " attr.datasetEntity." + ModelDBConstants.ID + DATASET_ID_POST_QUERY_PARAM);
+        var query =
             session
                 .createQuery(stringQueryBuilder.toString())
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -713,8 +714,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       } else {
         stringQueryBuilder.append(" attr." + ModelDBConstants.KEY + " in (:keys)");
         stringQueryBuilder.append(
-            " AND attr.datasetEntity." + ModelDBConstants.ID + " = :datasetId");
-        Query query =
+            " AND attr.datasetEntity." + ModelDBConstants.ID + DATASET_ID_POST_QUERY_PARAM);
+        var query =
             session
                 .createQuery(stringQueryBuilder.toString())
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -726,7 +727,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       datasetObj.setTime_updated(Calendar.getInstance().getTimeInMillis());
       session.update(datasetObj);
       transaction.commit();
-      return datasetObj.getProtoObject(roleService);
+      return datasetObj.getProtoObject(mdbRoleService);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteDatasetAttributes(datasetId, attributeKeyList, deleteAll);
@@ -738,8 +739,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public Map<String, String> getOwnersByDatasetIds(List<String> datasetIds) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery(GET_DATASET_BY_IDS_QUERY);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var query = session.createQuery(GET_DATASET_BY_IDS_QUERY);
       query.setParameterList("ids", datasetIds);
 
       @SuppressWarnings("unchecked")
@@ -761,8 +762,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public List<String> getWorkspaceDatasetIDs(String workspaceName, UserInfo currentLoginUserInfo) {
-    if (!roleService.IsImplemented()) {
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    if (!mdbRoleService.IsImplemented()) {
+      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         return session.createQuery(NON_DELETED_DATASET_IDS).list();
       }
     } else {
@@ -770,7 +771,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       // get list of accessible datasets
       @SuppressWarnings("unchecked")
       List<String> accessibleDatasetIds =
-          roleService.getAccessibleResourceIds(
+          mdbRoleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
               ModelDBServiceResourceTypes.DATASET,
@@ -783,8 +784,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
           && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         LOGGER.debug("Workspace and current login user match");
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
-            roleService.getResourceItems(
-                null, Collections.emptySet(), ModelDBServiceResourceTypes.DATASET);
+            mdbRoleService.getResourceItems(
+                null, Collections.emptySet(), ModelDBServiceResourceTypes.DATASET, false);
         accessibleResourceIds.addAll(
             accessibleAllWorkspaceItems.stream()
                 .map(GetResourcesResponseItem::getResourceId)
@@ -793,7 +794,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
         // get list of accessible datasets
         accessibleResourceIds =
             ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
-                roleService,
+                mdbRoleService,
                 accessibleResourceIds,
                 workspaceName,
                 currentLoginUserInfo,
@@ -802,7 +803,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       LOGGER.debug("accessibleAllWorkspaceDatasetIds : {}", accessibleResourceIds);
 
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         @SuppressWarnings("unchecked")
         Query<String> query = session.createQuery(NON_DELETED_DATASET_IDS_BY_IDS);
         query.setParameterList(ModelDBConstants.DATASET_IDS, accessibleDatasetIds);
@@ -816,8 +817,8 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
   @Override
   public boolean datasetExistsInDB(String datasetId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery(COUNT_DATASET_BY_ID_HQL);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var query = session.createQuery(COUNT_DATASET_BY_ID_HQL);
       query.setParameter("datasetId", datasetId);
       Long projectCount = (Long) query.getSingleResult();
       return projectCount == 1L;

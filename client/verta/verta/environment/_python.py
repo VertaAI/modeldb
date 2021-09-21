@@ -34,8 +34,10 @@ class Python(_environment._Environment):
     constraints : list of str, optional
         List of PyPI package names with version specifiers. If not provided, nothing will be
         captured.
-    env_vars : list of str, optional
-        Names of environment variables to capture. If not provided, nothing will be captured.
+    env_vars : list of str, or dict of str to str, optional
+        Environment variables. If a list of names is provided, the values will
+        be captured from the current environment. If not provided, nothing
+        will be captured.
     apt_packages : list of str, optional
         Apt packages to be installed alongside a Python environment.
     _autocapture : bool, default True
@@ -49,6 +51,8 @@ class Python(_environment._Environment):
         pip requirements.
     apt_packages : list of str
         Apt packages to be installed alongside a Python environment.
+    env_vars : dict of str to str, or None
+        Environment variables.
 
     Examples
     --------
@@ -100,13 +104,12 @@ class Python(_environment._Environment):
         if self._msg.python.constraints or self._msg.python.raw_constraints:
             lines.append("constraints:")
             lines.extend(map("    {}".format, self.constraints))
-        if self._msg.environment_variables:
+        if self.env_vars:
             lines.append("environment variables:")
             lines.extend(
-                "    {}={}".format(env_var_msg.name, env_var_msg.value)
-                for env_var_msg in sorted(
-                    self._msg.environment_variables,
-                    key=lambda env_var_msg: env_var_msg.name,
+                sorted(
+                    "    {}={}".format(name, value)
+                    for name, value in self.env_vars.items()
                 )
             )
         if self.apt_packages:

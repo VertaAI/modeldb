@@ -1,6 +1,6 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInterceptor;
+import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectInterceptor;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 
@@ -361,7 +361,7 @@ public class ExperimentRunTest extends TestsInit {
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Flh3.googleusercontent.com%2FFyZA5SbKPJA7Y3XCeb9-uGwow8pugxj77Z1xvs8vFS6EI3FABZDCDtA9ScqzHKjhU8av_Ck95ET-P_rPJCbC2v_OswCN8A%3Ds688&imgrefurl=https%3A%2F%2Fdevelopers.google.com%2F&docid=1MVaWrOPIjYeJM&tbnid=I7xZkRN5m6_z-M%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw..i&w=688&h=387&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw&iact=mrc&uact=8")
             .setArtifactType(ArtifactType.BLOB)
             .setUploadCompleted(
-                !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
+                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3))
             .build());
     artifactList.add(
         Artifact.newBuilder()
@@ -370,7 +370,7 @@ public class ExperimentRunTest extends TestsInit {
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Fpay.google.com%2Fabout%2Fstatic%2Fimages%2Fsocial%2Fknowledge_graph_logo.png&imgrefurl=https%3A%2F%2Fpay.google.com%2Fabout%2F&docid=zmoE9BrSKYr4xM&tbnid=eCL1Y6f9xrPtDM%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg..i&w=1200&h=630&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg&iact=mrc&uact=8")
             .setArtifactType(ArtifactType.IMAGE)
             .setUploadCompleted(
-                !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
+                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3))
             .build());
 
     List<Artifact> datasets = new ArrayList<>();
@@ -380,7 +380,7 @@ public class ExperimentRunTest extends TestsInit {
             .setPath("This is data artifact type in Google developer datasets")
             .setArtifactType(ArtifactType.MODEL)
             .setUploadCompleted(
-                !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
+                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3))
             .build());
     datasets.add(
         Artifact.newBuilder()
@@ -388,7 +388,7 @@ public class ExperimentRunTest extends TestsInit {
             .setPath("This is data artifact type in Google Pay datasets")
             .setArtifactType(ArtifactType.DATA)
             .setUploadCompleted(
-                !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
+                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3))
             .build());
 
     List<KeyValue> metrics = new ArrayList<>();
@@ -4999,8 +4999,10 @@ public class ExperimentRunTest extends TestsInit {
                             .setPath("https://xyz_path_string.com/image.png")
                             .setArtifactType(ArtifactType.CODE)
                             .setUploadCompleted(
-                                !testConfig.artifactStoreConfig.artifactStoreType.equals(
-                                    ModelDBConstants.S3))
+                                !testConfig
+                                    .artifactStoreConfig
+                                    .getArtifactStoreType()
+                                    .equals(ModelDBConstants.S3))
                             .build())
                     .build())
             .build();
@@ -5036,8 +5038,10 @@ public class ExperimentRunTest extends TestsInit {
                             .setPath("https://xyz_path_string.com/image.png")
                             .setArtifactType(ArtifactType.IMAGE)
                             .setUploadCompleted(
-                                !testConfig.artifactStoreConfig.artifactStoreType.equals(
-                                    ModelDBConstants.S3))
+                                !testConfig
+                                    .artifactStoreConfig
+                                    .getArtifactStoreType()
+                                    .equals(ModelDBConstants.S3))
                             .build())
                     .build())
             .setOverwrite(true)
@@ -5096,8 +5100,10 @@ public class ExperimentRunTest extends TestsInit {
                             .setPath("https://xyz_path_string.com/image.png")
                             .setArtifactType(ArtifactType.CODE)
                             .setUploadCompleted(
-                                !testConfig.artifactStoreConfig.artifactStoreType.equals(
-                                    ModelDBConstants.S3))
+                                !testConfig
+                                    .artifactStoreConfig
+                                    .getArtifactStoreType()
+                                    .equals(ModelDBConstants.S3))
                             .build())
                     .build())
             .build();
@@ -5599,7 +5605,7 @@ public class ExperimentRunTest extends TestsInit {
         getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
         getVersionedInputResponse =
             experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
-        if (testConfig.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
           assertTrue(
               "ExperimentRun versioningInput not match with expected ExperimentRun versioningInput",
               getVersionedInputResponse.getVersionedInputs().getKeyLocationMapMap().isEmpty());
@@ -5682,13 +5688,13 @@ public class ExperimentRunTest extends TestsInit {
 
     if (testConfig.hasAuth()) {
       AddCollaboratorRequest addCollaboratorRequest =
-          CollaboratorTest.addCollaboratorRequestProject(
+          CollaboratorUtils.addCollaboratorRequestProject(
               project, authClientInterceptor.getClient2Email(), CollaboratorType.READ_WRITE);
       collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
       LOGGER.info("\n Collaborator1 added in project successfully \n");
 
       addCollaboratorRequest =
-          CollaboratorTest.addCollaboratorRequestUser(
+          CollaboratorUtils.addCollaboratorRequestUser(
               String.valueOf(repoId),
               authClientInterceptor.getClient2Email(),
               CollaboratorType.READ_WRITE,
@@ -6478,7 +6484,7 @@ public class ExperimentRunTest extends TestsInit {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        if (testConfig.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
           assertEquals(
               "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               1,
@@ -6523,7 +6529,7 @@ public class ExperimentRunTest extends TestsInit {
             "ExperimentRun count not match with expected experimentRun count",
             2,
             response.getExperimentRunsCount());
-        if (testConfig.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
           assertEquals(
               "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
               3,
@@ -7140,7 +7146,7 @@ public class ExperimentRunTest extends TestsInit {
         if (exprRun.getId().equals(experimentRun2.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-          if (testConfig.populateConnectionsBasedOnPrivileges) {
+          if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
             assertFalse(
                 "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
           } else {
@@ -7157,7 +7163,7 @@ public class ExperimentRunTest extends TestsInit {
         } else if (exprRun.getId().equals(experimentRun3.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
-          if (testConfig.populateConnectionsBasedOnPrivileges) {
+          if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
             assertFalse(
                 "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
           } else {
@@ -7180,7 +7186,7 @@ public class ExperimentRunTest extends TestsInit {
       ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
       String locationKey =
           ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-      if (testConfig.populateConnectionsBasedOnPrivileges) {
+      if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
         assertFalse("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
       } else {
         assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
@@ -7660,7 +7666,10 @@ public class ExperimentRunTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion1.getId())
               .setUploadCompleted(
-                  !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
+                  !testConfig
+                      .artifactStoreConfig
+                      .getArtifactStoreType()
+                      .equals(ModelDBConstants.S3))
               .build();
       artifacts.add(artifact1);
       artifactMap.put(artifact1.getKey(), artifact1);
@@ -7671,7 +7680,10 @@ public class ExperimentRunTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion2.getId())
               .setUploadCompleted(
-                  !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
+                  !testConfig
+                      .artifactStoreConfig
+                      .getArtifactStoreType()
+                      .equals(ModelDBConstants.S3))
               .build();
       artifacts.add(artifact2);
       artifactMap.put(artifact2.getKey(), artifact2);
@@ -7740,7 +7752,7 @@ public class ExperimentRunTest extends TestsInit {
             "ExperimentRun count not match with expected experimentRun count",
             1,
             response.getExperimentRunsCount());
-        if (testConfig.populateConnectionsBasedOnPrivileges) {
+        if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
           assertEquals(
               "ExperimentRun not match with expected experimentRun",
               0,

@@ -7,6 +7,7 @@ import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterSetConfigBlob.ValueCase;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import io.grpc.Status.Code;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -24,7 +25,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "hyperparameter_set_config_blob")
-public class HyperparameterSetConfigBlobEntity {
+public class HyperparameterSetConfigBlobEntity implements Serializable {
   private HyperparameterSetConfigBlobEntity() {}
 
   public HyperparameterSetConfigBlobEntity(
@@ -83,9 +84,8 @@ public class HyperparameterSetConfigBlobEntity {
   }
 
   public HyperparameterSetConfigBlob toProto() throws ModelDBException {
-    HyperparameterSetConfigBlob.Builder builder =
-        HyperparameterSetConfigBlob.newBuilder().setName(this.name);
-    ValueCase valueCase = ValueCase.forNumber(this.value_type);
+    var builder = HyperparameterSetConfigBlob.newBuilder().setName(this.name);
+    var valueCase = ValueCase.forNumber(this.value_type);
     if (valueCase == null) {
       throw new ModelDBException(
           "Invalid value found for HyperparameterSetConfigBlob", Code.INVALID_ARGUMENT);
