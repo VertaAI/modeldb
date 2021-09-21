@@ -299,8 +299,7 @@ public class VersionInputHandler {
                   keysAndParameterMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
                   keysAndParameterMap.put(ENTITY_ID_QUERY_PARAM, entityId);
                   keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
-                  keysAndParameterMap.put(
-                      VERSIONING_KEY_QUERY_PARAM, CommonConstants.EMPTY_STRING);
+                  keysAndParameterMap.put(VERSIONING_KEY_QUERY_PARAM, CommonConstants.EMPTY_STRING);
                   keysAndParameterMap.put(VERSIONING_LOCATION_QUERY_PARAM, null);
                   keysAndParameterMap.put("versioning_blob_type", null);
                   keysAndParameterMap.put(BLOB_HASH_QUERY_PARAM, null);

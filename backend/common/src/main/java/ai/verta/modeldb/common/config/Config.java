@@ -24,6 +24,7 @@ import java.util.Optional;
 import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.introspector.BeanAccess;
 
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public abstract class Config {
@@ -46,6 +47,7 @@ public abstract class Config {
       String filePath = System.getenv(configFile);
       filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
       InputStream inputStream = new FileInputStream(filePath);
+      yaml.setBeanAccess(BeanAccess.FIELD);
       return yaml.loadAs(inputStream, configType);
     } catch (ModelDBException | NullPointerException ex) {
       throw ex;
