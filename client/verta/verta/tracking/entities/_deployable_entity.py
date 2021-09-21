@@ -20,6 +20,7 @@ from verta._internal_utils import (
     _histogram_utils,
     _utils,
 )
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta.environment import _Environment
 
 from verta.external import six
