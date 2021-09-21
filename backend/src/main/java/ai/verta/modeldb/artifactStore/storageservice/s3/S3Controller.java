@@ -61,12 +61,12 @@ public class S3Controller {
       return s3Service.loadFileAsResource(fileName, artifactPath);
     } catch (ModelDBException e) {
       LOGGER.info(e.getMessage(), e);
-      Status status =
+      var status =
           Status.newBuilder().setCode(e.getCode().value()).setMessage(e.getMessage()).build();
       throw StatusProto.toStatusRuntimeException(status);
     } catch (Exception e) {
       LOGGER.warn(e.getMessage(), e);
-      Status status =
+      var status =
           Status.newBuilder().setCode(Code.INTERNAL_VALUE).setMessage(e.getMessage()).build();
       throw StatusProto.toStatusRuntimeException(status);
     }

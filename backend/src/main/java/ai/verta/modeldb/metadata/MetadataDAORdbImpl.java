@@ -16,64 +16,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 public class MetadataDAORdbImpl implements MetadataDAO {
-  private static final Logger LOGGER = LogManager.getLogger(MetadataDAORdbImpl.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
 
   private static final String GET_LABELS_HQL =
-      new StringBuilder("From LabelsMappingEntity lm where lm.id.")
-          .append(ModelDBConstants.ENTITY_HASH)
-          .append(" = :entityHash ")
-          .append(" AND lm.id.")
-          .append(ModelDBConstants.ENTITY_TYPE)
-          .append(" = :entityType")
-          .append(" ORDER BY lm.id.label")
-          .toString();
-  private static final String GET_LABEL_IDS_HQL =
-      new StringBuilder("From LabelsMappingEntity lm where ").toString();
-  private static final String DELETE_LABELS_HQL =
-      new StringBuilder("DELETE From LabelsMappingEntity lm where lm.")
-          .append(ModelDBConstants.ENTITY_HASH)
-          .append(" = :entityHash ")
-          .append(" AND lm.")
-          .append(ModelDBConstants.ENTITY_TYPE)
-          .append(" = :entityType AND lm.")
-          .append(ModelDBConstants.LABEL)
-          .append(" IN (:labels)")
-          .toString();
+      "From LabelsMappingEntity lm where lm.id.entity_hash = :entityHash AND lm.id.entity_type = :entityType ORDER BY lm.id.label";
+  private static final String GET_LABEL_IDS_HQL = "From LabelsMappingEntity lm where ";
   private static final String GET_PROPERTY_HQL =
-      new StringBuilder("From MetadataPropertyMappingEntity pm where pm.id.")
-          .append("repositoryId")
-          .append(" = :repositoryId")
-          .append(" AND pm.id.")
-          .append("commitSha")
-          .append(" = :commitSha")
-          .append(" AND pm.id.")
-          .append("location")
-          .append(" = :location")
-          .append(" AND pm.id.")
-          .append("key")
-          .append(" = :key")
-          .toString();
+      "From MetadataPropertyMappingEntity pm where pm.id.repositoryId = :repositoryId AND pm.id.commitSha = :commitSha AND pm.id.location = :location AND pm.id.key = :key";
   private static final String GET_KEY_VALUE_PROPERTY_HQL =
-      new StringBuilder("From KeyValuePropertyMappingEntity kv where kv.id.")
-          .append(ModelDBConstants.ENTITY_HASH)
-          .append(" = :")
-          .append(ModelDBConstants.ENTITY_HASH)
-          .append(" AND kv.id.")
-          .append(ModelDBConstants.PROPERTY_NAME)
-          .append(" = :")
-          .append(ModelDBConstants.PROPERTY_NAME)
-          .toString();
+      "From KeyValuePropertyMappingEntity kv where kv.id.entity_hash = :entity_hash AND kv.id.property_name = :property_name";
 
   private String getEntityHash(IdentificationType id) {
     String entityHash;
@@ -92,8 +50,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public boolean addLabels(IdentificationType id, List<String> labels) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
       addLabels(session, id, labels);
       transaction.commit();
       return true;
@@ -108,8 +66,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public boolean addProperty(IdentificationType id, String key, String value) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
       addProperty(session, id, key, value);
       transaction.commit();
       return true;
@@ -140,7 +98,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
   public void addLabels(Session session, IdentificationType id, List<String> labels) {
     for (String label : labels) {
       LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
-      LabelsMappingEntity existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
+      var existingLabelsMappingEntity = session.get(LabelsMappingEntity.class, id0);
       if (existingLabelsMappingEntity == null) {
         session.save(new LabelsMappingEntity(id0));
       }
@@ -149,8 +107,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public boolean updateLabels(IdentificationType id, List<String> labels) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
       deleteLabels(session, id, labels, true);
       addLabels(session, id, labels);
       transaction.commit();
@@ -166,7 +124,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public List<String> getLabels(IdentificationType id) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       return getLabels(session, id);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -196,11 +154,11 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public List<IdentificationType> getLabelIds(List<String> labels, OperatorEnum.Operator operator) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       Map<String, Object> parametersMap = new HashMap<>();
-      StringBuilder queryBuilder = new StringBuilder(GET_LABEL_IDS_HQL);
-      for (int index = 0; index < labels.size(); index++) {
+      var queryBuilder = new StringBuilder(GET_LABEL_IDS_HQL);
+      for (var index = 0; index < labels.size(); index++) {
         if (operator.equals(OperatorEnum.Operator.CONTAIN)
             || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
           queryBuilder.append(" lower(lm.id.").append(ModelDBConstants.LABEL).append(") ");
@@ -223,7 +181,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
       return labelsMappingEntities.stream()
           .map(
               labelsMappingEntity -> {
-                IdentificationType.Builder builder =
+                var builder =
                     IdentificationType.newBuilder()
                         .setIdType(
                             IDTypeEnum.IDType.forNumber(
@@ -231,6 +189,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
                 switch (builder.getIdType()) {
                   case VERSIONING_REPOSITORY:
                     builder.setIntId(Long.parseLong(labelsMappingEntity.getId().getEntity_hash()));
+                    break;
                   case VERSIONING_COMMIT:
                   default:
                     builder.setStringId(labelsMappingEntity.getId().getEntity_hash());
@@ -249,7 +208,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public String getProperty(IdentificationType id, String key) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       return getProperty(session, id, key);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -280,8 +239,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public boolean deleteLabels(IdentificationType id, List<String> labels, boolean deleteAll) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
       deleteLabels(session, id, labels, deleteAll);
       transaction.commit();
       return true;
@@ -322,7 +281,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
     } else {
       for (String label : labels) {
         LabelsMappingEntity.LabelMappingId id0 = LabelsMappingEntity.createId(id, label);
-        LabelsMappingEntity existingLabelsMappingEntity =
+        var existingLabelsMappingEntity =
             session.get(LabelsMappingEntity.class, id0, LockMode.PESSIMISTIC_WRITE);
         if (existingLabelsMappingEntity != null) {
           session.delete(existingLabelsMappingEntity);
@@ -333,8 +292,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public boolean deleteProperty(IdentificationType id, String key) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
 
       MetadataPropertyMappingEntity.LabelMappingId id0 =
           MetadataPropertyMappingEntity.createId(id, key);
@@ -358,8 +317,8 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public void addKeyValueProperties(AddKeyValuePropertiesRequest request) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
       for (KeyValueStringProperty keyValue : request.getKeyValuePropertyList()) {
         KeyValuePropertyMappingEntity.KeyValuePropertyMappingId id0 =
             KeyValuePropertyMappingEntity.createId(
@@ -380,7 +339,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public List<KeyValueStringProperty> getKeyValueProperties(GetKeyValuePropertiesRequest request) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<KeyValueStringProperty> keyValues = new ArrayList<>();
       if (request.getGetAll()) {
         Query<KeyValuePropertyMappingEntity> query =
@@ -420,7 +379,7 @@ public class MetadataDAORdbImpl implements MetadataDAO {
 
   @Override
   public void deleteKeyValueProperties(DeleteKeyValuePropertiesRequest request) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       session.beginTransaction();
       if (request.getDeleteAll()) {
         StringBuilder stringQueryBuilder =

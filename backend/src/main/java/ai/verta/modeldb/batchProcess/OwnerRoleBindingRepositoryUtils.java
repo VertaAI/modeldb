@@ -1,15 +1,13 @@
 package ai.verta.modeldb.batchProcess;
 
-import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.AuthServiceUtils;
-import ai.verta.modeldb.authservice.RoleService;
-import ai.verta.modeldb.authservice.RoleServiceUtils;
+import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
+import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
-import ai.verta.modeldb.config.Config;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -19,13 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
 
 public class OwnerRoleBindingRepositoryUtils {
   private OwnerRoleBindingRepositoryUtils() {}
@@ -35,14 +30,14 @@ public class OwnerRoleBindingRepositoryUtils {
       ModelDBHibernateUtil.getInstance();
   private static AuthService authService;
   private static UAC uac;
-  private static RoleService roleService;
+  private static MDBRoleService mdbRoleService;
 
   public static void execute() {
-    Config config = App.getInstance().config;
+    var config = App.getInstance().mdbConfig;
     if (config.hasAuth()) {
       uac = UAC.FromConfig(config);
-      authService = AuthServiceUtils.FromConfig(config, uac);
-      roleService = RoleServiceUtils.FromConfig(config, authService, uac);
+      authService = MDBAuthServiceUtils.FromConfig(config, uac);
+      mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
       return;
@@ -56,15 +51,15 @@ public class OwnerRoleBindingRepositoryUtils {
     LOGGER.debug("Repositories migration started");
     Long count = getEntityCount(RepositoryEntity.class);
 
-    int lowerBound = 0;
-    final int pagesize = 5000;
+    var lowerBound = 0;
+    final var pagesize = 5000;
     LOGGER.debug("Total repositories {}", count);
 
     while (lowerBound < count) {
 
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-        Transaction transaction = session.beginTransaction();
-        CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+        var transaction = session.beginTransaction();
+        var criteriaBuilder = session.getCriteriaBuilder();
 
         CriteriaQuery<RepositoryEntity> criteriaQuery =
             criteriaBuilder.createQuery(RepositoryEntity.class);
@@ -92,14 +87,14 @@ public class OwnerRoleBindingRepositoryUtils {
           }
           // Fetch the Repository owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null);
+              authService.getUserInfoFromAuthServer(userIds, null, null, true);
           for (RepositoryEntity repositoryEntity : repositoryEntities) {
-            UserInfo userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
+            var userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
             if (userInfoValue != null) {
               try {
-                ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+                var modelDBServiceResourceTypes =
                     ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
-                roleService.createRoleBinding(
+                mdbRoleService.createRoleBinding(
                     ModelDBConstants.ROLE_REPOSITORY_OWNER,
                     new CollaboratorUser(authService, userInfoValue),
                     String.valueOf(repositoryEntity.getId()),
@@ -133,8 +128,8 @@ public class OwnerRoleBindingRepositoryUtils {
   }
 
   private static Long getEntityCount(Class<?> klass) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var criteriaBuilder = session.getCriteriaBuilder();
       CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
       countQuery.select(criteriaBuilder.count(countQuery.from(klass)));
       return session.createQuery(countQuery).getSingleResult();

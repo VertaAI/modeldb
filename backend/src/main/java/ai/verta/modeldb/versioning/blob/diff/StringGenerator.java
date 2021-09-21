@@ -19,9 +19,9 @@ public class StringGenerator extends Generator<String> {
 
   @Override
   public String generate(SourceOfRandomness random, GenerationStatus status) {
-    StringBuilder sb = new StringBuilder(CAPACITY);
-    for (int i = 0; i < CAPACITY; i++) {
-      int randomIndex = random.nextInt(ALL_MY_CHARS.length());
+    var sb = new StringBuilder(CAPACITY);
+    for (var i = 0; i < CAPACITY; i++) {
+      var randomIndex = random.nextInt(ALL_MY_CHARS.length());
       sb.append(ALL_MY_CHARS.charAt(randomIndex));
     }
     return sb.toString();

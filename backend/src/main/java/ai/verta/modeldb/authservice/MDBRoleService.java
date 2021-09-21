@@ -1,6 +1,7 @@
 package ai.verta.modeldb.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.modeldb.common.authservice.RoleService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.GetCollaboratorResponseItem;
@@ -11,7 +12,7 @@ import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Metadata;
 import java.util.List;
 
-public interface RoleService extends ai.verta.modeldb.common.authservice.RoleService {
+public interface MDBRoleService extends RoleService {
 
   boolean IsImplemented();
 
@@ -62,7 +63,7 @@ public interface RoleService extends ai.verta.modeldb.common.authservice.RoleSer
    */
   Workspace getWorkspaceByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
 
-  WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+  WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
 
   boolean checkConnectionsBasedOnPrivileges(

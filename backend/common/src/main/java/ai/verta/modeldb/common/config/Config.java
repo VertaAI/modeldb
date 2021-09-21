@@ -21,35 +21,35 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.introspector.BeanAccess;
 
+@SuppressWarnings({"squid:S116", "squid:S100"})
 public abstract class Config {
-  public static String MISSING_REQUIRED = "required field is missing";
+  public static final String MISSING_REQUIRED = "required field is missing";
 
-  public ServiceConfig authService;
-  public Map<String, CronJobConfig> cron_job = new HashMap<>();
-  public boolean populateConnectionsBasedOnPrivileges = false;
-  public DatabaseConfig database;
-  public boolean enableTrace = false;
-  public GrpcServerConfig grpcServer;
-  public SpringServerConfig springServer;
-  public ServiceUserConfig service_user;
-  public int jdbi_retry_time = 100; // Time in ms
+  private ServiceConfig authService;
+  private Map<String, CronJobConfig> cron_job = new HashMap<>();
+  private boolean populateConnectionsBasedOnPrivileges = false;
+  private DatabaseConfig database;
+  private boolean enableTrace = false;
+  private GrpcServerConfig grpcServer;
+  private SpringServerConfig springServer;
+  private ServiceUserConfig service_user;
+  private int jdbi_retry_time = 100; // Time in ms
 
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
     try {
-      Yaml yaml = new Yaml(new Constructor(configType));
+      var yaml = new Yaml(new Constructor(configType));
       String filePath = System.getenv(configFile);
       filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
       InputStream inputStream = new FileInputStream(filePath);
+      yaml.setBeanAccess(BeanAccess.FIELD);
       return yaml.loadAs(inputStream, configType);
-    } catch (ModelDBException ex) {
-      throw ex;
-    } catch (NullPointerException ex) {
+    } catch (ModelDBException | NullPointerException ex) {
       throw ex;
     } catch (Exception ex) {
       throw new InternalErrorException(ex.getMessage());
@@ -119,27 +119,57 @@ public abstract class Config {
   }
 
   public FutureJdbi initializeFutureJdbi(DatabaseConfig databaseConfig, String poolName) {
-    final Jdbi jdbi = initializeJdbi(databaseConfig, poolName);
-    final Executor dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.threadCount);
+    final var jdbi = initializeJdbi(databaseConfig, poolName);
+    final var dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.getThreadCount());
     return new FutureJdbi(jdbi, dbExecutor);
   }
 
   public Jdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
     initializeTracing();
     final var hikariDataSource = new HikariDataSource();
-    final var dbUrl = RdbConfig.buildDatabaseConnectionString(databaseConfig.RdbConfiguration);
+    final var dbUrl = RdbConfig.buildDatabaseConnectionString(databaseConfig.getRdbConfiguration());
     hikariDataSource.setJdbcUrl(dbUrl);
-    hikariDataSource.setUsername(databaseConfig.RdbConfiguration.RdbUsername);
-    hikariDataSource.setPassword(databaseConfig.RdbConfiguration.RdbPassword);
-    hikariDataSource.setMinimumIdle(Integer.parseInt(databaseConfig.minConnectionPoolSize));
-    hikariDataSource.setMaximumPoolSize(Integer.parseInt(databaseConfig.maxConnectionPoolSize));
+    hikariDataSource.setUsername(databaseConfig.getRdbConfiguration().getRdbUsername());
+    hikariDataSource.setPassword(databaseConfig.getRdbConfiguration().getRdbPassword());
+    hikariDataSource.setMinimumIdle(Integer.parseInt(databaseConfig.getMinConnectionPoolSize()));
+    hikariDataSource.setMaximumPoolSize(
+        Integer.parseInt(databaseConfig.getMaxConnectionPoolSize()));
     hikariDataSource.setRegisterMbeans(true);
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);
 
-    final Jdbi jdbi =
-        Jdbi.create(hikariDataSource).setSqlLogger(new OpentracingSqlLogger(GlobalTracer.get()));
+    return Jdbi.create(hikariDataSource).setSqlLogger(new OpentracingSqlLogger(GlobalTracer.get()));
+  }
 
-    return jdbi;
+  public ServiceConfig getAuthService() {
+    return authService;
+  }
+
+  public Map<String, CronJobConfig> getCron_job() {
+    return cron_job;
+  }
+
+  public boolean isPopulateConnectionsBasedOnPrivileges() {
+    return populateConnectionsBasedOnPrivileges;
+  }
+
+  public DatabaseConfig getDatabase() {
+    return database;
+  }
+
+  public GrpcServerConfig getGrpcServer() {
+    return grpcServer;
+  }
+
+  public SpringServerConfig getSpringServer() {
+    return springServer;
+  }
+
+  public ServiceUserConfig getService_user() {
+    return service_user;
+  }
+
+  public int getJdbi_retry_time() {
+    return jdbi_retry_time;
   }
 }

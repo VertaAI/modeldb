@@ -52,8 +52,8 @@ public class DiffMerger {
                   if (elD != null) {
                     for (DF el : elD) {
                       AutogenDiffStatusEnumDiffStatus elStatus = status.apply(el);
-                      F diffA = getA.apply(el);
-                      F diffB = getB.apply(el);
+                      var diffA = getA.apply(el);
+                      var diffB = getB.apply(el);
                       if (elStatus == null
                           || elStatus.Status == DiffStatusEnum.DiffStatus.DELETED) {
                         if (diffA != null) {
@@ -119,8 +119,8 @@ public class DiffMerger {
     AutogenDiffStatusEnumDiffStatus status = getStatus.apply(d);
     if (status.Status == DiffStatusEnum.DiffStatus.ADDED
         || status.Status == DiffStatusEnum.DiffStatus.MODIFIED) {
-      T dA = getA.apply(d);
-      T dB = getB.apply(d);
+      var dA = getA.apply(d);
+      var dB = getB.apply(d);
       if (a != null && !(a.equals(dB) || a.equals(dA)) && hasherA != null) {
         conflictKeys.add(hasherA.apply(a));
         return null;

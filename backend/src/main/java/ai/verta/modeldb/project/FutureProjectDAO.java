@@ -8,6 +8,7 @@ import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LogAttributes;
+import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -27,11 +28,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class FutureProjectDAO {
-  private static Logger LOGGER = LogManager.getLogger(FutureProjectDAO.class);
 
   private final Executor executor;
   private final FutureJdbi jdbi;
@@ -45,7 +43,7 @@ public class FutureProjectDAO {
     this.jdbi = jdbi;
     this.uac = uac;
 
-    String entityName = "ProjectEntity";
+    var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
     tagsHandler = new TagsHandler(executor, jdbi, entityName);
   }
@@ -58,7 +56,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               }
             },
             executor);
@@ -85,7 +83,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               } else if (keys.isEmpty() && !getAll) {
                 throw new InvalidArgumentException("Attribute keys not present");
               }
@@ -109,7 +107,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               } else if (attributes.isEmpty()) {
                 throw new InvalidArgumentException("Attributes not present");
               }
@@ -135,7 +133,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               } else if (attribute.getKey().isEmpty()) {
                 throw new InvalidArgumentException("Attribute not present");
               }
@@ -161,7 +159,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               } else if (tags.isEmpty()) {
                 throw new InvalidArgumentException("Tags not present");
               }
@@ -186,7 +184,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               }
             },
             executor);
@@ -210,7 +208,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               }
             },
             executor);

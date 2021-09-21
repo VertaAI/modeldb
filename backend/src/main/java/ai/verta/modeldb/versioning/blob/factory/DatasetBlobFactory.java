@@ -22,6 +22,8 @@ import org.hibernate.query.Query;
 
 public class DatasetBlobFactory extends BlobFactory {
 
+  private static final String BLOB_SHAS_QUERY_PARAM = "blobShas";
+
   DatasetBlobFactory(InternalFolderElementEntity internalFolderElementEntity) {
     super(
         internalFolderElementEntity.getElement_type(),
@@ -30,7 +32,7 @@ public class DatasetBlobFactory extends BlobFactory {
 
   @Override
   public Blob getBlob(Session session) throws ModelDBException {
-    DatasetBlob.Builder datasetBlobBuilder = DatasetBlob.newBuilder();
+    var datasetBlobBuilder = DatasetBlob.newBuilder();
     switch (getElementType()) {
       case S_3_DATASET_BLOB:
         datasetBlobBuilder.setS3(getS3Blob(session, getElementSha()));
@@ -49,16 +51,19 @@ public class DatasetBlobFactory extends BlobFactory {
         }
         datasetBlobBuilder.setQuery(queryBlob);
         break;
+      default:
+        // Do nothing
+        break;
     }
     return Blob.newBuilder().setDataset(datasetBlobBuilder).build();
   }
 
   private static S3DatasetBlob getS3Blob(Session session, String blobHash) throws ModelDBException {
-    String s3ComponentQueryHQL =
+    var s3ComponentQueryHQL =
         "From S3DatasetComponentBlobEntity s3 WHERE s3.id.s3_dataset_blob_id = :blobShas";
 
     Query<S3DatasetComponentBlobEntity> s3ComponentQuery = session.createQuery(s3ComponentQueryHQL);
-    s3ComponentQuery.setParameter("blobShas", blobHash);
+    s3ComponentQuery.setParameter(BLOB_SHAS_QUERY_PARAM, blobHash);
     List<S3DatasetComponentBlobEntity> datasetComponentBlobEntities = s3ComponentQuery.list();
 
     if (datasetComponentBlobEntities != null && datasetComponentBlobEntities.size() > 0) {
@@ -73,12 +78,12 @@ public class DatasetBlobFactory extends BlobFactory {
   }
 
   static PathDatasetBlob getPathBlob(Session session, String blobHash) {
-    String pathComponentQueryHQL =
+    var pathComponentQueryHQL =
         "From PathDatasetComponentBlobEntity p WHERE p.id.path_dataset_blob_id = :blobShas";
 
     Query<PathDatasetComponentBlobEntity> pathComponentQuery =
         session.createQuery(pathComponentQueryHQL);
-    pathComponentQuery.setParameter("blobShas", blobHash);
+    pathComponentQuery.setParameter(BLOB_SHAS_QUERY_PARAM, blobHash);
     List<PathDatasetComponentBlobEntity> pathDatasetComponentBlobEntities =
         pathComponentQuery.list();
 
@@ -94,12 +99,12 @@ public class DatasetBlobFactory extends BlobFactory {
   }
 
   static QueryDatasetBlob getQueryBlob(Session session, String blobHash) {
-    String pathComponentQueryHQL =
+    var pathComponentQueryHQL =
         "From QueryDatasetComponentBlobEntity q WHERE q.id.query_dataset_blob_id = :blobShas";
 
     Query<QueryDatasetComponentBlobEntity> queryComponentQuery =
         session.createQuery(pathComponentQueryHQL);
-    queryComponentQuery.setParameter("blobShas", blobHash);
+    queryComponentQuery.setParameter(BLOB_SHAS_QUERY_PARAM, blobHash);
     List<QueryDatasetComponentBlobEntity> queryDatasetComponentBlobEntities =
         queryComponentQuery.list();
 

@@ -42,6 +42,6 @@ public class TypeChecker {
   }
 
   public static Boolean sameType(AutogenBlob a, AutogenBlob b) {
-    return getType(a).equals(getType(b));
+    return getType(a) != null && getType(a).equals(getType(b));
   }
 }

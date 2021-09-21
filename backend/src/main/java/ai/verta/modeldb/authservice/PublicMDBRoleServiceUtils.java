@@ -28,18 +28,18 @@ import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.Metadata;
 import java.util.*;
 
-public class PublicRoleServiceUtils implements RoleService {
+public class PublicMDBRoleServiceUtils implements MDBRoleService {
 
   private ProjectDAO projectDAO;
   private DatasetDAO datasetDAO;
 
-  public PublicRoleServiceUtils(AuthService authService) {
+  public PublicMDBRoleServiceUtils(AuthService authService) {
     MetadataDAO metadataDAO = new MetadataDAORdbImpl();
     CommitDAO commitDAO = new CommitDAORdbImpl(authService, this);
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, this);
     ExperimentRunDAO experimentRunDAO =
         new ExperimentRunDAORdbImpl(
-            App.getInstance().config,
+            App.getInstance().mdbConfig,
             authService,
             this,
             new RepositoryDAORdbImpl(authService, this, commitDAO, metadataDAO),
@@ -72,13 +72,17 @@ public class PublicRoleServiceUtils implements RoleService {
       String roleName,
       CollaboratorBase collaborator,
       String resourceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {}
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    // Do nothing
+  }
 
   @Override
   public void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
-      String resourceId) {}
+      String resourceId) {
+    // Do nothing
+  }
 
   @Override
   public Map<String, Actions> getSelfAllowedActionsBatch(
@@ -194,7 +198,7 @@ public class PublicRoleServiceUtils implements RoleService {
   @Override
   public WorkspaceDTO getWorkspaceDTOByWorkspaceName(
       UserInfo currentLoginUserInfo, String workspaceName) {
-    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
+    var workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceName(workspaceName);
     return workspaceDTO;
   }
@@ -206,9 +210,9 @@ public class PublicRoleServiceUtils implements RoleService {
   }
 
   @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+  public WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
-    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
+    var workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(workspaceId);
     workspaceDTO.setWorkspaceType(WorkspaceType.forNumber(workspaceType));
     return workspaceDTO;
@@ -259,7 +263,8 @@ public class PublicRoleServiceUtils implements RoleService {
   public List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,
       Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      boolean isServiceUser) {
     return Collections.emptyList();
   }
 

@@ -55,7 +55,7 @@ public class TreeElem {
           .setElementSha(getBlobHash())
           .build();
     } else {
-      InternalFolder.Builder internalFolder = InternalFolder.newBuilder();
+      var internalFolder = InternalFolder.newBuilder();
       List<InternalFolderElement> elems = new LinkedList<>();
       for (TreeElem elem : children.values()) {
         InternalFolderElement build = elem.saveFolders(session, fileHasher, hashes);

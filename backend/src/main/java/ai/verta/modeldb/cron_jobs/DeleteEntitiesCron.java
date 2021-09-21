@@ -2,7 +2,7 @@ package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.DatasetEntity;
@@ -37,15 +37,17 @@ import org.hibernate.query.Query;
 
 public class DeleteEntitiesCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(DeleteEntitiesCron.class);
+  private static final String DELETED_KEY = "deleted";
+  private static final String REPO_ID_KEY = "repoId";
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final Integer recordUpdateLimit;
 
   public DeleteEntitiesCron(
-      AuthService authService, RoleService roleService, Integer recordUpdateLimit) {
+      AuthService authService, MDBRoleService mdbRoleService, Integer recordUpdateLimit) {
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
     this.recordUpdateLimit = recordUpdateLimit;
   }
 
@@ -54,7 +56,7 @@ public class DeleteEntitiesCron extends TimerTask {
   public void run() {
     LOGGER.info("DeleteEntitiesCron wakeup");
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       // Update project timestamp
       deleteProjects(session);
 
@@ -89,21 +91,9 @@ public class DeleteEntitiesCron extends TimerTask {
 
   private void deleteProjects(Session session) {
     LOGGER.trace("Project deleting");
-    String alias = "pr";
-    String deleteProjectsQueryString =
-        new StringBuilder("FROM ")
-            .append(ProjectEntity.class.getSimpleName())
-            .append(" ")
-            .append(alias)
-            .append(" WHERE ")
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.DELETED)
-            .append(" = :deleted ")
-            .toString();
-
-    Query projectDeleteQuery = session.createQuery(deleteProjectsQueryString);
-    projectDeleteQuery.setParameter("deleted", true);
+    var projectDeleteQuery =
+        session.createQuery("FROM ProjectEntity pr WHERE pr.deleted = :deleted ");
+    projectDeleteQuery.setParameter(DELETED_KEY, true);
     projectDeleteQuery.setMaxResults(this.recordUpdateLimit);
     List<ProjectEntity> projectEntities = projectDeleteQuery.list();
 
@@ -114,23 +104,13 @@ public class DeleteEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteEntityResourcesWithServiceUser(
+        mdbRoleService.deleteEntityResourcesWithServiceUser(
             projectIds, ModelDBServiceResourceTypes.PROJECT);
-        Transaction transaction = session.beginTransaction();
-        String updateDeletedStatusExperimentQueryString =
-            new StringBuilder("UPDATE ")
-                .append(ExperimentEntity.class.getSimpleName())
-                .append(" exp ")
-                .append("SET exp.")
-                .append(ModelDBConstants.DELETED)
-                .append(" = :deleted ")
-                .append(" WHERE exp.")
-                .append(ModelDBConstants.PROJECT_ID)
-                .append(" IN (:projectIds)")
-                .toString();
-        Query deletedExperimentQuery =
-            session.createQuery(updateDeletedStatusExperimentQueryString);
-        deletedExperimentQuery.setParameter("deleted", true);
+        var transaction = session.beginTransaction();
+        var updateDeletedStatusExperimentQueryString =
+            "UPDATE ExperimentEntity exp SET exp.deleted = :deleted WHERE exp.project_id IN (:projectIds)";
+        var deletedExperimentQuery = session.createQuery(updateDeletedStatusExperimentQueryString);
+        deletedExperimentQuery.setParameter(DELETED_KEY, true);
         deletedExperimentQuery.setParameter("projectIds", projectIds);
         deletedExperimentQuery.executeUpdate();
         transaction.commit();
@@ -156,16 +136,9 @@ public class DeleteEntitiesCron extends TimerTask {
 
   private void deleteExperiments(Session session) {
     LOGGER.trace("Experiment deleting");
-    String deleteExperimentQueryString =
-        new StringBuilder("FROM ")
-            .append(ExperimentEntity.class.getSimpleName())
-            .append(" ex WHERE ex.")
-            .append(ModelDBConstants.DELETED)
-            .append(" = :deleted ")
-            .toString();
-
-    Query experimentDeleteQuery = session.createQuery(deleteExperimentQueryString);
-    experimentDeleteQuery.setParameter("deleted", true);
+    var experimentDeleteQuery =
+        session.createQuery("FROM ExperimentEntity ex WHERE ex.deleted = :deleted ");
+    experimentDeleteQuery.setParameter(DELETED_KEY, true);
     experimentDeleteQuery.setMaxResults(this.recordUpdateLimit);
     List<ExperimentEntity> experimentEntities = experimentDeleteQuery.list();
 
@@ -188,21 +161,12 @@ public class DeleteEntitiesCron extends TimerTask {
       }
 
       try {
-        Transaction transaction = session.beginTransaction();
-        String updateDeletedStatusExperimentRunQueryString =
-            new StringBuilder("UPDATE ")
-                .append(ExperimentRunEntity.class.getSimpleName())
-                .append(" expr ")
-                .append("SET expr.")
-                .append(ModelDBConstants.DELETED)
-                .append(" = :deleted ")
-                .append(" WHERE expr.")
-                .append(ModelDBConstants.EXPERIMENT_ID)
-                .append(" IN (:experimentIds)")
-                .toString();
-        Query deletedExperimentRunQuery =
+        var transaction = session.beginTransaction();
+        var updateDeletedStatusExperimentRunQueryString =
+            "UPDATE ExperimentRunEntity expr SET expr.deleted = :deleted WHERE expr.experiment_id IN (:experimentIds)";
+        var deletedExperimentRunQuery =
             session.createQuery(updateDeletedStatusExperimentRunQueryString);
-        deletedExperimentRunQuery.setParameter("deleted", true);
+        deletedExperimentRunQuery.setParameter(DELETED_KEY, true);
         deletedExperimentRunQuery.setParameter("experimentIds", experimentIds);
         deletedExperimentRunQuery.executeUpdate();
         transaction.commit();
@@ -231,7 +195,7 @@ public class DeleteEntitiesCron extends TimerTask {
     List<String> roleBindingNames = new LinkedList<>();
     for (ExperimentEntity experimentEntity : experimentEntities) {
       String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
+          mdbRoleService.buildRoleBindingName(
               ModelDBConstants.ROLE_EXPERIMENT_OWNER,
               experimentEntity.getId(),
               experimentEntity.getOwner(),
@@ -241,22 +205,15 @@ public class DeleteEntitiesCron extends TimerTask {
       }
     }
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
+      mdbRoleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 
   private void deleteExperimentRuns(Session session) {
     LOGGER.trace("ExperimentRun deleting");
-    String deleteExperimentRunQueryString =
-        new StringBuilder("FROM ")
-            .append(ExperimentRunEntity.class.getSimpleName())
-            .append(" expr WHERE expr.")
-            .append(ModelDBConstants.DELETED)
-            .append(" = :deleted ")
-            .toString();
-
-    Query experimentRunDeleteQuery = session.createQuery(deleteExperimentRunQueryString);
-    experimentRunDeleteQuery.setParameter("deleted", true);
+    var experimentRunDeleteQuery =
+        session.createQuery("FROM ExperimentRunEntity expr WHERE expr.deleted = :deleted ");
+    experimentRunDeleteQuery.setParameter(DELETED_KEY, true);
     experimentRunDeleteQuery.setMaxResults(this.recordUpdateLimit);
     List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
 
@@ -279,7 +236,7 @@ public class DeleteEntitiesCron extends TimerTask {
 
       try {
         // Delete the ExperimentRun comments
-        Transaction transaction = session.beginTransaction();
+        var transaction = session.beginTransaction();
         if (!experimentRunIds.isEmpty()) {
           removeEntityComments(
               session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
@@ -313,7 +270,7 @@ public class DeleteEntitiesCron extends TimerTask {
     List<String> roleBindingNames = new LinkedList<>();
     for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
       String ownerRoleBindingName =
-          roleService.buildRoleBindingName(
+          mdbRoleService.buildRoleBindingName(
               ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
               experimentRunEntity.getId(),
               experimentRunEntity.getOwner(),
@@ -323,20 +280,14 @@ public class DeleteEntitiesCron extends TimerTask {
       }
     }
     if (!roleBindingNames.isEmpty()) {
-      roleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
+      mdbRoleService.deleteRoleBindingsUsingServiceUser(roleBindingNames);
     }
   }
 
   private void removeEntityComments(Session session, List<String> entityIds, String entityName) {
-    String commentDeleteHql =
-        new StringBuilder()
-            .append("From CommentEntity ce where ce.")
-            .append(ModelDBConstants.ENTITY_ID)
-            .append(" IN (:entityIds) AND ce.")
-            .append(ModelDBConstants.ENTITY_NAME)
-            .append(" =:entityName")
-            .toString();
-    Query commentDeleteQuery = session.createQuery(commentDeleteHql);
+    var commentDeleteHql =
+        "From CommentEntity ce where ce.entity_id IN (:entityIds) AND ce.entity_name =:entityName";
+    var commentDeleteQuery = session.createQuery(commentDeleteHql);
     commentDeleteQuery.setParameterList("entityIds", entityIds);
     commentDeleteQuery.setParameter("entityName", entityName);
     List<CommentEntity> commentEntities = commentDeleteQuery.list();
@@ -347,20 +298,9 @@ public class DeleteEntitiesCron extends TimerTask {
 
   private void deleteDatasets(Session session) {
     LOGGER.trace("Dataset deleting");
-    String alias = "dt";
-    String deleteDatasetsQueryString =
-        new StringBuilder("FROM ")
-            .append(DatasetEntity.class.getSimpleName())
-            .append(" ")
-            .append(alias)
-            .append(" WHERE ")
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.DELETED)
-            .append(" = :deleted ")
-            .toString();
-    Query datasetDeleteQuery = session.createQuery(deleteDatasetsQueryString);
-    datasetDeleteQuery.setParameter("deleted", true);
+    var datasetDeleteQuery =
+        session.createQuery("FROM DatasetEntity dt WHERE dt.deleted = :deleted ");
+    datasetDeleteQuery.setParameter(DELETED_KEY, true);
     datasetDeleteQuery.setMaxResults(this.recordUpdateLimit);
     List<DatasetEntity> datasetEntities = datasetDeleteQuery.list();
 
@@ -371,23 +311,14 @@ public class DeleteEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteEntityResourcesWithServiceUser(
+        mdbRoleService.deleteEntityResourcesWithServiceUser(
             datasetIds, ModelDBServiceResourceTypes.DATASET);
-        Transaction transaction = session.beginTransaction();
-        String updateDeletedStatusDatasetVersionQueryString =
-            new StringBuilder("UPDATE ")
-                .append(DatasetVersionEntity.class.getSimpleName())
-                .append(" dv ")
-                .append("SET dv.")
-                .append(ModelDBConstants.DELETED)
-                .append(" = :deleted ")
-                .append(" WHERE dv.")
-                .append(ModelDBConstants.DATASET_ID)
-                .append(" IN (:datasetIds)")
-                .toString();
-        Query deletedDatasetVersionQuery =
+        var transaction = session.beginTransaction();
+        var updateDeletedStatusDatasetVersionQueryString =
+            "UPDATE DatasetVersionEntity dv SET dv.deleted = :deleted WHERE dv.dataset_id IN (:datasetIds)";
+        var deletedDatasetVersionQuery =
             session.createQuery(updateDeletedStatusDatasetVersionQueryString);
-        deletedDatasetVersionQuery.setParameter("deleted", true);
+        deletedDatasetVersionQuery.setParameter(DELETED_KEY, true);
         deletedDatasetVersionQuery.setParameter("datasetIds", datasetIds);
         deletedDatasetVersionQuery.executeUpdate();
         transaction.commit();
@@ -412,32 +343,21 @@ public class DeleteEntitiesCron extends TimerTask {
 
   private void deleteDatasetVersions(Session session) {
     LOGGER.trace("DatasetVersion deleting");
-    String alias = "dv";
-    String deleteDatasetVersionsQueryString =
-        new StringBuilder("FROM ")
-            .append(DatasetVersionEntity.class.getSimpleName())
-            .append(" ")
-            .append(alias)
-            .append(" WHERE ")
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.DELETED)
-            .append(" = :deleted ")
-            .toString();
-    Query datasetVersionDeleteQuery = session.createQuery(deleteDatasetVersionsQueryString);
-    datasetVersionDeleteQuery.setParameter("deleted", true);
+    var datasetVersionDeleteQuery =
+        session.createQuery("FROM DatasetVersionEntity dv WHERE dv.deleted = :deleted ");
+    datasetVersionDeleteQuery.setParameter(DELETED_KEY, true);
     List<DatasetVersionEntity> datasetVersionEntities = datasetVersionDeleteQuery.list();
 
     if (!datasetVersionEntities.isEmpty()) {
       try {
-        roleService.deleteEntityResourcesWithServiceUser(
+        mdbRoleService.deleteEntityResourcesWithServiceUser(
             datasetVersionEntities.stream()
                 .map(DatasetVersionEntity::getId)
                 .collect(Collectors.toList()),
             ModelDBServiceResourceTypes.DATASET_VERSION);
         for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
           try {
-            Transaction transaction = session.beginTransaction();
+            var transaction = session.beginTransaction();
             session.delete(datasetVersionEntity);
             transaction.commit();
           } catch (OptimisticLockException ex) {
@@ -458,55 +378,35 @@ public class DeleteEntitiesCron extends TimerTask {
 
   private void deleteRepositories(Session session) {
     LOGGER.trace("Repository deleting");
-    String alias = "rp";
-    String deleteRepositoriesQueryString =
-        new StringBuilder("FROM ")
-            .append(RepositoryEntity.class.getSimpleName())
-            .append(" ")
-            .append(alias)
-            .append(" WHERE ")
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.DELETED)
-            .append(" = :deleted ")
-            .toString();
-    Query repositoryDeleteQuery = session.createQuery(deleteRepositoriesQueryString);
-    repositoryDeleteQuery.setParameter("deleted", true);
+    var repositoryDeleteQuery =
+        session.createQuery("FROM RepositoryEntity rp WHERE rp.deleted = :deleted ");
+    repositoryDeleteQuery.setParameter(DELETED_KEY, true);
     List<RepositoryEntity> repositoryEntities = repositoryDeleteQuery.list();
 
     if (!repositoryEntities.isEmpty()) {
       for (RepositoryEntity repository : repositoryEntities) {
         Transaction transaction = null;
         try {
-          ModelDBServiceResourceTypes modelDBServiceResourceTypes =
+          var modelDBServiceResourceTypes =
               ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
-          roleService.deleteEntityResourcesWithServiceUser(
+          mdbRoleService.deleteEntityResourcesWithServiceUser(
               Collections.singletonList(String.valueOf(repository.getId())),
               modelDBServiceResourceTypes);
 
           transaction = session.beginTransaction();
 
-          String deleteTagsHql =
-              new StringBuilder("DELETE " + TagsEntity.class.getSimpleName() + " te where te.id.")
-                  .append(ModelDBConstants.REPOSITORY_ID)
-                  .append(" = :repoId ")
-                  .toString();
-          Query deleteTagsQuery = session.createQuery(deleteTagsHql);
-          deleteTagsQuery.setParameter("repoId", repository.getId());
+          var deleteTagsHql = "DELETE TagsEntity te where te.id.repository_id = :repoId ";
+          var deleteTagsQuery = session.createQuery(deleteTagsHql);
+          deleteTagsQuery.setParameter(REPO_ID_KEY, repository.getId());
           deleteTagsQuery.executeUpdate();
 
           deleteLabels(
               session, String.valueOf(repository.getId()), IDTypeEnum.IDType.VERSIONING_REPOSITORY);
 
-          String getRepositoryBranchesHql =
-              new StringBuilder("From ")
-                  .append(BranchEntity.class.getSimpleName())
-                  .append(" br where br.id.")
-                  .append(ModelDBConstants.REPOSITORY_ID)
-                  .append(" = :repoId ")
-                  .toString();
-          Query query = session.createQuery(getRepositoryBranchesHql);
-          query.setParameter("repoId", repository.getId());
+          var getRepositoryBranchesHql =
+              "From BranchEntity br where br.id.repository_id = :repoId ";
+          var query = session.createQuery(getRepositoryBranchesHql);
+          query.setParameter(REPO_ID_KEY, repository.getId());
           List<BranchEntity> branchEntities = query.list();
 
           List<String> branches =
@@ -515,23 +415,18 @@ public class DeleteEntitiesCron extends TimerTask {
                   .collect(Collectors.toList());
 
           if (!branches.isEmpty()) {
-            String deleteBranchesHQL =
+            var deleteBranchesHQL =
                 "DELETE FROM BranchEntity br where br.id.repository_id = :repositoryId AND br.id.branch IN (:branches)";
-            Query deleteBranchQuery = session.createQuery(deleteBranchesHQL);
+            var deleteBranchQuery = session.createQuery(deleteBranchesHQL);
             deleteBranchQuery.setParameter("repositoryId", repository.getId());
             deleteBranchQuery.setParameterList("branches", branches);
             deleteBranchQuery.executeUpdate();
           }
 
-          StringBuilder commitQueryBuilder =
-              new StringBuilder(
-                  "SELECT cm FROM "
-                      + CommitEntity.class.getSimpleName()
-                      + " cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ");
-          Query<CommitEntity> commitEntityQuery =
-              session.createQuery(
-                  commitQueryBuilder.append(" ORDER BY cm.date_created DESC").toString());
-          commitEntityQuery.setParameter("repoId", repository.getId());
+          var commitQuery =
+              "SELECT cm FROM CommitEntity cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ORDER BY cm.date_created DESC";
+          Query<CommitEntity> commitEntityQuery = session.createQuery(commitQuery);
+          commitEntityQuery.setParameter(REPO_ID_KEY, repository.getId());
           List<CommitEntity> commitEntities = commitEntityQuery.list();
 
           commitEntities.forEach(
@@ -583,15 +478,9 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   public static void deleteLabels(Session session, Object entityHash, IDTypeEnum.IDType idType) {
-    String deleteLabelsQueryString =
-        new StringBuilder("DELETE LabelsMappingEntity lm where lm.id.")
-            .append(ModelDBConstants.ENTITY_HASH)
-            .append(" = :entityHash ")
-            .append(" AND lm.id.")
-            .append(ModelDBConstants.ENTITY_TYPE)
-            .append(" = :entityType")
-            .toString();
-    Query deleteLabelsQuery =
+    var deleteLabelsQueryString =
+        "DELETE LabelsMappingEntity lm where lm.id.entity_hash = :entityHash AND lm.id.entity_type = :entityType";
+    var deleteLabelsQuery =
         session
             .createQuery(deleteLabelsQueryString)
             .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -601,14 +490,9 @@ public class DeleteEntitiesCron extends TimerTask {
   }
 
   public static void deleteAttribute(Session session, String entityHash) {
-    String deleteAllAttributes =
-        new StringBuilder("delete from AttributeEntity at WHERE at.")
-            .append(ModelDBConstants.ENTITY_HASH)
-            .append(" = :entityHash")
-            .append(" AND at.entity_name ")
-            .append(" = :entityName")
-            .toString();
-    Query deleteLabelsQuery =
+    var deleteAllAttributes =
+        "delete from AttributeEntity at WHERE at.entity_hash = :entityHash AND at.entity_name = :entityName";
+    var deleteLabelsQuery =
         session
             .createQuery(deleteAllAttributes)
             .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -619,12 +503,9 @@ public class DeleteEntitiesCron extends TimerTask {
 
   private static void deleteTagEntities(Session session, Long repoId, String commitHash) {
     String getTagsHql =
-        "From TagsEntity te where te.id."
-            + ModelDBConstants.REPOSITORY_ID
-            + " = :repoId "
-            + " AND te.commit_hash = :commitHash";
+        "From TagsEntity te where te.id.repository_id = :repoId AND te.commit_hash = :commitHash";
     Query<TagsEntity> getTagsQuery = session.createQuery(getTagsHql, TagsEntity.class);
-    getTagsQuery.setParameter("repoId", repoId);
+    getTagsQuery.setParameter(REPO_ID_KEY, repoId);
     getTagsQuery.setParameter("commitHash", commitHash);
     List<TagsEntity> tagsEntities = getTagsQuery.list();
     tagsEntities.forEach(session::delete);

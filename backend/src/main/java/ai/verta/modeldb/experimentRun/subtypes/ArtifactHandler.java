@@ -7,7 +7,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
@@ -25,10 +25,11 @@ import org.hibernate.Session;
 
 public class ArtifactHandler extends ArtifactHandlerBase {
   private static Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
+  private static final String KEY_S_NOT_LOGGED_ERROR = "Key %s not logged";
 
   private final CodeVersionHandler codeVersionHandler;
   private final DatasetHandler datasetHandler;
-  private final Config config = App.getInstance().config;
+  private final MDBConfig mdbConfig = App.getInstance().mdbConfig;
 
   private final ArtifactStoreDAO artifactStoreDAO;
   private final DatasetVersionDAO datasetVersionDAO;
@@ -104,7 +105,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                       throw new NotFoundException(finalErrorMessage);
                     }
 
-                    GetUrlForArtifact.Response response =
+                    var response =
                         artifactStoreDAO.getUrlForArtifactMultipart(
                             s3Key, request.getMethod(), request.getPartNumber(), uploadId);
 
@@ -123,9 +124,10 @@ public class ArtifactHandler extends ArtifactHandlerBase {
             maybeId -> {
               final var id =
                   maybeId.orElseThrow(
-                      () -> new InvalidArgumentException("Key " + key + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+                      () ->
+                          new InvalidArgumentException(String.format(KEY_S_NOT_LOGGED_ERROR, key)));
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 return getS3PathAndMultipartUploadId(
                     session, artifactEntity, partNumber != 0, initializeMultipart);
@@ -141,7 +143,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified
-        && config.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)) {
+        && mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {
@@ -189,7 +191,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                         artifacts -> {
                           if (artifacts.isEmpty()) {
                             throw new InvalidArgumentException(
-                                "Key " + request.getKey() + " not logged");
+                                String.format(KEY_S_NOT_LOGGED_ERROR, request.getKey()));
                           }
                           return new AbstractMap.SimpleEntry<>(
                               datasetVersionDAO.getUrlForDatasetVersion(
@@ -219,9 +221,10 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               final var id =
                   maybeId.orElseThrow(
                       () ->
-                          new InvalidArgumentException("Key " + request.getKey() + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+                          new InvalidArgumentException(
+                              String.format(KEY_S_NOT_LOGGED_ERROR, request.getKey())));
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 VersioningUtils.saveArtifactPartEntity(
                     request.getArtifactPart(),
@@ -241,18 +244,18 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               final var id =
                   maybeId.orElseThrow(
                       () ->
-                          new InvalidArgumentException("Key " + request.getKey() + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+                          new InvalidArgumentException(
+                              String.format(KEY_S_NOT_LOGGED_ERROR, request.getKey())));
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 Set<ArtifactPartEntity> artifactPartEntities =
                     VersioningUtils.getArtifactPartEntities(
                         session,
                         String.valueOf(artifactEntity.getId()),
                         ArtifactPartEntity.EXP_RUN_ARTIFACT);
-                ;
-                GetCommittedArtifactParts.Response.Builder response =
-                    GetCommittedArtifactParts.Response.newBuilder();
+
+                var response = GetCommittedArtifactParts.Response.newBuilder();
                 artifactPartEntities.forEach(
                     artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
                 return response.build();
@@ -268,12 +271,13 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               final var id =
                   maybeId.orElseThrow(
                       () ->
-                          new InvalidArgumentException("Key " + request.getKey() + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+                          new InvalidArgumentException(
+                              String.format(KEY_S_NOT_LOGGED_ERROR, request.getKey())));
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 if (artifactEntity.getUploadId() == null) {
-                  String message =
+                  var message =
                       "Multipart wasn't initialized OR Multipart artifact already committed";
                   throw new InvalidArgumentException(message);
                 }
