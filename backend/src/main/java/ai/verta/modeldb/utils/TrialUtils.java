@@ -76,6 +76,21 @@ public class TrialUtils {
     }
   }
 
+  public static void validateExperimentRunPerWorkspaceForTrial(
+      TrialConfig config, int existingCount) throws ModelDBException {
+    if (config != null) {
+      if (config.restrictions.max_experiment_run_per_workspace != null
+          && existingCount >= config.restrictions.max_experiment_run_per_workspace) {
+        throw new ModelDBException(
+            ModelDBConstants.LIMIT_RUN_NUMBER
+                + "“Number of experiment runs exceeded”: Your trial account allows you to log upto "
+                + config.restrictions.max_experiment_run_per_workspace
+                + " experiment runs. Try deleting prior experiment runs in order to proceed.",
+            Code.RESOURCE_EXHAUSTED);
+      }
+    }
+  }
+
   public static InternalFuture<Void> futureValidateExperimentRunPerWorkspaceForTrial(
       TrialConfig config, Executor executor) {
     // TODO: Implement trial support using InternalFuture

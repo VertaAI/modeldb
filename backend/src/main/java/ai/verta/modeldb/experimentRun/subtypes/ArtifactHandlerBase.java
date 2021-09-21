@@ -8,8 +8,11 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.MDBArtifactStoreConfig;
+import ai.verta.modeldb.config.MDBConfig;
+import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.utils.TrialUtils;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +30,7 @@ public class ArtifactHandlerBase {
   protected final String entityName;
   protected final String entityIdReferenceColumn;
   private final MDBArtifactStoreConfig artifactStoreConfig;
+  private final TrialConfig trialConfig;
 
   protected String getTableName() {
     return "artifact";
@@ -38,7 +42,9 @@ public class ArtifactHandlerBase {
     this.jdbi = jdbi;
     this.fieldType = fieldType;
     this.entityName = entityName;
-    this.artifactStoreConfig = App.getInstance().mdbConfig.artifactStoreConfig;
+    MDBConfig mdbConfig = App.getInstance().mdbConfig;
+    this.artifactStoreConfig = mdbConfig.artifactStoreConfig;
+    this.trialConfig = mdbConfig.trial;
 
     switch (entityName) {
       case "ProjectEntity":
@@ -228,6 +234,29 @@ public class ArtifactHandlerBase {
                         }
                       }
                     }),
+            executor)
+        .thenAccept(
+            unused -> {
+              if (entityName.equals("ExperimentRunEntity") && fieldType.equals("artifacts")) {
+                jdbi.withHandle(
+                        handle ->
+                            handle
+                                .createQuery(
+                                    String.format(
+                                        "select count(id) from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id ",
+                                        getTableName(), entityIdReferenceColumn))
+                                .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                                .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                                .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                                .mapTo(Long.class)
+                                .one())
+                    .thenAccept(
+                        count ->
+                            TrialUtils.validateMaxArtifactsForTrial(
+                                trialConfig, artifacts.size(), count.intValue()),
+                        executor);
+              }
+            },
             executor)
         .thenCompose(
             unused ->
