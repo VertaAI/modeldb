@@ -37,8 +37,8 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   public AuthServiceChannel(Config config) {
     super(config);
-    String host = config.authService.host;
-    int port = config.authService.port;
+    String host = config.getAuthService().getHost();
+    int port = config.getAuthService().getPort();
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
     if (host != null && port != 0) { // AuthService not available.
       authChannel =
@@ -46,8 +46,8 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
               .usePlaintext()
               .build();
 
-      this.serviceUserEmail = config.service_user.email;
-      this.serviceUserDevKey = config.service_user.devKey;
+      this.serviceUserEmail = config.getService_user().getEmail();
+      this.serviceUserDevKey = config.getService_user().getDevKey();
     } else {
       throw new UnavailableException(
           "Host OR Port not found for contacting authentication service");

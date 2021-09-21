@@ -36,7 +36,7 @@ public class UpdateProjectTimestampReconcile
         handle ->
             handle
                 .createQuery(fetchUpdatedProjectIds)
-                .setFetchSize(config.maxSync)
+                .setFetchSize(config.getMaxSync())
                 .map(
                     (rs, ctx) -> {
                       var projectId = rs.getString("ex.project_id");

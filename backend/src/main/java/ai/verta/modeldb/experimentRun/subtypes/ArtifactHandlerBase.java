@@ -255,7 +255,9 @@ public class ArtifactHandlerBase {
                             .bind("filename_extension", artifact.getFilenameExtension())
                             .bind(
                                 "upload_completed",
-                                !artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
+                                !artifactStoreConfig
+                                    .getArtifactStoreType()
+                                    .equals(ModelDBConstants.S3))
                             .bind("store_type_path", storeTypePath)
                             .bind("serialization", artifact.getSerialization())
                             .bind("artifact_subtype", artifact.getArtifactSubtype())

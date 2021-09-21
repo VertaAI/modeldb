@@ -43,8 +43,7 @@ public class AuthServiceUtils implements AuthService {
       }
     } catch (StatusRuntimeException ex) {
       return (UserInfo)
-          CommonUtils.retryOrThrowException(
-              ex, retry, (RetryCallInterface<UserInfo>) this::getCurrentLoginUserInfo, timeout);
+          CommonUtils.retryOrThrowException(ex, retry, this::getCurrentLoginUserInfo, timeout);
     }
   }
 
@@ -68,8 +67,7 @@ public class AuthServiceUtils implements AuthService {
       }
     } catch (StatusRuntimeException ex) {
       return (UserInfo)
-          CommonUtils.retryOrThrowException(
-              ex, retry, (RetryCallInterface<UserInfo>) this::getUnsignedUser, timeout);
+          CommonUtils.retryOrThrowException(ex, retry, this::getUnsignedUser, timeout);
     }
   }
 
@@ -106,7 +104,7 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (RetryCallInterface<UserInfo>)
-                  (retry1) -> getUserInfo(retry1, vertaId, vertaIdentifier),
+                  retry1 -> getUserInfo(retry1, vertaId, vertaIdentifier),
               timeout);
     }
   }
@@ -163,7 +161,7 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (RetryCallInterface<Map<String, UserInfo>>)
-                  (retry1) ->
+                  retry1 ->
                       getUserInfoFromAuthServer(
                           retry1, vertaIdList, emailIdList, usernameList, isServiceUser),
               timeout);
@@ -236,7 +234,7 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<UserInfoPaginationDTO>)
-                  (retry1) -> getFuzzyUserInfoList(retry1, usernameChar),
+                  retry1 -> getFuzzyUserInfoList(retry1, usernameChar),
               timeout);
     }
   }
@@ -260,7 +258,7 @@ public class AuthServiceUtils implements AuthService {
           CommonUtils.retryOrThrowException(
               ex,
               retry,
-              (RetryCallInterface<Workspace>) (retry1) -> workspaceIdByName(retry1, workspaceName),
+              (RetryCallInterface<Workspace>) retry1 -> workspaceIdByName(retry1, workspaceName),
               timeout);
     }
   }
@@ -284,7 +282,7 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<Workspace>)
-                  (retry1) -> workspaceById(retry1, workspaceId),
+                  retry1 -> workspaceById(retry1, workspaceId),
               timeout);
     }
   }

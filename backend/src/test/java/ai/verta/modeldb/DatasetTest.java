@@ -1367,7 +1367,10 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion2.getId())
               .setUploadCompleted(
-                  !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
+                  !testConfig
+                      .artifactStoreConfig
+                      .getArtifactStoreType()
+                      .equals(ModelDBConstants.S3))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1396,7 +1399,10 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion1.getId())
               .setUploadCompleted(
-                  !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
+                  !testConfig
+                      .artifactStoreConfig
+                      .getArtifactStoreType()
+                      .equals(ModelDBConstants.S3))
               .build();
 
       logDatasetRequest =
@@ -1572,7 +1578,10 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion2.getId())
               .setUploadCompleted(
-                  !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
+                  !testConfig
+                      .artifactStoreConfig
+                      .getArtifactStoreType()
+                      .equals(ModelDBConstants.S3))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1601,7 +1610,10 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion1.getId())
               .setUploadCompleted(
-                  !testConfig.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3))
+                  !testConfig
+                      .artifactStoreConfig
+                      .getArtifactStoreType()
+                      .equals(ModelDBConstants.S3))
               .build();
 
       logDatasetRequest =

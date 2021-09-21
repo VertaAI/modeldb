@@ -4,21 +4,22 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.dialect.MySQL5Dialect;
-import org.hibernate.dialect.PostgreSQLDialect;
+import org.hibernate.dialect.PostgreSQL82Dialect;
 import org.hibernate.dialect.SQLServer2008Dialect;
 
+@SuppressWarnings({"squid:S116", "squid:S100"})
 public class RdbConfig {
   private static final Logger LOGGER = LogManager.getLogger(RdbConfig.class);
 
-  public String RdbDatabaseName;
+  private String RdbDatabaseName;
   // TODO: replace driver with "io.opentracing.contrib.jdbc.TracingDriver" if tracing is enabled
-  public String RdbDriver;
-  public String RdbDialect;
-  public String RdbUrl;
-  public String RdbUsername;
-  public String RdbPassword;
-  public String sslMode = "DISABLED";
-  public Boolean sslEnabled = false;
+  private String RdbDriver;
+  private String RdbDialect;
+  private String RdbUrl;
+  private String RdbUsername;
+  private String RdbPassword;
+  private String sslMode = "DISABLED";
+  private Boolean sslEnabled = false;
 
   public void Validate(String base) throws InvalidConfigException {
     if (RdbDatabaseName == null || RdbDatabaseName.isEmpty())
@@ -39,7 +40,7 @@ public class RdbConfig {
   }
 
   public boolean isPostgres() {
-    return RdbDialect.equals(PostgreSQLDialect.class.getName());
+    return RdbDialect.equals(PostgreSQL82Dialect.class.getName());
   }
 
   public boolean isMysql() {
@@ -52,12 +53,12 @@ public class RdbConfig {
 
   public static String buildDatabaseConnectionString(RdbConfig rdb) {
     if (rdb.isMssql()) {
-      return rdb.RdbUrl + ";databaseName=" + rdb.RdbDatabaseName;
+      return rdb.RdbUrl + ";databaseName=" + rdb.getRdbDatabaseName();
     }
     final var url =
         rdb.RdbUrl
             + "/"
-            + rdb.RdbDatabaseName
+            + rdb.getRdbDatabaseName()
             + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
             + "&sslEnabled="
             + rdb.sslEnabled
@@ -78,12 +79,12 @@ public class RdbConfig {
             + rdb.sslEnabled
             + "&sslMode="
             + rdb.sslMode;
-    LOGGER.info("Using db URL: ", url);
+    LOGGER.info("Using db URL: {}", url);
     return url;
   }
 
   public static String buildDatabaseName(RdbConfig rdb) {
-    final var dbName = rdb.RdbDatabaseName;
+    final var dbName = rdb.getRdbDatabaseName();
     if (dbName.contains("-")) {
       if (rdb.isPostgres()) {
         throw new ModelDBException("Postgres does not support database names containing -");
@@ -96,5 +97,29 @@ public class RdbConfig {
       }
     }
     return dbName;
+  }
+
+  public String getRdbDatabaseName() {
+    return RdbDatabaseName;
+  }
+
+  public String getRdbDialect() {
+    return RdbDialect;
+  }
+
+  public String getRdbUrl() {
+    return RdbUrl;
+  }
+
+  public String getRdbUsername() {
+    return RdbUsername;
+  }
+
+  public String getRdbPassword() {
+    return RdbPassword;
+  }
+
+  public String getSslMode() {
+    return sslMode;
   }
 }

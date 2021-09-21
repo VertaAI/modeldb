@@ -18,8 +18,8 @@ public class CronJobUtils {
   public static void initializeCronJobs(MDBConfig mdbConfig, ServiceSet services) {
 
     LOGGER.info("Enter in CronJobUtils: initializeBasedOnConfig()");
-    if (mdbConfig.cron_job != null) {
-      for (Map.Entry<String, CronJobConfig> cronJob : mdbConfig.cron_job.entrySet()) {
+    if (mdbConfig.getCron_job() != null) {
+      for (Map.Entry<String, CronJobConfig> cronJob : mdbConfig.getCron_job().entrySet()) {
         TimerTask task = null;
         if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
             && (mdbConfig.hasServiceAccount() || !services.mdbRoleService.IsImplemented())) {
@@ -27,26 +27,28 @@ public class CronJobUtils {
               new DeleteEntitiesCron(
                   services.authService,
                   services.mdbRoleService,
-                  cronJob.getValue().record_update_limit);
+                  cronJob.getValue().getRecord_update_limit());
         } else if (cronJob.getKey().equals(ModelDBConstants.UPDATE_RUN_ENVIRONMENTS)
             && services.artifactStoreService != null
             && !(services.artifactStoreService instanceof ArtifactStoreDAODisabled)) {
           task =
               new PopulateEnvironmentInRunCron(
-                  services.artifactStoreService, cronJob.getValue().record_update_limit, mdbConfig);
+                  services.artifactStoreService,
+                  cronJob.getValue().getRecord_update_limit(),
+                  mdbConfig);
         } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
             && (mdbConfig.hasServiceAccount() || !services.mdbRoleService.IsImplemented())) {
           task =
               new CleanUpEntitiesCron(
-                  services.mdbRoleService, cronJob.getValue().record_update_limit);
+                  services.mdbRoleService, cronJob.getValue().getRecord_update_limit());
         } else {
           LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());
         }
         if (task != null) {
           ModelDBUtils.scheduleTask(
               task,
-              cronJob.getValue().initial_delay,
-              cronJob.getValue().frequency,
+              cronJob.getValue().getInitial_delay(),
+              cronJob.getValue().getFrequency(),
               TimeUnit.SECONDS);
           LOGGER.info("{} cron job scheduled successfully", cronJob.getKey());
         }

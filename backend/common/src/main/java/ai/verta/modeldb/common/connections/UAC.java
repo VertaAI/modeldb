@@ -11,6 +11,7 @@ import io.grpc.stub.MetadataUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+@SuppressWarnings({"squid:S100"})
 public class UAC extends Connection {
   private static final Logger LOGGER = LogManager.getLogger(UAC.class);
 
@@ -31,7 +32,7 @@ public class UAC extends Connection {
   }
 
   private UAC(Config config) {
-    this(config.authService.host, config.authService.port, config);
+    this(config.getAuthService().getHost(), config.getAuthService().getPort(), config);
   }
 
   public UAC(String host, Integer port, Config config) {
@@ -71,9 +72,9 @@ public class UAC extends Connection {
     var devKeyHyphen = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
     var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-    requestHeaders.put(emailKey, config.service_user.email);
-    requestHeaders.put(devKey, config.service_user.devKey);
-    requestHeaders.put(devKeyHyphen, config.service_user.devKey);
+    requestHeaders.put(emailKey, config.getService_user().getEmail());
+    requestHeaders.put(devKey, config.getService_user().getDevKey());
+    requestHeaders.put(devKeyHyphen, config.getService_user().getDevKey());
     requestHeaders.put(sourceKey, "PythonClient");
     return requestHeaders;
   }

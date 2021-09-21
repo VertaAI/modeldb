@@ -41,7 +41,7 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
   }
 
   private MDBRoleServiceUtils(Config config, AuthService authService, UAC uac) {
-    super(authService, config.grpcServer.requestTimeout, uac);
+    super(authService, config.getGrpcServer().getRequestTimeout(), uac);
   }
 
   @Override
@@ -312,7 +312,7 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
           collaborator,
           ModelDBServiceResourceTypes.REPOSITORY.name());
     } else {
-      return ModelDBConstants.EMPTY_STRING;
+      return CommonConstants.EMPTY_STRING;
     }
   }
 

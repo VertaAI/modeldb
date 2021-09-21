@@ -1,10 +1,10 @@
 package ai.verta.modeldb.common.config;
 
 public class NFSConfig {
-  public String nfsUrlProtocol = "https";
-  public String nfsRootPath;
-  public String nfsServerHost = "";
-  public NFSEndpointConfig artifactEndpoint;
+  private String nfsUrlProtocol = "https";
+  private String nfsRootPath;
+  private String nfsServerHost = "";
+  private NFSEndpointConfig artifactEndpoint;
 
   public void Validate(String base) throws InvalidConfigException {
     if (nfsRootPath == null || nfsRootPath.isEmpty())
@@ -17,5 +17,13 @@ public class NFSConfig {
 
   public String storeTypePathPrefix() {
     return String.format("nfs://%s/", nfsRootPath);
+  }
+
+  public String getNfsRootPath() {
+    return nfsRootPath;
+  }
+
+  public NFSEndpointConfig getArtifactEndpoint() {
+    return artifactEndpoint;
   }
 }

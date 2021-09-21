@@ -8,6 +8,7 @@ import io.grpc.ServerCallHandler;
 import io.grpc.ServerInterceptor;
 import io.grpc.StatusRuntimeException;
 
+@SuppressWarnings({"squid:S119"})
 // From https://sultanov.dev/blog/exception-handling-in-grpc-java-server/
 public class ExceptionInterceptor implements ServerInterceptor {
 

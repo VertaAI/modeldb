@@ -246,7 +246,7 @@ public class RoleServiceUtils implements RoleService {
           CommonUtils.retryOrThrowException(
               ex,
               retry,
-              (CommonUtils.RetryCallInterface<GeneratedMessageV3>) (retry1) -> getTeamById(teamId),
+              (CommonUtils.RetryCallInterface<GeneratedMessageV3>) retry1 -> getTeamById(teamId),
               timeout);
     }
   }
@@ -271,7 +271,7 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
-                  (retry1) -> getOrgById(retry1, orgId, isServiceUser),
+                  retry1 -> getOrgById(retry1, orgId, isServiceUser),
               timeout);
     }
   }
@@ -520,7 +520,7 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
 
-      if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
+      if (!getAllowedResourcesResponse.getResourcesList().isEmpty()) {
         List<String> resourcesIds = new ArrayList<>();
         for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
           resourcesIds.addAll(resources.getResourceIdsList());
@@ -535,7 +535,7 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<List<String>>)
-                  (retry1) ->
+                  retry1 ->
                       getAllowedResources(
                           retry1,
                           modelDBServiceResourceTypes,
@@ -578,7 +578,7 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
 
-      if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
+      if (!getAllowedResourcesResponse.getResourcesList().isEmpty()) {
         List<String> resourcesIds = new ArrayList<>();
         for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
           resourcesIds.addAll(resources.getResourceIdsList());
@@ -593,7 +593,7 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<List<String>>)
-                  (retry1) ->
+                  retry1 ->
                       getSelfAllowedResources(
                           retry1, modelDBServiceResourceTypes, modelDBServiceActions),
               timeout);
@@ -634,7 +634,7 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
 
-      if (getAllowedResourcesResponse.getResourcesList().size() > 0) {
+      if (!getAllowedResourcesResponse.getResourcesList().isEmpty()) {
         List<String> getSelfDirectlyAllowedResourceIds = new ArrayList<>();
         for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
           getSelfDirectlyAllowedResourceIds.addAll(resources.getResourceIdsList());
@@ -649,7 +649,7 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<List<String>>)
-                  (retry1) ->
+                  retry1 ->
                       getSelfDirectlyAllowedResources(
                           retry1, modelDBServiceResourceTypes, modelDBServiceActions),
               timeout);
@@ -765,7 +765,7 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<Map<String, Actions>>)
-                  (retry1) -> getSelfAllowedActionsBatch(retry1, resourceIds, type),
+                  retry1 -> getSelfAllowedActionsBatch(retry1, resourceIds, type),
               timeout);
     }
   }
@@ -813,7 +813,7 @@ public class RoleServiceUtils implements RoleService {
           ex,
           retry,
           (CommonUtils.RetryCallInterface<Void>)
-              (retry1) -> {
+              retry1 -> {
                 setRoleBindingOnAuthService(retry1, roleBinding);
                 return null;
               },
@@ -847,7 +847,7 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<Boolean>)
-                  (retry1) -> deleteRoleBindingsUsingServiceUser(retry1, roleBindingNames),
+                  retry1 -> deleteRoleBindingsUsingServiceUser(retry1, roleBindingNames),
               timeout);
     }
   }
@@ -869,7 +869,7 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
-                  (retry1) -> getTeamByName(retry1, orgId, teamName),
+                  retry1 -> getTeamByName(retry1, orgId, teamName),
               timeout);
     }
   }
@@ -894,7 +894,7 @@ public class RoleServiceUtils implements RoleService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
-                  (retry1) -> getOrgByName(retry1, name),
+                  retry1 -> getOrgByName(retry1, name),
               timeout);
     }
   }
@@ -914,11 +914,7 @@ public class RoleServiceUtils implements RoleService {
       return listMyOrganizationsResponse.getOrganizationsList();
     } catch (StatusRuntimeException ex) {
       return (List<Organization>)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<List<Organization>>) this::listMyOrganizations,
-              timeout);
+          CommonUtils.retryOrThrowException(ex, retry, this::listMyOrganizations, timeout);
     }
   }
 }

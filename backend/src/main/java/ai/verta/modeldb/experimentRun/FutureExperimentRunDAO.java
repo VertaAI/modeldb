@@ -214,7 +214,8 @@ public class FutureExperimentRunDAO {
         new HyperparametersFromConfigHandler(
             executor, jdbi, "hyperparameters", EXPERIMENT_RUN_ENTITY_NAME);
     codeVersionFromBlobHandler =
-        new CodeVersionFromBlobHandler(executor, jdbi, config.populateConnectionsBasedOnPrivileges);
+        new CodeVersionFromBlobHandler(
+            executor, jdbi, config.isPopulateConnectionsBasedOnPrivileges());
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -1446,7 +1447,7 @@ public class FutureExperimentRunDAO {
 
   private InternalFuture<List<Resources>>
       getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges() {
-    return InternalFuture.completedInternalFuture(config.populateConnectionsBasedOnPrivileges)
+    return InternalFuture.completedInternalFuture(config.isPopulateConnectionsBasedOnPrivileges())
         .thenCompose(
             populateConnectionsBasedOnPrivileges -> {
               // If populateConnectionsBasedOnPrivileges = true then fetch all accessible

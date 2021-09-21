@@ -64,7 +64,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       var deletedQuery = session.createQuery(queryString);
       deletedQuery.setParameter("deleted", true);
-      deletedQuery.setMaxResults(config.maxSync);
+      deletedQuery.setMaxResults(config.getMaxSync());
       deletedQuery.stream().forEach(id -> this.insert(String.valueOf(id)));
     }
   }

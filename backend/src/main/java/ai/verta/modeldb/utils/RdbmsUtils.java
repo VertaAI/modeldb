@@ -5,6 +5,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -718,7 +719,7 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (App.getInstance().mdbConfig.database.RdbConfiguration.isPostgres()) {
+        if (App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isPostgres()) {
           if (stringColumn) {
 
             return getOperatorPredicate(
@@ -2057,7 +2058,7 @@ public class RdbmsUtils {
           new VersioningModeldbEntityMapping(
               versioningEntry.getRepositoryId(),
               versioningEntry.getCommit(),
-              ModelDBConstants.EMPTY_STRING,
+              CommonConstants.EMPTY_STRING,
               null,
               null,
               null,

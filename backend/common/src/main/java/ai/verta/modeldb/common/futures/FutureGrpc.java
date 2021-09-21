@@ -11,13 +11,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 
+@SuppressWarnings({"squid:S100"})
 public class FutureGrpc {
   private FutureGrpc() {}
 
   // Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom
   // InternalFuture
   public static <T> InternalFuture<T> ClientRequest(ListenableFuture<T> f, Executor ex) {
-    CompletableFuture<T> promise = new CompletableFuture<T>();
+    CompletableFuture<T> promise = new CompletableFuture<>();
     Futures.addCallback(f, new Callback<T>(promise), ex);
     return InternalFuture.from(promise);
   }

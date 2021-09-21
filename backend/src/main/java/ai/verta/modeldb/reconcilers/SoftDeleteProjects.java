@@ -42,7 +42,7 @@ public class SoftDeleteProjects extends Reconciler<String> {
       deletedQuery.setParameter("deleted", true);
       deletedQuery.setParameter("created", false);
       deletedQuery.setParameter("dateCreated", new Date().getTime() - 60000L); // before 1 min
-      deletedQuery.setMaxResults(config.maxSync);
+      deletedQuery.setMaxResults(config.getMaxSync());
       deletedQuery.stream().forEach(id -> this.insert((String) id));
     }
   }

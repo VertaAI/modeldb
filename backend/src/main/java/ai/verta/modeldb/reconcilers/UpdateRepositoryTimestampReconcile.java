@@ -41,7 +41,7 @@ public class UpdateRepositoryTimestampReconcile
         handle -> {
           handle
               .createQuery(fetchUpdatedDatasetIds)
-              .setFetchSize(config.maxSync)
+              .setFetchSize(config.getMaxSync())
               .map(
                   (rs, ctx) -> {
                     Long datasetId = rs.getLong("rc.repository_id");

@@ -31,8 +31,6 @@ public abstract class ModelDBConstants {
   public static final String PATH_DELIMITER = "/";
   public static final Integer TAG_LENGTH = 40;
 
-  public static final String EMPTY_STRING = "";
-
   // Column/protos field names
   public static final String ARTIFACTS = "artifacts";
   public static final String ATTRIBUTES = "attributes";

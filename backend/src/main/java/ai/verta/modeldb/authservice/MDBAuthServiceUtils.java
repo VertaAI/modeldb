@@ -12,6 +12,6 @@ public class MDBAuthServiceUtils extends AuthServiceUtils {
   }
 
   private MDBAuthServiceUtils(Config config, UAC uac) {
-    super(uac, config.grpcServer.requestTimeout);
+    super(uac, config.getGrpcServer().getRequestTimeout());
   }
 }

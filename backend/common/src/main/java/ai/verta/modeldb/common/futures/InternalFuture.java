@@ -164,9 +164,10 @@ public class InternalFuture<T> {
         .get()
         .whenComplete(
             (value, throwable) -> {
+              boolean retryCheckerFlag = retryChecker.apply(throwable);
               if (throwable == null) {
                 promise.complete(value);
-              } else if (retryChecker.apply(throwable)) {
+              } else if (retryCheckerFlag) {
                 // If we should retry, then perform the retry and map the result of the future to
                 // the current promise
                 // This build up a chain of promises, which can consume memory. I couldn't figure

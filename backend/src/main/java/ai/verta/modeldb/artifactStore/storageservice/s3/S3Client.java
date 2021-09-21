@@ -46,10 +46,10 @@ public class S3Client {
   public S3Client(String cloudBucketName) throws IOException, ModelDBException {
     app = App.getInstance();
     config = app.mdbConfig.artifactStoreConfig.S3;
-    String cloudAccessKey = config.cloudAccessKey;
-    String cloudSecretKey = config.cloudSecretKey;
-    String minioEndpoint = config.minioEndpoint;
-    awsRegion = Regions.fromName(config.awsRegion);
+    String cloudAccessKey = config.getCloudAccessKey();
+    String cloudSecretKey = config.getCloudSecretKey();
+    String minioEndpoint = config.getMinioEndpoint();
+    awsRegion = Regions.fromName(config.getAwsRegion());
     this.bucketName = cloudBucketName;
 
     // Start the counter with one because this class has a reference to it

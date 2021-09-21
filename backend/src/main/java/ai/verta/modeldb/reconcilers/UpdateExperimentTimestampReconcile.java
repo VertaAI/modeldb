@@ -36,7 +36,7 @@ public class UpdateExperimentTimestampReconcile
         handle -> {
           handle
               .createQuery(fetchUpdatedExperimentIds)
-              .setFetchSize(config.maxSync)
+              .setFetchSize(config.getMaxSync())
               .map(
                   (rs, ctx) -> {
                     var experimentId = rs.getString("expr.experiment_id");

@@ -98,7 +98,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public GetUrlForArtifact.Response generatePresignedUrlForTrial(
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
-    if (mdbConfig.artifactStoreConfig.S3.s3presignedURLEnabled) {
+    if (mdbConfig.artifactStoreConfig.S3.getS3presignedURLEnabled()) {
       if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
         return GetUrlForArtifact.Response.newBuilder()
             .setMultipartUploadOk(false)
@@ -116,7 +116,7 @@ public class S3Service implements ArtifactStoreService {
                   TrialUtils.getBodyParameterMapForTrialPresignedURL(
                       client.getCredentials(),
                       bucketName,
-                      mdbConfig.artifactStoreConfig.S3.awsRegion,
+                      mdbConfig.artifactStoreConfig.S3.getAwsRegion(),
                       s3Key,
                       maxArtifactSize * 1024 * 1024))
               .build();
@@ -140,7 +140,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public String generatePresignedUrl(String s3Key, String method, long partNumber, String uploadId)
       throws ModelDBException {
-    if (mdbConfig.artifactStoreConfig.S3.s3presignedURLEnabled) {
+    if (mdbConfig.artifactStoreConfig.S3.getS3presignedURLEnabled()) {
       return getS3PresignedUrl(s3Key, method, partNumber, uploadId);
     } else {
       return getPresignedUrlViaMDB(s3Key, method, partNumber, uploadId);
@@ -321,10 +321,10 @@ public class S3Service implements ArtifactStoreService {
       final var url =
           getUploadUrl(
               parameters,
-              mdbConfig.artifactStoreConfig.protocol,
-              mdbConfig.artifactStoreConfig.artifactEndpoint.storeArtifact,
-              mdbConfig.artifactStoreConfig.pickArtifactStoreHostFromConfig,
-              mdbConfig.artifactStoreConfig.host);
+              mdbConfig.artifactStoreConfig.getProtocol(),
+              mdbConfig.artifactStoreConfig.getArtifactEndpoint().getStoreArtifact(),
+              mdbConfig.artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
+              mdbConfig.artifactStoreConfig.getHost());
       LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
       return url;
     } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
@@ -334,10 +334,10 @@ public class S3Service implements ArtifactStoreService {
       final var url =
           getDownloadUrl(
               parameters,
-              mdbConfig.artifactStoreConfig.protocol,
-              mdbConfig.artifactStoreConfig.artifactEndpoint.getArtifact,
-              mdbConfig.artifactStoreConfig.pickArtifactStoreHostFromConfig,
-              mdbConfig.artifactStoreConfig.host);
+              mdbConfig.artifactStoreConfig.getProtocol(),
+              mdbConfig.artifactStoreConfig.getArtifactEndpoint().getGetArtifact(),
+              mdbConfig.artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
+              mdbConfig.artifactStoreConfig.getHost());
       LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
       return url;
     } else {
