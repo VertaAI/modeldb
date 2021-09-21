@@ -5,6 +5,7 @@ Our test suite is intended to cover the full breadth of our platform's functiona
 A subset of tests can be run solely on open-source functionality (detailed in **Running Tests**), but certain features may not be testable at all on our open-source platform.
 
 ## Installation
+
 To install the packages needed for running tests, refer to the **Developer Installation** instructions in [the contribution guide](../../CONTRIBUTING.md).
 
 Also, set the following environment variables, which are used by the test suite for ModelDB integration tests:
@@ -40,11 +41,13 @@ pytest test_entities.py::TestProject::test_create # specific function within spe
 ```
 
 ## Writing Tests
+
 Tests are loosely organized by files and classes of related functionality. See [`versioning/`](https://github.com/VertaAI/modeldb/tree/master/client/verta/tests/versioning) or [`monitoring/alerts/`](https://github.com/VertaAI/modeldb/tree/master/client/verta/tests/monitoring/alerts) for decent examples.
 
 Note that for CLI tests, `click` provides [its own testing utilities](https://click.palletsprojects.com/en/7.x/testing/). See [`test_cli.py`](test_cli.py) for examples.
 
-### Fixtures 
+### Fixtures
+
 [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture.html) are reusable items that are passed to test functions.
 Most fixtures are defined in [`conftest.py`](conftest.py).  
 To use a fixture: simply write the name of the fixture as a parameter to your test function; `pytest` will automatically pass it in at runtime.  
