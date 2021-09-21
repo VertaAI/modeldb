@@ -1,3 +1,9 @@
+## A note on running tests against our OSS images
+
+Our test suite is intended to cover the full breadth of our platform's functionality as experienced through the client. As a result, several of the integration tests **may fail with missing endpoints / `404`s** when run against our open-source images as we work on new functionality.
+
+A subset of tests can be run solely on open-source functionality (detailed in **Running Tests**), but certain features may not be testable at all on our open-source platform.
+
 ## Installation
 To install the packages needed for running tests, refer to the **Developer Installation** instructions in [the contribution guide](../../CONTRIBUTING.md).
 
@@ -9,6 +15,7 @@ Also, set the following environment variables, which are used by the test suite 
 - `VERTA_S3_TEST_OBJECT` (specified object must exist, the tests will not create it)
 
 ## Running Tests
+
 To execute the full test suite, run:
 ```bash
 pytest
@@ -33,7 +40,7 @@ pytest test_entities.py::TestProject::test_create # specific function within spe
 ```
 
 ## Writing Tests
-Tests are loosely organized by files and classes of related functionality. See [`test_versioning/test_repository.py`](test_versioning/test_repository.py) or [`test_entities.py`](test_entities.py) for decent examples.
+Tests are loosely organized by files and classes of related functionality. See [`versioning/`](https://github.com/VertaAI/modeldb/tree/master/client/verta/tests/versioning) or [`monitoring/alerts/`](https://github.com/VertaAI/modeldb/tree/master/client/verta/tests/monitoring/alerts) for decent examples.
 
 Note that for CLI tests, `click` provides [its own testing utilities](https://click.palletsprojects.com/en/7.x/testing/). See [`test_cli.py`](test_cli.py) for examples.
 
