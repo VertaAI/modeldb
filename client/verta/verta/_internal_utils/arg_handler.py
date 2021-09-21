@@ -96,7 +96,7 @@ def maybe(fn, val):
         return None
 
 
-def prepend_slash(path):
+def ensure_starts_with_slash(path):
     """Prepends ``"/"`` to `path` if it doesn't already start with one.
 
     Parameters

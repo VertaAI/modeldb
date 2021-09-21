@@ -139,7 +139,7 @@ class Endpoint(object):
         public_within_org=None,
         visibility=None,
     ):
-        path = arg_handler.prepend_slash(path)
+        path = arg_handler.ensure_starts_with_slash(path)
         (
             visibility,
             public_within_org,
