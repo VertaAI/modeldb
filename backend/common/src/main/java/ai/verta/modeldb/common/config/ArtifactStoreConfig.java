@@ -6,8 +6,10 @@ public class ArtifactStoreConfig {
   private boolean enabled = true;
   private String protocol = "https";
   private String host = "";
+
   @SuppressWarnings({"squid:S116"})
   private NFSConfig NFS;
+
   private NFSEndpointConfig artifactEndpoint;
 
   public String getArtifactStoreType() {

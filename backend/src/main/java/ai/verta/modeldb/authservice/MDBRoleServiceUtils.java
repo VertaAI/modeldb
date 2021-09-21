@@ -312,7 +312,7 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
           collaborator,
           ModelDBServiceResourceTypes.REPOSITORY.name());
     } else {
-      return ModelDBConstants.EMPTY_STRING;
+      return CommonConstants.EMPTY_STRING;
     }
   }
 

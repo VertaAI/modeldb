@@ -34,6 +34,7 @@ public class BatchLoader<T, R> {
     }
 
     return InternalFuture.sequence(resultsList, executor)
-        .thenApply(x -> x.stream().flatMap(Collection::stream).collect(Collectors.toList()), executor);
+        .thenApply(
+            x -> x.stream().flatMap(Collection::stream).collect(Collectors.toList()), executor);
   }
 }

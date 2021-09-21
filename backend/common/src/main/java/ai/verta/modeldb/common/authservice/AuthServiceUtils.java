@@ -43,8 +43,7 @@ public class AuthServiceUtils implements AuthService {
       }
     } catch (StatusRuntimeException ex) {
       return (UserInfo)
-          CommonUtils.retryOrThrowException(
-              ex, retry, this::getCurrentLoginUserInfo, timeout);
+          CommonUtils.retryOrThrowException(ex, retry, this::getCurrentLoginUserInfo, timeout);
     }
   }
 
@@ -68,8 +67,7 @@ public class AuthServiceUtils implements AuthService {
       }
     } catch (StatusRuntimeException ex) {
       return (UserInfo)
-          CommonUtils.retryOrThrowException(
-              ex, retry, this::getUnsignedUser, timeout);
+          CommonUtils.retryOrThrowException(ex, retry, this::getUnsignedUser, timeout);
     }
   }
 

@@ -315,7 +315,8 @@ public abstract class CommonHibernateUtil {
 
         if (locked) {
           Thread.sleep(
-              config.getLiquibaseLockThreshold().longValue() * 1000L); // liquibaseLockThreshold = second
+              config.getLiquibaseLockThreshold().longValue()
+                  * 1000L); // liquibaseLockThreshold = second
           releaseLiquibaseLock(config);
         }
       }
@@ -372,7 +373,8 @@ public abstract class CommonHibernateUtil {
 
   public Connection getDBConnection(RdbConfig rdb) throws SQLException {
     final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
-    return DriverManager.getConnection(connectionString, rdb.getRdbUsername(), rdb.getRdbPassword());
+    return DriverManager.getConnection(
+        connectionString, rdb.getRdbUsername(), rdb.getRdbPassword());
   }
 
   public boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
@@ -530,7 +532,8 @@ public abstract class CommonHibernateUtil {
     releaseLiquibaseLock(config);
 
     // Run tables liquibase migration
-    createTablesLiquibaseMigration(config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath);
+    createTablesLiquibaseMigration(
+        config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath);
   }
 
   public void createDBIfNotExists(RdbConfig rdb) throws SQLException {

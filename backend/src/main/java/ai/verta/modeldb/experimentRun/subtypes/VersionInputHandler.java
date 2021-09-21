@@ -5,6 +5,7 @@ import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -299,7 +300,7 @@ public class VersionInputHandler {
                   keysAndParameterMap.put(ENTITY_ID_QUERY_PARAM, entityId);
                   keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
                   keysAndParameterMap.put(
-                      VERSIONING_KEY_QUERY_PARAM, ModelDBConstants.EMPTY_STRING);
+                      VERSIONING_KEY_QUERY_PARAM, CommonConstants.EMPTY_STRING);
                   keysAndParameterMap.put(VERSIONING_LOCATION_QUERY_PARAM, null);
                   keysAndParameterMap.put("versioning_blob_type", null);
                   keysAndParameterMap.put(BLOB_HASH_QUERY_PARAM, null);

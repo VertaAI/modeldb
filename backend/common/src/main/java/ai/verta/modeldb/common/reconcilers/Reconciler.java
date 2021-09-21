@@ -55,7 +55,8 @@ public abstract class Reconciler<T> {
         };
 
     var executorService = Executors.newSingleThreadScheduledExecutor();
-    executorService.scheduleAtFixedRate(runnable, 0, config.getResyncPeriodSeconds(), TimeUnit.SECONDS);
+    executorService.scheduleAtFixedRate(
+        runnable, 0, config.getResyncPeriodSeconds(), TimeUnit.SECONDS);
   }
 
   private void startWorkers() {

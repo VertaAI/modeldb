@@ -130,7 +130,8 @@ public abstract class Config {
     hikariDataSource.setUsername(databaseConfig.getRdbConfiguration().getRdbUsername());
     hikariDataSource.setPassword(databaseConfig.getRdbConfiguration().getRdbPassword());
     hikariDataSource.setMinimumIdle(Integer.parseInt(databaseConfig.getMinConnectionPoolSize()));
-    hikariDataSource.setMaximumPoolSize(Integer.parseInt(databaseConfig.getMaxConnectionPoolSize()));
+    hikariDataSource.setMaximumPoolSize(
+        Integer.parseInt(databaseConfig.getMaxConnectionPoolSize()));
     hikariDataSource.setRegisterMbeans(true);
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);

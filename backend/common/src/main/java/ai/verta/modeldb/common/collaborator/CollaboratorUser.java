@@ -8,7 +8,6 @@ import ai.verta.uac.Entities;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.VertaUserInfo;
 import com.google.protobuf.GeneratedMessageV3;
-
 import java.util.Objects;
 
 public class CollaboratorUser extends CollaboratorBase {

@@ -10,6 +10,7 @@ public interface CommonConstants {
   boolean EXPORT_SCHEMA = false;
   String USER_DIR = "user.dir";
   String DELETED = "deleted";
+  String EMPTY_STRING = "";
 
   enum UserIdentifier {
     VERTA_ID,

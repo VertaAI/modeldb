@@ -914,11 +914,7 @@ public class RoleServiceUtils implements RoleService {
       return listMyOrganizationsResponse.getOrganizationsList();
     } catch (StatusRuntimeException ex) {
       return (List<Organization>)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              this::listMyOrganizations,
-              timeout);
+          CommonUtils.retryOrThrowException(ex, retry, this::listMyOrganizations, timeout);
     }
   }
 }
