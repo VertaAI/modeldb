@@ -17,4 +17,8 @@ public class SpringServerConfig {
   public int getPort() {
     return port;
   }
+
+  public int getThreadCount() {
+    return threadCount;
+  }
 }
