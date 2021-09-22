@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities.environment;
 
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import javax.persistence.Column;
@@ -11,9 +12,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "python_environment_blob")
-public class PythonEnvironmentBlobEntity {
-
-  public PythonEnvironmentBlobEntity() {}
+public class PythonEnvironmentBlobEntity implements Serializable {
 
   @Id
   @Column(name = "blob_hash", nullable = false, columnDefinition = "varchar", length = 64)

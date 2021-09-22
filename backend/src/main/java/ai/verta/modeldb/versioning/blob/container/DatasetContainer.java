@@ -19,6 +19,7 @@ import org.hibernate.Session;
 
 public class DatasetContainer extends BlobContainer {
 
+  private static final String COMPONENT_COMMON_FIELD = ":component:";
   private final DatasetBlob dataset;
 
   public DatasetContainer(BlobExpanded blobExpanded) {
@@ -40,7 +41,7 @@ public class DatasetContainer extends BlobContainer {
 
         // sorted
         Map<String, AutogenS3DatasetComponentBlob> componentHashes = new LinkedHashMap<>();
-        AutogenS3DatasetBlob autogenS3DatasetBlob = AutogenS3DatasetBlob.fromProto(s3);
+        var autogenS3DatasetBlob = AutogenS3DatasetBlob.fromProto(s3);
         if (autogenS3DatasetBlob != null && autogenS3DatasetBlob.getComponents() != null) {
           for (AutogenS3DatasetComponentBlob componentBlob : autogenS3DatasetBlob.getComponents()) {
             final String componentHash = computeSHA(componentBlob);
@@ -53,7 +54,7 @@ public class DatasetContainer extends BlobContainer {
                 componentHashes.entrySet()) {
               if (!blobHashes.contains(component.getKey())) {
                 blobHashes.add(component.getKey());
-                S3DatasetComponentBlobEntity s3DatasetComponentBlobEntity =
+                var s3DatasetComponentBlobEntity =
                     new S3DatasetComponentBlobEntity(
                         component.getKey(), blobHash, component.getValue().toProto().build());
                 session.saveOrUpdate(s3DatasetComponentBlobEntity);
@@ -83,7 +84,7 @@ public class DatasetContainer extends BlobContainer {
       throws NoSuchAlgorithmException {
     // sorted
     Map<String, AutogenPathDatasetComponentBlob> componentHashes = new LinkedHashMap<>();
-    AutogenPathDatasetBlob autogenPathDatasetBlob = AutogenPathDatasetBlob.fromProto(path);
+    var autogenPathDatasetBlob = AutogenPathDatasetBlob.fromProto(path);
     if (autogenPathDatasetBlob != null && autogenPathDatasetBlob.getComponents() != null) {
       for (AutogenPathDatasetComponentBlob componentBlob : autogenPathDatasetBlob.getComponents()) {
         final String componentHash = computeSHA(componentBlob);
@@ -96,7 +97,7 @@ public class DatasetContainer extends BlobContainer {
             componentHashes.entrySet()) {
           if (!blobHashes.contains(component.getKey())) {
             blobHashes.add(component.getKey());
-            PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
+            var pathDatasetComponentBlobEntity =
                 new PathDatasetComponentBlobEntity(
                     component.getKey(), blobHash, component.getValue().toProto().build());
             session.saveOrUpdate(pathDatasetComponentBlobEntity);
@@ -113,8 +114,7 @@ public class DatasetContainer extends BlobContainer {
       throws NoSuchAlgorithmException {
     // sorted
     Map<String, AutogenQueryDatasetComponentBlob> componentHashes = new LinkedHashMap<>();
-    AutogenQueryDatasetBlob autogenQueryDatasetBlob =
-        AutogenQueryDatasetBlob.fromProto(queryDatasetBlob);
+    var autogenQueryDatasetBlob = AutogenQueryDatasetBlob.fromProto(queryDatasetBlob);
     if (autogenQueryDatasetBlob != null && autogenQueryDatasetBlob.getComponents() != null) {
       for (AutogenQueryDatasetComponentBlob componentBlob :
           autogenQueryDatasetBlob.getComponents()) {
@@ -128,7 +128,7 @@ public class DatasetContainer extends BlobContainer {
             componentHashes.entrySet()) {
           if (!blobHashes.contains(component.getKey())) {
             blobHashes.add(component.getKey());
-            QueryDatasetComponentBlobEntity queryDatasetComponentBlobEntity =
+            var queryDatasetComponentBlobEntity =
                 new QueryDatasetComponentBlobEntity(
                     component.getKey(), blobHash, component.getValue().toProto().build());
             session.saveOrUpdate(queryDatasetComponentBlobEntity);
@@ -154,7 +154,7 @@ public class DatasetContainer extends BlobContainer {
 
   public static String computeSHA(AutogenPathDatasetComponentBlob path)
       throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     sb.append("path:")
         .append(path.getPath())
         .append(":size:")
@@ -174,7 +174,7 @@ public class DatasetContainer extends BlobContainer {
 
   public static String computeSHA(AutogenS3DatasetComponentBlob s3componentBlob)
       throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     sb.append(":s3:")
         .append(computeSHA(s3componentBlob.getPath()))
         .append(":s3_version_id:")
@@ -184,28 +184,28 @@ public class DatasetContainer extends BlobContainer {
 
   private String computeSHAS3Dataset(Map<String, AutogenS3DatasetComponentBlob> componentHashes)
       throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     sb.append("s3");
     for (Map.Entry<String, AutogenS3DatasetComponentBlob> component : componentHashes.entrySet()) {
-      sb.append(":component:").append(component.getKey());
+      sb.append(COMPONENT_COMMON_FIELD).append(component.getKey());
     }
     return FileHasher.getSha(sb.toString());
   }
 
   static String computeSHAPathDataset(Map<String, AutogenPathDatasetComponentBlob> componentHashes)
       throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     sb.append("path");
     for (Map.Entry<String, AutogenPathDatasetComponentBlob> component :
         componentHashes.entrySet()) {
-      sb.append(":component:").append(component.getKey());
+      sb.append(COMPONENT_COMMON_FIELD).append(component.getKey());
     }
     return FileHasher.getSha(sb.toString());
   }
 
   public static String computeSHA(AutogenQueryDatasetComponentBlob query)
       throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     sb.append("query:")
         .append(query.getQuery())
         .append(":data_source_uri:")
@@ -220,11 +220,11 @@ public class DatasetContainer extends BlobContainer {
   static String computeSHAQueryDataset(
       Map<String, AutogenQueryDatasetComponentBlob> componentHashes)
       throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     sb.append("query");
     for (Map.Entry<String, AutogenQueryDatasetComponentBlob> component :
         componentHashes.entrySet()) {
-      sb.append(":component:").append(component.getKey());
+      sb.append(COMPONENT_COMMON_FIELD).append(component.getKey());
     }
     return FileHasher.getSha(sb.toString());
   }
@@ -233,7 +233,7 @@ public class DatasetContainer extends BlobContainer {
   public void processAttribute(
       Session session, Long repoId, String commitHash, boolean addAttribute)
       throws ModelDBException {
-    BlobExpanded blobExpanded = super.getBlobExpanded();
+    var blobExpanded = super.getBlobExpanded();
     List<AttributeEntity> newOrUpdatedAttributeEntities =
         RdbmsUtils.convertAttributesFromAttributeEntityList(
             this, ModelDBConstants.ATTRIBUTES, blobExpanded.getAttributesList());
@@ -257,7 +257,7 @@ public class DatasetContainer extends BlobContainer {
     } else {
       if (!existingAttributes.isEmpty()) {
         for (AttributeEntity updatedAttributeObj : newOrUpdatedAttributeEntities) {
-          boolean doesExist = false;
+          var doesExist = false;
           for (AttributeEntity existingAttribute : existingAttributes) {
             if (existingAttribute.getKey().equals(updatedAttributeObj.getKey())) {
               existingAttribute.setKey(updatedAttributeObj.getKey());

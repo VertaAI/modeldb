@@ -40,8 +40,8 @@ public class AuthClientInterceptor {
   private class Client1AuthInterceptor implements ClientInterceptor {
 
     public Client1AuthInterceptor(ServiceUserConfig user) {
-      client1Email = user.email;
-      client1DevKey = user.devKey;
+      client1Email = user.getEmail();
+      client1DevKey = user.getDevKey();
     }
 
     @Override
@@ -71,8 +71,8 @@ public class AuthClientInterceptor {
   private class Client2AuthInterceptor implements ClientInterceptor {
 
     Client2AuthInterceptor(ServiceUserConfig user) {
-      client2Email = user.email;
-      client2DevKey = user.devKey;
+      client2Email = user.getEmail();
+      client2DevKey = user.getDevKey();
     }
 
     public String getClient2Email() {

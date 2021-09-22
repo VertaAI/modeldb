@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.query;
 
+import java.util.Collections;
 import java.util.List;
 
 public class OrderColumn implements OrderItem {
@@ -28,6 +29,6 @@ public class OrderColumn implements OrderItem {
 
   @Override
   public List<OrderColumn> getColumns() {
-    return null;
+    return Collections.emptyList();
   }
 }

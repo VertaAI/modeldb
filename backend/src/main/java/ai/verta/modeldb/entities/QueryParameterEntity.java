@@ -105,7 +105,7 @@ public class QueryParameterEntity {
   }
 
   public QueryParameter getProtoObject() {
-    Builder valueBuilder = Value.newBuilder();
+    var valueBuilder = Value.newBuilder();
     valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(getValue(), valueBuilder);
     return QueryParameter.newBuilder()
         .setParameterName(getParameter_name())

@@ -6,20 +6,19 @@ import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.CommitArtifactPart.Response;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
-import ai.verta.modeldb.entities.config.HyperparameterElementConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
 import ai.verta.modeldb.entities.versioning.CommitEntity;
@@ -47,7 +46,6 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -67,122 +65,51 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private static final boolean OVERWRITE_VERSION_MAP = false;
-  private final Config config;
+  private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
+  private static final String REPO_IDS_QUERY_PARAM = "repoIds";
+  private final MDBConfig mdbConfig;
   private static final long CACHE_SIZE = 1000;
   private static final int DURATION = 10;
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
   private final MetadataDAO metadataDAO;
   private static final String CHECK_EXP_RUN_EXISTS_AT_INSERT_HQL =
-      new StringBuilder("Select count(*) From ExperimentRunEntity ere where ")
-          .append(" ere." + ModelDBConstants.NAME + " = :experimentRunName ")
-          .append(" AND ere." + ModelDBConstants.PROJECT_ID + " = :projectId ")
-          .append(" AND ere." + ModelDBConstants.EXPERIMENT_ID + " = :experimentId ")
-          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
-          .toString();
+      "Select count(*) From ExperimentRunEntity ere where ere.name = :experimentRunName AND ere.project_id = :projectId AND ere.experiment_id = :experimentId AND ere.deleted = false";
   private static final String CHECK_EXP_RUN_EXISTS_AT_UPDATE_HQL =
-      new StringBuilder("Select count(*) From ExperimentRunEntity ere where ")
-          .append(" ere." + ModelDBConstants.ID + " = :experimentRunId ")
-          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
-          .toString();
+      "Select count(*) From ExperimentRunEntity ere where ere.id = :experimentRunId AND ere.deleted = false";
   private static final String GET_EXP_RUN_BY_IDS_HQL =
-      "From ExperimentRunEntity exr where exr.id IN (:ids) AND exr."
-          + ModelDBConstants.DELETED
-          + " = false ";
+      "From ExperimentRunEntity exr where exr.id IN (:ids) AND exr.deleted = false ";
   private static final String DELETE_ALL_TAGS_HQL =
-      new StringBuilder("delete from TagsMapping tm WHERE tm.experimentRunEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :experimentRunId")
-          .toString();
+      "delete from TagsMapping tm WHERE tm.experimentRunEntity.id = :experimentRunId";
   private static final String DELETE_SELECTED_TAGS_HQL =
-      new StringBuilder("delete from TagsMapping tm WHERE tm.")
-          .append(ModelDBConstants.TAGS)
-          .append(" in (:tags) AND tm.experimentRunEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :experimentRunId")
-          .toString();
+      "delete from TagsMapping tm WHERE tm.tags in (:tags) AND tm.experimentRunEntity.id = :experimentRunId";
   private static final String DELETE_ALL_ARTIFACTS_HQL =
-      new StringBuilder("delete from ArtifactEntity ar WHERE ar.experimentRunEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :experimentRunId")
-          .toString();
+      "delete from ArtifactEntity ar WHERE ar.experimentRunEntity.id = :experimentRunId";
   private static final String DELETE_SELECTED_ARTIFACTS_HQL =
-      new StringBuilder("delete from ArtifactEntity ar WHERE ar.")
-          .append(ModelDBConstants.KEY)
-          .append(" in (:keys) AND ar.experimentRunEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :experimentRunId ")
-          .append(" AND ar.field_type = :field_type")
-          .toString();
+      "delete from ArtifactEntity ar WHERE ar.key in (:keys) AND ar.experimentRunEntity.id = :experimentRunId AND ar.field_type = :field_type";
   private static final String GET_EXP_RUN_ATTRIBUTE_BY_KEYS_HQL =
-      new StringBuilder("From AttributeEntity attr where attr.")
-          .append(ModelDBConstants.KEY)
-          .append(" in (:keys) AND attr.experimentRunEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :experimentRunId AND attr.field_type = :fieldType")
-          .toString();
+      "From AttributeEntity attr where attr.key in (:keys) AND attr.experimentRunEntity.id = :experimentRunId AND attr.field_type = :fieldType";
   private static final String DELETE_ALL_EXP_RUN_ATTRIBUTES_HQL =
-      new StringBuilder("delete from AttributeEntity attr WHERE attr.experimentRunEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :experimentRunId AND attr.field_type = :fieldType")
-          .toString();
+      "delete from AttributeEntity attr WHERE attr.experimentRunEntity.id = :experimentRunId AND attr.field_type = :fieldType";
   private static final String DELETE_SELECTED_EXP_RUN_ATTRIBUTES_HQL =
-      new StringBuilder("delete from AttributeEntity attr WHERE attr.")
-          .append(ModelDBConstants.KEY)
-          .append(" in (:keys) AND attr.experimentRunEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :experimentRunId AND attr.field_type = :fieldType")
-          .toString();
+      "delete from AttributeEntity attr WHERE attr.key in (:keys) AND attr.experimentRunEntity.id = :experimentRunId AND attr.field_type = :fieldType";
   private static final String GET_EXPERIMENT_RUN_BY_PROJECT_ID_HQL =
-      new StringBuilder()
-          .append("From ExperimentRunEntity ere where ere.")
-          .append(ModelDBConstants.PROJECT_ID)
-          .append(" IN (:projectIds) ")
-          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
-          .toString();
+      "From ExperimentRunEntity ere where ere.project_id IN (:projectIds) AND ere.deleted = false";
   private static final String GET_EXPERIMENT_RUN_BY_EXPERIMENT_ID_HQL =
-      new StringBuilder()
-          .append("From ExperimentRunEntity ere where ere.")
-          .append(ModelDBConstants.EXPERIMENT_ID)
-          .append(" IN (:experimentIds) ")
-          .append(" AND ere." + ModelDBConstants.DELETED + " = false ")
-          .toString();
+      "From ExperimentRunEntity ere where ere.experiment_id IN (:experimentIds) AND ere.deleted = false";
   private static final String DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING =
-      new StringBuilder("UPDATE ")
-          .append(ExperimentRunEntity.class.getSimpleName())
-          .append(" expr ")
-          .append("SET expr.")
-          .append(ModelDBConstants.DELETED)
-          .append(" = :deleted ")
-          .append(" WHERE expr.")
-          .append(ModelDBConstants.ID)
-          .append(" IN (:experimentRunIds)")
-          .toString();
+      "UPDATE ExperimentRunEntity expr SET expr.deleted = :deleted WHERE expr.id IN (:experimentRunIds)";
   private static final String DELETE_ALL_KEY_VALUES_HQL =
-      new StringBuilder("delete from KeyValueEntity kv WHERE kv.experimentRunEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :experimentRunId")
-          .append(" AND kv.field_type = :field_type")
-          .toString();
+      "delete from KeyValueEntity kv WHERE kv.experimentRunEntity.id = :experimentRunId AND kv.field_type = :field_type";
   private static final String DELETE_SELECTED_KEY_VALUES_HQL =
-      new StringBuilder("delete from KeyValueEntity kv WHERE kv.")
-          .append(ModelDBConstants.KEY)
-          .append(" in (:keys) AND kv.experimentRunEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :experimentRunId ")
-          .append(" AND kv.field_type = :field_type")
-          .toString();
+      "delete from KeyValueEntity kv WHERE kv.key in (:keys) AND kv.experimentRunEntity.id = :experimentRunId AND kv.field_type = :field_type";
   private static final String GET_ALL_OBSERVATIONS_HQL =
-      new StringBuilder("FROM ObservationEntity oe WHERE oe.experimentRunEntity.")
-          .append(ModelDBConstants.ID)
-          .append(" = :experimentRunId")
-          .append(" AND oe.field_type = :field_type")
-          .toString();
+      "FROM ObservationEntity oe WHERE oe.experimentRunEntity.id = :experimentRunId AND oe.field_type = :field_type";
 
-  private LoadingCache<String, ReadWriteLock> locks =
+  private final LoadingCache<String, ReadWriteLock> locks =
       CacheBuilder.newBuilder()
           .maximumSize(CACHE_SIZE)
           .expireAfterWrite(DURATION, TimeUnit.MINUTES)
@@ -193,33 +120,35 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 }
               });
 
+  @SuppressWarnings({"squid:S2222"})
   protected AutoCloseable acquireReadLock(String lockKey) throws ExecutionException {
     LOGGER.debug("acquireReadLock for key: {}", lockKey);
     ReadWriteLock lock = locks.get(lockKey);
-    Lock readLock = lock.readLock();
+    var readLock = lock.readLock();
     readLock.lock();
     return readLock::unlock;
   }
 
+  @SuppressWarnings({"squid:S2222"})
   protected AutoCloseable acquireWriteLock(String lockKey) throws ExecutionException {
     LOGGER.debug("acquireWriteLock for key: {}", lockKey);
     ReadWriteLock lock = locks.get(lockKey);
-    Lock writeLock = lock.writeLock();
+    var writeLock = lock.writeLock();
     writeLock.lock();
     return writeLock::unlock;
   }
 
   public ExperimentRunDAORdbImpl(
-      Config config,
+      MDBConfig mdbConfig,
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       BlobDAO blobDAO,
       MetadataDAO metadataDAO) {
-    this.config = config;
+    this.mdbConfig = mdbConfig;
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
@@ -227,7 +156,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private void checkIfEntityAlreadyExists(ExperimentRun experimentRun, Boolean isInsert) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query query = null;
       if (isInsert) {
         query = session.createQuery(CHECK_EXP_RUN_EXISTS_AT_INSERT_HQL);
@@ -243,7 +172,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRun.getId());
       }
       Long count = (Long) query.uniqueResult();
-      boolean existStatus = false;
+      var existStatus = false;
       if (count > 0) {
         existStatus = true;
       }
@@ -282,9 +211,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     if (errorMessage != null) {
       throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
     }
-    RepositoryIdentification repositoryIdentification =
+    var repositoryIdentification =
         RepositoryIdentification.newBuilder().setRepoId(versioningEntry.getRepositoryId()).build();
-    CommitEntity commitEntity =
+    var commitEntity =
         commitDAO.getCommitEntity(
             session,
             versioningEntry.getCommit(),
@@ -296,7 +225,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               session, commitEntity.getRootSha(), new ArrayList<>(), Collections.emptyList());
       for (Map.Entry<String, Location> locationBlobKeyMap :
           versioningEntry.getKeyLocationMapMap().entrySet()) {
-        String locationKey = String.join("#", locationBlobKeyMap.getValue().getLocationList());
+        var locationKey = String.join("#", locationBlobKeyMap.getValue().getLocationList());
         if (!locationBlobWithHashMap.containsKey(locationKey)) {
           throw new ModelDBException(
               "Blob Location '"
@@ -318,16 +247,23 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws ModelDBException {
     checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       TrialUtils.validateExperimentRunPerWorkspaceForTrial(
-          config.trial, projectDAO, roleService, this, experimentRun.getProjectId(), userInfo);
-      TrialUtils.validateMaxArtifactsForTrial(config.trial, experimentRun.getArtifactsCount(), 0);
+          mdbConfig.trial,
+          projectDAO,
+          mdbRoleService,
+          this,
+          experimentRun.getProjectId(),
+          userInfo);
+      TrialUtils.validateMaxArtifactsForTrial(
+          mdbConfig.trial, experimentRun.getArtifactsCount(), 0);
 
-      if (experimentRun.getDatasetsCount() > 0 && config.populateConnectionsBasedOnPrivileges) {
+      if (experimentRun.getDatasetsCount() > 0
+          && mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
       }
 
-      ExperimentRunEntity experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
+      var experimentRunObj = RdbmsUtils.generateExperimentRunEntity(experimentRun);
       if (experimentRun.getVersionedInputs() != null && experimentRun.hasVersionedInputs()) {
         Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
             validateVersioningEntity(session, experimentRun.getVersionedInputs());
@@ -345,7 +281,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           experimentRunObj.setHyperparameter_element_mappings(new ArrayList<>(hyrParamMappings));
         }
       }
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       experimentRunObj.setCreated(true);
       session.saveOrUpdate(experimentRunObj);
       transaction.commit();
@@ -361,7 +297,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private void createRoleBindingsForExperimentRun(ExperimentRun experimentRun, UserInfo userInfo) {
-    roleService.createRoleBinding(
+    mdbRoleService.createRoleBinding(
         ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
         new CollaboratorUser(authService, userInfo),
         experimentRun.getId(),
@@ -379,10 +315,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .forEach(
                     configBlobEntity -> {
                       if (configBlobEntity.getHyperparameter_type().equals(HYPERPARAMETER)) {
-                        HyperparameterElementConfigBlobEntity hyperparamElemConfBlobEntity =
+                        var hyperparamElemConfBlobEntity =
                             configBlobEntity.getHyperparameterElementConfigBlobEntity();
                         try {
-                          HyperparameterElementMappingEntity hyrParamMapping =
+                          var hyrParamMapping =
                               new HyperparameterElementMappingEntity(
                                   experimentRunObj,
                                   hyperparamElemConfBlobEntity.getName(),
@@ -400,9 +336,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<String> deleteExperimentRuns(List<String> experimentRunIds) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<String> allowedProjectIds =
-          roleService.getSelfAllowedResources(
+          mdbRoleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.PROJECT, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
       List<String> accessibleExperimentRunIds =
@@ -412,8 +348,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             "Access is denied. User is unauthorized for given ExperimentRun entities : "
                 + accessibleExperimentRunIds);
       }
-      Transaction transaction = session.beginTransaction();
-      Query query =
+      var transaction = session.beginTransaction();
+      var query =
           session
               .createQuery(DELETED_STATUS_EXPERIMENT_RUN_QUERY_STRING)
               .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -453,7 +389,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             .setValue(Value.newBuilder().setStringValue(entityValue).build())
             .build();
 
-    FindExperimentRuns findExperimentRuns =
+    var findExperimentRuns =
         FindExperimentRuns.newBuilder()
             .setPageNumber(pageNumber)
             .setPageLimit(pageLimit)
@@ -461,24 +397,24 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             .setSortKey(sortKey)
             .addPredicates(entityKeyValuePredicate)
             .build();
-    UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+    var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
     return findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
   }
 
   @Override
   public List<ExperimentRun> getExperimentRuns(String key, String value, UserInfo userInfo) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       List<ExperimentRun> experimentRuns = new ArrayList<>();
 
       Map<String, Object[]> whereClauseParamMap = new HashMap<>();
-      Object[] idValueArr = new Object[2];
+      var idValueArr = new Object[2];
       idValueArr[0] = RdbmsUtils.getRdbOperatorSymbol(OperatorEnum.Operator.EQ);
       idValueArr[1] = value;
       whereClauseParamMap.put(key, idValueArr);
 
       LOGGER.debug("Getting experimentRun for {} ", userInfo);
       if (userInfo != null) {
-        Object[] ownerValueArr = new Object[2];
+        var ownerValueArr = new Object[2];
         ownerValueArr[0] = RdbmsUtils.getRdbOperatorSymbol(OperatorEnum.Operator.EQ);
         ownerValueArr[1] = authService.getVertaIdFromUserInfo(userInfo);
         whereClauseParamMap.put(ModelDBConstants.OWNER, ownerValueArr);
@@ -517,8 +453,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<ExperimentRun> getExperimentRunsByBatchIds(List<String> experimentRunIds) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery(GET_EXP_RUN_BY_IDS_HQL);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var query = session.createQuery(GET_EXP_RUN_BY_IDS_HQL);
       query.setParameterList("ids", experimentRunIds);
 
       @SuppressWarnings("unchecked")
@@ -536,14 +472,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRun getExperimentRun(String experimentRunId) throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntity =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntity = session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntity == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       LOGGER.debug("Got ExperimentRun successfully");
-      ExperimentRun experimentRun = experimentRunEntity.getProtoObject();
+      var experimentRun = experimentRunEntity.getProtoObject();
       return populateFieldsBasedOnPrivileges(experimentRun);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -556,7 +491,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private ExperimentRun populateFieldsBasedOnPrivileges(ExperimentRun experimentRun)
       throws ModelDBException {
-    if (config.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       if (experimentRun.getDatasetsCount() > 0) {
         experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, false);
       }
@@ -574,7 +509,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
    */
   private ExperimentRun checkDatasetVersionBasedOnPrivileges(
       ExperimentRun experimentRun, boolean errorOut) throws ModelDBException {
-    ExperimentRun.Builder experimentRunBuilder = experimentRun.toBuilder();
+    var experimentRunBuilder = experimentRun.toBuilder();
     List<Artifact> accessibleDatasetVersions =
         getPrivilegedDatasets(experimentRun.getDatasetsList(), errorOut);
     experimentRunBuilder.clearDatasets().addAllDatasets(accessibleDatasetVersions);
@@ -622,7 +557,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       notAccessibleRepoIdIdsSet.add(repoId);
       experimentRun = experimentRun.toBuilder().clearVersionedInputs().build();
     } else {
-      if (roleService.checkConnectionsBasedOnPrivileges(
+      if (mdbRoleService.checkConnectionsBasedOnPrivileges(
           ModelDBServiceResourceTypes.REPOSITORY,
           ModelDBActionEnum.ModelDBServiceActions.READ,
           String.valueOf(repoId))) {
@@ -637,7 +572,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public boolean isExperimentRunExists(Session session, String experimentRunId) {
-    Query query = session.createQuery(CHECK_EXP_RUN_EXISTS_AT_UPDATE_HQL);
+    var query = session.createQuery(CHECK_EXP_RUN_EXISTS_AT_UPDATE_HQL);
     query.setParameter("experimentRunId", experimentRunId);
     Long count = (Long) query.uniqueResult();
     return count > 0;
@@ -645,14 +580,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void updateExperimentRunName(String experimentRunId, String experimentRunName) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntity =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntity.setName(experimentRunName);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
       experimentRunEntity.increaseVersionNumber();
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.update(experimentRunEntity);
       transaction.commit();
       LOGGER.debug("ExperimentRun name updated successfully");
@@ -668,18 +603,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun updateExperimentRunDescription(
       String experimentRunId, String experimentRunDescription) throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntity =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntity.setDescription(experimentRunDescription);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
       experimentRunEntity.increaseVersionNumber();
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.update(experimentRunEntity);
       transaction.commit();
       LOGGER.debug("ExperimentRun description updated successfully");
-      ExperimentRun experimentRun = experimentRunEntity.getProtoObject();
+      var experimentRun = experimentRunEntity.getProtoObject();
       return populateFieldsBasedOnPrivileges(experimentRun);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -692,11 +627,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logExperimentRunCodeVersion(String experimentRunId, CodeVersion updatedCodeVersion) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntity =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntity =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
 
-      CodeVersionEntity existingCodeVersionEntity = experimentRunEntity.getCode_version_snapshot();
+      var existingCodeVersionEntity = experimentRunEntity.getCode_version_snapshot();
       if (existingCodeVersionEntity == null) {
         experimentRunEntity.setCode_version_snapshot(
             RdbmsUtils.generateCodeVersionEntity(
@@ -710,7 +645,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
       experimentRunEntity.increaseVersionNumber();
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.update(experimentRunEntity);
       transaction.commit();
       LOGGER.debug("ExperimentRun code version snapshot updated successfully");
@@ -725,14 +660,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void setParentExperimentRunId(String experimentRunId, String parentExperimentRunId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntity =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntity =
           session.load(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntity.setParent_id(parentExperimentRunId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntity.setDate_updated(currentTimestamp);
       experimentRunEntity.increaseVersionNumber();
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.update(experimentRunEntity);
       transaction.commit();
       LOGGER.debug("ExperimentRun parentId updated successfully");
@@ -748,14 +683,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRun addExperimentRunTags(String experimentRunId, List<String> tagsList)
       throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunObj == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       List<String> newTags = new ArrayList<>();
-      ExperimentRun existingProtoExperimentRunObj = experimentRunObj.getProtoObject();
+      var existingProtoExperimentRunObj = experimentRunObj.getProtoObject();
       for (String tag : tagsList) {
         if (!existingProtoExperimentRunObj.getTagsList().contains(tag)) {
           newTags.add(tag);
@@ -768,12 +703,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         experimentRunObj.getTags().addAll(newTagMappings);
         experimentRunObj.setDate_updated(currentTimestamp);
         experimentRunObj.increaseVersionNumber();
-        Transaction transaction = session.beginTransaction();
+        var transaction = session.beginTransaction();
         session.saveOrUpdate(experimentRunObj);
         transaction.commit();
       }
       LOGGER.debug("ExperimentRun tags added successfully");
-      ExperimentRun experimentRun = experimentRunObj.getProtoObject();
+      var experimentRun = experimentRunObj.getProtoObject();
       return populateFieldsBasedOnPrivileges(experimentRun);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -788,17 +723,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public ExperimentRun deleteExperimentRunTags(
       String experimentRunId, List<String> experimentRunTagList, Boolean deleteAll)
       throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
       if (deleteAll) {
-        Query query =
+        var query =
             session
                 .createQuery(DELETE_ALL_TAGS_HQL)
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
         query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
         query.executeUpdate();
       } else {
-        Query query =
+        var query =
             session
                 .createQuery(DELETE_SELECTED_TAGS_HQL)
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -814,7 +749,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       session.update(experimentRunObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun tags deleted successfully");
-      ExperimentRun experimentRun = experimentRunObj.getProtoObject();
+      var experimentRun = experimentRunObj.getProtoObject();
       return populateFieldsBasedOnPrivileges(experimentRun);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -827,9 +762,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logObservations(String experimentRunId, List<Observation> observations) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      ExperimentRunEntity experimentRunEntityObj =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
+      var experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
@@ -861,13 +796,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<Observation> getObservationByKey(String experimentRunId, String observationKey) {
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntityObj = session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntityObj == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
-      ExperimentRun experimentRun = experimentRunEntityObj.getProtoObject();
+      var experimentRun = experimentRunEntityObj.getProtoObject();
       List<Observation> observationEntities = new ArrayList<>();
       for (Observation observation : experimentRun.getObservationsList()) {
         if ((observation.hasArtifact() && observation.getArtifact().getKey().equals(observationKey))
@@ -888,8 +822,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logMetrics(String experimentRunId, List<KeyValue> newMetrics) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntityObj =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
@@ -912,7 +846,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       experimentRunEntityObj.increaseVersionNumber();
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
     } catch (Exception ex) {
@@ -926,7 +860,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<KeyValue> getExperimentRunMetrics(String experimentRunId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
@@ -945,14 +879,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<Artifact> getExperimentRunDatasets(String experimentRunId) throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
       LOGGER.debug("Got ExperimentRun Datasets");
-      ExperimentRun experimentRun = experimentRunObj.getProtoObject();
+      var experimentRun = experimentRunObj.getProtoObject();
       experimentRun = populateFieldsBasedOnPrivileges(experimentRun);
       return experimentRun.getDatasetsList();
     } catch (Exception ex) {
@@ -967,15 +901,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void logDatasets(String experimentRunId, List<Artifact> newDatasets, boolean overwrite)
       throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntityObj =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
-      ExperimentRun experimentRun = experimentRunEntityObj.getProtoObject();
+      var experimentRun = experimentRunEntityObj.getProtoObject();
 
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       if (overwrite) {
         List<String> datasetKeys = new ArrayList<>();
         for (Artifact dataset : newDatasets) {
@@ -996,7 +930,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
-      if (config.populateConnectionsBasedOnPrivileges) {
+      if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
         newDatasets = getPrivilegedDatasets(newDatasets, true);
       }
 
@@ -1021,8 +955,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void logArtifacts(String experimentRunId, List<Artifact> newArtifacts)
       throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntityObj =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
@@ -1040,7 +974,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       TrialUtils.validateMaxArtifactsForTrial(
-          config.trial, newArtifacts.size(), existingArtifacts.size());
+          mdbConfig.trial, newArtifacts.size(), existingArtifacts.size());
 
       List<ArtifactEntity> newArtifactList =
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
@@ -1049,7 +983,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       experimentRunEntityObj.increaseVersionNumber();
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
     } catch (Exception ex) {
@@ -1063,18 +997,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<Artifact> getExperimentRunArtifacts(String experimentRunId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
-      ExperimentRun experimentRun = experimentRunObj.getProtoObject();
+      var experimentRun = experimentRunObj.getProtoObject();
       if (experimentRun.getArtifactsList() != null && !experimentRun.getArtifactsList().isEmpty()) {
         LOGGER.debug("Got ExperimentRun Artifacts");
         return experimentRun.getArtifactsList();
       } else {
-        String errorMessage = "Artifacts not found in the ExperimentRun";
+        var errorMessage = "Artifacts not found in the ExperimentRun";
         throw new NotFoundException(errorMessage);
       }
     } catch (Exception ex) {
@@ -1088,24 +1022,24 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private void deleteArtifactEntities(
       Session session, String experimentRunId, List<String> keys, String fieldType) {
-    Query query =
+    var query =
         session
             .createQuery(DELETE_SELECTED_ARTIFACTS_HQL)
             .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     query.setParameterList("keys", keys);
     query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
-    query.setParameter("field_type", fieldType);
+    query.setParameter(FIELD_TYPE_QUERY_PARAM, fieldType);
     query.executeUpdate();
   }
 
   @Override
   public void deleteArtifacts(String experimentRunId, String artifactKey) {
     Transaction transaction = null;
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       transaction = session.beginTransaction();
 
       if (false) { // Change it with parameter for support to delete all artifacts
-        Query query =
+        var query =
             session
                 .createQuery(DELETE_ALL_ARTIFACTS_HQL)
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -1136,8 +1070,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logHyperparameters(String experimentRunId, List<KeyValue> newHyperparameters) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntityObj =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
@@ -1162,7 +1096,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       experimentRunEntityObj.increaseVersionNumber();
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
     } catch (Exception ex) {
@@ -1176,7 +1110,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<KeyValue> getExperimentRunHyperparameters(String experimentRunId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
@@ -1195,8 +1129,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logAttributes(String experimentRunId, List<KeyValue> newAttributes) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntityObj =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       if (experimentRunEntityObj == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
@@ -1221,7 +1155,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       experimentRunEntityObj.increaseVersionNumber();
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
     } catch (Exception ex) {
@@ -1236,18 +1170,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<KeyValue> getExperimentRunAttributes(
       String experimentRunId, List<String> attributeKeyList, Boolean getAll) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj == null) {
-        String errorMessage = "Invalid ExperimentRun ID found";
+        var errorMessage = "Invalid ExperimentRun ID found";
         throw new NotFoundException(errorMessage);
       }
 
       if (getAll) {
         return experimentRunObj.getProtoObject().getAttributesList();
       } else {
-        Query query = session.createQuery(GET_EXP_RUN_ATTRIBUTE_BY_KEYS_HQL);
+        var query = session.createQuery(GET_EXP_RUN_ATTRIBUTE_BY_KEYS_HQL);
         query.setParameterList("keys", attributeKeyList);
         query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
         query.setParameter(ModelDBConstants.FIELD_TYPE_STR, ModelDBConstants.ATTRIBUTES);
@@ -1304,22 +1238,23 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       throws PermissionDeniedException {
 
     LOGGER.trace("trying to open session");
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       LOGGER.trace("Starting to find experimentRuns");
 
       Workspace workspace = null;
       if (!queryParameters.getWorkspaceName().isEmpty()) {
         workspace =
-            roleService.getWorkspaceByWorkspaceName(
+            mdbRoleService.getWorkspaceByWorkspaceName(
                 currentLoginUserInfo, queryParameters.getWorkspaceName());
       }
       List<GetResourcesResponseItem> accessibleProjectResourceByWorkspace =
-          roleService.getResourceItems(
+          mdbRoleService.getResourceItems(
               workspace,
               !queryParameters.getProjectId().isEmpty()
                   ? new HashSet<>(Collections.singletonList(queryParameters.getProjectId()))
                   : Collections.emptySet(),
-              ModelDBServiceResourceTypes.PROJECT);
+              ModelDBServiceResourceTypes.PROJECT,
+              false);
       Set<String> accessibleProjectIds =
           accessibleProjectResourceByWorkspace.stream()
               .map(GetResourcesResponseItem::getResourceId)
@@ -1347,11 +1282,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           accessibleExperimentRunIds.addAll(accessibleExperimentRunId);
           // Validate if current user has access to the entity or not where predicate key has an id
           RdbmsUtils.validatePredicates(
-              ModelDBConstants.EXPERIMENT_RUNS, accessibleExperimentRunIds, predicate, roleService);
+              ModelDBConstants.EXPERIMENT_RUNS,
+              accessibleExperimentRunIds,
+              predicate,
+              mdbRoleService);
         }
       }
 
-      CriteriaBuilder builder = session.getCriteriaBuilder();
+      var builder = session.getCriteriaBuilder();
       // Using FROM and JOIN
       CriteriaQuery<ExperimentRunEntity> criteriaQuery =
           builder.createQuery(ExperimentRunEntity.class);
@@ -1393,24 +1331,24 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       if (!projectIds.isEmpty()) {
         Expression<String> projectExpression = experimentRunRoot.get(ModelDBConstants.PROJECT_ID);
-        Predicate projectsPredicate = projectExpression.in(projectIds);
+        var projectsPredicate = projectExpression.in(projectIds);
         finalPredicatesList.add(projectsPredicate);
       }
 
       if (!queryParameters.getExperimentId().isEmpty()) {
         Expression<String> exp = experimentRunRoot.get(ModelDBConstants.EXPERIMENT_ID);
-        Predicate predicate2 = builder.equal(exp, queryParameters.getExperimentId());
+        var predicate2 = builder.equal(exp, queryParameters.getExperimentId());
         finalPredicatesList.add(predicate2);
       }
 
       if (!queryParameters.getExperimentRunIdsList().isEmpty()) {
         Expression<String> exp = experimentRunRoot.get(ModelDBConstants.ID);
-        Predicate predicate2 = exp.in(queryParameters.getExperimentRunIdsList());
+        var predicate2 = exp.in(queryParameters.getExperimentRunIdsList());
         finalPredicatesList.add(predicate2);
       }
 
       LOGGER.trace("Added entity predicates");
-      String entityName = "experimentRunEntity";
+      var entityName = "experimentRunEntity";
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
@@ -1420,7 +1358,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 criteriaQuery,
                 experimentRunRoot,
                 authService,
-                roleService,
+                mdbRoleService,
                 ModelDBServiceResourceTypes.EXPERIMENT_RUN);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
@@ -1429,7 +1367,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
           LOGGER.info(ex.getMessage());
-          ExperimentRunPaginationDTO experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
+          var experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
           experimentRunPaginationDTO.setExperimentRuns(Collections.emptyList());
           experimentRunPaginationDTO.setTotalRecords(0L);
           return experimentRunPaginationDTO;
@@ -1452,18 +1390,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               experimentRunRoot,
               entityName);
 
-      Predicate[] predicateArr = new Predicate[finalPredicatesList.size()];
-      for (int index = 0; index < finalPredicatesList.size(); index++) {
+      var predicateArr = new Predicate[finalPredicatesList.size()];
+      for (var index = 0; index < finalPredicatesList.size(); index++) {
         predicateArr[index] = finalPredicatesList.get(index);
       }
 
-      Predicate predicateWhereCause = builder.and(predicateArr);
+      var predicateWhereCause = builder.and(predicateArr);
       criteriaQuery.select(experimentRunRoot);
       criteriaQuery.where(predicateWhereCause);
       criteriaQuery.orderBy(orderBy);
 
       LOGGER.trace("Creating criteria query");
-      Query query = session.createQuery(criteriaQuery);
+      var query = session.createQuery(criteriaQuery);
       LOGGER.debug("Final experimentRuns final query : {}", query.getQueryString());
       if (queryParameters.getPageNumber() != 0 && queryParameters.getPageLimit() != 0) {
         // Calculate number of documents to skip
@@ -1485,9 +1423,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         LOGGER.trace("Converted from Hibernate to proto");
 
         List<String> selfAllowedRepositoryIds = new ArrayList<>();
-        if (config.populateConnectionsBasedOnPrivileges) {
+        if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
           selfAllowedRepositoryIds =
-              roleService.getSelfAllowedResources(
+              mdbRoleService.getSelfAllowedResources(
                   ModelDBServiceResourceTypes.REPOSITORY,
                   ModelDBActionEnum.ModelDBServiceActions.READ);
         }
@@ -1535,7 +1473,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               experimentRun = ExperimentRun.newBuilder().setId(experimentRun.getId()).build();
               experimentRuns.add(experimentRun);
             } else {
-              if (config.populateConnectionsBasedOnPrivileges) {
+              if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
                 if (experimentRun.getDatasetsCount() > 0) {
                   experimentRun =
                       filteredDatasetsBasedOnPrivileges(
@@ -1559,7 +1497,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long totalRecords = RdbmsUtils.count(session, experimentRunRoot, criteriaQuery);
       LOGGER.debug("ExperimentRuns Total record count : {}", totalRecords);
 
-      ExperimentRunPaginationDTO experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
+      var experimentRunPaginationDTO = new ExperimentRunPaginationDTO();
       experimentRunPaginationDTO.setExperimentRuns(experimentRuns);
       experimentRunPaginationDTO.setTotalRecords(totalRecords);
       return experimentRunPaginationDTO;
@@ -1606,10 +1544,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   private Map<String, List<KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
       Session session, List<String> expRunIds, List<String> selfAllowedRepositoryIds) {
 
-    String queryBuilder =
+    var queryBuilder =
         "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
-    if (config.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
         return new HashMap<>();
       } else {
@@ -1617,12 +1555,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
     }
 
-    Query query = session.createQuery(queryBuilder);
+    var query = session.createQuery(queryBuilder);
     query.setParameter("hyperparameterType", HYPERPARAMETER);
     query.setParameterList("expRunIds", expRunIds);
-    if (config.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       query.setParameterList(
-          "repoIds",
+          REPO_IDS_QUERY_PARAM,
           selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
     }
 
@@ -1636,13 +1574,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       configBlobEntities.forEach(
           objects -> {
             String expRunId = (String) objects[0];
-            ConfigBlobEntity configBlobEntity = (ConfigBlobEntity) objects[1];
+            var configBlobEntity = (ConfigBlobEntity) objects[1];
             if (configBlobEntity.getHyperparameter_type() == HYPERPARAMETER) {
-              HyperparameterElementConfigBlobEntity hyperElementConfigBlobEntity =
+              var hyperElementConfigBlobEntity =
                   configBlobEntity.getHyperparameterElementConfigBlobEntity();
               HyperparameterValuesConfigBlob valuesConfigBlob =
                   hyperElementConfigBlobEntity.toProto();
-              Value.Builder valueBuilder = Value.newBuilder();
+              var valueBuilder = Value.newBuilder();
               switch (valuesConfigBlob.getValueCase()) {
                 case INT_VALUE:
                   valueBuilder.setNumberValue(valuesConfigBlob.getIntValue());
@@ -1652,6 +1590,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   break;
                 case STRING_VALUE:
                   valueBuilder.setStringValue(valuesConfigBlob.getStringValue());
+                  break;
+                default:
+                  // Do nothing
                   break;
               }
               KeyValue hyperparameter =
@@ -1687,7 +1628,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             + " LEFT JOIN PathDatasetComponentBlobEntity pdcb ON ncb.path_dataset_blob_hash = pdcb.id.path_dataset_blob_id "
             + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
-    if (config.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
         return new HashMap<>();
       } else {
@@ -1695,12 +1636,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
     }
 
-    Query query = session.createQuery(queryBuilder);
+    var query = session.createQuery(queryBuilder);
     query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
     query.setParameterList("expRunIds", expRunIds);
-    if (config.populateConnectionsBasedOnPrivileges) {
+    if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       query.setParameterList(
-          "repoIds",
+          REPO_IDS_QUERY_PARAM,
           selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
     }
 
@@ -1716,11 +1657,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         String expRunId = (String) objects[0];
         String versioningLocation = (String) objects[1];
         GitCodeBlobEntity gitBlobEntity = (GitCodeBlobEntity) objects[2];
-        NotebookCodeBlobEntity notebookCodeBlobEntity = (NotebookCodeBlobEntity) objects[3];
-        PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
-            (PathDatasetComponentBlobEntity) objects[4];
+        var notebookCodeBlobEntity = (NotebookCodeBlobEntity) objects[3];
+        var pathDatasetComponentBlobEntity = (PathDatasetComponentBlobEntity) objects[4];
 
-        CodeVersion.Builder codeVersionBuilder = CodeVersion.newBuilder();
+        var codeVersionBuilder = CodeVersion.newBuilder();
         LOGGER.debug("notebookCodeBlobEntity {}", notebookCodeBlobEntity);
         LOGGER.debug("pathDatasetComponentBlobEntity {}", pathDatasetComponentBlobEntity);
         LOGGER.debug("gitBlobEntity {}", gitBlobEntity);
@@ -1741,7 +1681,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         if (codeBlobMap == null) {
           codeBlobMap = new LinkedHashMap<>();
         }
-        Location.Builder locationBuilder = Location.newBuilder();
+        var locationBuilder = Location.newBuilder();
         CommonUtils.getProtoObjectFromString(versioningLocation, locationBuilder);
         codeBlobMap.put(
             ModelDBUtils.getLocationWithSlashOperator(locationBuilder.getLocationList()),
@@ -1756,7 +1696,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       CodeVersion.Builder codeVersionBuilder,
       GitCodeBlob codeBlob,
       PathDatasetComponentBlob pathComponentBlob) {
-    GitSnapshot.Builder gitSnapShot = GitSnapshot.newBuilder();
+    var gitSnapShot = GitSnapshot.newBuilder();
     if (codeBlob != null) {
       gitSnapShot
           .setRepo(codeBlob.getRepo())
@@ -1773,14 +1713,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRunPaginationDTO sortExperimentRuns(
       ProjectDAO projectDAO, SortExperimentRuns queryParameters) throws PermissionDeniedException {
-    FindExperimentRuns findExperimentRuns =
+    var findExperimentRuns =
         FindExperimentRuns.newBuilder()
             .addAllExperimentRunIds(queryParameters.getExperimentRunIdsList())
             .setSortKey(queryParameters.getSortKey())
             .setAscending(queryParameters.getAscending())
             .setIdsOnly(queryParameters.getIdsOnly())
             .build();
-    UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+    var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
     return findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
   }
 
@@ -1788,7 +1728,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public List<ExperimentRun> getTopExperimentRuns(
       ProjectDAO projectDAO, TopExperimentRunsSelector queryParameters)
       throws PermissionDeniedException {
-    FindExperimentRuns findExperimentRuns =
+    var findExperimentRuns =
         FindExperimentRuns.newBuilder()
             .setProjectId(queryParameters.getProjectId())
             .setExperimentId(queryParameters.getExperimentId())
@@ -1799,14 +1739,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             .setPageNumber(1)
             .setPageLimit(queryParameters.getTopK())
             .build();
-    UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+    var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
     return findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns)
         .getExperimentRuns();
   }
 
   @Override
   public List<String> getExperimentRunTags(String experimentRunId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       LOGGER.debug("Got ExperimentRun Tags");
@@ -1822,8 +1762,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void addExperimentRunAttributes(String experimentRunId, List<KeyValue> attributesList) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntityObj =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       List<AttributeEntity> newAttributeList =
           RdbmsUtils.convertAttributesFromAttributeEntityList(
@@ -1832,7 +1772,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       experimentRunEntityObj.increaseVersionNumber();
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
     } catch (Exception ex) {
@@ -1847,10 +1787,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public void deleteExperimentRunAttributes(
       String experimentRunId, List<String> attributeKeyList, Boolean deleteAll) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
       if (deleteAll) {
-        Query query =
+        var query =
             session
                 .createQuery(DELETE_ALL_EXP_RUN_ATTRIBUTES_HQL)
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -1858,7 +1798,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         query.setParameter(ModelDBConstants.FIELD_TYPE_STR, ModelDBConstants.ATTRIBUTES);
         query.executeUpdate();
       } else {
-        Query query =
+        var query =
             session
                 .createQuery(DELETE_SELECTED_EXP_RUN_ATTRIBUTES_HQL)
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -1886,14 +1826,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logJobId(String experimentRunId, String jobId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntityObj =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntityObj =
           session.get(ExperimentRunEntity.class, experimentRunId, LockMode.PESSIMISTIC_WRITE);
       experimentRunEntityObj.setJob_id(jobId);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
       experimentRunEntityObj.increaseVersionNumber();
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(experimentRunEntityObj);
       transaction.commit();
       LOGGER.debug("ExperimentRun JobID added successfully");
@@ -1908,9 +1848,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public String getJobId(String experimentRunId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ExperimentRunEntity experimentRunEntityObj =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunEntityObj = session.get(ExperimentRunEntity.class, experimentRunId);
       LOGGER.debug("Got ExperimentRun JobID");
       return experimentRunEntityObj.getJob_id();
     } catch (Exception ex) {
@@ -1927,7 +1866,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Experiment newExperiment,
       Project newProject,
       UserInfo newOwner) {
-    ExperimentRun.Builder experimentRunBuilder =
+    var experimentRunBuilder =
         ExperimentRun.newBuilder(srcExperimentRun).setId(UUID.randomUUID().toString());
 
     if (newOwner != null) {
@@ -1944,12 +1883,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<ExperimentRun> getExperimentRuns(List<KeyValue> keyValues) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      StringBuilder stringQueryBuilder = new StringBuilder("From ExperimentRunEntity er where ");
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var stringQueryBuilder = new StringBuilder("From ExperimentRunEntity er where ");
       Map<String, Object> paramMap = new HashMap<>();
-      for (int index = 0; index < keyValues.size(); index++) {
-        KeyValue keyValue = keyValues.get(index);
-        Value value = keyValue.getValue();
+      for (var index = 0; index < keyValues.size(); index++) {
+        var keyValue = keyValues.get(index);
+        var value = keyValue.getValue();
         String key = keyValue.getKey();
 
         switch (value.getKindCase()) {
@@ -1972,7 +1911,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
       stringQueryBuilder.append(" AND er.deleted = false ");
-      Query query = session.createQuery(stringQueryBuilder.toString());
+      var query = session.createQuery(stringQueryBuilder.toString());
       for (Map.Entry<String, Object> paramEntry : paramMap.entrySet()) {
         query.setParameter(paramEntry.getKey(), paramEntry.getValue());
       }
@@ -1989,7 +1928,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public String getProjectIdByExperimentRunId(String experimentRunId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunObj != null) {
@@ -2010,12 +1949,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public Map<String, String> getProjectIdsFromExperimentRunIds(List<String> experimentRunIds) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var query =
           session.createQuery(
-              "Select exr.id, exr.project_id From ExperimentRunEntity exr where exr.id IN (:ids) AND exr."
-                  + ModelDBConstants.DELETED
-                  + " = false ");
+              "Select exr.id, exr.project_id From ExperimentRunEntity exr where exr.id IN (:ids) AND exr.deleted = false ");
       query.setParameterList("ids", experimentRunIds);
 
       @SuppressWarnings("unchecked")
@@ -2039,11 +1976,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<?> getSelectedFieldsByExperimentRunIds(
       List<String> experimentRunIds, List<String> selectedFields) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      String alias = "exr";
-      StringBuilder queryBuilder = new StringBuilder("Select ");
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var alias = "exr";
+      var queryBuilder = new StringBuilder("Select ");
       if (selectedFields != null && !selectedFields.isEmpty()) {
-        int index = 1;
+        var index = 1;
         for (String selectedField : selectedFields) {
           queryBuilder.append(alias).append(".");
           queryBuilder.append(selectedField);
@@ -2056,7 +1993,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       queryBuilder.append(GET_EXP_RUN_BY_IDS_HQL);
-      Query experimentRunQuery = session.createQuery(queryBuilder.toString());
+      var experimentRunQuery = session.createQuery(queryBuilder.toString());
       experimentRunQuery.setParameterList("ids", experimentRunIds);
       return experimentRunQuery.list();
     } catch (Exception ex) {
@@ -2070,8 +2007,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<String> getExperimentRunIdsByProjectIds(List<String> projectIds) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query experimentRunQuery = session.createQuery(GET_EXPERIMENT_RUN_BY_PROJECT_ID_HQL);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunQuery = session.createQuery(GET_EXPERIMENT_RUN_BY_PROJECT_ID_HQL);
       experimentRunQuery.setParameterList("projectIds", projectIds);
       List<ExperimentRunEntity> experimentRunEntities = experimentRunQuery.list();
 
@@ -2091,8 +2028,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public List<String> getExperimentRunIdsByExperimentIds(List<String> experimentIds) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query experimentRunQuery = session.createQuery(GET_EXPERIMENT_RUN_BY_EXPERIMENT_ID_HQL);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var experimentRunQuery = session.createQuery(GET_EXPERIMENT_RUN_BY_EXPERIMENT_ID_HQL);
       experimentRunQuery.setParameterList("experimentIds", experimentIds);
       List<ExperimentRunEntity> experimentRunEntities = experimentRunQuery.list();
 
@@ -2112,8 +2049,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logVersionedInput(LogVersionedInput request) throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      VersioningEntry versioningEntry = request.getVersionedInputs();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var versioningEntry = request.getVersionedInputs();
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
           validateVersioningEntity(session, versioningEntry);
       ExperimentRunEntity runEntity =
@@ -2128,8 +2065,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       } else {
         if (!versioningModeldbEntityMappings.isEmpty()) {
           VersioningModeldbEntityMapping existingFirstEntityMapping = existingMappings.get(0);
-          VersioningModeldbEntityMapping versioningModeldbFirstEntityMapping =
-              versioningModeldbEntityMappings.get(0);
+          var versioningModeldbFirstEntityMapping = versioningModeldbEntityMappings.get(0);
           if (!existingFirstEntityMapping
                   .getRepository_id()
                   .equals(versioningModeldbFirstEntityMapping.getRepository_id())
@@ -2141,13 +2077,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE,
                   io.grpc.Status.Code.ALREADY_EXISTS);
             }
-            CriteriaBuilder cb = session.getCriteriaBuilder();
+            var cb = session.getCriteriaBuilder();
             CriteriaDelete<VersioningModeldbEntityMapping> delete =
                 cb.createCriteriaDelete(VersioningModeldbEntityMapping.class);
             Root<VersioningModeldbEntityMapping> e =
                 delete.from(VersioningModeldbEntityMapping.class);
             delete.where(cb.in(e.get("experimentRunEntity")).value(runEntity));
-            Transaction transaction = session.beginTransaction();
+            var transaction = session.beginTransaction();
             session
                 .createQuery(delete)
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE))
@@ -2158,7 +2094,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             List<VersioningModeldbEntityMapping> finalVersionList = new ArrayList<>();
             for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
                 versioningModeldbEntityMappings) {
-              boolean addNew = true;
+              var addNew = true;
               for (VersioningModeldbEntityMapping existsVerMapping : existingMappings) {
                 if (versioningModeldbEntityMapping.equals(existsVerMapping)) {
                   addNew = false;
@@ -2190,7 +2126,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       runEntity.setDate_updated(currentTimestamp);
       runEntity.increaseVersionNumber();
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(runEntity);
       transaction.commit();
       LOGGER.debug("ExperimentRun versioning added successfully");
@@ -2205,7 +2141,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void deleteLogVersionedInputs(Session session, Long repoId, String commitHash) {
-    StringBuilder fetchAllExpRunLogVersionedInputsHqlBuilder =
+    var fetchAllExpRunLogVersionedInputsHqlBuilder =
         new StringBuilder(
             "DELETE FROM VersioningModeldbEntityMapping vm WHERE vm.repository_id = :repoId ");
     fetchAllExpRunLogVersionedInputsHqlBuilder
@@ -2215,7 +2151,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     if (commitHash != null && !commitHash.isEmpty()) {
       fetchAllExpRunLogVersionedInputsHqlBuilder.append(" AND vm.commit = :commitHash");
     }
-    Query query =
+    var query =
         session
             .createQuery(fetchAllExpRunLogVersionedInputsHqlBuilder.toString())
             .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -2229,32 +2165,32 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void deleteLogVersionedInputs(Session session, List<Long> repoIds) {
-    StringBuilder fetchAllExpRunLogVersionedInputsHqlBuilder =
+    var fetchAllExpRunLogVersionedInputsHqlBuilder =
         new StringBuilder(
             "DELETE FROM VersioningModeldbEntityMapping vm WHERE vm.repository_id IN (:repoIds) ");
     fetchAllExpRunLogVersionedInputsHqlBuilder
         .append(" AND vm.entity_type = '")
         .append(ExperimentRunEntity.class.getSimpleName())
         .append("'");
-    Query query =
+    var query =
         session
             .createQuery(fetchAllExpRunLogVersionedInputsHqlBuilder.toString())
             .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
-    query.setParameter("repoIds", repoIds);
+    query.setParameter(REPO_IDS_QUERY_PARAM, repoIds);
     query.executeUpdate();
     LOGGER.debug("ExperimentRun versioning deleted successfully");
   }
 
   @Override
   public GetVersionedInput.Response getVersionedInputs(GetVersionedInput request) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       ExperimentRunEntity experimentRunObj =
           session.get(ExperimentRunEntity.class, request.getId());
       if (experimentRunObj != null) {
-        ExperimentRun experimentRun = experimentRunObj.getProtoObject();
+        var experimentRun = experimentRunObj.getProtoObject();
         if (experimentRun.getVersionedInputs() != null
             && experimentRun.getVersionedInputs().getRepositoryId() != 0
-            && config.populateConnectionsBasedOnPrivileges) {
+            && mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
           experimentRun =
               checkVersionInputBasedOnPrivileges(experimentRun, new HashSet<>(), new HashSet<>());
         }
@@ -2282,9 +2218,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
-      CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var repositoryEntity = repositoryFunction.apply(session);
+      var commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
 
       KeyValueQuery repositoryIdPredicate =
           KeyValueQuery.newBuilder()
@@ -2309,17 +2245,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setSortKey(ModelDBConstants.DATE_UPDATED)
               .addPredicates(repositoryIdPredicate)
               .addPredicates(commitHashPredicate);
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       if (request.getRepositoryId().hasNamedId()) {
         findExperimentRuns.setWorkspaceName(
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
         GetResourcesResponseItem entityResource =
-            roleService.getEntityResource(
+            mdbRoleService.getEntityResource(
                 Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
                 Optional.empty(),
                 ModelDBServiceResourceTypes.REPOSITORY);
-        Workspace workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
+        var workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
         if (workspace != null) {
           findExperimentRuns.setWorkspaceName(
               workspace.getInternalIdCase() == Workspace.InternalIdCase.ORG_ID
@@ -2327,7 +2263,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   : workspace.getUsername());
         }
       }
-      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+      var experimentRunPaginationDTO =
           findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
       return ListCommitExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
@@ -2349,9 +2285,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity = repositoryFunction.apply(session);
-      CommitEntity commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var repositoryEntity = repositoryFunction.apply(session);
+      var commitEntity = commitFunction.apply(session, session1 -> repositoryEntity);
 
       KeyValueQuery repositoryIdPredicate =
           KeyValueQuery.newBuilder()
@@ -2368,7 +2304,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setValueType(ValueTypeEnum.ValueType.STRING)
               .build();
 
-      Location location = Location.newBuilder().addAllLocation(request.getLocationList()).build();
+      var location = Location.newBuilder().addAllLocation(request.getLocationList()).build();
       KeyValueQuery locationPredicate =
           KeyValueQuery.newBuilder()
               .setKey(
@@ -2389,17 +2325,17 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .addPredicates(repositoryIdPredicate)
               .addPredicates(commitHashPredicate)
               .addPredicates(locationPredicate);
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
       if (request.getRepositoryId().hasNamedId()) {
         findExperimentRuns.setWorkspaceName(
             request.getRepositoryId().getNamedId().getWorkspaceName());
       } else {
         GetResourcesResponseItem entityResource =
-            roleService.getEntityResource(
+            mdbRoleService.getEntityResource(
                 Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
                 Optional.empty(),
                 ModelDBServiceResourceTypes.REPOSITORY);
-        Workspace workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
+        var workspace = authService.workspaceById(true, entityResource.getWorkspaceId());
         if (workspace != null) {
           findExperimentRuns.setWorkspaceName(
               workspace.getInternalIdCase() == Workspace.InternalIdCase.ORG_ID
@@ -2408,7 +2344,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
 
-      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+      var experimentRunPaginationDTO =
           findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
 
       return ListBlobExperimentRunsRequest.Response.newBuilder()
@@ -2451,8 +2387,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public Entry<String, String> getExperimentRunArtifactS3PathAndMultipartUploadID(
       String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart)
       throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ArtifactEntity artifactEntity = getArtifactEntity(session, experimentRunId, key);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var artifactEntity = getArtifactEntity(session, experimentRunId, key);
       try (AutoCloseable ignored = acquireWriteLock(buildArtifactLockKey(experimentRunId, key))) {
         return getS3PathAndMultipartUploadId(
             session, artifactEntity, partNumber != 0, initializeMultipart);
@@ -2483,7 +2419,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified
-        && config.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)) {
+        && mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {
@@ -2521,8 +2457,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public Response commitArtifactPart(CommitArtifactPart request) throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      ArtifactEntity artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
       try (AutoCloseable ignored =
           acquireWriteLock(
               buildArtifactPartLockKey(
@@ -2543,13 +2479,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public GetCommittedArtifactParts.Response getCommittedArtifactParts(
       GetCommittedArtifactParts request) throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       try (AutoCloseable ignored =
           acquireReadLock(buildArtifactLockKey(request.getId(), request.getKey()))) {
         Set<ArtifactPartEntity> artifactPartEntities =
             getArtifactPartEntities(session, request.getId(), request.getKey());
-        GetCommittedArtifactParts.Response.Builder response =
-            GetCommittedArtifactParts.Response.newBuilder();
+        var response = GetCommittedArtifactParts.Response.newBuilder();
         artifactPartEntities.forEach(
             artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
         return response.build();
@@ -2572,7 +2507,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private Set<ArtifactPartEntity> getArtifactPartEntities(
       Session session, String experimentRunId, String key) throws ModelDBException {
-    ArtifactEntity artifactEntity = getArtifactEntity(session, experimentRunId, key);
+    var artifactEntity = getArtifactEntity(session, experimentRunId, key);
     return VersioningUtils.getArtifactPartEntities(
         session, String.valueOf(artifactEntity.getId()), ArtifactPartEntity.EXP_RUN_ARTIFACT);
   }
@@ -2582,13 +2517,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       CommitMultipartArtifact request, CommitMultipartFunction commitMultipartFunction)
       throws ModelDBException {
     List<PartETag> partETags;
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       try (AutoCloseable ignored =
           acquireWriteLock(buildArtifactLockKey(request.getId(), request.getKey()))) {
-        ArtifactEntity artifactEntity =
-            getArtifactEntity(session, request.getId(), request.getKey());
+        var artifactEntity = getArtifactEntity(session, request.getId(), request.getKey());
         if (artifactEntity.getUploadId() == null) {
-          String message = "Multipart wasn't initialized OR Multipart artifact already committed";
+          var message = "Multipart wasn't initialized OR Multipart artifact already committed";
           LOGGER.info(message);
           throw new ModelDBException(message, Code.FAILED_PRECONDITION);
         }
@@ -2617,24 +2551,24 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   private void deleteAllKeyValueEntities(
       Session session, String experimentRunId, String fieldType) {
-    Query query =
+    var query =
         session
             .createQuery(DELETE_ALL_KEY_VALUES_HQL)
             .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
-    query.setParameter("field_type", fieldType);
+    query.setParameter(FIELD_TYPE_QUERY_PARAM, fieldType);
     query.executeUpdate();
   }
 
   private void deleteKeyValueEntities(
       Session session, String experimentRunId, List<String> keys, String fieldType) {
-    Query query =
+    var query =
         session
             .createQuery(DELETE_SELECTED_KEY_VALUES_HQL)
             .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
     query.setParameterList("keys", keys);
     query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
-    query.setParameter("field_type", fieldType);
+    query.setParameter(FIELD_TYPE_QUERY_PARAM, fieldType);
     query.executeUpdate();
   }
 
@@ -2646,13 +2580,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       String fieldType) {
     String projectId = getProjectIdByExperimentRunId(experimentRunId);
     // Validate if current user has access to the entity or not
-    roleService.validateEntityUserWithUserInfo(
+    mdbRoleService.validateEntityUserWithUserInfo(
         ModelDBServiceResourceTypes.PROJECT,
         projectId,
         ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
       if (deleteAll) {
         deleteAllKeyValueEntities(session, experimentRunId, fieldType);
       } else {
@@ -2681,19 +2615,19 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       String experimentRunId, List<String> experimentRunObservationsKeys, Boolean deleteAll) {
     String projectId = getProjectIdByExperimentRunId(experimentRunId);
     // Validate if current user has access to the entity or not
-    roleService.validateEntityUserWithUserInfo(
+    mdbRoleService.validateEntityUserWithUserInfo(
         ModelDBServiceResourceTypes.PROJECT,
         projectId,
         ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      Query query =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
+      var query =
           session
               .createQuery(GET_ALL_OBSERVATIONS_HQL)
               .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
       query.setParameter(ModelDBConstants.EXPERIMENT_RUN_ID_STR, experimentRunId);
-      query.setParameter("field_type", ModelDBConstants.OBSERVATIONS);
+      query.setParameter(FIELD_TYPE_QUERY_PARAM, ModelDBConstants.OBSERVATIONS);
       List<ObservationEntity> observationEntities = query.list();
       List<ObservationEntity> removedObservationEntities = new ArrayList<>();
       if (deleteAll) {
@@ -2735,8 +2669,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public ExperimentRunPaginationDTO getExperimentRunsByDatasetVersionId(
       ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request) throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      CommitEntity commitEntity = session.get(CommitEntity.class, request.getDatasetVersionId());
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var commitEntity = session.get(CommitEntity.class, request.getDatasetVersionId());
       if (commitEntity == null) {
         throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
       }
@@ -2762,7 +2696,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setValueType(ValueTypeEnum.ValueType.STRING)
               .build();
 
-      FindExperimentRuns findExperimentRuns =
+      var findExperimentRuns =
           FindExperimentRuns.newBuilder()
               .setPageNumber(request.getPageNumber())
               .setPageLimit(request.getPageLimit())
@@ -2770,8 +2704,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setSortKey(request.getSortKey())
               .addPredicates(entityKeyValuePredicate)
               .build();
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+      var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      var experimentRunPaginationDTO =
           findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
       LOGGER.debug(
           "Final return ExperimentRun count : {}",
@@ -2786,15 +2720,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   public ExperimentRun cloneExperimentRun(
       ProjectDAO projectDAO, CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
       throws ModelDBException {
-    ExperimentRun srcExperimentRun = getExperimentRun(cloneExperimentRun.getSrcExperimentRunId());
+    var srcExperimentRun = getExperimentRun(cloneExperimentRun.getSrcExperimentRunId());
 
     // Validate if current user has access to the entity or not
-    roleService.validateEntityUserWithUserInfo(
+    mdbRoleService.validateEntityUserWithUserInfo(
         ModelDBServiceResourceTypes.PROJECT,
         srcExperimentRun.getProjectId(),
         ModelDBActionEnum.ModelDBServiceActions.UPDATE);
 
-    ExperimentRun.Builder desExperimentRunBuilder = srcExperimentRun.toBuilder().clone();
+    var desExperimentRunBuilder = srcExperimentRun.toBuilder().clone();
     desExperimentRunBuilder
         .setId(UUID.randomUUID().toString())
         .setDateCreated(Calendar.getInstance().getTimeInMillis())
@@ -2809,8 +2743,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
 
     if (!cloneExperimentRun.getDestExperimentId().isEmpty()) {
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-        ExperimentEntity destExperimentEntity =
+      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+        var destExperimentEntity =
             session.get(ExperimentEntity.class, cloneExperimentRun.getDestExperimentId());
         if (destExperimentEntity == null) {
           throw new ModelDBException(
@@ -2819,7 +2753,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
 
         // Validate if current user has access to the entity or not
-        roleService.validateEntityUserWithUserInfo(
+        mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT,
             destExperimentEntity.getProject_id(),
             ModelDBActionEnum.ModelDBServiceActions.UPDATE);
@@ -2834,10 +2768,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public void logEnvironment(String experimentRunId, EnvironmentBlob environmentBlob) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      ExperimentRunEntity experimentRunEntity =
-          session.get(ExperimentRunEntity.class, experimentRunId);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
+      var experimentRunEntity = session.get(ExperimentRunEntity.class, experimentRunId);
       if (experimentRunEntity == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }

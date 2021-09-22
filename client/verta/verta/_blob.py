@@ -13,7 +13,7 @@ class Blob(object):
         if not isinstance(other, type(self)):
             return NotImplemented
 
-        return self._as_proto() == other._as_proto()
+        return repr(self) == repr(other)
 
     def __ne__(self, other):
         if not isinstance(other, type(self)):

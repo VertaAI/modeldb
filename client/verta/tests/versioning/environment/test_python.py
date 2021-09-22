@@ -107,14 +107,6 @@ class TestPythonVersion:
         assert env._msg.python.version.patch == sys.version_info.micro
 
 
-class TestEnvironmentVariables:
-    def test_env_vars(self):
-        env_vars = os.environ.keys()
-        env = Python(requirements=[], env_vars=env_vars)
-
-        assert env._msg.environment_variables
-
-
 class TestAptPackages:
     def test_apt_packages(self):
         env = Python([])

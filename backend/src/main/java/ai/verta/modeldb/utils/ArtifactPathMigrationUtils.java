@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 
 public class ArtifactPathMigrationUtils {
   private ArtifactPathMigrationUtils() {}
@@ -41,19 +38,19 @@ public class ArtifactPathMigrationUtils {
 
     Long count = getArtifactEntityCount();
 
-    int lowerBound = 0;
-    final int pagesize = 500;
+    var lowerBound = 0;
+    final var pagesize = 500;
     LOGGER.debug("Total artifactEntities {}", count);
 
     while (lowerBound < count) {
 
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-        Transaction transaction = session.beginTransaction();
-        String queryString =
+      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+        var transaction = session.beginTransaction();
+        var queryString =
             "FROM ArtifactEntity ae WHERE ae."
                 + ModelDBConstants.STORE_TYPE_PATH
                 + " IS NULL ORDER BY ae.id asc";
-        Query query = session.createQuery(queryString);
+        var query = session.createQuery(queryString);
         query.setFirstResult(lowerBound);
         query.setMaxResults(pagesize);
         List<ArtifactEntity> artifactEntities = query.list();
@@ -74,8 +71,8 @@ public class ArtifactPathMigrationUtils {
   }
 
   private static Long getArtifactEntityCount() {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var query =
           session.createQuery(
               "SELECT count(*) FROM ArtifactEntity ae WHERE ae."
                   + ModelDBConstants.STORE_TYPE_PATH

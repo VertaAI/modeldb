@@ -5,13 +5,13 @@ import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.entities.versioning.CommitEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -33,10 +33,16 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.jdbi.v3.core.statement.PreparedBatch;
 
 public class VersionInputHandler {
+  private static final String REPOSITORY_ID_QUERY_PARAM = "repository_id";
+  private static final String COMMIT_QUERY_PARAM = "commit";
+  private static final String VERSIONING_KEY_QUERY_PARAM = "versioning_key";
+  private static final String ENTITY_ID_QUERY_PARAM = "entityId";
+  private static final String ENTITY_TYPE_QUERY_PARAM = "entity_type";
+  private static final String BLOB_HASH_QUERY_PARAM = "blob_hash";
+  private static final String INT_VALUE_QUERY_SELECTED_PARAM = "int_value";
+  private static final String VERSIONING_LOCATION_QUERY_PARAM = "versioning_location";
   private static Logger LOGGER = LogManager.getLogger(VersionInputHandler.class);
 
   private final Executor executor;
@@ -128,12 +134,12 @@ public class VersionInputHandler {
             for (Map.Entry<String, Location> locationEntry :
                 versioningEntry.getKeyLocationMapMap().entrySet()) {
               // Prepare location key from list of locations in Versioning entry
-              String locationKey = String.join("#", locationEntry.getValue().getLocationList());
+              var locationKey = String.join("#", locationEntry.getValue().getLocationList());
               Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
                   locationBlobWithHashMap.get(locationKey);
 
               // Get blob from blob map for location key build from Versioning entry locations
-              Blob blob = blobExpandedWithHashMap.getKey().getBlob();
+              var blob = blobExpandedWithHashMap.getKey().getBlob();
 
               // If blob type have the config then we will add mapping entry in
               // versioning_modeldb_entity_mapping_config_blob
@@ -149,12 +155,12 @@ public class VersionInputHandler {
                     .map(
                         (rs, ctx) -> {
                           Map<String, Object> argsMap = new HashMap<>();
-                          argsMap.put("repository_id", versioningEntry.getRepositoryId());
-                          argsMap.put("commit", versioningEntry.getCommit());
-                          argsMap.put("versioning_key", locationEntry.getKey());
-                          argsMap.put("entityId", entityId);
-                          argsMap.put("entity_type", entity_type);
-                          argsMap.put("blob_hash", rs.getString("blob_hash"));
+                          argsMap.put(REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
+                          argsMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
+                          argsMap.put(VERSIONING_KEY_QUERY_PARAM, locationEntry.getKey());
+                          argsMap.put(ENTITY_ID_QUERY_PARAM, entityId);
+                          argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+                          argsMap.put(BLOB_HASH_QUERY_PARAM, rs.getString(BLOB_HASH_QUERY_PARAM));
                           argsMap.put("config_seq_number", rs.getString("config_seq_number"));
                           argsMaps.add(argsMap);
                           return rs;
@@ -175,7 +181,7 @@ public class VersionInputHandler {
                       + " config_blob_entity_blob_hash, "
                       + " config_blob_entity_config_seq_number) "
                       + " VALUES (:repository_id, :commit, :versioning_key, :entityId, :entity_type, :blob_hash, :config_seq_number)";
-              PreparedBatch preparedBatch = handle.prepareBatch(blobMappingQueryStr);
+              var preparedBatch = handle.prepareBatch(blobMappingQueryStr);
               argsMaps.forEach(preparedBatch::add);
               int[] insertedCount = preparedBatch.execute();
               LOGGER.trace(
@@ -204,12 +210,12 @@ public class VersionInputHandler {
             for (Map.Entry<String, Location> locationEntry :
                 versioningEntry.getKeyLocationMapMap().entrySet()) {
               // Prepare location key from list of locations in Versioning entry
-              String locationKey = String.join("#", locationEntry.getValue().getLocationList());
+              var locationKey = String.join("#", locationEntry.getValue().getLocationList());
               Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
                   locationBlobWithHashMap.get(locationKey);
 
               // Get blob from blob map for location key build from Versioning entry locations
-              Blob blob = blobExpandedWithHashMap.getKey().getBlob();
+              var blob = blobExpandedWithHashMap.getKey().getBlob();
 
               // If blob type have the config and it has the HYPERPARAMETER then we will add mapping
               // entry in hyperparameter_element_mapping
@@ -228,11 +234,13 @@ public class VersionInputHandler {
                           Map<String, Object> argsMap = new HashMap<>();
                           argsMap.put("name", rs.getString("name"));
                           argsMap.put(
-                              "int_value",
-                              rs.getInt("int_value") != 0 ? rs.getInt("int_value") : null);
+                              INT_VALUE_QUERY_SELECTED_PARAM,
+                              rs.getInt(INT_VALUE_QUERY_SELECTED_PARAM) != 0
+                                  ? rs.getInt(INT_VALUE_QUERY_SELECTED_PARAM)
+                                  : null);
                           argsMap.put("float_value", rs.getFloat("float_value"));
                           argsMap.put("string_value", rs.getString("string_value"));
-                          argsMap.put("entity_type", entity_type);
+                          argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
                           argsMap.put("entity_id", entityId);
                           argsMaps.add(argsMap);
                           return rs;
@@ -245,7 +253,7 @@ public class VersionInputHandler {
                   "INSERT INTO hyperparameter_element_mapping (name, int_value, float_value, string_value, entity_type, "
                       + entityIdReferenceColumn
                       + " ) VALUES (:name, :int_value, :float_value, :string_value, :entity_type, :entity_id )";
-              PreparedBatch preparedBatch = handle.prepareBatch(hemeStr);
+              var preparedBatch = handle.prepareBatch(hemeStr);
               argsMaps.forEach(preparedBatch::add);
               int[] insertedCount = preparedBatch.execute();
               LOGGER.trace(
@@ -286,14 +294,15 @@ public class VersionInputHandler {
 
                 if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
                   Map<String, Object> keysAndParameterMap = new HashMap<>();
-                  keysAndParameterMap.put("repository_id", versioningEntry.getRepositoryId());
-                  keysAndParameterMap.put("commit", versioningEntry.getCommit());
-                  keysAndParameterMap.put("entityId", entityId);
-                  keysAndParameterMap.put("entity_type", entity_type);
-                  keysAndParameterMap.put("versioning_key", ModelDBConstants.EMPTY_STRING);
-                  keysAndParameterMap.put("versioning_location", null);
+                  keysAndParameterMap.put(
+                      REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
+                  keysAndParameterMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
+                  keysAndParameterMap.put(ENTITY_ID_QUERY_PARAM, entityId);
+                  keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+                  keysAndParameterMap.put(VERSIONING_KEY_QUERY_PARAM, CommonConstants.EMPTY_STRING);
+                  keysAndParameterMap.put(VERSIONING_LOCATION_QUERY_PARAM, null);
                   keysAndParameterMap.put("versioning_blob_type", null);
-                  keysAndParameterMap.put("blob_hash", null);
+                  keysAndParameterMap.put(BLOB_HASH_QUERY_PARAM, null);
 
                   LOGGER.trace("insert experiment run query string: " + queryStr);
                   var query = handle.createUpdate(queryStr);
@@ -310,32 +319,34 @@ public class VersionInputHandler {
                     if (existingVersioningEntry == null
                         || !existingVersioningEntry.containsKeyLocationMap(
                             locationEntry.getKey())) {
-                      String locationKey =
+                      var locationKey =
                           String.join("#", locationEntry.getValue().getLocationList());
                       Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
                           locationBlobWithHashMap.get(locationKey);
 
-                      Blob blob = blobExpandedWithHashMap.getKey().getBlob();
+                      var blob = blobExpandedWithHashMap.getKey().getBlob();
 
                       Map<String, Object> keysAndParameterMap = new HashMap<>();
-                      keysAndParameterMap.put("repository_id", versioningEntry.getRepositoryId());
-                      keysAndParameterMap.put("commit", versioningEntry.getCommit());
-                      keysAndParameterMap.put("entityId", entityId);
-                      keysAndParameterMap.put("entity_type", entity_type);
-                      keysAndParameterMap.put("versioning_key", locationEntry.getKey());
                       keysAndParameterMap.put(
-                          "versioning_location",
+                          REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
+                      keysAndParameterMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
+                      keysAndParameterMap.put(ENTITY_ID_QUERY_PARAM, entityId);
+                      keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+                      keysAndParameterMap.put(VERSIONING_KEY_QUERY_PARAM, locationEntry.getKey());
+                      keysAndParameterMap.put(
+                          VERSIONING_LOCATION_QUERY_PARAM,
                           ModelDBUtils.getStringFromProtoObject(locationEntry.getValue()));
                       keysAndParameterMap.put(
                           "versioning_blob_type", blob.getContentCase().getNumber());
-                      keysAndParameterMap.put("blob_hash", blobExpandedWithHashMap.getValue());
+                      keysAndParameterMap.put(
+                          BLOB_HASH_QUERY_PARAM, blobExpandedWithHashMap.getValue());
 
                       argsMaps.add(keysAndParameterMap);
                     }
                   }
 
                   if (!argsMaps.isEmpty()) {
-                    PreparedBatch preparedBatch = handle.prepareBatch(queryStr);
+                    var preparedBatch = handle.prepareBatch(queryStr);
                     argsMaps.forEach(preparedBatch::add);
                     int[] insertedCount = preparedBatch.execute();
                     LOGGER.trace(
@@ -382,14 +393,14 @@ public class VersionInputHandler {
         unused -> {
           Map<String, Map.Entry<BlobExpanded, String>> requestedLocationBlobWithHashMap =
               new HashMap<>();
-          try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+          try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
             // Fetch version input mapped repository
-            RepositoryIdentification repositoryIdentification =
+            var repositoryIdentification =
                 RepositoryIdentification.newBuilder()
                     .setRepoId(versioningEntry.getRepositoryId())
                     .build();
             // Fetch version input mapped commit
-            CommitEntity commitEntity =
+            var commitEntity =
                 commitDAO.getCommitEntity(
                     session,
                     versioningEntry.getCommit(),
@@ -407,8 +418,7 @@ public class VersionInputHandler {
                       Collections.emptyList());
               for (Map.Entry<String, Location> locationBlobKeyMap :
                   versioningEntry.getKeyLocationMapMap().entrySet()) {
-                String locationKey =
-                    String.join("#", locationBlobKeyMap.getValue().getLocationList());
+                var locationKey = String.join("#", locationBlobKeyMap.getValue().getLocationList());
                 // If requested locations and commit blob locations are not matched then we will
                 // throw error for logging invalid versioned input
                 if (!locationBlobWithHashMap.containsKey(locationKey)) {
@@ -454,18 +464,18 @@ public class VersionInputHandler {
                           // here we have store multiple locations key for single version key see
                           // line 299 loop so
                           // we are creating SimpleEntry based on each location key.
-                          VersioningEntry.Builder versioningEntryBuilder =
+                          var versioningEntryBuilder =
                               VersioningEntry.newBuilder()
-                                  .setRepositoryId(rs.getLong("repository_id"))
-                                  .setCommit(rs.getString("commit"));
+                                  .setRepositoryId(rs.getLong(REPOSITORY_ID_QUERY_PARAM))
+                                  .setCommit(rs.getString(COMMIT_QUERY_PARAM));
 
-                          if (rs.getString("versioning_key") != null
-                              && !rs.getString("versioning_key").isEmpty()) {
-                            Location.Builder locationBuilder = Location.newBuilder();
+                          if (rs.getString(VERSIONING_KEY_QUERY_PARAM) != null
+                              && !rs.getString(VERSIONING_KEY_QUERY_PARAM).isEmpty()) {
+                            var locationBuilder = Location.newBuilder();
                             CommonUtils.getProtoObjectFromString(
-                                rs.getString("versioning_location"), locationBuilder);
+                                rs.getString(VERSIONING_LOCATION_QUERY_PARAM), locationBuilder);
                             versioningEntryBuilder.putKeyLocationMap(
-                                rs.getString("versioning_key"), locationBuilder.build());
+                                rs.getString(VERSIONING_KEY_QUERY_PARAM), locationBuilder.build());
                           }
 
                           return new AbstractMap.SimpleEntry<>(
@@ -481,7 +491,7 @@ public class VersionInputHandler {
               // now we are adding all location map in to single VersionedInput for runs.
               for (Map.Entry<String, VersioningEntry> entry : simpleEntries) {
                 if (entryMap.containsKey(entry.getKey())) {
-                  VersioningEntry versioningEntry = entryMap.get(entry.getKey());
+                  var versioningEntry = entryMap.get(entry.getKey());
                   versioningEntry =
                       versioningEntry
                           .toBuilder()

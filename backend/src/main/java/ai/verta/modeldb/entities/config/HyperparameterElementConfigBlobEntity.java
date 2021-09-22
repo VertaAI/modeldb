@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities.config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import io.grpc.Status;
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -10,7 +11,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "hyperparameter_element_config_blob")
-public class HyperparameterElementConfigBlobEntity {
+public class HyperparameterElementConfigBlobEntity implements Serializable {
   private HyperparameterElementConfigBlobEntity() {}
 
   public HyperparameterElementConfigBlobEntity(
@@ -67,7 +68,7 @@ public class HyperparameterElementConfigBlobEntity {
   }
 
   public HyperparameterValuesConfigBlob toProto() {
-    HyperparameterValuesConfigBlob.Builder builder = HyperparameterValuesConfigBlob.newBuilder();
+    var builder = HyperparameterValuesConfigBlob.newBuilder();
     if (this.int_value != null) {
       builder.setIntValue(this.int_value);
     }

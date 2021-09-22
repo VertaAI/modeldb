@@ -26,12 +26,12 @@ public class ConfigBlobFactory extends BlobFactory {
 
   @Override
   public Blob getBlob(Session session) throws ModelDBException {
-    String configQuery =
+    var configQuery =
         "From ConfigBlobEntity where blob_hash = :blobHash ORDER BY config_seq_number ASC";
     Query<ConfigBlobEntity> query = session.createQuery(configQuery);
     query.setParameter("blobHash", getElementSha());
     List<ConfigBlobEntity> configBlobEntities = query.list();
-    ConfigBlob.Builder configBlobBuilder = ConfigBlob.newBuilder();
+    var configBlobBuilder = ConfigBlob.newBuilder();
     for (ConfigBlobEntity configBlobEntity : configBlobEntities) {
       switch (getElementType()) {
         case CONFIG_BLOB:
@@ -41,7 +41,7 @@ public class ConfigBlobFactory extends BlobFactory {
                   session.get(
                       HyperparameterElementConfigBlobEntity.class,
                       configBlobEntity.getComponentBlobHash());
-              HyperparameterConfigBlob hyperparameterConfigBlob =
+              var hyperparameterConfigBlob =
                   HyperparameterConfigBlob.newBuilder()
                       .setName(elementConfigBlobEntity.getName())
                       .setValue(elementConfigBlobEntity.toProto())

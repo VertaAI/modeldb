@@ -52,8 +52,8 @@ class TestObject:
         )
 
         # translate expected values
-        request_path = arg_handler.prepend_slash(request_path)
-        health_path = arg_handler.prepend_slash(health_path)
+        request_path = arg_handler.ensure_starts_with_slash(request_path)
+        health_path = arg_handler.ensure_starts_with_slash(health_path)
         if isinstance(env_vars, list):
             env_vars = {name: os.environ[name] for name in env_vars}
 
@@ -94,8 +94,8 @@ class TestProto:
     ):
         hypothesis.assume(tag or sha)
 
-        request_path = arg_handler.prepend_slash(request_path)
-        health_path = arg_handler.prepend_slash(health_path)
+        request_path = arg_handler.ensure_starts_with_slash(request_path)
+        health_path = arg_handler.ensure_starts_with_slash(health_path)
 
         msg = RegistryService_pb2.ModelVersion()
         msg.docker_metadata.request_port = port
@@ -162,8 +162,8 @@ class TestProto:
         msg = docker_image._as_model_ver_proto()
 
         # translate expected values
-        request_path = arg_handler.prepend_slash(request_path)
-        health_path = arg_handler.prepend_slash(health_path)
+        request_path = arg_handler.ensure_starts_with_slash(request_path)
+        health_path = arg_handler.ensure_starts_with_slash(health_path)
         if isinstance(env_vars, list):
             env_vars = {name: os.environ[name] for name in env_vars}
 

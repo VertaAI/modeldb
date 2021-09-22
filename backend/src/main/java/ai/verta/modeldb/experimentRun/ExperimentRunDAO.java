@@ -358,6 +358,7 @@ public interface ExperimentRunDAO {
    *     ExperimentRun.project_id etc.
    * @return {@link List} : value = experimentRun OR selectedFields_array_objects
    */
+  @SuppressWarnings({"squid:S1452"})
   List<?> getSelectedFieldsByExperimentRunIds(
       List<String> experimentRunIds, List<String> selectedFields);
 

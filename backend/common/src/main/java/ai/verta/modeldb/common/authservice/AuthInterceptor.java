@@ -27,33 +27,31 @@ public class AuthInterceptor implements ServerInterceptor {
   @Override
   public <R, S> Listener<R> interceptCall(
       ServerCall<R, S> call, Metadata requestHeaders, ServerCallHandler<R, S> next) {
-    Context context = Context.current().withValue(METADATA_INFO, requestHeaders);
+    var context = Context.current().withValue(METADATA_INFO, requestHeaders);
     String methodName = call.getMethodDescriptor().getFullMethodName();
 
     if (!(methodName.equals("ai.verta.modeldb.ProjectService/verifyConnection")
         || methodName.equals("grpc.health.v1.Health/Check")
         || methodName.equals("grpc.health.v1.Health/Watch"))) {
       // validate empty headers from user request
-      Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-      Metadata.Key<String> dev_key_underscore =
-          Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
-      Metadata.Key<String> dev_key =
-          Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
-      Metadata.Key<String> bearerAccessToken =
+      var emailKey = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
+      var devKeyUnderscore = Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+      var devKey = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+      var bearerAccessToken =
           Metadata.Key.of("bearer_access_token", Metadata.ASCII_STRING_MARSHALLER);
-      Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+      var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-      boolean parameterMissing = false;
-      if (!requestHeaders.containsKey(source_key)) {
+      var parameterMissing = false;
+      if (!requestHeaders.containsKey(sourceKey)) {
         parameterMissing = true;
       } else {
-        String sourceValue = requestHeaders.get(source_key);
+        var sourceValue = requestHeaders.get(sourceKey);
         assert sourceValue != null;
-        boolean isDevKeyUsed = sourceValue.equals("PythonClient");
+        var isDevKeyUsed = sourceValue.equals("PythonClient");
         if (isDevKeyUsed) {
-          if (!requestHeaders.containsKey(email_key)
-              || !(requestHeaders.containsKey(dev_key_underscore)
-                  || requestHeaders.containsKey(dev_key))) {
+          if (!requestHeaders.containsKey(emailKey)
+              || !(requestHeaders.containsKey(devKeyUnderscore)
+                  || requestHeaders.containsKey(devKey))) {
             parameterMissing = true;
           }
         } else if (!requestHeaders.containsKey(bearerAccessToken)) {
@@ -69,6 +67,6 @@ public class AuthInterceptor implements ServerInterceptor {
     }
 
     ServerCall.Listener<R> delegate = Contexts.interceptCall(context, call, requestHeaders, next);
-    return new ForwardingServerCallListener.SimpleForwardingServerCallListener<R>(delegate) {};
+    return new ForwardingServerCallListener.SimpleForwardingServerCallListener<>(delegate) {};
   }
 }
