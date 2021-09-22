@@ -261,7 +261,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             Paths to local Python code files that `model_cls` depends on. This
             parameter has the same behavior as ``custom_modules`` in
             :meth:`RegisteredModelVersion.log_model`.
-        model_api : :class:`~verta.utils.ModelAPI`
+        model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying the model's expected input and output
         artifacts : dict of str to obj
             A mapping from artifact keys to artifacts. These will be logged
@@ -346,7 +346,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             Keras model.
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
-        model_api : :class:`~verta.utils.ModelAPI`
+        model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying the model's expected input and output
         name : str, optional
             Name of the model version. If no name is provided, one will be
@@ -419,7 +419,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             scikit-learn model.
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
-        model_api : :class:`~verta.utils.ModelAPI`
+        model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying the model's expected input and output
         name : str, optional
             Name of the model version. If no name is provided, one will be
@@ -489,7 +489,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             PyTorch model.
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
-        model_api : :class:`~verta.utils.ModelAPI`
+        model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying the model's expected input and output
         name : str, optional
             Name of the model version. If no name is provided, one will be
@@ -575,7 +575,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             XGBoost model using their scikit-learn wrapper interface.
         environment : :class:`~verta.environment.Python`
             pip and apt dependencies.
-        model_api : :class:`~verta.utils.ModelAPI`
+        model_api : :class:`~verta.utils.ModelAPI`, optional
             Model API specifying the model's expected input and output
         name : str, optional
             Name of the model version. If no name is provided, one will be
