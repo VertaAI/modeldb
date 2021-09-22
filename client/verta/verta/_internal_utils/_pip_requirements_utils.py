@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import copy
 import importlib
 import re
 import subprocess
@@ -260,8 +261,7 @@ def set_version_pins(requirements):
 
 
 def pin_verta_and_cloudpickle(requirements):
-    """
-    Adds verta and cloudpickle to `requirements`, pinning their versions from the environment.
+    """Add verta and cloudpickle to `requirements`, pinning their versions from the environment.
 
     Model deserilization in most cases requires that ``verta`` and
     ``cloudpickle`` have the same versions as when the model was serialized.
@@ -270,6 +270,11 @@ def pin_verta_and_cloudpickle(requirements):
     ----------
     requirements : list of str
 
+    Returns
+    -------
+    list of str
+        Copy of `requirements` with pinned verta and cloudpickle.
+
     Raises
     ------
     ValueError
@@ -277,6 +282,8 @@ def pin_verta_and_cloudpickle(requirements):
         conflicts with the version in the current environment.
 
     """
+    requirements = copy.copy(requirements)
+
     # replace git-installed verta (`pip install -e verta`) with "verta"
     for i, req in enumerate(requirements):
         if "VertaAI/modeldb.git" in req and "#egg=verta" in req:
@@ -290,15 +297,17 @@ def pin_verta_and_cloudpickle(requirements):
             requirements[i] = __about__.__title__
             continue
 
-    # inject verta
-    inject_requirement(requirements, __about__.__title__, __about__.__version__)
+    for library, version in [
+        (__about__.__title__, __about__.__version__),  # verta
+        (cloudpickle.__name__, cloudpickle.__version__),  # cloudpickle
+    ]:
+        requirements = inject_requirement(requirements, library, version)
 
-    # inject cloudpickle
-    inject_requirement(requirements, cloudpickle.__name__, cloudpickle.__version__)
+    return requirements
 
 
 def inject_requirement(requirements, library, version):
-    """Injects `library` pinned to `version` into `requirements` in-place.
+    """Return a copy of `requirements` with `library` pinned to `version`.
 
     If `library` is already in `requirements` and has a version pin, this
     function asserts that the pinned version matches the the current
@@ -316,33 +325,38 @@ def inject_requirement(requirements, library, version):
     version : str
         Desired version number, e.g. "0.20.0".
 
+    Returns
+    -------
+    list of str
+        Copy of `requirements` with `library` pinned to `version`.
+
     """
+    requirements = copy.copy(requirements)
     pinned_library_req = "{}=={}".format(library, version)
 
-    # add if not present
-    if not any(req.startswith(library) for req in requirements):
+    if not any(req.startswith(library) for req in requirements):  # not present: add
         requirements.append(pinned_library_req)
-        return
-
-    # pin version
-    for i, req in enumerate(requirements):
-        if req.startswith(library):
-            if "==" in req:  # version pin: check version
-                their_ver = req.split('==')[-1]
-                if version != their_ver:  # versions conflict: raise exception
-                    raise ValueError(
-                        "Client is running with {} v{}, but the provided requirements specify v{};"
-                        " these must match".format(library, version, their_ver)
+    else:  # present: pin version
+        for i, req in enumerate(requirements):
+            if req.startswith(library):
+                if "==" in req:  # version pin: check version
+                    their_ver = req.split('==')[-1]
+                    if version != their_ver:  # versions conflict: raise exception
+                        raise ValueError(
+                            "Client is running with {} v{}, but the provided requirements specify v{};"
+                            " these must match".format(library, version, their_ver)
+                        )
+                    else:  # versions match: no action needed
+                        continue
+                # TODO: check other operators (>=, >, ...)
+                else:  # no version pin: set
+                    requirements[i] = preserve_req_suffixes(
+                        req,
+                        pinned_library_req,
                     )
-                else:  # versions match: no action needed
                     continue
-            # TODO: check other operators (>=, >, ...)
-            else:  # no version pin: set
-                requirements[i] = preserve_req_suffixes(
-                    req,
-                    pinned_library_req,
-                )
-                continue
+
+    return requirements
 
 
 def preserve_req_suffixes(requirement, pinned_library_req):

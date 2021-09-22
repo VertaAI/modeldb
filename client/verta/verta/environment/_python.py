@@ -225,8 +225,7 @@ class Python(_environment._Environment):
                 " not {}".format(type(requirements))
             )
 
-        requirements = copy.copy(requirements)
-        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        requirements = _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
 
         try:
             requirements_copy = copy.copy(requirements)

@@ -60,7 +60,7 @@ class TestObject:
             env_vars=env_vars,
         )
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        requirements = _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
         for line in requirements:
             assert line in repr(env)
         for line in constraints:
@@ -82,7 +82,7 @@ class TestObject:
         assert env._msg.python.raw_requirements
         assert env._msg.python.raw_constraints
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        requirements = _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
         for line in requirements:
             assert line in repr(env)
         for line in constraints:
@@ -145,7 +145,7 @@ class TestParsedRequirements:
         assert env._msg.python.requirements
         assert not env._msg.python.raw_requirements
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        reqs = _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
         assert_parsed_reqs_match(env.requirements, reqs)
 
     def test_from_files(self, requirements_file):
@@ -154,7 +154,7 @@ class TestParsedRequirements:
         assert env._msg.python.requirements
         assert not env._msg.python.raw_requirements
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        reqs = _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
         assert_parsed_reqs_match(env.requirements, reqs)
 
     def test_legacy_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
@@ -223,8 +223,7 @@ class TestRawRequirements:
             assert not env._msg.python.requirements
             assert env._msg.python.raw_requirements
 
-            expected_reqs = [req]
-            _pip_requirements_utils.pin_verta_and_cloudpickle(expected_reqs)
+            expected_reqs = _pip_requirements_utils.pin_verta_and_cloudpickle([req])
             assert env.requirements == expected_reqs
 
     def test_inject_verta_cloudpickle(self):

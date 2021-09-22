@@ -146,16 +146,25 @@ class TestPinVertaAndCloudpickle:
 
         pinned_library_req = "{}=={}".format(library, version)
 
-        requirements = []
-        _pip_requirements_utils.inject_requirement(requirements, library, version)
+        requirements = _pip_requirements_utils.inject_requirement(
+            [],
+            library,
+            version,
+        )
         assert requirements == [pinned_library_req]
 
-        requirements = [library]
-        _pip_requirements_utils.inject_requirement(requirements, library, version)
+        requirements = _pip_requirements_utils.inject_requirement(
+            [library],
+            library,
+            version,
+        )
         assert requirements == [pinned_library_req]
 
-        requirements = [other_library]
-        _pip_requirements_utils.inject_requirement(requirements, library, version)
+        requirements = _pip_requirements_utils.inject_requirement(
+            [other_library],
+            library,
+            version,
+        )
         assert requirements == [other_library, pinned_library_req]
 
     def test_preserve_req_suffixes(self):
@@ -188,5 +197,5 @@ class TestPinVertaAndCloudpickle:
             for suffix in cloudpickle_reqs_suffixes
         ]
         expected_reqs = expected_verta_reqs + expected_cloudpickle_reqs
-        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        reqs = _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
         assert reqs == expected_reqs
