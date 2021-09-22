@@ -20,8 +20,8 @@ from verta._internal_utils import (
     _histogram_utils,
     _utils,
 )
-
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta.environment import _Environment
 
 from verta.external import six
 
@@ -65,6 +65,11 @@ class _DeployableEntity(_ModelDBEntity):
             self.id,
         )
 
+    @property
+    def has_environment(self):
+        self._refresh_cache()
+        return True if self._msg.environment.WhichOneof("content") else False
+
     @abc.abstractmethod
     def _get_artifact_msg(self, key):
         """Get Artifact protobuf with `key`.
@@ -84,6 +89,35 @@ class _DeployableEntity(_ModelDBEntity):
     @abc.abstractmethod
     def _get_artifact(self, key):
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def log_environment(self, env, overwrite=False):
+        """Log an environment.
+
+        Parameters
+        ----------
+        env : :mod:`~verta.environment`
+            Environment to log.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing artifact with key `key`.
+
+        """
+        raise NotImplementedError
+
+    def get_environment(self):
+        """Get the logged environment.
+
+        Returns
+        -------
+        :mod:`~verta.environment`
+            Logged environment.
+
+        """
+        self._refresh_cache()
+        if not self.has_environment:
+            raise RuntimeError("environment was not previously set")
+
+        return _Environment._from_env_proto(self._msg.environment)
 
     @abc.abstractmethod
     def log_model(

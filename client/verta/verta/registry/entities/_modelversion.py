@@ -33,7 +33,7 @@ from verta._internal_utils import (
 from verta import utils
 
 from verta import _blob, code, data_types
-from verta.environment import _Environment, Python
+from verta.environment import _Environment
 from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
@@ -130,13 +130,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def name(self):
         self._refresh_cache()
         return self._msg.version
-
-    @property
-    def has_environment(self):
-        self._refresh_cache()
-        return self._msg.environment.HasField(
-            "python"
-        ) or self._msg.environment.HasField("docker")
 
     @property
     def has_model(self):
@@ -583,17 +576,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._update(self._msg, method="PUT")
 
     def log_environment(self, env, overwrite=False):
-        """
-        Logs an environment to this Model Version.
-
-        Parameters
-        ----------
-        env : :class:`~verta.environment.Python`
-            Environment to log.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing artifact with key `key`.
-
-        """
         if not isinstance(env, _Environment):
             raise TypeError(
                 "`env` must be of type Environment, not {}".format(type(env))
@@ -623,22 +605,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._fetch_with_no_cache()
         self._msg.ClearField("environment")
         self._update(self._msg, method="PUT")
-
-    def get_environment(self):
-        """
-        Gets the environment of this Model Version.
-
-        Returns
-        -------
-        :class:`~verta.environment.Python`
-            Environment of this ModelVersion.
-
-        """
-        self._refresh_cache()
-        if not self.has_environment:
-            raise RuntimeError("environment was not previously set.")
-
-        return Python._from_proto(self._msg)
 
     def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         if method.upper() not in ("GET", "PUT"):
