@@ -36,7 +36,7 @@ from verta.dataset.entities import (
 from verta import data_types
 from verta import deployment
 from verta import utils
-from verta.environment import Python
+from verta.environment import _Environment
 
 from ._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from ._deployable_entity import _DeployableEntity
@@ -129,11 +129,6 @@ class ExperimentRun(_DeployableEntity):
     def name(self):
         self._refresh_cache()
         return self._msg.name
-
-    @property
-    def has_environment(self):
-        self._refresh_cache()
-        return self._msg.environment.HasField("python") or self._msg.environment.HasField("docker")
 
     @classmethod
     def _generate_default_name(cls):
@@ -1672,29 +1667,15 @@ class ExperimentRun(_DeployableEntity):
         return _utils.unravel_observations(self._msg.observations)
 
     def log_environment(self, env, overwrite=False):
-        """
-        Logs a Python environment to this Experiment Run.
-
-        .. versionadded:: 0.17.1
-
-        Parameters
-        ----------
-        env : :class:`~verta.environment.Python`
-            Environment to log.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing artifact with key `key`.
-
-        """
-        if not isinstance(env, Python):
+        if not isinstance(env, _Environment):
             raise TypeError(
-                "`env` must be of type Python, not {}".format(type(env)))
+                "`env` must be of type Environment, not {}".format(type(env))
+            )
 
         if self.has_environment and not overwrite:
             raise ValueError(
                 "environment already exists; consider setting overwrite=True")
 
-        # need to call .environment on the proto object because ._as_proto produces
-        # ai.verta.modeldb.versioning.Blob, not ai.verta.modeldb.versioning.EnvironmentBlob
         msg = _ExperimentRunService.LogEnvironment(
             id=self.id, environment=env._as_env_proto())
         response = self._conn.make_proto_request(
@@ -1705,22 +1686,6 @@ class ExperimentRun(_DeployableEntity):
             self._fetch_with_no_cache()
         else:
             _utils.raise_for_http_error(response)
-
-    def get_environment(self):
-        """
-        Gets the environment of this Experiment Run.
-
-        Returns
-        -------
-        :class:`~verta.environment.Python`
-            Environment of this ExperimentRun.
-
-        """
-        self._refresh_cache()
-        if not self.has_environment:
-            raise RuntimeError("environment was not previously set")
-
-        return Python._from_proto(self._msg)
 
     def log_modules(self, paths, search_path=None):
         """
