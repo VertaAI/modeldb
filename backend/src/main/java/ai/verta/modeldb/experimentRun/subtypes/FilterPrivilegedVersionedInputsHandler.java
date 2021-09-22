@@ -37,11 +37,11 @@ public class FilterPrivilegedVersionedInputsHandler {
           List<InternalFuture<Map<String, VersioningEntry>>> internalFutureList = new ArrayList<>();
           for (String runId : runIds) {
             // Get VersionEntry from fetched map
-            VersioningEntry versioningEntry = versionedInputsMap.get(runId);
+            var versioningEntry = versionedInputsMap.get(runId);
             if (versioningEntry == null) {
               continue;
             }
-            String repoId = String.valueOf(versioningEntry.getRepositoryId());
+            var repoId = String.valueOf(versioningEntry.getRepositoryId());
             // Check repository is accessible or not from versionedInputs If not then we will remove
             // it from fetched map
             internalFutureList.add(

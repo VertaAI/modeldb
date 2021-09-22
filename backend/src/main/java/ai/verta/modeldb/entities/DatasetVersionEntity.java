@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -19,7 +20,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "dataset_version")
-public class DatasetVersionEntity {
+public class DatasetVersionEntity implements Serializable {
 
   public DatasetVersionEntity() {}
 
@@ -257,7 +258,7 @@ public class DatasetVersionEntity {
   }
 
   public DatasetVersion getProtoObject() {
-    DatasetVersion.Builder datasetVersionBuilder =
+    var datasetVersionBuilder =
         DatasetVersion.newBuilder()
             .setId(getId())
             .setParentId(getParent_id() != null ? getParent_id() : "")

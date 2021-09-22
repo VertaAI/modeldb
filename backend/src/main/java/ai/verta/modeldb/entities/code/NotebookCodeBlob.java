@@ -13,8 +13,6 @@ import javax.persistence.Table;
 @Table(name = "notebook_code_blob")
 public class NotebookCodeBlob {
 
-  public NotebookCodeBlob() {}
-
   @Id
   @Column(name = "blob_hash", nullable = false, columnDefinition = "varchar", length = 64)
   private String blob_hash;

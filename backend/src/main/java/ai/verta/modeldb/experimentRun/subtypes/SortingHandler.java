@@ -23,6 +23,9 @@ public class SortingHandler {
         return InternalFuture.completedInternalFuture(
             new QueryFilterContext()
                 .addOrderItem(new OrderColumn("experiment_run." + key, ascending)));
+      default:
+        // Do nothing
+        break;
     }
 
     String[] names = key.split("\\.");
@@ -42,6 +45,9 @@ public class SortingHandler {
         queryFilterContexts.add(configHyperparameterSoryPredicate);
         return InternalFuture.completedInternalFuture(
             QueryFilterContext.combine(queryFilterContexts));
+      default:
+        // Do nothing
+        break;
     }
 
     return InternalFuture.failedStage(new InvalidArgumentException("Sort key cannot be handled"));

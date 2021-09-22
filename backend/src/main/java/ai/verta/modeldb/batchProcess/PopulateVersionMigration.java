@@ -16,9 +16,6 @@ import java.util.List;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 
 public class PopulateVersionMigration {
   private PopulateVersionMigration() {}
@@ -39,25 +36,25 @@ public class PopulateVersionMigration {
     LOGGER.debug("DatasetVersion version migration started");
 
     Long count;
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      String repoCountQueryStr =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var repoCountQueryStr =
           "SELECT COUNT(r) FROM RepositoryEntity r WHERE r.deleted = false  AND r.datasetRepositoryMappingEntity IS NOT EMPTY ";
-      Query repoCountQuery = session.createQuery(repoCountQueryStr);
+      var repoCountQuery = session.createQuery(repoCountQueryStr);
       count = (Long) repoCountQuery.getSingleResult();
     }
 
-    int lowerBound = 0;
+    var lowerBound = 0;
     final int pagesize = recordUpdateLimit;
     LOGGER.debug("Total Datasets {}", count);
 
     while (lowerBound < count) {
-      try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
         LOGGER.debug("starting DatasetVersion version migration");
         String repoQuery =
             "SELECT r FROM RepositoryEntity r "
                 + "WHERE r.deleted = false  AND r.datasetRepositoryMappingEntity IS NOT EMPTY "
                 + "ORDER BY r.date_created";
-        Query repoTypedQuery = session.createQuery(repoQuery);
+        var repoTypedQuery = session.createQuery(repoQuery);
         repoTypedQuery.setFirstResult(lowerBound);
         repoTypedQuery.setMaxResults(pagesize);
         List<RepositoryEntity> datasetEntities = repoTypedQuery.list();
@@ -74,27 +71,27 @@ public class PopulateVersionMigration {
             String commitCountQueryStr =
                 "SELECT count(c) FROM CommitEntity c "
                     + "INNER JOIN c.repository r WHERE r.id = :datasetId  AND c.parent_commits IS NOT EMPTY ";
-            Query commitCountQuery = session.createQuery(commitCountQueryStr);
+            var commitCountQuery = session.createQuery(commitCountQueryStr);
             commitCountQuery.setParameter("datasetId", datasetId);
             Long commitCount = (Long) commitCountQuery.getSingleResult();
 
-            int commitLowerBound = 0;
+            var commitLowerBound = 0;
             final int commitPagesize = recordUpdateLimit;
             LOGGER.debug("Total DatasetVersions {}", commitCount);
 
-            long version = 0L;
+            var version = 0L;
             while (commitLowerBound < commitCount) {
               String commitQuery =
                   "SELECT c FROM CommitEntity c "
                       + "INNER JOIN c.repository r WHERE r.id = :datasetId  AND c.parent_commits IS NOT EMPTY "
                       + "ORDER BY c.date_created";
-              Query commitTypedQuery = session.createQuery(commitQuery);
+              var commitTypedQuery = session.createQuery(commitQuery);
               commitTypedQuery.setParameter("datasetId", datasetId);
               commitTypedQuery.setFirstResult(commitLowerBound);
               commitTypedQuery.setMaxResults(commitPagesize);
               List<CommitEntity> commitEntities = commitTypedQuery.list();
 
-              Transaction transaction = session.beginTransaction();
+              var transaction = session.beginTransaction();
               try {
                 for (CommitEntity commitEntity : commitEntities) {
                   List<String> location =

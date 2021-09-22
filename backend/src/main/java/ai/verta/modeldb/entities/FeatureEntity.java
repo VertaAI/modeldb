@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.modeldb.Feature;
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -13,7 +14,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "feature")
-public class FeatureEntity {
+public class FeatureEntity implements Serializable {
 
   public FeatureEntity() {}
 

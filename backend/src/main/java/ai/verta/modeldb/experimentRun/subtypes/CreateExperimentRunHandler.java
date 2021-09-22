@@ -137,7 +137,7 @@ public class CreateExperimentRunHandler {
       request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
     }
 
-    ExperimentRun.Builder experimentRunBuilder =
+    var experimentRunBuilder =
         ExperimentRun.newBuilder()
             .setId(UUID.randomUUID().toString())
             .setProjectId(request.getProjectId())
@@ -207,7 +207,7 @@ public class CreateExperimentRunHandler {
 
     // Created comma separated field names from keys of above map
     String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
-    String commaFields = String.join(",", fieldsArr);
+    var commaFields = String.join(",", fieldsArr);
 
     StringBuilder queryStrBuilder =
         new StringBuilder("insert into experiment_run ( ").append(commaFields).append(") values (");
@@ -217,7 +217,7 @@ public class CreateExperimentRunHandler {
     // keys of
     // above the map
     // Ex: VALUES (:project_id, :experiment_id, :name) etc.
-    String bindArguments =
+    var bindArguments =
         String.join(",", Arrays.stream(fieldsArr).map(s -> ":" + s).toArray(String[]::new));
 
     queryStrBuilder.append(bindArguments);
@@ -252,7 +252,7 @@ public class CreateExperimentRunHandler {
                       } catch (UnableToExecuteStatementException exception) {
                         if (exception.getCause() instanceof MySQLTransactionRollbackException) {
                           // take a brief pause before resubmitting its query/transaction
-                          Thread.sleep(config.jdbi_retry_time); // Time in ms
+                          Thread.sleep(config.getJdbi_retry_time()); // Time in ms
                           LOGGER.trace("Retry to insert ExperimentRun");
                           int count = query.execute();
                           LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
@@ -343,13 +343,15 @@ public class CreateExperimentRunHandler {
             + " AND experiment_id = :experimentId "
             + " AND deleted = :deleted ";
 
-    var query = handle.createQuery(queryStr).bind("experimentRunName", experimentRun.getName());
-    query.bind("projectId", experimentRun.getProjectId());
-    query.bind("experimentId", experimentRun.getExperimentId());
-    query.bind("deleted", false);
+    try (var query = handle.createQuery(queryStr)) {
+      query.bind("experimentRunName", experimentRun.getName());
+      query.bind("projectId", experimentRun.getProjectId());
+      query.bind("experimentId", experimentRun.getExperimentId());
+      query.bind("deleted", false);
 
-    long count = query.mapTo(Long.class).one();
-    return count > 0;
+      long count = query.mapTo(Long.class).one();
+      return count > 0;
+    }
   }
 
   private String buildRoleBindingName(

@@ -7,7 +7,7 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceImplBase;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
@@ -47,7 +47,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(AdvancedServiceImpl.class);
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final ProjectDAO projectDAO;
   private final ExperimentRunDAO experimentRunDAO;
   private final FutureExperimentRunDAO futureExperimentRunDAO;
@@ -59,7 +59,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
   public AdvancedServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
     this.authService = serviceSet.authService;
-    this.roleService = serviceSet.roleService;
+    this.mdbRoleService = serviceSet.mdbRoleService;
     this.projectDAO = daoSet.projectDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
     this.commentDAO = daoSet.commentDAO;
@@ -87,14 +87,18 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     List<String> resourceIds = new LinkedList<>();
     Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
 
+    projects.forEach(
+        project -> {
+          vertaIds.add(project.getOwner());
+          resourceIds.add(project.getId());
+        });
+
     projects
         .parallelStream()
         .forEach(
             (project) -> {
-              vertaIds.add(project.getOwner());
-              resourceIds.add(project.getId());
               List<GetCollaboratorResponseItem> projectCollaboratorList =
-                  roleService.getResourceCollaborators(
+                  mdbRoleService.getResourceCollaborators(
                       ModelDBServiceResourceTypes.PROJECT,
                       project.getId(),
                       project.getOwner(),
@@ -114,19 +118,22 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     LOGGER.trace("getHydratedProjects emailIds : {}", emailIds);
 
     Map<String, UserInfo> userInfoMap =
-        authService.getUserInfoFromAuthServer(vertaIds, emailIds, null);
+        authService.getUserInfoFromAuthServer(vertaIds, emailIds, null, false);
 
     Map<String, Actions> selfAllowedActions =
-        roleService.getSelfAllowedActionsBatch(resourceIds, ModelDBServiceResourceTypes.PROJECT);
+        mdbRoleService.getSelfAllowedActionsBatch(resourceIds, ModelDBServiceResourceTypes.PROJECT);
     for (Project project : projects) {
       // Use the map for vertaId  to UserInfo generated for this batch request to populate the
       // userInfo for individual projects.
       LOGGER.trace("Owner : {}", project.getOwner());
       List<CollaboratorUserInfo> collaboratorUserInfos =
           ModelDBUtils.getHydratedCollaboratorUserInfo(
-              authService, roleService, projectCollaboratorMap.get(project.getId()), userInfoMap);
+              authService,
+              mdbRoleService,
+              projectCollaboratorMap.get(project.getId()),
+              userInfoMap);
 
-      HydratedProject.Builder hydratedProjectBuilder =
+      var hydratedProjectBuilder =
           HydratedProject.newBuilder()
               .setProject(project)
               .addAllCollaboratorUserInfos(collaboratorUserInfos);
@@ -154,12 +161,12 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       GetHydratedProjects request, StreamObserver<GetHydratedProjects.Response> responseObserver) {
     try {
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
       ProjectPaginationDTO projectPaginationDTO;
       List<String> allowedProjectIds =
-          roleService.getSelfAllowedResources(
+          mdbRoleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
-      FindProjects findProjects =
+      var findProjects =
           FindProjects.newBuilder()
               .addAllProjectIds(allowedProjectIds)
               .setPageNumber(request.getPageNumber())
@@ -196,14 +203,14 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       StreamObserver<GetHydratedProjectById.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetHydratedProjectById request";
+        var errorMessage = "Project ID not found in GetHydratedProjectById request";
         throw new InvalidArgumentException(errorMessage);
       }
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
-      Project project = projectDAO.getProjectByID(request.getId());
+      var project = projectDAO.getProjectByID(request.getId());
       responseObserver.onNext(
           GetHydratedProjectById.Response.newBuilder()
               .setHydratedProject(getHydratedProjects(Collections.singletonList(project)).get(0))
@@ -222,14 +229,14 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       StreamObserver<GetHydratedExperimentsByProjectId.Response> responseObserver) {
     try {
       if (request.getProjectId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetHydratedExperimentsByProjectId request";
+        var errorMessage = "Project ID not found in GetHydratedExperimentsByProjectId request";
         throw new InvalidArgumentException(errorMessage);
       }
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
-      ExperimentPaginationDTO experimentPaginationDTO =
+      var experimentPaginationDTO =
           experimentDAO.getExperimentsInProject(
               projectDAO,
               request.getProjectId(),
@@ -264,15 +271,14 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       StreamObserver<GetHydratedExperimentRunsByProjectId.Response> responseObserver) {
     try {
       if (request.getProjectId().isEmpty()) {
-        String errorMessage =
-            "Project ID not found in GetHydratedExperimentRunsByProjectId request";
+        var errorMessage = "Project ID not found in GetHydratedExperimentRunsByProjectId request";
         throw new InvalidArgumentException(errorMessage);
       }
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
-      ExperimentRunPaginationDTO experimentRunPaginationDTO =
+      var experimentRunPaginationDTO =
           experimentRunDAO.getExperimentRunsFromEntity(
               projectDAO,
               ModelDBConstants.PROJECT_ID,
@@ -319,7 +325,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     Map<String, Actions> actions = new HashMap<>();
     if (projectIdSet.size() > 0) {
       actions =
-          roleService.getSelfAllowedActionsBatch(
+          mdbRoleService.getSelfAllowedActionsBatch(
               new ArrayList<>(projectIdSet), ModelDBServiceResourceTypes.PROJECT);
     }
 
@@ -341,7 +347,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
     // Fetch the experimentRun owners userInfo
     Map<String, UserInfo> userInfoMap =
-        authService.getUserInfoFromAuthServer(vertaIdList, null, null);
+        authService.getUserInfoFromAuthServer(vertaIdList, null, null, false);
 
     List<HydratedExperimentRun> hydratedExperimentRuns = new LinkedList<>();
     LOGGER.trace("hydrating experiments");
@@ -349,10 +355,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo());
     for (ExperimentRun experimentRun : experimentRuns) {
 
-      HydratedExperimentRun.Builder hydratedExperimentRunBuilder =
-          HydratedExperimentRun.newBuilder();
+      var hydratedExperimentRunBuilder = HydratedExperimentRun.newBuilder();
 
-      UserInfo userInfoValue = userInfoMap.get(experimentRun.getOwner());
+      var userInfoValue = userInfoMap.get(experimentRun.getOwner());
       LOGGER.trace("owner {}", experimentRun.getOwner());
       if (userInfoValue != null) {
         hydratedExperimentRunBuilder.setOwnerUserInfo(userInfoValue);
@@ -366,12 +371,12 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         List<Action> actionList =
             ModelDBUtils.getActionsList(new ArrayList<>(projectIdSet), actions);
         LOGGER.info("actionList {}", actionList);
-        Action deleteAction =
+        var deleteAction =
             Action.newBuilder()
                 .setModeldbServiceAction(ModelDBServiceActions.DELETE)
                 .setService(Service.MODELDB_SERVICE)
                 .build();
-        Action updateAction =
+        var updateAction =
             Action.newBuilder()
                 .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
                 .setService(Service.MODELDB_SERVICE)
@@ -391,14 +396,14 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         LOGGER.info(ModelDBMessages.USER_NOT_FOUND_ERROR_MSG, experimentRun.getOwner());
       }
       // Prepare experiment for hydratedExperimentRun
-      Experiment hydratedExperiment =
+      var hydratedExperiment =
           Experiment.newBuilder()
               .setName(experimentMap.get(experimentRun.getExperimentId()).getName())
               .build();
       LOGGER.trace("hydratedExperiment {}", hydratedExperiment);
       hydratedExperimentRunBuilder.setExperimentRun(experimentRun);
       hydratedExperimentRunBuilder.setExperiment(hydratedExperiment);
-      HydratedExperimentRun hydratedExperimentRun = hydratedExperimentRunBuilder.build();
+      var hydratedExperimentRun = hydratedExperimentRunBuilder.build();
       LOGGER.trace("hydratedExperimentRun {}", hydratedExperimentRun);
       hydratedExperimentRuns.add(hydratedExperimentRun);
     }
@@ -413,18 +418,18 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       StreamObserver<GetHydratedExperimentRunById.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
-        String errorMessage = "ExperimentRun ID not found in GetHydratedExperimentRunById request";
+        var errorMessage = "ExperimentRun ID not found in GetHydratedExperimentRunById request";
         throw new InvalidArgumentException(errorMessage);
       }
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
-      UserInfo currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
 
-      FindExperimentRuns findExperimentRuns =
+      var findExperimentRuns =
           FindExperimentRuns.newBuilder()
               .addExperimentRunIds(request.getId())
               .setPageLimit(1)
@@ -444,8 +449,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRunsList());
       }
 
-      GetHydratedExperimentRunById.Response.Builder response =
-          GetHydratedExperimentRunById.Response.newBuilder();
+      var response = GetHydratedExperimentRunById.Response.newBuilder();
       if (!hydratedExperimentRuns.isEmpty()) {
         if (hydratedExperimentRuns.size() > 1) {
           LOGGER.warn(
@@ -472,16 +476,16 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       LOGGER.trace("got current logged in user info");
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
-        roleService.validateEntityUserWithUserInfo(
+        mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT,
             request.getProjectId(),
             ModelDBServiceActions.READ);
 
         LOGGER.trace("Validated project accessibility");
       } else if (!request.getExperimentId().isEmpty()) {
-        Experiment experiment = experimentDAO.getExperiment(request.getExperimentId());
+        var experiment = experimentDAO.getExperiment(request.getExperimentId());
         // Validate if current user has access to the entity or not
-        roleService.validateEntityUserWithUserInfo(
+        mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT,
             experiment.getProjectId(),
             ModelDBServiceActions.READ);
@@ -544,8 +548,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      ExperimentRunPaginationDTO experimentRunPaginationDTO =
-          experimentRunDAO.sortExperimentRuns(projectDAO, request);
+      var experimentRunPaginationDTO = experimentRunDAO.sortExperimentRuns(projectDAO, request);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
@@ -575,14 +578,14 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     try {
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
-        roleService.validateEntityUserWithUserInfo(
+        mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT,
             request.getProjectId(),
             ModelDBServiceActions.READ);
       } else if (!request.getExperimentId().isEmpty()) {
-        Experiment experiment = experimentDAO.getExperiment(request.getExperimentId());
+        var experiment = experimentDAO.getExperiment(request.getExperimentId());
         // Validate if current user has access to the entity or not
-        roleService.validateEntityUserWithUserInfo(
+        mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT,
             experiment.getProjectId(),
             ModelDBServiceActions.READ);
@@ -613,7 +616,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   private List<HydratedExperiment> getHydratedExperiments(
       String projectId, List<Experiment> experiments) {
     Map<String, Actions> actions =
-        roleService.getSelfAllowedActionsBatch(
+        mdbRoleService.getSelfAllowedActionsBatch(
             Collections.singletonList(projectId), ModelDBServiceResourceTypes.PROJECT);
     LOGGER.debug("experiments count in getHydratedExperiments method : {}", experiments.size());
     Set<String> vertaIdList = new HashSet<>();
@@ -623,28 +626,27 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
     // Fetch the experiment owners userInfo
     Map<String, UserInfo> userInfoMap =
-        authService.getUserInfoFromAuthServer(vertaIdList, null, null);
+        authService.getUserInfoFromAuthServer(vertaIdList, null, null, false);
 
     String currentUserVertaID =
         authService.getVertaIdFromUserInfo(authService.getCurrentLoginUserInfo());
     List<HydratedExperiment> hydratedExperiments = new LinkedList<>();
     for (Experiment experiment : experiments) {
-      HydratedExperiment.Builder hydratedExperimentBuilder =
-          HydratedExperiment.newBuilder().setExperiment(experiment);
+      var hydratedExperimentBuilder = HydratedExperiment.newBuilder().setExperiment(experiment);
 
-      UserInfo userInfoValue = userInfoMap.get(experiment.getOwner());
+      var userInfoValue = userInfoMap.get(experiment.getOwner());
       if (userInfoValue != null) {
         hydratedExperimentBuilder.setOwnerUserInfo(userInfoValue);
         List<Action> actionList = new LinkedList<>();
         if (actions != null && actions.size() > 0) {
           actionList = ModelDBUtils.getActionsList(Collections.singletonList(projectId), actions);
         }
-        Action deleteAction =
+        var deleteAction =
             Action.newBuilder()
                 .setModeldbServiceAction(ModelDBServiceActions.DELETE)
                 .setService(Service.MODELDB_SERVICE)
                 .build();
-        Action updateAction =
+        var updateAction =
             Action.newBuilder()
                 .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
                 .setService(Service.MODELDB_SERVICE)
@@ -670,15 +672,14 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     try {
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
-        roleService.validateEntityUserWithUserInfo(
+        mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT,
             request.getProjectId(),
             ModelDBServiceActions.READ);
       }
 
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      ExperimentPaginationDTO experimentPaginationDTO =
-          experimentDAO.findExperiments(projectDAO, userInfo, request);
+      var userInfo = authService.getCurrentLoginUserInfo();
+      var experimentPaginationDTO = experimentDAO.findExperiments(projectDAO, userInfo, request);
       LOGGER.debug(
           "ExperimentPaginationDTO record count : {}", experimentPaginationDTO.getTotalRecords());
 
@@ -712,9 +713,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       FindProjects request, StreamObserver<AdvancedQueryProjectsResponse> responseObserver) {
     try {
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
-      ProjectPaginationDTO projectPaginationDTO =
+      var projectPaginationDTO =
           projectDAO.findProjects(request, null, userInfo, ResourceVisibility.PRIVATE);
       LOGGER.debug(
           ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectPaginationDTO.getTotalRecords());
@@ -753,14 +754,18 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
     List<String> resourceIds = new LinkedList<>();
 
+    datasets.forEach(
+        dataset -> {
+          vertaIds.add(dataset.getOwner());
+          resourceIds.add(dataset.getId());
+        });
+
     datasets
         .parallelStream()
         .forEach(
             (dataset) -> {
-              vertaIds.add(dataset.getOwner());
-              resourceIds.add(dataset.getId());
               List<GetCollaboratorResponseItem> datasetCollaboratorList =
-                  roleService.getResourceCollaborators(
+                  mdbRoleService.getResourceCollaborators(
                       ModelDBServiceResourceTypes.DATASET,
                       dataset.getId(),
                       dataset.getOwner(),
@@ -779,21 +784,24 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     LOGGER.trace("getHydratedDatasets emailIds : {}", emailIds.size());
 
     Map<String, UserInfo> userInfoMap =
-        authService.getUserInfoFromAuthServer(vertaIds, emailIds, null);
+        authService.getUserInfoFromAuthServer(vertaIds, emailIds, null, false);
 
     LOGGER.trace("Got results from UAC : {}", userInfoMap.size());
 
     Map<String, Actions> selfAllowedActions =
-        roleService.getSelfAllowedActionsBatch(resourceIds, ModelDBServiceResourceTypes.DATASET);
+        mdbRoleService.getSelfAllowedActionsBatch(resourceIds, ModelDBServiceResourceTypes.DATASET);
 
     for (Dataset dataset : datasets) {
       // Use the map for vertaId  to UserInfo generated for this batch request to populate the
       // userInfo for individual datasets.
       List<CollaboratorUserInfo> collaboratorUserInfos =
           ModelDBUtils.getHydratedCollaboratorUserInfo(
-              authService, roleService, datasetCollaboratorMap.get(dataset.getId()), userInfoMap);
+              authService,
+              mdbRoleService,
+              datasetCollaboratorMap.get(dataset.getId()),
+              userInfoMap);
 
-      HydratedDataset.Builder hydratedDatasetBuilder =
+      var hydratedDatasetBuilder =
           HydratedDataset.newBuilder()
               .setDataset(dataset)
               .addAllCollaboratorUserInfos(collaboratorUserInfos);
@@ -809,7 +817,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         hydratedDatasetBuilder.addAllAllowedActions(
             selfAllowedActions.get(dataset.getId()).getActionsList());
       }
-      HydratedDataset hydratedDataset = hydratedDatasetBuilder.build();
+      var hydratedDataset = hydratedDatasetBuilder.build();
 
       hydratedDatasets.add(hydratedDataset);
     }
@@ -835,8 +843,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       FindDatasets request, StreamObserver<AdvancedQueryDatasetsResponse> responseObserver) {
     try {
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      DatasetPaginationDTO datasetPaginationDTO =
+      var userInfo = authService.getCurrentLoginUserInfo();
+      var datasetPaginationDTO =
           datasetDAO.findDatasets(request, userInfo, ResourceVisibility.PRIVATE);
       LOGGER.debug(
           ModelDBMessages.DATASET_RECORD_COUNT_MSG, datasetPaginationDTO.getTotalRecords());
@@ -857,15 +865,15 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   }
 
   private HydratedDatasetVersion getHydratedDatasetVersion(DatasetVersion datasetVersion) {
-    UserInfo ownerUserInfo =
+    var ownerUserInfo =
         authService.getUserInfo(datasetVersion.getOwner(), CommonConstants.UserIdentifier.VERTA_ID);
 
     Map<String, Actions> selfAllowedActions =
-        roleService.getSelfAllowedActionsBatch(
+        mdbRoleService.getSelfAllowedActionsBatch(
             Collections.singletonList(datasetVersion.getDatasetId()),
             ModelDBServiceResourceTypes.DATASET);
 
-    HydratedDatasetVersion.Builder hydratedDatasetVersionBuilder =
+    var hydratedDatasetVersionBuilder =
         HydratedDatasetVersion.newBuilder().setDatasetVersion(datasetVersion);
     if (ownerUserInfo != null) {
       hydratedDatasetVersionBuilder.setOwnerUserInfo(ownerUserInfo);
@@ -875,12 +883,12 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           new ArrayList<Action>(
               selfAllowedActions.get(datasetVersion.getDatasetId()).getActionsList());
       if (ownerUserInfo != null) {
-        Action deleteAction =
+        var deleteAction =
             Action.newBuilder()
                 .setModeldbServiceAction(ModelDBServiceActions.DELETE)
                 .setService(Service.MODELDB_SERVICE)
                 .build();
-        Action updateAction =
+        var updateAction =
             Action.newBuilder()
                 .setModeldbServiceAction(ModelDBServiceActions.UPDATE)
                 .setService(Service.MODELDB_SERVICE)
@@ -902,11 +910,11 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       StreamObserver<AdvancedQueryDatasetVersionsResponse> responseObserver) {
     try {
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
       if (!request.getDatasetId().isEmpty()) {
         // Validate if current user has access to the entity or not
-        roleService.validateEntityUserWithUserInfo(
+        mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.DATASET,
             request.getDatasetId(),
             ModelDBServiceActions.READ);
@@ -949,12 +957,12 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       StreamObserver<GetHydratedDatasetByName.Response> responseObserver) {
     try {
       if (request.getName().isEmpty()) {
-        String errorMessage = "Dataset Name not found in GetHydratedDatasetByName request";
+        var errorMessage = "Dataset Name not found in GetHydratedDatasetByName request";
         throw new InvalidArgumentException(errorMessage);
       }
 
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
       FindDatasets.Builder findDatasets =
           FindDatasets.newBuilder()
@@ -970,7 +978,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                       ? authService.getUsernameFromUserInfo(userInfo)
                       : request.getWorkspaceName());
 
-      DatasetPaginationDTO datasetPaginationDTO =
+      var datasetPaginationDTO =
           datasetDAO.findDatasets(findDatasets.build(), userInfo, ResourceVisibility.PRIVATE);
 
       if (datasetPaginationDTO.getTotalRecords() == 0) {
@@ -1017,7 +1025,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       CollaboratorBase host,
       ResourceVisibility visibility) {
 
-    ProjectPaginationDTO projectPaginationDTO =
+    var projectPaginationDTO =
         projectDAO.findProjects(findProjectsRequest, host, currentLoginUserInfo, visibility);
     LOGGER.debug(ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectPaginationDTO.getTotalRecords());
 
@@ -1048,13 +1056,13 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       CollaboratorUser hostCollaboratorBase = null;
       String userEmail = request.getEmail();
       if (!userEmail.isEmpty() && ModelDBUtils.isValidEmail(userEmail)) {
-        UserInfo hostUserInfo =
+        var hostUserInfo =
             authService.getUserInfo(userEmail, CommonConstants.UserIdentifier.EMAIL_ID);
         hostCollaboratorBase = new CollaboratorUser(authService, hostUserInfo);
       } else if (!userEmail.isEmpty()) {
         errorMessage = "Invalid email found in the FindHydratedPublicProjects request";
       } else if (!request.getVertaId().isEmpty()) {
-        UserInfo hostUserInfo =
+        var hostUserInfo =
             authService.getUserInfo(request.getVertaId(), CommonConstants.UserIdentifier.VERTA_ID);
         hostCollaboratorBase = new CollaboratorUser(authService, hostUserInfo);
       }
@@ -1092,9 +1100,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
       GeneratedMessageV3 hostOrgInfo;
       if (!request.getId().isEmpty()) {
-        hostOrgInfo = roleService.getOrgById(request.getId());
+        hostOrgInfo = mdbRoleService.getOrgById(request.getId());
       } else {
-        hostOrgInfo = roleService.getOrgByName(request.getName());
+        hostOrgInfo = mdbRoleService.getOrgByName(request.getName());
       }
 
       responseObserver.onNext(
@@ -1127,9 +1135,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
       GeneratedMessageV3 hostTeamInfo;
       if (!request.getId().isEmpty()) {
-        hostTeamInfo = roleService.getTeamById(request.getId());
+        hostTeamInfo = mdbRoleService.getTeamById(request.getId());
       } else {
-        hostTeamInfo = roleService.getTeamByName(request.getOrgId(), request.getName());
+        hostTeamInfo = mdbRoleService.getTeamByName(request.getOrgId(), request.getName());
       }
 
       responseObserver.onNext(
@@ -1168,11 +1176,11 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       StreamObserver<GetHydratedDatasetsByProjectId.Response> responseObserver) {
     try {
       if (request.getProjectId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetHydratedDatasetsByProjectId request";
+        var errorMessage = "Project ID not found in GetHydratedDatasetsByProjectId request";
         throw new InvalidArgumentException(errorMessage);
       }
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
       List<ExperimentRun> experimentRuns =
@@ -1181,7 +1189,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
       LOGGER.debug("ExperimentRun list record count : {}", experimentRuns.size());
       List<HydratedDataset> hydratedDatasets = new ArrayList<>();
-      long totalRecords = 0L;
+      var totalRecords = 0L;
       if (!experimentRuns.isEmpty()) {
         Set<String> datasetVersionIdSet = new HashSet<>();
         for (ExperimentRun experimentRun : experimentRuns) {
@@ -1207,7 +1215,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             "Dataset ids count based on the dataset version founded from experimentRun : "
                 + datasetIdSet.size());
         if (!datasetIdSet.isEmpty()) {
-          FindDatasets findDatasetsRequest =
+          var findDatasetsRequest =
               FindDatasets.newBuilder()
                   .addAllDatasetIds(datasetIdSet)
                   .setPageNumber(request.getPageNumber())
@@ -1216,8 +1224,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
                   .setSortKey(request.getSortKey())
                   .build();
           // Get the user info from the Context
-          UserInfo userInfo = authService.getCurrentLoginUserInfo();
-          DatasetPaginationDTO datasetPaginationDTO =
+          var userInfo = authService.getCurrentLoginUserInfo();
+          var datasetPaginationDTO =
               datasetDAO.findDatasets(findDatasetsRequest, userInfo, ResourceVisibility.PRIVATE);
           LOGGER.debug(
               ModelDBMessages.DATASET_RECORD_COUNT_MSG, datasetPaginationDTO.getTotalRecords());

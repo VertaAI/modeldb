@@ -18,7 +18,7 @@ public class S3DatasetComponentBlobEntity {
   public S3DatasetComponentBlobEntity(
       String blobHash, String blobHashDataset, S3DatasetComponentBlob s3DatasetComponentBlob) {
 
-    PathDatasetComponentBlob pathDatasetComponentBlob = s3DatasetComponentBlob.getPath();
+    var pathDatasetComponentBlob = s3DatasetComponentBlob.getPath();
     this.id = new S3DatasetComponentBlobId(blobHash, blobHashDataset);
     this.path = pathDatasetComponentBlob.getPath();
     this.size = pathDatasetComponentBlob.getSize();

@@ -79,7 +79,7 @@ public class TestsInit {
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     testConfig = TestConfig.getInstance();
-    handleExecutor = FutureGrpc.initializeExecutor(testConfig.grpcServer.threadCount);
+    handleExecutor = FutureGrpc.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
     // Initialize services that we depend on
     services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
     authService = services.authService;
@@ -87,7 +87,7 @@ public class TestsInit {
     DAOSet daos =
         DAOSet.fromServices(
             services, testConfig.getJdbi(), handleExecutor, testConfig, testConfig.trial);
-    App.migrate(testConfig.database, testConfig.migrations);
+    App.migrate(testConfig.getDatabase(), testConfig.migrations);
 
     App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
     serverBuilder.intercept(new MetadataForwarder());
@@ -103,12 +103,15 @@ public class TestsInit {
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
-    deleteEntitiesCron = new DeleteEntitiesCron(services.authService, services.roleService, 1000);
+    deleteEntitiesCron =
+        new DeleteEntitiesCron(services.authService, services.mdbRoleService, 1000);
 
-    if (testConfig.authService != null) {
+    if (testConfig.getAuthService() != null) {
       ManagedChannel authServiceChannel =
           ManagedChannelBuilder.forTarget(
-                  testConfig.authService.host + ":" + testConfig.authService.port)
+                  testConfig.getAuthService().getHost()
+                      + ":"
+                      + testConfig.getAuthService().getPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
@@ -119,7 +122,9 @@ public class TestsInit {
 
       ManagedChannel authServiceChannelClient2 =
           ManagedChannelBuilder.forTarget(
-                  testConfig.authService.host + ":" + testConfig.authService.port)
+                  testConfig.getAuthService().getHost()
+                      + ":"
+                      + testConfig.getAuthService().getPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient2AuthInterceptor())
               .build();

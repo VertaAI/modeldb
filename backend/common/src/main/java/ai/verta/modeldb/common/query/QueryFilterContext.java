@@ -89,8 +89,7 @@ public class QueryFilterContext {
   }
 
   private static long calculateOffset(long pageIndex, long pageLimit) {
-    final var offset = pageLimit * pageIndex;
-    return offset;
+    return pageLimit * pageIndex;
   }
 
   public String getLimitString() {

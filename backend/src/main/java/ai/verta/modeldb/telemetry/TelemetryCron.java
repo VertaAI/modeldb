@@ -12,7 +12,6 @@ import com.google.protobuf.Value;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -21,8 +20,6 @@ import java.util.List;
 import java.util.TimerTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
 
 public class TelemetryCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(TelemetryCron.class);
@@ -50,7 +47,7 @@ public class TelemetryCron extends TimerTask {
     }
 
     if (telemetryDataList.size() > 0 && TelemetryUtils.telemetryUniqueIdentifier != null) {
-      CollectTelemetry collectTelemetry =
+      var collectTelemetry =
           CollectTelemetry.newBuilder()
               .setId(TelemetryUtils.telemetryUniqueIdentifier)
               .addAllMetrics(telemetryDataList)
@@ -66,17 +63,17 @@ public class TelemetryCron extends TimerTask {
         httpClient.setRequestProperty("Accept", "application/json");
         httpClient.setRequestProperty("grpc-metadata-source", "PythonClient");
 
-        try (OutputStream os = httpClient.getOutputStream()) {
+        try (var os = httpClient.getOutputStream()) {
           os.write(ModelDBUtils.getStringFromProtoObject(collectTelemetry).getBytes());
         }
 
         int responseCode = httpClient.getResponseCode();
         LOGGER.info("POST Response Code :: {}", responseCode);
 
-        try (BufferedReader br =
+        try (var br =
             new BufferedReader(
                 new InputStreamReader(httpClient.getInputStream(), StandardCharsets.UTF_8))) {
-          StringBuilder response = new StringBuilder();
+          var response = new StringBuilder();
           String responseLine;
           while ((responseLine = br.readLine()) != null) {
             response.append(responseLine.trim());
@@ -94,10 +91,10 @@ public class TelemetryCron extends TimerTask {
   private List<KeyValue> collectTelemetryDataFromDB() {
     // Get new telemetry data from database
     List<KeyValue> telemetryDataList = new ArrayList<>();
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery("select count(*) from ProjectEntity");
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var query = session.createQuery("select count(*) from ProjectEntity");
       Long projectCount = (Long) query.uniqueResult();
-      KeyValue projectCountKeyValue =
+      var projectCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.PROJECTS)
               .setValue(Value.newBuilder().setNumberValue(projectCount).build())
@@ -107,7 +104,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from ExperimentEntity");
       Long experimentCount = (Long) query.uniqueResult();
-      KeyValue experimentCountKeyValue =
+      var experimentCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.EXPERIMENTS)
               .setValue(Value.newBuilder().setNumberValue(experimentCount).build())
@@ -117,7 +114,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from ExperimentRunEntity");
       Long experimentRunCount = (Long) query.uniqueResult();
-      KeyValue experimentRunCountKeyValue =
+      var experimentRunCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.EXPERIMENT_RUNS)
               .setValue(Value.newBuilder().setNumberValue(experimentRunCount).build())
@@ -127,7 +124,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from DatasetEntity");
       Long datasetCount = (Long) query.uniqueResult();
-      KeyValue datasetCountKeyValue =
+      var datasetCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.DATASETS)
               .setValue(Value.newBuilder().setNumberValue(datasetCount).build())
@@ -137,7 +134,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from DatasetVersionEntity");
       Long datasetVersionCount = (Long) query.uniqueResult();
-      KeyValue datasetVersionCountKeyValue =
+      var datasetVersionCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.DATASETS_VERSIONS)
               .setValue(Value.newBuilder().setNumberValue(datasetVersionCount).build())
@@ -147,7 +144,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from CommentEntity");
       Long commentCount = (Long) query.uniqueResult();
-      KeyValue commentCountKeyValue =
+      var commentCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.COMMENTS)
               .setValue(Value.newBuilder().setNumberValue(commentCount).build())
@@ -157,7 +154,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from CodeVersionEntity");
       Long codeVersionCount = (Long) query.uniqueResult();
-      KeyValue codeVersionCountKeyValue =
+      var codeVersionCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.CODEVERSIONS)
               .setValue(Value.newBuilder().setNumberValue(codeVersionCount).build())
@@ -167,7 +164,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from AttributeEntity");
       Long attributeCount = (Long) query.uniqueResult();
-      KeyValue attributeCountKeyValue =
+      var attributeCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.ATTRIBUTES)
               .setValue(Value.newBuilder().setNumberValue(attributeCount).build())
@@ -177,7 +174,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from ArtifactEntity");
       Long artifactsCount = (Long) query.uniqueResult();
-      KeyValue artifactsCountKeyValue =
+      var artifactsCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.ARTIFACTS)
               .setValue(Value.newBuilder().setNumberValue(artifactsCount).build())
@@ -187,7 +184,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from FeatureEntity");
       Long featuresCount = (Long) query.uniqueResult();
-      KeyValue featuresCountKeyValue =
+      var featuresCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.FEATURES)
               .setValue(Value.newBuilder().setNumberValue(featuresCount).build())
@@ -197,7 +194,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from GitSnapshotEntity");
       Long gitSnapshotCount = (Long) query.uniqueResult();
-      KeyValue gitSnapshotCountKeyValue =
+      var gitSnapshotCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.GIT_SNAPSHOTS)
               .setValue(Value.newBuilder().setNumberValue(gitSnapshotCount).build())
@@ -207,7 +204,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from KeyValueEntity");
       Long keyValueCount = (Long) query.uniqueResult();
-      KeyValue keyValueCountKeyValue =
+      var keyValueCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.KEY_VALUES)
               .setValue(Value.newBuilder().setNumberValue(keyValueCount).build())
@@ -217,7 +214,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from ObservationEntity");
       Long observationCount = (Long) query.uniqueResult();
-      KeyValue observationCountKeyValue =
+      var observationCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.OBSERVATIONS)
               .setValue(Value.newBuilder().setNumberValue(observationCount).build())
@@ -227,7 +224,7 @@ public class TelemetryCron extends TimerTask {
 
       query = session.createQuery("select count(*) from TagsMapping");
       Long tagMappingsCount = (Long) query.uniqueResult();
-      KeyValue tagMappingsCountKeyValue =
+      var tagMappingsCountKeyValue =
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.TAG_MAPPINGS)
               .setValue(Value.newBuilder().setNumberValue(tagMappingsCount).build())

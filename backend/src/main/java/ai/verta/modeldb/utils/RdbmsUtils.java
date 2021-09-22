@@ -4,10 +4,10 @@ import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.*;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
@@ -24,7 +24,6 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
-import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
@@ -41,8 +40,6 @@ import org.hibernate.query.Query;
 
 public class RdbmsUtils {
 
-  private RdbmsUtils() {}
-
   private static final Logger LOGGER = LogManager.getLogger(RdbmsUtils.class);
   private static final String MAX_EPOCH_NUMBER_SQL_1 =
       "select max(o.epoch_number) From (select keyvaluemapping_id, epoch_number from observation where experiment_run_id ='";
@@ -50,6 +47,7 @@ public class RdbmsUtils {
       "' and entity_name = 'ExperimentRunEntity') o, (select id from keyvalue where kv_key ='";
   private static final String MAX_EPOCH_NUMBER_SQL_3 =
       "' and  entity_name IS NULL) k where o.keyvaluemapping_id = k.id ";
+  private static final String AND_QUERY_OPERATOR = " AND ";
 
   public static JobEntity generateJobEntity(Job job) {
     return new JobEntity(job);
@@ -61,7 +59,9 @@ public class RdbmsUtils {
 
   // TODO: delete as it seems unused
   public static List<Project> convertProjectsFromProjectEntityList(
-      RoleService roleService, AuthService authService, List<ProjectEntity> projectEntityList) {
+      MDBRoleService mdbRoleService,
+      AuthService authService,
+      List<ProjectEntity> projectEntityList) {
     List<Project> projects = new ArrayList<>();
     if (projectEntityList != null) {
       Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
@@ -69,7 +69,7 @@ public class RdbmsUtils {
       for (ProjectEntity projectEntity : projectEntityList) {
         projects.add(
             projectEntity.getProtoObject(
-                roleService, authService, cacheWorkspaceMap, getResourcesMap));
+                mdbRoleService, authService, cacheWorkspaceMap, getResourcesMap));
       }
     }
     return projects;
@@ -115,7 +115,7 @@ public class RdbmsUtils {
     List<AttributeEntity> attributeList = new ArrayList<>();
     if (attributes != null) {
       for (KeyValue attribute : attributes) {
-        AttributeEntity attributeEntity = generateAttributeEntity(entity, fieldType, attribute);
+        var attributeEntity = generateAttributeEntity(entity, fieldType, attribute);
         attributeList.add(attributeEntity);
       }
     }
@@ -148,7 +148,7 @@ public class RdbmsUtils {
     List<KeyValueEntity> attributeList = new ArrayList<>();
     if (keyValueList != null) {
       for (KeyValue keyValue : keyValueList) {
-        KeyValueEntity keyValueEntity = generateKeyValueEntity(entity, fieldType, keyValue);
+        var keyValueEntity = generateKeyValueEntity(entity, fieldType, keyValue);
         attributeList.add(keyValueEntity);
       }
     }
@@ -225,7 +225,7 @@ public class RdbmsUtils {
         BigInteger maxEpochNumber = (BigInteger) sqlQuery.uniqueResult();
         Long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber.longValue() + 1;
 
-        Observation new_observation =
+        var new_observation =
             Observation.newBuilder(observation)
                 .setEpochNumber(Value.newBuilder().setNumberValue(newEpochValue))
                 .build();
@@ -255,7 +255,7 @@ public class RdbmsUtils {
     if (observationList != null) {
       LOGGER.trace("observationList size {}", observationList.size());
       for (Observation observation : observationList) {
-        ObservationEntity observationEntity =
+        var observationEntity =
             generateObservationEntity(
                 session, entity, fieldType, observation, entity_name, entity_id);
         observationEntityList.add(observationEntity);
@@ -294,7 +294,7 @@ public class RdbmsUtils {
     List<TagsMapping> tagsMappings = new ArrayList<>();
     if (tagsList != null) {
       for (String tag : tagsList) {
-        TagsMapping tagsMapping = new TagsMapping(entity, tag);
+        var tagsMapping = new TagsMapping(entity, tag);
         tagsMappings.add(tagsMapping);
       }
     }
@@ -313,7 +313,7 @@ public class RdbmsUtils {
     List<FeatureEntity> featureEntities = new ArrayList<>();
     if (features != null) {
       for (Feature feature : features) {
-        FeatureEntity featureEntity = new FeatureEntity(entity, feature);
+        var featureEntity = new FeatureEntity(entity, feature);
         featureEntities.add(featureEntity);
       }
     }
@@ -336,11 +336,11 @@ public class RdbmsUtils {
   }
 
   public static List<Dataset> convertDatasetsFromDatasetEntityList(
-      RoleService roleService, List<DatasetEntity> datasetEntityList) {
+      MDBRoleService mdbRoleService, List<DatasetEntity> datasetEntityList) {
     List<Dataset> datasets = new ArrayList<>();
     if (datasetEntityList != null) {
       for (DatasetEntity datasetEntity : datasetEntityList) {
-        datasets.add(datasetEntity.getProtoObject(roleService));
+        datasets.add(datasetEntity.getProtoObject(mdbRoleService));
       }
     }
     return datasets;
@@ -423,8 +423,7 @@ public class RdbmsUtils {
     List<QueryParameterEntity> queryParameterEntityList = new ArrayList<>();
     if (queryParameterList != null) {
       for (QueryParameter keyValue : queryParameterList) {
-        QueryParameterEntity keyValueEntity =
-            generateQueryParameterEntity(entity, fieldType, keyValue);
+        var keyValueEntity = generateQueryParameterEntity(entity, fieldType, keyValue);
         queryParameterEntityList.add(keyValueEntity);
       }
     }
@@ -498,8 +497,8 @@ public class RdbmsUtils {
       Boolean order,
       String sortBy,
       Boolean isNeedTotalCount) {
-    String alias = "entity";
-    StringBuilder finalQueryBuilder = new StringBuilder();
+    var alias = "entity";
+    var finalQueryBuilder = new StringBuilder();
     StringBuilder countQueryBuilder =
         new StringBuilder("SELECT COUNT (")
             .append(alias)
@@ -509,7 +508,7 @@ public class RdbmsUtils {
 
     if (projectionFields != null && !projectionFields.isEmpty()) {
       finalQueryBuilder.append("SELECT ");
-      int index = 1;
+      var index = 1;
       for (String selectedField : projectionFields) {
         finalQueryBuilder.append(alias).append(".");
         finalQueryBuilder.append(selectedField);
@@ -527,7 +526,7 @@ public class RdbmsUtils {
     if (whereClauseParam != null && whereClauseParam.size() > 0) {
       finalQueryBuilder.append(" WHERE ");
       countQueryBuilder.append(" WHERE ");
-      int index = 1;
+      var index = 1;
       for (Map.Entry<String, Object[]> entityFieldEntry : whereClauseParam.entrySet()) {
         Object[] operatorWithValueArr = entityFieldEntry.getValue();
         finalQueryBuilder.append(" ").append(alias).append(".").append(entityFieldEntry.getKey());
@@ -544,21 +543,21 @@ public class RdbmsUtils {
             .append(entityFieldEntry.getKey());
 
         if (index < whereClauseParam.size()) {
-          finalQueryBuilder.append(" AND ");
-          countQueryBuilder.append(" AND ");
+          finalQueryBuilder.append(AND_QUERY_OPERATOR);
+          countQueryBuilder.append(AND_QUERY_OPERATOR);
           index++;
         }
       }
     }
 
     finalQueryBuilder
-        .append(" AND ")
+        .append(AND_QUERY_OPERATOR)
         .append(alias)
         .append(".")
         .append(ModelDBConstants.DELETED)
         .append(" = false ");
     countQueryBuilder
-        .append(" AND ")
+        .append(AND_QUERY_OPERATOR)
         .append(alias)
         .append(".")
         .append(ModelDBConstants.DELETED)
@@ -584,7 +583,7 @@ public class RdbmsUtils {
           .append(ModelDBConstants.ORDER_DESC);
     }
 
-    Query query = session.createQuery(finalQueryBuilder.toString());
+    var query = session.createQuery(finalQueryBuilder.toString());
     if (pageNumber != null && pageLimit != null && pageNumber != 0 && pageLimit != 0) {
       // Calculate number of documents to skip
       int skips = pageLimit * (pageNumber - 1);
@@ -604,13 +603,13 @@ public class RdbmsUtils {
       }
     }
 
-    List entityList = query.list();
+    var entityList = query.list();
 
     Map<String, Object> dataWithCountMap = new HashMap<>();
     dataWithCountMap.put(ModelDBConstants.DATA_LIST, entityList);
 
     if (isNeedTotalCount) {
-      Query countQuery = session.createQuery(countQueryBuilder.toString());
+      var countQuery = session.createQuery(countQueryBuilder.toString());
       if (whereClauseParam != null && whereClauseParam.size() > 0) {
         for (Map.Entry<String, Object[]> entityFieldEntry : whereClauseParam.entrySet()) {
           Object[] operatorWithValueArr = entityFieldEntry.getValue();
@@ -709,8 +708,8 @@ public class RdbmsUtils {
       KeyValueQuery keyValueQuery,
       boolean stringColumn) {
 
-    Value value = keyValueQuery.getValue();
-    Operator operator = keyValueQuery.getOperator();
+    var value = keyValueQuery.getValue();
+    var operator = keyValueQuery.getOperator();
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
         LOGGER.debug("Called switch case : number_value");
@@ -720,7 +719,7 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (App.getInstance().config.database.RdbConfiguration.isPostgres()) {
+        if (App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isPostgres()) {
           if (stringColumn) {
 
             return getOperatorPredicate(
@@ -763,10 +762,10 @@ public class RdbmsUtils {
         return getOperatorPredicate(builder, valueExpression, operator, value.getBoolValue());
       case LIST_VALUE:
         List<Object> valueList = new ArrayList<>();
-        ListValue listValue = value.getListValue();
+        var listValue = value.getListValue();
         for (Value item : listValue.getValuesList()) {
           if (item.getKindCase().ordinal() == Value.KindCase.STRING_VALUE.ordinal()) {
-            String stringValue = item.getStringValue();
+            var stringValue = item.getStringValue();
             valueList.add(stringValue);
           } else if (item.getKindCase().ordinal() == Value.KindCase.NUMBER_VALUE.ordinal()) {
             Double doubleValue = item.getNumberValue();
@@ -811,7 +810,7 @@ public class RdbmsUtils {
     Expression<?> orderByExpression;
     switch (keys[0]) {
       case ModelDBConstants.ARTIFACTS:
-        LOGGER.debug("switch case : Artifacts");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_ARTIFACTS_DEBUG);
         Join<ExperimentRunEntity, ArtifactEntity> artifactEntityJoin =
             root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
         artifactEntityJoin.alias(parentFieldName + "_art");
@@ -829,7 +828,7 @@ public class RdbmsUtils {
         orderByExpression = artifactEntityJoin.get(ModelDBConstants.PATH);
         break;
       case ModelDBConstants.DATASETS:
-        LOGGER.debug("switch case : Datasets");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_DATASETS_DEBUG);
         Join<ExperimentRunEntity, ArtifactEntity> datasetEntityJoin =
             root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
         datasetEntityJoin.alias(parentFieldName + "_dts");
@@ -845,7 +844,7 @@ public class RdbmsUtils {
         orderByExpression = datasetEntityJoin.get(ModelDBConstants.PATH);
         break;
       case ModelDBConstants.ATTRIBUTES:
-        LOGGER.debug("switch case : Attributes");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_ATTRIBUTES_DEBUG);
         Join<ExperimentRunEntity, AttributeEntity> attributeEntityJoin =
             root.join(ModelDBConstants.ATTRIBUTE_MAPPING, JoinType.LEFT);
         attributeEntityJoin.alias(parentFieldName + "_attr");
@@ -863,7 +862,7 @@ public class RdbmsUtils {
         orderByExpression = attributeEntityJoin.get(ModelDBConstants.VALUE);
         break;
       case ModelDBConstants.HYPERPARAMETERS:
-        LOGGER.debug("switch case : Hyperparameters");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_HYPERPARAMETERS_DEBUG);
         Join<ExperimentRunEntity, KeyValueEntity> hyperparameterEntityJoin =
             root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
         hyperparameterEntityJoin.alias(parentFieldName + "_hypr");
@@ -881,7 +880,7 @@ public class RdbmsUtils {
         orderByExpression = hyperparameterEntityJoin.get(ModelDBConstants.VALUE);
         break;
       case ModelDBConstants.METRICS:
-        LOGGER.debug("switch case : Metrics");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_METRICS_DEBUG);
         Join<ExperimentRunEntity, KeyValueEntity> metricsEntityJoin =
             root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
         metricsEntityJoin.alias(parentFieldName + "_mtr");
@@ -897,7 +896,7 @@ public class RdbmsUtils {
         orderByExpression = metricsEntityJoin.get(ModelDBConstants.VALUE);
         break;
       case ModelDBConstants.OBSERVATIONS:
-        LOGGER.debug("switch case : Observation");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_OBSERVATION_DEBUG);
         if (keys.length > 2) {
           // If getting third level key like observation.attribute.attr_1 then it is not supported
           throw new InvalidArgumentException("Third level of sorting not supported");
@@ -958,7 +957,7 @@ public class RdbmsUtils {
         }
         break;
       case ModelDBConstants.FEATURES:
-        LOGGER.debug("switch case : Feature");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_FEATURE_DEBUG);
         Join<ExperimentRunEntity, FeatureEntity> featureEntityJoin =
             root.join(ModelDBConstants.FEATURES, JoinType.LEFT);
         featureEntityJoin.alias(parentFieldName + "_feature");
@@ -971,7 +970,7 @@ public class RdbmsUtils {
         orderByExpression = featureEntityJoin.get(ModelDBConstants.NAME);
         break;
       case ModelDBConstants.TAGS:
-        LOGGER.debug("switch case : tags");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_TAGS_DEBUG);
         Join<ExperimentRunEntity, TagsMapping> tagsEntityJoin =
             root.join(ModelDBConstants.TAGS, JoinType.LEFT);
         tagsEntityJoin.alias(parentFieldName + "_tags");
@@ -1020,7 +1019,7 @@ public class RdbmsUtils {
     List<Expression<?>> orderByExpressionList = new ArrayList<>();
     switch (keys[0]) {
       case ModelDBConstants.ARTIFACTS:
-        LOGGER.debug("switch case : Artifacts");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_ARTIFACTS_DEBUG);
         Join<ExperimentRunEntity, ArtifactEntity> artifactEntityJoin =
             root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
         artifactEntityJoin.alias(parentFieldName + "_art");
@@ -1038,7 +1037,7 @@ public class RdbmsUtils {
         orderByExpressionList.add(artifactEntityJoin.get(ModelDBConstants.PATH));
         break;
       case ModelDBConstants.DATASETS:
-        LOGGER.debug("switch case : Datasets");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_DATASETS_DEBUG);
         Join<ExperimentRunEntity, ArtifactEntity> datasetEntityJoin =
             root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
         datasetEntityJoin.alias(parentFieldName + "_dts");
@@ -1054,7 +1053,7 @@ public class RdbmsUtils {
         orderByExpressionList.add(datasetEntityJoin.get(ModelDBConstants.PATH));
         break;
       case ModelDBConstants.ATTRIBUTES:
-        LOGGER.debug("switch case : Attributes");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_ATTRIBUTES_DEBUG);
         Join<ExperimentRunEntity, AttributeEntity> attributeEntityJoin =
             root.join(ModelDBConstants.ATTRIBUTE_MAPPING, JoinType.LEFT);
         attributeEntityJoin.alias(parentFieldName + "_attr");
@@ -1072,7 +1071,7 @@ public class RdbmsUtils {
         orderByExpressionList.add(attributeEntityJoin.get(ModelDBConstants.VALUE));
         break;
       case ModelDBConstants.HYPERPARAMETERS:
-        LOGGER.debug("switch case : Hyperparameters");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_HYPERPARAMETERS_DEBUG);
         Join<ExperimentRunEntity, KeyValueEntity> hyperparameterEntityJoin =
             root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
         hyperparameterEntityJoin.alias(parentFieldName + "_hypr");
@@ -1107,7 +1106,7 @@ public class RdbmsUtils {
         }
         break;
       case ModelDBConstants.METRICS:
-        LOGGER.debug("switch case : Metrics");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_METRICS_DEBUG);
         Join<ExperimentRunEntity, KeyValueEntity> metricsEntityJoin =
             root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
         metricsEntityJoin.alias(parentFieldName + "_mtr");
@@ -1123,7 +1122,7 @@ public class RdbmsUtils {
         orderByExpressionList.add(metricsEntityJoin.get(ModelDBConstants.VALUE));
         break;
       case ModelDBConstants.OBSERVATIONS:
-        LOGGER.debug("switch case : Observation");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_OBSERVATION_DEBUG);
         if (keys.length > 2) {
           // If getting third level key like observation.attribute.attr_1 then it is not supported
           throw new InvalidArgumentException("Third level of sorting not supported");
@@ -1184,7 +1183,7 @@ public class RdbmsUtils {
         }
         break;
       case ModelDBConstants.FEATURES:
-        LOGGER.debug("switch case : Feature");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_FEATURE_DEBUG);
         Join<ExperimentRunEntity, FeatureEntity> featureEntityJoin =
             root.join(ModelDBConstants.FEATURES, JoinType.LEFT);
         featureEntityJoin.alias(parentFieldName + "_feature");
@@ -1197,7 +1196,7 @@ public class RdbmsUtils {
         orderByExpressionList.add(featureEntityJoin.get(ModelDBConstants.NAME));
         break;
       case ModelDBConstants.TAGS:
-        LOGGER.debug("switch case : tags");
+        LOGGER.debug(ModelDBMessages.SWITCH_CASE_TAGS_DEBUG);
         Join<ExperimentRunEntity, TagsMapping> tagsEntityJoin =
             root.join(ModelDBConstants.TAGS, JoinType.LEFT);
         tagsEntityJoin.alias(parentFieldName + "_tags");
@@ -1212,8 +1211,8 @@ public class RdbmsUtils {
       default:
         orderByExpressionList.add(root.get(sortBy));
     }
-    Order[] orderByArr = new Order[orderByExpressionList.size()];
-    for (int index = 0; index < orderByExpressionList.size(); index++) {
+    var orderByArr = new Order[orderByExpressionList.size()];
+    for (var index = 0; index < orderByExpressionList.size(); index++) {
       Expression<?> orderByExpression = orderByExpressionList.get(index);
       orderByArr[index] =
           isAscending ? builder.asc(orderByExpression) : builder.desc(orderByExpression);
@@ -1239,21 +1238,20 @@ public class RdbmsUtils {
       String key,
       KeyValueQuery predicate) {
     List<Predicate> fieldPredicates = new ArrayList<>();
-    Predicate fieldTypePredicate =
-        builder.equal(expression.get(ModelDBConstants.FEILD_TYPE), fieldType);
+    var fieldTypePredicate = builder.equal(expression.get(ModelDBConstants.FEILD_TYPE), fieldType);
     fieldPredicates.add(fieldTypePredicate);
 
     Path valueExpression;
     if (key.equals(ModelDBConstants.LINKED_ARTIFACT_ID)) {
       valueExpression = expression.get(key);
     } else {
-      Predicate keyPredicate = builder.equal(expression.get(ModelDBConstants.KEY), key);
+      var keyPredicate = builder.equal(expression.get(ModelDBConstants.KEY), key);
       fieldPredicates.add(keyPredicate);
       valueExpression = expression.get(ModelDBConstants.PATH);
     }
 
     if (predicate != null) {
-      Predicate valuePredicate =
+      var valuePredicate =
           getValuePredicate(builder, ModelDBConstants.ARTIFACTS, valueExpression, predicate, true);
       fieldPredicates.add(valuePredicate);
     }
@@ -1278,14 +1276,13 @@ public class RdbmsUtils {
       String key,
       KeyValueQuery predicate) {
     List<Predicate> fieldPredicates = new ArrayList<>();
-    Predicate fieldTypePredicate =
-        builder.equal(expression.get(ModelDBConstants.FEILD_TYPE), fieldType);
+    var fieldTypePredicate = builder.equal(expression.get(ModelDBConstants.FEILD_TYPE), fieldType);
     fieldPredicates.add(fieldTypePredicate);
-    Predicate keyPredicate = builder.equal(expression.get(ModelDBConstants.KEY), key);
+    var keyPredicate = builder.equal(expression.get(ModelDBConstants.KEY), key);
     fieldPredicates.add(keyPredicate);
 
     if (predicate != null) {
-      Predicate valuePredicate =
+      var valuePredicate =
           getValuePredicate(
               builder,
               ModelDBConstants.ATTRIBUTES,
@@ -1310,7 +1307,7 @@ public class RdbmsUtils {
    * @return {@link Long} : total records count
    */
   public static <T> long count(Session session, Root<T> root, CriteriaQuery<T> criteria) {
-    final CriteriaBuilder builder = session.getCriteriaBuilder();
+    final var builder = session.getCriteriaBuilder();
     final CriteriaQuery<Long> countCriteria = builder.createQuery(Long.class);
 
     countCriteria.select(builder.count(root));
@@ -1349,13 +1346,13 @@ public class RdbmsUtils {
       CriteriaQuery<?> criteriaQuery,
       Root<?> entityRootPath,
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes)
       throws ModelDBException {
     List<Predicate> finalPredicatesList = new ArrayList<>();
     if (!predicates.isEmpty()) {
       List<Predicate> keyValuePredicates = new ArrayList<>();
-      for (int index = 0; index < predicates.size(); index++) {
+      for (var index = 0; index < predicates.size(); index++) {
         KeyValueQuery predicate = predicates.get(index);
         try {
           String errorMessage = null;
@@ -1375,7 +1372,7 @@ public class RdbmsUtils {
           Path expression;
           String[] names = key.split("\\.");
 
-          Operator operator = predicate.getOperator();
+          var operator = predicate.getOperator();
           if (operator.equals(Operator.NOT_CONTAIN)) {
             predicate = predicate.toBuilder().setOperator(Operator.CONTAIN).build();
           } else if (operator.equals(Operator.NE)) {
@@ -1386,7 +1383,7 @@ public class RdbmsUtils {
           Expression<String> parentPathFromChild;
           switch (names[0]) {
             case ModelDBConstants.ARTIFACTS:
-              LOGGER.debug("switch case : Artifacts");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_ARTIFACTS_DEBUG);
               Root<ArtifactEntity> artifactEntityRoot = subquery.from(ArtifactEntity.class);
               artifactEntityRoot.alias(entityName + "_" + ModelDBConstants.ARTIFACT_ALIAS + index);
               List<Predicate> artifactValuePredicates =
@@ -1401,8 +1398,8 @@ public class RdbmsUtils {
               subquery.select(parentPathFromChild);
               artifactValuePredicates.add(builder.isNotNull(parentPathFromChild));
 
-              Predicate[] artifactPredicatesOne = new Predicate[artifactValuePredicates.size()];
-              for (int indexJ = 0; indexJ < artifactValuePredicates.size(); indexJ++) {
+              var artifactPredicatesOne = new Predicate[artifactValuePredicates.size()];
+              for (var indexJ = 0; indexJ < artifactValuePredicates.size(); indexJ++) {
                 artifactPredicatesOne[indexJ] = artifactValuePredicates.get(indexJ);
               }
               subquery.where(builder.and(artifactPredicatesOne));
@@ -1410,7 +1407,7 @@ public class RdbmsUtils {
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
               break;
             case ModelDBConstants.DATASETS:
-              LOGGER.debug("switch case : Datasets");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_DATASETS_DEBUG);
               Root<ArtifactEntity> datasetEntityRoot = subquery.from(ArtifactEntity.class);
               datasetEntityRoot.alias(entityName + "_" + ModelDBConstants.DATASET_ALIAS + index);
               List<Predicate> datasetValuePredicates =
@@ -1425,8 +1422,8 @@ public class RdbmsUtils {
               subquery.select(parentPathFromChild);
               datasetValuePredicates.add(builder.isNotNull(parentPathFromChild));
 
-              Predicate[] datasetPredicatesOne = new Predicate[datasetValuePredicates.size()];
-              for (int indexJ = 0; indexJ < datasetValuePredicates.size(); indexJ++) {
+              var datasetPredicatesOne = new Predicate[datasetValuePredicates.size()];
+              for (var indexJ = 0; indexJ < datasetValuePredicates.size(); indexJ++) {
                 datasetPredicatesOne[indexJ] = datasetValuePredicates.get(indexJ);
               }
               subquery.where(builder.and(datasetPredicatesOne));
@@ -1434,7 +1431,7 @@ public class RdbmsUtils {
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
               break;
             case ModelDBConstants.ATTRIBUTES:
-              LOGGER.debug("switch case : Attributes");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_ATTRIBUTES_DEBUG);
               Root<AttributeEntity> attributeEntityRoot = subquery.from(AttributeEntity.class);
               attributeEntityRoot.alias(
                   entityName + "_" + ModelDBConstants.ATTRIBUTE_ALIAS + index);
@@ -1450,8 +1447,8 @@ public class RdbmsUtils {
               subquery.select(parentPathFromChild);
               attributeValuePredicates.add(builder.isNotNull(parentPathFromChild));
 
-              Predicate[] attributePredicatesOne = new Predicate[attributeValuePredicates.size()];
-              for (int indexJ = 0; indexJ < attributeValuePredicates.size(); indexJ++) {
+              var attributePredicatesOne = new Predicate[attributeValuePredicates.size()];
+              for (var indexJ = 0; indexJ < attributeValuePredicates.size(); indexJ++) {
                 attributePredicatesOne[indexJ] = attributeValuePredicates.get(indexJ);
               }
               subquery.where(builder.and(attributePredicatesOne));
@@ -1459,7 +1456,7 @@ public class RdbmsUtils {
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
               break;
             case ModelDBConstants.HYPERPARAMETERS:
-              LOGGER.debug("switch case : Hyperparameters");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_HYPERPARAMETERS_DEBUG);
               Subquery<String> subqueryMDB = criteriaQuery.subquery(String.class);
               Root<KeyValueEntity> hyperparameterEntityRoot =
                   subqueryMDB.from(KeyValueEntity.class);
@@ -1477,20 +1474,19 @@ public class RdbmsUtils {
               subqueryMDB.select(parentPathFromChild);
               hyperparameterValuePredicates.add(builder.isNotNull(parentPathFromChild));
 
-              Predicate[] hyperparameterPredicatesOne =
-                  new Predicate[hyperparameterValuePredicates.size()];
-              for (int indexJ = 0; indexJ < hyperparameterValuePredicates.size(); indexJ++) {
+              var hyperparameterPredicatesOne = new Predicate[hyperparameterValuePredicates.size()];
+              for (var indexJ = 0; indexJ < hyperparameterValuePredicates.size(); indexJ++) {
                 hyperparameterPredicatesOne[indexJ] = hyperparameterValuePredicates.get(indexJ);
               }
               subqueryMDB.where(builder.and(hyperparameterPredicatesOne));
               // This subquery should become one part of union
-              Predicate[] predicatesArr = new Predicate[2];
-              Predicate oldHyperparameterPredicate =
+              var predicatesArr = new Predicate[2];
+              var oldHyperparameterPredicate =
                   getPredicateFromSubquery(builder, entityRootPath, operator, subqueryMDB);
               predicatesArr[0] = oldHyperparameterPredicate;
               Subquery<String> subqueryVersion = criteriaQuery.subquery(String.class);
               // Hyperparameter from new design
-              Predicate newHyperparameterPredicate =
+              var newHyperparameterPredicate =
                   getVersionedInputHyperparameterPredicate(
                       entityName,
                       builder,
@@ -1508,7 +1504,7 @@ public class RdbmsUtils {
               }
               break;
             case ModelDBConstants.METRICS:
-              LOGGER.debug("switch case : Metrics");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_METRICS_DEBUG);
               Root<KeyValueEntity> metricsEntityRoot = subquery.from(KeyValueEntity.class);
               metricsEntityRoot.alias(entityName + "_" + ModelDBConstants.METRICS_ALIAS + index);
               List<Predicate> metricsValuePredicates =
@@ -1523,8 +1519,8 @@ public class RdbmsUtils {
               subquery.select(parentPathFromChild);
               metricsValuePredicates.add(builder.isNotNull(parentPathFromChild));
 
-              Predicate[] metricsPredicatesOne = new Predicate[metricsValuePredicates.size()];
-              for (int indexJ = 0; indexJ < metricsValuePredicates.size(); indexJ++) {
+              var metricsPredicatesOne = new Predicate[metricsValuePredicates.size()];
+              for (var indexJ = 0; indexJ < metricsValuePredicates.size(); indexJ++) {
                 metricsPredicatesOne[indexJ] = metricsValuePredicates.get(indexJ);
               }
               subquery.where(builder.and(metricsPredicatesOne));
@@ -1532,7 +1528,7 @@ public class RdbmsUtils {
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
               break;
             case ModelDBConstants.OBSERVATIONS:
-              LOGGER.debug("switch case : Observation");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_OBSERVATION_DEBUG);
 
               if (names.length > 2) {
                 switch (names[1]) {
@@ -1557,8 +1553,8 @@ public class RdbmsUtils {
                     subquery.select(parentPathFromChild);
                     obrAttrValuePredicates.add(builder.isNotNull(parentPathFromChild));
 
-                    Predicate[] obrAttrPredicatesOne = new Predicate[obrAttrValuePredicates.size()];
-                    for (int indexJ = 0; indexJ < obrAttrValuePredicates.size(); indexJ++) {
+                    var obrAttrPredicatesOne = new Predicate[obrAttrValuePredicates.size()];
+                    for (var indexJ = 0; indexJ < obrAttrValuePredicates.size(); indexJ++) {
                       obrAttrPredicatesOne[indexJ] = obrAttrValuePredicates.get(indexJ);
                     }
                     subquery.where(builder.and(obrAttrPredicatesOne));
@@ -1584,8 +1580,8 @@ public class RdbmsUtils {
                     parentPathFromChild = obrArtEntityRoot.get(entityName).get(ModelDBConstants.ID);
                     subquery.select(parentPathFromChild);
                     obrArtValuePredicates.add(builder.isNotNull(parentPathFromChild));
-                    Predicate[] obrArtPredicatesOne = new Predicate[obrArtValuePredicates.size()];
-                    for (int indexJ = 0; indexJ < obrArtValuePredicates.size(); indexJ++) {
+                    var obrArtPredicatesOne = new Predicate[obrArtValuePredicates.size()];
+                    for (var indexJ = 0; indexJ < obrArtValuePredicates.size(); indexJ++) {
                       obrArtPredicatesOne[indexJ] = obrArtValuePredicates.get(indexJ);
                     }
                     subquery.where(builder.and(obrArtPredicatesOne));
@@ -1601,7 +1597,7 @@ public class RdbmsUtils {
                     subquery.from(ObservationEntity.class);
                 observationEntityRootEntityRoot.alias(
                     entityName + "_" + ModelDBConstants.OBSERVATION_ALIAS + index);
-                Predicate observationValuePredicate =
+                var observationValuePredicate =
                     RdbmsUtils.getValuePredicate(
                         builder,
                         ModelDBConstants.OBSERVATIONS,
@@ -1619,10 +1615,10 @@ public class RdbmsUtils {
               }
               break;
             case ModelDBConstants.FEATURES:
-              LOGGER.debug("switch case : Feature");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_FEATURE_DEBUG);
               Root<FeatureEntity> featureEntityRoot = subquery.from(FeatureEntity.class);
               featureEntityRoot.alias(entityName + "_" + ModelDBConstants.FEATURE_ALIAS + index);
-              Predicate featureValuePredicate =
+              var featureValuePredicate =
                   RdbmsUtils.getValuePredicate(
                       builder,
                       ModelDBConstants.FEATURES,
@@ -1638,18 +1634,18 @@ public class RdbmsUtils {
                   getPredicateFromSubquery(builder, entityRootPath, operator, subquery));
               break;
             case ModelDBConstants.TAGS:
-              LOGGER.debug("switch case : tags");
+              LOGGER.debug(ModelDBMessages.SWITCH_CASE_TAGS_DEBUG);
               Predicate tagValuePredicate;
               if (entityName.equals(ModelDBConstants.REPOSITORY_ENTITY)) {
                 Subquery<Long> longSubquery = criteriaQuery.subquery(Long.class);
                 Root<LabelsMappingEntity> tagsMappingRoot =
                     longSubquery.from(LabelsMappingEntity.class);
                 tagsMappingRoot.alias(entityName + "_" + ModelDBConstants.TAGS_ALIAS + index);
-                Predicate predicate1 =
+                var predicate1 =
                     builder.equal(
                         tagsMappingRoot.get("id").get("entity_type"),
                         IDTypeEnum.IDType.VERSIONING_REPOSITORY_VALUE);
-                Predicate predicate2 =
+                var predicate2 =
                     RdbmsUtils.getValuePredicate(
                         builder,
                         "id.label",
@@ -1692,7 +1688,7 @@ public class RdbmsUtils {
                   subquery.from(VersioningModeldbEntityMapping.class);
               versioningEntityRoot.alias(
                   entityName + "_" + ModelDBConstants.VERSIONED_ALIAS + index);
-              Predicate keyValuePredicate =
+              var keyValuePredicate =
                   RdbmsUtils.getValuePredicate(
                       builder, names[1], versioningEntityRoot.get(names[1]), predicate, false);
 
@@ -1703,8 +1699,8 @@ public class RdbmsUtils {
               subquery.select(parentPathFromChild);
 
               versioningValuePredicates.add(builder.isNotNull(parentPathFromChild));
-              Predicate[] versioningPredicatesOne = new Predicate[versioningValuePredicates.size()];
-              for (int indexJ = 0; indexJ < versioningValuePredicates.size(); indexJ++) {
+              var versioningPredicatesOne = new Predicate[versioningValuePredicates.size()];
+              for (var indexJ = 0; indexJ < versioningValuePredicates.size(); indexJ++) {
                 versioningPredicatesOne[indexJ] = versioningValuePredicates.get(indexJ);
               }
               subquery.where(builder.and(versioningPredicatesOne));
@@ -1733,7 +1729,7 @@ public class RdbmsUtils {
                       keyValuePredicates,
                       predicate,
                       operator,
-                      roleService);
+                      mdbRoleService);
                 } else {
                   setFuzzySearchPredicateBasedOnMDBOwner(
                       builder,
@@ -1747,13 +1743,13 @@ public class RdbmsUtils {
                 }
               } else if (key.equalsIgnoreCase("dataset_visibility")) {
                 expression = entityRootPath.get("repository_visibility");
-                Predicate queryPredicate =
+                var queryPredicate =
                     RdbmsUtils.getValuePredicate(builder, key, expression, predicate, false);
                 keyValuePredicates.add(queryPredicate);
                 criteriaQuery.multiselect(entityRootPath, expression);
               } else {
                 expression = entityRootPath.get(key);
-                Predicate queryPredicate =
+                var queryPredicate =
                     RdbmsUtils.getValuePredicate(builder, key, expression, predicate, false);
                 keyValuePredicates.add(queryPredicate);
                 criteriaQuery.multiselect(entityRootPath, expression);
@@ -1776,8 +1772,8 @@ public class RdbmsUtils {
         }
       }
       if (!keyValuePredicates.isEmpty()) {
-        Predicate[] finalKeyValuePredicates = new Predicate[keyValuePredicates.size()];
-        for (int indexJ = 0; indexJ < keyValuePredicates.size(); indexJ++) {
+        var finalKeyValuePredicates = new Predicate[keyValuePredicates.size()];
+        for (var indexJ = 0; indexJ < keyValuePredicates.size(); indexJ++) {
           finalKeyValuePredicates[indexJ] = keyValuePredicates.get(indexJ);
         }
         finalPredicatesList.add(builder.and(finalKeyValuePredicates));
@@ -1794,12 +1790,12 @@ public class RdbmsUtils {
       List<Predicate> keyValuePredicates,
       KeyValueQuery predicate,
       Operator operator,
-      RoleService roleService) {
+      MDBRoleService mdbRoleService) {
     if ((operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
-      Predicate fuzzySearchPredicate =
+      var fuzzySearchPredicate =
           getFuzzyUsersQueryPredicate(
               authService,
-              roleService,
+              mdbRoleService,
               builder,
               entityRootPath,
               predicate,
@@ -1811,16 +1807,17 @@ public class RdbmsUtils {
             ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, Code.FAILED_PRECONDITION);
       }
     } else {
-      String ownerId = predicate.getValue().getStringValue();
+      var ownerId = predicate.getValue().getStringValue();
       Map<String, UserInfo> userInfoMap =
           authService.getUserInfoFromAuthServer(
               new HashSet<>(Collections.singleton(ownerId)),
               Collections.emptySet(),
-              Collections.emptyList());
+              Collections.emptyList(),
+              false);
       Set<String> resourceIdSet =
           getResourceIdsFromUserWorkspaces(
               authService,
-              roleService,
+              mdbRoleService,
               modelDBServiceResourceTypes,
               Collections.singletonList(userInfoMap.get(ownerId)));
       Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
@@ -1839,7 +1836,7 @@ public class RdbmsUtils {
       Operator operator) {
     Path expression;
     if (operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN)) {
-      Predicate fuzzySearchPredicate =
+      var fuzzySearchPredicate =
           getFuzzyUsersQueryPredicate(authService, builder, entityRootPath, predicate);
       if (fuzzySearchPredicate != null) {
         keyValuePredicates.add(fuzzySearchPredicate);
@@ -1849,8 +1846,7 @@ public class RdbmsUtils {
       }
     } else {
       expression = entityRootPath.get(key);
-      Predicate queryPredicate =
-          RdbmsUtils.getValuePredicate(builder, key, expression, predicate, false);
+      var queryPredicate = RdbmsUtils.getValuePredicate(builder, key, expression, predicate, false);
       keyValuePredicates.add(queryPredicate);
       criteriaQuery.multiselect(entityRootPath, expression);
     }
@@ -1874,7 +1870,7 @@ public class RdbmsUtils {
       Root<?> entityRootPath,
       KeyValueQuery requestedPredicate) {
     if (requestedPredicate.getValue().getKindCase().equals(Value.KindCase.STRING_VALUE)) {
-      Operator operator = requestedPredicate.getOperator();
+      var operator = requestedPredicate.getOperator();
       List<UserInfo> userInfoList = getFuzzyUserInfos(authService, requestedPredicate);
       if (userInfoList != null && !userInfoList.isEmpty()) {
         Expression<String> exp = entityRootPath.get(requestedPredicate.getKey());
@@ -1897,18 +1893,18 @@ public class RdbmsUtils {
 
   private static Predicate getFuzzyUsersQueryPredicate(
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       CriteriaBuilder builder,
       Root<?> entityRootPath,
       KeyValueQuery requestedPredicate,
       ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     if (requestedPredicate.getValue().getKindCase().equals(Value.KindCase.STRING_VALUE)) {
-      Operator operator = requestedPredicate.getOperator();
+      var operator = requestedPredicate.getOperator();
       List<UserInfo> userInfoList = getFuzzyUserInfos(authService, requestedPredicate);
       if (userInfoList != null && !userInfoList.isEmpty()) {
         Set<String> projectIdSet =
             getResourceIdsFromUserWorkspaces(
-                authService, roleService, modelDBServiceResourceTypes, userInfoList);
+                authService, mdbRoleService, modelDBServiceResourceTypes, userInfoList);
         Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
         if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
           return builder.not(exp.in(projectIdSet));
@@ -1925,18 +1921,19 @@ public class RdbmsUtils {
 
   public static Set<String> getResourceIdsFromUserWorkspaces(
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       List<UserInfo> userInfoList) {
     Set<String> resourceIdsSet = new HashSet<>();
     for (UserInfo userInfo : userInfoList) {
       List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
-          roleService.getResourceItems(
+          mdbRoleService.getResourceItems(
               Workspace.newBuilder()
                   .setId(authService.getWorkspaceIdFromUserInfo(userInfo))
                   .build(),
               Collections.emptySet(),
-              modelDBServiceResourceTypes);
+              modelDBServiceResourceTypes,
+              false);
       resourceIdsSet.addAll(
           accessibleAllWorkspaceItems.stream()
               .map(GetResourcesResponseItem::getResourceId)
@@ -1947,7 +1944,7 @@ public class RdbmsUtils {
 
   public static List<UserInfo> getFuzzyUserInfos(
       AuthService authService, KeyValueQuery requestedPredicate) {
-    UserInfoPaginationDTO userInfoPaginationDTO =
+    var userInfoPaginationDTO =
         authService.getFuzzyUserInfoList(requestedPredicate.getValue().getStringValue());
     return userInfoPaginationDTO.getUserInfoList();
   }
@@ -1966,20 +1963,20 @@ public class RdbmsUtils {
     elementMappingEntityRoot.alias(
         entityName + "_" + ModelDBConstants.HYPERPARAMETER_ALIAS + "elem_mapping_" + index);
     List<Predicate> configBlobEntityRootPredicates = new ArrayList<>();
-    Predicate idPredicate =
+    var idPredicate =
         builder.equal(
             elementMappingEntityRoot.get(entityName).get(ModelDBConstants.ID),
             entityRootPath.get(ModelDBConstants.ID));
     configBlobEntityRootPredicates.add(idPredicate);
 
-    Predicate keyPredicate =
+    var keyPredicate =
         builder.equal(elementMappingEntityRoot.get(ModelDBConstants.NAME), names[names.length - 1]);
     configBlobEntityRootPredicates.add(keyPredicate);
 
     List<Predicate> orPredicates = new ArrayList<>();
     if (predicate.getValue().getKindCase().equals(KindCase.NUMBER_VALUE)) {
       try {
-        Predicate intValuePredicate =
+        var intValuePredicate =
             getValuePredicate(
                 builder,
                 ModelDBConstants.HYPERPARAMETERS,
@@ -1991,7 +1988,7 @@ public class RdbmsUtils {
         LOGGER.debug("Value could not be cast to int");
       }
       try {
-        Predicate floatValuePredicate =
+        var floatValuePredicate =
             getValuePredicate(
                 builder,
                 ModelDBConstants.HYPERPARAMETERS,
@@ -2003,7 +2000,7 @@ public class RdbmsUtils {
         LOGGER.debug("Value could not be cast to float");
       }
     }
-    Predicate stringValuePredicate =
+    var stringValuePredicate =
         getValuePredicate(
             builder,
             ModelDBConstants.HYPERPARAMETERS,
@@ -2017,9 +2014,8 @@ public class RdbmsUtils {
         elementMappingEntityRoot.get(entityName).get(ModelDBConstants.ID);
     configBlobEntityRootPredicates.add(builder.isNotNull(parentPathFromChild));
 
-    Predicate[] hyprElemmappingRootPredicatesOne =
-        new Predicate[configBlobEntityRootPredicates.size()];
-    for (int indexJ = 0; indexJ < configBlobEntityRootPredicates.size(); indexJ++) {
+    var hyprElemmappingRootPredicatesOne = new Predicate[configBlobEntityRootPredicates.size()];
+    for (var indexJ = 0; indexJ < configBlobEntityRootPredicates.size(); indexJ++) {
       hyprElemmappingRootPredicatesOne[indexJ] = configBlobEntityRootPredicates.get(indexJ);
     }
     subquery.select(parentPathFromChild);
@@ -2062,7 +2058,7 @@ public class RdbmsUtils {
           new VersioningModeldbEntityMapping(
               versioningEntry.getRepositoryId(),
               versioningEntry.getCommit(),
-              ModelDBConstants.EMPTY_STRING,
+              CommonConstants.EMPTY_STRING,
               null,
               null,
               null,
@@ -2070,13 +2066,13 @@ public class RdbmsUtils {
     } else {
       for (Map.Entry<String, Location> locationEntry :
           versioningEntry.getKeyLocationMapMap().entrySet()) {
-        String locationKey = String.join("#", locationEntry.getValue().getLocationList());
+        var locationKey = String.join("#", locationEntry.getValue().getLocationList());
         Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
             locationBlobWithHashMap.get(locationKey);
 
-        Blob blob = blobExpandedWithHashMap.getKey().getBlob();
+        var blob = blobExpandedWithHashMap.getKey().getBlob();
 
-        VersioningModeldbEntityMapping vmem =
+        var vmem =
             new VersioningModeldbEntityMapping(
                 versioningEntry.getRepositoryId(),
                 versioningEntry.getCommit(),
@@ -2086,7 +2082,7 @@ public class RdbmsUtils {
                 blobExpandedWithHashMap.getValue(),
                 entity);
         if (blob.getContentCase().equals(Blob.ContentCase.CONFIG)) {
-          Query query =
+          var query =
               session.createQuery("FROM ConfigBlobEntity cb WHERE cb.blob_hash = :blobHash");
           query.setParameter("blobHash", blobExpandedWithHashMap.getValue());
           List<ConfigBlobEntity> configBlobEntities = query.list();
@@ -2100,14 +2096,14 @@ public class RdbmsUtils {
 
   public static VersioningEntry getVersioningEntryFromList(
       List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings) {
-    VersioningEntry.Builder versioningEntry = VersioningEntry.newBuilder();
+    var versioningEntry = VersioningEntry.newBuilder();
     for (VersioningModeldbEntityMapping versioningModeldbEntityMapping :
         versioningModeldbEntityMappings) {
       versioningEntry.setRepositoryId(versioningModeldbEntityMapping.getRepository_id());
       versioningEntry.setCommit(versioningModeldbEntityMapping.getCommit());
       if (versioningModeldbEntityMapping.getVersioning_location() != null
           && !versioningModeldbEntityMapping.getVersioning_location().isEmpty()) {
-        Location.Builder locationBuilder = Location.newBuilder();
+        var locationBuilder = Location.newBuilder();
         CommonUtils.getProtoObjectFromString(
             versioningModeldbEntityMapping.getVersioning_location(), locationBuilder);
         versioningEntry.putKeyLocationMap(
@@ -2132,20 +2128,20 @@ public class RdbmsUtils {
    * @param entityName : dataset, project etc.
    * @param accessibleEntityIds : accessible entity ids like project.ids, dataset.ids etc.
    * @param predicate : predicate request
-   * @param roleService : role service
+   * @param mdbRoleService : role service
    */
   public static void validatePredicates(
       String entityName,
       List<String> accessibleEntityIds,
       KeyValueQuery predicate,
-      RoleService roleService) {
+      MDBRoleService mdbRoleService) {
     if (predicate.getKey().equals(ModelDBConstants.ID)) {
       if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
         throw new InvalidArgumentException(ModelDBConstants.NON_EQ_ID_PRED_ERROR_MESSAGE);
       }
-      String entityId = predicate.getValue().getStringValue();
+      var entityId = predicate.getValue().getStringValue();
       if ((accessibleEntityIds.isEmpty() || !accessibleEntityIds.contains(entityId))
-          && roleService.IsImplemented()) {
+          && mdbRoleService.IsImplemented()) {
         throw new PermissionDeniedException(
             "Access is denied. User is unauthorized for given "
                 + entityName
@@ -2176,7 +2172,8 @@ public class RdbmsUtils {
       Object value,
       Map<String, Object> parametersMap) {
     @SuppressWarnings("squid:S2245")
-    long timestamp = index0 + new Random(System.nanoTime()).nextInt(Integer.MAX_VALUE);
+    long timestamp =
+        (long) index0 + (long) new Random(System.nanoTime()).nextInt(Integer.MAX_VALUE);
     String key;
     switch (operator.ordinal()) {
       case OperatorEnum.Operator.GT_VALUE:

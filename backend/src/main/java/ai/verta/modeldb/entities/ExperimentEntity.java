@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,7 +23,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "experiment")
-public class ExperimentEntity {
+public class ExperimentEntity implements Serializable {
 
   public ExperimentEntity() {}
 
@@ -254,7 +255,7 @@ public class ExperimentEntity {
   }
 
   public Experiment getProtoObject() {
-    Experiment.Builder experimentBuilder =
+    var experimentBuilder =
         Experiment.newBuilder()
             .setId(getId())
             .setProjectId(getProject_id())

@@ -30,6 +30,7 @@ public class CommonUtils {
     return filePath;
   }
 
+  @SuppressWarnings({"squid:S112"})
   public static Message.Builder getProtoObjectFromString(
       String jsonString, Message.Builder builder) {
     try {
@@ -56,7 +57,7 @@ public class CommonUtils {
       errorMessage = "UAC Service unavailable : " + errorMessage;
       if (retry && retryCallInterface != null) {
         try {
-          Thread.sleep(requestTimeout * 1000);
+          Thread.sleep(requestTimeout.longValue() * 1000L);
           retry = false;
         } catch (InterruptedException e) {
           // Restore interrupted state...
@@ -85,28 +86,36 @@ public class CommonUtils {
       CompletionException ex = (CompletionException) e;
       return logError(ex.getCause(), defaultInstance);
     } else {
-      Throwable throwable = findRootCause(e);
+      if (e == null) {
+        var status1 =
+            Status.newBuilder()
+                .setCode(Code.INTERNAL_VALUE)
+                .setMessage("Exception found null")
+                .build();
+        return StatusProto.toStatusRuntimeException(status1);
+      }
+      var throwable = findRootCause(e);
       // Condition 'throwable != null' covered by below condition 'throwable instanceof
       // SocketException'
       StackTraceElement[] stack = e.getStackTrace();
       if (throwable instanceof SocketException) {
-        String errorMessage = "Database Connection not found: ";
-        LOGGER.info(errorMessage + "{}", e.getMessage());
+        var errorMessage = "Database Connection not found: ";
+        LOGGER.info("{} {}", errorMessage, e.getMessage());
         status =
             Status.newBuilder()
                 .setCode(Code.UNAVAILABLE_VALUE)
                 .setMessage(errorMessage + throwable.getMessage())
                 .build();
       } else if (e instanceof LockAcquisitionException) {
-        String errorMessage = "Encountered deadlock in database connection.";
-        LOGGER.info(errorMessage + "{}", e.getMessage());
+        var errorMessage = "Encountered deadlock in database connection.";
+        LOGGER.info(" {} {}", errorMessage, e.getMessage());
         status =
             Status.newBuilder()
                 .setCode(Code.ABORTED_VALUE)
                 .setMessage(errorMessage + throwable.getMessage())
                 .build();
       } else if (e instanceof ModelDBException) {
-        ModelDBException modelDBException = (ModelDBException) e;
+        var modelDBException = (ModelDBException) e;
         logBasedOnTheErrorCode(isClientError(modelDBException.getCode().value()), modelDBException);
         status =
             Status.newBuilder()
@@ -122,16 +131,16 @@ public class CommonUtils {
                 .setMessage(CommonConstants.INTERNAL_ERROR)
                 .build();
       }
-      int n = 0;
+      var n = 0;
       boolean isLongStack = stack.length > STACKTRACE_LENGTH;
       if (isLongStack) {
         for (; n < STACKTRACE_LENGTH + 1; ++n) {
-          LOGGER.warn("{}: {}", n, stack[n].toString());
+          LOGGER.warn("{}: {}", n, stack[n]);
         }
       }
       for (; n < stack.length; ++n) {
         if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
-          LOGGER.warn("{}: {}", n, stack[n].toString());
+          LOGGER.warn("{}: {}", n, stack[n]);
         }
       }
       statusRuntimeException = StatusProto.toStatusRuntimeException(status);
@@ -187,10 +196,27 @@ public class CommonUtils {
     if (throwable == null) {
       return null;
     }
-    Throwable rootCause = throwable;
+    var rootCause = throwable;
     while (rootCause.getCause() != null && rootCause.getCause() != rootCause) {
       rootCause = rootCause.getCause();
     }
     return rootCause;
+  }
+
+  public static void printStackTrace(Logger logger, Exception e) {
+    StackTraceElement[] stack = e.getStackTrace();
+    logger.error("Stacktrace with {} elements for {}", stack.length, e);
+    int n = 0;
+    boolean isLongStack = stack.length > STACKTRACE_LENGTH;
+    if (isLongStack) {
+      for (; n < STACKTRACE_LENGTH + 1; ++n) {
+        logger.warn("{}: {}", n, stack[n].toString());
+      }
+    }
+    for (; n < stack.length; ++n) {
+      if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
+        logger.warn("{}: {}", n, stack[n].toString());
+      }
+    }
   }
 }

@@ -10,7 +10,7 @@ import ai.verta.modeldb.GetComments;
 import ai.verta.modeldb.GetComments.Response;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateComment;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
@@ -29,7 +29,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(CommentServiceImpl.class);
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final CommentDAO commentDAO;
   private final ExperimentRunDAO experimentRunDAO;
 
@@ -37,7 +37,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
 
   public CommentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
-    this.roleService = serviceSet.roleService;
+    this.mdbRoleService = serviceSet.mdbRoleService;
     this.commentDAO = daoSet.commentDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
   }
@@ -108,12 +108,10 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       AddComment request, StreamObserver<AddComment.Response> responseObserver) {
     try {
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      Comment comment = getCommentFromRequest(request, userInfo);
-      Comment newComment =
-          commentDAO.addComment(experimentRunEntity, request.getEntityId(), comment);
-      AddComment.Response response =
-          AddComment.Response.newBuilder().setComment(newComment).build();
+      var userInfo = authService.getCurrentLoginUserInfo();
+      var comment = getCommentFromRequest(request, userInfo);
+      var newComment = commentDAO.addComment(experimentRunEntity, request.getEntityId(), comment);
+      var response = AddComment.Response.newBuilder().setComment(newComment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -126,12 +124,11 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       UpdateComment request, StreamObserver<UpdateComment.Response> responseObserver) {
     try {
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      Comment updatedComment = getUpdatedCommentFromRequest(request, userInfo);
+      var userInfo = authService.getCurrentLoginUserInfo();
+      var updatedComment = getUpdatedCommentFromRequest(request, userInfo);
       updatedComment =
           commentDAO.updateComment(experimentRunEntity, request.getEntityId(), updatedComment);
-      UpdateComment.Response response =
-          UpdateComment.Response.newBuilder().setComment(updatedComment).build();
+      var response = UpdateComment.Response.newBuilder().setComment(updatedComment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -145,17 +142,16 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       GetComments request, StreamObserver<Response> responseObserver) {
     try {
       if (request.getEntityId().isEmpty()) {
-        String errorMessage = "Entity ID not found in GetComments request";
+        var errorMessage = "Entity ID not found in GetComments request";
         throw new InvalidArgumentException(errorMessage);
       }
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getEntityId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<Comment> comments = commentDAO.getComments(experimentRunEntity, request.getEntityId());
-      GetComments.Response response =
-          GetComments.Response.newBuilder().addAllComments(comments).build();
+      var response = GetComments.Response.newBuilder().addAllComments(comments).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -181,12 +177,11 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       }
 
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
       Boolean status =
           commentDAO.deleteComment(
               experimentRunEntity, request.getEntityId(), request.getId(), userInfo);
-      DeleteComment.Response response =
-          DeleteComment.Response.newBuilder().setStatus(status).build();
+      var response = DeleteComment.Response.newBuilder().setStatus(status).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {

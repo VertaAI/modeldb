@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.Job;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -17,7 +18,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "job")
-public class JobEntity {
+public class JobEntity implements Serializable {
 
   public JobEntity() {}
 
