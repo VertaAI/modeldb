@@ -60,7 +60,7 @@ class TestObject:
             env_vars=env_vars,
         )
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        requirements = _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
         for line in requirements:
             assert line in repr(env)
         for line in constraints:
@@ -82,7 +82,7 @@ class TestObject:
         assert env._msg.python.raw_requirements
         assert env._msg.python.raw_constraints
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        requirements = _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
         for line in requirements:
             assert line in repr(env)
         for line in constraints:
@@ -137,7 +137,7 @@ class TestParsedRequirements:
         assert env._msg.python.requirements
         assert not env._msg.python.raw_requirements
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        reqs = _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
         assert_parsed_reqs_match(env.requirements, reqs)
 
     def test_from_files(self, requirements_file):
@@ -146,7 +146,7 @@ class TestParsedRequirements:
         assert env._msg.python.requirements
         assert not env._msg.python.raw_requirements
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        reqs = _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
         assert_parsed_reqs_match(env.requirements, reqs)
 
     def test_legacy_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
@@ -190,7 +190,7 @@ class TestParsedRequirements:
         assert requirement.split("+")[0] in env_ver.requirements
 
     def test_inject_verta_cloudpickle(self):
-        env = Python(requirements=[])
+        env = Python(requirements=["pytest"])
         requirements = {req.library for req in env._msg.python.requirements}
 
         assert "verta" in requirements
@@ -215,13 +215,12 @@ class TestRawRequirements:
             assert not env._msg.python.requirements
             assert env._msg.python.raw_requirements
 
-            expected_reqs = [req]
-            _pip_requirements_utils.pin_verta_and_cloudpickle(expected_reqs)
+            expected_reqs = _pip_requirements_utils.pin_verta_and_cloudpickle([req])
             assert env.requirements == expected_reqs
 
     def test_inject_verta_cloudpickle(self):
         reqs = [
-            "-e client/verta"
+            "--no-binary :all:",
         ]
         env = Python(requirements=reqs)
 
@@ -280,3 +279,21 @@ class TestRawConstraints:
 
         assert env._msg.python.raw_constraints == requirements_file_without_versions.read()
         assert set(env.constraints) == set(constraints)
+
+
+class TestVCSInstalledVerta:
+    @pytest.mark.parametrize(
+        "requirements",
+        [
+            ["-e git+git@github.com:VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
+            ["-e git+https://github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
+            ["-e git+ssh://git@github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
+        ],
+    )
+    def test_vcs_installed_verta(self, requirements):
+        vcs_verta_req = requirements[0]
+        pinned_verta_req = "verta=={}".format(verta.__version__)
+
+        env = Python(requirements=requirements)
+        assert vcs_verta_req not in env.requirements
+        assert pinned_verta_req in env.requirements
