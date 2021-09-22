@@ -87,12 +87,16 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     List<String> resourceIds = new LinkedList<>();
     Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
 
+    projects.forEach(
+        project -> {
+          vertaIds.add(project.getOwner());
+          resourceIds.add(project.getId());
+        });
+
     projects
         .parallelStream()
         .forEach(
             (project) -> {
-              vertaIds.add(project.getOwner());
-              resourceIds.add(project.getId());
               List<GetCollaboratorResponseItem> projectCollaboratorList =
                   mdbRoleService.getResourceCollaborators(
                       ModelDBServiceResourceTypes.PROJECT,
@@ -750,12 +754,16 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     Metadata requestHeaders = AuthInterceptor.METADATA_INFO.get();
     List<String> resourceIds = new LinkedList<>();
 
+    datasets.forEach(
+        dataset -> {
+          vertaIds.add(dataset.getOwner());
+          resourceIds.add(dataset.getId());
+        });
+
     datasets
         .parallelStream()
         .forEach(
             (dataset) -> {
-              vertaIds.add(dataset.getOwner());
-              resourceIds.add(dataset.getId());
               List<GetCollaboratorResponseItem> datasetCollaboratorList =
                   mdbRoleService.getResourceCollaborators(
                       ModelDBServiceResourceTypes.DATASET,
