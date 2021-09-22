@@ -2,11 +2,9 @@
 
 from __future__ import print_function
 
+import collections
 import os
 import sys
-
-import six
-from six.moves import collections_abc
 
 from verta.external import six
 from verta import _blob
@@ -104,7 +102,7 @@ class _Environment(_blob.Blob):
             # {'VERTA_HOST': 'app.verta.ai', 'CUDA_VISIBLE_DEVICES': '0,1'}
 
         """
-        if isinstance(env_vars, collections_abc.Mapping):
+        if isinstance(env_vars, collections.Mapping):
             # as mapping
             env_vars_dict = dict(env_vars)
         else:
