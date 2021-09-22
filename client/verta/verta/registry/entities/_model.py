@@ -9,6 +9,7 @@ from verta._internal_utils import _artifact_utils, _utils, arg_handler, model_va
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
+from verta._protos.public.registry.ModelMetadata_pb2 import ModelLanguageEnum, ModelTypeEnum
 
 from .. import VertaModelBase
 from ._modelversion import RegisteredModelVersion
@@ -182,8 +183,12 @@ class RegisteredModel(_entity._ModelDBEntity):
             _artifact_utils.validate_key(key)
         attrs = attrs or {}
         attrs.update({
-            "__verta_reserved__model_language": "Python",
-            "__verta_reserved__model_type": "StandardVertaModel",
+            "__verta_reserved__model_language": ModelLanguageEnum.ModelLanguage.Name(
+                ModelLanguageEnum.Python,
+            ),
+            "__verta_reserved__model_type": ModelTypeEnum.ModelType.Name(
+                ModelTypeEnum.StandardVertaModel,
+            ),
         })
 
         model_ver = self.create_version(
@@ -618,6 +623,94 @@ class RegisteredModel(_entity._ModelDBEntity):
             attrs=attrs,
             lock_level=lock_level,
         )
+
+    def create_containerized_model(
+        self,
+        docker_image,
+        model_api=None,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        lock_level=None,
+    ):
+        """Create a Containerized Model version from a Docker image.
+
+        .. versionadded:: 0.20.0
+
+        Parameters
+        ----------
+        docker_image : :class:`~verta.registry.DockerImage`
+            Docker image information.
+        model_api : :class:`~verta.utils.ModelAPI`, optional
+            Model API specifying the model's expected input and output
+        name : str, optional
+            Name of the model version. If no name is provided, one will be
+            generated.
+        desc : str, optional
+            Description of the model version.
+        labels : list of str, optional
+            Labels of the model version.
+        attrs : dict of str to {None, bool, float, int, str}, optional
+            Attributes of the model version.
+        lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
+            Lock level to set when creating this model version.
+
+        Returns
+        -------
+        :class:`~verta.registry.entities.RegisteredModelVersion`
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.registry import DockerImage
+
+            docker_image = DockerImage(
+                port=5000,
+                request_path="/predict_json",
+                health_path="/health",
+
+                repository="012345678901.dkr.ecr.apne2-az1.amazonaws.com/models/example",
+                tag="example",
+
+                env_vars={"CUDA_VISIBLE_DEVICES": "0,1"},
+            )
+
+            model_ver = reg_model.create_containerized_model(
+                docker_image,
+            )
+            endpoint.update(model_ver, wait=True)
+            endpoint.get_deployed_model().predict(input)
+
+        """
+        attrs = attrs or {}
+        attrs.update({
+            "__verta_reserved__model_language": ModelLanguageEnum.ModelLanguage.Name(
+                ModelLanguageEnum.Unknown,
+            ),
+            "__verta_reserved__model_type": ModelTypeEnum.ModelType.Name(
+                ModelTypeEnum.UserContainerizedModel,
+            ),
+        })
+
+        model_ver = self.create_version(
+            name=name,
+            desc=desc,
+            labels=labels,
+            attrs=attrs,
+            lock_level=lock_level,
+        )
+        try:
+            model_ver.log_docker(
+                docker_image=docker_image,
+                model_api=model_api,
+            )
+        except Exception as e:
+            model_ver.delete()
+            raise e
+
+        return model_ver
 
     def create_version_from_run(self, run_id, name=None, lock_level=None):
         """Create a model version copied from an experiment run.
