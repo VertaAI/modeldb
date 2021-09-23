@@ -38,6 +38,7 @@ from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
 from .. import lock, DockerImage
+from ..stage_change import _StageChange
 
 
 logger = logging.getLogger(__name__)
@@ -277,6 +278,45 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 return artifact_msg
 
         raise KeyError("no artifact found with key {}".format(key))
+
+    def change_stage(self, stage_change):
+        """Change this model version's stage, bypassing the approval cycle.
+
+        .. versionadded:: 0.19.2
+
+        .. note::
+
+            User must have read-write permissions.
+
+        Parameters
+        ----------
+        stage_change : :mod:`~verta.registry.stage_change`
+            Desired stage change.
+
+        Returns
+        -------
+        str
+            This model version's new stage.
+
+        Examples
+        --------
+        See documentation for individual stage change objects for usage
+        examples.
+
+        """
+        if not isinstance(stage_change, _StageChange):
+            raise TypeError(
+                "`stage_change` must be an object from `verta.registry.stage_change`,"
+                " not {}".format(type(stage_change))
+            )
+
+        msg = stage_change._to_proto_request(self.id)
+        endpoint = "/api/v1/registry/stage/updateStage"
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        self._conn.must_response(response)
+        self._clear_cache()
+
+        return self.stage
 
     def log_docker(
         self,

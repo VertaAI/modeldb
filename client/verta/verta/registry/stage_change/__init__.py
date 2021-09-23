@@ -4,6 +4,7 @@
 
 from verta._internal_utils import documentation
 
+from ._stage_change import _StageChange
 from ._archived import Archived
 from ._development import Development
 from ._production import Production
