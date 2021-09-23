@@ -301,6 +301,24 @@ class _DeployableEntity(_ModelDBEntity):
         )
         return artifact_msg
 
+    @classmethod
+    def _pretty_artifact_str(cls, artifact_msg):
+        """
+        Return a user friendly string representation of an artifact message.
+
+        Paramters
+        ---------
+        artifact_msg : CommonService_pb2.Artifact
+            Artifact message to render
+
+        Returns
+        -------
+        str
+            User friendly string representation
+        """
+        type_name = _CommonCommonService.ArtifactTypeEnum.ArtifactType.Name(artifact_msg.artifact_type)
+        return "Artifact({}, {}, upload completed: {})".format(artifact_msg.key, type_name, artifact_msg.upload_completed)
+
     def _cache_file(self, filename, contents):
         """
         Caches `contents` to `filename` within ``_CACHE_DIR``.

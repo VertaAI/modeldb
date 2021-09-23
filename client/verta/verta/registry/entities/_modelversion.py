@@ -77,8 +77,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._refresh_cache()
         msg = self._msg
         artifact_keys = self.get_artifact_keys()
+        artifacts = self._msg.artifacts
         if self.has_model:
             artifact_keys.append(self._MODEL_KEY)
+            artifacts.append(self._msg.model)
 
         return "\n".join(
             (
@@ -118,7 +120,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "registered model id: {}".format(msg.registered_model_id),
                 "experiment run id: {}".format(msg.experiment_run_id),
                 # "archived status: {}".format(msg.archived == _CommonCommonService.TernaryEnum.TRUE),
-                "artifact keys: {}".format(artifact_keys),
+                "artifacts: {}".format(map(self._pretty_artifact_str, artifacts))
             )
         )
 
@@ -140,11 +142,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def registered_model_id(self):
         self._refresh_cache()
         return self._msg.registered_model_id
-
-    # @property
-    # def is_archived(self):
-    #     self._refresh_cache()
-    #     return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
 
     @property
     def workspace(self):

@@ -74,6 +74,7 @@ class ExperimentRun(_DeployableEntity):
     def __repr__(self):
         self._refresh_cache()
         run_msg = self._msg
+        artifacts = run_msg.artifacts
         return "\n".join(
             (
                 "name: {}".format(run_msg.name),
@@ -107,7 +108,7 @@ class ExperimentRun(_DeployableEntity):
                     _utils.unravel_observations(run_msg.observations)
                 ),
                 "metrics: {}".format(_utils.unravel_key_values(run_msg.metrics)),
-                "artifact keys: {}".format(_utils.unravel_artifacts(run_msg.artifacts)),
+                "artifacts: {}".format(map(self._pretty_artifact_str, artifacts))
             )
         )
 
