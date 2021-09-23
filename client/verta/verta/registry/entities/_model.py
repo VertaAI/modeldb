@@ -9,9 +9,8 @@ from verta._internal_utils import _artifact_utils, _utils, arg_handler, model_va
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
-from verta._protos.public.registry.ModelMetadata_pb2 import ModelLanguageEnum, ModelTypeEnum
 
-from .. import VertaModelBase
+from .. import _constants, VertaModelBase
 from ._modelversion import RegisteredModelVersion
 from ._modelversions import RegisteredModelVersions
 
@@ -183,12 +182,8 @@ class RegisteredModel(_entity._ModelDBEntity):
             _artifact_utils.validate_key(key)
         attrs = attrs or {}
         attrs.update({
-            "__verta_reserved__model_language": ModelLanguageEnum.ModelLanguage.Name(
-                ModelLanguageEnum.Python,
-            ),
-            "__verta_reserved__model_type": ModelTypeEnum.ModelType.Name(
-                ModelTypeEnum.StandardVertaModel,
-            ),
+            _constants.MODEL_LANGUAGE_ATTR_KEY: _constants.ModelLanguage.PYTHON,
+            _constants.MODEL_TYPE_ATTR_KEY: _constants.ModelType.STANDARD_VERTA_MODEL,
         })
 
         model_ver = self.create_version(
@@ -686,12 +681,8 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         attrs = attrs or {}
         attrs.update({
-            "__verta_reserved__model_language": ModelLanguageEnum.ModelLanguage.Name(
-                ModelLanguageEnum.Unknown,
-            ),
-            "__verta_reserved__model_type": ModelTypeEnum.ModelType.Name(
-                ModelTypeEnum.UserContainerizedModel,
-            ),
+            _constants.MODEL_LANGUAGE_ATTR_KEY: _constants.ModelLanguage.UNKNOWN,
+            _constants.MODEL_TYPE_ATTR_KEY: _constants.ModelType.USER_CONTAINERIZED_MODEL,
         })
 
         model_ver = self.create_version(

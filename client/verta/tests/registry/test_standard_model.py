@@ -12,7 +12,7 @@ import pytest
 from verta._internal_utils import _artifact_utils, model_validator
 from verta.environment import Python
 from verta.external import six
-from verta.registry import verify_io
+from verta.registry import _constants, verify_io
 
 from ..models import standard_models
 from ..strategies import json_strategy
@@ -204,6 +204,19 @@ class TestModelValidator:
 
 
 class TestStandardModels:
+
+    @staticmethod
+    def assert_reserved_attributes(model_ver):
+        attrs = model_ver.get_attributes()
+        assert (
+            attrs[_constants.MODEL_LANGUAGE_ATTR_KEY]
+            == _constants.ModelLanguage.PYTHON
+        )
+        assert (
+            attrs[_constants.MODEL_TYPE_ATTR_KEY]
+            == _constants.ModelType.STANDARD_VERTA_MODEL
+        )
+
     @pytest.mark.parametrize(
         "model",
         verta_models,
@@ -230,6 +243,8 @@ class TestStandardModels:
                 artifacts={model.ARTIFACT_KEY: artifact_value},
             )
 
+        self.assert_reserved_attributes(model_ver)
+
         endpoint.update(model_ver, wait=True)
         deployed_model = endpoint.get_deployed_model()
         assert deployed_model.predict(artifact_value) == artifact_value
@@ -247,6 +262,8 @@ class TestStandardModels:
                 Python(["pytest"]),  # source module imports pytest
             )
         assert not record  # no warning of missing decorator on predict()
+
+        self.assert_reserved_attributes(model_ver)
 
         endpoint.update(model_ver, wait=True)
         deployed_model = endpoint.get_deployed_model()
@@ -287,6 +304,8 @@ class TestStandardModels:
             Python(["tensorflow"]),
         )
 
+        self.assert_reserved_attributes(model_ver)
+
         endpoint.update(model_ver, wait=True)
         deployed_model = endpoint.get_deployed_model()
         assert deployed_model.predict(np.random.random(size=(3, 3)))
@@ -324,6 +343,8 @@ class TestStandardModels:
             Python(["scikit-learn"]),
         )
 
+        self.assert_reserved_attributes(model_ver)
+
         endpoint.update(model_ver, wait=True)
         deployed_model = endpoint.get_deployed_model()
         assert deployed_model.predict(np.random.random(size=(3, 3)))
@@ -358,6 +379,8 @@ class TestStandardModels:
             Python(reqs),
         )
 
+        self.assert_reserved_attributes(model_ver)
+
         endpoint.update(model_ver, wait=True)
         deployed_model = endpoint.get_deployed_model()
         assert deployed_model.predict(np.random.random(size=(3, 3)))
@@ -384,6 +407,8 @@ class TestStandardModels:
             model,
             Python(["scikit-learn", "xgboost"]),
         )
+
+        self.assert_reserved_attributes(model_ver)
 
         endpoint.update(model_ver, wait=True)
         deployed_model = endpoint.get_deployed_model()
