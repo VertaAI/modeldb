@@ -63,6 +63,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         Whether there is a model associated with this Model Version.
     registered_model_id : int
         ID of this version's Registered Model.
+    stage : str
+        Model version stage.
 
     """
 
@@ -83,9 +85,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         return "\n".join(
             (
                 "version: {}".format(msg.version),
-                "stage: {}".format(
-                    _StageService.StageEnum.Stage.Name(msg.stage).lower()
-                ),
+                "stage: {}".format(self.stage),
                 "lock level: {}".format(
                     _RegistryService.ModelVersionLockLevelEnum.ModelVersionLockLevel.Name(
                         msg.lock_level
@@ -140,6 +140,11 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def registered_model_id(self):
         self._refresh_cache()
         return self._msg.registered_model_id
+
+    @property
+    def stage(self):
+        self._refresh_cache()
+        return _StageService.StageEnum.Stage.Name(self._msg.stage).lower()
 
     # @property
     # def is_archived(self):
