@@ -5,7 +5,9 @@ from __future__ import print_function
 import copy
 import warnings
 
-from verta._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
+from verta._protos.public.modeldb import (
+    ExperimentRunService_pb2 as _ExperimentRunService,
+)
 
 from verta.external import six
 
@@ -43,16 +45,22 @@ class ExperimentRuns(_LazyList):
     """
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
-        'id', 'project_id', 'experiment_id',
-        'name',
-        'date_created', 'date_updated',
-        'attributes', 'hyperparameters', 'metrics',
-        'tags'
+        "id",
+        "project_id",
+        "experiment_id",
+        "name",
+        "date_created",
+        "date_updated",
+        "attributes",
+        "hyperparameters",
+        "metrics",
+        "tags",
     }
 
     def __init__(self, conn, conf):
         super(ExperimentRuns, self).__init__(
-            conn, conf,
+            conn,
+            conf,
             _ExperimentRunService.FindExperimentRuns(),
         )
 
@@ -60,9 +68,9 @@ class ExperimentRuns(_LazyList):
         return "<ExperimentRuns containing {} runs>".format(self.__len__())
 
     def _call_back_end(self, msg):
-        response = self._conn.make_proto_request("POST",
-                                                "/api/v1/modeldb/experiment-run/findExperimentRuns",
-                                                body=msg)
+        response = self._conn.make_proto_request(
+            "POST", "/api/v1/modeldb/experiment-run/findExperimentRuns", body=msg
+        )
         response = self._conn.must_proto_response(response, msg.Response)
         return response.experiment_runs, response.total_records
 
@@ -87,8 +95,10 @@ class ExperimentRuns(_LazyList):
         data = []
         for run in self:
             run_data = {}
-            run_data.update({'hpp.'+k: v for k, v in run.get_hyperparameters().items()})
-            run_data.update({'metric.'+k: v for k, v in run.get_metrics().items()})
+            run_data.update(
+                {"hpp." + k: v for k, v in run.get_hyperparameters().items()}
+            )
+            run_data.update({"metric." + k: v for k, v in run.get_metrics().items()})
 
             ids.append(run.id)
             data.append(run_data)
@@ -104,7 +114,7 @@ class ExperimentRuns(_LazyList):
         if proj:
             new_list._msg.project_id = proj.id
         else:
-            new_list._msg.project_id = ''
+            new_list._msg.project_id = ""
         return new_list
 
     def with_experiment(self, expt=None):
@@ -112,7 +122,7 @@ class ExperimentRuns(_LazyList):
         if expt:
             new_list._msg.experiment_id = expt.id
         else:
-            new_list._msg.experiment_id = ''
+            new_list._msg.experiment_id = ""
         return new_list
 
     def top_k(self, key, k, ret_all_info=False):
@@ -150,12 +160,16 @@ class ExperimentRuns(_LazyList):
 
         """
         if ret_all_info:
-            warnings.warn("`ret_all_info` is deprecated and will be removed in a later version",
-                          category=FutureWarning)
+            warnings.warn(
+                "`ret_all_info` is deprecated and will be removed in a later version",
+                category=FutureWarning,
+            )
 
-        if key.split('.')[0] not in self._VALID_QUERY_KEYS:
-            raise ValueError("key `{}` is not a valid key for querying;"
-                             " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
+        if key.split(".")[0] not in self._VALID_QUERY_KEYS:
+            raise ValueError(
+                "key `{}` is not a valid key for querying;"
+                " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS)
+            )
 
         # apply sort to new Runs
         new_runs = copy.deepcopy(self)
@@ -210,12 +224,16 @@ class ExperimentRuns(_LazyList):
 
         """
         if ret_all_info:
-            warnings.warn("`ret_all_info` is deprecated and will be removed in a later version",
-                          category=FutureWarning)
+            warnings.warn(
+                "`ret_all_info` is deprecated and will be removed in a later version",
+                category=FutureWarning,
+            )
 
-        if key.split('.')[0] not in self._VALID_QUERY_KEYS:
-            raise ValueError("key `{}` is not a valid key for querying;"
-                             " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS))
+        if key.split(".")[0] not in self._VALID_QUERY_KEYS:
+            raise ValueError(
+                "key `{}` is not a valid key for querying;"
+                " currently supported keys are: {}".format(key, self._VALID_QUERY_KEYS)
+            )
 
         # apply sort to new Runs
         new_runs = copy.deepcopy(self)
@@ -251,7 +269,7 @@ class ExperimentRuns(_LazyList):
 
         """
         new_list = copy.deepcopy(self)
-        new_list._msg.ClearField('project_id')
-        new_list._msg.ClearField('experiment_id')
-        new_list._msg.workspace_name = workspace or ''
+        new_list._msg.ClearField("project_id")
+        new_list._msg.ClearField("experiment_id")
+        new_list._msg.workspace_name = workspace or ""
         return new_list

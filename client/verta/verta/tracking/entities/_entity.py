@@ -33,10 +33,9 @@ class _ModelDBEntity(object):
 
         # TODO: remove these b/c they're barely used, and don't even work with registry
         self._service = service_module
-        self._request_url = "{}://{}/api/v1/modeldb/{}/{}".format(self._conn.scheme,
-                                                      self._conn.socket,
-                                                      service_url_component,
-                                                      '{}')  # endpoint placeholder
+        self._request_url = "{}://{}/api/v1/modeldb/{}/{}".format(
+            self._conn.scheme, self._conn.socket, service_url_component, "{}"
+        )  # endpoint placeholder
 
         self.id = msg.id
         self._msg = msg
@@ -72,18 +71,18 @@ class _ModelDBEntity(object):
     def __getstate__(self):
         state = self.__dict__.copy()
 
-        state['_service_module_name'] = state['_service'].__name__
-        del state['_service']
+        state["_service_module_name"] = state["_service"].__name__
+        del state["_service"]
 
         # This is done because we can't pickle protobuf objects
         # TODO: use json conversion instead to avoid the call
-        del state['_msg']
+        del state["_msg"]
 
         return state
 
     def __setstate__(self, state):
-        state['_service'] = importlib.import_module(state['_service_module_name'])
-        del state['_service_module_name']
+        state["_service"] = importlib.import_module(state["_service_module_name"])
+        del state["_service_module_name"]
 
         self.__dict__.update(state)
 
@@ -106,7 +105,7 @@ class _ModelDBEntity(object):
             Sanitized `key`
 
         """
-        return "".join([x for x in key if (x.isalnum() or x == '_')])
+        return "".join([x for x in key if (x.isalnum() or x == "_")])
 
     @classmethod
     def _get_by_id(cls, conn, conf, id):
@@ -153,8 +152,8 @@ class _ModelDBEntity(object):
 
     @classmethod
     def _create(cls, conn, conf, *args, **kwargs):
-        if 'name' in kwargs and kwargs['name'] is None:
-            kwargs['name'] = cls._generate_default_name()
+        if "name" in kwargs and kwargs["name"] is None:
+            kwargs["name"] = cls._generate_default_name()
 
         # translate between `public_within_org` and `visibility`
         VISIBILITY_KEY = "visibility"
@@ -163,11 +162,16 @@ class _ModelDBEntity(object):
             visibility = kwargs.pop(VISIBILITY_KEY)
             public_within_org = kwargs.pop(PUBLIC_WITHIN_ORG_KEY)
 
-            visibility, public_within_org = _visibility._Visibility._translate_public_within_org(visibility, public_within_org)
+            (
+                visibility,
+                public_within_org,
+            ) = _visibility._Visibility._translate_public_within_org(
+                visibility, public_within_org
+            )
 
             kwargs[VISIBILITY_KEY] = visibility
             kwargs[PUBLIC_WITHIN_ORG_KEY] = public_within_org
-        if 'visibility' in kwargs and kwargs['visibility'] is None:
+        if "visibility" in kwargs and kwargs["visibility"] is None:
             # this case shouldn't happen since `visibility` should be wherever
             # `public_within_org` is, but just in case
             kwargs[VISIBILITY_KEY] = _workspace_default._WorkspaceDefault()
@@ -182,28 +186,49 @@ class _ModelDBEntity(object):
 
     @classmethod
     def _create_proto(cls, conn, *args, **kwargs):
-        tags = kwargs.pop('tags', None)
+        tags = kwargs.pop("tags", None)
         if tags is not None:
-            kwargs['tags'] = _utils.as_list_of_str(tags)
+            kwargs["tags"] = _utils.as_list_of_str(tags)
 
-        attrs = kwargs.pop('attrs', None)
+        attrs = kwargs.pop("attrs", None)
         if attrs is not None:
             for key, value in six.viewitems(attrs):
                 if isinstance(value, data_types._VertaDataType):
                     attrs[key] = value._as_dict()
 
-            kwargs['attrs'] = [
-                _CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True))
+            kwargs["attrs"] = [
+                _CommonCommonService.KeyValue(
+                    key=key,
+                    value=_utils.python_to_val_proto(value, allow_collection=True),
+                )
                 for key, value in six.viewitems(attrs)
             ]
 
         return cls._create_proto_internal(conn, *args, **kwargs)
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):  # recommended params
+    def _create_proto_internal(
+        cls,
+        conn,
+        ctx,
+        name,
+        desc=None,
+        tags=None,
+        attrs=None,
+        date_created=None,
+        **kwargs
+    ):  # recommended params
         raise NotImplementedError
 
-    def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False, is_dirty=None, autocapture=True):
+    def log_code(
+        self,
+        exec_path=None,
+        repo_url=None,
+        commit_hash=None,
+        overwrite=False,
+        is_dirty=None,
+        autocapture=True,
+    ):
         """
         Logs the code version.
 
@@ -297,9 +322,13 @@ class _ModelDBEntity(object):
             print("Git repository successfully located at {}".format(repo_root_dir))
         if not self._conf.use_git:
             if repo_url is not None or commit_hash is not None:
-                raise ValueError("`repo_url` and `commit_hash` can only be set if `use_git` was set to True in the Client")
+                raise ValueError(
+                    "`repo_url` and `commit_hash` can only be set if `use_git` was set to True in the Client"
+                )
             if not autocapture:  # user passed `False`
-                raise ValueError("`autocapture` is only applicable if `use_git` was set to True in the Client")
+                raise ValueError(
+                    "`autocapture` is only applicable if `use_git` was set to True in the Client"
+                )
 
         if autocapture:
             if exec_path is None:
@@ -314,12 +343,15 @@ class _ModelDBEntity(object):
             else:
                 exec_path = os.path.expanduser(exec_path)
                 if not os.path.isfile(exec_path):
-                    raise ValueError("`exec_path` \"{}\" must be a valid filepath".format(exec_path))
+                    raise ValueError(
+                        '`exec_path` "{}" must be a valid filepath'.format(exec_path)
+                    )
 
         # TODO: remove this circular dependency
         from ._project import Project
         from ._experiment import Experiment
         from ._experimentrun import ExperimentRun
+
         if isinstance(self, Project):  # TODO: not this
             Message = self._service.LogProjectCodeVersion
             endpoint = "logProjectCodeVersion"
@@ -335,13 +367,17 @@ class _ModelDBEntity(object):
             if isinstance(self, ExperimentRun):
                 msg.overwrite = True
             else:
-                raise ValueError("`overwrite=True` is currently only supported for ExperimentRun")
+                raise ValueError(
+                    "`overwrite=True` is currently only supported for ExperimentRun"
+                )
 
         if self._conf.use_git:
             if autocapture:
                 try:
                     # adjust `exec_path` to be relative to repo root
-                    exec_path = os.path.relpath(exec_path, _git_utils.get_git_repo_root_dir())
+                    exec_path = os.path.relpath(
+                        exec_path, _git_utils.get_git_repo_root_dir()
+                    )
                 except OSError as e:
                     print("{}; logging absolute path to file instead".format(e))
                     exec_path = os.path.abspath(exec_path)
@@ -349,35 +385,48 @@ class _ModelDBEntity(object):
                 msg.code_version.git_snapshot.filepaths.append(exec_path)
 
             from verta.code import _git  # avoid Python 2 top-level circular import
+
             code_ver = _git.Git(
-                repo_url=repo_url, commit_hash=commit_hash, is_dirty=is_dirty,
+                repo_url=repo_url,
+                commit_hash=commit_hash,
+                is_dirty=is_dirty,
                 autocapture=autocapture,
             )
             msg.code_version.git_snapshot.repo = code_ver.repo_url or ""
             msg.code_version.git_snapshot.hash = code_ver.commit_hash or ""
             if not autocapture and is_dirty is None:
-                msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.UNKNOWN
+                msg.code_version.git_snapshot.is_dirty = (
+                    _CommonCommonService.TernaryEnum.UNKNOWN
+                )
             elif code_ver.is_dirty:
-                msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.TRUE
+                msg.code_version.git_snapshot.is_dirty = (
+                    _CommonCommonService.TernaryEnum.TRUE
+                )
             else:
-                msg.code_version.git_snapshot.is_dirty = _CommonCommonService.TernaryEnum.FALSE
+                msg.code_version.git_snapshot.is_dirty = (
+                    _CommonCommonService.TernaryEnum.FALSE
+                )
         else:  # log code as Artifact
             if exec_path is None:
                 # don't halt execution
-                print("unable to find code file; you may be in an unsupported environment")
+                print(
+                    "unable to find code file; you may be in an unsupported environment"
+                )
                 return
                 # raise RuntimeError("unable to find code file; you may be in an unsupported environment")
 
             # write ZIP archive
             zipstream = six.BytesIO()
-            with zipfile.ZipFile(zipstream, 'w') as zipf:
+            with zipfile.ZipFile(zipstream, "w") as zipf:
                 filename = os.path.basename(exec_path)
                 if exec_path.endswith(".ipynb"):
                     try:
                         saved_notebook = _utils.save_notebook(exec_path)
                     except:  # failed to save
-                        print("unable to automatically save Notebook;"
-                              " logging latest checkpoint from disk")
+                        print(
+                            "unable to automatically save Notebook;"
+                            " logging latest checkpoint from disk"
+                        )
                         zipf.write(exec_path, filename)
                     else:
                         zipf.writestr(
@@ -388,8 +437,8 @@ class _ModelDBEntity(object):
                     zipf.write(exec_path, filename)
             zipstream.seek(0)
 
-            key = 'code'
-            extension = 'zip'
+            key = "code"
+            extension = "zip"
 
             artifact_hash = _artifact_utils.calc_sha256(zipstream)
             basename = key + os.extsep + extension
@@ -397,26 +446,30 @@ class _ModelDBEntity(object):
 
             msg.code_version.code_archive.path = artifact_path
             msg.code_version.code_archive.path_only = False
-            msg.code_version.code_archive.artifact_type = _CommonCommonService.ArtifactTypeEnum.CODE
+            msg.code_version.code_archive.artifact_type = (
+                _CommonCommonService.ArtifactTypeEnum.CODE
+            )
             msg.code_version.code_archive.filename_extension = extension
         # TODO: check if we actually have any loggable information
         msg.code_version.date_logged = _utils.now()
 
         data = _utils.proto_to_json(msg)
-        response = _utils.make_request("POST",
-                                       self._request_url.format(endpoint),
-                                       self._conn, json=data)
+        response = _utils.make_request(
+            "POST", self._request_url.format(endpoint), self._conn, json=data
+        )
         if not response.ok:
             if response.status_code == 409:
                 raise ValueError("a code version has already been logged")
             else:
                 _utils.raise_for_http_error(response)
 
-        if msg.code_version.WhichOneof("code") == 'code_archive':
+        if msg.code_version.WhichOneof("code") == "code_archive":
             # upload artifact to artifact store
             # pylint: disable=no-member
             # this method should only be called on ExperimentRun, which does have _get_url_for_artifact()
-            url = self._get_url_for_artifact("verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type).url
+            url = self._get_url_for_artifact(
+                "verta_code_archive", "PUT", msg.code_version.code_archive.artifact_type
+            ).url
 
             response = _utils.make_request("PUT", url, self._conn, data=zipstream)
             _utils.raise_for_http_error(response)
@@ -442,6 +495,7 @@ class _ModelDBEntity(object):
         from ._project import Project
         from ._experiment import Experiment
         from ._experimentrun import ExperimentRun
+
         if isinstance(self, Project):  # TODO: not this
             Message = self._service.GetProjectCodeVersion
             endpoint = "getProjectCodeVersion"
@@ -453,36 +507,44 @@ class _ModelDBEntity(object):
             endpoint = "getExperimentRunCodeVersion"
         msg = Message(id=self.id)
         data = _utils.proto_to_json(msg)
-        response = _utils.make_request("GET",
-                                       self._request_url.format(endpoint),
-                                       self._conn, params=data)
+        response = _utils.make_request(
+            "GET", self._request_url.format(endpoint), self._conn, params=data
+        )
         _utils.raise_for_http_error(response)
 
-        response_msg = _utils.json_to_proto(_utils.body_to_json(response), Message.Response)
+        response_msg = _utils.json_to_proto(
+            _utils.body_to_json(response), Message.Response
+        )
         code_ver_msg = response_msg.code_version
-        which_code = code_ver_msg.WhichOneof('code')
-        if which_code == 'git_snapshot':
+        which_code = code_ver_msg.WhichOneof("code")
+        if which_code == "git_snapshot":
             git_snapshot_msg = code_ver_msg.git_snapshot
             git_snapshot = {}
             if git_snapshot_msg.filepaths:
-                git_snapshot['filepaths'] = git_snapshot_msg.filepaths
+                git_snapshot["filepaths"] = git_snapshot_msg.filepaths
             if git_snapshot_msg.repo:
-                git_snapshot['repo_url'] = git_snapshot_msg.repo
+                git_snapshot["repo_url"] = git_snapshot_msg.repo
             if git_snapshot_msg.hash:
-                git_snapshot['commit_hash'] = git_snapshot_msg.hash
+                git_snapshot["commit_hash"] = git_snapshot_msg.hash
             if git_snapshot_msg.is_dirty != _CommonCommonService.TernaryEnum.UNKNOWN:
-                git_snapshot['is_dirty'] = git_snapshot_msg.is_dirty == _CommonCommonService.TernaryEnum.TRUE
+                git_snapshot["is_dirty"] = (
+                    git_snapshot_msg.is_dirty == _CommonCommonService.TernaryEnum.TRUE
+                )
             return git_snapshot
-        elif which_code == 'code_archive':
+        elif which_code == "code_archive":
             # download artifact from artifact store
             # pylint: disable=no-member
             # this method should only be called on ExperimentRun, which does have _get_url_for_artifact()
-            url = self._get_url_for_artifact("verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type).url
+            url = self._get_url_for_artifact(
+                "verta_code_archive", "GET", code_ver_msg.code_archive.artifact_type
+            ).url
 
             response = _utils.make_request("GET", url, self._conn)
             _utils.raise_for_http_error(response)
 
             code_archive = six.BytesIO(response.content)
-            return zipfile.ZipFile(code_archive, 'r')  # TODO: return a util class instead, maybe
+            return zipfile.ZipFile(
+                code_archive, "r"
+            )  # TODO: return a util class instead, maybe
         else:
             raise RuntimeError("unable find code in response")

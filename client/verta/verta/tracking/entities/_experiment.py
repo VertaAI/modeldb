@@ -30,11 +30,14 @@ class Experiment(_ModelDBEntity):
         Experiment Runs under this Experiment.
 
     """
+
     def __init__(self, conn, conf, msg):
-        super(Experiment, self).__init__(conn, conf, _ExperimentService, "experiment", msg)
+        super(Experiment, self).__init__(
+            conn, conf, _ExperimentService, "experiment", msg
+        )
 
     def __repr__(self):
-        return "<Experiment \"{}\">".format(self.name)
+        return '<Experiment "{}">'.format(self.name)
 
     @property
     def name(self):
@@ -54,9 +57,9 @@ class Experiment(_ModelDBEntity):
     def _get_proto_by_id(cls, conn, id):
         Message = _ExperimentService.GetExperimentById
         msg = Message(id=id)
-        response = conn.make_proto_request("GET",
-                                           "/api/v1/modeldb/experiment/getExperimentById",
-                                           params=msg)
+        response = conn.make_proto_request(
+            "GET", "/api/v1/modeldb/experiment/getExperimentById", params=msg
+        )
 
         return conn.maybe_proto_response(response, Message.Response).experiment
 
@@ -64,20 +67,27 @@ class Experiment(_ModelDBEntity):
     def _get_proto_by_name(cls, conn, name, proj_id):
         Message = _ExperimentService.GetExperimentByName
         msg = Message(project_id=proj_id, name=name)
-        response = conn.make_proto_request("GET",
-                                           "/api/v1/modeldb/experiment/getExperimentByName",
-                                           params=msg)
+        response = conn.make_proto_request(
+            "GET", "/api/v1/modeldb/experiment/getExperimentByName", params=msg
+        )
 
         return conn.maybe_proto_response(response, Message.Response).experiment
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None):
+    def _create_proto_internal(
+        cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None
+    ):
         Message = _ExperimentService.CreateExperiment
-        msg = Message(project_id=ctx.proj.id, name=name,
-                      description=desc, tags=tags, attributes=attrs)
-        response = conn.make_proto_request("POST",
-                                           "/api/v1/modeldb/experiment/createExperiment",
-                                           body=msg)
+        msg = Message(
+            project_id=ctx.proj.id,
+            name=name,
+            description=desc,
+            tags=tags,
+            attributes=attrs,
+        )
+        response = conn.make_proto_request(
+            "POST", "/api/v1/modeldb/experiment/createExperiment", body=msg
+        )
         expt = conn.must_proto_response(response, Message.Response).experiment
         print("created new Experiment: {}".format(expt.name))
         return expt
@@ -87,6 +97,10 @@ class Experiment(_ModelDBEntity):
         Deletes this experiment.
 
         """
-        request_url = "{}://{}/api/v1/modeldb/experiment/deleteExperiment".format(self._conn.scheme, self._conn.socket)
-        response = _utils.make_request("DELETE", request_url, self._conn, json={'id': self.id})
+        request_url = "{}://{}/api/v1/modeldb/experiment/deleteExperiment".format(
+            self._conn.scheme, self._conn.socket
+        )
+        response = _utils.make_request(
+            "DELETE", request_url, self._conn, json={"id": self.id}
+        )
         _utils.raise_for_http_error(response)

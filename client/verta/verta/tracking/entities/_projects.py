@@ -14,17 +14,18 @@ from ._project import Project
 class Projects(_LazyList):
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
-        'id',
-        'name',
-        'date_created',
-        'date_updated',
-        'attributes',
-        'tags',
+        "id",
+        "name",
+        "date_created",
+        "date_updated",
+        "attributes",
+        "tags",
     }
 
     def __init__(self, conn, conf):
         super(Projects, self).__init__(
-            conn, conf,
+            conn,
+            conf,
             _ProjectService.FindProjects(),
         )
 
@@ -32,9 +33,9 @@ class Projects(_LazyList):
         return "<Projects containing {} projects>".format(self.__len__())
 
     def _call_back_end(self, msg):
-        response = self._conn.make_proto_request("POST",
-                                                "/api/v1/modeldb/project/findProjects",
-                                                body=msg)
+        response = self._conn.make_proto_request(
+            "POST", "/api/v1/modeldb/project/findProjects", body=msg
+        )
         response = self._conn.must_proto_response(response, msg.Response)
         return response.projects, response.total_records
 
@@ -56,5 +57,5 @@ class Projects(_LazyList):
 
         """
         new_list = copy.deepcopy(self)
-        new_list._msg.workspace_name = workspace or ''
+        new_list._msg.workspace_name = workspace or ""
         return new_list

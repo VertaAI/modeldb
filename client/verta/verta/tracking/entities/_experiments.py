@@ -14,17 +14,18 @@ from ._experiment import Experiment
 class Experiments(_LazyList):
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
-        'id',
-        'name',
-        'date_created',
-        'date_updated',
-        'attributes',
-        'tags',
+        "id",
+        "name",
+        "date_created",
+        "date_updated",
+        "attributes",
+        "tags",
     }
 
     def __init__(self, conn, conf):
         super(Experiments, self).__init__(
-            conn, conf,
+            conn,
+            conf,
             _ExperimentService.FindExperiments(),
         )
 
@@ -32,9 +33,9 @@ class Experiments(_LazyList):
         return "<Experiment containing {} experiments>".format(self.__len__())
 
     def _call_back_end(self, msg):
-        response = self._conn.make_proto_request("POST",
-                                                "/api/v1/modeldb/experiment/findExperiments",
-                                                body=msg)
+        response = self._conn.make_proto_request(
+            "POST", "/api/v1/modeldb/experiment/findExperiments", body=msg
+        )
         response = self._conn.must_proto_response(response, msg.Response)
         return response.experiments, response.total_records
 
@@ -46,7 +47,7 @@ class Experiments(_LazyList):
         if proj:
             new_list._msg.project_id = proj.id
         else:
-            new_list._msg.project_id = ''
+            new_list._msg.project_id = ""
         return new_list
 
     def with_workspace(self, workspace=None):
@@ -64,6 +65,6 @@ class Experiments(_LazyList):
 
         """
         new_list = copy.deepcopy(self)
-        new_list._msg.ClearField('project_id')
-        new_list._msg.workspace_name = workspace or ''
+        new_list._msg.ClearField("project_id")
+        new_list._msg.workspace_name = workspace or ""
         return new_list
