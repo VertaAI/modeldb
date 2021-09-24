@@ -100,6 +100,8 @@ pygments_style = None
 
 # reStructuredText to be included at the beginning of every source file.
 rst_prolog = '\n'.join([
+".. |experimental| replace:: This functionality is experimental—please reach"
+    " out to us to verify its availability in your version of our platform.",
 ])
 
 

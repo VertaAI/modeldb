@@ -638,6 +638,10 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         .. versionadded:: 0.20.0
 
+        .. note::
+
+            |experimental|
+
         Parameters
         ----------
         docker_image : :class:`~verta.registry.DockerImage`

@@ -285,6 +285,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         .. note::
 
+            |experimental|
+
+        .. note::
+
             This method cannot be used alongside :meth:`log_environment`.
 
         Parameters
