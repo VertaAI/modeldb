@@ -100,22 +100,6 @@ pygments_style = None
 
 # reStructuredText to be included at the beginning of every source file.
 rst_prolog = '\n'.join([
-".. |tags description| replace:: Tags are short textual labels used to help"
-    " identify a run, such as its purpose or its environment.",
-".. |attributes description| replace:: Attributes are descriptive metadata,"
-    " such as the team responsible for this model or the expected training"
-    " time.",
-".. |hyperparameters description| replace:: Hyperparameters are model"
-    " configuration metadata, such as the loss function or the regularization"
-    " penalty.",
-".. |metrics description| replace:: Metrics are unique performance metadata,"
-    " such as accuracy or loss on the full training set.",
-".. |observations description| replace:: Observations are recurring metadata"
-    " that are repeatedly measured over time, such as batch losses over an"
-    " epoch or memory usage.",
-".. |dataset versioning overhaul| replace:: In ``verta==0.16.0``, the dataset"
-    " versioning interface was overhauled to be more flexible, robust, and"
-    " consistent with other ModelDB entities.",
 ])
 
 
