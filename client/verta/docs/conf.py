@@ -100,8 +100,9 @@ pygments_style = None
 
 # reStructuredText to be included at the beginning of every source file.
 rst_prolog = '\n'.join([
-".. |experimental| replace:: This functionality is experimental—please reach"
-    " out to us to verify its availability in your version of our platform.",
+".. |experimental| replace:: This feature may require an upgrade to the"
+    " platform; please reach out to the Verta team at support@verta.ai to"
+    " verify its availability in your version of the system.",
 ])
 
 
