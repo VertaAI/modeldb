@@ -916,7 +916,12 @@
         "UPDATE_REDACT",
         "ALERTER",
         "PREDICT",
-        "CONTROL"
+        "CONTROL",
+        "IS_ALLOWED",
+        "GET",
+        "READ_SECRETS",
+        "CREATE_SERVICE_ACCOUNT",
+        "CREATE_CONTAINER_REGISTRY"
       ],
       "default": "UNKNOWN"
     },
