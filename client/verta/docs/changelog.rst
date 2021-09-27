@@ -37,6 +37,21 @@ Changelog
      (`# <>`__)
 
 
+v0.19.2 (2021-09-27)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add ``RegisteredModelVersion.change_stage()``
+  (`#2654 <https://github.com/VertaAI/modeldb/pull/2654>`__)
+
+Bug Fixes
+^^^^^^^^^
+- put upper constraint on `protobuf version for Python 2 compatibility
+  <https://github.com/protocolbuffers/protobuf/issues/8984>`__
+  (`#2633 <https://github.com/VertaAI/modeldb/pull/2633>`__)
+
+
 v0.19.1 (2021-08-09)
 --------------------
 
