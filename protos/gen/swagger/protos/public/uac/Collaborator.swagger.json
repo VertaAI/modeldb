@@ -543,7 +543,9 @@
               "WORKSPACE",
               "USER",
               "SERVICE_ACCOUNT",
-              "CONTAINER_REGISTRY_CONFIGURATION"
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "EVENT",
+              "WEBHOOK"
             ],
             "default": "UNKNOWN"
           },
@@ -669,7 +671,9 @@
               "WORKSPACE",
               "USER",
               "SERVICE_ACCOUNT",
-              "CONTAINER_REGISTRY_CONFIGURATION"
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "EVENT",
+              "WEBHOOK"
             ],
             "default": "UNKNOWN"
           },
@@ -815,7 +819,9 @@
               "WORKSPACE",
               "USER",
               "SERVICE_ACCOUNT",
-              "CONTAINER_REGISTRY_CONFIGURATION"
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "EVENT",
+              "WEBHOOK"
             ],
             "default": "UNKNOWN"
           },
@@ -1368,7 +1374,9 @@
         "WORKSPACE",
         "USER",
         "SERVICE_ACCOUNT",
-        "CONTAINER_REGISTRY_CONFIGURATION"
+        "CONTAINER_REGISTRY_CONFIGURATION",
+        "EVENT",
+        "WEBHOOK"
       ],
       "default": "UNKNOWN"
     },
