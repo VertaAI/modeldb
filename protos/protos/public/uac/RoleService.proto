@@ -68,6 +68,11 @@ message ModelDBActionEnum {
         ALERTER = 12;
         PREDICT = 13;
         CONTROL = 14;
+        IS_ALLOWED = 15;
+        GET = 16;
+        READ_SECRETS = 17;
+        CREATE_SERVICE_ACCOUNT = 18;
+        CREATE_CONTAINER_REGISTRY = 19;
     }
 };
 
