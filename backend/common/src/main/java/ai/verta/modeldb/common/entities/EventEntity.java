@@ -2,9 +2,17 @@ package ai.verta.modeldb.common.entities;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 
 public class EventEntity implements Serializable {
   private EventEntity() {}
+
+  public EventEntity(String eventType, Long workspaceId, String eventMetadata) {
+    this.event_uuid = UUID.randomUUID().toString();
+    this.event_type = eventType;
+    this.workspace_id = workspaceId;
+    this.event_metadata = eventMetadata;
+  }
 
   String event_uuid; // uuid for this event to handle deduplication
   String event_type; // Service-specific name for this type of event
