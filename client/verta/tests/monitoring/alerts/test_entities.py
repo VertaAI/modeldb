@@ -102,8 +102,6 @@ class TestAlert:
 
         yesterday = time_utils.now() - datetime.timedelta(days=1)
         yesterday_millis = time_utils.epoch_millis(yesterday)
-        # TODO: remove following line when backend stops round to nearest sec
-        yesterday_millis = round(yesterday_millis, -3)
         alert._update_last_evaluated_at(yesterday)
         alert._fetch_with_no_cache()
         assert alert._msg.last_evaluated_at_millis == yesterday_millis
