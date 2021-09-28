@@ -6,6 +6,7 @@ import abc
 import copy
 import importlib
 import os
+import pathlib2
 import shutil
 import sys
 import tarfile
@@ -189,7 +190,20 @@ class _DeployableEntity(_ModelDBEntity):
             Absolute path where artifact was downloaded to. Matches `download_to_path`.
 
         """
+        download_to_path = os.path.abspath(download_to_path)
+        artifact = self._get_artifact_msg(key)
+        if artifact.upload_completed:
+            pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+            # TODO: clean up empty parent dirs if something later fails
+            return self._internal_download_artifact(key, artifact, download_to_path)
+        else:
+            raise ValueError("artifact upload incomplete; download not possible")
+
+
+    @abc.abstractmethod
+    def _internal_download_artifact(self, key, artifact, download_to_path):
         raise NotImplementedError
+
 
     @abc.abstractmethod
     def download_model(self, download_to_path):
