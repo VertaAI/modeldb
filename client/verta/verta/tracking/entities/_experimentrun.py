@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import ast
 import copy
+import logging
 import os
 import pathlib2
 import pprint
@@ -44,6 +45,9 @@ from verta.environment import _Environment
 
 from ._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from ._deployable_entity import _DeployableEntity
+
+
+logger = logging.getLogger(__name__)
 
 
 class ExperimentRun(_DeployableEntity):
@@ -1720,7 +1724,7 @@ class ExperimentRun(_DeployableEntity):
 
         # get a stream of the file bytes, without loading into memory, and write to file
         # TODO: consolidate this with _get_artifact() and get_artifact()
-        print("downloading {} from ModelDB".format(key))
+        logger.info("downloading %s from ModelDB", key)
         if artifact.path_only:
             if os.path.exists(artifact.path):
                 # copy from clientside storage
@@ -1730,7 +1734,7 @@ class ExperimentRun(_DeployableEntity):
                     "artifact {} appears to have been logged as path-only,"
                     " and cannot be downloaded".format(key)
                 )
-            print("download complete; file written to {}".format(download_to_path))
+            logger.info("download complete; file written to %s", download_to_path)
         else:
             # download artifact from artifact store
             url = self._get_url_for_artifact(key, "GET").url
