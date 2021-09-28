@@ -47,6 +47,7 @@ message AuthzActionEnum {
         READ_SECRETS = 8;
         CREATE_SERVICE_ACCOUNT = 9;
         CREATE_CONTAINER_REGISTRY = 10;
+        CREATE_WEBHOOK = 11;
     }
 
 };
