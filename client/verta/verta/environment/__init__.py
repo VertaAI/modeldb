@@ -9,6 +9,6 @@ from ._python import Python
 
 
 documentation.reassign_module(
-    [Docker, Python],
+    [Python],
     module_name=__name__,
 )
