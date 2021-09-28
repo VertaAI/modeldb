@@ -1000,12 +1000,12 @@
             </not>
         </preConditions>
         <createTable tableName="event">
-            <column name="eventUUID" type="varchar(64)">
+            <column name="event_uuid" type="varchar(64)">
                 <constraints nullable="false" primaryKey="true" primaryKeyName="pk_query_event_uuid"/>
             </column>
-            <column name="eventType" type="varchar(64)"/>
-            <column name="workspaceId" type="int8"/>
-            <column name="eventMetadata" type="text"/>
+            <column name="event_type" type="varchar(64)"/>
+            <column name="workspace_id" type="int8"/>
+            <column name="event_metadata" type="text"/>
         </createTable>
         <rollback>
             <dropTable tableName="event"/>
