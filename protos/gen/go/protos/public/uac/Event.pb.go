@@ -533,7 +533,7 @@ func (x *DeleteWebhookRequest) GetIds() []uint64 {
 	return nil
 }
 
-// Single call of a webhook to dliver a given event
+// Single call of a webhook to deliver a given event
 type WebhookCall struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
