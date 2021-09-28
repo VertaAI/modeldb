@@ -4,6 +4,8 @@ import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import com.google.gson.JsonObject;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -17,25 +19,27 @@ public class FutureEventDAO {
   private final Executor executor;
   private final FutureJdbi jdbi;
   private final Config config;
+  private final String serviceType;
 
-  public FutureEventDAO(Executor executor, FutureJdbi jdbi, Config config) {
+  public FutureEventDAO(Executor executor, FutureJdbi jdbi, Config config, String serviceType) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.config = config;
+    this.serviceType = serviceType;
   }
 
   public Boolean addLocalEventWithBlocking(
-      String eventType, long workspaceId, String eventMetadata) {
-    return addLocalEvent(eventType, workspaceId, eventMetadata).get();
+      String resourceType, String eventType, long workspaceId, JsonObject eventMetadata) {
+    return addLocalEvent(resourceType, eventType, workspaceId, eventMetadata).get();
   }
 
   public InternalFuture<Boolean> addLocalEventWithAsync(
-      String eventType, long workspaceId, String eventMetadata) {
-    return addLocalEvent(eventType, workspaceId, eventMetadata);
+      String resourceType, String eventType, long workspaceId, JsonObject eventMetadata) {
+    return addLocalEvent(resourceType, eventType, workspaceId, eventMetadata);
   }
 
   private InternalFuture<Boolean> addLocalEvent(
-      String eventType, long workspaceId, String eventMetadata) {
+      String resourceType, String eventType, long workspaceId, JsonObject eventMetadata) {
     if (!config.isEvent_system_enabled()) {
       LOGGER.info("Event system is not enabled");
       return InternalFuture.completedInternalFuture(false);
@@ -46,6 +50,10 @@ public class FutureEventDAO {
       return InternalFuture.failedStage(new ModelDBException("Workspace id should not be empty"));
     }
 
+    eventMetadata.addProperty("service", serviceType);
+    eventMetadata.addProperty("resource_type", resourceType);
+    eventMetadata.addProperty("logged_time", new Date().getTime());
+
     return jdbi.withHandle(
             handle ->
                 handle
@@ -54,7 +62,7 @@ public class FutureEventDAO {
                     .bind("event_uuid", UUID.randomUUID().toString())
                     .bind("event_type", eventType)
                     .bind("workspace_id", workspaceId)
-                    .bind("event_metadata", eventMetadata)
+                    .bind("event_metadata", eventMetadata.toString())
                     .execute())
         .thenApply(
             insertedRowCount -> {
