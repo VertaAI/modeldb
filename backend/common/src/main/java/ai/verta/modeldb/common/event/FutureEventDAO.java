@@ -4,14 +4,11 @@ import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -44,7 +41,7 @@ public class FutureEventDAO {
       return InternalFuture.completedInternalFuture(false);
     }
 
-    if (workspaceId == 0){
+    if (workspaceId == 0) {
       LOGGER.info("workspaceId not found while logging event");
       return InternalFuture.failedStage(new ModelDBException("Workspace id should not be empty"));
     }
@@ -81,9 +78,12 @@ public class FutureEventDAO {
       return InternalFuture.completedInternalFuture(false);
     }
 
-    Set<String> eventUUIDs = eventUUIDList.stream().filter(eventUUID -> !eventUUID.isEmpty()).collect(Collectors.toSet());
+    Set<String> eventUUIDs =
+        eventUUIDList.stream()
+            .filter(eventUUID -> !eventUUID.isEmpty())
+            .collect(Collectors.toSet());
 
-    if (eventUUIDs.isEmpty()){
+    if (eventUUIDs.isEmpty()) {
       return InternalFuture.failedStage(new ModelDBException("Event UUID not found for deletion"));
     }
 
