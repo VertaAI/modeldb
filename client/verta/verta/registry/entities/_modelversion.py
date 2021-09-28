@@ -27,17 +27,18 @@ from verta._internal_utils import (
     _artifact_utils,
     _request_utils,
     _utils,
+    arg_handler,
     importer,
     time_utils,
 )
 from verta import utils
 
-from verta import _blob, code, data_types
-from verta.environment import _Environment, Python
+from verta import _blob, code, data_types, environment
 from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
-from .. import lock
+from .. import lock, DockerImage
+from ..stage_change import _StageChange
 
 
 logger = logging.getLogger(__name__)
@@ -63,6 +64,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         Whether there is a model associated with this Model Version.
     registered_model_id : int
         ID of this version's Registered Model.
+    stage : str
+        Model version stage.
 
     """
 
@@ -83,9 +86,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         return "\n".join(
             (
                 "version: {}".format(msg.version),
-                "stage: {}".format(
-                    _StageService.StageEnum.Stage.Name(msg.stage).lower()
-                ),
+                "stage: {}".format(self.stage),
                 "lock level: {}".format(
                     _RegistryService.ModelVersionLockLevelEnum.ModelVersionLockLevel.Name(
                         msg.lock_level
@@ -132,13 +133,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         return self._msg.version
 
     @property
-    def has_environment(self):
-        self._refresh_cache()
-        return self._msg.environment.HasField(
-            "python"
-        ) or self._msg.environment.HasField("docker")
-
-    @property
     def has_model(self):
         self._refresh_cache()
         return bool(self._msg.model) and bool(self._msg.model.key)
@@ -147,6 +141,11 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def registered_model_id(self):
         self._refresh_cache()
         return self._msg.registered_model_id
+
+    @property
+    def stage(self):
+        self._refresh_cache()
+        return _StageService.StageEnum.Stage.Name(self._msg.stage).lower()
 
     # @property
     # def is_archived(self):
@@ -279,6 +278,151 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 return artifact_msg
 
         raise KeyError("no artifact found with key {}".format(key))
+
+    def change_stage(self, stage_change):
+        """Change this model version's stage, bypassing the approval cycle.
+
+        .. versionadded:: 0.19.2
+
+        .. note::
+
+            User must have read-write permissions.
+
+        Parameters
+        ----------
+        stage_change : :mod:`~verta.registry.stage_change`
+            Desired stage change.
+
+        Returns
+        -------
+        str
+            This model version's new stage.
+
+        Examples
+        --------
+        See documentation for individual stage change objects for usage
+        examples.
+
+        """
+        if not isinstance(stage_change, _StageChange):
+            raise TypeError(
+                "`stage_change` must be an object from `verta.registry.stage_change`,"
+                " not {}".format(type(stage_change))
+            )
+
+        msg = stage_change._to_proto_request(self.id)
+        endpoint = "/api/v1/registry/stage/updateStage"
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        self._conn.must_response(response)
+        self._clear_cache()
+
+        return self.stage
+
+    def log_docker(
+        self,
+        docker_image,
+        model_api=None,
+        overwrite=False,
+    ):
+        """Log Docker image information for deployment.
+
+        .. versionadded:: 0.20.0
+
+        .. note::
+
+            This method cannot be used alongside :meth:`log_environment`.
+
+        Parameters
+        ----------
+        docker_image : :class:`~verta.registry.DockerImage`
+            Docker image information.
+        model_api : :class:`~verta.utils.ModelAPI`, optional
+            Model API specifying the model's expected input and output
+        overwrite : bool, default False
+            Whether to allow overwriting existing Docker image information.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.registry import DockerImage
+
+            model_ver.log_docker(
+                DockerImage(
+                    port=5000,
+                    request_path="/predict_json",
+                    health_path="/health",
+
+                    repository="012345678901.dkr.ecr.apne2-az1.amazonaws.com/models/example",
+                    tag="example",
+
+                    env_vars={"CUDA_VISIBLE_DEVICES": "0,1"},
+                )
+            )
+
+        """
+        if not isinstance(docker_image, DockerImage):
+            raise TypeError(
+                "`docker_image` must be type verta.registry.DockerImage,"
+                " not {}".format(type(docker_image))
+            )
+        if model_api and not isinstance(model_api, utils.ModelAPI):
+            raise ValueError(
+                "`model_api` must be `verta.utils.ModelAPI`, not {}".format(
+                    type(model_api)
+                )
+            )
+
+        # check for conflict
+        if not overwrite:
+            self._refresh_cache()
+            if self._msg.docker_metadata.request_port:
+                raise ValueError(
+                    "Docker image information already exists;"
+                    " consider setting overwrite=True"
+                )
+            if self.has_environment:
+                raise ValueError(
+                    "environment already exists;"
+                    " consider setting overwrite=True"
+                )
+
+        # log model API (first, in case there's a conflict)
+        if model_api:
+            self.log_artifact(
+                _artifact_utils.MODEL_API_KEY,
+                model_api,
+                overwrite,
+                "json",
+            )
+
+        # log docker
+        if overwrite:
+            self._fetch_with_no_cache()
+            docker_image._merge_into_model_ver_proto(self._msg)
+            self._update(self._msg, method="PUT")
+        else:
+            self._update(
+                docker_image._as_model_ver_proto(),
+                method="PATCH",
+                update_mask={"paths": ["docker_metadata", "environment"]},
+            )
+
+    def get_docker(self):
+        """Get logged Docker image information.
+
+        Returns
+        -------
+        :class:`~verta.registry.DockerImage`
+
+        """
+        self._refresh_cache()
+        if not self._msg.docker_metadata.request_port:
+            raise ValueError(
+                "Docker image information has not been logged"
+            )
+
+        return DockerImage._from_model_ver_proto(self._msg)
 
     def log_model(
         self,
@@ -583,18 +727,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._update(self._msg, method="PUT")
 
     def log_environment(self, env, overwrite=False):
-        """
-        Logs an environment to this Model Version.
-
-        Parameters
-        ----------
-        env : :class:`~verta.environment.Python`
-            Environment to log.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing artifact with key `key`.
-
-        """
-        if not isinstance(env, _Environment):
+        if not isinstance(env, environment._Environment):
             raise TypeError(
                 "`env` must be of type Environment, not {}".format(type(env))
             )
@@ -623,22 +756,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._fetch_with_no_cache()
         self._msg.ClearField("environment")
         self._update(self._msg, method="PUT")
-
-    def get_environment(self):
-        """
-        Gets the environment of this Model Version.
-
-        Returns
-        -------
-        :class:`~verta.environment.Python`
-            Environment of this ModelVersion.
-
-        """
-        self._refresh_cache()
-        if not self.has_environment:
-            raise RuntimeError("environment was not previously set.")
-
-        return Python._from_proto(self._msg)
 
     def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         if method.upper() not in ("GET", "PUT"):

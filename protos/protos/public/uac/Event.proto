@@ -60,7 +60,7 @@ message DeleteWebhookRequest {
     repeated uint64 ids = 1;
 }
 
-// Single call of a webhook to dliver a given event
+// Single call of a webhook to deliver a given event
 message WebhookCall {
     uint64 id = 1;
     uint64 webhook_id = 2;

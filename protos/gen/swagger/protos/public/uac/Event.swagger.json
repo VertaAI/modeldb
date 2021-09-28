@@ -513,7 +513,7 @@
           "$ref": "#/definitions/WebhookCallStatus"
         }
       },
-      "title": "Single call of a webhook to dliver a given event"
+      "title": "Single call of a webhook to deliver a given event"
     }
   },
   "basePath": "/v1"

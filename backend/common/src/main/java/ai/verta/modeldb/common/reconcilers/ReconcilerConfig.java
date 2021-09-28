@@ -14,6 +14,10 @@ public class ReconcilerConfig {
     return batchSize;
   }
 
+  public void setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
+  }
+
   public int getWorkerCount() {
     return workerCount;
   }

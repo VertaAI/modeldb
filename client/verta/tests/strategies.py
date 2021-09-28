@@ -44,3 +44,40 @@ def filepath(draw):
 
     segments = [draw(st.text(legal_chars, min_size=1)) for _ in range(num_segments)]
     return os.path.join(*segments)
+
+
+@st.composite
+def env_vars(draw):
+    """For use as Environment versioning's `env_var` parameter.
+
+    The parameter can be either a list of variable names that exist in the
+    environment or a mapping of names to specific values.
+
+    Returns
+    -------
+    env_vars : list of str, or dict of str to str
+        Environment variables.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        env = Environment(env_vars=env_vars)
+
+        if isinstance(env_vars, list):
+            env_vars = {name: os.environ[name] for name in env_vars}
+
+        assert env.env_vars == (env_vars or None)
+
+    """
+    return draw(
+        st.one_of(
+            st.lists(
+                st.sampled_from(sorted(os.environ.keys())),
+            ),
+            st.dictionaries(
+                keys=st.text(min_size=1),
+                values=st.text(min_size=1),
+            ),
+        )
+    )

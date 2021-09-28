@@ -543,7 +543,9 @@
               "WORKSPACE",
               "USER",
               "SERVICE_ACCOUNT",
-              "CONTAINER_REGISTRY_CONFIGURATION"
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "EVENT",
+              "WEBHOOK"
             ],
             "default": "UNKNOWN"
           },
@@ -567,7 +569,13 @@
               "MONITORED_ENTITY",
               "NOTIFICATION_CHANNEL",
               "ENDPOINT",
-              "BUILD"
+              "BUILD",
+              "ORGANIZATION",
+              "TEAM",
+              "WORKSPACE",
+              "USER",
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -669,7 +677,9 @@
               "WORKSPACE",
               "USER",
               "SERVICE_ACCOUNT",
-              "CONTAINER_REGISTRY_CONFIGURATION"
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "EVENT",
+              "WEBHOOK"
             ],
             "default": "UNKNOWN"
           },
@@ -693,7 +703,13 @@
               "MONITORED_ENTITY",
               "NOTIFICATION_CHANNEL",
               "ENDPOINT",
-              "BUILD"
+              "BUILD",
+              "ORGANIZATION",
+              "TEAM",
+              "WORKSPACE",
+              "USER",
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -815,7 +831,9 @@
               "WORKSPACE",
               "USER",
               "SERVICE_ACCOUNT",
-              "CONTAINER_REGISTRY_CONFIGURATION"
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "EVENT",
+              "WEBHOOK"
             ],
             "default": "UNKNOWN"
           },
@@ -839,7 +857,13 @@
               "MONITORED_ENTITY",
               "NOTIFICATION_CHANNEL",
               "ENDPOINT",
-              "BUILD"
+              "BUILD",
+              "ORGANIZATION",
+              "TEAM",
+              "WORKSPACE",
+              "USER",
+              "SERVICE_ACCOUNT",
+              "CONTAINER_REGISTRY_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -1368,7 +1392,9 @@
         "WORKSPACE",
         "USER",
         "SERVICE_ACCOUNT",
-        "CONTAINER_REGISTRY_CONFIGURATION"
+        "CONTAINER_REGISTRY_CONFIGURATION",
+        "EVENT",
+        "WEBHOOK"
       ],
       "default": "UNKNOWN"
     },
@@ -1455,7 +1481,12 @@
         "UPDATE_REDACT",
         "ALERTER",
         "PREDICT",
-        "CONTROL"
+        "CONTROL",
+        "IS_ALLOWED",
+        "GET",
+        "READ_SECRETS",
+        "CREATE_SERVICE_ACCOUNT",
+        "CREATE_CONTAINER_REGISTRY"
       ],
       "default": "UNKNOWN"
     },
@@ -1476,7 +1507,13 @@
         "MONITORED_ENTITY",
         "NOTIFICATION_CHANNEL",
         "ENDPOINT",
-        "BUILD"
+        "BUILD",
+        "ORGANIZATION",
+        "TEAM",
+        "WORKSPACE",
+        "USER",
+        "SERVICE_ACCOUNT",
+        "CONTAINER_REGISTRY_CONFIGURATION"
       ],
       "default": "UNKNOWN"
     },

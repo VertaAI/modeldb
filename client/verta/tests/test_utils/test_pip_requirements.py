@@ -19,6 +19,12 @@ from verta._internal_utils import _pip_requirements_utils
 
 
 @st.composite
+def libraries(draw):
+    alphabet = string.ascii_letters + string.digits + "-_"
+    return draw(st.text(alphabet=alphabet, min_size=1))
+
+
+@st.composite
 def versions(draw):
     numbers = st.integers(min_value=0, max_value=(2 ** 31) - 1)
 
@@ -127,6 +133,40 @@ class TestPipRequirementsUtils:
 
 
 class TestPinVertaAndCloudpickle:
+    @hypothesis.given(
+        library=libraries(),
+        version=versions(),
+        other_library=libraries(),
+    )
+    def test_inject_requirement(self, library, version, other_library):
+        # limitation of current implementation
+        # uses startswith() to avoid dealing with the ==, etc. operators
+        # which is fine since this is only used for verta & cloudpickle
+        hypothesis.assume(not other_library.startswith(library))
+
+        pinned_library_req = "{}=={}".format(library, version)
+
+        requirements = _pip_requirements_utils.inject_requirement(
+            [],
+            library,
+            version,
+        )
+        assert requirements == [pinned_library_req]
+
+        requirements = _pip_requirements_utils.inject_requirement(
+            [library],
+            library,
+            version,
+        )
+        assert requirements == [pinned_library_req]
+
+        requirements = _pip_requirements_utils.inject_requirement(
+            [other_library],
+            library,
+            version,
+        )
+        assert requirements == [other_library, pinned_library_req]
+
     def test_preserve_req_suffixes(self):
         # NOTE: the reqs here aren't technically valid themselves due to duplicates
         verta_reqs_suffixes = [
@@ -157,5 +197,5 @@ class TestPinVertaAndCloudpickle:
             for suffix in cloudpickle_reqs_suffixes
         ]
         expected_reqs = expected_verta_reqs + expected_cloudpickle_reqs
-        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        reqs = _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
         assert reqs == expected_reqs

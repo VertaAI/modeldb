@@ -122,4 +122,8 @@ public class RdbConfig {
   public String getSslMode() {
     return sslMode;
   }
+
+  public String getRdbDriver() {
+    return RdbDriver;
+  }
 }

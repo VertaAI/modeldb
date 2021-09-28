@@ -2,6 +2,8 @@
 
 import pytest
 
+from verta.registry import stage_change
+
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
@@ -58,9 +60,33 @@ class TestFind:
             assert item._msg == msg_other
 
     def test_find_stage(self, registered_model):
-        # TODO: expand with other stages once client impls version transition
-        assert len(registered_model.versions.find("stage == unassigned")) == 0
+        find = registered_model.versions.find
 
-        registered_model.create_version()
-        assert len(registered_model.versions.find("stage == unassigned")) == 1
-        assert len(registered_model.versions.find("stage == development")) == 0
+        assert len(find("stage == unassigned")) == 0
+
+        model_ver = registered_model.create_version()
+        assert len(find("stage == unassigned")) == 1
+
+        model_ver.change_stage(
+            stage_change.Development("Working on it."),
+        )
+        assert len(find("stage == unassigned")) == 0
+        assert len(find("stage == development")) == 1
+
+        model_ver.change_stage(
+            stage_change.Staging("Undergoing final testing."),
+        )
+        assert len(find("stage == development")) == 0
+        assert len(find("stage == staging")) == 1
+
+        model_ver.change_stage(
+            stage_change.Production("Rolling out to prod."),
+        )
+        assert len(find("stage == staging")) == 0
+        assert len(find("stage == production")) == 1
+
+        model_ver.change_stage(
+            stage_change.Archived("Deprioritized; keeping for posterity."),
+        )
+        assert len(find("stage == production")) == 0
+        assert len(find("stage == archived")) == 1
