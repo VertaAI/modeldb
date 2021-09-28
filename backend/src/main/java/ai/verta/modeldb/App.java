@@ -123,7 +123,8 @@ public class App implements ApplicationContextAware {
 
   @Bean
   public GracefulShutdown gracefulShutdown() {
-    if (mdbConfig == null) {
+    MDBConfig mdbConfig = App.getInstance().mdbConfig;
+    if (mdbConfig == null || mdbConfig.getSpringServer().getShutdownTimeout() == null) {
       return new GracefulShutdown(30L);
     }
     return new GracefulShutdown(mdbConfig.getSpringServer().getShutdownTimeout());
