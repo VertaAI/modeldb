@@ -120,6 +120,8 @@ message AuthzResourceEnum {
         USER = 5;
         SERVICE_ACCOUNT = 6;
         CONTAINER_REGISTRY_CONFIGURATION = 7;
+        EVENT = 8;
+        WEBHOOK = 9;
     }
 };
 
