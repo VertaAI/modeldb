@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "uac/Workspace.proto",
+    "title": "uac/Event.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -11,41 +11,9 @@
     "application/json"
   ],
   "paths": {
-    "/workspace/createOrUpdateContainerRegistryConfiguration": {
+    "/event/createEvent": {
       "post": {
-        "operationId": "WorkspaceService_createOrUpdateContainerRegistryConfiguration",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
-            }
-          }
-        ],
-        "tags": [
-          "WorkspaceService"
-        ]
-      }
-    },
-    "/workspace/deleteContainerRegistryConfiguration": {
-      "post": {
-        "operationId": "WorkspaceService_deleteContainerRegistryConfiguration",
+        "operationId": "EventService_createEvent",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -66,45 +34,23 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
+              "$ref": "#/definitions/uacCreateEventRequest"
             }
           }
         ],
         "tags": [
-          "WorkspaceService"
+          "EventService"
         ]
       }
     },
-    "/workspace/getVisibleWorkspaces": {
-      "get": {
-        "operationId": "WorkspaceService_getVisibleWorkspaces",
+    "/event/createWebhook": {
+      "post": {
+        "operationId": "EventService_createWebhook",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacWorkspaces"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "tags": [
-          "WorkspaceService"
-        ]
-      }
-    },
-    "/workspace/getWorkspaceById": {
-      "get": {
-        "operationId": "WorkspaceService_getWorkspaceById",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacWorkspace"
+              "$ref": "#/definitions/uacWebhook"
             }
           },
           "default": {
@@ -116,26 +62,27 @@
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacCreateWebhookRequest"
+            }
           }
         ],
         "tags": [
-          "WorkspaceService"
+          "EventService"
         ]
       }
     },
-    "/workspace/getWorkspaceByLegacyId": {
-      "get": {
-        "operationId": "WorkspaceService_getWorkspaceByLegacyId",
+    "/event/deleteWebhook": {
+      "delete": {
+        "operationId": "EventService_deleteWebhook",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacWorkspace"
+              "$ref": "#/definitions/uacEmpty"
             }
           },
           "default": {
@@ -147,37 +94,27 @@
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "workspace_type",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "UNKNOWN",
-              "ORGANIZATION",
-              "USER"
-            ],
-            "default": "UNKNOWN"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacDeleteWebhookRequest"
+            }
           }
         ],
         "tags": [
-          "WorkspaceService"
+          "EventService"
         ]
       }
     },
-    "/workspace/getWorkspaceByName": {
-      "get": {
-        "operationId": "WorkspaceService_getWorkspaceByName",
+    "/event/findWebhook": {
+      "post": {
+        "operationId": "EventService_findWebhook",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacWorkspace"
+              "$ref": "#/definitions/uacFindWebhookRequestResponse"
             }
           },
           "default": {
@@ -189,25 +126,124 @@
         },
         "parameters": [
           {
-            "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacFindWebhookRequest"
+            }
           }
         ],
         "tags": [
-          "WorkspaceService"
+          "EventService"
+        ]
+      }
+    },
+    "/event/findWebhookCall": {
+      "post": {
+        "operationId": "EventService_findWebhookCall",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacFindWebhookCallRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacFindWebhookCallRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/event/retriggerWebhookCall": {
+      "post": {
+        "operationId": "EventService_retriggerWebhookCall",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacWebhookCall"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacRetriggerWebhookCallRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/event/updateWebhook": {
+      "post": {
+        "operationId": "EventService_updateWebhook",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacWebhook"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacUpdateWebhookRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
         ]
       }
     }
   },
   "definitions": {
-    "WorkspaceTypeEnumWorkspaceType": {
+    "WebhookCallStatus": {
       "type": "string",
       "enum": [
         "UNKNOWN",
-        "ORGANIZATION",
-        "USER"
+        "SUCCESS",
+        "FAILURE",
+        "IN_PROGRESS"
       ],
       "default": "UNKNOWN"
     },
@@ -247,68 +283,237 @@
         }
       }
     },
-    "uacEmpty": {
-      "type": "object"
-    },
-    "uacWorkspace": {
+    "uacCreateEventRequest": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "user_id": {
+        "event_uuid": {
           "type": "string"
         },
-        "org_id": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "org_name": {
-          "type": "string"
-        },
-        "container_registries": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
-          }
-        }
-      }
-    },
-    "uacWorkspaceContainerRegistryConfiguration": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "base": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "secret_key": {
+        "event_type": {
           "type": "string"
         },
         "workspace_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "event_metadata": {
+          "$ref": "#/definitions/protobufAny"
         }
       }
     },
-    "uacWorkspaces": {
+    "uacCreateWebhookRequest": {
       "type": "object",
       "properties": {
-        "workspace": {
+        "name": {
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "location": {
+          "type": "string"
+        },
+        "mutual_secret": {
+          "type": "string"
+        },
+        "event_types": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/uacWorkspace"
+            "type": "string"
+          }
+        },
+        "all_events": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacDeleteWebhookRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
           }
         }
       }
+    },
+    "uacEmpty": {
+      "type": "object"
+    },
+    "uacFindWebhookCallRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "webhook_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "event_uuids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WebhookCallStatus"
+          }
+        }
+      }
+    },
+    "uacFindWebhookCallRequestResponse": {
+      "type": "object",
+      "properties": {
+        "calls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacWebhookCall"
+          }
+        }
+      }
+    },
+    "uacFindWebhookRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "workspace_id": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      }
+    },
+    "uacFindWebhookRequestResponse": {
+      "type": "object",
+      "properties": {
+        "webhooks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacWebhook"
+          }
+        }
+      }
+    },
+    "uacRetriggerWebhookCallRequest": {
+      "type": "object",
+      "properties": {
+        "call_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "The call returned for this has a completely new ID"
+    },
+    "uacUpdateWebhookRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "new_location": {
+          "type": "string"
+        },
+        "mutual_secret": {
+          "type": "string"
+        },
+        "add_event_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "delete_event_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "set_all_events": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "clear_all_events": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacWebhook": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "location": {
+          "type": "string"
+        },
+        "mutual_secret": {
+          "type": "string"
+        },
+        "event_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uacWebhookCall": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "webhook_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "event_uuid": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/WebhookCallStatus"
+        }
+      },
+      "title": "Single call of a webhook to deliver a given event"
     }
   },
   "basePath": "/v1"

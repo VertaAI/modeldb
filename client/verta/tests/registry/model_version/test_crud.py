@@ -7,7 +7,7 @@ import verta
 import verta.dataset
 from verta import visibility
 from verta import data_types
-from verta.registry import lock
+from verta.registry import lock, stage_change
 from verta._internal_utils import importer
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
@@ -303,6 +303,27 @@ class TestLockLevels:
             user_model_ver.delete()
         admin_model_ver.delete()
 
+
+class TestStages:
+
+    def test_update_stage(self, model_version):
+        assert model_version.stage == "unassigned"
+
+        assert model_version.change_stage(
+            stage_change.Development("Working on it."),
+        ) == model_version.stage == "development"
+
+        assert model_version.change_stage(
+            stage_change.Staging("Undergoing final testing."),
+        ) == model_version.stage == "staging"
+
+        assert model_version.change_stage(
+            stage_change.Production("Rolling out to prod."),
+        ) == model_version.stage == "production"
+
+        assert model_version.change_stage(
+            stage_change.Archived("Deprioritized; keeping for posterity."),
+        ) == model_version.stage == "archived"
 
 # TODO: combine with test_experimentrun/test_attributes.py::TestComplexAttributes
 @pytest.mark.skipif(
