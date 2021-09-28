@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import abc
 import copy
+import logging
 import importlib
 import os
 import pathlib2
@@ -42,6 +43,8 @@ _CACHE_DIR = os.path.join(
 _INTERNAL_ATTR_PREFIX = "__verta_"
 _FEATURE_DATA_ATTR_PREFIX = _INTERNAL_ATTR_PREFIX + "feature_data_"
 _TRAINING_DATA_ATTR_PREFIX = _INTERNAL_ATTR_PREFIX + "training_data_"
+
+logger = logging.getLogger(__name__)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -172,7 +175,14 @@ class _DeployableEntity(_ModelDBEntity):
         """
         raise NotImplementedError
 
-    # TODO: Fix for VR-12591
+
+    @classmethod
+    def _validate_artifact_uploaded(cls, artifact_msg):
+        """Raises a ValueError if the artifact upload is not complete"""
+        if (not artifact_msg.upload_completed):
+            raise ValueError("artifact upload incomplete; download not possible")
+
+
     @abc.abstractmethod
     def download_artifact(self, key, download_to_path):
         """Downloads the artifact with name `key` to path `download_to_path`.
@@ -192,12 +202,10 @@ class _DeployableEntity(_ModelDBEntity):
         """
         download_to_path = os.path.abspath(download_to_path)
         artifact = self._get_artifact_msg(key)
-        if artifact.upload_completed:
-            pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
-            # TODO: clean up empty parent dirs if something later fails
-            return self._internal_download_artifact(key, artifact, download_to_path)
-        else:
-            raise ValueError("artifact upload incomplete; download not possible")
+        self._validate_artifact_uploaded(artifact)
+        pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+        # TODO: clean up empty parent dirs if something later fails
+        return self._internal_download_artifact(key, artifact, download_to_path)
 
 
     @abc.abstractmethod
@@ -486,7 +494,11 @@ class _DeployableEntity(_ModelDBEntity):
             #     identical, so multiple writes would be idempotent.
             path = self._get_cached_file(filename)
             if path is None:
-                contents = self._get_artifact(key)
+                try:
+                    contents = self._get_artifact(key)
+                except ValueError as error:
+                    logger.exception(error)
+                    continue
                 if isinstance(contents, tuple):
                     # ExperimentRun._get_artifact() returns two values (contents, path_only)
                     # whereas ModelVersion._get_artifact() returns one (contents), so until
