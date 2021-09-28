@@ -427,7 +427,7 @@ class _DeployableEntity(_ModelDBEntity):
         path = os.path.join(_CACHE_DIR, name)
         return path if os.path.exists(path) else None
 
-    # TODO: Fix for VR-12591
+
     def fetch_artifacts(self, keys):
         """
         Downloads artifacts that are associated with a Standard Verta Model.
