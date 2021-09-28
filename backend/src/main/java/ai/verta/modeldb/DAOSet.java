@@ -5,6 +5,7 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
+import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.TrialConfig;
@@ -42,6 +43,7 @@ public class DAOSet {
   public MetadataDAO metadataDAO;
   public ProjectDAO projectDAO;
   public RepositoryDAO repositoryDAO;
+  public FutureEventDAO futureEventDAO;
 
   public static DAOSet fromServices(
       ServiceSet services,
@@ -96,6 +98,7 @@ public class DAOSet {
             set.repositoryDAO,
             set.commitDAO,
             set.blobDAO);
+    set.futureEventDAO = new FutureEventDAO(executor, jdbi, mdbConfig, "MDB_BACKEND");
 
     return set;
   }

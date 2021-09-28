@@ -1,5 +1,7 @@
 package ai.verta.modeldb.project;
 
+import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.AddProjectAttributes;
 import ai.verta.modeldb.AddProjectTag;
 import ai.verta.modeldb.AddProjectTags;
@@ -37,21 +39,30 @@ import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import io.grpc.stub.StreamObserver;
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FutureProjectServiceImpl extends ProjectServiceImpl {
   private final Executor executor;
   private final FutureProjectDAO futureProjectDAO;
   private final ProjectDAO projectDAO;
+  private final FutureEventDAO futureEventDAO;
 
   public FutureProjectServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
     super(serviceSet, daoSet);
     this.executor = executor;
     this.futureProjectDAO = daoSet.futureProjectDAO;
     this.projectDAO = daoSet.projectDAO;
+    this.futureEventDAO = daoSet.futureEventDAO;
   }
 
   private InternalFuture<Project> getProjectById(String projectId) {
@@ -88,6 +99,30 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .addAllAttributes(request.getAttributesList())
                       .build())
               .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject -> {
+                    // Add succeeded event in local DB
+                    JsonObject eventMetadata = new JsonObject();
+                    eventMetadata.addProperty("entity_id", updatedProject.getId());
+                    eventMetadata.addProperty("updated_field", "attributes");
+                    eventMetadata.add(
+                        "attribute_keys",
+                        new Gson()
+                            .toJsonTree(
+                                request.getAttributesList().stream()
+                                    .map(KeyValue::getKey)
+                                    .collect(Collectors.toSet()),
+                                new TypeToken<ArrayList<String>>() {}.getType()));
+                    eventMetadata.addProperty("message", "project attributes added successfully");
+                    return futureEventDAO
+                        .addLocalEventWithAsync(
+                            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT.name(),
+                            "update.resource.project.update_project_succeeded",
+                            updatedProject.getWorkspaceServiceId(),
+                            eventMetadata)
+                        .thenApply(eventLoggedStatus -> updatedProject, executor);
+                  },
+                  executor)
               .thenApply(
                   updatedProject ->
                       AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build(),
@@ -107,6 +142,30 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
           futureProjectDAO
               .updateProjectAttributes(request)
               .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject -> {
+                    // Add succeeded event in local DB
+                    JsonObject eventMetadata = new JsonObject();
+                    eventMetadata.addProperty("entity_id", updatedProject.getId());
+                    eventMetadata.addProperty("updated_field", "attributes");
+                    eventMetadata.add(
+                        "attribute_keys",
+                        new Gson()
+                            .toJsonTree(
+                                Stream.of(request.getAttribute())
+                                    .map(KeyValue::getKey)
+                                    .collect(Collectors.toSet()),
+                                new TypeToken<ArrayList<String>>() {}.getType()));
+                    eventMetadata.addProperty("message", "project attributes updated successfully");
+                    return futureEventDAO
+                        .addLocalEventWithAsync(
+                            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT.name(),
+                            "update.resource.project.update_project_succeeded",
+                            updatedProject.getWorkspaceServiceId(),
+                            eventMetadata)
+                        .thenApply(eventLoggedStatus -> updatedProject, executor);
+                  },
+                  executor)
               .thenApply(
                   updatedProject ->
                       UpdateProjectAttributes.Response.newBuilder()
@@ -145,6 +204,32 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
           futureProjectDAO
               .deleteAttributes(request)
               .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject -> {
+                    // Add succeeded event in local DB
+                    JsonObject eventMetadata = new JsonObject();
+                    eventMetadata.addProperty("entity_id", updatedProject.getId());
+                    eventMetadata.addProperty("updated_field", "attributes");
+                    if (request.getDeleteAll()) {
+                      eventMetadata.addProperty("attributes_deleted_all", true);
+                    } else {
+                      eventMetadata.add(
+                          "attribute_keys",
+                          new Gson()
+                              .toJsonTree(
+                                  request.getAttributeKeysList(),
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
+                    }
+                    eventMetadata.addProperty("message", "project attributes deleted successfully");
+                    return futureEventDAO
+                        .addLocalEventWithAsync(
+                            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT.name(),
+                            "update.resource.project.update_project_succeeded",
+                            updatedProject.getWorkspaceServiceId(),
+                            eventMetadata)
+                        .thenApply(eventLoggedStatus -> updatedProject, executor);
+                  },
+                  executor)
               .thenApply(
                   updatedProject ->
                       DeleteProjectAttributes.Response.newBuilder()
@@ -165,6 +250,28 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
           futureProjectDAO
               .addTags(request)
               .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject -> {
+                    // Add succeeded event in local DB
+                    JsonObject eventMetadata = new JsonObject();
+                    eventMetadata.addProperty("entity_id", updatedProject.getId());
+                    eventMetadata.addProperty("updated_field", "tags");
+                    eventMetadata.add(
+                        "attribute_keys",
+                        new Gson()
+                            .toJsonTree(
+                                request.getTagsList(),
+                                new TypeToken<ArrayList<String>>() {}.getType()));
+                    eventMetadata.addProperty("message", "project tags updated successfully");
+                    return futureEventDAO
+                        .addLocalEventWithAsync(
+                            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT.name(),
+                            "update.resource.project.update_project_succeeded",
+                            updatedProject.getWorkspaceServiceId(),
+                            eventMetadata)
+                        .thenApply(eventLoggedStatus -> updatedProject, executor);
+                  },
+                  executor)
               .thenApply(
                   updatedProject ->
                       AddProjectTags.Response.newBuilder().setProject(updatedProject).build(),
@@ -196,6 +303,32 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
           futureProjectDAO
               .deleteTags(request)
               .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject -> {
+                    // Add succeeded event in local DB
+                    JsonObject eventMetadata = new JsonObject();
+                    eventMetadata.addProperty("entity_id", updatedProject.getId());
+                    eventMetadata.addProperty("updated_field", "tags");
+                    if (request.getDeleteAll()) {
+                      eventMetadata.addProperty("tags_deleted_all", true);
+                    } else {
+                      eventMetadata.add(
+                          "tags",
+                          new Gson()
+                              .toJsonTree(
+                                  request.getTagsList(),
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
+                    }
+                    eventMetadata.addProperty("message", "project tags deleted successfully");
+                    return futureEventDAO
+                        .addLocalEventWithAsync(
+                            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT.name(),
+                            "update.resource.project.update_project_succeeded",
+                            updatedProject.getWorkspaceServiceId(),
+                            eventMetadata)
+                        .thenApply(eventLoggedStatus -> updatedProject, executor);
+                  },
+                  executor)
               .thenApply(
                   updatedProject ->
                       DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build(),
@@ -218,6 +351,28 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .addTags(request.getTag())
                       .build())
               .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject -> {
+                    // Add succeeded event in local DB
+                    JsonObject eventMetadata = new JsonObject();
+                    eventMetadata.addProperty("entity_id", updatedProject.getId());
+                    eventMetadata.addProperty("updated_field", "tags");
+                    eventMetadata.add(
+                        "tags",
+                        new Gson()
+                            .toJsonTree(
+                                Stream.of(request.getTag()).collect(Collectors.toSet()),
+                                new TypeToken<ArrayList<String>>() {}.getType()));
+                    eventMetadata.addProperty("message", "project tag added successfully");
+                    return futureEventDAO
+                        .addLocalEventWithAsync(
+                            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT.name(),
+                            "update.resource.project.update_project_succeeded",
+                            updatedProject.getWorkspaceServiceId(),
+                            eventMetadata)
+                        .thenApply(eventLoggedStatus -> updatedProject, executor);
+                  },
+                  executor)
               .thenApply(
                   updatedProject ->
                       AddProjectTag.Response.newBuilder().setProject(updatedProject).build(),
@@ -241,6 +396,28 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .setDeleteAll(false)
                       .build())
               .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject -> {
+                    // Add succeeded event in local DB
+                    JsonObject eventMetadata = new JsonObject();
+                    eventMetadata.addProperty("entity_id", updatedProject.getId());
+                    eventMetadata.addProperty("updated_field", "tags");
+                    eventMetadata.add(
+                        "tags",
+                        new Gson()
+                            .toJsonTree(
+                                Stream.of(request.getTag()).collect(Collectors.toSet()),
+                                new TypeToken<ArrayList<String>>() {}.getType()));
+                    eventMetadata.addProperty("message", "project tag deleted successfully");
+                    return futureEventDAO
+                        .addLocalEventWithAsync(
+                            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT.name(),
+                            "update.resource.project.update_project_succeeded",
+                            updatedProject.getWorkspaceServiceId(),
+                            eventMetadata)
+                        .thenApply(eventLoggedStatus -> updatedProject, executor);
+                  },
+                  executor)
               .thenApply(
                   updatedProject ->
                       DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build(),
