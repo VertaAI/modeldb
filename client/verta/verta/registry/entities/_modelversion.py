@@ -623,30 +623,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         return artifact_stream
 
-    # TODO: Fix for VR-12591
-    # def download_artifact(self, key, download_to_path):
-    #     download_to_path = os.path.abspath(download_to_path)
-    #     artifact = self._get_artifact_msg(key)
-    #
-    #     # create parent dirs
-    #     pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
-    #     # TODO: clean up empty parent dirs if something later fails
-    #
-    #     # get a stream of the file bytes, without loading into memory, and write to file
-    #     logger.info("downloading %s from Registry", key)
-    #     url = self._get_url_for_artifact(key, "GET").url
-    #     with _utils.make_request("GET", url, self._conn, stream=True) as response:
-    #         _utils.raise_for_http_error(response)
-    #
-    #         if (
-    #             artifact.filename_extension == _artifact_utils.ZIP_EXTENSION
-    #         ):  # verta-created ZIP
-    #             downloader = _request_utils.download_zipped_dir
-    #         else:
-    #             downloader = _request_utils.download_file
-    #         downloader(response, download_to_path, overwrite_ok=True)
-    #
-    #     return download_to_path
 
     def _internal_download_artifact(self, key, artifact, download_to_path):
         # get a stream of the file bytes, without loading into memory, and write to file

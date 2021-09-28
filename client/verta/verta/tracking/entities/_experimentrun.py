@@ -1712,44 +1712,6 @@ class ExperimentRun(_DeployableEntity):
         self._refresh_cache()
         return list(map(lambda artifact: artifact.key, self._msg.artifacts))
 
-    # TODO: Fix for VR-12591
-    # def download_artifact(self, key, download_to_path):
-    #     download_to_path = os.path.abspath(download_to_path)
-    #
-    #     artifact = self._get_artifact_msg(key)
-    #
-    #     # create parent dirs
-    #     pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
-    #     # TODO: clean up empty parent dirs if something later fails
-    #
-    #     # get a stream of the file bytes, without loading into memory, and write to file
-    #     # TODO: consolidate this with _get_artifact() and get_artifact()
-    #     logger.info("downloading %s from ModelDB", key)
-    #     if artifact.path_only:
-    #         if os.path.exists(artifact.path):
-    #             # copy from clientside storage
-    #             shutil.copyfile(artifact.path, download_to_path)
-    #         else:
-    #             raise ValueError(
-    #                 "artifact {} appears to have been logged as path-only,"
-    #                 " and cannot be downloaded".format(key)
-    #             )
-    #         logger.info("download complete; file written to %s", download_to_path)
-    #     else:
-    #         # download artifact from artifact store
-    #         url = self._get_url_for_artifact(key, "GET").url
-    #         with _utils.make_request("GET", url, self._conn, stream=True) as response:
-    #             _utils.raise_for_http_error(response)
-    #
-    #             if (
-    #                 artifact.filename_extension == _artifact_utils.ZIP_EXTENSION
-    #             ):  # verta-created ZIP
-    #                 downloader = _request_utils.download_zipped_dir
-    #             else:
-    #                 downloader = _request_utils.download_file
-    #             downloader(response, download_to_path, overwrite_ok=True)
-    #
-    #     return download_to_path
 
     def _internal_download_artifact(self, key, artifact, download_to_path):
         logger.info("downloading %s from ModelDB", key)
