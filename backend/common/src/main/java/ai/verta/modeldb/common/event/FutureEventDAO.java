@@ -95,7 +95,7 @@ public class FutureEventDAO {
                     .execute())
         .thenApply(
             insertedRowCount -> {
-              LOGGER.debug("Event deleted successfully");
+              LOGGER.debug("Events deleted successfully, Events UUID are {}", eventUUIDList);
               return insertedRowCount > 0;
             },
             executor);
