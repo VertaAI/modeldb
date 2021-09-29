@@ -61,7 +61,7 @@ bases/test_deployable_entity.py::TestBuildArtifactStorePath::test_no_ext PASSED 
 bases/test_deployable_entity.py::TestCreateArtifactMsg::test_with_ext PASSED                     [100%]
 ```
 
-`-rfE` outputs a summary when tests are complete, listing failures and errors:
+`-rfE` outputs a summary (`r`) when tests are complete, listing failures (`f`) and errors (`E`):
 
 ```bash
 ============================= short test summary info ==============================
