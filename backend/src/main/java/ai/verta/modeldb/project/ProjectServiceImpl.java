@@ -987,7 +987,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       JsonObject eventMetadata = new JsonObject();
       eventMetadata.addProperty("entity_id", updatedProject.getId());
       eventMetadata.addProperty("updated_field", "read_me_text");
-      eventMetadata.addProperty("read_me_text", request.getReadmeText());
+      eventMetadata.addProperty("updated_field_value", request.getReadmeText());
       eventMetadata.addProperty("message", "project read_me_text updated successfully");
       futureEventDAO.addLocalEventWithBlocking(
           ModelDBServiceResourceTypes.PROJECT.name(),
@@ -1065,7 +1065,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       JsonObject eventMetadata = new JsonObject();
       eventMetadata.addProperty("entity_id", project.getId());
       eventMetadata.addProperty("updated_field", "short_name");
-      eventMetadata.addProperty("short_name", request.getShortName());
+      eventMetadata.addProperty("updated_field_value", request.getShortName());
       eventMetadata.addProperty("message", "project short_name updated successfully");
       futureEventDAO.addLocalEventWithBlocking(
           ModelDBServiceResourceTypes.PROJECT.name(),
