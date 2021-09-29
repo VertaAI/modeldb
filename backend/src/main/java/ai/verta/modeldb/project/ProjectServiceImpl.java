@@ -823,6 +823,17 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       var project = projectDAO.deepCopyProjectForUser(request.getId(), userInfo);
       var response = DeepCopyProject.Response.newBuilder().setProject(project).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", project.getId());
+      eventMetadata.addProperty("message", "project clone successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.PROJECT.name(),
+          "clone.resource.project.clone_project_succeeded",
+          project.getWorkspaceServiceId(),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -971,6 +982,19 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       var updatedProject = projectDAO.updateProjectReadme(request.getId(), request.getReadmeText());
       var response = SetProjectReadme.Response.newBuilder().setProject(updatedProject).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedProject.getId());
+      eventMetadata.addProperty("updated_field", "read_me_text");
+      eventMetadata.addProperty("read_me_text", request.getReadmeText());
+      eventMetadata.addProperty("message", "project read_me_text updated successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.PROJECT.name(),
+          "update.resource.project.update_project_succeeded",
+          updatedProject.getWorkspaceServiceId(),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1036,6 +1060,19 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var project =
           projectDAO.setProjectShortName(request.getId(), request.getShortName(), userInfo);
       var response = SetProjectShortName.Response.newBuilder().setProject(project).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", project.getId());
+      eventMetadata.addProperty("updated_field", "short_name");
+      eventMetadata.addProperty("short_name", request.getShortName());
+      eventMetadata.addProperty("message", "project short_name updated successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.PROJECT.name(),
+          "update.resource.project.update_project_succeeded",
+          project.getWorkspaceServiceId(),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1104,6 +1141,18 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
       /*Build response*/
       var responseBuilder = LogProjectCodeVersion.Response.newBuilder().setProject(updatedProject);
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedProject.getId());
+      eventMetadata.addProperty("updated_field", "code_version");
+      eventMetadata.addProperty("message", "code_version logged successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.PROJECT.name(),
+          "update.resource.project.update_project_succeeded",
+          updatedProject.getWorkspaceServiceId(),
+          eventMetadata);
+
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -1248,6 +1297,26 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
       var updatedProject = projectDAO.logArtifacts(request.getId(), artifactList);
       var responseBuilder = LogProjectArtifacts.Response.newBuilder().setProject(updatedProject);
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedProject.getId());
+      eventMetadata.addProperty("updated_field", "artifacts");
+      eventMetadata.add(
+          "artifacts_keys",
+          new Gson()
+              .toJsonTree(
+                  request.getArtifactsList().stream()
+                      .map(Artifact::getKey)
+                      .collect(Collectors.toSet()),
+                  new TypeToken<ArrayList<String>>() {}.getType()));
+      eventMetadata.addProperty("message", "project artifacts added successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.PROJECT.name(),
+          "update.resource.project.update_project_succeeded",
+          updatedProject.getWorkspaceServiceId(),
+          eventMetadata);
+
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -1299,6 +1368,24 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       var updatedProject = projectDAO.deleteArtifacts(request.getId(), request.getKey());
       var response = DeleteProjectArtifact.Response.newBuilder().setProject(updatedProject).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedProject.getId());
+      eventMetadata.addProperty("updated_field", "artifacts");
+      eventMetadata.add(
+          "artifacts_keys",
+          new Gson()
+              .toJsonTree(
+                  Stream.of(request.getKey()).collect(Collectors.toSet()),
+                  new TypeToken<ArrayList<String>>() {}.getType()));
+      eventMetadata.addProperty("message", "project artifact deleted successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.PROJECT.name(),
+          "update.resource.project.update_project_succeeded",
+          updatedProject.getWorkspaceServiceId(),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
