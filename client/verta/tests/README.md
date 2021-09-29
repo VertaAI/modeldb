@@ -56,9 +56,9 @@ got existing RegisteredModel: 689611632945984004339
 `-v` increases verbosity for a handful of aspects, including displaying the name of each test:
 
 ```bash
-bases/test_deployable_entity.py::TestBuildArtifactStorePath::test_with_ext PASSED                                        [ 33%]
-bases/test_deployable_entity.py::TestBuildArtifactStorePath::test_no_ext PASSED                                          [ 66%]
-bases/test_deployable_entity.py::TestCreateArtifactMsg::test_with_ext PASSED                                             [100%]
+bases/test_deployable_entity.py::TestBuildArtifactStorePath::test_with_ext PASSED                [ 33%]
+bases/test_deployable_entity.py::TestBuildArtifactStorePath::test_no_ext PASSED                  [ 66%]
+bases/test_deployable_entity.py::TestCreateArtifactMsg::test_with_ext PASSED                     [100%]
 ```
 
 `-rfE` outputs a summary when tests are complete, listing failures and errors:
