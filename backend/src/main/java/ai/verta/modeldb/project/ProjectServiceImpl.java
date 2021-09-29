@@ -1376,7 +1376,8 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       eventMetadata.add(
           "artifacts_keys",
           new Gson()
-              .toJsonTree(Collections.singletonList(request.getKey()),
+              .toJsonTree(
+                  Collections.singletonList(request.getKey()),
                   new TypeToken<ArrayList<String>>() {}.getType()));
       eventMetadata.addProperty("message", "project artifact deleted successfully");
       futureEventDAO.addLocalEventWithBlocking(
