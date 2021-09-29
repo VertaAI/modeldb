@@ -11,6 +11,7 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -22,10 +23,15 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -37,6 +43,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
   private final ExperimentDAO experimentDAO;
   private final ProjectDAO projectDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
+  private final FutureEventDAO futureEventDAO;
 
   public ExperimentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
@@ -44,6 +51,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     this.experimentDAO = daoSet.experimentDAO;
     this.projectDAO = daoSet.projectDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
+    this.futureEventDAO = daoSet.futureEventDAO;
   }
 
   /**
@@ -122,6 +130,17 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       experiment = experimentDAO.insertExperiment(experiment, userInfo);
       var response = CreateExperiment.Response.newBuilder().setExperiment(experiment).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", experiment.getId());
+      eventMetadata.addProperty("project_id", experiment.getProjectId());
+      eventMetadata.addProperty("message", "experiment added successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "add.resource.experiment.add_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(userInfo),
+          eventMetadata);
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -281,21 +300,38 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       Experiment updatedExperiment = null;
+      JsonObject eventMetadata = new JsonObject();
       if (!request.getName().isEmpty()) {
         updatedExperiment =
             experimentDAO.updateExperimentName(
                 request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
+        eventMetadata.addProperty("updated_field", "name");
+        eventMetadata.addProperty("updated_field_value", updatedExperiment.getName());
       }
       // FIXME: this code never allows us to set the description as an empty string
       if (!request.getDescription().isEmpty()) {
         updatedExperiment =
             experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
+        eventMetadata.addProperty("updated_field", "description");
+        eventMetadata.addProperty("updated_field_value", updatedExperiment.getDescription());
       }
 
       var response =
           UpdateExperimentNameOrDescription.Response.newBuilder()
               .setExperiment(updatedExperiment)
               .build();
+
+      // Add succeeded event in local DB
+
+      eventMetadata.addProperty("entity_id", updatedExperiment.getId());
+      eventMetadata.addProperty("project_id", updatedExperiment.getProjectId());
+      eventMetadata.addProperty("message", "experiment name or description updated successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -337,6 +373,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       var response =
           UpdateExperimentName.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedExperiment.getId());
+      eventMetadata.addProperty("project_id", updatedExperiment.getProjectId());
+      eventMetadata.addProperty("updated_field", "name");
+      eventMetadata.addProperty("updated_field_value", updatedExperiment.getName());
+      eventMetadata.addProperty("message", "experiment name updated successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -377,6 +427,19 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               .setExperiment(updatedExperiment)
               .build();
 
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedExperiment.getId());
+      eventMetadata.addProperty("project_id", updatedExperiment.getProjectId());
+      eventMetadata.addProperty("updated_field", "description");
+      eventMetadata.addProperty("updated_field_value", updatedExperiment.getDescription());
+      eventMetadata.addProperty("message", "experiment description updated successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -416,6 +479,23 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
       var response =
           AddExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedExperiment.getId());
+      eventMetadata.addProperty("project_id", updatedExperiment.getProjectId());
+      eventMetadata.addProperty("updated_field", "tags");
+      eventMetadata.add(
+          "tags",
+          new Gson()
+              .toJsonTree(request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+      eventMetadata.addProperty("message", "experiment tags added successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -456,6 +536,25 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
       var response =
           AddExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedExperiment.getId());
+      eventMetadata.addProperty("project_id", updatedExperiment.getProjectId());
+      eventMetadata.addProperty("updated_field", "tags");
+      eventMetadata.add(
+          "tags",
+          new Gson()
+              .toJsonTree(
+                  Collections.singletonList(request.getTag()),
+                  new TypeToken<ArrayList<String>>() {}.getType()));
+      eventMetadata.addProperty("message", "experiment tag added successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -521,6 +620,26 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               request.getId(), request.getTagsList(), request.getDeleteAll());
       var response =
           DeleteExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedExperiment.getId());
+      eventMetadata.addProperty("project_id", updatedExperiment.getProjectId());
+      eventMetadata.addProperty("updated_field", "tags");
+      if (request.getDeleteAll()) {
+        eventMetadata.addProperty("tags_deleted_all", true);
+      } else {
+        eventMetadata.add(
+            "tags",
+            new Gson()
+                .toJsonTree(
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      eventMetadata.addProperty("message", "experiment tags deleted successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -560,6 +679,25 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               request.getId(), Collections.singletonList(request.getTag()), false);
       var response =
           DeleteExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedExperiment.getId());
+      eventMetadata.addProperty("project_id", updatedExperiment.getProjectId());
+      eventMetadata.addProperty("updated_field", "tags");
+      eventMetadata.add(
+          "tags",
+          new Gson()
+              .toJsonTree(
+                  Collections.singletonList(request.getTag()),
+                  new TypeToken<ArrayList<String>>() {}.getType()));
+      eventMetadata.addProperty("message", "experiment tag added successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -593,6 +731,27 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       experimentDAO.addExperimentAttributes(
           request.getId(), Collections.singletonList(request.getAttribute()));
       var response = AddAttributes.Response.newBuilder().setStatus(true).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", request.getId());
+      eventMetadata.addProperty("project_id", projectId);
+      eventMetadata.addProperty("updated_field", "attributes");
+      eventMetadata.add(
+          "attribute_keys",
+          new Gson()
+              .toJsonTree(
+                  Stream.of(request.getAttribute())
+                      .map(KeyValue::getKey)
+                      .collect(Collectors.toSet()),
+                  new TypeToken<ArrayList<String>>() {}.getType()));
+      eventMetadata.addProperty("message", "experiment attribute added successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -632,6 +791,27 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.addExperimentAttributes(request.getId(), request.getAttributesList());
       var response =
           AddExperimentAttributes.Response.newBuilder().setExperiment(experiment).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", experiment.getId());
+      eventMetadata.addProperty("project_id", experiment.getProjectId());
+      eventMetadata.addProperty("updated_field", "attributes");
+      eventMetadata.add(
+          "attribute_keys",
+          new Gson()
+              .toJsonTree(
+                  request.getAttributesList().stream()
+                      .map(KeyValue::getKey)
+                      .collect(Collectors.toSet()),
+                  new TypeToken<ArrayList<String>>() {}.getType()));
+      eventMetadata.addProperty("message", "experiment attributes added successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -717,6 +897,29 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
       var response =
           DeleteExperimentAttributes.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedExperiment.getId());
+      eventMetadata.addProperty("project_id", updatedExperiment.getProjectId());
+      eventMetadata.addProperty("updated_field", "attributes");
+      if (request.getDeleteAll()) {
+        eventMetadata.addProperty("attribute_deleted_all", true);
+      } else {
+        eventMetadata.add(
+            "attribute_keys",
+            new Gson()
+                .toJsonTree(
+                    request.getAttributeKeysList(),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      eventMetadata.addProperty("message", "experiment attributes deleted successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -748,6 +951,18 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.deleteExperiments(Collections.singletonList(request.getId()));
       var response =
           DeleteExperiment.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", request.getId());
+      eventMetadata.addProperty("project_id", projectId);
+      eventMetadata.addProperty("message", "experiment deleted successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "delete.resource.experiment.delete_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -797,6 +1012,19 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
       var response =
           LogExperimentCodeVersion.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedExperiment.getId());
+      eventMetadata.addProperty("project_id", updatedExperiment.getProjectId());
+      eventMetadata.addProperty("updated_field", "code_version");
+      eventMetadata.addProperty("message", "experiment code_version updated successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -977,6 +1205,27 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       var updatedExperiment = experimentDAO.logArtifacts(request.getId(), artifactList);
       var response =
           LogExperimentArtifacts.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedExperiment.getId());
+      eventMetadata.addProperty("project_id", updatedExperiment.getProjectId());
+      eventMetadata.addProperty("updated_field", "artifacts");
+      eventMetadata.add(
+          "artifact_keys",
+          new Gson()
+              .toJsonTree(
+                  request.getArtifactsList().stream()
+                      .map(Artifact::getKey)
+                      .collect(Collectors.toSet()),
+                  new TypeToken<ArrayList<String>>() {}.getType()));
+      eventMetadata.addProperty("message", "experiment artifacts added successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1045,6 +1294,25 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       var updatedExperiment = experimentDAO.deleteArtifacts(request.getId(), request.getKey());
       var response =
           DeleteExperimentArtifact.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedExperiment.getId());
+      eventMetadata.addProperty("project_id", updatedExperiment.getProjectId());
+      eventMetadata.addProperty("updated_field", "artifacts");
+      eventMetadata.add(
+          "artifact_keys",
+          new Gson()
+              .toJsonTree(
+                  Collections.singletonList(request.getKey()),
+                  new TypeToken<ArrayList<String>>() {}.getType()));
+      eventMetadata.addProperty("message", "experiment artifact deleted successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.EXPERIMENT.name(),
+          "update.resource.experiment.update_experiment_succeeded",
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          eventMetadata);
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
