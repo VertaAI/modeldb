@@ -23,6 +23,8 @@ public class TelemetryUtils {
   private static boolean telemetryInitialized = false;
   public static String telemetryUniqueIdentifier = null;
   private String consumer = ModelDBConstants.TELEMETRY_CONSUMER_URL;
+  private static final String charEncodingStr =
+      "  CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
 
   public TelemetryUtils(String consumer) throws InvalidConfigException {
     if (consumer != null && !consumer.isEmpty()) {
@@ -47,10 +49,14 @@ public class TelemetryUtils {
           LOGGER.warn("modeldb_deployment_info table not found");
           LOGGER.info("Table modeldb_deployment_info creating");
 
-          final var createModelDBDeploymentInfoQuery =
-              "create table modeldb_deployment_info (md_key varchar(50),md_value varchar(255), creation_timestamp BIGINT) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
-          final var createTelemetryInformationQuery =
-              "Create table telemetry_information (tel_key varchar(50),tel_value varchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer varchar(256)) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
+          var createModelDBDeploymentInfoQuery =
+              "create table modeldb_deployment_info (md_key varchar(50),md_value varchar(255), creation_timestamp BIGINT) ";
+          var createTelemetryInformationQuery =
+              "Create table telemetry_information (tel_key varchar(50),tel_value varchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer varchar(256)) ";
+          if (!database.getRdbConfiguration().isPostgres()) {
+            createModelDBDeploymentInfoQuery += charEncodingStr;
+            createTelemetryInformationQuery += charEncodingStr;
+          }
 
           try (var statement = connection.createStatement()) {
             statement.executeUpdate(createModelDBDeploymentInfoQuery);
@@ -71,13 +77,16 @@ public class TelemetryUtils {
             try (var stmt = connection.createStatement()) {
               var updateStatements =
                   new String[] {
-                    "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                    "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                    "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                    "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                    "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
+                    "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) ",
+                    "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) ",
+                    "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) ",
+                    "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) ",
+                    "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) "
                   };
               for (String updateStatement : updateStatements) {
+                if (!database.getRdbConfiguration().isPostgres()) {
+                  updateStatement += charEncodingStr;
+                }
                 stmt.executeUpdate(updateStatement);
               }
               var selectQuery = "Select * from modeldb_deployment_info where md_key = 'id'";

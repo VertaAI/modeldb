@@ -158,7 +158,7 @@ public class App implements ApplicationContextAware {
     var liquibaseMigration =
         Boolean.parseBoolean(
             Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
-                .orElse("false"));
+                .orElse("true"));
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(App.getInstance().mdbConfig, databaseConfig);
     if (liquibaseMigration) {

@@ -68,7 +68,6 @@ public abstract class CommonHibernateUtil {
     try {
 
       final var rdb = config.getRdbConfiguration();
-      final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
       final var idleTimeoutMillis = Integer.parseInt(config.getConnectionTimeout()) * 1000;
       final var connectionTimeoutMillis = 30000;
       final var connectionMaxLifetimeMillis = idleTimeoutMillis - 5000;
@@ -97,13 +96,12 @@ public abstract class CommonHibernateUtil {
               .setProperty("hibernate.hikari.registerMbeans", "true")
               .setProperty("hibernate.generate_statistics", "true")
               .setProperty("hibernate.jmx.enabled", "true")
-              .setProperty("hibernate.hbm2ddl.auto", "none")
               .setProperty(AvailableSettings.QUERY_PLAN_CACHE_MAX_SIZE, String.valueOf(200))
               .setProperty(
                   AvailableSettings.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE,
                   String.valueOf(20));
 
-      LOGGER.trace("connectionString {}", connectionString);
+      LOGGER.trace("connectionString {}", url);
       // Create registry builder
       StandardServiceRegistryBuilder registryBuilder =
           new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
@@ -545,7 +543,13 @@ public abstract class CommonHibernateUtil {
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
     LOGGER.info("Connecting to DB server url: {} ", dbUrl);
     try (var connection = DriverManager.getConnection(dbUrl, properties)) {
-      var resultSet = connection.getMetaData().getCatalogs();
+      ResultSet resultSet;
+      if (rdb.isPostgres()) {
+        Statement statement = connection.createStatement();
+        resultSet = statement.executeQuery("SELECT datname FROM pg_database");
+      } else {
+        resultSet = connection.getMetaData().getCatalogs();
+      }
 
       while (resultSet.next()) {
         var databaseNameRes = resultSet.getString(1);

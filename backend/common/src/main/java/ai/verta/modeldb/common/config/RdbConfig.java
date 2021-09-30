@@ -55,6 +55,9 @@ public class RdbConfig {
     if (rdb.isMssql()) {
       return rdb.RdbUrl + ";databaseName=" + rdb.getRdbDatabaseName();
     }
+    if (rdb.isPostgres() && rdb.RdbUrl.endsWith("/")) {
+      rdb.RdbUrl = rdb.RdbUrl.substring(0, rdb.RdbUrl.length() - 1);
+    }
     final var url =
         rdb.RdbUrl
             + "/"
@@ -71,6 +74,10 @@ public class RdbConfig {
   public static String buildDatabaseServerConnectionString(RdbConfig rdb) {
     if (rdb.isMssql()) {
       return rdb.RdbUrl;
+    }
+    if (rdb.isPostgres()) {
+      // '/' is compulsory at the end of host and port for postgres
+      rdb.RdbUrl += (rdb.RdbUrl.endsWith("/") ? "" : "/");
     }
     final var url =
         rdb.RdbUrl

@@ -18,6 +18,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -65,10 +66,11 @@ public class DatasetToRepositoryMigration {
   private static BlobDAO blobDAO;
   private static int recordUpdateLimit = 100;
   private static Role writeOnlyRole;
+  private static MDBConfig config;
 
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
-    var config = App.getInstance().mdbConfig;
+    config = App.getInstance().mdbConfig;
     uac = UAC.FromConfig(config);
     authService = MDBAuthServiceUtils.FromConfig(config, uac);
     mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
@@ -103,8 +105,14 @@ public class DatasetToRepositoryMigration {
         LOGGER.debug("backup_linked_artifact_id already exists");
       }
 
-      var createDatasetMigrationTable =
-          "CREATE TABLE IF NOT EXISTS dataset_migration_status (dataset_id varchar(225) NOT NULL, repo_id bigint(20) NOT NULL, status varchar(255) DEFAULT NULL)";
+      String createDatasetMigrationTable;
+      if (config.getDatabase().getRdbConfiguration().isPostgres()) {
+        createDatasetMigrationTable =
+            "CREATE TABLE IF NOT EXISTS dataset_migration_status (dataset_id varchar(225) NOT NULL, repo_id bigint NOT NULL, status varchar(255) DEFAULT NULL)";
+      } else {
+        createDatasetMigrationTable =
+            "CREATE TABLE IF NOT EXISTS dataset_migration_status (dataset_id varchar(225) NOT NULL, repo_id bigint(20) NOT NULL, status varchar(255) DEFAULT NULL)";
+      }
       Query createQuery = session.createSQLQuery(createDatasetMigrationTable);
       createQuery.executeUpdate();
       session.getTransaction().commit();

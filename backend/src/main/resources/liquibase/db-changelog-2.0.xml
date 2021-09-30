@@ -346,9 +346,24 @@
 
     <changeSet id="set-created-true-on-project-for-existing-projects" author="cory">
         <validCheckSum>8:facae5d9b302c1ccb90da4c4a817e4e7</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <dbms type="postgresql"/>
+            </not>
+        </preConditions>
         <update tableName="project">
             <column name="created" valueBoolean="true"/>
             <where>created=0 AND deleted=0</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="set-created-true-on-project-for-existing-projects-postgres" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <update tableName="project">
+            <column name="created" valueBoolean="true"/>
+            <where>created=false AND deleted=false</where>
         </update>
     </changeSet>
 
@@ -376,9 +391,24 @@
 
     <changeSet id="set-created-true-on-repository-for-existing-repositories" author="anandJ">
         <validCheckSum>8:ca60f426e233e31ee54ab1fa18f27b4f</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <dbms type="postgresql"/>
+            </not>
+        </preConditions>
         <update tableName="repository">
             <column name="created" valueBoolean="true"/>
             <where>created=0 AND deleted=0</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="set-created-true-on-repository-for-existing-repositories-postgres" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <update tableName="repository">
+            <column name="created" valueBoolean="true"/>
+            <where>created=false AND deleted=false</where>
         </update>
     </changeSet>
 
@@ -450,17 +480,47 @@
 
     <changeSet id="set-visibility-migration-false-on-repositories" author="anandJ">
         <validCheckSum>8:84a5812d4897c6ff419c96746930d5cb</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <dbms type="postgresql"/>
+            </not>
+        </preConditions>
         <update tableName="repository">
             <column name="visibility_migration" valueBoolean="false"/>
             <where>visibility_migration=1</where>
         </update>
     </changeSet>
 
+    <changeSet id="set-visibility-migration-false-on-repositories-postgres" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <update tableName="repository">
+            <column name="visibility_migration" valueBoolean="false"/>
+            <where>visibility_migration=true</where>
+        </update>
+    </changeSet>
+
     <changeSet id="set-visibility-migration-false-on-projects" author="anandJ">
         <validCheckSum>8:49b3426a96fae28f656c42ec4932346d</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <dbms type="postgresql"/>
+            </not>
+        </preConditions>
         <update tableName="project">
             <column name="visibility_migration" valueBoolean="false"/>
             <where>visibility_migration=1</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="set-visibility-migration-false-on-projects-postgres" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <update tableName="project">
+            <column name="visibility_migration" valueBoolean="false"/>
+            <where>visibility_migration=true</where>
         </update>
     </changeSet>
 
@@ -981,11 +1041,25 @@
 
     <changeSet id="marked-existing-artifact-uploaded-true" author="anandJ">
         <preConditions onFail="MARK_RAN">
+            <not>
+                <dbms type="postgresql"/>
+            </not>
             <columnExists tableName="artifact" columnName="upload_completed"/>
         </preConditions>
         <update tableName="artifact">
             <column name="upload_completed" valueBoolean="true" />
             <where>field_type="artifacts" AND upload_completed = 0</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="marked-existing-artifact-uploaded-true-postgres" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <columnExists tableName="artifact" columnName="upload_completed"/>
+        </preConditions>
+        <update tableName="artifact">
+            <column name="upload_completed" valueBoolean="true" />
+            <where>field_type='artifacts' AND upload_completed = false</where>
         </update>
     </changeSet>
 
