@@ -360,6 +360,7 @@ class TestExperimentRun:
         _utils.raise_for_http_error(response)
         assert response.json().get('tags', []) == [TAG]
 
+    @pytest.mark.skip(reason="backend bug (VR-13087); un-skip with VR-13088")
     def test_clone(self, experiment_run):
         expt_run = experiment_run
         expt_run._conf.use_git = False
@@ -385,7 +386,7 @@ class TestExperimentRun:
         assert expt_run._msg.observations == new_run._msg.observations
         assert expt_run._msg.artifacts == new_run._msg.artifacts
 
-
+    @pytest.mark.skip(reason="backend bug (VR-13087); un-skip with VR-13088")
     def test_clone_into_expt(self, client):
         expt1 = client.set_experiment()
         expt2 = client.set_experiment()
