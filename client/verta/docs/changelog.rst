@@ -47,7 +47,7 @@ New Features
 
 Bug Fixes
 ^^^^^^^^^
-- put upper constraint on `protobuf version for Python 2 compatibility
+- put upper constraint on `protobuf` version for Python 2 compatibility
   <https://github.com/protocolbuffers/protobuf/issues/8984>`__
   (`#2633 <https://github.com/VertaAI/modeldb/pull/2633>`__)
 
