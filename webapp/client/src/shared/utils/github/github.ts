@@ -1,94 +1,52 @@
 import * as R from 'ramda';
+import gitUrlParse from 'git-url-parse';
 
-import { URL, SHHUrl } from '../types';
+import { URL } from '../types';
 
-export type GithubRemoteRepoUrl = SHHUrl | URL;
+export interface GitInfoFromUrl {
+  baseUrl: string | undefined;
+  repositoryFullName: string;
+}
 
 export interface IGithubRemoteRepoUrlComponents {
-  userName: string;
-  repositoryInfo: { name: string; nameWithExtension: string };
+  baseUrl: string | undefined;
+  repositoryFullName: string;
 }
 
 export type MaybeGithubRemoteRepoUrl =
   | { type: 'github'; value: IGithubRemoteRepoUrlComponents }
   | { type: 'unknown'; value: string };
 
-export type Result<T, Error> =
-  | { type: 'success'; data: T }
-  | { type: 'error'; error: Error };
-
 export const makeGithubRemoteRepoUrl = (
   remoteRepoUrl: string
 ): MaybeGithubRemoteRepoUrl => {
-  const res = parseGithubRemoteRepoUrl(remoteRepoUrl);
-  if (res.type === 'success') {
-    return { type: 'github', value: res.data };
-  } else {
+  try {
+    const parsed = gitUrlParse(remoteRepoUrl);
+    return {
+      type: 'github',
+      value: {
+        baseUrl: parsed.resource || undefined,
+        repositoryFullName: parsed.full_name,
+      },
+    };
+  } catch (e) {
     return { type: 'unknown', value: remoteRepoUrl };
   }
 };
 
-export const parseGithubRemoteRepoUrl = (
-  remoteRepoUrl: GithubRemoteRepoUrl
-): Result<IGithubRemoteRepoUrlComponents, string> => {
-  if (remoteRepoUrl.startsWith('git@')) {
-    const [, userName, repoName] = /git@github.com:(.+)\/(.+).git/.exec(
-      remoteRepoUrl
-    );
-    return {
-      type: 'success',
-      data: {
-        userName,
-        repositoryInfo: {
-          name: repoName,
-          nameWithExtension: `${repoName}.git`,
-        },
-      },
-    };
-  }
-  if (
-    ['https://github.com', 'http://github.com', 'github.com'].some((t) =>
-      remoteRepoUrl.startsWith(t)
-    )
-  ) {
-    const [, pathname = ''] = remoteRepoUrl.split('github.com/');
-    const userNameAndRepo = pathname.split('/');
-    if (userNameAndRepo.length >= 2) {
-      return {
-        type: 'success',
-        data: {
-          userName: userNameAndRepo[0],
-          repositoryInfo: {
-            name: userNameAndRepo[1],
-            nameWithExtension: userNameAndRepo[1],
-          },
-        },
-      };
-    } else {
-      return {
-        type: 'success',
-        data: {
-          userName: '',
-          repositoryInfo: { name: '', nameWithExtension: '' },
-        },
-      };
-    }
+export const makeRepoUrl = (gitInfo: GitInfoFromUrl) => {
+  if (gitInfo.baseUrl) {
+    return `https://${gitInfo.baseUrl}/${gitInfo.repositoryFullName}`;
   }
 
-  return { type: 'error', error: 'invalid repo url' };
-};
-
-export const makeRepoUrl = (
-  components: IGithubRemoteRepoUrlComponents
-): URL => {
-  return `https://github.com/${components.userName}/${components.repositoryInfo.name}`;
+  return gitInfo.repositoryFullName;
 };
 
 export const makeRepoBlobUrl = (
   components: IGithubRemoteRepoUrlComponents,
   { commitHash, execPath }: { commitHash: string; execPath: string }
 ): URL => {
-  return `https://github.com/${components.userName}/${components.repositoryInfo.name}/blob/${commitHash}/${execPath}`;
+  return `${makeRepoUrl(components)}/blob/${commitHash}/${execPath}`;
 };
 
 export const makeCompareCommitsUrl = ({
@@ -96,29 +54,27 @@ export const makeCompareCommitsUrl = ({
   repoWithCommitHash2,
 }: {
   repoWithCommitHash1: {
-    url: IGithubRemoteRepoUrlComponents;
+    url: GitInfoFromUrl;
     commitHash: string;
   };
   repoWithCommitHash2: {
-    url: IGithubRemoteRepoUrlComponents;
+    url: GitInfoFromUrl;
     commitHash: string;
   };
 }) => {
   if (R.equals(repoWithCommitHash1.url, repoWithCommitHash2.url)) {
-    const {
-      userName,
-      repositoryInfo: { name: repoName },
-    } = repoWithCommitHash1.url;
     const shortCommit1 = repoWithCommitHash1.commitHash.slice(0, 6);
     const shortCommit2 = repoWithCommitHash2.commitHash.slice(0, 6);
-    return `https://github.com/${userName}/${repoName}/compare/${shortCommit1}..${shortCommit2}`;
+    return `${makeRepoUrl(
+      repoWithCommitHash1.url
+    )}/compare/${shortCommit1}..${shortCommit2}`;
   }
 };
 
 export const makeRepoShortName = (
   components: IGithubRemoteRepoUrlComponents
 ): string => {
-  return `${components.userName}/${components.repositoryInfo.nameWithExtension}`;
+  return components.repositoryFullName;
 };
 
 export const makeRepoUrlWithRepoShortName = (
@@ -134,7 +90,7 @@ export const makeCommitUrl = (
   components: IGithubRemoteRepoUrlComponents,
   commitHash: string
 ): URL => {
-  return `https://github.com/${components.userName}/${components.repositoryInfo.name}/commit/${commitHash}`;
+  return `${makeRepoUrl(components)}/commit/${commitHash}`;
 };
 
 export const makeTagUrl = (
@@ -144,9 +100,6 @@ export const makeTagUrl = (
   return `${makeRepoUrl(components)}/tree/${tag}`;
 };
 
-export const makeBranchUrl = (
-  components: IGithubRemoteRepoUrlComponents,
-  branch: string
-): URL => {
-  return `${makeRepoUrl(components)}/tree/${branch}`;
+export const makeBranchUrl = (gitInfo: GitInfoFromUrl, branch: string) => {
+  return `${makeRepoUrl(gitInfo)}/tree/${branch}`;
 };

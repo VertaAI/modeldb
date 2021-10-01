@@ -1,7 +1,4 @@
-import {
-  parseGithubRemoteRepoUrl,
-  MaybeGithubRemoteRepoUrl,
-} from 'shared/utils/github/github';
+import { MaybeGithubRemoteRepoUrl } from 'shared/utils/github/github';
 
 import {
   IPathDatasetComponentBlob,
