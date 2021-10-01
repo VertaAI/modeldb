@@ -10,8 +10,11 @@ Object {
         "commitHash": "#hhh",
         "isDirty": true,
         "remoteRepoUrl": Object {
-          "type": "unknown",
-          "value": "repo",
+          "type": "github",
+          "value": Object {
+            "baseUrl": undefined,
+            "repositoryFullName": "repo",
+          },
         },
         "tag": "tag",
       },
@@ -37,8 +40,11 @@ Object {
         "commitHash": "#hhh",
         "isDirty": true,
         "remoteRepoUrl": Object {
-          "type": "unknown",
-          "value": "repo",
+          "type": "github",
+          "value": Object {
+            "baseUrl": undefined,
+            "repositoryFullName": "repo",
+          },
         },
         "tag": "tag",
       },
@@ -64,8 +70,11 @@ Object {
         "commitHash": "#hhh",
         "isDirty": true,
         "remoteRepoUrl": Object {
-          "type": "unknown",
-          "value": "repo",
+          "type": "github",
+          "value": Object {
+            "baseUrl": undefined,
+            "repositoryFullName": "repo",
+          },
         },
         "tag": "tag",
       },
@@ -77,8 +86,11 @@ Object {
         "commitHash": "#hhh",
         "isDirty": true,
         "remoteRepoUrl": Object {
-          "type": "unknown",
-          "value": "repadfadfadfo",
+          "type": "github",
+          "value": Object {
+            "baseUrl": undefined,
+            "repositoryFullName": "repadfadfadfo",
+          },
         },
         "tag": "tag",
       },
