@@ -24,39 +24,17 @@ database:
   RdbConfiguration:
     RdbDatabaseName: postgres
     RdbDriver: "org.postgresql.Driver"
-    RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
+    RdbDialect: "org.hibernate.dialect.PostgreSQL82Dialect"
     RdbUrl: "jdbc:postgresql://modeldb-postgres:5432"
     RdbUsername: postgres
     RdbPassword: root
+    sslMode: DISABLED
 
-# Test Database settings (type mongodb, couchbasedb etc..)
-test:
-  test-database:
-    DBType: relational
-    timeout: 4
-    liquibaseLockThreshold: 60 #time in second
-    RdbConfiguration:
-      RdbDatabaseName: postgres
-      RdbDriver: "org.postgresql.Driver"
-      RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
-      RdbUrl: "jdbc:postgresql://modeldb-postgres:5432"
-      RdbUsername: postgres
-      RdbPassword: root
 
-#ArtifactStore Properties
-artifactStore_grpcServer:
-  host: modeldb-backend
-  port: 8086
-
+starterProject: 
 cron_job:
-  update_parent_timestamp:
-    frequency: 10 #frequency to update parent timestamp in second, default 60
-    record_update_limit: 100
-  delete_entities:
-    frequency: 60 #frequency to update parent timestamp in second, default 60
-    record_update_limit: 100
 
 telemetry:
-  opt_in: true
+  opt_out: false
   frequency: 1 #frequency to share data in hours, default 1
   consumer: https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry

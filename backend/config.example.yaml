@@ -51,38 +51,38 @@ database:
   RdbConfiguration:
     RdbDatabaseName:
     RdbDriver: "org.postgresql.Driver"
-    RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
+    RdbDialect: "org.hibernate.dialect.PostgreSQL82Dialect"
     RdbUrl: "jdbc:postgresql://localhost:5432"
     RdbUsername:
     RdbPassword:
     sslMode: DISABLED
     sslEnabled: false
 
-# Test Database settings (type mongodb, couchbasedb, relational etc..)
-test:
-  test-database:
-    DBType: relational
-    timeout: 4
-    liquibaseLockThreshold: 60 #time in second
-    changeSetToRevertUntilTag: #ex: version_1.0
-    minConnectionPoolSize: 5
-    maxConnectionPoolSize: 20
-    connectionTimeout: 300
-    RdbConfiguration:
-      RdbDatabaseName: test
-      RdbDriver: "org.postgresql.Driver"
-      RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
-      RdbUrl: "jdbc:postgresql://localhost:5432"
-      RdbUsername:
-      RdbPassword:
-      sslMode: DISABLED
-  testUsers:
-    primaryUser:
-      email:
-      devKey:
-    secondaryUser:
-      email:
-      devKey:
+# # Test Database settings (type mongodb, couchbasedb, relational etc..)
+# test:
+#   test-database:
+#     DBType: relational
+#     timeout: 4
+#     liquibaseLockThreshold: 60 #time in second
+#     changeSetToRevertUntilTag: #ex: version_1.0
+#     minConnectionPoolSize: 5
+#     maxConnectionPoolSize: 20
+#     connectionTimeout: 300
+#     RdbConfiguration:
+#       RdbDatabaseName: test
+#       RdbDriver: "org.postgresql.Driver"
+#       RdbDialect: "org.hibernate.dialect.PostgreSQL82Dialect"
+#       RdbUrl: "jdbc:postgresql://localhost:5432"
+#       RdbUsername:
+#       RdbPassword:
+#       sslMode: DISABLED
+#   testUsers:
+#     primaryUser:
+#       email:
+#       devKey:
+#     secondaryUser:
+#       email:
+#       devKey:
 
 #AuthService Properties
 authService:
@@ -112,29 +112,13 @@ telemetry:
   consumer: https://xyz.com/api/v1/xyz
 
 cron_job:
-  delete_entities:
-    initial_delay: 300 #delay timestamp in second, default 300second = 5min
-    frequency: 60 #frequency to delete entities in second, default 60
-    record_update_limit: 50
-  update_run_environments:
-    initial_delay: 300 #delay timestamp in second, default 300second = 5min
-    frequency: 60 #frequency to delete entities in second, default 60
-    record_update_limit: 100
-  delete_audit_logs:
-    initial_delay: 300 #delay timestamp in second, default 300second = 5min
-    frequency: 60 #frequency to delete entities in second, default 60
-    record_update_limit: 100
-  clean_up_entities:
-    initial_delay: 300 #delay timestamp in second, default 300second = 5min
-    frequency: 60 #frequency to delete entities in second, default 60
-    record_update_limit: 100
 
 populateConnectionsBasedOnPrivileges: false
 disabled_audits: true
 jdbi_retry_time: 100 # Time in ms
 
 trial:
-  enable: true
+  enable: false
   restrictions:
     max_artifact_size_MB: #Integer value
     max_artifact_per_run: #Integer value
