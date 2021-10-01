@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.authservice;
 
+import ai.verta.modeldb.common.config.Config;
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.ForwardingServerCallListener;
@@ -15,6 +16,11 @@ import org.apache.logging.log4j.Logger;
 public class AuthInterceptor implements ServerInterceptor {
   private static final Logger LOGGER = LogManager.getLogger(AuthInterceptor.class);
   public static final Context.Key<Metadata> METADATA_INFO = Context.key("metadata");
+  private final Config config;
+
+  public AuthInterceptor(Config config) {
+    this.config = config;
+  }
 
   /**
    * @param call: ServerCall
@@ -58,7 +64,7 @@ public class AuthInterceptor implements ServerInterceptor {
           parameterMissing = true;
         }
       }
-      if (parameterMissing) {
+      if (parameterMissing && config.hasAuth()) {
         var message = "Required parameter is missing in metadata in request: " + methodName;
         call.close(Status.PERMISSION_DENIED.withDescription(message), requestHeaders);
         LOGGER.debug(message);

@@ -81,23 +81,30 @@ public class CreateExperimentRunHandler {
   }
 
   public InternalFuture<ExperimentRun> convertCreateRequest(final CreateExperimentRun request) {
-    return FutureGrpc.ClientRequest(
-            uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
-        .thenCompose(
-            currentLoginUserInfo ->
-                TrialUtils.futureValidateExperimentRunPerWorkspaceForTrial(trialConfig, executor)
-                    .thenCompose(
-                        unused -> {
-                          final var experimentRun =
-                              getExperimentRunFromRequest(request, currentLoginUserInfo);
+    InternalFuture<UserInfo> currentLoginUserInfoFuture;
+    if (!config.hasAuth()) {
+      currentLoginUserInfoFuture =
+          InternalFuture.completedInternalFuture(UserInfo.newBuilder().build());
+    } else {
+      currentLoginUserInfoFuture =
+          FutureGrpc.ClientRequest(
+              uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor);
+    }
+    return currentLoginUserInfoFuture.thenCompose(
+        currentLoginUserInfo ->
+            TrialUtils.futureValidateExperimentRunPerWorkspaceForTrial(trialConfig, executor)
+                .thenCompose(
+                    unused -> {
+                      final var experimentRun =
+                          getExperimentRunFromRequest(request, currentLoginUserInfo);
 
-                          TrialUtils.validateMaxArtifactsForTrial(
-                              trialConfig, experimentRun.getArtifactsCount(), 0);
+                      TrialUtils.validateMaxArtifactsForTrial(
+                          trialConfig, experimentRun.getArtifactsCount(), 0);
 
-                          return InternalFuture.completedInternalFuture(experimentRun);
-                        },
-                        executor),
-            executor);
+                      return InternalFuture.completedInternalFuture(experimentRun);
+                    },
+                    executor),
+        executor);
     /*.thenCompose(
     experimentRun -> {
       // TODO: Fix below logic for checking privileges of linked dataset versions
@@ -364,6 +371,9 @@ public class CreateExperimentRunHandler {
     ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceType =
         ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN;
     String roleName = ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER;
+    if (!config.hasAuth()) {
+      return InternalFuture.completedInternalFuture(null);
+    }
     return FutureGrpc.ClientRequest(
             uac.getServiceAccountRoleServiceFutureStub()
                 .setRoleBinding(

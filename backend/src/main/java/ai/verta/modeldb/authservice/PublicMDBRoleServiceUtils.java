@@ -7,8 +7,6 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.dataset.DatasetDAO;
-import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experiment.ExperimentDAORdbImpl;
@@ -21,6 +19,7 @@ import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.BlobDAORdbImpl;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitDAORdbImpl;
+import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -31,10 +30,11 @@ import java.util.*;
 public class PublicMDBRoleServiceUtils implements MDBRoleService {
 
   private ProjectDAO projectDAO;
-  private DatasetDAO datasetDAO;
+  private RepositoryDAO repositoryDAO;
+  private MetadataDAO metadataDAO;
 
   public PublicMDBRoleServiceUtils(AuthService authService) {
-    MetadataDAO metadataDAO = new MetadataDAORdbImpl();
+    this.metadataDAO = new MetadataDAORdbImpl();
     CommitDAO commitDAO = new CommitDAORdbImpl(authService, this);
     ExperimentDAO experimentDAO = new ExperimentDAORdbImpl(authService, this);
     ExperimentRunDAO experimentRunDAO =
@@ -47,7 +47,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
             new BlobDAORdbImpl(authService, this),
             metadataDAO);
     this.projectDAO = new ProjectDAORdbImpl(authService, this, experimentDAO, experimentRunDAO);
-    this.datasetDAO = new DatasetDAORdbImpl(authService, this);
+    this.repositoryDAO = new RepositoryDAORdbImpl(authService, this, commitDAO, metadataDAO);
   }
 
   @Override
@@ -123,7 +123,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
           throw new NotFoundException(errorMessage);
         }
       } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
-        datasetDAO.getDatasetById(resourceId);
+        repositoryDAO.getDatasetById(metadataDAO, resourceId);
       }
     }
   }

@@ -186,14 +186,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           "Can't access repository because it's protected", Code.PERMISSION_DENIED);
     }
 
-    var modelDBServiceResourceTypes =
-        ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
-    if (checkWrite) {
-      mdbRoleService.validateEntityUserWithUserInfo(
-          modelDBServiceResourceTypes, repository.getId().toString(), ModelDBServiceActions.UPDATE);
-    } else {
-      mdbRoleService.validateEntityUserWithUserInfo(
-          modelDBServiceResourceTypes, repository.getId().toString(), ModelDBServiceActions.READ);
+    if (App.getInstance().mdbConfig.hasAuth()) {
+      var modelDBServiceResourceTypes =
+          ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
+      if (checkWrite) {
+        mdbRoleService.validateEntityUserWithUserInfo(
+            modelDBServiceResourceTypes,
+            repository.getId().toString(),
+            ModelDBServiceActions.UPDATE);
+      } else {
+        mdbRoleService.validateEntityUserWithUserInfo(
+            modelDBServiceResourceTypes, repository.getId().toString(), ModelDBServiceActions.READ);
+      }
     }
     return repository;
   }

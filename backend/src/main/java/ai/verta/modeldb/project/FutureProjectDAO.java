@@ -3,6 +3,7 @@ package ai.verta.modeldb.project;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.GetAttributes;
@@ -14,6 +15,7 @@ import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
@@ -34,6 +36,7 @@ public class FutureProjectDAO {
   private final Executor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
+  private final MDBConfig mdbConfig;
 
   private final AttributeHandler attributeHandler;
   private final TagsHandler tagsHandler;
@@ -42,6 +45,7 @@ public class FutureProjectDAO {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
+    this.mdbConfig = App.getInstance().mdbConfig;
 
     var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
@@ -244,6 +248,9 @@ public class FutureProjectDAO {
 
   public InternalFuture<Void> checkProjectPermission(
       String projId, ModelDBActionEnum.ModelDBServiceActions action) {
+    if (!mdbConfig.hasAuth()) {
+      return InternalFuture.completedInternalFuture(null);
+    }
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(

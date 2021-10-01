@@ -44,6 +44,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       ModelDBHibernateUtil.getInstance();
   private ExperimentDAO experimentDAO;
   private ExperimentRunDAO experimentRunDAO;
+  private String starterProjectID;
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
 
@@ -88,6 +89,8 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     this.mdbRoleService = mdbRoleService;
     this.experimentDAO = experimentDAO;
     this.experimentRunDAO = experimentRunDAO;
+    var app = App.getInstance();
+    this.starterProjectID = app.mdbConfig.starterProject;
   }
 
   /**
@@ -582,8 +585,6 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     // if no project id specified , default to the one captured from config.yaml
     // TODO: extend the starter project to be set of projects, so parameterizing this function makes
     // sense
-    var app = App.getInstance();
-    var starterProjectID = app.mdbConfig.starterProject;
     if (srcProjectID == null || srcProjectID.isEmpty()) srcProjectID = starterProjectID;
 
     // if this is not a starter project, then cloning is not supported

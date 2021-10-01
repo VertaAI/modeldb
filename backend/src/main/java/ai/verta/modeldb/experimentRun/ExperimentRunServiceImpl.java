@@ -29,7 +29,6 @@ import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -987,10 +986,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     List<Artifact> datasets = exprRun.getDatasetsList();
     for (Artifact dataset : datasets) {
       if (dataset.getKey().equals(request.getKey()))
-        return new SimpleEntry<>(
-            datasetVersionDAO.getUrlForDatasetVersion(
-                dataset.getLinkedArtifactId(), request.getMethod()),
-            null);
+        throw new InvalidArgumentException("Not supported yet");
     }
     // if the loop above did not return anything that means there was no Dataset logged with the
     // particular key

@@ -1,0 +1,62 @@
+#ModelDB Properties
+grpcServer:
+  port: 8085
+  requestTimeout: 30 #time in second
+  metrics_port: 8087
+
+springServer:
+  port: 8086
+  shutdownTimeout: 30
+
+# Database settings (type mongodb, couchbasedb, relational etc..)
+database:
+  DBType: relational
+  timeout: 4
+  liquibaseLockThreshold: 60
+  idleTimeout: "60000"
+  maxLifetime: "300000"
+  minConnectionPoolSize: "0"
+  maxConnectionPoolSize: "20"
+  connectionTimeout: "30000"
+  RdbConfiguration:
+    RdbDatabaseName: modeldb_oss
+    RdbDriver: "org.postgresql.Driver" #"com.mysql.cj.jdbc.Driver", "org.postgresql.Driver"
+    RdbDialect: "org.hibernate.dialect.PostgreSQL82Dialect" #"org.hibernate.dialect.MySQL5Dialect", "org.hibernate.dialect.PostgreSQL82Dialect"
+    RdbUrl: "jdbc:postgresql://localhost:5432" #"jdbc:mysql://localhost:3306", "jdbc:postgresql://localhost:5432"
+    RdbUsername: postgres #root, postgres
+    RdbPassword: root
+
+starterProject:
+
+#ArtifactStore Properties
+artifactStoreConfig:
+  artifactStoreType: NFS #amazonS3, googleCloudStorage,nfs
+  enabled: true
+  protocol: http
+  host: localhost:8086
+  pickArtifactStoreHostFromConfig: true
+  artifactEndpoint:
+    getArtifact: "/v1/artifact/getArtifact"
+    storeArtifact: "/v1/artifact/storeArtifact"
+  S3:
+    cloudAccessKey:  #for s3 its access-secret, maybe set these when building the image?, for gcp?, for nfs?
+    cloudSecretKey:
+    cloudBucketName: # if nfs then root dir. Note: bucket needs to exist already
+    awsRegion:
+    s3presignedURLEnabled: true
+    minioEndpoint:
+  NFS:
+    nfsRootPath: /Users/xyz/ArtifactStore/test_dir/
+    nfsServerHost: localhost
+    nfsUrlProtocol: https
+    artifactEndpoint:
+      getArtifact: "/v1/artifact1/getArtifact"
+      storeArtifact: "/v1/artifact/storeArtifact"
+
+telemetry:
+  opt_out: false
+  frequency: 10 #frequency to share data in hours, default 1
+  consumer: https://app.verta.ai/api/v1/uac-proxy/telemetry/collectTelemetry
+
+cron_job:
+

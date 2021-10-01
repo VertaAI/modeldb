@@ -103,6 +103,7 @@ import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import java.util.ArrayList;
@@ -464,6 +465,9 @@ public class FutureExperimentRunDAO {
       List<String> entityIds,
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    if (!config.hasAuth()) {
+      return InternalFuture.completedInternalFuture(true);
+    }
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(
@@ -543,6 +547,9 @@ public class FutureExperimentRunDAO {
   private InternalFuture<List<Resources>> getAllowedEntitiesByResourceType(
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    if (!config.hasAuth()) {
+      return InternalFuture.completedInternalFuture(new ArrayList<>());
+    }
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()
                 .getSelfAllowedResources(
@@ -1365,6 +1372,9 @@ public class FutureExperimentRunDAO {
     if (projectId.isPresent() && !projectId.get().isEmpty()) {
       requestProjectIds.add(projectId.get());
     }
+    if (!config.hasAuth()) {
+      return InternalFuture.completedInternalFuture(requestProjectIds);
+    }
     return FutureGrpc.ClientRequest(
             uac.getWorkspaceService()
                 .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
@@ -1783,9 +1793,13 @@ public class FutureExperimentRunDAO {
 
     return validateRequestParamFuture
         .thenCompose(
-            unused ->
-                FutureGrpc.ClientRequest(
-                    uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
+            unused -> {
+              if (!config.hasAuth()) {
+                return InternalFuture.completedInternalFuture(UserInfo.newBuilder().build());
+              }
+              return FutureGrpc.ClientRequest(
+                  uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor);
+            },
             executor)
         .thenCompose(
             userInfo ->

@@ -1530,4 +1530,44 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
     }
   }
+
+  @Override
+  public List<String> getDatasetIdsOfDatasetVersions(List<String> datasetVersionIds) {
+    if (datasetVersionIds == null || datasetVersionIds.isEmpty()) {
+      return Collections.emptyList();
+    }
+    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      String alias = "cm";
+      StringBuilder queryBuilder =
+          new StringBuilder(" FROM ")
+              .append(CommitEntity.class.getSimpleName())
+              .append(" ")
+              .append(alias)
+              .append(" WHERE ")
+              .append(alias)
+              .append(".commit_hash IN (:commitHashList)");
+      Query<CommitEntity> query = session.createQuery(queryBuilder.toString());
+      query.setParameterList("commitHashList", datasetVersionIds);
+      List<RepositoryEntity> repositoryEntities = new ArrayList<>();
+      query
+          .list()
+          .forEach(
+              commitEntity -> {
+                for (RepositoryEntity repositoryEntity : commitEntity.getRepository()) {
+                  if (repositoryEntity.isDataset()) {
+                    repositoryEntities.add(repositoryEntity);
+                  }
+                }
+              });
+      return repositoryEntities.stream()
+          .map(repositoryEntity -> String.valueOf(repositoryEntity.getId()))
+          .collect(Collectors.toList());
+    } catch (Exception ex) {
+      if (ModelDBUtils.needToRetry(ex)) {
+        return getDatasetIdsOfDatasetVersions(datasetVersionIds);
+      } else {
+        throw ex;
+      }
+    }
+  }
 }

@@ -29,13 +29,14 @@ public class ServiceSet {
   public static ServiceSet fromConfig(
       MDBConfig mdbConfig, MDBArtifactStoreConfig mdbArtifactStoreConfig) throws IOException {
     var set = new ServiceSet();
-    set.uac = UAC.FromConfig(mdbConfig);
-    set.authService = MDBAuthServiceUtils.FromConfig(mdbConfig, set.uac);
-    set.mdbRoleService = MDBRoleServiceUtils.FromConfig(mdbConfig, set.authService, set.uac);
 
     // Initialize App.java singleton instance
     set.app = App.getInstance();
     set.app.mdbConfig = mdbConfig;
+
+    set.uac = UAC.FromConfig(mdbConfig);
+    set.authService = MDBAuthServiceUtils.FromConfig(mdbConfig, set.uac);
+    set.mdbRoleService = MDBRoleServiceUtils.FromConfig(mdbConfig, set.authService, set.uac);
 
     if (mdbArtifactStoreConfig.isEnabled()) {
       set.artifactStoreService = initializeArtifactStore(mdbArtifactStoreConfig);

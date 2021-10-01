@@ -244,7 +244,7 @@ public class App implements ApplicationContextAware {
       serverBuilder.intercept(new MetadataForwarder());
       serverBuilder.intercept(new ExceptionInterceptor());
       serverBuilder.intercept(new MonitoringInterceptor());
-      serverBuilder.intercept(new AuthInterceptor());
+      serverBuilder.intercept(new AuthInterceptor(App.getInstance().mdbConfig));
 
       // Add APIs
       LOGGER.info("Initializing backend services.");
