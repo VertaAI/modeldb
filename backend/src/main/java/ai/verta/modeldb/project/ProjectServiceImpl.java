@@ -59,6 +59,7 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import io.grpc.stub.StreamObserver;
@@ -95,6 +96,34 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     this.futureEventDAO = daoSet.futureEventDAO;
   }
 
+  private void addEvent(
+      String entityId,
+      long workspaceId,
+      String eventType,
+      Optional<String> updatedField,
+      Map<String, Object> extraFieldsMap,
+      String eventMessage) {
+    // Add succeeded event in local DB
+    JsonObject eventMetadata = new JsonObject();
+    eventMetadata.addProperty("entity_id", entityId);
+    if (updatedField.isPresent() && !updatedField.get().isEmpty()) {
+      eventMetadata.addProperty("updated_field", updatedField.get());
+    }
+    if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
+      extraFieldsMap.forEach(
+          (key, value) -> {
+            if (value instanceof JsonElement) {
+              eventMetadata.add(key, (JsonElement) value);
+            } else {
+              eventMetadata.addProperty(key, String.valueOf(value));
+            }
+          });
+    }
+    eventMetadata.addProperty("message", eventMessage);
+    futureEventDAO.addLocalEventWithBlocking(
+        ModelDBServiceResourceTypes.PROJECT.name(), eventType, workspaceId, eventMetadata);
+  }
+
   /**
    * Convert CreateProject request to Project entity and insert in database.
    *
@@ -116,14 +145,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var response = CreateProject.Response.newBuilder().setProject(project).build();
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", project.getId());
-      eventMetadata.addProperty("message", "project logged successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "add.resource.project.add_project_succeeded",
+      addEvent(
+          project.getId(),
           project.getWorkspaceServiceId(),
-          eventMetadata);
+          "add.resource.project.add_project_succeeded",
+          Optional.empty(),
+          Collections.emptyMap(),
+          "project logged successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -161,15 +189,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           UpdateProjectDescription.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", updatedProject.getId());
-      eventMetadata.addProperty("updated_field", "description");
-      eventMetadata.addProperty("message", "project description updated successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("description"),
+          Collections.emptyMap(),
+          "project description updated successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -206,25 +232,20 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var updatedProject =
           projectDAO.addProjectAttributes(request.getId(), request.getAttributesList());
       var response = AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
-
-      // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", updatedProject.getId());
-      eventMetadata.addProperty("updated_field", "attributes");
-      eventMetadata.add(
-          "attribute_keys",
-          new Gson()
-              .toJsonTree(
-                  request.getAttributesList().stream()
-                      .map(KeyValue::getKey)
-                      .collect(Collectors.toSet()),
-                  new TypeToken<ArrayList<String>>() {}.getType()));
-      eventMetadata.addProperty("message", "project attributes added successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getAttributesList().stream()
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project attributes added successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -270,23 +291,20 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           UpdateProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", updatedProject.getId());
-      eventMetadata.addProperty("updated_field", "attributes");
-      eventMetadata.add(
-          "attribute_keys",
-          new Gson()
-              .toJsonTree(
-                  Stream.of(request.getAttribute())
-                      .map(KeyValue::getKey)
-                      .collect(Collectors.toSet()),
-                  new TypeToken<ArrayList<String>>() {}.getType()));
-      eventMetadata.addProperty("message", "project attributes updated successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      Stream.of(request.getAttribute())
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project attributes updated successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -374,25 +392,24 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           DeleteProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", updatedProject.getId());
-      eventMetadata.addProperty("updated_field", "attributes");
+      Map<String, Object> extraField = new HashMap<>();
       if (request.getDeleteAll()) {
-        eventMetadata.addProperty("attributes_delete_all", true);
+        extraField.put("attributes_delete_all", true);
       } else {
-        eventMetadata.add(
+        extraField.put(
             "attribute_keys",
             new Gson()
                 .toJsonTree(
                     request.getAttributeKeysList(),
                     new TypeToken<ArrayList<String>>() {}.getType()));
       }
-      eventMetadata.addProperty("message", "project attributes deleted successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("attributes"),
+          extraField,
+          "project attributes deleted successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -429,19 +446,17 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var response = AddProjectTags.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", updatedProject.getId());
-      eventMetadata.addProperty("updated_field", "tags");
-      eventMetadata.add(
-          "tags",
-          new Gson()
-              .toJsonTree(request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
-      eventMetadata.addProperty("message", "project tags added successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
+          "project tags added successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -508,24 +523,23 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var response = DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", updatedProject.getId());
-      eventMetadata.addProperty("updated_field", "tags");
+      JsonElement extraField;
       if (request.getDeleteAll()) {
-        eventMetadata.addProperty("tags_deleted_all", true);
+        JsonObject extraFieldObj = new JsonObject();
+        extraFieldObj.addProperty("delete_all", true);
+        extraField = extraFieldObj;
       } else {
-        eventMetadata.add(
-            "tags",
+        extraField =
             new Gson()
-                .toJsonTree(
-                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+                .toJsonTree(request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType());
       }
-      eventMetadata.addProperty("message", "project tags deleted successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("tags"),
+          Collections.singletonMap("tags", extraField),
+          "project tags deleted successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -565,21 +579,18 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var response = AddProjectTag.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", updatedProject.getId());
-      eventMetadata.addProperty("updated_field", "tags");
-      eventMetadata.add(
-          "tags",
-          new Gson()
-              .toJsonTree(
-                  Collections.singletonList(request.getTag()),
-                  new TypeToken<ArrayList<String>>() {}.getType()));
-      eventMetadata.addProperty("message", "project tag added successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getTag()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project tag added successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -616,21 +627,18 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var response = DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", updatedProject.getId());
-      eventMetadata.addProperty("updated_field", "tags");
-      eventMetadata.add(
-          "tags",
-          new Gson()
-              .toJsonTree(
-                  Collections.singletonList(request.getTag()),
-                  new TypeToken<ArrayList<String>>() {}.getType()));
-      eventMetadata.addProperty("message", "project tag deleted successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getTag()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project tag deleted successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -825,14 +833,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var response = DeepCopyProject.Response.newBuilder().setProject(project).build();
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", project.getId());
-      eventMetadata.addProperty("message", "project clone successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "clone.resource.project.clone_project_succeeded",
+      addEvent(
+          project.getId(),
           project.getWorkspaceServiceId(),
-          eventMetadata);
+          "clone.resource.project.clone_project_succeeded",
+          Optional.empty(),
+          Collections.emptyMap(),
+          "project clone successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -995,6 +1002,14 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           updatedProject.getWorkspaceServiceId(),
           eventMetadata);
 
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("read_me_text"),
+          Collections.singletonMap("updated_field_value", request.getReadmeText()),
+          "project read_me_text updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1062,16 +1077,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var response = SetProjectShortName.Response.newBuilder().setProject(project).build();
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", project.getId());
-      eventMetadata.addProperty("updated_field", "short_name");
-      eventMetadata.addProperty("updated_field_value", request.getShortName());
-      eventMetadata.addProperty("message", "project short_name updated successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          project.getId(),
           project.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("short_name"),
+          Collections.singletonMap("updated_field_value", project.getShortName()),
+          "project short_name updated successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -1143,15 +1155,13 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var responseBuilder = LogProjectCodeVersion.Response.newBuilder().setProject(updatedProject);
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", updatedProject.getId());
-      eventMetadata.addProperty("updated_field", "code_version");
-      eventMetadata.addProperty("message", "code_version logged successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("code_version"),
+          Collections.emptyMap(),
+          "code_version logged successfully");
 
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
@@ -1299,23 +1309,20 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var responseBuilder = LogProjectArtifacts.Response.newBuilder().setProject(updatedProject);
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", updatedProject.getId());
-      eventMetadata.addProperty("updated_field", "artifacts");
-      eventMetadata.add(
-          "artifacts_keys",
-          new Gson()
-              .toJsonTree(
-                  request.getArtifactsList().stream()
-                      .map(Artifact::getKey)
-                      .collect(Collectors.toSet()),
-                  new TypeToken<ArrayList<String>>() {}.getType()));
-      eventMetadata.addProperty("message", "project artifacts added successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("artifacts"),
+          Collections.singletonMap(
+              "artifacts_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getArtifactsList().stream()
+                          .map(Artifact::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project artifacts added successfully");
 
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
@@ -1370,21 +1377,18 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var response = DeleteProjectArtifact.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
-      JsonObject eventMetadata = new JsonObject();
-      eventMetadata.addProperty("entity_id", updatedProject.getId());
-      eventMetadata.addProperty("updated_field", "artifacts");
-      eventMetadata.add(
-          "artifacts_keys",
-          new Gson()
-              .toJsonTree(
-                  Collections.singletonList(request.getKey()),
-                  new TypeToken<ArrayList<String>>() {}.getType()));
-      eventMetadata.addProperty("message", "project artifact deleted successfully");
-      futureEventDAO.addLocalEventWithBlocking(
-          ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+      addEvent(
+          updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          eventMetadata);
+          "update.resource.project.update_project_succeeded",
+          Optional.of("artifacts"),
+          Collections.singletonMap(
+              "artifacts_keys",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getKey()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project artifact deleted successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
