@@ -23,10 +23,12 @@ class _Environment(_blob.Blob):
     ----------
     env_vars : dict of str to str, or None
         Environment variables.
+    command : list of str, or None
+        Shell command associated with this environment.
 
     """
 
-    def __init__(self, env_vars, autocapture):
+    def __init__(self, env_vars=None, command_line=None, autocapture):
         super(_Environment, self).__init__()
 
         # TODO: don't use proto to store data
@@ -36,6 +38,10 @@ class _Environment(_blob.Blob):
             self.add_env_vars(env_vars)
         if autocapture:
             self._capture_cmd_line_args()
+
+    @property
+    def command(self):
+        return list(self._msg.command_line) or None
 
     @property
     def env_vars(self):

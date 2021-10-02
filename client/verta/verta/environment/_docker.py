@@ -33,6 +33,8 @@ class Docker(_environment._Environment):
         Environment variables. If a list of names is provided, the values will
         be captured from the current environment. If not provided, nothing
         will be captured.
+    command : list of str, or None
+        Command to run when container starts.
 
     Attributes
     ----------
@@ -44,6 +46,8 @@ class Docker(_environment._Environment):
         Image ID.
     env_vars : dict of str to str, or None
         Environment variables.
+    command : list of str, or None
+        Command to run when container starts.
 
     Examples
     --------

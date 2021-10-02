@@ -170,6 +170,7 @@ class DockerImage(object):
                 for var
                 in model_ver_msg.environment.environment_variables
             },
+            command=model_ver._msg.environment.command_line,
         )
 
     def _as_model_ver_proto(self):
