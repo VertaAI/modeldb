@@ -176,14 +176,13 @@ class _DeployableEntity(_ModelDBEntity):
         raise NotImplementedError
 
 
-    @classmethod
-    def _validate_artifact_uploaded(cls, artifact_msg):
+    @staticmethod
+    def _validate_artifact_uploaded(artifact_msg):
         """Raises a ValueError if the artifact upload is not complete"""
         if (not artifact_msg.upload_completed):
             raise ValueError("artifact upload incomplete; download not possible")
 
 
-    @abc.abstractmethod
     def download_artifact(self, key, download_to_path):
         """Downloads the artifact with name `key` to path `download_to_path`.
 

@@ -6,6 +6,11 @@ import pytest
 import six
 
 from verta._internal_utils import _artifact_utils
+from verta._protos.public.modeldb import (
+    ExperimentRunService_pb2 as ExperimentRunService,
+)
+from verta._protos.public.common import CommonService_pb2 as CommonService
+from verta.tracking.entities import ExperimentRun
 
 
 class TestArtifacts:
@@ -79,6 +84,19 @@ class TestArtifacts:
                 experiment_run.log_image(key, artifact)
             with pytest.raises(ValueError, match="please use a different key$"):
                 experiment_run.log_image_path(key, artifact)
+
+    def test_block_download_for_incomplete(self, experiment_run):
+        artifact_msg = CommonService.Artifact(
+            key="key",
+            path="path",
+            artifact_type=CommonService.ArtifactTypeEnum.MODEL,
+            upload_completed=False
+            )
+        # NB: This is a bit of a hack to force the presence of an "incomplete"
+        # artifact, absent the ability to properly unit test this.
+        experiment_run._get_artifact_msg = lambda key: artifact_msg
+        with pytest.raises(ValueError, match="artifact upload incomplete"):
+            experiment_run.download_artifact("key", "target_path")
 
 
 class TestImages:
