@@ -670,7 +670,7 @@ class RegisteredModel(_entity._ModelDBEntity):
                 request_path="/predict_json",
                 health_path="/health",
 
-                repository="012345678901.dkr.ecr.apne2-az1.amazonaws.com/models/example",
+                repository="models/example",
                 tag="example",
 
                 env_vars={"CUDA_VISIBLE_DEVICES": "0,1"},

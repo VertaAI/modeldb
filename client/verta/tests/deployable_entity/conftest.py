@@ -37,7 +37,7 @@ def environment(request):
     cls = request.param
     if cls is Docker:
         env = Docker(
-            repository="012345678901.dkr.ecr.apne2-az1.amazonaws.com/models/example",
+            repository="models/example",
             tag="example",
         )
     elif cls is Python:

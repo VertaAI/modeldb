@@ -50,7 +50,7 @@ class Docker(_environment._Environment):
     .. code-block:: python
 
         Docker(
-            repository="012345678901.dkr.ecr.apne2-az1.amazonaws.com/models/example",
+            repository="models/example",
             tag="example",
         )
 
