@@ -92,7 +92,8 @@ public class FutureEventDAO {
             .collect(Collectors.toSet());
 
     if (eventUUIDs.isEmpty()) {
-      return InternalFuture.failedStage(new ModelDBException("Event UUID not found for deletion"));
+      LOGGER.debug("0 out of 0 events deleted");
+      return InternalFuture.completedInternalFuture(true);
     }
 
     return jdbi.withHandle(
@@ -102,9 +103,9 @@ public class FutureEventDAO {
                     .bindList("eventUUIDs", eventUUIDs)
                     .execute())
         .thenApply(
-            insertedRowCount -> {
-              LOGGER.debug("Events deleted successfully, Events UUID are {}", eventUUIDList);
-              return insertedRowCount > 0;
+            deletedRowCount -> {
+              LOGGER.debug("Events deleted successfully, Events UUID are {}", eventUUIDs);
+              return deletedRowCount == eventUUIDs.size();
             },
             executor);
   }
