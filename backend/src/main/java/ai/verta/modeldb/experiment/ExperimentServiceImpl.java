@@ -330,20 +330,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       Experiment updatedExperiment = null;
-      String updatedField = null;
+      List<String> updatedFields = new ArrayList<>();
       String updatedFieldValue = null;
       if (!request.getName().isEmpty()) {
         updatedExperiment =
             experimentDAO.updateExperimentName(
                 request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
-        updatedField = "name";
+        updatedFields.add("name");
         updatedFieldValue = updatedExperiment.getName();
       }
       // FIXME: this code never allows us to set the description as an empty string
       if (!request.getDescription().isEmpty()) {
         updatedExperiment =
             experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
-        updatedField = "description";
+        updatedFields.add("description");
         updatedFieldValue = updatedExperiment.getDescription();
       }
 
@@ -358,7 +358,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           updatedExperiment.getProjectId(),
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           "update.resource.experiment.update_experiment_succeeded",
-          Optional.of(updatedField),
+          Optional.of(String.join(",", updatedFields)),
           Collections.singletonMap("updated_field_value", updatedFieldValue),
           "experiment name or description updated successfully");
 
