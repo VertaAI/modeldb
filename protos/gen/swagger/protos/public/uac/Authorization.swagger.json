@@ -632,6 +632,9 @@
         },
         "service": {
           "$ref": "#/definitions/ServiceEnumService"
+        },
+        "pagination": {
+          "$ref": "#/definitions/vertacommonPagination"
         }
       },
       "title": "Same as above, but lists the resources on which actions can be performed by entities\nIf all possible resources combinations are allowed returns:\nResources({Resource(service: service, resource_ids:{}, resource_type:resource_type)})"
@@ -795,6 +798,20 @@
         }
       },
       "title": "A resource describes a specific object in a service that can receive an action"
+    },
+    "vertacommonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     }
   },
   "basePath": "/v1"
