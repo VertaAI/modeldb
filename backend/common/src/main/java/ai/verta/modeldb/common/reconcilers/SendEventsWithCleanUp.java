@@ -39,6 +39,7 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
             handle
                 .createQuery(
                     "SELECT event_uuid, event_type, workspace_id, event_metadata FROM event")
+                .setFetchSize(config.getMaxSync())
                 .map(
                     (rs, ctx) -> {
                       Value.Builder valueBuilder = Value.newBuilder();
