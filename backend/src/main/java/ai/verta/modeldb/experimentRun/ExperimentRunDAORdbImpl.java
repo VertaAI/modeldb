@@ -2255,7 +2255,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
                 Optional.empty(),
                 ModelDBServiceResourceTypes.REPOSITORY);
-        var workspace = authService.workspaceByIdForServiceUser(true, entityResource.getWorkspaceId());
+        var workspace =
+            authService.workspaceByIdForServiceUser(true, entityResource.getWorkspaceId());
         if (workspace != null) {
           findExperimentRuns.setWorkspaceName(
               workspace.getInternalIdCase() == Workspace.InternalIdCase.ORG_ID
@@ -2335,7 +2336,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 Optional.of(String.valueOf(request.getRepositoryId().getRepoId())),
                 Optional.empty(),
                 ModelDBServiceResourceTypes.REPOSITORY);
-        var workspace = authService.workspaceByIdForServiceUser(true, entityResource.getWorkspaceId());
+        var workspace =
+            authService.workspaceByIdForServiceUser(true, entityResource.getWorkspaceId());
         if (workspace != null) {
           findExperimentRuns.setWorkspaceName(
               workspace.getInternalIdCase() == Workspace.InternalIdCase.ORG_ID
