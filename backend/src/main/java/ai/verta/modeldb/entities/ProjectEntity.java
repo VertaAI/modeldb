@@ -384,7 +384,7 @@ public class ProjectEntity implements Serializable {
     if (cacheWorkspaceMap.containsKey(projectResource.getWorkspaceId())) {
       workspace = cacheWorkspaceMap.get(projectResource.getWorkspaceId());
     } else {
-      workspace = authService.workspaceById(false, projectResource.getWorkspaceId());
+      workspace = authService.workspaceByIdForServiceUser(false, projectResource.getWorkspaceId());
       cacheWorkspaceMap.put(workspace.getId(), workspace);
     }
     switch (workspace.getInternalIdCase()) {

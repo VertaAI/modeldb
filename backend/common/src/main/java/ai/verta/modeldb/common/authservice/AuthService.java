@@ -37,7 +37,7 @@ public interface AuthService {
 
   UserInfoPaginationDTO getFuzzyUserInfoList(String usernameChar);
 
-  Workspace workspaceIdByName(boolean retry, String workspaceName);
+  Workspace workspaceIdByNameForServiceUser(boolean retry, String workspaceName);
 
-  Workspace workspaceById(boolean retry, Long workspaceId);
+  Workspace workspaceByIdForServiceUser(boolean retry, Long workspaceId);
 }

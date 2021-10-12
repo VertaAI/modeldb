@@ -72,12 +72,12 @@ public class PublicAuthServiceUtils implements AuthService {
   }
 
   @Override
-  public Workspace workspaceIdByName(boolean retry, String workspaceName) {
+  public Workspace workspaceIdByNameForServiceUser(boolean retry, String workspaceName) {
     return Workspace.newBuilder().build();
   }
 
   @Override
-  public Workspace workspaceById(boolean retry, Long workspaceId) {
+  public Workspace workspaceByIdForServiceUser(boolean retry, Long workspaceId) {
     return Workspace.newBuilder().build();
   }
 }

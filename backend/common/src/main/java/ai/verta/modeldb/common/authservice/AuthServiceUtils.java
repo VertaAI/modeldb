@@ -240,7 +240,7 @@ public class AuthServiceUtils implements AuthService {
   }
 
   @Override
-  public Workspace workspaceIdByName(boolean retry, String workspaceName) {
+  public Workspace workspaceIdByNameForServiceUser(boolean retry, String workspaceName) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetWorkspaceByName.Builder getWorkspaceByName =
           GetWorkspaceByName.newBuilder().setName(workspaceName);
@@ -249,7 +249,7 @@ public class AuthServiceUtils implements AuthService {
       // Get the user info from the Context
       var workspace =
           authServiceChannel
-              .getWorkspaceServiceBlockingStub()
+              .getWorkspaceServiceBlockingStubForServiceUser()
               .getWorkspaceByName(getWorkspaceByName.build());
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       return workspace;
@@ -258,21 +258,21 @@ public class AuthServiceUtils implements AuthService {
           CommonUtils.retryOrThrowException(
               ex,
               retry,
-              (RetryCallInterface<Workspace>) retry1 -> workspaceIdByName(retry1, workspaceName),
+              (RetryCallInterface<Workspace>) retry1 -> workspaceIdByNameForServiceUser(retry1, workspaceName),
               timeout);
     }
   }
 
   @Override
-  public Workspace workspaceById(boolean retry, Long workspaceId) {
+  public Workspace workspaceByIdForServiceUser(boolean retry, Long workspaceId) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetWorkspaceById.Builder getWorkspaceById = GetWorkspaceById.newBuilder().setId(workspaceId);
 
-      LOGGER.trace("get workspaceById: ID : {}", workspaceId);
+      LOGGER.trace("get workspaceByIdForServiceUser: ID : {}", workspaceId);
       // Get the user info from the Context
       var workspace =
           authServiceChannel
-              .getWorkspaceServiceBlockingStub()
+              .getWorkspaceServiceBlockingStubForServiceUser()
               .getWorkspaceById(getWorkspaceById.build());
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       return workspace;
@@ -282,7 +282,7 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<Workspace>)
-                  retry1 -> workspaceById(retry1, workspaceId),
+                  retry1 -> workspaceByIdForServiceUser(retry1, workspaceId),
               timeout);
     }
   }

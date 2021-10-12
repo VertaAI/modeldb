@@ -325,7 +325,7 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
       LOGGER.trace("Fetching workspace " + legacyWorkspaceId);
       final var workspace =
           authServiceChannel
-              .getWorkspaceServiceBlockingStub()
+              .getWorkspaceServiceBlockingStubForServiceUser()
               .getWorkspaceByLegacyId(
                   GetWorkspaceByLegacyId.newBuilder()
                       .setId(legacyWorkspaceId)
@@ -394,10 +394,10 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
     /*from the name for workspace, get the workspace id and type.
     if no workspace is present assume user's personal workspace*/
     if (workspaceName == null || workspaceName.isEmpty()) {
-      return authService.workspaceIdByName(
+      return authService.workspaceIdByNameForServiceUser(
           true, authService.getUsernameFromUserInfo(currentLoginUserInfo));
     } else {
-      return authService.workspaceIdByName(true, workspaceName);
+      return authService.workspaceIdByNameForServiceUser(true, workspaceName);
     }
   }
 

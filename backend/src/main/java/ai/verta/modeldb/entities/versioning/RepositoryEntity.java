@@ -259,7 +259,7 @@ public class RepositoryEntity implements Serializable {
     if (cacheWorkspaceMap.containsKey(responseItem.getWorkspaceId())) {
       workspace = cacheWorkspaceMap.get(responseItem.getWorkspaceId());
     } else {
-      workspace = authService.workspaceById(false, responseItem.getWorkspaceId());
+      workspace = authService.workspaceByIdForServiceUser(false, responseItem.getWorkspaceId());
       cacheWorkspaceMap.put(workspace.getId(), workspace);
     }
 
