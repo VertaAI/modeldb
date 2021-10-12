@@ -27,7 +27,8 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub
       organizationServiceBlockingStubForServiceUser;
-  private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStubForServiceUser;
+  private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub
+      workspaceServiceBlockingStubForServiceUser;
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
       collaboratorServiceBlockingStubForServiceUser;
@@ -200,7 +201,8 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
         attachInterceptorsForServiceUser(WorkspaceServiceGrpc.newBlockingStub(authChannel));
   }
 
-  public WorkspaceServiceGrpc.WorkspaceServiceBlockingStub getWorkspaceServiceBlockingStubForServiceUser() {
+  public WorkspaceServiceGrpc.WorkspaceServiceBlockingStub
+      getWorkspaceServiceBlockingStubForServiceUser() {
     if (workspaceServiceBlockingStubForServiceUser == null) {
       initWorkspaceServiceStubChannelForServiceUser();
     }
