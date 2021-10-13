@@ -810,7 +810,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
       Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
       String workspaceName = queryParameters.getWorkspaceName();
       if (!workspaceName.isEmpty()
-              && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             mdbRoleService.getResourceItems(
                 null,
