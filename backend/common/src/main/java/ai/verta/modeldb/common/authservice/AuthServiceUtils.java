@@ -258,7 +258,8 @@ public class AuthServiceUtils implements AuthService {
           CommonUtils.retryOrThrowException(
               ex,
               retry,
-              (RetryCallInterface<Workspace>) retry1 -> workspaceIdByNameForServiceUser(retry1, workspaceName),
+              (RetryCallInterface<Workspace>)
+                  retry1 -> workspaceIdByNameForServiceUser(retry1, workspaceName),
               timeout);
     }
   }
