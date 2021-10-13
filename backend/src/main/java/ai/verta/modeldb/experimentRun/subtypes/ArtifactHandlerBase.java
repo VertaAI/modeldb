@@ -264,6 +264,11 @@ public class ArtifactHandlerBase {
                 jdbi.useHandle(
                     handle -> {
                       for (final var artifact : artifacts) {
+                        var uploadCompleted =
+                            !artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3);
+                        if (artifact.getUploadCompleted()) {
+                          uploadCompleted = true;
+                        }
                         var storeTypePath =
                             !artifact.getPathOnly()
                                 ? artifactStoreConfig.storeTypePathPrefix() + artifact.getPath()
@@ -282,11 +287,7 @@ public class ArtifactHandlerBase {
                             .bind("path_only", artifact.getPathOnly())
                             .bind("linked_artifact_id", artifact.getLinkedArtifactId())
                             .bind("filename_extension", artifact.getFilenameExtension())
-                            .bind(
-                                "upload_completed",
-                                !artifactStoreConfig
-                                    .getArtifactStoreType()
-                                    .equals(ModelDBConstants.S3))
+                            .bind("upload_completed", uploadCompleted)
                             .bind("store_type_path", storeTypePath)
                             .bind("serialization", artifact.getSerialization())
                             .bind("artifact_subtype", artifact.getArtifactSubtype())
