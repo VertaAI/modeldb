@@ -28,21 +28,21 @@ public class FutureEventDAO {
     this.serviceType = serviceType;
   }
 
-  public Boolean addLocalEventWithBlocking(
+  public Void addLocalEventWithBlocking(
       String resourceType, String eventType, long workspaceId, JsonObject eventMetadata) {
     return addLocalEvent(resourceType, eventType, workspaceId, eventMetadata).get();
   }
 
-  public InternalFuture<Boolean> addLocalEventWithAsync(
+  public InternalFuture<Void> addLocalEventWithAsync(
       String resourceType, String eventType, long workspaceId, JsonObject eventMetadata) {
     return addLocalEvent(resourceType, eventType, workspaceId, eventMetadata);
   }
 
-  private InternalFuture<Boolean> addLocalEvent(
+  private InternalFuture<Void> addLocalEvent(
       String resourceType, String eventType, long workspaceId, JsonObject eventMetadata) {
     if (!config.isEvent_system_enabled()) {
       LOGGER.info("Event system is not enabled");
-      return InternalFuture.completedInternalFuture(false);
+      return InternalFuture.completedInternalFuture(null);
     }
 
     if (workspaceId == 0) {
@@ -54,7 +54,7 @@ public class FutureEventDAO {
     eventMetadata.addProperty("resource_type", resourceType);
     eventMetadata.addProperty("logged_time", new Date().getTime());
 
-    return jdbi.withHandle(
+    return jdbi.useHandle(
             handle ->
                 handle
                     .createUpdate(
@@ -64,26 +64,22 @@ public class FutureEventDAO {
                     .bind("workspace_id", workspaceId)
                     .bind("event_metadata", eventMetadata.toString())
                     .execute())
-        .thenApply(
-            insertedRowCount -> {
-              LOGGER.debug("Event added successfully");
-              return insertedRowCount > 0;
-            },
+        .thenAccept( unused -> LOGGER.debug("Event added successfully"),
             executor);
   }
 
-  public Boolean deleteLocalEventWithBlocking(List<String> eventUUIDs) {
+  public Void deleteLocalEventWithBlocking(List<String> eventUUIDs) {
     return deleteLocalEvent(eventUUIDs).get();
   }
 
-  public InternalFuture<Boolean> deleteLocalEventWithAsync(List<String> eventUUIDs) {
+  public InternalFuture<Void> deleteLocalEventWithAsync(List<String> eventUUIDs) {
     return deleteLocalEvent(eventUUIDs);
   }
 
-  private InternalFuture<Boolean> deleteLocalEvent(List<String> eventUUIDList) {
+  private InternalFuture<Void> deleteLocalEvent(List<String> eventUUIDList) {
     if (!config.isEvent_system_enabled()) {
       LOGGER.info("Event system is not enabled");
-      return InternalFuture.completedInternalFuture(false);
+      return InternalFuture.completedInternalFuture(null);
     }
 
     Set<String> eventUUIDs =
@@ -93,20 +89,17 @@ public class FutureEventDAO {
 
     if (eventUUIDs.isEmpty()) {
       LOGGER.debug("0 out of 0 events deleted");
-      return InternalFuture.completedInternalFuture(true);
+      return InternalFuture.completedInternalFuture(null);
     }
 
-    return jdbi.withHandle(
+    return jdbi.useHandle(
             handle ->
                 handle
                     .createUpdate("DELETE FROM event WHERE event_uuid IN (<eventUUIDs>) ")
                     .bindList("eventUUIDs", eventUUIDs)
                     .execute())
-        .thenApply(
-            deletedRowCount -> {
-              LOGGER.debug("Events deleted successfully, Events UUID are {}", eventUUIDs);
-              return deletedRowCount == eventUUIDs.size();
-            },
+        .thenAccept(
+            unused -> LOGGER.debug("Events deleted successfully"),
             executor);
   }
 }
