@@ -73,7 +73,7 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
         .thenCompose(
             deleteEventUUIDs -> {
               LOGGER.debug("Ready to delete local events from database: {}", deleteEventUUIDs);
-              InternalFuture<Boolean> statusFuture =
+              InternalFuture<Void> statusFuture =
                   futureEventDAO.deleteLocalEventWithAsync(deleteEventUUIDs);
               LOGGER.debug("Deleted local events from database: {}", deleteEventUUIDs);
               return statusFuture;
@@ -81,11 +81,7 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
             executor)
         .thenApply(
             status -> {
-              if (status) {
-                LOGGER.debug("local events sent into the global event server successfully");
-              } else {
-                LOGGER.warn("failed to send local events in the global event server");
-              }
+              LOGGER.debug("local events sent into the global event server successfully");
               return new ReconcileResult();
             },
             executor)
