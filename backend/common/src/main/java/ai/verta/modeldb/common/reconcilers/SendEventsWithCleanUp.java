@@ -14,10 +14,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
-  private static final Logger LOGGER = LogManager.getLogger(SendEventsWithCleanUp.class);
   private final UAC uac;
   private final FutureEventDAO futureEventDAO;
 
@@ -27,7 +25,7 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
       FutureEventDAO futureEventDAO,
       FutureJdbi futureJdbi,
       Executor executor) {
-    super(config, LOGGER, futureJdbi, executor, false);
+    super(config, LogManager.getLogger(SendEventsWithCleanUp.class), futureJdbi, executor, false);
     this.uac = uac;
     this.futureEventDAO = futureEventDAO;
   }
@@ -72,16 +70,16 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
             executor)
         .thenCompose(
             deleteEventUUIDs -> {
-              LOGGER.debug("Ready to delete local events from database: {}", deleteEventUUIDs);
+              logger.debug("Ready to delete local events from database");
               InternalFuture<Void> statusFuture =
                   futureEventDAO.deleteLocalEventWithAsync(deleteEventUUIDs);
-              LOGGER.debug("Deleted local events from database: {}", deleteEventUUIDs);
+              logger.debug("Deleted local events from database");
               return statusFuture;
             },
             executor)
         .thenApply(
             status -> {
-              LOGGER.debug("local events sent into the global event server successfully");
+              logger.debug("local events sent into the global event server successfully");
               return new ReconcileResult();
             },
             executor)
