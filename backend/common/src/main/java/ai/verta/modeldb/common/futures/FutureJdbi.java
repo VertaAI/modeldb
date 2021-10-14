@@ -8,7 +8,7 @@ import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
 
 public class FutureJdbi {
-  private final Executor executor;
+    private final Executor executor;
   private final Jdbi jdbi;
 
   public FutureJdbi(Jdbi jdbi, Executor executor) {
