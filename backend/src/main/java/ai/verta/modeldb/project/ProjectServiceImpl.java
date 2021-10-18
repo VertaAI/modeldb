@@ -48,6 +48,7 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -57,6 +58,10 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +73,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -79,6 +85,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
   private final ProjectDAO projectDAO;
   private final ExperimentRunDAO experimentRunDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
+  private final FutureEventDAO futureEventDAO;
 
   public ProjectServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
@@ -86,6 +93,37 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
     this.projectDAO = daoSet.projectDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
+    this.futureEventDAO = daoSet.futureEventDAO;
+  }
+
+  private void addEvent(
+      String entityId,
+      long workspaceId,
+      String eventType,
+      Optional<String> updatedField,
+      Map<String, Object> extraFieldsMap,
+      String eventMessage) {
+    // Add succeeded event in local DB
+    JsonObject eventMetadata = new JsonObject();
+    eventMetadata.addProperty("entity_id", entityId);
+    if (updatedField.isPresent() && !updatedField.get().isEmpty()) {
+      eventMetadata.addProperty("updated_field", updatedField.get());
+    }
+    if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
+      JsonObject updatedFieldValue = new JsonObject();
+      extraFieldsMap.forEach(
+          (key, value) -> {
+            if (value instanceof JsonElement) {
+              updatedFieldValue.add(key, (JsonElement) value);
+            } else {
+              updatedFieldValue.addProperty(key, String.valueOf(value));
+            }
+          });
+      eventMetadata.add("updated_field_value", updatedFieldValue);
+    }
+    eventMetadata.addProperty("message", eventMessage);
+    futureEventDAO.addLocalEventWithBlocking(
+        ModelDBServiceResourceTypes.PROJECT.name(), eventType, workspaceId, eventMetadata);
   }
 
   /**
@@ -107,6 +145,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var project = projectDAO.insertProject(request, userInfo);
 
       var response = CreateProject.Response.newBuilder().setProject(project).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          project.getId(),
+          project.getWorkspaceServiceId(),
+          "add.resource.project.add_project_succeeded",
+          Optional.empty(),
+          Collections.emptyMap(),
+          "project logged successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -141,6 +189,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.updateProjectDescription(request.getId(), request.getDescription());
       var response =
           UpdateProjectDescription.Response.newBuilder().setProject(updatedProject).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("description"),
+          Collections.emptyMap(),
+          "project description updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -176,6 +234,21 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var updatedProject =
           projectDAO.addProjectAttributes(request.getId(), request.getAttributesList());
       var response = AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getAttributesList().stream()
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project attributes added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -218,6 +291,23 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.updateProjectAttributes(request.getId(), request.getAttribute());
       var response =
           UpdateProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      Stream.of(request.getAttribute())
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project attributes updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -302,6 +392,27 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
       var response =
           DeleteProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraField = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraField.put("attributes_delete_all", true);
+      } else {
+        extraField.put(
+            "attribute_keys",
+            new Gson()
+                .toJsonTree(
+                    request.getAttributeKeysList(),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("attributes"),
+          extraField,
+          "project attributes deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -335,6 +446,20 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.addProjectTags(
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
       var response = AddProjectTags.Response.newBuilder().setProject(updatedProject).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
+          "project tags added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -398,6 +523,26 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           projectDAO.deleteProjectTags(
               request.getId(), request.getTagsList(), request.getDeleteAll());
       var response = DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraField = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraField.put("tags_delete_all", true);
+      } else {
+        extraField.put(
+            "tags",
+            new Gson()
+                .toJsonTree(
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("tags"),
+          extraField,
+          "project tags deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -434,6 +579,21 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               request.getId(),
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
       var response = AddProjectTag.Response.newBuilder().setProject(updatedProject).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getTag()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project tag added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -467,6 +627,21 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var updatedProject =
           projectDAO.deleteProjectTags(request.getId(), Arrays.asList(request.getTag()), false);
       var response = DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getTag()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project tag deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -658,6 +833,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       var project = projectDAO.deepCopyProjectForUser(request.getId(), userInfo);
       var response = DeepCopyProject.Response.newBuilder().setProject(project).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          project.getId(),
+          project.getWorkspaceServiceId(),
+          "clone.resource.project.clone_project_succeeded",
+          Optional.empty(),
+          Collections.emptyMap(),
+          "project clone successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -806,6 +991,27 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       var updatedProject = projectDAO.updateProjectReadme(request.getId(), request.getReadmeText());
       var response = SetProjectReadme.Response.newBuilder().setProject(updatedProject).build();
+
+      // Add succeeded event in local DB
+      JsonObject eventMetadata = new JsonObject();
+      eventMetadata.addProperty("entity_id", updatedProject.getId());
+      eventMetadata.addProperty("updated_field", "read_me_text");
+      eventMetadata.addProperty("updated_field_value", request.getReadmeText());
+      eventMetadata.addProperty("message", "project read_me_text updated successfully");
+      futureEventDAO.addLocalEventWithBlocking(
+          ModelDBServiceResourceTypes.PROJECT.name(),
+          "update.resource.project.update_project_succeeded",
+          updatedProject.getWorkspaceServiceId(),
+          eventMetadata);
+
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("read_me_text"),
+          Collections.emptyMap(),
+          "project read_me_text updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -871,6 +1077,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var project =
           projectDAO.setProjectShortName(request.getId(), request.getShortName(), userInfo);
       var response = SetProjectShortName.Response.newBuilder().setProject(project).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          project.getId(),
+          project.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("short_name"),
+          Collections.singletonMap("short_name", project.getShortName()),
+          "project short_name updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -939,6 +1155,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
       /*Build response*/
       var responseBuilder = LogProjectCodeVersion.Response.newBuilder().setProject(updatedProject);
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("code_version"),
+          Collections.emptyMap(),
+          "code_version logged successfully");
+
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -1083,6 +1309,23 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
       var updatedProject = projectDAO.logArtifacts(request.getId(), artifactList);
       var responseBuilder = LogProjectArtifacts.Response.newBuilder().setProject(updatedProject);
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("artifacts"),
+          Collections.singletonMap(
+              "artifact_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getArtifactsList().stream()
+                          .map(Artifact::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project artifacts added successfully");
+
       responseObserver.onNext(responseBuilder.build());
       responseObserver.onCompleted();
 
@@ -1134,6 +1377,21 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       var updatedProject = projectDAO.deleteArtifacts(request.getId(), request.getKey());
       var response = DeleteProjectArtifact.Response.newBuilder().setProject(updatedProject).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedProject.getId(),
+          updatedProject.getWorkspaceServiceId(),
+          "update.resource.project.update_project_succeeded",
+          Optional.of("artifacts"),
+          Collections.singletonMap(
+              "artifact_keys",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getKey()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "project artifact deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
