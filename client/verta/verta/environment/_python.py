@@ -265,7 +265,7 @@ class Python(_environment._Environment):
                 ),
             )
         except:
-            logger.warning(
+            logger.info(
                 "failed to manually parse requirements;"
                 " falling back to capturing raw contents",
                 exc_info=True,
@@ -296,7 +296,7 @@ class Python(_environment._Environment):
                 ),
             )
         except:
-            logger.warning(
+            logger.info(
                 "failed to manually parse constraints;"
                 " falling back to capturing raw contents",
                 exc_info=True,

@@ -1,9 +1,11 @@
 package ai.verta.modeldb.reconcilers;
 
+import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
+import ai.verta.modeldb.common.reconcilers.SendEventsWithCleanUp;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,9 +20,10 @@ public class ReconcilerInitializer {
   public static UpdateRepositoryTimestampReconcile updateRepositoryTimestampReconcile;
   public static UpdateExperimentTimestampReconcile updateExperimentTimestampReconcile;
   public static UpdateProjectTimestampReconcile updateProjectTimestampReconcile;
+  public static SendEventsWithCleanUp sendEventsWithCleanUp;
 
   public static void initialize(
-      Config config, ServiceSet services, FutureJdbi futureJdbi, Executor executor) {
+      Config config, ServiceSet services, DAOSet daos, FutureJdbi futureJdbi, Executor executor) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
     softDeleteProjects =
         new SoftDeleteProjects(
@@ -43,6 +46,13 @@ public class ReconcilerInitializer {
         new UpdateExperimentTimestampReconcile(new ReconcilerConfig(), futureJdbi, executor);
     updateProjectTimestampReconcile =
         new UpdateProjectTimestampReconcile(new ReconcilerConfig(), futureJdbi, executor);
+
+    if (config.isEvent_system_enabled()) {
+      sendEventsWithCleanUp =
+          new SendEventsWithCleanUp(
+              new ReconcilerConfig(), services.uac, daos.futureEventDAO, futureJdbi, executor);
+    }
+
     LOGGER.info("Exit from ReconcilerUtils: initialize()");
   }
 }

@@ -1317,7 +1317,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           "update.resource.project.update_project_succeeded",
           Optional.of("artifacts"),
           Collections.singletonMap(
-              "artifacts_keys",
+              "artifact_keys",
               new Gson()
                   .toJsonTree(
                       request.getArtifactsList().stream()
@@ -1385,7 +1385,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           "update.resource.project.update_project_succeeded",
           Optional.of("artifacts"),
           Collections.singletonMap(
-              "artifacts_keys",
+              "artifact_keys",
               new Gson()
                   .toJsonTree(
                       Collections.singletonList(request.getKey()),

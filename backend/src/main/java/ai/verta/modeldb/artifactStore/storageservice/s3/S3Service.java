@@ -116,8 +116,8 @@ public class S3Service implements ArtifactStoreService {
                   TrialUtils.getBodyParameterMapForTrialPresignedURL(
                       client.getCredentials(),
                       bucketName,
-                      mdbConfig.artifactStoreConfig.S3.getAwsRegion(),
                       s3Key,
+                      mdbConfig.artifactStoreConfig.S3.getAwsRegion(),
                       maxArtifactSize * 1024 * 1024))
               .build();
         }
