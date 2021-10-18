@@ -993,4 +993,27 @@
         <tagDatabase tag="db_version_2.35"/>
     </changeSet>
 
+    <changeSet id="create-event-table" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="event"/>
+            </not>
+        </preConditions>
+        <createTable tableName="event">
+            <column name="event_uuid" type="varchar(64)">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_query_event_uuid"/>
+            </column>
+            <column name="event_type" type="varchar(255)"/>
+            <column name="workspace_id" type="int8"/>
+            <column name="event_metadata" type="text"/>
+        </createTable>
+        <rollback>
+            <dropTable tableName="event"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="db_version_2.36" author="anandJ">
+        <tagDatabase tag="db_version_2.36"/>
+    </changeSet>
+
 </databaseChangeLog>

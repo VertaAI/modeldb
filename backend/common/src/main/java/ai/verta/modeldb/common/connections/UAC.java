@@ -25,6 +25,7 @@ public class UAC extends Connection {
   private final RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub;
   private final RoleServiceGrpc.RoleServiceFutureStub serviceAccountRoleServiceFutureStub;
   private final OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub;
+  private final EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub;
 
   public static UAC FromConfig(Config config) {
     if (!config.hasAuth()) return null;
@@ -59,6 +60,10 @@ public class UAC extends Connection {
             .withInterceptors(
                 MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
     organizationServiceFutureStub = OrganizationServiceGrpc.newFutureStub(authServiceChannel);
+    eventServiceFutureStub =
+        EventServiceGrpc.newFutureStub(authServiceChannel)
+            .withInterceptors(
+                MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
   }
 
   public AuthServiceChannel getBlockingAuthServiceChannel() {
@@ -105,5 +110,9 @@ public class UAC extends Connection {
 
   public RoleServiceGrpc.RoleServiceFutureStub getServiceAccountRoleServiceFutureStub() {
     return serviceAccountRoleServiceFutureStub;
+  }
+
+  public EventServiceGrpc.EventServiceFutureStub getEventService() {
+    return eventServiceFutureStub;
   }
 }
