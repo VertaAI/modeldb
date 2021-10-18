@@ -27,6 +27,7 @@ Event object have main four fields like:
 | ------ | ------ |
 | Project | - add.resource.project.add_project_succeeded <br/> - update.resource.project.update_project_succeeded <br/> - delete.resource.project.delete_project_succeeded |
 | Experiment | - add.resource.experiment.add_experiment_succeeded <br/> - update.resource.experiment.update_experiment_succeeded <br/> - delete.resource.experiment.delete_experiment_succeeded |
+| Experiment Run | - add.resource.experiment_run.add_experiment_run_succeeded <br/> - update.resource.experiment_run.update_experiment_run_succeeded <br/> - delete.resource.experiment_run.delete_experiment_run_succeeded |
 
 
 ### Event Metadata (event_metadata)
