@@ -23,11 +23,6 @@ pytest
 ```
 `pytest` automatically runs any `test_*()` method in any `Test*` class in any `test_*.py` file.
 
-Add the `-vvs` flag to output `stdout` while tests are running:
-```bash
-pytest -vvs
-```
-
 Add the `--oss` option to only run ModelDB OSS-compatible tests:
 ```bash
 pytest --oss
@@ -40,7 +35,40 @@ pytest test_entities.py::TestProject # specific class
 pytest test_entities.py::TestProject::test_create # specific function within specific class
 ```
 
-## Writing Tests
+### Pytest invocation flags
+
+`pytest` has a few flags that can be mixed and matched to customize output while tests are running.
+
+`-s` outputs `stdout`:
+
+```bash
+[TEST LOG] test setup begun 2021-09-29 20:06:22.250206 UTC
+[DEBUG] using email: *****@**********.***
+[DEBUG] using developer key: ********-****-****-****-************
+connection successfully established
+created new RegisteredModel: Model 689611632945983186997 in workspace: Testing
+created new RegisteredModel: 689611632945984004339 in workspace: Testing
+got existing RegisteredModel: 689611632945984004339
+.
+[TEST LOG] test teardown completed 2021-09-29 20:06:27.799351 UTC
+```
+
+`-v` increases verbosity for a handful of aspects, including displaying the name of each test:
+
+```bash
+bases/test_deployable_entity.py::TestBuildArtifactStorePath::test_with_ext PASSED                [ 33%]
+bases/test_deployable_entity.py::TestBuildArtifactStorePath::test_no_ext PASSED                  [ 66%]
+bases/test_deployable_entity.py::TestCreateArtifactMsg::test_with_ext PASSED                     [100%]
+```
+
+`-rfE` outputs a summary (`r`) when tests are complete, listing failures (`f`) and errors (`E`):
+
+```bash
+============================= short test summary info ==============================
+FAILED monitoring/alerts/test_entities.py::TestAlert::test_update_last_evaluated_at
+```
+
+## Writing tests
 
 Tests are loosely organized by files and classes of related functionality. See [`versioning/`](https://github.com/VertaAI/modeldb/tree/master/client/verta/tests/versioning) or [`monitoring/alerts/`](https://github.com/VertaAI/modeldb/tree/master/client/verta/tests/monitoring/alerts) for decent examples.
 

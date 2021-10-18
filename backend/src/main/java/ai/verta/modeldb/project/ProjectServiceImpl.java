@@ -110,14 +110,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       eventMetadata.addProperty("updated_field", updatedField.get());
     }
     if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
+      JsonObject updatedFieldValue = new JsonObject();
       extraFieldsMap.forEach(
           (key, value) -> {
             if (value instanceof JsonElement) {
-              eventMetadata.add(key, (JsonElement) value);
+              updatedFieldValue.add(key, (JsonElement) value);
             } else {
-              eventMetadata.addProperty(key, String.valueOf(value));
+              updatedFieldValue.addProperty(key, String.valueOf(value));
             }
           });
+      eventMetadata.add("updated_field_value", updatedFieldValue);
     }
     eventMetadata.addProperty("message", eventMessage);
     futureEventDAO.addLocalEventWithBlocking(
@@ -523,22 +525,22 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var response = DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
-      JsonElement extraField;
+      Map<String, Object> extraField = new HashMap<>();
       if (request.getDeleteAll()) {
-        JsonObject extraFieldObj = new JsonObject();
-        extraFieldObj.addProperty("delete_all", true);
-        extraField = extraFieldObj;
+        extraField.put("tags_delete_all", true);
       } else {
-        extraField =
+        extraField.put(
+            "tags",
             new Gson()
-                .toJsonTree(request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType());
+                .toJsonTree(
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
           "update.resource.project.update_project_succeeded",
           Optional.of("tags"),
-          Collections.singletonMap("tags", extraField),
+          extraField,
           "project tags deleted successfully");
 
       responseObserver.onNext(response);
@@ -1007,7 +1009,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           updatedProject.getWorkspaceServiceId(),
           "update.resource.project.update_project_succeeded",
           Optional.of("read_me_text"),
-          Collections.singletonMap("updated_field_value", request.getReadmeText()),
+          Collections.emptyMap(),
           "project read_me_text updated successfully");
 
       responseObserver.onNext(response);
@@ -1082,7 +1084,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           project.getWorkspaceServiceId(),
           "update.resource.project.update_project_succeeded",
           Optional.of("short_name"),
-          Collections.singletonMap("updated_field_value", project.getShortName()),
+          Collections.singletonMap("short_name", project.getShortName()),
           "project short_name updated successfully");
 
       responseObserver.onNext(response);
