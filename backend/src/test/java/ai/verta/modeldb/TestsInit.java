@@ -35,6 +35,7 @@ public class TestsInit {
   protected static AuthService authService;
   protected static Executor handleExecutor;
   protected static ServiceSet services;
+  protected static DAOSet daos;
 
   // all service stubs
   protected static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
@@ -84,7 +85,7 @@ public class TestsInit {
     services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
     authService = services.authService;
     // Initialize data access
-    DAOSet daos =
+    daos =
         DAOSet.fromServices(
             services, testConfig.getJdbi(), handleExecutor, testConfig, testConfig.trial);
     App.migrate(testConfig.getDatabase(), testConfig.migrations);
@@ -96,7 +97,8 @@ public class TestsInit {
     serverBuilder.intercept(new AuthInterceptor());
     // Initialize cron jobs
     CronJobUtils.initializeCronJobs(testConfig, services);
-    ReconcilerInitializer.initialize(testConfig, services, testConfig.getJdbi(), handleExecutor);
+    ReconcilerInitializer.initialize(
+        testConfig, services, daos, testConfig.getJdbi(), handleExecutor);
 
     if (testConfig.testUsers != null && !testConfig.testUsers.isEmpty()) {
       authClientInterceptor = new AuthClientInterceptor(testConfig.testUsers);
