@@ -345,7 +345,6 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       if (!request.getDescription().isEmpty()) {
         updatedExperiment =
             experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
-        updatedFieldsMap.put("description", updatedExperiment.getDescription());
       }
 
       var response =
@@ -464,7 +463,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("description"),
-          Collections.singletonMap("description", updatedExperiment.getDescription()),
+          Collections.emptyMap(),
           "experiment description updated successfully");
 
       responseObserver.onNext(response);
