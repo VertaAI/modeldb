@@ -51,7 +51,11 @@ public class ArtifactEntity implements Serializable {
     }
 
     this.field_type = fieldType;
-    setUploadCompleted(!artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3));
+    var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3);
+    if (artifact.getUploadCompleted()) {
+      uploadCompleted = true;
+    }
+    setUploadCompleted(uploadCompleted);
   }
 
   @Id
