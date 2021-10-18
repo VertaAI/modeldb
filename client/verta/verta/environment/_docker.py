@@ -14,8 +14,12 @@ from . import _environment
 logger = logging.getLogger(__name__)
 
 
+# TODO: Add back to documentation.reassign_module() in environment/__init__.py
+#       when this has user-facing functionality.
 class Docker(_environment._Environment):
     """Information to identify a Docker image environment.
+
+    .. versionadded:: 0.20.0
 
     Parameters
     ----------

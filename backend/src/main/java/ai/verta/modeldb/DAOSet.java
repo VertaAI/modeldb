@@ -26,6 +26,7 @@ import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.*;
+import ai.verta.uac.ServiceEnum;
 import java.util.concurrent.Executor;
 
 public class DAOSet {
@@ -98,7 +99,8 @@ public class DAOSet {
             set.repositoryDAO,
             set.commitDAO,
             set.blobDAO);
-    set.futureEventDAO = new FutureEventDAO(executor, jdbi, mdbConfig, "MDB_BACKEND");
+    set.futureEventDAO =
+        new FutureEventDAO(executor, jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
 
     return set;
   }

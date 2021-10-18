@@ -349,7 +349,7 @@ class TestPath:
             # multiple unrelated paths
             ([["../tests/modelapi_hypothesis", "conftest.py"], ".."]),
             ([["conftest.py", "../tests/modelapi_hypothesis"], ".."]),
-            ([["modelapi_hypothesis", "test_versioning"], "modelapi_hypothesis"]),
+            ([["modelapi_hypothesis", "versioning"], "modelapi_hypothesis"]),
         ]
     )
     def test_invalid_base_path_error(self, paths, base_path):
@@ -358,7 +358,7 @@ class TestPath:
 
     def test_concat(self):
         dataset1 = verta.dataset.Path("modelapi_hypothesis/")
-        dataset2 = verta.dataset.Path("test_versioning/")
+        dataset2 = verta.dataset.Path("versioning/")
         components = dataset1.list_components() + dataset2.list_components()
         components = list(sorted(components, key=lambda component: component.path))
 
@@ -374,8 +374,8 @@ class TestPath:
         assert dataset1.list_components() == components
 
     def test_concat_intersect_error(self):
-        dataset1 = verta.dataset.Path("test_versioning/")
-        dataset2 = verta.dataset.Path("test_versioning/test_dataset.py")
+        dataset1 = verta.dataset.Path("versioning/")
+        dataset2 = verta.dataset.Path("versioning/test_dataset.py")
 
         with pytest.raises(ValueError):
             dataset1 + dataset2  # pylint: disable=pointless-statement
@@ -394,8 +394,8 @@ class TestPath:
             base_path="modelapi_hypothesis/",
         )
         dataset2 = verta.dataset.Path(
-            "test_versioning/",
-            base_path="test_versioning/",
+            "versioning/",
+            base_path="versioning/",
         )
         components = dataset1.list_components() + dataset2.list_components()
         components = list(sorted(components, key=lambda component: component.path))
@@ -409,16 +409,16 @@ class TestPath:
             base_path=".",
         )
         dataset2 = verta.dataset.Path(
-            "test_versioning/__init__.py",
-            base_path="test_versioning",
+            "versioning/__init__.py",
+            base_path="versioning",
         )
 
         with pytest.raises(ValueError):
             dataset1 + dataset2  # pylint: disable=pointless-statement
 
     def test_add(self):
-        path1 = "test_versioning/test_code.py"
-        path2 = "test_versioning/test_dataset.py"
+        path1 = "versioning/test_code.py"
+        path2 = "versioning/test_dataset.py"
 
         dataset = verta.dataset.Path(path1)
         dataset.add(path2)
@@ -432,10 +432,10 @@ class TestPath:
         assert dataset.list_components() == components
 
     def test_add_intersect_error(self):
-        dataset = verta.dataset.Path("test_versioning/")
+        dataset = verta.dataset.Path("versioning/")
 
         with pytest.raises(ValueError):
-            dataset.add("test_versioning/test_dataset.py")
+            dataset.add("versioning/test_dataset.py")
 
     def test_file_scheme(self):
         filepaths = list(map(os.path.abspath, os.listdir(".")))
@@ -452,7 +452,7 @@ class TestPath:
         assert set(dataset1.list_paths()) == set(dataset2.list_paths())
 
     def test_with_spark(self):
-        filenames = list(map(os.path.abspath, ["test_versioning/"]))
+        filenames = list(map(os.path.abspath, ["versioning/"]))
 
         SparkContext = pytest.importorskip("pyspark").SparkContext
         sc = SparkContext("local")

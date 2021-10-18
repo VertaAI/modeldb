@@ -39,6 +39,8 @@ import org.apache.logging.log4j.Logger;
 public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentServiceImpl.class);
+  private static final String UPDATE_EVENT_TYPE =
+      "update.resource.experiment.update_experiment_succeeded";
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
   private final ExperimentDAO experimentDAO;
@@ -71,14 +73,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       eventMetadata.addProperty("updated_field", updatedField.get());
     }
     if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
+      JsonObject updatedFieldValue = new JsonObject();
       extraFieldsMap.forEach(
           (key, value) -> {
             if (value instanceof JsonElement) {
-              eventMetadata.add(key, (JsonElement) value);
+              updatedFieldValue.add(key, (JsonElement) value);
             } else {
-              eventMetadata.addProperty(key, String.valueOf(value));
+              updatedFieldValue.addProperty(key, String.valueOf(value));
             }
           });
+      eventMetadata.add("updated_field_value", updatedFieldValue);
     }
     eventMetadata.addProperty("message", eventMessage);
     futureEventDAO.addLocalEventWithBlocking(
@@ -330,21 +334,18 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       Experiment updatedExperiment = null;
-      String updatedField = null;
-      String updatedFieldValue = null;
+      Map<String, String> updatedFieldsMap = new HashMap<>();
       if (!request.getName().isEmpty()) {
         updatedExperiment =
             experimentDAO.updateExperimentName(
                 request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
-        updatedField = "name";
-        updatedFieldValue = updatedExperiment.getName();
+        updatedFieldsMap.put("name", updatedExperiment.getName());
       }
       // FIXME: this code never allows us to set the description as an empty string
       if (!request.getDescription().isEmpty()) {
         updatedExperiment =
             experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
-        updatedField = "description";
-        updatedFieldValue = updatedExperiment.getDescription();
+        updatedFieldsMap.put("description", updatedExperiment.getDescription());
       }
 
       var response =
@@ -353,14 +354,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               .build();
 
       // Add succeeded event in local DB
-      addEvent(
-          updatedExperiment.getId(),
-          updatedExperiment.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
-          Optional.of(updatedField),
-          Collections.singletonMap("updated_field_value", updatedFieldValue),
-          "experiment name or description updated successfully");
+      for (Map.Entry<String, String> entry : updatedFieldsMap.entrySet()) {
+        addEvent(
+            updatedExperiment.getId(),
+            updatedExperiment.getProjectId(),
+            authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+            UPDATE_EVENT_TYPE,
+            Optional.of(entry.getKey()),
+            Collections.singletonMap(entry.getKey(), entry.getValue()),
+            String.format("experiment %s updated successfully", entry.getKey()));
+      }
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -409,9 +412,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           updatedExperiment.getId(),
           updatedExperiment.getProjectId(),
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("name"),
-          Collections.singletonMap("updated_field_value", updatedExperiment.getName()),
+          Collections.singletonMap("name", updatedExperiment.getName()),
           "experiment name updated successfully");
 
       responseObserver.onNext(response);
@@ -459,9 +462,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           updatedExperiment.getId(),
           updatedExperiment.getProjectId(),
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("description"),
-          Collections.singletonMap("updated_field_value", updatedExperiment.getDescription()),
+          Collections.singletonMap("description", updatedExperiment.getDescription()),
           "experiment description updated successfully");
 
       responseObserver.onNext(response);
@@ -509,7 +512,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           updatedExperiment.getId(),
           updatedExperiment.getProjectId(),
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
               "tags",
@@ -564,7 +567,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           updatedExperiment.getId(),
           updatedExperiment.getProjectId(),
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
               "tags",
@@ -640,23 +643,23 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       var response =
           DeleteExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
       // Add succeeded event in local DB
-      JsonElement extraField;
+      Map<String, Object> extraField = new HashMap<>();
       if (request.getDeleteAll()) {
-        JsonObject extraFieldObj = new JsonObject();
-        extraFieldObj.addProperty("delete_all", true);
-        extraField = extraFieldObj;
+        extraField.put("tags_delete_all", true);
       } else {
-        extraField =
+        extraField.put(
+            "tags",
             new Gson()
-                .toJsonTree(request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType());
+                .toJsonTree(
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           updatedExperiment.getId(),
           updatedExperiment.getProjectId(),
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("tags"),
-          Collections.singletonMap("tags", extraField),
+          extraField,
           "experiment tags deleted successfully");
 
       responseObserver.onNext(response);
@@ -704,7 +707,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           updatedExperiment.getId(),
           updatedExperiment.getProjectId(),
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
               "tags",
@@ -753,7 +756,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           request.getId(),
           projectId,
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
               "attribute_keys",
@@ -810,7 +813,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           request.getId(),
           projectId,
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
               "attribute_keys",
@@ -909,25 +912,24 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           DeleteExperimentAttributes.Response.newBuilder().setExperiment(updatedExperiment).build();
 
       // Add succeeded event in local DB
-      JsonElement extraField;
+      Map<String, Object> extraField = new HashMap<>();
       if (request.getDeleteAll()) {
-        JsonObject extraFieldObj = new JsonObject();
-        extraFieldObj.addProperty("delete_all", true);
-        extraField = extraFieldObj;
+        extraField.put("attributes_delete_all", true);
       } else {
-        extraField =
+        extraField.put(
+            "attribute_keys",
             new Gson()
                 .toJsonTree(
                     request.getAttributeKeysList(),
-                    new TypeToken<ArrayList<String>>() {}.getType());
+                    new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           updatedExperiment.getId(),
           updatedExperiment.getProjectId(),
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
-          Collections.singletonMap("attribute_keys", extraField),
+          extraField,
           "experiment attributes deleted successfully");
 
       responseObserver.onNext(response);
@@ -1027,7 +1029,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           updatedExperiment.getId(),
           updatedExperiment.getProjectId(),
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("code_version"),
           Collections.emptyMap(),
           "experiment code_version updated successfully");
@@ -1218,7 +1220,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           request.getId(),
           projectId,
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
               "artifact_keys",
@@ -1304,7 +1306,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           updatedExperiment.getId(),
           updatedExperiment.getProjectId(),
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "update.resource.experiment.update_experiment_succeeded",
+          UPDATE_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
               "artifact_keys",

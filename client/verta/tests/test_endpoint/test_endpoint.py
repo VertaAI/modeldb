@@ -220,8 +220,8 @@ class TestEndpoint:
         excinfo_value = str(excinfo.value).strip()
         assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in excinfo_value
 
-    def test_update_runtime_error(self, client, model_version, endpoint):
-        """Propagate errors from model being initialized at container runtime."""
+    def test_update_init_error(self, client, model_version, endpoint):
+        """Propagate errors from model being initialized at container init."""
         LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
 
         model_version.log_model(LogisticRegression(), custom_modules=[])
