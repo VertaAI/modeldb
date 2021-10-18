@@ -64,8 +64,7 @@ public class FutureEventDAO {
                     .bind("workspace_id", workspaceId)
                     .bind("event_metadata", eventMetadata.toString())
                     .execute())
-        .thenAccept( unused -> LOGGER.debug("Event added successfully"),
-            executor);
+        .thenAccept(unused -> LOGGER.debug("Event added successfully"), executor);
   }
 
   public Void deleteLocalEventWithBlocking(List<String> eventUUIDs) {
@@ -98,8 +97,6 @@ public class FutureEventDAO {
                     .createUpdate("DELETE FROM event WHERE event_uuid IN (<eventUUIDs>) ")
                     .bindList("eventUUIDs", eventUUIDs)
                     .execute())
-        .thenAccept(
-            unused -> LOGGER.debug("Events deleted successfully"),
-            executor);
+        .thenAccept(unused -> LOGGER.debug("Events deleted successfully"), executor);
   }
 }
