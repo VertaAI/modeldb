@@ -27,6 +27,7 @@ import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -50,7 +51,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
     this.uac = serviceSet.uac;
   }
 
-  private InternalFuture<Boolean> addEvent(
+  private InternalFuture<Void> addEvent(
       String entityId,
       Optional<String> experimentId,
       String projectId,
@@ -70,14 +71,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       eventMetadata.addProperty("updated_field", updatedField.get());
     }
     if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
+      JsonObject updatedFieldValue = new JsonObject();
       extraFieldsMap.forEach(
           (key, value) -> {
             if (value instanceof JsonElement) {
-              eventMetadata.add(key, (JsonElement) value);
+              updatedFieldValue.add(key, (JsonElement) value);
             } else {
-              eventMetadata.addProperty(key, String.valueOf(value));
+              updatedFieldValue.addProperty(key, String.valueOf(value));
             }
           });
+      eventMetadata.add("updated_field_value", updatedFieldValue);
     }
     eventMetadata.addProperty("message", eventMessage);
     return futureEventDAO.addLocalEventWithAsync(
@@ -111,7 +114,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                         Optional.empty(),
                                         Collections.emptyMap(),
                                         "experiment_run added successfully")
-                                    .thenApply(eventLoggedStatus -> experimentRun, executor),
+                                    .thenApply(unused -> experimentRun, executor),
                             executor);
                   },
                   executor)
@@ -336,7 +339,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                         Optional.of("description"),
                                         Collections.emptyMap(),
                                         "experiment_run description added successfully")
-                                    .thenApply(eventLoggedStatus -> experimentRun, executor),
+                                    .thenApply(unused -> experimentRun, executor),
                             executor);
                   },
                   executor)
@@ -392,7 +395,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                                     new TypeToken<
                                                         ArrayList<String>>() {}.getType())),
                                         "experiment_run tags added successfully")
-                                    .thenApply(eventLoggedStatus -> experimentRun, executor),
+                                    .thenApply(unused -> experimentRun, executor),
                             executor);
                   },
                   executor)
@@ -448,17 +451,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                         .thenCompose(
                             userInfo -> {
                               // Add succeeded event in local DB
-                              JsonElement extraField;
+                              Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
-                                JsonObject extraFieldObj = new JsonObject();
-                                extraFieldObj.addProperty("delete_all", true);
-                                extraField = extraFieldObj;
+                                extraFieldValue.put("tags_deleted_all", true);
                               } else {
-                                extraField =
+                                extraFieldValue.put(
+                                    "tags",
                                     new Gson()
                                         .toJsonTree(
                                             request.getTagsList(),
-                                            new TypeToken<ArrayList<String>>() {}.getType());
+                                            new TypeToken<ArrayList<String>>() {}.getType()));
                               }
                               return addEvent(
                                       experimentRun.getId(),
@@ -467,9 +469,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                       Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
                                       UPDATE_EVENT_TYPE,
                                       Optional.of("tags"),
-                                      Collections.singletonMap("tags", extraField),
+                                      extraFieldValue,
                                       "experiment_run tags deleted successfully")
-                                  .thenApply(eventLoggedStatus -> experimentRun, executor);
+                                  .thenApply(unused -> experimentRun, executor);
                             },
                             executor);
                   },
@@ -771,17 +773,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                         .thenCompose(
                             userInfo -> {
                               // Add succeeded event in local DB
-                              JsonElement extraField;
+                              Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
-                                JsonObject extraFieldObj = new JsonObject();
-                                extraFieldObj.addProperty("delete_all", true);
-                                extraField = extraFieldObj;
+                                extraFieldValue.put("observations_deleted_all", true);
                               } else {
-                                extraField =
+                                extraFieldValue.put(
+                                    "observation_keys",
                                     new Gson()
                                         .toJsonTree(
                                             request.getObservationKeysList(),
-                                            new TypeToken<ArrayList<String>>() {}.getType());
+                                            new TypeToken<ArrayList<String>>() {}.getType()));
                               }
                               return addEvent(
                                   experimentRun.getId(),
@@ -790,7 +791,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("observations"),
-                                  Collections.singletonMap("observations", extraField),
+                                  extraFieldValue,
                                   "experiment_run observations deleted successfully");
                             },
                             executor);
@@ -945,17 +946,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                         .thenCompose(
                             userInfo -> {
                               // Add succeeded event in local DB
-                              JsonElement extraField;
+                              Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
-                                JsonObject extraFieldObj = new JsonObject();
-                                extraFieldObj.addProperty("delete_all", true);
-                                extraField = extraFieldObj;
+                                extraFieldValue.put("metrics_deleted_all", true);
                               } else {
-                                extraField =
+                                extraFieldValue.put(
+                                    "metric_keys",
                                     new Gson()
                                         .toJsonTree(
                                             request.getMetricKeysList(),
-                                            new TypeToken<ArrayList<String>>() {}.getType());
+                                            new TypeToken<ArrayList<String>>() {}.getType()));
                               }
                               return addEvent(
                                   experimentRun.getId(),
@@ -964,7 +964,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("metrics"),
-                                  Collections.singletonMap("metrics", extraField),
+                                  extraFieldValue,
                                   "experiment_run metrics deleted successfully");
                             },
                             executor);
@@ -1006,19 +1006,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                         .thenCompose(
                             userInfo -> {
                               // Add succeeded event in local DB
-                              JsonElement extraField;
+                              Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getOverwrite()) {
-                                JsonObject extraFieldObj = new JsonObject();
-                                extraFieldObj.addProperty("overwrite_all", true);
-                                extraField = extraFieldObj;
+                                extraFieldValue.put("datasets_overwrite_all", true);
                               } else {
-                                extraField =
+                                extraFieldValue.put(
+                                    "dataset_keys",
                                     new Gson()
                                         .toJsonTree(
                                             Stream.of(request.getDataset())
                                                 .map(Artifact::getKey)
                                                 .collect(Collectors.toSet()),
-                                            new TypeToken<ArrayList<String>>() {}.getType());
+                                            new TypeToken<ArrayList<String>>() {}.getType()));
                               }
                               return addEvent(
                                   experimentRun.getId(),
@@ -1027,7 +1026,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("datasets"),
-                                  Collections.singletonMap("datasets_keys", extraField),
+                                  extraFieldValue,
                                   "experiment_run datasets added successfully");
                             },
                             executor);
@@ -1065,19 +1064,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                         .thenCompose(
                             userInfo -> {
                               // Add succeeded event in local DB
-                              JsonElement extraField;
+                              Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getOverwrite()) {
-                                JsonObject extraFieldObj = new JsonObject();
-                                extraFieldObj.addProperty("overwrite_all", true);
-                                extraField = extraFieldObj;
+                                extraFieldValue.put("datasets_overwrite_all", true);
                               } else {
-                                extraField =
+                                extraFieldValue.put(
+                                    "dataset_keys",
                                     new Gson()
                                         .toJsonTree(
                                             request.getDatasetsList().stream()
                                                 .map(Artifact::getKey)
                                                 .collect(Collectors.toSet()),
-                                            new TypeToken<ArrayList<String>>() {}.getType());
+                                            new TypeToken<ArrayList<String>>() {}.getType()));
                               }
                               return addEvent(
                                   experimentRun.getId(),
@@ -1086,7 +1084,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("datasets"),
-                                  Collections.singletonMap("datasets_keys", extraField),
+                                  extraFieldValue,
                                   "experiment_run datasets added successfully");
                             },
                             executor);
@@ -1264,17 +1262,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                         .thenCompose(
                             userInfo -> {
                               // Add succeeded event in local DB
-                              JsonElement extraField;
+                              Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
-                                JsonObject extraFieldObj = new JsonObject();
-                                extraFieldObj.addProperty("delete_all", true);
-                                extraField = extraFieldObj;
+                                extraFieldValue.put("hyperparameters_deleted_all", true);
                               } else {
-                                extraField =
+                                extraFieldValue.put(
+                                    "hyperparameter_keys",
                                     new Gson()
                                         .toJsonTree(
                                             request.getHyperparameterKeysList(),
-                                            new TypeToken<ArrayList<String>>() {}.getType());
+                                            new TypeToken<ArrayList<String>>() {}.getType()));
                               }
                               return addEvent(
                                   experimentRun.getId(),
@@ -1283,7 +1280,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("hyperparameters"),
-                                  Collections.singletonMap("hyperparameters", extraField),
+                                  extraFieldValue,
                                   "experiment_run hyperparameters deleted successfully");
                             },
                             executor);
@@ -1499,17 +1496,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                         .thenCompose(
                             userInfo -> {
                               // Add succeeded event in local DB
-                              JsonElement extraField;
+                              Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
-                                JsonObject extraFieldObj = new JsonObject();
-                                extraFieldObj.addProperty("delete_all", true);
-                                extraField = extraFieldObj;
+                                extraFieldValue.put("attributes_deleted_all", true);
                               } else {
-                                extraField =
+                                extraFieldValue.put(
+                                    "attribute_keys",
                                     new Gson()
                                         .toJsonTree(
                                             request.getAttributeKeysList(),
-                                            new TypeToken<ArrayList<String>>() {}.getType());
+                                            new TypeToken<ArrayList<String>>() {}.getType()));
                               }
                               return addEvent(
                                   experimentRun.getId(),
@@ -1518,7 +1514,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("attributes"),
-                                  Collections.singletonMap("attributes", extraField),
+                                  extraFieldValue,
                                   "experiment_run attributes deleted successfully");
                             },
                             executor);

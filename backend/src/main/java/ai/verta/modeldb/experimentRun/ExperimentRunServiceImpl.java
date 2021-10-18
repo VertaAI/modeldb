@@ -92,14 +92,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       eventMetadata.addProperty("updated_field", updatedField.get());
     }
     if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
+      JsonObject updatedFieldValue = new JsonObject();
       extraFieldsMap.forEach(
           (key, value) -> {
             if (value instanceof JsonElement) {
-              eventMetadata.add(key, (JsonElement) value);
+              updatedFieldValue.add(key, (JsonElement) value);
             } else {
-              eventMetadata.addProperty(key, String.valueOf(value));
+              updatedFieldValue.addProperty(key, String.valueOf(value));
             }
           });
+      eventMetadata.add("updated_field_value", updatedFieldValue);
     }
     eventMetadata.addProperty("message", eventMessage);
     futureEventDAO.addLocalEventWithBlocking(
@@ -688,15 +690,15 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build();
 
       // Add succeeded event in local DB
-      JsonElement extraField;
+      Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
-        JsonObject extraFieldObj = new JsonObject();
-        extraFieldObj.addProperty("delete_all", true);
-        extraField = extraFieldObj;
+        extraFieldValue.put("tags_deleted_all", true);
       } else {
-        extraField =
+        extraFieldValue.put(
+            "tags",
             new Gson()
-                .toJsonTree(request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType());
+                .toJsonTree(
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           updatedExperimentRun.getId(),
@@ -705,7 +707,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("tags"),
-          Collections.singletonMap("tags", extraField),
+          extraFieldValue,
           "experiment_run tags deleted successfully");
 
       responseObserver.onNext(response);
@@ -809,7 +811,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
-              "attributes_keys",
+              "attribute_keys",
               new Gson()
                   .toJsonTree(
                       request.getAttributesList().stream()
@@ -859,17 +861,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = DeleteExperimentRunAttributes.Response.newBuilder().build();
 
       // Add succeeded event in local DB
-      JsonElement extraField;
+      Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
-        JsonObject extraFieldObj = new JsonObject();
-        extraFieldObj.addProperty("delete_all", true);
-        extraField = extraFieldObj;
+        extraFieldValue.put("attributes_deleted_all", true);
       } else {
-        extraField =
+        extraFieldValue.put(
+            "attribute_keys",
             new Gson()
                 .toJsonTree(
                     request.getAttributeKeysList(),
-                    new TypeToken<ArrayList<String>>() {}.getType());
+                    new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           request.getId(),
@@ -878,7 +879,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
-          Collections.singletonMap("attribute_keys", extraField),
+          extraFieldValue,
           "experiment_run attributes deleted successfully");
 
       responseObserver.onNext(response);
@@ -938,7 +939,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UPDATE_EVENT_TYPE,
           Optional.of("observations"),
           Collections.singletonMap(
-              "observations_keys",
+              "observation_keys",
               new Gson().toJsonTree(keys, new TypeToken<ArrayList<String>>() {}.getType())),
           "experiment_run observations added successfully");
 
@@ -994,7 +995,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UPDATE_EVENT_TYPE,
           Optional.of("observations"),
           Collections.singletonMap(
-              "observations_keys",
+              "observation_keys",
               new Gson().toJsonTree(keys, new TypeToken<ArrayList<String>>() {}.getType())),
           "experiment_run observations added successfully");
 
@@ -1074,7 +1075,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UPDATE_EVENT_TYPE,
           Optional.of("metrics"),
           Collections.singletonMap(
-              "metrics_keys",
+              "metric_keys",
               new Gson()
                   .toJsonTree(
                       Stream.of(request.getMetric())
@@ -1124,7 +1125,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UPDATE_EVENT_TYPE,
           Optional.of("metrics"),
           Collections.singletonMap(
-              "metrics_keys",
+              "metric_keys",
               new Gson()
                   .toJsonTree(
                       request.getMetricsList().stream()
@@ -1359,7 +1360,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UPDATE_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
-              "artifacts_keys",
+              "artifact_keys",
               new Gson()
                   .toJsonTree(
                       Stream.of(request.getArtifact())
@@ -1413,7 +1414,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UPDATE_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
-              "artifacts_keys",
+              "artifact_keys",
               new Gson()
                   .toJsonTree(
                       request.getArtifactsList().stream()
@@ -1589,7 +1590,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UPDATE_EVENT_TYPE,
           Optional.of("hyperparameters"),
           Collections.singletonMap(
-              "hyperparameters_keys",
+              "hyperparameter_keys",
               new Gson()
                   .toJsonTree(
                       Stream.of(request.getHyperparameter())
@@ -1642,7 +1643,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UPDATE_EVENT_TYPE,
           Optional.of("hyperparameters"),
           Collections.singletonMap(
-              "hyperparameters_keys",
+              "hyperparameter_keys",
               new Gson()
                   .toJsonTree(
                       request.getHyperparametersList().stream()
@@ -1723,7 +1724,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
-              "attributes_keys",
+              "attribute_keys",
               new Gson()
                   .toJsonTree(
                       Stream.of(request.getAttribute())
@@ -1774,7 +1775,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
-              "attributes_keys",
+              "attribute_keys",
               new Gson()
                   .toJsonTree(
                       request.getAttributesList().stream()
@@ -2127,17 +2128,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogDataset.Response.newBuilder().build();
 
       // Add succeeded event in local DB
-      JsonElement extraField;
+      Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getOverwrite()) {
-        JsonObject extraFieldObj = new JsonObject();
-        extraFieldObj.addProperty("overwrite_all", true);
-        extraField = extraFieldObj;
+        extraFieldValue.put("datasets_overwrite_all", true);
       } else {
-        extraField =
+        extraFieldValue.put(
+            "dataset_keys",
             new Gson()
                 .toJsonTree(
-                    Collections.singletonList(dataset.getKey()),
-                    new TypeToken<ArrayList<String>>() {}.getType());
+                    Stream.of(request.getDataset())
+                        .map(Artifact::getKey)
+                        .collect(Collectors.toSet()),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           request.getId(),
@@ -2146,7 +2148,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("datasets"),
-          Collections.singletonMap("datasets_keys", extraField),
+          extraFieldValue,
           "experiment_run datasets added successfully");
 
       responseObserver.onNext(response);
@@ -2180,19 +2182,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogDatasets.Response.newBuilder().build();
 
       // Add succeeded event in local DB
-      JsonElement extraField;
+      Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getOverwrite()) {
-        JsonObject extraFieldObj = new JsonObject();
-        extraFieldObj.addProperty("overwrite_all", true);
-        extraField = extraFieldObj;
+        extraFieldValue.put("datasets_overwrite_all", true);
       } else {
-        extraField =
+        extraFieldValue.put(
+            "dataset_keys",
             new Gson()
                 .toJsonTree(
                     request.getDatasetsList().stream()
                         .map(Artifact::getKey)
                         .collect(Collectors.toSet()),
-                    new TypeToken<ArrayList<String>>() {}.getType());
+                    new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           request.getId(),
@@ -2201,7 +2202,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("datasets"),
-          Collections.singletonMap("datasets_keys", extraField),
+          extraFieldValue,
           "experiment_run datasets added successfully");
 
       responseObserver.onNext(response);
@@ -2469,17 +2470,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = DeleteHyperparameters.Response.newBuilder().build();
 
       // Add succeeded event in local DB
-      JsonElement extraField;
+      Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
-        JsonObject extraFieldObj = new JsonObject();
-        extraFieldObj.addProperty("delete_all", true);
-        extraField = extraFieldObj;
+        extraFieldValue.put("hyperparameters_deleted_all", true);
       } else {
-        extraField =
+        extraFieldValue.put(
+            "hyperparameter_keys",
             new Gson()
                 .toJsonTree(
                     request.getHyperparameterKeysList(),
-                    new TypeToken<ArrayList<String>>() {}.getType());
+                    new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           request.getId(),
@@ -2488,7 +2488,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("hyperparameters"),
-          Collections.singletonMap("hyperparameters_keys", extraField),
+          extraFieldValue,
           "experiment_run hyperparameters deleted successfully");
 
       responseObserver.onNext(response);
@@ -2524,16 +2524,15 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = DeleteMetrics.Response.newBuilder().build();
 
       // Add succeeded event in local DB
-      JsonElement extraField;
+      Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
-        JsonObject extraFieldObj = new JsonObject();
-        extraFieldObj.addProperty("delete_all", true);
-        extraField = extraFieldObj;
+        extraFieldValue.put("metrics_deleted_all", true);
       } else {
-        extraField =
+        extraFieldValue.put(
+            "metric_keys",
             new Gson()
                 .toJsonTree(
-                    request.getMetricKeysList(), new TypeToken<ArrayList<String>>() {}.getType());
+                    request.getMetricKeysList(), new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           request.getId(),
@@ -2542,7 +2541,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("metrics"),
-          Collections.singletonMap("metrics_keys", extraField),
+          extraFieldValue,
           "experiment_run metrics deleted successfully");
 
       responseObserver.onNext(response);
@@ -2574,17 +2573,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = DeleteObservations.Response.newBuilder().build();
 
       // Add succeeded event in local DB
-      JsonElement extraField;
+      Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
-        JsonObject extraFieldObj = new JsonObject();
-        extraFieldObj.addProperty("delete_all", true);
-        extraField = extraFieldObj;
+        extraFieldValue.put("observations_deleted_all", true);
       } else {
-        extraField =
+        extraFieldValue.put(
+            "observation_keys",
             new Gson()
                 .toJsonTree(
                     request.getObservationKeysList(),
-                    new TypeToken<ArrayList<String>>() {}.getType());
+                    new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           request.getId(),
@@ -2593,7 +2591,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("observations"),
-          Collections.singletonMap("observations_keys", extraField),
+          extraFieldValue,
           "experiment_run observations deleted successfully");
 
       responseObserver.onNext(response);
