@@ -11,6 +11,7 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -22,21 +23,30 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentServiceImpl.class);
+  private static final String UPDATE_EVENT_TYPE =
+      "update.resource.experiment.update_experiment_succeeded";
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
   private final ExperimentDAO experimentDAO;
   private final ProjectDAO projectDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
+  private final FutureEventDAO futureEventDAO;
 
   public ExperimentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
@@ -44,6 +54,39 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     this.experimentDAO = daoSet.experimentDAO;
     this.projectDAO = daoSet.projectDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
+    this.futureEventDAO = daoSet.futureEventDAO;
+  }
+
+  private void addEvent(
+      String entityId,
+      String projectId,
+      long workspaceId,
+      String eventType,
+      Optional<String> updatedField,
+      Map<String, Object> extraFieldsMap,
+      String eventMessage) {
+    // Add succeeded event in local DB
+    JsonObject eventMetadata = new JsonObject();
+    eventMetadata.addProperty("entity_id", entityId);
+    eventMetadata.addProperty("project_id", projectId);
+    if (updatedField.isPresent() && !updatedField.get().isEmpty()) {
+      eventMetadata.addProperty("updated_field", updatedField.get());
+    }
+    if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
+      JsonObject updatedFieldValue = new JsonObject();
+      extraFieldsMap.forEach(
+          (key, value) -> {
+            if (value instanceof JsonElement) {
+              updatedFieldValue.add(key, (JsonElement) value);
+            } else {
+              updatedFieldValue.addProperty(key, String.valueOf(value));
+            }
+          });
+      eventMetadata.add("updated_field_value", updatedFieldValue);
+    }
+    eventMetadata.addProperty("message", eventMessage);
+    futureEventDAO.addLocalEventWithBlocking(
+        ModelDBServiceResourceTypes.EXPERIMENT.name(), eventType, workspaceId, eventMetadata);
   }
 
   /**
@@ -122,6 +165,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       experiment = experimentDAO.insertExperiment(experiment, userInfo);
       var response = CreateExperiment.Response.newBuilder().setExperiment(experiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          experiment.getId(),
+          experiment.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(userInfo),
+          "add.resource.experiment.add_experiment_succeeded",
+          Optional.empty(),
+          Collections.emptyMap(),
+          "experiment added successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -281,10 +334,12 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       Experiment updatedExperiment = null;
+      Map<String, String> updatedFieldsMap = new HashMap<>();
       if (!request.getName().isEmpty()) {
         updatedExperiment =
             experimentDAO.updateExperimentName(
                 request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
+        updatedFieldsMap.put("name", updatedExperiment.getName());
       }
       // FIXME: this code never allows us to set the description as an empty string
       if (!request.getDescription().isEmpty()) {
@@ -296,6 +351,19 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           UpdateExperimentNameOrDescription.Response.newBuilder()
               .setExperiment(updatedExperiment)
               .build();
+
+      // Add succeeded event in local DB
+      for (Map.Entry<String, String> entry : updatedFieldsMap.entrySet()) {
+        addEvent(
+            updatedExperiment.getId(),
+            updatedExperiment.getProjectId(),
+            authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+            UPDATE_EVENT_TYPE,
+            Optional.of(entry.getKey()),
+            Collections.singletonMap(entry.getKey(), entry.getValue()),
+            String.format("experiment %s updated successfully", entry.getKey()));
+      }
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -337,6 +405,17 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       var response =
           UpdateExperimentName.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("name"),
+          Collections.singletonMap("name", updatedExperiment.getName()),
+          "experiment name updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -377,6 +456,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               .setExperiment(updatedExperiment)
               .build();
 
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("description"),
+          Collections.emptyMap(),
+          "experiment description updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -416,6 +505,21 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
       var response =
           AddExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment tags added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -456,6 +560,22 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
       var response =
           AddExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getTag()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment tag added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -521,6 +641,26 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               request.getId(), request.getTagsList(), request.getDeleteAll());
       var response =
           DeleteExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
+      // Add succeeded event in local DB
+      Map<String, Object> extraField = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraField.put("tags_delete_all", true);
+      } else {
+        extraField.put(
+            "tags",
+            new Gson()
+                .toJsonTree(
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          extraField,
+          "experiment tags deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -560,6 +700,22 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               request.getId(), Collections.singletonList(request.getTag()), false);
       var response =
           DeleteExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getTag()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment tag deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -593,6 +749,24 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       experimentDAO.addExperimentAttributes(
           request.getId(), Collections.singletonList(request.getAttribute()));
       var response = AddAttributes.Response.newBuilder().setStatus(true).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      Stream.of(request.getAttribute())
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment attribute added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -632,6 +806,24 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.addExperimentAttributes(request.getId(), request.getAttributesList());
       var response =
           AddExperimentAttributes.Response.newBuilder().setExperiment(experiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getAttributesList().stream()
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment attributes added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -717,6 +909,28 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
       var response =
           DeleteExperimentAttributes.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraField = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraField.put("attributes_delete_all", true);
+      } else {
+        extraField.put(
+            "attribute_keys",
+            new Gson()
+                .toJsonTree(
+                    request.getAttributeKeysList(),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("attributes"),
+          extraField,
+          "experiment attributes deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -748,6 +962,17 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.deleteExperiments(Collections.singletonList(request.getId()));
       var response =
           DeleteExperiment.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          "delete.resource.experiment.delete_experiment_succeeded",
+          Optional.empty(),
+          Collections.emptyMap(),
+          "experiment deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -797,6 +1022,17 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
       var response =
           LogExperimentCodeVersion.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("code_version"),
+          Collections.emptyMap(),
+          "experiment code_version updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -977,6 +1213,24 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       var updatedExperiment = experimentDAO.logArtifacts(request.getId(), artifactList);
       var response =
           LogExperimentArtifacts.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("artifacts"),
+          Collections.singletonMap(
+              "artifact_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getArtifactsList().stream()
+                          .map(Artifact::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment artifacts added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1045,6 +1299,22 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       var updatedExperiment = experimentDAO.deleteArtifacts(request.getId(), request.getKey());
       var response =
           DeleteExperimentArtifact.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("artifacts"),
+          Collections.singletonMap(
+              "artifact_keys",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getKey()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment artifact deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
