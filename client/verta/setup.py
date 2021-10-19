@@ -33,6 +33,7 @@ setup(
         "pytimeparse>=1.1.8, <2.0",
         "pyyaml>=5.1, <5.4",
         "requests>=2.21, <3.0",
+        "singledispatch>=3.6, <4.0"
     ],
     entry_points={
         "console_scripts": [
