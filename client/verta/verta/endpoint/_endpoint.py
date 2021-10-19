@@ -15,6 +15,7 @@ from verta.registry.entities import RegisteredModelVersion
 from verta.visibility import _visibility
 
 from . import KafkaSettings
+from . import Build
 from .autoscaling import Autoscaling
 from .autoscaling.metrics import _AutoscalingMetric
 from .resources import Resources
@@ -95,6 +96,20 @@ class Endpoint(object):
     @property
     def path(self):
         return self._path(Endpoint._get_json_by_id(self._conn, self.workspace, self.id))
+
+    def get_current_build(self):
+        """
+        TODO: FILL ME IN
+        """
+        raise NotImplementedError
+
+
+    def get_builds(self):
+        """
+        TODO: FILL ME IN
+        """
+        raise NotImplementedError
+
 
     def _path(self, data):
         return data["creator_request"]["path"]
@@ -287,6 +302,7 @@ class Endpoint(object):
 
         return self._update_from_build(update_body, wait)
 
+    # TODO: VR-13123 alter to accept a verta.endpoint.Build instead of update body
     def _update_from_build(self, update_body, wait=False):
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
