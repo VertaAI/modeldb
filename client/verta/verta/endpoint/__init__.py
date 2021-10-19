@@ -3,10 +3,10 @@
 
 from verta._internal_utils import documentation
 
+from ._build import Build
 from ._kafka_settings import KafkaSettings
 from ._endpoint import Endpoint
 from ._endpoints import Endpoints
-from ._build import Build
 
 
 documentation.reassign_module(

@@ -101,13 +101,19 @@ class Endpoint(object):
         """
         TODO: FILL ME IN
         """
-        raise NotImplementedError
-
+        production_stage = self._get_production_stage()
+        components =  production_stage["components"]
+        build_id = next(map(lambda component: component["build_id"], components),None)
+        build = self._get_build(build_id)
+        return build
 
     def get_builds(self):
         """
         TODO: FILL ME IN
         """
+        # production_stage = self._get_production_stage()
+        # then get versions at /api/v1/deployment/workspace/{workspace-name}/endpoints/{endpoint-id}/stages/{productionStageId}/versions
+        # then for each self._get_build(build_id)
         raise NotImplementedError
 
 
@@ -375,23 +381,40 @@ class Endpoint(object):
         return response.json()["id"]
 
     def _get_or_create_stage(self, name="production"):
+        """Returns a stage id for compatibility reasons at the moment"""
         if name == "production":
             # Check if a stage exists:
-            url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages".format(
-                self._conn.scheme, self._conn.socket, self.workspace, self.id
-            )
-            response = _utils.make_request("GET", url, self._conn, params={})
-
-            _utils.raise_for_http_error(response)
-            response_json = response.json()
-
-            if response_json["stages"]:
-                return response_json["stages"][0]["id"]
-
-            # no stage found:
-            return self._create_stage("production")
+            production_stage = self._get_production_stage()
+            if production_stage:
+                return production_stage["id"]
+            else:
+                # no stage found:
+                return self._create_stage("production")
         else:
             raise NotImplementedError("currently not supported other stages")
+
+
+    def _get_stages(self):
+        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages".format(
+            self._conn.scheme, self._conn.socket, self.workspace, self.id
+        )
+        response = _utils.make_request("GET", url, self._conn, params={})
+
+        _utils.raise_for_http_error(response)
+        response_json = response.json()
+        if "stages" in response_json:
+            return response_json["stages"]
+        else:
+            return []
+
+
+    def _get_production_stage(self):
+        stages = self._get_stages()
+        if stages:
+            return stages[0]
+        else:
+            return None
+
 
     def _create_stage(self, name="production"):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages".format(
@@ -759,6 +782,10 @@ class Endpoint(object):
 
         _utils.raise_for_http_error(response)
         return response.json()
+
+    def _get_build(self, build_id):
+        json = self._get_build_status(build_id)
+        return Build.from_json(json)
 
     def delete(self):
         """
