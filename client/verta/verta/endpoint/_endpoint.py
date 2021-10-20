@@ -251,7 +251,7 @@ class Endpoint(object):
             Whether to wait for the endpoint to finish updating before returning.
         resources : :class:`~verta.endpoint.resources.Resources`, optional
             Resources allowed for the updated endpoint.
-        autoscaling : :class:`~verta.endpoint.autoscaling._autoscaling.Autoscaling`, optional
+        autoscaling : :class:`~verta.endpoint.autoscaling.Autoscaling`, optional
             Autoscaling condition for the updated endpoint.
         env_vars : dict of str to str, optional
             Environment variables.
