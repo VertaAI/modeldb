@@ -107,28 +107,6 @@ class Endpoint(object):
         build = self._get_build(build_id)
         return build
 
-    def get_builds(self):
-        """
-        TODO: FILL ME IN
-        """
-        production_stage = self._get_production_stage()
-        # then for each self._get_build(build_id)
-        version_build_ids = self._get_stage_version_build_ids(production_stage)
-        builds = [self._get_build(build_id) for build_id in build_ids]
-        return builds
-
-
-    # TODO: VR-13123 Fix me
-    def _get_stage_version_build_ids(self, stage):
-        stage_id = stage["id"]
-        url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/versions".format(
-            self._conn.scheme, self._conn.socket, self.workspace, self.id, stage_id
-        )
-        response = _utils.make_request("GET", url, self._conn)
-        _utils.raise_for_http_error(response)
-        return [version["build_id"] for version in response]
-
-
     def _path(self, data):
         return data["creator_request"]["path"]
 
