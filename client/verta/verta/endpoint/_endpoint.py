@@ -297,9 +297,9 @@ class Endpoint(object):
         status : dict of str to {None, bool, float, int, str, list, dict}
 
         """
-        if not isinstance(model_reference, (RegisteredModelVersion, ExperimentRun)):
+        if not isinstance(model_reference, (RegisteredModelVersion, ExperimentRun, Build)):
             raise TypeError(
-                "`model_reference` must be an ExperimentRun or RegisteredModelVersion"
+                "`model_reference` must be an ExperimentRun, RegisteredModelVersion, or Build"
             )
 
         if not strategy:
@@ -309,18 +309,17 @@ class Endpoint(object):
             strategy, resources, autoscaling, env_vars
         )
 
-        # update Kafka settings
-        if kafka_settings is False:
-            self._del_kafka_settings(self._get_or_create_stage())
-        elif kafka_settings:
-            self._set_kafka_settings(self._get_or_create_stage(), kafka_settings)
+        self._update_kafka_settings(kafka_settings)
 
-        # create new build
-        update_body["build_id"] = self._create_build(model_reference)
+        if isinstance(model_reference, Build):
+            update_body["build_id"] = model_reference.id
+        else:
+            # create new build
+            build = self._create_build(model_reference)
+            update_body["build_id"] = build.id
 
         return self._update_from_build(update_body, wait)
 
-    # TODO: VR-13123 alter to accept a verta.endpoint.Build instead of update body
     def _update_from_build(self, update_body, wait=False):
         # Update stages with new build
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/update".format(
@@ -336,19 +335,18 @@ class Endpoint(object):
         if wait:
             print("waiting for update...", end="")
             sys.stdout.flush()
-
-            build_status = self._get_build_status(update_body["build_id"])
+            build_id = update_body["build_id"]
+            build = self._get_build(build_id)
             # have to check using build status, otherwise might never terminate
-            while build_status["status"] not in ("finished", "error"):
+            while not build.is_complete:
                 print(".", end="")
                 sys.stdout.flush()
                 time.sleep(5)
-                build_status = self._get_build_status(update_body["build_id"])
+                build = self._get_build(build_id)
 
-            if build_status["status"] == "error":
+            if build.status == "error":
                 print()
-                failure_msg = build_status.get("message", "no error message available")
-                raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
+                raise RuntimeError("endpoint update failed;\n{}".format(build.message))
 
             # still need to wait because status might be "creating" even though build status is "finished"
             status_dict = self.get_status()
@@ -390,7 +388,7 @@ class Endpoint(object):
             )
 
         _utils.raise_for_http_error(response)
-        return response.json()["id"]
+        return Build.from_json(response.json())
 
     def _get_or_create_stage(self, name="production"):
         """Returns a stage id for compatibility reasons at the moment"""
@@ -473,6 +471,12 @@ class Endpoint(object):
         if not kafka_settings_dict or kafka_settings_dict == {"disabled": True}:
             return None
         return KafkaSettings._from_dict(kafka_settings_dict)
+
+    def _update_kafka_settings(self, kafka_settings=None):
+        if kafka_settings is False:
+            self._del_kafka_settings(self._get_or_create_stage())
+        elif kafka_settings:
+            self._set_kafka_settings(self._get_or_create_stage(), kafka_settings)
 
     def _del_kafka_settings(self, stage_id):
         if not isinstance(stage_id, six.integer_types):
@@ -785,7 +789,8 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
         return response.json()
 
-    def _get_build_status(self, build_id):
+
+    def _get_build(self, build_id):
         url = "{}://{}/api/v1/deployment/workspace/{}/builds/{}".format(
             self._conn.scheme, self._conn.socket, self.workspace, build_id
         )
@@ -793,11 +798,7 @@ class Endpoint(object):
         response = _utils.make_request("GET", url, self._conn)
 
         _utils.raise_for_http_error(response)
-        return response.json()
-
-    def _get_build(self, build_id):
-        json = self._get_build_status(build_id)
-        return Build.from_json(json)
+        return Build.from_json(response.json())
 
     def delete(self):
         """
