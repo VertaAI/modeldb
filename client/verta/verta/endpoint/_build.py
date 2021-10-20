@@ -1,42 +1,5 @@
-# BuildResponse:
-#   type: object
-#   properties:
-#     id:
-#       type: integer
-#     status:
-#       $ref: '#/definitions/BuildStatus'
-#     scan_status:
-#       $ref: '#/definitions/BuildScanStatus'
-#     message:
-#       type: string
-#     date_created:
-#       type: string
-#       format: date-time
-#     date_updated:
-#       type: string
-#       format: date-time
-#     creator_request:
-#       $ref: '#/definitions/BuildCreate'
-#     location:
-#       type: string
-#
-# BuildStatus:
-#   typ: string
-#   enum:
-#   - initializing
-#   - building
-#   - deleting
-#   - error
-#   - finished
-#   - deleted
-# BuildScanStatus:
-#   typ: string
-#   enum:
-#     - unscanned
-#     - scanning
-#     - safe
-#     - unsafe
-#     - error
+# -*- coding: utf-8 -*-
+
 
 class Build(object):
     EMPTY_MESSAGE = "no error message available"
@@ -52,7 +15,9 @@ class Build(object):
 
     @classmethod
     def from_json(cls, response):
-        return Build(response["id"], response["status"], response.get("message"), response)
+        return Build(
+            response["id"], response["status"], response.get("message"), response
+        )
 
     @property
     def id(self):
