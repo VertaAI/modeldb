@@ -1,6 +1,7 @@
 package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.AddDatasetVersionAttributes;
 import ai.verta.modeldb.AddDatasetVersionTags;
@@ -32,6 +33,7 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.DatasetVersionDTO;
@@ -47,12 +49,21 @@ import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.UserInfo;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -66,6 +77,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private final MetadataDAO metadataDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
   private final MDBRoleService mdbRoleService;
+  private final FutureEventDAO futureEventDAO;
 
   public DatasetVersionServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
@@ -75,6 +87,39 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     this.blobDAO = daoSet.blobDAO;
     this.metadataDAO = daoSet.metadataDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
+    this.futureEventDAO = daoSet.futureEventDAO;
+  }
+
+  private void addEvent(
+      String entityId,
+      Optional<String> datasetIdOptional,
+      long workspaceId,
+      String eventType,
+      Optional<String> updatedField,
+      Map<String, Object> extraFieldsMap,
+      String eventMessage) {
+    // Add succeeded event in local DB
+    JsonObject eventMetadata = new JsonObject();
+    eventMetadata.addProperty("entity_id", entityId);
+    datasetIdOptional.ifPresent(datasetId -> eventMetadata.addProperty("dataset_id", datasetId));
+    if (updatedField.isPresent() && !updatedField.get().isEmpty()) {
+      eventMetadata.addProperty("updated_field", updatedField.get());
+    }
+    if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
+      JsonObject updatedFieldValue = new JsonObject();
+      extraFieldsMap.forEach(
+          (key, value) -> {
+            if (value instanceof JsonElement) {
+              updatedFieldValue.add(key, (JsonElement) value);
+            } else {
+              updatedFieldValue.addProperty(key, String.valueOf(value));
+            }
+          });
+      eventMetadata.add("updated_field_value", updatedFieldValue);
+    }
+    eventMetadata.addProperty("message", eventMessage);
+    futureEventDAO.addLocalEventWithBlocking(
+        ModelDBServiceResourceTypes.DATASET_VERSION.name(), eventType, workspaceId, eventMetadata);
   }
 
   private DatasetVersion getDatasetVersionFromRequest(
@@ -158,6 +203,17 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               true);
       var response =
           CreateDatasetVersion.Response.newBuilder().setDatasetVersion(datasetVersion).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          datasetVersion.getId(),
+          Optional.of(datasetVersion.getDatasetId()),
+          authService.getWorkspaceIdFromUserInfo(userInfo),
+          "add.resource.dataset_version.add_dataset_version_succeeded",
+          Optional.empty(),
+          Collections.emptyMap(),
+          "dataset_version logged successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -426,6 +482,17 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           UpdateDatasetVersionDescription.Response.newBuilder()
               .setDatasetVersion(datasetVersion)
               .build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          datasetVersion.getId(),
+          Optional.of(datasetVersion.getDatasetId()),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          "update.resource.dataset_version.update_dataset_version_succeeded",
+          Optional.of("description"),
+          Collections.emptyMap(),
+          "dataset_version description updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -467,6 +534,21 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               false);
       var response =
           AddDatasetVersionTags.Response.newBuilder().setDatasetVersion(datasetVersion).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          datasetVersion.getId(),
+          Optional.of(datasetVersion.getDatasetId()),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          "update.resource.dataset_version.update_dataset_version_succeeded",
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
+          "dataset_version tags added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -508,6 +590,27 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               request.getDeleteAll());
       var response =
           DeleteDatasetVersionTags.Response.newBuilder().setDatasetVersion(datasetVersion).build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraField = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraField.put("tags_delete_all", true);
+      } else {
+        extraField.put(
+            "tags",
+            new Gson()
+                .toJsonTree(
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          datasetVersion.getId(),
+          Optional.of(datasetVersion.getDatasetId()),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          "update.resource.dataset_version.update_dataset_version_succeeded",
+          Optional.of("tags"),
+          extraField,
+          "dataset_version tags deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -550,6 +653,24 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           AddDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
               .build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedDatasetVersion.getId(),
+          Optional.of(updatedDatasetVersion.getDatasetId()),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          "update.resource.dataset_version.update_dataset_version_succeeded",
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getAttributesList().stream()
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "dataset_version attributes added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -592,6 +713,24 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           UpdateDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
               .build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedDatasetVersion.getId(),
+          Optional.of(updatedDatasetVersion.getDatasetId()),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          "update.resource.dataset_version.update_dataset_version_succeeded",
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      Stream.of(request.getAttribute())
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "dataset_version attribute updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -680,6 +819,28 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           DeleteDatasetVersionAttributes.Response.newBuilder()
               .setDatasetVersion(updatedDatasetVersion)
               .build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraField = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraField.put("attributes_delete_all", true);
+      } else {
+        extraField.put(
+            "attribute_keys",
+            new Gson()
+                .toJsonTree(
+                    request.getAttributeKeysList(),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          updatedDatasetVersion.getId(),
+          Optional.of(updatedDatasetVersion.getDatasetId()),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          "update.resource.dataset_version.update_dataset_version_succeeded",
+          Optional.of("attributes"),
+          extraField,
+          "dataset_version attributes deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
