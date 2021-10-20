@@ -29,7 +29,7 @@ class Build(object):
 
     @property
     def message(self):
-        return self._message or EMPTY_MESSAGE
+        return self._message or Build.EMPTY_MESSAGE
 
     @property
     def is_complete(self):
