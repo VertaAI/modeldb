@@ -89,6 +89,8 @@ message ModelDBResourceEnum {
         USER = 18;
         SERVICE_ACCOUNT = 19;
         CONTAINER_REGISTRY_CONFIGURATION = 20;
+        STAGE = 21;
+        PROFILER = 22;
     }
 };
 

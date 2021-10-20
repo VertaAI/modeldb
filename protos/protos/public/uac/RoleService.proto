@@ -18,6 +18,8 @@ message ServiceEnum {
         AUTHZ_SERVICE = 3;
         MODELDB_SERVICE = 4;
         DEPLOYMENT_SERVICE = 5;
+        REGISTRY_SERVICE = 6;
+        MONITORING_SERVICE = 7;
     }
 };
 
