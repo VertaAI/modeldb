@@ -36,6 +36,8 @@ import org.apache.logging.log4j.Logger;
 public class VersioningServiceImpl extends VersioningServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(VersioningServiceImpl.class);
+  private static final String UPDATE_REPOSITORY_EVENT_TYPE =
+      "update.resource.repository.update_repository_succeeded";
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
   private final RepositoryDAO repositoryDAO;
@@ -197,7 +199,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       addEvent(
           response.getRepository().getId(),
           response.getRepository().getWorkspaceServiceId(),
-          "update.resource.repository.update_repository_succeeded",
+          UPDATE_REPOSITORY_EVENT_TYPE,
           Optional.empty(),
           Collections.emptyMap(),
           "repository updated successfully");
@@ -228,7 +230,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           repositoryResponse.getRepository().getId(),
-          repositoryResponse.getRepository().getWorkspaceServiceId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           "delete.resource.repository.delete_repository_succeeded",
           Optional.empty(),
           Collections.emptyMap(),
@@ -327,7 +329,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       addEvent(
           repositoryResponse.getRepository().getId(),
           repositoryResponse.getRepository().getWorkspaceServiceId(),
-          "update.resource.repository.update_repository_succeeded",
+          UPDATE_REPOSITORY_EVENT_TYPE,
           Optional.of("commit"),
           Collections.singletonMap("commit_hash", response.getCommit().getCommitSha()),
           "Commit added successfully");
@@ -381,7 +383,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       addEvent(
           repositoryResponse.getRepository().getId(),
           repositoryResponse.getRepository().getWorkspaceServiceId(),
-          "update.resource.repository.update_repository_succeeded",
+          UPDATE_REPOSITORY_EVENT_TYPE,
           Optional.of("commit"),
           Collections.singletonMap("commit_hash", request.getCommitSha()),
           "Commit deleted successfully");
@@ -468,7 +470,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         addEvent(
             repositoryResponse.getRepository().getId(),
             repositoryResponse.getRepository().getWorkspaceServiceId(),
-            "update.resource.repository.update_repository_succeeded",
+            UPDATE_REPOSITORY_EVENT_TYPE,
             Optional.of("commit"),
             Collections.singletonMap("commit_hash", mergeResponse.getCommit().getCommitSha()),
             mergeResponse.getCommit().getMessage());
@@ -495,7 +497,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       addEvent(
           repositoryResponse.getRepository().getId(),
           repositoryResponse.getRepository().getWorkspaceServiceId(),
-          "update.resource.repository.update_repository_succeeded",
+          UPDATE_REPOSITORY_EVENT_TYPE,
           Optional.of("commit"),
           Collections.singletonMap("commit_hash", mergeResponse.getCommit().getCommitSha()),
           mergeResponse.getCommit().getMessage());
@@ -551,7 +553,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       addEvent(
           repositoryResponse.getRepository().getId(),
           repositoryResponse.getRepository().getWorkspaceServiceId(),
-          "update.resource.repository.update_repository_succeeded",
+          UPDATE_REPOSITORY_EVENT_TYPE,
           Optional.of("branch"),
           updatedFieldValueMap,
           String.format("Set branch '%s' successfully", request.getBranch()));
@@ -580,7 +582,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       addEvent(
           repositoryResponse.getRepository().getId(),
           repositoryResponse.getRepository().getWorkspaceServiceId(),
-          "update.resource.repository.update_repository_succeeded",
+          UPDATE_REPOSITORY_EVENT_TYPE,
           Optional.of("branch"),
           Collections.singletonMap("branch", request.getBranch()),
           String.format("Branch '%s' deleted successfully", request.getBranch()));
@@ -647,7 +649,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       addEvent(
           repositoryResponse.getRepository().getId(),
           repositoryResponse.getRepository().getWorkspaceServiceId(),
-          "update.resource.repository.update_repository_succeeded",
+          UPDATE_REPOSITORY_EVENT_TYPE,
           Optional.of("tag"),
           updatedFieldValueMap,
           String.format("Set tag '%s' successfully", request.getTag()));
@@ -675,7 +677,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       addEvent(
           repositoryResponse.getRepository().getId(),
           repositoryResponse.getRepository().getWorkspaceServiceId(),
-          "update.resource.repository.update_repository_succeeded",
+          UPDATE_REPOSITORY_EVENT_TYPE,
           Optional.of("tag"),
           Collections.singletonMap("tag", request.getTag()),
           String.format("Tag '%s' deleted successfully", request.getTag()));

@@ -44,6 +44,8 @@ import org.apache.logging.log4j.Logger;
 public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentRunServiceImpl.class);
+  protected static final String DELETE_EXPERIMENT_RUN_EVENT_TYPE =
+      "delete.resource.experiment_run.delete_experiment_run_succeeded";
   protected final String UPDATE_EVENT_TYPE =
       "update.resource.experiment_run.update_experiment_run_succeeded";
   protected final String ADD_EVENT_TYPE =
@@ -247,6 +249,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           experimentRunDAO.deleteExperimentRuns(Collections.singletonList(request.getId()));
       var response =
           DeleteExperimentRun.Response.newBuilder().setStatus(!deletedRunIds.isEmpty()).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          DELETE_EXPERIMENT_RUN_EVENT_TYPE,
+          Optional.empty(),
+          Collections.emptyMap(),
+          "experiment_run deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -2280,6 +2294,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           DeleteExperimentRuns.Response.newBuilder()
               .setStatus(!deleteExperimentRunsIds.isEmpty())
               .build();
+
+      // Add succeeded event in local DB
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      for (String experimentRunId : deleteExperimentRunsIds) {
+        addEvent(
+            experimentRunId,
+            Optional.empty(),
+            projectIdsMap.get(experimentRunId),
+            authService.getWorkspaceIdFromUserInfo(userInfo),
+            DELETE_EXPERIMENT_RUN_EVENT_TYPE,
+            Optional.empty(),
+            Collections.emptyMap(),
+            "experiment_run deleted successfully");
+      }
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 

@@ -41,6 +41,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
   private static final Logger LOGGER = LogManager.getLogger(ExperimentServiceImpl.class);
   private static final String UPDATE_EVENT_TYPE =
       "update.resource.experiment.update_experiment_succeeded";
+  private static final String DELETE_EXPERIMENT_EVENT_TYPE =
+      "delete.resource.experiment.delete_experiment_succeeded";
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
   private final ExperimentDAO experimentDAO;
@@ -968,7 +970,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           request.getId(),
           projectId,
           authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
-          "delete.resource.experiment.delete_experiment_succeeded",
+          DELETE_EXPERIMENT_EVENT_TYPE,
           Optional.empty(),
           Collections.emptyMap(),
           "experiment deleted successfully");
@@ -1343,6 +1345,19 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       List<String> deletedIds = experimentDAO.deleteExperiments(request.getIdsList());
       var response =
           DeleteExperiments.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
+
+      // Add succeeded event in local DB
+      for (String experimentId : deletedIds) {
+        addEvent(
+            experimentId,
+            projectIdFromExperimentMap.get(experimentId),
+            authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+            DELETE_EXPERIMENT_EVENT_TYPE,
+            Optional.empty(),
+            Collections.emptyMap(),
+            "experiment deleted successfully");
+      }
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
