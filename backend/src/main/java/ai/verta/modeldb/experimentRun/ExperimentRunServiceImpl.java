@@ -216,15 +216,15 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(experimentRun.getProjectId()),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(experimentRun.getProjectId()),
+              Optional.empty(),
+              ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           experimentRun.getId(),
           Optional.of(experimentRun.getExperimentId()),
           experimentRun.getProjectId(),
-              projectResource.getWorkspaceId(),
+          projectResource.getWorkspaceId(),
           ADD_EVENT_TYPE,
           Optional.empty(),
           Collections.emptyMap(),
@@ -473,10 +473,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(updatedExperimentRun.getProjectId()),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(updatedExperimentRun.getProjectId()),
+              Optional.empty(),
+              ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
@@ -517,10 +517,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -572,10 +570,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
@@ -631,10 +627,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
@@ -717,10 +711,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
         extraFieldValue.put("tags_deleted_all", true);
@@ -783,10 +775,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build();
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
@@ -840,10 +830,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -903,10 +891,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
         extraFieldValue.put("attributes_deleted_all", true);
@@ -968,10 +954,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       Set<String> keys =
           Stream.of(request.getObservation())
               .map(
@@ -1029,10 +1013,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       Set<String> keys =
           request.getObservationsList().stream()
               .map(
@@ -1124,10 +1106,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -1179,10 +1159,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -1419,10 +1397,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -1478,10 +1454,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -1578,10 +1552,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -1664,10 +1636,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -1722,10 +1692,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -1808,10 +1776,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -1864,10 +1830,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -2062,10 +2026,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -2188,10 +2150,10 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(existingChildrenExperimentRunProjectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(existingChildrenExperimentRunProjectId),
+              Optional.empty(),
+              ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getExperimentRunId(),
           Optional.empty(),
@@ -2240,10 +2202,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getOverwrite()) {
         extraFieldValue.put("datasets_overwrite_all", true);
@@ -2299,10 +2259,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getOverwrite()) {
         extraFieldValue.put("datasets_overwrite_all", true);
@@ -2361,10 +2319,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -2439,10 +2395,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
@@ -2602,10 +2556,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
         extraFieldValue.put("hyperparameters_deleted_all", true);
@@ -2661,10 +2613,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
         extraFieldValue.put("metrics_deleted_all", true);
@@ -2715,10 +2665,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
         extraFieldValue.put("observations_deleted_all", true);
@@ -2877,10 +2825,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       // Add succeeded event in local DB
       GetResourcesResponseItem projectResource =
-              mdbRoleService.getEntityResource(
-                      Optional.of(projectId),
-                      Optional.empty(),
-                      ModelDBServiceResourceTypes.PROJECT);
+          mdbRoleService.getEntityResource(
+              Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
