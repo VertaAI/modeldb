@@ -18,6 +18,7 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.uac.Empty;
+import ai.verta.uac.GetResourcesResponseItem;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -100,16 +101,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo ->
+                            entityResource ->
                                 addEvent(
                                         experimentRun.getId(),
                                         Optional.of(experimentRun.getExperimentId()),
                                         experimentRun.getProjectId(),
-                                        Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                        entityResource.getWorkspaceId(),
                                         ADD_EVENT_TYPE,
                                         Optional.empty(),
                                         Collections.emptyMap(),
@@ -325,16 +328,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo ->
+                            entityResource ->
                                 addEvent(
                                         experimentRun.getId(),
                                         Optional.of(experimentRun.getExperimentId()),
                                         experimentRun.getProjectId(),
-                                        Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                        entityResource.getWorkspaceId(),
                                         UPDATE_EVENT_TYPE,
                                         Optional.of("description"),
                                         Collections.emptyMap(),
@@ -375,16 +380,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo ->
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource ->
                                 addEvent(
                                         experimentRun.getId(),
                                         Optional.of(experimentRun.getExperimentId()),
                                         experimentRun.getProjectId(),
-                                        Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                        entityResource.getWorkspaceId(),
                                         UPDATE_EVENT_TYPE,
                                         Optional.of("tags"),
                                         Collections.singletonMap(
@@ -445,11 +452,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo -> {
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
@@ -466,7 +475,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                       experimentRun.getId(),
                                       Optional.of(experimentRun.getExperimentId()),
                                       experimentRun.getProjectId(),
-                                      Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                      entityResource.getWorkspaceId(),
                                       UPDATE_EVENT_TYPE,
                                       Optional.of("tags"),
                                       extraFieldValue,
@@ -511,16 +520,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo ->
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource ->
                                 addEvent(
                                         experimentRun.getId(),
                                         Optional.of(experimentRun.getExperimentId()),
                                         experimentRun.getProjectId(),
-                                        Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                        entityResource.getWorkspaceId(),
                                         UPDATE_EVENT_TYPE,
                                         Optional.of("tags"),
                                         Collections.singletonMap(
@@ -571,16 +582,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo ->
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource ->
                                 addEvent(
                                         experimentRun.getId(),
                                         Optional.of(experimentRun.getExperimentId()),
                                         experimentRun.getProjectId(),
-                                        Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                        entityResource.getWorkspaceId(),
                                         UPDATE_EVENT_TYPE,
                                         Optional.of("tags"),
                                         Collections.singletonMap(
@@ -630,11 +643,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo -> {
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource -> {
                               Set<String> keys =
                                   Stream.of(request.getObservation())
                                       .map(
@@ -649,7 +664,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   experimentRun.getId(),
                                   Optional.of(experimentRun.getExperimentId()),
                                   experimentRun.getProjectId(),
-                                  Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                  entityResource.getWorkspaceId(),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("observations"),
                                   Collections.singletonMap(
@@ -689,11 +704,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo -> {
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource -> {
                               Set<String> keys =
                                   request.getObservationsList().stream()
                                       .map(
@@ -708,7 +725,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   experimentRun.getId(),
                                   Optional.of(experimentRun.getExperimentId()),
                                   experimentRun.getProjectId(),
-                                  Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                  entityResource.getWorkspaceId(),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("observations"),
                                   Collections.singletonMap(
@@ -767,11 +784,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo -> {
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
@@ -788,7 +807,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   experimentRun.getId(),
                                   Optional.of(experimentRun.getExperimentId()),
                                   experimentRun.getProjectId(),
-                                  Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                  entityResource.getWorkspaceId(),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("observations"),
                                   extraFieldValue,
@@ -826,16 +845,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo ->
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("metrics"),
                                     Collections.singletonMap(
@@ -875,16 +896,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo ->
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("metrics"),
                                     Collections.singletonMap(
@@ -940,11 +963,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo -> {
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
@@ -961,7 +986,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   experimentRun.getId(),
                                   Optional.of(experimentRun.getExperimentId()),
                                   experimentRun.getProjectId(),
-                                  Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                  entityResource.getWorkspaceId(),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("metrics"),
                                   extraFieldValue,
@@ -1000,11 +1025,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo -> {
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getOverwrite()) {
@@ -1023,7 +1050,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   experimentRun.getId(),
                                   Optional.of(experimentRun.getExperimentId()),
                                   experimentRun.getProjectId(),
-                                  Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                  entityResource.getWorkspaceId(),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("datasets"),
                                   extraFieldValue,
@@ -1058,11 +1085,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo -> {
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getOverwrite()) {
@@ -1081,7 +1110,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   experimentRun.getId(),
                                   Optional.of(experimentRun.getExperimentId()),
                                   experimentRun.getProjectId(),
-                                  Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                  entityResource.getWorkspaceId(),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("datasets"),
                                   extraFieldValue,
@@ -1136,16 +1165,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo ->
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("hyperparameters"),
                                     Collections.singletonMap(
@@ -1186,16 +1217,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo ->
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("hyperparameters"),
                                     Collections.singletonMap(
@@ -1256,11 +1289,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo -> {
+                            entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
@@ -1277,7 +1312,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   experimentRun.getId(),
                                   Optional.of(experimentRun.getExperimentId()),
                                   experimentRun.getProjectId(),
-                                  Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                  entityResource.getWorkspaceId(),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("hyperparameters"),
                                   extraFieldValue,
@@ -1316,16 +1351,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo ->
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(experimentRun.getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("attributes"),
                                     Collections.singletonMap(
@@ -1366,16 +1403,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo ->
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("attributes"),
                                     Collections.singletonMap(
@@ -1438,16 +1477,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo ->
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("attributes"),
                                     Collections.singletonMap(
@@ -1490,11 +1531,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo -> {
+                            entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
@@ -1511,7 +1554,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   experimentRun.getId(),
                                   Optional.of(experimentRun.getExperimentId()),
                                   experimentRun.getProjectId(),
-                                  Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                  entityResource.getWorkspaceId(),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("attributes"),
                                   extraFieldValue,
@@ -1547,16 +1590,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo ->
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("environment"),
                                     Collections.emptyMap(),
@@ -1591,16 +1636,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo ->
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("code_version"),
                                     Collections.emptyMap(),
@@ -1660,16 +1707,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo ->
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("artifacts"),
                                     Collections.singletonMap(
@@ -1710,16 +1759,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo ->
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("artifacts"),
                                     Collections.singletonMap(
@@ -1777,17 +1828,19 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo -> {
+                            entityResource -> {
                               // Add succeeded event in local DB
                               return addEvent(
                                   experimentRun.getId(),
                                   Optional.of(experimentRun.getExperimentId()),
                                   experimentRun.getProjectId(),
-                                  Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                  entityResource.getWorkspaceId(),
                                   UPDATE_EVENT_TYPE,
                                   Optional.of("artifacts"),
                                   Collections.singletonMap(
@@ -1962,16 +2015,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
-                            userInfo ->
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
                                     experimentRun.getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     UPDATE_EVENT_TYPE,
                                     Optional.of("version_input"),
                                     Collections.emptyMap(),
@@ -2034,16 +2089,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
               .thenCompose(
                   returnResponse -> {
                     // Add succeeded event in local DB
-                    return FutureGrpc.ClientRequest(
-                            uac.getUACService().getCurrentUser(Empty.newBuilder().build()),
-                            executor)
-                        .thenCompose(
-                            userInfo ->
+                    return InternalFuture.completedInternalFuture(
+                            mdbRoleService.getEntityResource(
+                                    Optional.of(returnResponse.getRun().getProjectId()),
+                                    Optional.empty(),
+                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                            .thenCompose(
+                                    entityResource ->
                                 addEvent(
                                     returnResponse.getRun().getId(),
                                     Optional.of(returnResponse.getRun().getExperimentId()),
                                     returnResponse.getRun().getProjectId(),
-                                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                                    entityResource.getWorkspaceId(),
                                     ADD_EVENT_TYPE,
                                     Optional.empty(),
                                     Collections.emptyMap(),

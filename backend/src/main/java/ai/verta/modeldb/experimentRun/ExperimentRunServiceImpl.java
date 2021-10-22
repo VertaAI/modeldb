@@ -24,6 +24,7 @@ import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
@@ -49,7 +50,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   protected final String ADD_EVENT_TYPE =
       "add.resource.experiment_run.add_experiment_run_succeeded";
   private final AuthService authService;
-  private final MDBRoleService mdbRoleService;
+  protected final MDBRoleService mdbRoleService;
   private final ExperimentRunDAO experimentRunDAO;
   private final ProjectDAO projectDAO;
   private final ExperimentDAO experimentDAO;
@@ -214,11 +215,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           CreateExperimentRun.Response.newBuilder().setExperimentRun(experimentRun).build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(experimentRun.getProjectId()),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           experimentRun.getId(),
           Optional.of(experimentRun.getExperimentId()),
           experimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(userInfo),
+              projectResource.getWorkspaceId(),
           ADD_EVENT_TYPE,
           Optional.empty(),
           Collections.emptyMap(),
@@ -466,11 +472,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(updatedExperimentRun.getProjectId()),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
           updatedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("description"),
           Collections.emptyMap(),
@@ -505,11 +516,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = UpdateExperimentRunName.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("name"),
           Collections.singletonMap("name", request.getName()),
@@ -555,11 +571,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           AddExperimentRunTags.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
           updatedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
@@ -609,11 +630,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           AddExperimentRunTag.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
           updatedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
@@ -690,6 +716,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
         extraFieldValue.put("tags_deleted_all", true);
@@ -704,7 +735,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
           updatedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("tags"),
           extraFieldValue,
@@ -751,11 +782,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               .setExperimentRun(updatedExperimentRun)
               .build();
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
           updatedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
@@ -803,11 +839,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = AddExperimentRunAttributes.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -861,6 +902,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = DeleteExperimentRunAttributes.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
         extraFieldValue.put("attributes_deleted_all", true);
@@ -876,7 +922,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           extraFieldValue,
@@ -921,6 +967,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogObservation.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       Set<String> keys =
           Stream.of(request.getObservation())
               .map(
@@ -935,7 +986,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("observations"),
           Collections.singletonMap(
@@ -977,6 +1028,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogObservations.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       Set<String> keys =
           request.getObservationsList().stream()
               .map(
@@ -991,7 +1047,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("observations"),
           Collections.singletonMap(
@@ -1067,11 +1123,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogMetric.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("metrics"),
           Collections.singletonMap(
@@ -1117,11 +1178,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogMetrics.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("metrics"),
           Collections.singletonMap(
@@ -1352,11 +1418,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogArtifact.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
@@ -1406,11 +1477,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogArtifacts.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
@@ -1501,11 +1577,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogExperimentRunCodeVersion.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("code_version"),
           Collections.emptyMap(),
@@ -1582,11 +1663,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogHyperparameter.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("hyperparameters"),
           Collections.singletonMap(
@@ -1635,11 +1721,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogHyperparameters.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("hyperparameters"),
           Collections.singletonMap(
@@ -1716,11 +1807,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogAttribute.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -1767,11 +1863,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogAttributes.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -1960,11 +2061,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogJobId.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("job"),
           Collections.emptyMap(),
@@ -2081,11 +2187,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = SetParentExperimentRunId.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(existingChildrenExperimentRunProjectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getExperimentRunId(),
           Optional.empty(),
           parentExperimentRunProjectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("parent_id"),
           Collections.singletonMap("parent_id", request.getParentId()),
@@ -2128,6 +2239,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogDataset.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getOverwrite()) {
         extraFieldValue.put("datasets_overwrite_all", true);
@@ -2145,7 +2261,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("datasets"),
           extraFieldValue,
@@ -2182,6 +2298,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogDatasets.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getOverwrite()) {
         extraFieldValue.put("datasets_overwrite_all", true);
@@ -2199,7 +2320,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("datasets"),
           extraFieldValue,
@@ -2239,11 +2360,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = DeleteArtifact.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
@@ -2312,11 +2438,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogVersionedInput.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("version_input"),
           Collections.emptyMap(),
@@ -2470,6 +2601,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = DeleteHyperparameters.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
         extraFieldValue.put("hyperparameters_deleted_all", true);
@@ -2485,7 +2621,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("hyperparameters"),
           extraFieldValue,
@@ -2524,6 +2660,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = DeleteMetrics.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
         extraFieldValue.put("metrics_deleted_all", true);
@@ -2538,7 +2679,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("metrics"),
           extraFieldValue,
@@ -2573,6 +2714,11 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = DeleteObservations.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       Map<String, Object> extraFieldValue = new HashMap<>();
       if (request.getDeleteAll()) {
         extraFieldValue.put("observations_deleted_all", true);
@@ -2588,7 +2734,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("observations"),
           extraFieldValue,
@@ -2690,11 +2836,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+          mdbRoleService.getEntityResource(
+              Optional.of(clonedExperimentRun.getProjectId()),
+              Optional.empty(),
+              ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           clonedExperimentRun.getId(),
           Optional.of(clonedExperimentRun.getExperimentId()),
           clonedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           ADD_EVENT_TYPE,
           Optional.empty(),
           Collections.emptyMap(),
@@ -2725,11 +2876,16 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var response = LogEnvironment.Response.newBuilder().build();
 
       // Add succeeded event in local DB
+      GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                      Optional.of(projectId),
+                      Optional.empty(),
+                      ModelDBServiceResourceTypes.PROJECT);
       addEvent(
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          projectResource.getWorkspaceId(),
           UPDATE_EVENT_TYPE,
           Optional.of("environment"),
           Collections.emptyMap(),
