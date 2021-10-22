@@ -17,8 +17,6 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.uac.Empty;
-import ai.verta.uac.GetResourcesResponseItem;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -330,9 +328,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
                         .thenCompose(
                             entityResource ->
                                 addEvent(
@@ -382,11 +380,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource ->
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource ->
                                 addEvent(
                                         experimentRun.getId(),
                                         Optional.of(experimentRun.getExperimentId()),
@@ -454,11 +452,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource -> {
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
@@ -522,11 +520,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource ->
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource ->
                                 addEvent(
                                         experimentRun.getId(),
                                         Optional.of(experimentRun.getExperimentId()),
@@ -584,11 +582,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource ->
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource ->
                                 addEvent(
                                         experimentRun.getId(),
                                         Optional.of(experimentRun.getExperimentId()),
@@ -645,11 +643,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource -> {
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource -> {
                               Set<String> keys =
                                   Stream.of(request.getObservation())
                                       .map(
@@ -706,11 +704,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource -> {
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource -> {
                               Set<String> keys =
                                   request.getObservationsList().stream()
                                       .map(
@@ -786,11 +784,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource -> {
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
@@ -847,11 +845,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource ->
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
@@ -898,11 +896,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource ->
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
@@ -965,11 +963,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource -> {
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getDeleteAll()) {
@@ -1027,11 +1025,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource -> {
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getOverwrite()) {
@@ -1087,11 +1085,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource -> {
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource -> {
                               // Add succeeded event in local DB
                               Map<String, Object> extraFieldValue = new HashMap<>();
                               if (request.getOverwrite()) {
@@ -1167,11 +1165,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource ->
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
@@ -1219,11 +1217,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource ->
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
@@ -1353,11 +1351,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(experimentRun.getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource ->
+                                Optional.of(experimentRun.getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource ->
                                 addEvent(
                                     experimentRun.getId(),
                                     Optional.of(experimentRun.getExperimentId()),
@@ -2091,11 +2089,11 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                     // Add succeeded event in local DB
                     return InternalFuture.completedInternalFuture(
                             mdbRoleService.getEntityResource(
-                                    Optional.of(returnResponse.getRun().getProjectId()),
-                                    Optional.empty(),
-                                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
-                            .thenCompose(
-                                    entityResource ->
+                                Optional.of(returnResponse.getRun().getProjectId()),
+                                Optional.empty(),
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT))
+                        .thenCompose(
+                            entityResource ->
                                 addEvent(
                                     returnResponse.getRun().getId(),
                                     Optional.of(returnResponse.getRun().getExperimentId()),
