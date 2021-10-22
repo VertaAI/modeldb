@@ -394,7 +394,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           response.getDataset().getId(),
-          Long.parseLong(response.getDataset().getWorkspaceId()),
+          response.getDataset().getWorkspaceServiceId(),
           "update.resource.dataset.update_dataset_succeeded",
           Optional.of("name"),
           Collections.singletonMap("name", response.getDataset().getName()),
@@ -439,7 +439,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           response.getDataset().getId(),
-          Long.parseLong(response.getDataset().getWorkspaceId()),
+          response.getDataset().getWorkspaceServiceId(),
           "update.resource.dataset.update_dataset_succeeded",
           Optional.of("description"),
           Collections.emptyMap(),
@@ -485,7 +485,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           response.getDataset().getId(),
-          Long.parseLong(response.getDataset().getWorkspaceId()),
+          response.getDataset().getWorkspaceServiceId(),
           "update.resource.dataset.update_dataset_succeeded",
           Optional.of("tags"),
           Collections.singletonMap(
