@@ -230,7 +230,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           repositoryResponse.getRepository().getId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          repositoryResponse.getRepository().getWorkspaceServiceId(),
           "delete.resource.repository.delete_repository_succeeded",
           Optional.empty(),
           Collections.emptyMap(),
