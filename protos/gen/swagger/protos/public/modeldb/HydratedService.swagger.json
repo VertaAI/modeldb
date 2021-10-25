@@ -984,7 +984,9 @@
         "ROLE_SERVICE",
         "AUTHZ_SERVICE",
         "MODELDB_SERVICE",
-        "DEPLOYMENT_SERVICE"
+        "DEPLOYMENT_SERVICE",
+        "REGISTRY_SERVICE",
+        "MONITORING_SERVICE"
       ],
       "default": "UNKNOWN"
     },
