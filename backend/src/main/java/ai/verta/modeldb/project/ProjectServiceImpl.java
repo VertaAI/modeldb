@@ -80,6 +80,10 @@ import org.apache.logging.log4j.Logger;
 public class ProjectServiceImpl extends ProjectServiceImplBase {
 
   public static final Logger LOGGER = LogManager.getLogger(ProjectServiceImpl.class);
+  protected static final String DELETE_PROJECT_EVENT_TYPE =
+      "delete.resource.project.delete_project_succeeded";
+  protected static final String UPDATE_PROJECT_EVENT_TYPE =
+      "update.resource.project.update_project_succeeded";
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
   private final ProjectDAO projectDAO;
@@ -194,7 +198,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("description"),
           Collections.emptyMap(),
           "project description updated successfully");
@@ -237,7 +241,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
               "attribute_keys",
@@ -296,7 +300,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
               "attribute_keys",
@@ -408,7 +412,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("attributes"),
           extraField,
           "project attributes deleted successfully");
@@ -451,7 +455,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
               "tags",
@@ -538,7 +542,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("tags"),
           extraField,
           "project tags deleted successfully");
@@ -584,7 +588,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
               "tags",
@@ -632,7 +636,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
               "tags",
@@ -666,10 +670,23 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
+      GetResourcesResponseItem projectResource =
+          mdbRoleService.getEntityResource(
+              Optional.of(request.getId()), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       List<String> deletedProjectIds =
           projectDAO.deleteProjects(Collections.singletonList(request.getId()));
       var response =
           DeleteProject.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          projectResource.getWorkspaceId(),
+          DELETE_PROJECT_EVENT_TYPE,
+          Optional.empty(),
+          Collections.emptyMap(),
+          "project deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1000,14 +1017,14 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       eventMetadata.addProperty("message", "project read_me_text updated successfully");
       futureEventDAO.addLocalEventWithBlocking(
           ModelDBServiceResourceTypes.PROJECT.name(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           updatedProject.getWorkspaceServiceId(),
           eventMetadata);
 
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("read_me_text"),
           Collections.emptyMap(),
           "project read_me_text updated successfully");
@@ -1082,7 +1099,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           project.getId(),
           project.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("short_name"),
           Collections.singletonMap("short_name", project.getShortName()),
           "project short_name updated successfully");
@@ -1160,7 +1177,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("code_version"),
           Collections.emptyMap(),
           "code_version logged successfully");
@@ -1314,7 +1331,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
               "artifact_keys",
@@ -1382,7 +1399,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       addEvent(
           updatedProject.getId(),
           updatedProject.getWorkspaceServiceId(),
-          "update.resource.project.update_project_succeeded",
+          UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
               "artifact_keys",
@@ -1413,6 +1430,20 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       List<String> deletedProjectIds = projectDAO.deleteProjects(request.getIdsList());
       var response =
           DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
+
+      // Add succeeded event in local DB
+      for (String projectId : deletedProjectIds) {
+        GetResourcesResponseItem projectResource =
+            mdbRoleService.getEntityResource(
+                Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
+        addEvent(
+            projectId,
+            projectResource.getWorkspaceId(),
+            DELETE_PROJECT_EVENT_TYPE,
+            Optional.empty(),
+            Collections.emptyMap(),
+            "project deleted successfully");
+      }
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 

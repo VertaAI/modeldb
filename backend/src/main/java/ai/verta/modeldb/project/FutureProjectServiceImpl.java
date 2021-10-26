@@ -139,7 +139,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       addEvent(
                               updatedProject.getId(),
                               updatedProject.getWorkspaceServiceId(),
-                              "update.resource.project.update_project_succeeded",
+                              UPDATE_PROJECT_EVENT_TYPE,
                               Optional.of("attributes"),
                               Collections.singletonMap(
                                   "attribute_keys",
@@ -176,7 +176,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       addEvent(
                               updatedProject.getId(),
                               updatedProject.getWorkspaceServiceId(),
-                              "update.resource.project.update_project_succeeded",
+                              UPDATE_PROJECT_EVENT_TYPE,
                               Optional.of("attributes"),
                               Collections.singletonMap(
                                   "attribute_keys",
@@ -244,7 +244,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                     return addEvent(
                             updatedProject.getId(),
                             updatedProject.getWorkspaceServiceId(),
-                            "update.resource.project.update_project_succeeded",
+                            UPDATE_PROJECT_EVENT_TYPE,
                             Optional.of("attributes"),
                             extraFieldValue,
                             "project attributes deleted successfully")
@@ -276,7 +276,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       addEvent(
                               updatedProject.getId(),
                               updatedProject.getWorkspaceServiceId(),
-                              "update.resource.project.update_project_succeeded",
+                              UPDATE_PROJECT_EVENT_TYPE,
                               Optional.of("tags"),
                               Collections.singletonMap(
                                   "tags",
@@ -335,7 +335,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                     return addEvent(
                             updatedProject.getId(),
                             updatedProject.getWorkspaceServiceId(),
-                            "update.resource.project.update_project_succeeded",
+                            UPDATE_PROJECT_EVENT_TYPE,
                             Optional.of("tags"),
                             extraFieldValue,
                             "project tags deleted successfully")
@@ -369,7 +369,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       addEvent(
                               updatedProject.getId(),
                               updatedProject.getWorkspaceServiceId(),
-                              "update.resource.project.update_project_succeeded",
+                              UPDATE_PROJECT_EVENT_TYPE,
                               Optional.of("tags"),
                               Collections.singletonMap(
                                   "tags",
@@ -408,7 +408,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       addEvent(
                               updatedProject.getId(),
                               updatedProject.getWorkspaceServiceId(),
-                              "update.resource.project.update_project_succeeded",
+                              UPDATE_PROJECT_EVENT_TYPE,
                               Optional.of("tags"),
                               Collections.singletonMap(
                                   "tags",

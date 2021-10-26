@@ -71,6 +71,10 @@ import org.apache.logging.log4j.Logger;
 public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetVersionServiceImpl.class);
+  private static final String DELETE_DATASET_VERSION_EVENT_TYPE =
+      "delete.resource.dataset_version.delete_dataset_version_succeeded";
+  private static final String UPDATE_DATASET_VERSION_EVENT_TYPE =
+      "update.resource.dataset_version.update_dataset_version_succeeded";
   private final AuthService authService;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
@@ -335,6 +339,17 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           Collections.singletonList(request.getId()),
           repositoryDAO);
       var response = DeleteDatasetVersion.Response.getDefaultInstance();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.of(request.getDatasetId()),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          DELETE_DATASET_VERSION_EVENT_TYPE,
+          Optional.empty(),
+          Collections.emptyMap(),
+          "dataset_version delete successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -495,7 +510,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           datasetVersion.getId(),
           Optional.of(datasetVersion.getDatasetId()),
           entityResource.getWorkspaceId(),
-          "update.resource.dataset_version.update_dataset_version_succeeded",
+          UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("description"),
           Collections.emptyMap(),
           "dataset_version description updated successfully");
@@ -550,7 +565,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           datasetVersion.getId(),
           Optional.of(datasetVersion.getDatasetId()),
           entityResource.getWorkspaceId(),
-          "update.resource.dataset_version.update_dataset_version_succeeded",
+          UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
               "tags",
@@ -619,7 +634,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           datasetVersion.getId(),
           Optional.of(datasetVersion.getDatasetId()),
           entityResource.getWorkspaceId(),
-          "update.resource.dataset_version.update_dataset_version_succeeded",
+          UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("tags"),
           extraField,
           "dataset_version tags deleted successfully");
@@ -675,7 +690,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           updatedDatasetVersion.getId(),
           Optional.of(updatedDatasetVersion.getDatasetId()),
           entityResource.getWorkspaceId(),
-          "update.resource.dataset_version.update_dataset_version_succeeded",
+          UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
               "attribute_keys",
@@ -738,7 +753,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           updatedDatasetVersion.getId(),
           Optional.of(updatedDatasetVersion.getDatasetId()),
           entityResource.getWorkspaceId(),
-          "update.resource.dataset_version.update_dataset_version_succeeded",
+          UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
               "attribute_keys",
@@ -858,7 +873,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           updatedDatasetVersion.getId(),
           Optional.of(updatedDatasetVersion.getDatasetId()),
           entityResource.getWorkspaceId(),
-          "update.resource.dataset_version.update_dataset_version_succeeded",
+          UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("attributes"),
           extraField,
           "dataset_version attributes deleted successfully");
@@ -891,6 +906,20 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
           request.getIdsList(),
           repositoryDAO);
       var response = DeleteDatasetVersions.Response.getDefaultInstance();
+
+      // Add succeeded event in local DB
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      for (String datasetVersionId : request.getIdsList()) {
+        addEvent(
+            datasetVersionId,
+            Optional.of(request.getDatasetId()),
+            authService.getWorkspaceIdFromUserInfo(userInfo),
+            DELETE_DATASET_VERSION_EVENT_TYPE,
+            Optional.empty(),
+            Collections.emptyMap(),
+            "dataset_version delete successfully");
+      }
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 

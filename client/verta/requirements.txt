@@ -10,6 +10,7 @@ wheel>=0.32
 hypothesis
 six>=1.11
 pytest>=4.3
+pytest-timeout==1.4.2
 
 # unit testing dependencies
 boto3
