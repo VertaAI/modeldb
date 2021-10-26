@@ -27,6 +27,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -139,6 +140,10 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
           futureExperimentRunDAO
               .deleteExperimentRuns(
                   DeleteExperimentRuns.newBuilder().addIds(request.getId()).build())
+              .thenCompose(
+                  unused ->
+                      loggedDeleteExperimentRunEvents(Collections.singletonList(request.getId())),
+                  executor)
               .thenApply(
                   unused -> DeleteExperimentRun.Response.newBuilder().setStatus(true).build(),
                   executor);
@@ -146,6 +151,30 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
+  }
+
+  private InternalFuture<List<Void>> loggedDeleteExperimentRunEvents(List<String> runIds) {
+    // Add succeeded event in local DB
+    return FutureGrpc.ClientRequest(
+            uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
+        .thenCompose(
+            userInfo -> {
+              List<InternalFuture<Void>> futureList = new ArrayList<>();
+              for (String runId : runIds) {
+                String projectId = experimentRunDAO.getProjectIdByExperimentRunId(runId);
+                addEvent(
+                    runId,
+                    Optional.empty(),
+                    projectId,
+                    Long.parseLong(userInfo.getVertaInfo().getWorkspaceId()),
+                    DELETE_EXPERIMENT_RUN_EVENT_TYPE,
+                    Optional.empty(),
+                    Collections.emptyMap(),
+                    "experiment_run deleted successfully");
+              }
+              return InternalFuture.sequence(futureList, executor);
+            },
+            executor);
   }
 
   @Override
@@ -1985,6 +2014,8 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .deleteExperimentRuns(request)
+              .thenCompose(
+                  unused -> loggedDeleteExperimentRunEvents(request.getIdsList()), executor)
               .thenApply(
                   unused -> DeleteExperimentRuns.Response.newBuilder().setStatus(true).build(),
                   executor);

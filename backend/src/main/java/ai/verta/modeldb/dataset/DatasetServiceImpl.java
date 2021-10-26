@@ -34,6 +34,7 @@ import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -59,6 +60,8 @@ import org.apache.logging.log4j.Logger;
 public class DatasetServiceImpl extends DatasetServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetServiceImpl.class);
+  private static final String UPDATE_DATASET_EVENT_TYPE =
+      "update.resource.dataset.update_dataset_succeeded";
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final MetadataDAO metadataDAO;
@@ -234,17 +237,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       GetResourcesResponseItem entityResource =
           mdbRoleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.DATASET);
-      deleteRepositoriesByDatasetIds(Collections.singletonList(request.getId()));
+      deleteRepositoriesByDatasetIds(Collections.singletonList(entityResource.getResourceId()));
       var response = DeleteDataset.Response.newBuilder().setStatus(true).build();
-
-      // Add succeeded event in local DB
-      addEvent(
-          entityResource.getResourceId(),
-          entityResource.getWorkspaceId(),
-          "delete.resource.dataset.delete_dataset_succeeded",
-          Optional.empty(),
-          Collections.emptyMap(),
-          "dataset delete successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -395,7 +389,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       addEvent(
           response.getDataset().getId(),
           Long.parseLong(response.getDataset().getWorkspaceId()),
-          "update.resource.dataset.update_dataset_succeeded",
+          UPDATE_DATASET_EVENT_TYPE,
           Optional.of("name"),
           Collections.singletonMap("name", response.getDataset().getName()),
           "dataset name updated successfully");
@@ -440,7 +434,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       addEvent(
           response.getDataset().getId(),
           Long.parseLong(response.getDataset().getWorkspaceId()),
-          "update.resource.dataset.update_dataset_succeeded",
+          UPDATE_DATASET_EVENT_TYPE,
           Optional.of("description"),
           Collections.emptyMap(),
           "dataset description updated successfully");
@@ -486,7 +480,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       addEvent(
           response.getDataset().getId(),
           Long.parseLong(response.getDataset().getWorkspaceId()),
-          "update.resource.dataset.update_dataset_succeeded",
+          UPDATE_DATASET_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
               "tags",
@@ -556,7 +550,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       addEvent(
           response.getDataset().getId(),
           response.getDataset().getWorkspaceServiceId(),
-          "update.resource.dataset.update_dataset_succeeded",
+          UPDATE_DATASET_EVENT_TYPE,
           Optional.of("tags"),
           extraField,
           "dataset tags deleted successfully");
@@ -607,7 +601,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       addEvent(
           updatedDataset.getId(),
           updatedDataset.getWorkspaceServiceId(),
-          "update.resource.dataset.update_dataset_succeeded",
+          UPDATE_DATASET_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
               "attribute_keys",
@@ -662,7 +656,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       addEvent(
           updatedDataset.getId(),
           updatedDataset.getWorkspaceServiceId(),
-          "update.resource.dataset.update_dataset_succeeded",
+          UPDATE_DATASET_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
               "attribute_keys",
@@ -736,7 +730,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       addEvent(
           response.getDataset().getId(),
           response.getDataset().getWorkspaceServiceId(),
-          "update.resource.dataset.update_dataset_succeeded",
+          UPDATE_DATASET_EVENT_TYPE,
           Optional.of("attributes"),
           extraField,
           "dataset attributes deleted successfully");
@@ -765,7 +759,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               new HashSet<>(request.getIdsList()),
               ModelDBServiceResourceTypes.DATASET,
               false);
-      deleteRepositoriesByDatasetIds(request.getIdsList());
+      deleteRepositoriesByDatasetIds(
+          responseItems.stream()
+              .map(GetResourcesResponseItem::getResourceId)
+              .collect(Collectors.toList()));
       var response = DeleteDatasets.Response.newBuilder().setStatus(true).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -776,6 +773,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   }
 
   private void deleteRepositoriesByDatasetIds(List<String> datasetIds) throws ModelDBException {
+    UserInfo userInfo = authService.getCurrentLoginUserInfo();
     for (String datasetId : datasetIds) {
       repositoryDAO.deleteRepository(
           DeleteRepositoryRequest.newBuilder()
@@ -786,6 +784,15 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           experimentRunDAO,
           false,
           RepositoryEnums.RepositoryTypeEnum.DATASET);
+
+      // Add succeeded event in local DB
+      addEvent(
+          datasetId,
+          authService.getWorkspaceIdFromUserInfo(userInfo),
+          "delete.resource.dataset.delete_dataset_succeeded",
+          Optional.empty(),
+          Collections.emptyMap(),
+          "dataset delete successfully");
     }
   }
 
