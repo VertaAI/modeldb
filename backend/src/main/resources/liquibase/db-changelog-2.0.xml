@@ -981,6 +981,9 @@
 
     <changeSet id="marked-existing-artifact-uploaded-true" author="anandJ">
         <preConditions onFail="MARK_RAN">
+            <not>
+                <dbms type="mssql"/>
+            </not>
             <columnExists tableName="artifact" columnName="upload_completed"/>
         </preConditions>
         <update tableName="artifact">
@@ -1014,6 +1017,21 @@
 
     <changeSet id="db_version_2.36" author="anandJ">
         <tagDatabase tag="db_version_2.36"/>
+    </changeSet>
+
+    <changeSet id="marked-existing-artifact-uploaded-true-mssql" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mssql"/>
+            <columnExists tableName="artifact" columnName="upload_completed"/>
+        </preConditions>
+        <update tableName="artifact">
+            <column name="upload_completed" valueBoolean="true" />
+            <where>field_type='artifacts' AND upload_completed = 0</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="db_version_2.37" author="anandJ">
+        <tagDatabase tag="db_version_2.37"/>
     </changeSet>
 
 </databaseChangeLog>
