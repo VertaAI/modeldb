@@ -409,7 +409,9 @@
         "WORKSPACE",
         "USER",
         "SERVICE_ACCOUNT",
-        "CONTAINER_REGISTRY_CONFIGURATION"
+        "CONTAINER_REGISTRY_CONFIGURATION",
+        "STAGE",
+        "PROFILER"
       ],
       "default": "UNKNOWN"
     },
@@ -445,7 +447,9 @@
         "ROLE_SERVICE",
         "AUTHZ_SERVICE",
         "MODELDB_SERVICE",
-        "DEPLOYMENT_SERVICE"
+        "DEPLOYMENT_SERVICE",
+        "REGISTRY_SERVICE",
+        "MONITORING_SERVICE"
       ],
       "default": "UNKNOWN"
     },
