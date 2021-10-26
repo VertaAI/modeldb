@@ -156,7 +156,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   private InternalFuture<List<Void>> loggedDeleteExperimentRunEvents(List<String> runIds) {
     // Add succeeded event in local DB
     return FutureGrpc.ClientRequest(
-            uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
+            uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()), executor)
         .thenCompose(
             userInfo -> {
               List<InternalFuture<Void>> futureList = new ArrayList<>();
