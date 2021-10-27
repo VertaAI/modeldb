@@ -721,7 +721,7 @@ class TestEndpoint:
         excinfo_value = str(excinfo.value).strip()
         assert "403" in excinfo_value
 
-    def test_update_from_build(self, client, class_endpoint_updated, class_model_for_deployment, created_entities):
+    def test_update_from_build(self, client, class_endpoint_updated, created_entities):
         existing_endpoint = class_endpoint_updated
         existing_build = existing_endpoint.wait_for_build(polling_seconds=5)
         current_build = existing_endpoint.get_current_build()
