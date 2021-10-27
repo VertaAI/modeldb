@@ -236,6 +236,7 @@ class Endpoint(object):
                 return endpoint
         return None
 
+    # TODO: update docstring here
     def update(
         self,
         model_reference,
@@ -344,6 +345,25 @@ class Endpoint(object):
                 raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
 
         return self.get_status()
+
+    def wait_for_build(self, polling_seconds=5, msg=None):
+        """
+        TODO: Fill me out.
+        """
+        current_build = self.get_current_build()
+        build_id = current_build.id
+        if current_build is None:
+            return None
+
+        # have to check using build status, otherwise might never terminate
+        while not current_build.is_complete:
+            if msg:
+                print(msg, end="")
+                sys.stdout.flush()
+            time.sleep(polling_seconds)
+            current_build = self._get_build(build_id)
+        return current_build
+
 
     def _create_build(self, model_reference):
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
