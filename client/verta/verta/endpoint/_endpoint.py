@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+import itertools
 import sys
 import time
 import json
@@ -103,7 +104,7 @@ class Endpoint(object):
         """
         production_stage = self._get_production_stage()
         components =  production_stage["components"]
-        build_id = next(map(lambda component: component["build_id"], components),None)
+        build_id = next(itertools.imap(lambda component: component["build_id"], components),None)
         build = self._get_build(build_id)
         return build
 
