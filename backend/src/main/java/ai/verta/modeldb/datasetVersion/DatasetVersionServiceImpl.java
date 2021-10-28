@@ -1,6 +1,7 @@
 package ai.verta.modeldb.datasetVersion;
 
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.AddDatasetVersionAttributes;
@@ -48,6 +49,7 @@ import ai.verta.modeldb.versioning.FindRepositoriesBlobs;
 import ai.verta.modeldb.versioning.ListCommitsRequest;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -82,6 +84,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
   private final ArtifactStoreDAO artifactStoreDAO;
   private final MDBRoleService mdbRoleService;
   private final FutureEventDAO futureEventDAO;
+  private final boolean isEventSystemEnabled;
 
   public DatasetVersionServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
@@ -92,20 +95,25 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     this.metadataDAO = daoSet.metadataDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
     this.futureEventDAO = daoSet.futureEventDAO;
+    this.isEventSystemEnabled = serviceSet.app.mdbConfig.isEvent_system_enabled();
   }
 
   private void addEvent(
       String entityId,
-      Optional<String> datasetIdOptional,
-      long workspaceId,
+      String datasetId,
       String eventType,
       Optional<String> updatedField,
       Map<String, Object> extraFieldsMap,
       String eventMessage) {
+
+    if (!isEventSystemEnabled) {
+      return;
+    }
+
     // Add succeeded event in local DB
     JsonObject eventMetadata = new JsonObject();
     eventMetadata.addProperty("entity_id", entityId);
-    datasetIdOptional.ifPresent(datasetId -> eventMetadata.addProperty("dataset_id", datasetId));
+    eventMetadata.addProperty("dataset_id", datasetId);
     if (updatedField.isPresent() && !updatedField.get().isEmpty()) {
       eventMetadata.addProperty("updated_field", updatedField.get());
     }
@@ -122,8 +130,18 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       eventMetadata.add("updated_field_value", updatedFieldValue);
     }
     eventMetadata.addProperty("message", eventMessage);
+
+    GetResourcesResponseItem datasetResource =
+        mdbRoleService.getEntityResource(
+            Optional.of(datasetId),
+            Optional.empty(),
+            ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
+
     futureEventDAO.addLocalEventWithBlocking(
-        ModelDBServiceResourceTypes.DATASET_VERSION.name(), eventType, workspaceId, eventMetadata);
+        ModelDBServiceResourceTypes.DATASET_VERSION.name(),
+        eventType,
+        datasetResource.getWorkspaceId(),
+        eventMetadata);
   }
 
   private DatasetVersion getDatasetVersionFromRequest(
@@ -211,8 +229,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           datasetVersion.getId(),
-          Optional.of(datasetVersion.getDatasetId()),
-          authService.getWorkspaceIdFromUserInfo(userInfo),
+          datasetVersion.getDatasetId(),
           "add.resource.dataset_version.add_dataset_version_succeeded",
           Optional.empty(),
           Collections.emptyMap(),
@@ -339,8 +356,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           request.getId(),
-          Optional.of(request.getDatasetId()),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          request.getDatasetId(),
           DELETE_DATASET_VERSION_EVENT_TYPE,
           Optional.empty(),
           Collections.emptyMap(),
@@ -501,8 +517,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           datasetVersion.getId(),
-          Optional.of(datasetVersion.getDatasetId()),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          datasetVersion.getDatasetId(),
           UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("description"),
           Collections.emptyMap(),
@@ -553,8 +568,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           datasetVersion.getId(),
-          Optional.of(datasetVersion.getDatasetId()),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          datasetVersion.getDatasetId(),
           UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
@@ -619,8 +633,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
       addEvent(
           datasetVersion.getId(),
-          Optional.of(datasetVersion.getDatasetId()),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          datasetVersion.getDatasetId(),
           UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("tags"),
           extraField,
@@ -672,8 +685,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           updatedDatasetVersion.getId(),
-          Optional.of(updatedDatasetVersion.getDatasetId()),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          updatedDatasetVersion.getDatasetId(),
           UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -732,8 +744,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           updatedDatasetVersion.getId(),
-          Optional.of(updatedDatasetVersion.getDatasetId()),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          updatedDatasetVersion.getDatasetId(),
           UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -849,8 +860,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       }
       addEvent(
           updatedDatasetVersion.getId(),
-          Optional.of(updatedDatasetVersion.getDatasetId()),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          updatedDatasetVersion.getDatasetId(),
           UPDATE_DATASET_VERSION_EVENT_TYPE,
           Optional.of("attributes"),
           extraField,
@@ -886,12 +896,10 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       var response = DeleteDatasetVersions.Response.getDefaultInstance();
 
       // Add succeeded event in local DB
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
       for (String datasetVersionId : request.getIdsList()) {
         addEvent(
             datasetVersionId,
-            Optional.of(request.getDatasetId()),
-            authService.getWorkspaceIdFromUserInfo(userInfo),
+            request.getDatasetId(),
             DELETE_DATASET_VERSION_EVENT_TYPE,
             Optional.empty(),
             Collections.emptyMap(),
