@@ -1444,9 +1444,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       // Add succeeded event in local DB
       for (String projectId : deletedProjectIds) {
-        GetResourcesResponseItem projectResource =
-            mdbRoleService.getEntityResource(
-                Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
         addEvent(
             projectId,
             Optional.empty(),
