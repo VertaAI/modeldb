@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-import itertools
 import sys
 import time
 import json
@@ -26,12 +25,6 @@ from .update._strategies import (
     DirectUpdateStrategy,
     CanaryUpdateStrategy,
 )
-
-
-def merge_dicts(a, b):
-    result = a.copy()
-    result.update(b)
-    return result
 
 
 class Endpoint(object):
@@ -91,22 +84,33 @@ class Endpoint(object):
 
     @property
     def kafka_settings(self):
+        """Get the Kafka settings for this endpoint."""
         # NOTE: assumes endpoints only have one stage (true at time of writing)
         return self._get_kafka_settings(self._get_or_create_stage())
 
     @property
     def path(self):
+        """Get the HTTP path of this endpoint."""
         return self._path(Endpoint._get_json_by_id(self._conn, self.workspace, self.id))
 
     def get_current_build(self):
-        """
-        TODO: FILL ME IN
+        """Retrieve the currently deployed build for this endpoint.
+
+        May return None if no build has been deployed to this endpoint.
+
+        Returns
+        -------
+        :class:`verta.endpoint.Build` or None
+            A build object with an id and status.
         """
         production_stage = self._get_production_stage()
         components =  production_stage["components"]
-        build_id = next(itertools.imap(lambda component: component["build_id"], components),None)
-        build = self._get_build(build_id)
-        return build
+        build_id = next(six.moves.map(lambda component: component["build_id"], components),None)
+        if build_id:
+            build = self._get_build(build_id)
+            return build
+        else:
+            return None
 
     def _path(self, data):
         return data["creator_request"]["path"]
@@ -237,7 +241,6 @@ class Endpoint(object):
                 return endpoint
         return None
 
-    # TODO: update docstring here
     def update(
         self,
         model_reference,
@@ -249,15 +252,15 @@ class Endpoint(object):
         kafka_settings=None,
     ):
         """
-        Updates the endpoint with a model logged in an Experiment Run or a Model Version.
+        Update the endpoint with a model logged in an Experiment Run or a Model Version.
 
         .. versionadded:: 0.19.0
             The `kafka_settings` parameter.
 
         Parameters
         ----------
-        model_reference : :class:`~verta.tracking.entities.ExperimentRun` or :class:`~verta.registry.entities.RegisteredModelVersion`
-            An Experiment Run or a Model Version with a model logged.
+        model_reference : :class:`~verta.tracking.entities.ExperimentRun` or :class:`~verta.registry.entities.RegisteredModelVersion` or :class:`~verta.endpoint.Build`
+            An Experiment Run, Model Version with a model logged, or a Build.
         strategy : :mod:`~verta.endpoint.update`, default DirectUpdateStrategy()
             Strategy (direct or canary) for updating the endpoint.
         wait : bool, default False
@@ -348,8 +351,19 @@ class Endpoint(object):
         return self.get_status()
 
     def wait_for_build(self, polling_seconds=5, msg=None):
-        """
-        TODO: Fill me out.
+        """Poll the endpoint status API until a build completes successfully or with an error.
+
+        Parameters
+        ----------
+        polling_seconds : float, optional
+            Number of seconds to sleep in between API calls.
+        msg : str, optional
+            Progress string to print in between polling calls.
+
+        Returns
+        -------
+        :class:`~verta.endpoint.Build`
+            A completed build.
         """
         current_build = self.get_current_build()
         build_id = current_build.id
@@ -387,10 +401,10 @@ class Endpoint(object):
             )
 
         _utils.raise_for_http_error(response)
-        return Build.from_json(response.json())
+        return Build._from_json(response.json())
 
     def _get_or_create_stage(self, name="production"):
-        """Returns a stage id for compatibility reasons at the moment"""
+        """Return a stage id for compatibility reasons at the moment."""
         if name == "production":
             # Check if a stage exists:
             production_stage = self._get_production_stage()
@@ -494,7 +508,7 @@ class Endpoint(object):
     # TODO: add support for KafkaSettings to _update_from_dict (VR-12264)
     def update_from_config(self, filepath, wait=False):
         """
-        Updates the endpoint via a YAML or JSON config file.
+        Update the endpoint via a YAML or JSON config file.
 
         Parameters
         ----------
@@ -589,7 +603,7 @@ class Endpoint(object):
 
     def get_status(self):
         """
-        Gets status on the endpoint.
+        Get status of the endpoint.
 
         Returns
         -------
@@ -639,7 +653,7 @@ class Endpoint(object):
         return [item[1] for item in logs]
 
     def get_access_token(self):
-        """Gets an arbitrary access token of the endpoint.
+        """Get an arbitrary access token of the endpoint.
 
         Returns
         -------
@@ -650,7 +664,7 @@ class Endpoint(object):
         return tokens[0] if tokens else None
 
     def get_access_tokens(self):
-        """Returns all existing tokens of the endpoint.
+        """Return all existing tokens of the endpoint.
 
         Returns
         -------
@@ -674,7 +688,7 @@ class Endpoint(object):
 
     def create_access_token(self, token):
         """
-        Creates an access token for the endpoint.
+        Create an access token for the endpoint.
 
         Parameters
         ----------
@@ -697,10 +711,7 @@ class Endpoint(object):
 
     @staticmethod
     def _create_update_body(strategy, resources=None, autoscaling=None, env_vars=None):
-        """
-        Converts endpoint update/config util classes into a JSON-friendly dict.
-
-        """
+        """Convert endpoint config util classes into a JSON-friendly dict."""
         if not isinstance(strategy, _UpdateStrategy):
             raise TypeError(
                 "`strategy` must be an object from verta.endpoint.update._strategies"
@@ -744,7 +755,7 @@ class Endpoint(object):
 
     def get_deployed_model(self):
         """
-        Returns an object for making predictions against the deployed model.
+        Return an object for making predictions against the deployed model.
 
         Returns
         -------
@@ -770,7 +781,7 @@ class Endpoint(object):
 
     def get_update_status(self):
         """
-        Gets update status on the endpoint.
+        Get update status on the endpoint.
 
         Returns
         -------
@@ -797,13 +808,10 @@ class Endpoint(object):
         response = _utils.make_request("GET", url, self._conn)
 
         _utils.raise_for_http_error(response)
-        return Build.from_json(response.json())
+        return Build._from_json(response.json())
 
     def delete(self):
-        """
-        Deletes this endpoint.
-
-        """
+        """Delete this endpoint."""
         request_url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}".format(
             self._conn.scheme, self._conn.socket, self.workspace, self.id
         )
