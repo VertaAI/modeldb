@@ -478,6 +478,9 @@ class Endpoint(object):
         if not update_dict:
             raise ValueError("input file must be a json or yaml")
 
+        return self.update_from_dict(update_dict, wait=wait)
+
+    def update_from_dict(self, update_dict, wait=False):
         return self._update_from_dict(update_dict, wait=wait)
 
     def _update_from_dict(self, update_dict, wait=False):
