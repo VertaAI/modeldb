@@ -166,8 +166,7 @@ public abstract class CommonHibernateUtil {
     throw new ModelDBException("Unrecognized database " + rdbConfiguration.getRdbDialect());
   }
 
-  public static void changeCharsetToUtf(JdbcConnection jdbcCon,
-      RdbConfig rdbConfiguration)
+  public static void changeCharsetToUtf(JdbcConnection jdbcCon, RdbConfig rdbConfiguration)
       throws DatabaseException, SQLException {
     try (var stmt = jdbcCon.createStatement()) {
       String dbName = jdbcCon.getCatalog();
