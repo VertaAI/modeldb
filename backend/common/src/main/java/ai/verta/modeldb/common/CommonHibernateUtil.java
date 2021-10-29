@@ -166,16 +166,13 @@ public abstract class CommonHibernateUtil {
     throw new ModelDBException("Unrecognized database " + rdbConfiguration.getRdbDialect());
   }
 
-  public static void changeCharsetToUtf(JdbcConnection jdbcCon,
-      RdbConfig rdbConfiguration)
+  public static void changeCharsetToUtf(JdbcConnection jdbcCon, RdbConfig rdbConfiguration)
       throws DatabaseException, SQLException {
     try (var stmt = jdbcCon.createStatement()) {
       String dbName = jdbcCon.getCatalog();
       String sql;
       if (rdbConfiguration.isMssql()) {
-        sql =
-            String.format(
-                "ALTER DATABASE %s COLLATE Latin1_General_100_CI_AI_SC_UTF8;", dbName);
+        sql = String.format("ALTER DATABASE %s COLLATE Latin1_General_100_CI_AI_SC_UTF8;", dbName);
       } else {
         sql =
             String.format(
