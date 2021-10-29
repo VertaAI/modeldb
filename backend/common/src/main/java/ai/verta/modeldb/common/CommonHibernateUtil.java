@@ -166,13 +166,21 @@ public abstract class CommonHibernateUtil {
     throw new ModelDBException("Unrecognized database " + rdbConfiguration.getRdbDialect());
   }
 
-  public static void changeCharsetToUtf(JdbcConnection jdbcCon)
+  public static void changeCharsetToUtf(JdbcConnection jdbcCon,
+      RdbConfig rdbConfiguration)
       throws DatabaseException, SQLException {
     try (var stmt = jdbcCon.createStatement()) {
       String dbName = jdbcCon.getCatalog();
-      var sql =
-          String.format(
-              "ALTER DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
+      String sql;
+      if (rdbConfiguration.isMssql()) {
+        sql =
+            String.format(
+                "ALTER DATABASE %s COLLATE Latin1_General_100_CI_AI_SC_UTF8;", dbName);
+      } else {
+        sql =
+            String.format(
+                "ALTER DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
+      }
       int result = stmt.executeUpdate(sql);
       LOGGER.info("ALTER charset execute result: {}", result);
     }
@@ -329,13 +337,13 @@ public abstract class CommonHibernateUtil {
   public void createTablesLiquibaseMigration(
       DatabaseConfig config, String changeSetToRevertUntilTag, String liquibaseRootPath)
       throws LiquibaseException, SQLException, InterruptedException {
-    var rdb = config.getRdbConfiguration();
+    RdbConfig rdbConfiguration = config.getRdbConfiguration();
 
     // Get database connection
-    try (var con = getDBConnection(rdb)) {
+    try (var con = getDBConnection(rdbConfiguration)) {
       var jdbcCon = new JdbcConnection(con);
-      if (config.getRdbConfiguration().isMysql()) {
-        changeCharsetToUtf(jdbcCon);
+      if (rdbConfiguration.isMysql() || rdbConfiguration.isMssql()) {
+        changeCharsetToUtf(jdbcCon, config.getRdbConfiguration());
       }
 
       // Overwrite default liquibase table names by custom
