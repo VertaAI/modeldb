@@ -100,7 +100,7 @@ class Endpoint(object):
 
         Returns
         -------
-        :class:`verta.endpoint.Build` or None
+        :class:`~verta.endpoint.Build` or None
             A build object with an id and status.
         """
         production_stage = self._get_production_stage()

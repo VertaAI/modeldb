@@ -11,6 +11,7 @@ from ._endpoints import Endpoints
 
 documentation.reassign_module(
     [
+        Build,
         KafkaSettings,
         Endpoint,
         Endpoints,
