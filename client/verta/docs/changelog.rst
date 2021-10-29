@@ -37,6 +37,15 @@ Changelog
      (`# <>`__)
 
 
+v0.19.3 (2021-10-29)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add support for updating endpoints with existing builds
+  (`#2685 <https://github.com/VertaAI/modeldb/pull/2685>`__)
+
+
 v0.19.2 (2021-09-30)
 --------------------
 
