@@ -3,6 +3,7 @@ package ai.verta.modeldb.project;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.GetAttributes;
@@ -10,6 +11,7 @@ import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.UpdateProjectAttributes;
+import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -34,6 +36,7 @@ public class FutureProjectDAO {
   private final Executor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
+  private final boolean isMssql;
 
   private final AttributeHandler attributeHandler;
   private final TagsHandler tagsHandler;
@@ -42,6 +45,7 @@ public class FutureProjectDAO {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
+    this.isMssql = App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql();
 
     var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
@@ -222,11 +226,18 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String projectId, Long now) {
+      String greatestValueStr;
+      if (isMssql){
+          greatestValueStr = "(SELECT MAX(value) FROM (VALUES (date_updated),(:now)) AS maxvalues(value))";
+      } else {
+          greatestValueStr = "greatest(date_updated, :now)";
+      }
+
     return jdbi.useHandle(
         handle ->
             handle
                 .createUpdate(
-                    "update project set date_updated=greatest(date_updated, :now) where id=:project_id")
+                    String.format("update project set date_updated=%s where id=:project_id", greatestValueStr))
                 .bind("project_id", projectId)
                 .bind("now", now)
                 .execute());
