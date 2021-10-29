@@ -175,7 +175,7 @@ public abstract class CommonHibernateUtil {
       if (rdbConfiguration.isMssql()) {
         sql =
             String.format(
-                "ALTER DATABASE %s COLLATE Latin1_General_100_CI_AI_SC_UTF8;", dbName);
+                "ALTER DATABASE \"%s\" COLLATE Latin1_General_100_CI_AI_SC_UTF8;", dbName);
       } else {
         sql =
             String.format(
