@@ -45,6 +45,11 @@ New Features
 - add support for updating endpoints with existing builds
   (`#2685 <https://github.com/VertaAI/modeldb/pull/2685>`__)
 
+Enhancements
+^^^^^^^^^^^^
+- downgrade raw requirements warning to info
+  (`#2676 <https://github.com/VertaAI/modeldb/pull/2676>`__)
+
 
 v0.19.2 (2021-09-30)
 --------------------
