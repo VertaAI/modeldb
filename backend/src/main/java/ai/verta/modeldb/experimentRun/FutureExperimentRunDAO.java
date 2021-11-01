@@ -774,27 +774,21 @@ public class FutureExperimentRunDAO {
               localQueryContext.getBinds().add(q -> q.bind("deleted", false));
 
               if (!request.getProjectId().isEmpty()) {
-                localQueryContext
-                    .getConditions()
-                    .add("project_id=:request_project_id");
+                localQueryContext.getConditions().add("project_id=:request_project_id");
                 localQueryContext
                     .getBinds()
                     .add(q -> q.bind("request_project_id", request.getProjectId()));
               }
 
               if (!request.getExperimentId().isEmpty()) {
-                localQueryContext
-                    .getConditions()
-                    .add("experiment_id=:request_experiment_id");
+                localQueryContext.getConditions().add("experiment_id=:request_experiment_id");
                 localQueryContext
                     .getBinds()
                     .add(q -> q.bind("request_experiment_id", request.getExperimentId()));
               }
 
               if (!request.getExperimentRunIdsList().isEmpty()) {
-                localQueryContext
-                    .getConditions()
-                    .add("id in (<request_experiment_run_ids>)");
+                localQueryContext.getConditions().add("id in (<request_experiment_run_ids>)");
                 localQueryContext
                     .getBinds()
                     .add(
@@ -923,36 +917,22 @@ public class FutureExperimentRunDAO {
                                               var runBuilder =
                                                   ExperimentRun.newBuilder()
                                                       .setId(rs.getString("id"))
-                                                      .setProjectId(
-                                                          rs.getString("project_id"))
+                                                      .setProjectId(rs.getString("project_id"))
                                                       .setExperimentId(
-                                                          rs.getString(
-                                                              "experiment_id"))
+                                                          rs.getString("experiment_id"))
                                                       .setName(rs.getString("name"))
-                                                      .setDescription(
-                                                          rs.getString(
-                                                              "description"))
-                                                      .setDateUpdated(
-                                                          rs.getLong("date_updated"))
-                                                      .setDateCreated(
-                                                          rs.getLong("date_created"))
-                                                      .setStartTime(
-                                                          rs.getLong("start_time"))
-                                                      .setEndTime(
-                                                          rs.getLong("end_time"))
-                                                      .setOwner(
-                                                          rs.getString("owner"))
-                                                      .setCodeVersion(
-                                                          rs.getString(
-                                                              "code_version"))
-                                                      .setJobId(
-                                                          rs.getString("job_id"))
+                                                      .setDescription(rs.getString("description"))
+                                                      .setDateUpdated(rs.getLong("date_updated"))
+                                                      .setDateCreated(rs.getLong("date_created"))
+                                                      .setStartTime(rs.getLong("start_time"))
+                                                      .setEndTime(rs.getLong("end_time"))
+                                                      .setOwner(rs.getString("owner"))
+                                                      .setCodeVersion(rs.getString("code_version"))
+                                                      .setJobId(rs.getString("job_id"))
                                                       .setVersionNumber(
-                                                          rs.getLong(
-                                                              "version_number"));
+                                                          rs.getLong("version_number"));
 
-                                              var environment =
-                                                  rs.getString("environment");
+                                              var environment = rs.getString("environment");
                                               if (environment != null && !environment.isEmpty()) {
                                                 var environmentBlobBuilder =
                                                     EnvironmentBlob.newBuilder();

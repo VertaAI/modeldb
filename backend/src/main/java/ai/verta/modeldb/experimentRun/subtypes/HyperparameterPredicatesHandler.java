@@ -37,12 +37,13 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
       switch (value.getKindCase()) {
         case NUMBER_VALUE:
           sql += applyOperator(operator, colValue, ":" + valueBindingName);
-          if (App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()){
+          if (App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()) {
             queryContext =
-                    queryContext.addBind(q -> q.bind(valueBindingName, String.format("'%s'",value.getNumberValue())));
+                queryContext.addBind(
+                    q -> q.bind(valueBindingName, String.format("'%s'", value.getNumberValue())));
           } else {
             queryContext =
-                    queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
+                queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
           }
           break;
         case STRING_VALUE:

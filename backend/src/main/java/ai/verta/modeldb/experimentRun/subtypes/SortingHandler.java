@@ -21,8 +21,7 @@ public class SortingHandler {
       case "date_created":
       case "name":
         return InternalFuture.completedInternalFuture(
-            new QueryFilterContext()
-                .addOrderItem(new OrderColumn(key, ascending)));
+            new QueryFilterContext().addOrderItem(new OrderColumn(key, ascending)));
       default:
         // Do nothing
         break;

@@ -11,7 +11,6 @@ import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.UpdateProjectAttributes;
-import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -226,18 +225,21 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String projectId, Long now) {
-      String greatestValueStr;
-      if (isMssql){
-          greatestValueStr = "(SELECT MAX(value) FROM (VALUES (date_updated),(:now)) AS maxvalues(value))";
-      } else {
-          greatestValueStr = "greatest(date_updated, :now)";
-      }
+    String greatestValueStr;
+    if (isMssql) {
+      greatestValueStr =
+          "(SELECT MAX(value) FROM (VALUES (date_updated),(:now)) AS maxvalues(value))";
+    } else {
+      greatestValueStr = "greatest(date_updated, :now)";
+    }
 
     return jdbi.useHandle(
         handle ->
             handle
                 .createUpdate(
-                    String.format("update project set date_updated=%s where id=:project_id", greatestValueStr))
+                    String.format(
+                        "update project set date_updated=%s where id=:project_id",
+                        greatestValueStr))
                 .bind("project_id", projectId)
                 .bind("now", now)
                 .execute());
