@@ -854,7 +854,7 @@ public class FutureExperimentRunDAO {
                                       if (item.getValue().getTable() != null) {
                                         sql +=
                                             String.format(
-                                                " left join (%s) as join_table_%d on id=join_table_%d.id ",
+                                                " left join (%s) as join_table_%d on id=join_table_%d.runId ",
                                                 item.getValue().getTable(),
                                                 item.getIndex(),
                                                 item.getIndex());
@@ -905,7 +905,11 @@ public class FutureExperimentRunDAO {
                                       final var offset =
                                           (request.getPageNumber() - 1) * request.getPageLimit();
                                       final var limit = request.getPageLimit();
-                                      sql += " LIMIT :limit OFFSET :offset";
+                                      if (config.getDatabase().getRdbConfiguration().isMssql()) {
+                                        sql += " OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY ";
+                                      } else {
+                                        sql += " LIMIT :limit OFFSET :offset";
+                                      }
                                       queryContext.addBind(q -> q.bind("limit", limit));
                                       queryContext.addBind(q -> q.bind("offset", offset));
                                     }

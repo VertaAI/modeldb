@@ -2,6 +2,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.VersioningEntry;
@@ -286,11 +287,9 @@ public class VersionInputHandler {
           return jdbi.useHandle(
               handle -> {
                 var queryStr =
-                    "INSERT INTO versioning_modeldb_entity_mapping "
-                        + " (repository_id, \"commit\", versioning_key, versioning_location, entity_type, versioning_blob_type, blob_hash, "
-                        + entityIdReferenceColumn
-                        + ") "
-                        + " VALUES (:repository_id, :commit, :versioning_key, :versioning_location, :entity_type, :versioning_blob_type, :blob_hash, :entityId)";
+                    String.format("INSERT INTO versioning_modeldb_entity_mapping "
+                        + " (repository_id, %s, versioning_key, versioning_location, entity_type, versioning_blob_type, blob_hash, %s) "
+                        + " VALUES (:repository_id, :commit, :versioning_key, :versioning_location, :entity_type, :versioning_blob_type, :blob_hash, :entityId)", App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()? "\"commit\"" : "commit", entityIdReferenceColumn);
 
                 if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
                   Map<String, Object> keysAndParameterMap = new HashMap<>();
@@ -451,10 +450,12 @@ public class VersionInputHandler {
             handle ->
                 handle
                     .createQuery(
-                        "select vm.experiment_run_id, vm.repository_id, vm.\"commit\", vm.versioning_key, vm.versioning_location  "
-                            + " from versioning_modeldb_entity_mapping as vm "
-                            + " where vm.experiment_run_id in (<run_ids>) "
-                            + " and vm.entity_type = :entityType")
+                        String.format(
+                            "select vm.experiment_run_id, vm.repository_id, vm.%s, vm.versioning_key, vm.versioning_location  "
+                                + " from versioning_modeldb_entity_mapping as vm "
+                                + " where vm.experiment_run_id in (<run_ids>) "
+                                + " and vm.entity_type = :entityType",
+                            App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()? "\"commit\"" : "commit"))
                     .bindList("run_ids", runIds)
                     .bind("entityType", entity_type)
                     .map(
@@ -493,8 +494,7 @@ public class VersionInputHandler {
                 if (entryMap.containsKey(entry.getKey())) {
                   var versioningEntry = entryMap.get(entry.getKey());
                   versioningEntry =
-                      versioningEntry
-                          .toBuilder()
+                      versioningEntry.toBuilder()
                           .putAllKeyLocationMap(entry.getValue().getKeyLocationMapMap())
                           .build();
                   entryMap.put(entry.getKey(), versioningEntry);
