@@ -50,8 +50,6 @@ Backwards Incompatibilities
   (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
 - ``Python.read_pip_file()`` and ``Python.read_pip_environment()`` now include previously-unsupported lines rather than skipping them by default
   (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
-- restrict ``protobuf`` dependency version upper constraint from ``<4.0`` to ``<3.18``
-  (`#2633 <https://github.com/VertaAI/modeldb/pull/2633>`__)
 
 New Features
 ^^^^^^^^^^^^
@@ -105,7 +103,7 @@ New Features
 
 Bug Fixes
 ^^^^^^^^^
-- put upper constraint on `protobuf` version for Python 2 compatibility
+- restrict ``protobuf`` dependency version upper constraint from ``<4.0`` to ``<3.18`` `for Python 2 compatibility
   <https://github.com/protocolbuffers/protobuf/issues/8984>`__
   (`#2633 <https://github.com/VertaAI/modeldb/pull/2633>`__)
 
