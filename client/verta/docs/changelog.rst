@@ -45,13 +45,13 @@ Backwards Incompatibilities
 - validate `VertaModelBase.__init__()` parameter names in `RegisteredModel.create_standard_model()`
   (`#2570 <https://github.com/VertaAI/modeldb/pull/2570>`__)
 - remove `ExperimentRun.log_requirements()`
-  (#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
+  (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
 - remove `ExperimentRun.log_model_for_deployment()`
-  (#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
-- `Python.read_pip_file()` and `Python.read_pip_environment()` now include unsupported lines rather than skipping them by default
-  (#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
-- `restrict `protobuf` dependency version upper constraint from `<4.0` to `<3.18`
-  (#2633 <https://github.com/VertaAI/modeldb/pull/2633>`__)
+  (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
+- Python.read_pip_file()` and `Python.read_pip_environment()` now include unsupported lines rather than skipping them by default
+  (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
+- restrict `protobuf` dependency version upper constraint from `<4.0` to `<3.18`
+  (`#2633 <https://github.com/VertaAI/modeldb/pull/2633>`__)
 
 New Features
 ^^^^^^^^^^^^
