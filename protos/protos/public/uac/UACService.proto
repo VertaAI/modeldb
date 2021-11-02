@@ -122,6 +122,10 @@ message DeleteUser {
     }
 }
 
+message ChangeDevKeyForUser {
+    string user_id = 1;
+}
+
 service UACService {
 
     // Get the current user information verifying JWT token
@@ -151,6 +155,30 @@ service UACService {
     rpc deleteSecondaryDevKey(Empty) returns (UserInfo) {
         option (google.api.http) = {
             delete: "/v1/uac/deleteSecondaryDevKey"
+            body: "*"
+        };
+    };
+
+    // adds new user developer key
+    rpc addDevKeyForUser(ChangeDevKeyForUser) returns (UserInfo) {
+        option (google.api.http) = {
+            post: "/v1/uac/addDevKeyForUser"
+            body: "*"
+        };
+    };
+
+    // deletes primary developer key
+    rpc deletePrimaryDevKeyForUser(ChangeDevKeyForUser) returns (UserInfo) {
+        option (google.api.http) = {
+            delete: "/v1/uac/deletePrimaryDevKeyForUser"
+            body: "*"
+        };
+    };
+
+   // deletes primary developer key
+    rpc deleteSecondaryDevKeyForUser(ChangeDevKeyForUser) returns (UserInfo) {
+        option (google.api.http) = {
+            delete: "/v1/uac/deleteSecondaryDevKeyForUser"
             body: "*"
         };
     };
