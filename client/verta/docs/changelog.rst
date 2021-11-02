@@ -48,7 +48,7 @@ Backwards Incompatibilities
   (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
 - remove ``ExperimentRun.log_model_for_deployment()``
   (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
-- ``Python.read_pip_file()`` and ``Python.read_pip_environment()`` now include unsupported lines rather than skipping them by default
+- ``Python.read_pip_file()`` and ``Python.read_pip_environment()`` now include previously-unsupported lines rather than skipping them by default
   (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
 - restrict ``protobuf`` dependency version upper constraint from ``<4.0`` to ``<3.18``
   (`#2633 <https://github.com/VertaAI/modeldb/pull/2633>`__)
@@ -67,7 +67,7 @@ New Features
   (`#2636 <https://github.com/VertaAI/modeldb/pull/2636>`__)
 - support ``Docker`` in ``log_environment()``/``get_environment()``
   (`#2637 <https://github.com/VertaAI/modeldb/pull/2637>`__)
-- support logging model versions based on containers
+- add ``DockerImage`` and ``RegisteredModelVersion.log_docker()``
   (`#2641 <https://github.com/VertaAI/modeldb/pull/2641>`__)
 - add ``RegisteredModel.create_containerized_model()``
   (`#2648 <https://github.com/VertaAI/modeldb/pull/2648>`__)
