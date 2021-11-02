@@ -716,6 +716,9 @@
           "type": "string",
           "format": "uint64",
           "title": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
+        },
+        "description": {
+          "type": "string"
         }
       }
     },
