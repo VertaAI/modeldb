@@ -287,9 +287,14 @@ public class VersionInputHandler {
           return jdbi.useHandle(
               handle -> {
                 var queryStr =
-                    String.format("INSERT INTO versioning_modeldb_entity_mapping "
-                        + " (repository_id, %s, versioning_key, versioning_location, entity_type, versioning_blob_type, blob_hash, %s) "
-                        + " VALUES (:repository_id, :commit, :versioning_key, :versioning_location, :entity_type, :versioning_blob_type, :blob_hash, :entityId)", App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()? "\"commit\"" : "commit", entityIdReferenceColumn);
+                    String.format(
+                        "INSERT INTO versioning_modeldb_entity_mapping "
+                            + " (repository_id, %s, versioning_key, versioning_location, entity_type, versioning_blob_type, blob_hash, %s) "
+                            + " VALUES (:repository_id, :commit, :versioning_key, :versioning_location, :entity_type, :versioning_blob_type, :blob_hash, :entityId)",
+                        App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()
+                            ? "\"commit\""
+                            : "commit",
+                        entityIdReferenceColumn);
 
                 if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
                   Map<String, Object> keysAndParameterMap = new HashMap<>();
@@ -455,7 +460,13 @@ public class VersionInputHandler {
                                 + " from versioning_modeldb_entity_mapping as vm "
                                 + " where vm.experiment_run_id in (<run_ids>) "
                                 + " and vm.entity_type = :entityType",
-                            App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()? "\"commit\"" : "commit"))
+                            App.getInstance()
+                                    .mdbConfig
+                                    .getDatabase()
+                                    .getRdbConfiguration()
+                                    .isMssql()
+                                ? "\"commit\""
+                                : "commit"))
                     .bindList("run_ids", runIds)
                     .bind("entityType", entity_type)
                     .map(
@@ -494,7 +505,8 @@ public class VersionInputHandler {
                 if (entryMap.containsKey(entry.getKey())) {
                   var versioningEntry = entryMap.get(entry.getKey());
                   versioningEntry =
-                      versioningEntry.toBuilder()
+                      versioningEntry
+                          .toBuilder()
                           .putAllKeyLocationMap(entry.getValue().getKeyLocationMapMap())
                           .build();
                   entryMap.put(entry.getKey(), versioningEntry);

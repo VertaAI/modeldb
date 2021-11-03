@@ -719,7 +719,8 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isPostgres()) {
+        var dbConfig = App.getInstance().mdbConfig.getDatabase().getRdbConfiguration();
+        if (dbConfig.isPostgres() || dbConfig.isMssql()) {
           if (stringColumn) {
 
             return getOperatorPredicate(
