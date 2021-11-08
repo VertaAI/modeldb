@@ -15,6 +15,7 @@ public class ArtifactPartEntity implements Serializable {
 
   public static final int EXP_RUN_ARTIFACT = 0;
   public static final int VERSION_BLOB_ARTIFACT = 1;
+  public static final int PROJECT_ARTIFACT = 2;
 
   public ArtifactPartEntity() {}
 

@@ -7,16 +7,22 @@ import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.UpdateProjectAttributes;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
+import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
+import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.uac.Action;
 import ai.verta.uac.IsSelfAllowed;
@@ -37,8 +43,14 @@ public class FutureProjectDAO {
 
   private final AttributeHandler attributeHandler;
   private final TagsHandler tagsHandler;
+  private final ArtifactHandler artifactHandler;
 
-  public FutureProjectDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
+  public FutureProjectDAO(
+      Executor executor,
+      FutureJdbi jdbi,
+      UAC uac,
+      ArtifactStoreDAO artifactStoreDAO,
+      DatasetVersionDAO datasetVersionDAO) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -46,6 +58,17 @@ public class FutureProjectDAO {
     var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
     tagsHandler = new TagsHandler(executor, jdbi, entityName);
+    CodeVersionHandler codeVersionHandler = new CodeVersionHandler(executor, jdbi, "project");
+    DatasetHandler datasetHandler = new DatasetHandler(executor, jdbi, entityName);
+    artifactHandler =
+        new ArtifactHandler(
+            executor,
+            jdbi,
+            entityName,
+            codeVersionHandler,
+            datasetHandler,
+            artifactStoreDAO,
+            datasetVersionDAO);
   }
 
   public InternalFuture<Void> deleteAttributes(DeleteProjectAttributes request) {
@@ -288,5 +311,21 @@ public class FutureProjectDAO {
                           .one();
                     }),
             executor);
+  }
+
+  public InternalFuture<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
+    final var projectId = request.getId();
+
+    InternalFuture<Void> permissionCheck;
+    if (request.getMethod().equalsIgnoreCase("get")) {
+      permissionCheck =
+          checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ);
+    } else {
+      permissionCheck =
+          checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+    }
+
+    return permissionCheck.thenCompose(
+        unused -> artifactHandler.getUrlForArtifact(request), executor);
   }
 }
