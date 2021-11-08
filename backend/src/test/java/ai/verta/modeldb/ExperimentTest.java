@@ -1714,7 +1714,7 @@ public class ExperimentTest extends TestsInit {
   }
 
   @Test
-  public void deleteExperiments() {
+  public void deleteExperiments() throws InterruptedException {
     LOGGER.info("Batch Delete Experiment test start................................");
 
     ExperimentRunTest experimentRunTest = new ExperimentRunTest();

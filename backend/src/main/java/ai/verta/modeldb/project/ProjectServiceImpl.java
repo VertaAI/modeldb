@@ -7,6 +7,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddProjectAttributes;
 import ai.verta.modeldb.AddProjectTag;
 import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.CreateProject;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.DeepCopyProject;
@@ -1432,17 +1433,19 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
           DeleteProjects.Response.newBuilder().setStatus(!deletedProjectIds.isEmpty()).build();
 
       // Add succeeded event in local DB
-      for (String projectId : deletedProjectIds) {
-        GetResourcesResponseItem projectResource =
-            mdbRoleService.getEntityResource(
-                Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
-        addEvent(
-            projectId,
-            projectResource.getWorkspaceId(),
-            DELETE_PROJECT_EVENT_TYPE,
-            Optional.empty(),
-            Collections.emptyMap(),
-            "project deleted successfully");
+      if (App.getInstance().mdbConfig.isEvent_system_enabled()) {
+        for (String projectId : deletedProjectIds) {
+          GetResourcesResponseItem projectResource =
+              mdbRoleService.getEntityResource(
+                  Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
+          addEvent(
+              projectId,
+              projectResource.getWorkspaceId(),
+              DELETE_PROJECT_EVENT_TYPE,
+              Optional.empty(),
+              Collections.emptyMap(),
+              "project deleted successfully");
+        }
       }
       responseObserver.onNext(response);
       responseObserver.onCompleted();

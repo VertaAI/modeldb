@@ -161,7 +161,7 @@ public class TestsInit {
   }
 
   @AfterClass
-  public static void removeServerAndService() {
+  public static void removeServerAndService() throws InterruptedException {
     App.initiateShutdown(0);
 
     cleanUpResources();
@@ -170,12 +170,14 @@ public class TestsInit {
     serverBuilder.build().shutdownNow();
   }
 
-  protected static void cleanUpResources() {
+  protected static void cleanUpResources() throws InterruptedException {
     // Remove all entities
     // removeEntities();
     // Delete entities by cron job
     ReconcilerInitializer.softDeleteProjects.resync();
+    Thread.sleep(5000);
     ReconcilerInitializer.softDeleteExperiments.resync();
+    Thread.sleep(5000);
     ReconcilerInitializer.softDeleteExperimentRuns.resync();
     ReconcilerInitializer.softDeleteDatasets.resync();
     ReconcilerInitializer.softDeleteRepositories.resync();

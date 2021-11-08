@@ -2034,9 +2034,8 @@ public class ProjectTest extends TestsInit {
   }
 
   @Test
-  public void y_projectCascadeDeleteTest() {
+  public void y_projectCascadeDeleteTest() throws InterruptedException {
     LOGGER.info("Project delete with cascading test start................................");
-    try {
       cleanUpResources();
 
       ExperimentRunTest experimentRunTest = new ExperimentRunTest();
@@ -2387,12 +2386,6 @@ public class ProjectTest extends TestsInit {
           }
         }
       }
-
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.info("Error Code : " + status.getCode() + " Error : " + status.getDescription());
-      fail();
-    }
 
     LOGGER.info("Project delete with cascading test stop................................");
   }
