@@ -3189,7 +3189,7 @@ public class HydratedServiceTest extends TestsInit {
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
 
-      deleteEntitiesCron.run();
+      cleanUpResources();
     }
 
     LOGGER.info("Check collaborator has delete action test stop.........");

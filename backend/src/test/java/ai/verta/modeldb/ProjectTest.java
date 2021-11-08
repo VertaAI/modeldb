@@ -2037,7 +2037,7 @@ public class ProjectTest extends TestsInit {
   public void y_projectCascadeDeleteTest() {
     LOGGER.info("Project delete with cascading test start................................");
     try {
-      deleteEntitiesCron.run();
+      cleanUpResources();
 
       ExperimentRunTest experimentRunTest = new ExperimentRunTest();
 
@@ -2141,9 +2141,7 @@ public class ProjectTest extends TestsInit {
 
       // Delete entities by cron job
       // 3 calls to ensure all P, E and ER are deleted.
-      deleteEntitiesCron.run();
-      deleteEntitiesCron.run();
-      deleteEntitiesCron.run();
+      cleanUpResources();
 
       // Start cross-checking of deleted the project all data from DB from here.
       try {
@@ -2313,9 +2311,7 @@ public class ProjectTest extends TestsInit {
       }
 
       // Delete entities by cron job
-      deleteEntitiesCron.run();
-      deleteEntitiesCron.run();
-      deleteEntitiesCron.run();
+      cleanUpResources();
 
       for (String projectId : projectIds) {
         // Start cross-checking of deleted the project all data from DB from here.

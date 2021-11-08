@@ -1805,8 +1805,7 @@ public class ExperimentTest extends TestsInit {
     assertTrue(response.getStatus());
 
     // Delete entities by cron job
-    deleteEntitiesCron.run();
-    deleteEntitiesCron.run();
+    cleanUpResources();
 
     for (String experimentId : experimentIds) {
 

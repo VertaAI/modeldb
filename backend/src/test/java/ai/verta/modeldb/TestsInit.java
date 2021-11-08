@@ -31,7 +31,6 @@ public class TestsInit {
   protected static AuthClientInterceptor authClientInterceptor;
 
   protected static TestConfig testConfig;
-  protected static DeleteEntitiesCron deleteEntitiesCron;
   protected static AuthService authService;
   protected static Executor handleExecutor;
   protected static ServiceSet services;
@@ -105,8 +104,6 @@ public class TestsInit {
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(services.authService, services.mdbRoleService, 1000);
 
     if (testConfig.getAuthService() != null) {
       ManagedChannel authServiceChannel =
@@ -168,12 +165,20 @@ public class TestsInit {
   public static void removeServerAndService() {
     App.initiateShutdown(0);
 
-    // Remove all entities
-    // removeEntities();
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
+    cleanUpResources();
 
     // shutdown test server
     serverBuilder.build().shutdownNow();
+  }
+
+  protected static void cleanUpResources() {
+    // Remove all entities
+    // removeEntities();
+    // Delete entities by cron job
+    ReconcilerInitializer.softDeleteProjects.resync();
+    ReconcilerInitializer.softDeleteExperiments.resync();
+    ReconcilerInitializer.softDeleteExperimentRuns.resync();
+    ReconcilerInitializer.softDeleteDatasets.resync();
+    ReconcilerInitializer.softDeleteRepositories.resync();
   }
 }
