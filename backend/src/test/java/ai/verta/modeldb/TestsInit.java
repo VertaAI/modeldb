@@ -8,7 +8,6 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
