@@ -7,16 +7,14 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.Value;
-import java.math.BigDecimal;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
@@ -182,19 +180,9 @@ public class KeyValueHandler {
             + ") "
             + "values (:entity_name, :field_type, :key, :value, :type, :entity_id)";
     try (var queryHandler = handle.createUpdate(queryString)) {
-      String value = ModelDBUtils.getStringFromProtoObject(kv.getValue());
-      // Logic to convert canonical number to double number
-      if (kv.getValue().hasNumberValue()) {
-        value = BigDecimal.valueOf(kv.getValue().getNumberValue()).toPlainString();
-      } else if (kv.getValue().hasStringValue()
-          && NumberUtils.isCreatable(kv.getValue().getStringValue().trim())) {
-        value =
-            BigDecimal.valueOf(Double.parseDouble(kv.getValue().getStringValue().trim()))
-                .toPlainString();
-      }
       queryHandler
           .bind(KEY_QUERY_PARAM, kv.getKey())
-          .bind(VALUE_QUERY_PARAM, value)
+          .bind(VALUE_QUERY_PARAM, RdbmsUtils.getValueForKeyValueTable(kv))
           .bind(TYPE_QUERY_PARAM, kv.getValueTypeValue())
           .bind(ENTITY_ID_PARAM_QUERY, entityId)
           .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
@@ -255,19 +243,6 @@ public class KeyValueHandler {
                     jdbi.useHandle(
                         handle -> {
                           if (exists) {
-                            String value = ModelDBUtils.getStringFromProtoObject(kv.getValue());
-                            // Logic to convert canonical number to double number
-                            if (kv.getValue().hasNumberValue()) {
-                              value =
-                                  BigDecimal.valueOf(kv.getValue().getNumberValue())
-                                      .toPlainString();
-                            } else if (kv.getValue().hasStringValue()
-                                && NumberUtils.isCreatable(kv.getValue().getStringValue().trim())) {
-                              value =
-                                  BigDecimal.valueOf(
-                                          Double.parseDouble(kv.getValue().getStringValue().trim()))
-                                      .toPlainString();
-                            }
                             handle
                                 .createUpdate(
                                     String.format(
@@ -275,7 +250,7 @@ public class KeyValueHandler {
                                             + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
                                         getTableName(), entityIdReferenceColumn))
                                 .bind(KEY_QUERY_PARAM, kv.getKey())
-                                .bind(VALUE_QUERY_PARAM, value)
+                                .bind(VALUE_QUERY_PARAM, RdbmsUtils.getValueForKeyValueTable(kv))
                                 .bind(TYPE_QUERY_PARAM, kv.getValueTypeValue())
                                 .bind(ENTITY_ID_PARAM_QUERY, entityId)
                                 .bind(FIELD_TYPE_QUERY_PARAM, fieldType)

@@ -1,13 +1,11 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.common.KeyValue;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
 import java.io.Serializable;
-import java.math.BigDecimal;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,7 +16,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,22 +29,7 @@ public class KeyValueEntity implements Serializable {
 
   public KeyValueEntity(Object entity, String fieldType, KeyValue keyValue) {
     setKey(keyValue.getKey());
-    if (App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()) {
-      // Logic to convert canonical number to double number
-      if (keyValue.getValue().hasNumberValue()) {
-        setValue(BigDecimal.valueOf(keyValue.getValue().getNumberValue()).toPlainString());
-      } else if (keyValue.getValue().hasStringValue()
-          && StringUtils.isNumeric(keyValue.getValue().getStringValue())) {
-        setValue(
-            BigDecimal.valueOf(Double.parseDouble(keyValue.getValue().getStringValue()))
-                .toPlainString());
-      } else {
-        setValue(ModelDBUtils.getStringFromProtoObject(keyValue.getValue()));
-      }
-    } else {
-      setValue(ModelDBUtils.getStringFromProtoObject(keyValue.getValue()));
-    }
-    setValue(ModelDBUtils.getStringFromProtoObject(keyValue.getValue()));
+    setValue(RdbmsUtils.getValueForKeyValueTable(keyValue));
     setValue_type(keyValue.getValueTypeValue());
 
     if (entity instanceof ProjectEntity) {
