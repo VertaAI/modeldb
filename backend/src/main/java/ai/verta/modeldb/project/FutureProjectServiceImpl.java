@@ -5,6 +5,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddProjectAttributes;
 import ai.verta.modeldb.AddProjectTag;
 import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.CreateProject;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.DeepCopyProject;
@@ -77,6 +78,11 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       Optional<String> updatedField,
       Map<String, Object> extraFieldsMap,
       String eventMessage) {
+
+    if (!App.getInstance().mdbConfig.isEvent_system_enabled()) {
+      return InternalFuture.completedInternalFuture(null);
+    }
+
     // Add succeeded event in local DB
     JsonObject eventMetadata = new JsonObject();
     eventMetadata.addProperty("entity_id", entityId);
