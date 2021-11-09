@@ -81,7 +81,6 @@ public class TestsInit {
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     testConfig = TestConfig.getInstance();
-    System.out.println("Config: " + new Gson().toJsonTree(testConfig));
     handleExecutor = FutureGrpc.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
     // Initialize services that we depend on
     services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);

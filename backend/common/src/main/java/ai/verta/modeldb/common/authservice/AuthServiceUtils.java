@@ -254,7 +254,6 @@ public class AuthServiceUtils implements AuthService {
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       return workspace;
     } catch (StatusRuntimeException ex) {
-      ex.printStackTrace();
       return (Workspace)
           CommonUtils.retryOrThrowException(
               ex,
