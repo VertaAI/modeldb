@@ -17,6 +17,7 @@ import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.OrganizationServiceGrpc;
 import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.UACServiceGrpc;
+import com.google.gson.Gson;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
@@ -80,6 +81,7 @@ public class TestsInit {
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     testConfig = TestConfig.getInstance();
+    System.out.println("Config: " + new Gson().toJsonTree(testConfig));
     handleExecutor = FutureGrpc.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
     // Initialize services that we depend on
     services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
