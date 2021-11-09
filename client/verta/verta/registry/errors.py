@@ -15,4 +15,4 @@ class CustomModelError(Exception):
     def __init__(self, http_code, message):
         self.http_code = http_code
         self.message = message
-        super().__init__(self.message)
+        super(CustomModelError, self).__init__(self.message)
