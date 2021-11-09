@@ -17,7 +17,6 @@ import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.OrganizationServiceGrpc;
 import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.UACServiceGrpc;
-import com.google.gson.Gson;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
