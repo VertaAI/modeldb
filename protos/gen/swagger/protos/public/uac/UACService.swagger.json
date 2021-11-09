@@ -44,6 +44,39 @@
         ]
       }
     },
+    "/uac/addDevKeyForUser": {
+      "post": {
+        "summary": "adds new user developer key",
+        "operationId": "UACService_addDevKeyForUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacUserInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacChangeDevKeyForUser"
+            }
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
     "/uac/createUser": {
       "post": {
         "summary": "For now, any user can create a new user",
@@ -110,6 +143,39 @@
         ]
       }
     },
+    "/uac/deletePrimaryDevKeyForUser": {
+      "delete": {
+        "summary": "deletes primary developer key",
+        "operationId": "UACService_deletePrimaryDevKeyForUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacUserInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacChangeDevKeyForUser"
+            }
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
     "/uac/deleteSecondaryDevKey": {
       "delete": {
         "summary": "deletes secondary developer key",
@@ -135,6 +201,39 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/uacEmpty"
+            }
+          }
+        ],
+        "tags": [
+          "UACService"
+        ]
+      }
+    },
+    "/uac/deleteSecondaryDevKeyForUser": {
+      "delete": {
+        "summary": "deletes primary developer key",
+        "operationId": "UACService_deleteSecondaryDevKeyForUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacUserInfo"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacChangeDevKeyForUser"
             }
           }
         ],
@@ -391,6 +490,14 @@
         }
       }
     },
+    "uacChangeDevKeyForUser": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        }
+      }
+    },
     "uacCreateUser": {
       "type": "object",
       "properties": {
@@ -609,6 +716,9 @@
           "type": "string",
           "format": "uint64",
           "title": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
+        },
+        "description": {
+          "type": "string"
         }
       }
     },

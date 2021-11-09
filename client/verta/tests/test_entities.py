@@ -360,6 +360,7 @@ class TestExperimentRun:
         _utils.raise_for_http_error(response)
         assert response.json().get('tags', []) == [TAG]
 
+    @pytest.mark.skip(reason="backend bug (VR-13087); un-skip with VR-13088")
     def test_clone(self, experiment_run):
         expt_run = experiment_run
         expt_run._conf.use_git = False
@@ -370,28 +371,26 @@ class TestExperimentRun:
         expt_run.log_artifact("my-artifact", "README.md")
         expt_run.log_code()
 
-        # set various things in the run
-        new_run_no_art = expt_run.clone()
+        # clone run
+        new_run = expt_run.clone()
+        expt_run._fetch_with_no_cache()
+        new_run._fetch_with_no_cache()
 
-        old_run_msg = expt_run._get_proto_by_id(expt_run._conn, expt_run.id)
-        new_run_no_art_msg = new_run_no_art._get_proto_by_id(new_run_no_art._conn, new_run_no_art.id)
+        assert expt_run.id != new_run.id
 
-        # ensure basic data is the same
-        assert expt_run.id != new_run_no_art_msg.id
-        assert old_run_msg.description == new_run_no_art_msg.description
-        assert old_run_msg.tags == new_run_no_art_msg.tags
-        assert old_run_msg.metrics == new_run_no_art_msg.metrics
-        assert old_run_msg.hyperparameters == new_run_no_art_msg.hyperparameters
-        assert old_run_msg.observations == new_run_no_art_msg.observations
-        assert old_run_msg.artifacts == new_run_no_art_msg.artifacts
+        # check data matches
+        assert expt_run._msg.description == new_run._msg.description
+        assert expt_run._msg.tags == new_run._msg.tags
+        assert expt_run._msg.metrics == new_run._msg.metrics
+        assert expt_run._msg.hyperparameters == new_run._msg.hyperparameters
+        assert expt_run._msg.observations == new_run._msg.observations
+        assert expt_run._msg.artifacts == new_run._msg.artifacts
 
-
+    @pytest.mark.skip(reason="backend bug (VR-13087); un-skip with VR-13088")
     def test_clone_into_expt(self, client):
         expt1 = client.set_experiment()
-
         expt2 = client.set_experiment()
         assert expt1.id != expt2.id  # of course, but just to be sure
-
         old_run = client.set_experiment_run()
         assert old_run._msg.experiment_id == expt2.id  # of course, but just to be sure
 
@@ -401,20 +400,21 @@ class TestExperimentRun:
         old_run.log_attributes({"attr1" : 10, "attr2" : {"abc": 1}})
         old_run.log_artifact("my-artifact", "README.md")
 
+        # clone run
         new_run = old_run.clone(experiment_id=expt1.id)
+        old_run._fetch_with_no_cache()
+        new_run._fetch_with_no_cache()
 
-        old_run_msg = old_run._get_proto_by_id(old_run._conn, old_run.id)
-        new_run_msg = new_run._get_proto_by_id(new_run._conn, new_run.id)
+        assert old_run.id != new_run.id
+        assert new_run._msg.experiment_id == expt1.id
 
-        assert old_run_msg.id != new_run_msg.id
-        assert new_run_msg.experiment_id == expt1.id
-
-        assert old_run_msg.description == new_run_msg.description
-        assert old_run_msg.tags == new_run_msg.tags
-        assert old_run_msg.metrics == new_run_msg.metrics
-        assert old_run_msg.hyperparameters == new_run_msg.hyperparameters
-        assert old_run_msg.observations == new_run_msg.observations
-        assert old_run_msg.artifacts == new_run_msg.artifacts
+        # check data matches
+        assert old_run._msg.description == new_run._msg.description
+        assert old_run._msg.tags == new_run._msg.tags
+        assert old_run._msg.metrics == new_run._msg.metrics
+        assert old_run._msg.hyperparameters == new_run._msg.hyperparameters
+        assert old_run._msg.observations == new_run._msg.observations
+        assert old_run._msg.artifacts == new_run._msg.artifacts
 
     def test_log_attribute_overwrite(self, client):
         initial_attrs = {"str-attr": "attr", "int-attr": 4, "float-attr": 0.5}

@@ -32,7 +32,7 @@ setup(
         "protobuf>=3.8, <3.18",
         "pytimeparse>=1.1.8, <2.0",
         "pyyaml>=5.1, <5.4",
-        "requests>=2.21, <3.0",
+        "requests>=2.21, <3.0"
     ],
     entry_points={
         "console_scripts": [

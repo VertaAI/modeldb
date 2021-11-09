@@ -506,7 +506,9 @@
               "ROLE_SERVICE",
               "AUTHZ_SERVICE",
               "MODELDB_SERVICE",
-              "DEPLOYMENT_SERVICE"
+              "DEPLOYMENT_SERVICE",
+              "REGISTRY_SERVICE",
+              "MONITORING_SERVICE"
             ],
             "default": "UNKNOWN"
           },
@@ -575,7 +577,9 @@
               "WORKSPACE",
               "USER",
               "SERVICE_ACCOUNT",
-              "CONTAINER_REGISTRY_CONFIGURATION"
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "STAGE",
+              "PROFILER"
             ],
             "default": "UNKNOWN"
           },
@@ -628,7 +632,9 @@
               "ROLE_SERVICE",
               "AUTHZ_SERVICE",
               "MODELDB_SERVICE",
-              "DEPLOYMENT_SERVICE"
+              "DEPLOYMENT_SERVICE",
+              "REGISTRY_SERVICE",
+              "MONITORING_SERVICE"
             ],
             "default": "UNKNOWN"
           },
@@ -709,7 +715,9 @@
               "WORKSPACE",
               "USER",
               "SERVICE_ACCOUNT",
-              "CONTAINER_REGISTRY_CONFIGURATION"
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "STAGE",
+              "PROFILER"
             ],
             "default": "UNKNOWN"
           },
@@ -782,7 +790,9 @@
               "ROLE_SERVICE",
               "AUTHZ_SERVICE",
               "MODELDB_SERVICE",
-              "DEPLOYMENT_SERVICE"
+              "DEPLOYMENT_SERVICE",
+              "REGISTRY_SERVICE",
+              "MONITORING_SERVICE"
             ],
             "default": "UNKNOWN"
           },
@@ -863,7 +873,9 @@
               "WORKSPACE",
               "USER",
               "SERVICE_ACCOUNT",
-              "CONTAINER_REGISTRY_CONFIGURATION"
+              "CONTAINER_REGISTRY_CONFIGURATION",
+              "STAGE",
+              "PROFILER"
             ],
             "default": "UNKNOWN"
           },
@@ -1378,7 +1390,8 @@
         "DELETE",
         "READ_SECRETS",
         "CREATE_SERVICE_ACCOUNT",
-        "CREATE_CONTAINER_REGISTRY"
+        "CREATE_CONTAINER_REGISTRY",
+        "CREATE_WEBHOOK"
       ],
       "default": "UNKNOWN"
     },
@@ -1513,7 +1526,9 @@
         "WORKSPACE",
         "USER",
         "SERVICE_ACCOUNT",
-        "CONTAINER_REGISTRY_CONFIGURATION"
+        "CONTAINER_REGISTRY_CONFIGURATION",
+        "STAGE",
+        "PROFILER"
       ],
       "default": "UNKNOWN"
     },
@@ -1560,7 +1575,9 @@
         "ROLE_SERVICE",
         "AUTHZ_SERVICE",
         "MODELDB_SERVICE",
-        "DEPLOYMENT_SERVICE"
+        "DEPLOYMENT_SERVICE",
+        "REGISTRY_SERVICE",
+        "MONITORING_SERVICE"
       ],
       "default": "UNKNOWN"
     },
@@ -2191,6 +2208,9 @@
           "type": "string",
           "format": "uint64",
           "title": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
+        },
+        "description": {
+          "type": "string"
         }
       }
     }

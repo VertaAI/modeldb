@@ -39,6 +39,7 @@ public abstract class Config {
   private SpringServerConfig springServer;
   private ServiceUserConfig service_user;
   private int jdbi_retry_time = 100; // Time in ms
+  private boolean event_system_enabled = false;
 
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
@@ -171,5 +172,9 @@ public abstract class Config {
 
   public int getJdbi_retry_time() {
     return jdbi_retry_time;
+  }
+
+  public boolean isEvent_system_enabled() {
+    return event_system_enabled;
   }
 }

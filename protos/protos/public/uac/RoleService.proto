@@ -18,6 +18,8 @@ message ServiceEnum {
         AUTHZ_SERVICE = 3;
         MODELDB_SERVICE = 4;
         DEPLOYMENT_SERVICE = 5;
+        REGISTRY_SERVICE = 6;
+        MONITORING_SERVICE = 7;
     }
 };
 
@@ -47,6 +49,7 @@ message AuthzActionEnum {
         READ_SECRETS = 8;
         CREATE_SERVICE_ACCOUNT = 9;
         CREATE_CONTAINER_REGISTRY = 10;
+        CREATE_WEBHOOK = 11;
     }
 
 };

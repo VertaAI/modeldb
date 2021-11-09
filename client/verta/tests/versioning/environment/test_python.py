@@ -221,7 +221,7 @@ class TestRawRequirements:
 
         # each line gets logged raw
         for req in reqs:
-            with caplog.at_level(logging.WARNING, logger="verta"):
+            with caplog.at_level(logging.INFO, logger="verta"):
                 env = Python(requirements=[req])
 
             assert "failed to manually parse requirements; falling back to capturing raw contents" in caplog.text
@@ -267,7 +267,7 @@ class TestRawConstraints:
 
         # each line gets logged raw
         for constraint in constraints:
-            with caplog.at_level(logging.WARNING, logger="verta"):
+            with caplog.at_level(logging.INFO, logger="verta"):
                 env = Python(requirements=[], constraints=[constraint])
 
             assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text
@@ -283,7 +283,7 @@ class TestRawConstraints:
         self, requirements_file_without_versions, caplog
     ):
         constraints = Python.read_pip_file(requirements_file_without_versions.name)
-        with caplog.at_level(logging.WARNING, logger="verta"):
+        with caplog.at_level(logging.INFO, logger="verta"):
             env = Python(requirements=[], constraints=constraints)
 
         assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text

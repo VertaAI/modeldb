@@ -10,6 +10,7 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -25,18 +26,30 @@ import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentRunServiceImpl.class);
+  protected static final String DELETE_EXPERIMENT_RUN_EVENT_TYPE =
+      "delete.resource.experiment_run.delete_experiment_run_succeeded";
+  protected final String UPDATE_EVENT_TYPE =
+      "update.resource.experiment_run.update_experiment_run_succeeded";
+  protected final String ADD_EVENT_TYPE =
+      "add.resource.experiment_run.add_experiment_run_succeeded";
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
   private final ExperimentRunDAO experimentRunDAO;
@@ -46,6 +59,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   private final DatasetVersionDAO datasetVersionDAO;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
+  private final FutureEventDAO futureEventDAO;
 
   public ExperimentRunServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
@@ -57,6 +71,43 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     this.datasetVersionDAO = daoSet.datasetVersionDAO;
     this.commitDAO = daoSet.commitDAO;
     this.repositoryDAO = daoSet.repositoryDAO;
+    this.futureEventDAO = daoSet.futureEventDAO;
+  }
+
+  private void addEvent(
+      String entityId,
+      Optional<String> experimentId,
+      String projectId,
+      long workspaceId,
+      String eventType,
+      Optional<String> updatedField,
+      Map<String, Object> extraFieldsMap,
+      String eventMessage) {
+    // Add succeeded event in local DB
+    JsonObject eventMetadata = new JsonObject();
+    eventMetadata.addProperty("entity_id", entityId);
+    if (experimentId.isPresent() && !experimentId.get().isEmpty()) {
+      eventMetadata.addProperty("experiment_id", experimentId.get());
+    }
+    eventMetadata.addProperty("project_id", projectId);
+    if (updatedField.isPresent() && !updatedField.get().isEmpty()) {
+      eventMetadata.addProperty("updated_field", updatedField.get());
+    }
+    if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
+      JsonObject updatedFieldValue = new JsonObject();
+      extraFieldsMap.forEach(
+          (key, value) -> {
+            if (value instanceof JsonElement) {
+              updatedFieldValue.add(key, (JsonElement) value);
+            } else {
+              updatedFieldValue.addProperty(key, String.valueOf(value));
+            }
+          });
+      eventMetadata.add("updated_field_value", updatedFieldValue);
+    }
+    eventMetadata.addProperty("message", eventMessage);
+    futureEventDAO.addLocalEventWithBlocking(
+        ModelDBServiceResourceTypes.EXPERIMENT_RUN.name(), eventType, workspaceId, eventMetadata);
   }
 
   private void validateExperimentEntity(String experimentId) {
@@ -163,6 +214,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRun = experimentRunDAO.insertExperimentRun(projectDAO, experimentRun, userInfo);
       var response =
           CreateExperimentRun.Response.newBuilder().setExperimentRun(experimentRun).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          experimentRun.getId(),
+          Optional.of(experimentRun.getExperimentId()),
+          experimentRun.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(userInfo),
+          ADD_EVENT_TYPE,
+          Optional.empty(),
+          Collections.emptyMap(),
+          "experiment_run added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -186,6 +249,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           experimentRunDAO.deleteExperimentRuns(Collections.singletonList(request.getId()));
       var response =
           DeleteExperimentRun.Response.newBuilder().setStatus(!deletedRunIds.isEmpty()).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          DELETE_EXPERIMENT_RUN_EVENT_TYPE,
+          Optional.empty(),
+          Collections.emptyMap(),
+          "experiment_run deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -403,6 +478,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           UpdateExperimentRunDescription.Response.newBuilder()
               .setExperimentRun(updatedExperimentRun)
               .build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperimentRun.getId(),
+          Optional.of(updatedExperimentRun.getExperimentId()),
+          updatedExperimentRun.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("description"),
+          Collections.emptyMap(),
+          "experiment_run description updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -430,6 +517,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.updateExperimentRunName(
           request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
       var response = UpdateExperimentRunName.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("name"),
+          Collections.singletonMap("name", request.getName()),
+          "experiment_run name updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -468,6 +567,22 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
       var response =
           AddExperimentRunTags.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperimentRun.getId(),
+          Optional.of(updatedExperimentRun.getExperimentId()),
+          updatedExperimentRun.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run tags added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -506,6 +621,23 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
       var response =
           AddExperimentRunTag.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperimentRun.getId(),
+          Optional.of(updatedExperimentRun.getExperimentId()),
+          updatedExperimentRun.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getTag()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run tags added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -570,6 +702,28 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           DeleteExperimentRunTags.Response.newBuilder()
               .setExperimentRun(updatedExperimentRun)
               .build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraFieldValue = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraFieldValue.put("tags_deleted_all", true);
+      } else {
+        extraFieldValue.put(
+            "tags",
+            new Gson()
+                .toJsonTree(
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          updatedExperimentRun.getId(),
+          Optional.of(updatedExperimentRun.getExperimentId()),
+          updatedExperimentRun.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          extraFieldValue,
+          "experiment_run tags deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -610,6 +764,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           DeleteExperimentRunTag.Response.newBuilder()
               .setExperimentRun(updatedExperimentRun)
               .build();
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperimentRun.getId(),
+          Optional.of(updatedExperimentRun.getExperimentId()),
+          updatedExperimentRun.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getTag()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run tag deleted successfully");
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -646,6 +815,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.addExperimentRunAttributes(request.getId(), request.getAttributesList());
       var response = AddExperimentRunAttributes.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getAttributesList().stream()
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run attributes added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -685,6 +873,29 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.deleteExperimentRunAttributes(
           request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
       var response = DeleteExperimentRunAttributes.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraFieldValue = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraFieldValue.put("attributes_deleted_all", true);
+      } else {
+        extraFieldValue.put(
+            "attribute_keys",
+            new Gson()
+                .toJsonTree(
+                    request.getAttributeKeysList(),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("attributes"),
+          extraFieldValue,
+          "experiment_run attributes deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -722,6 +933,30 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.logObservations(
           request.getId(), Collections.singletonList(request.getObservation()));
       var response = LogObservation.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      Set<String> keys =
+          Stream.of(request.getObservation())
+              .map(
+                  observation -> {
+                    if (observation.hasAttribute()) {
+                      return observation.getAttribute().getKey();
+                    }
+                    return observation.getArtifact().getKey();
+                  })
+              .collect(Collectors.toSet());
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("observations"),
+          Collections.singletonMap(
+              "observation_keys",
+              new Gson().toJsonTree(keys, new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run observations added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -754,6 +989,30 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logObservations(request.getId(), request.getObservationsList());
       var response = LogObservations.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      Set<String> keys =
+          request.getObservationsList().stream()
+              .map(
+                  observation -> {
+                    if (observation.hasAttribute()) {
+                      return observation.getAttribute().getKey();
+                    }
+                    return observation.getArtifact().getKey();
+                  })
+              .collect(Collectors.toSet());
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("observations"),
+          Collections.singletonMap(
+              "observation_keys",
+              new Gson().toJsonTree(keys, new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run observations added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -820,6 +1079,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logMetrics(request.getId(), Collections.singletonList(request.getMetric()));
       var response = LogMetric.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("metrics"),
+          Collections.singletonMap(
+              "metric_keys",
+              new Gson()
+                  .toJsonTree(
+                      Stream.of(request.getMetric())
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run metrics added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -851,6 +1129,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logMetrics(request.getId(), request.getMetricsList());
       var response = LogMetrics.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("metrics"),
+          Collections.singletonMap(
+              "metric_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getMetricsList().stream()
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run metrics added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1067,6 +1364,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logArtifacts(request.getId(), Collections.singletonList(artifact));
       var response = LogArtifact.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("artifacts"),
+          Collections.singletonMap(
+              "artifact_keys",
+              new Gson()
+                  .toJsonTree(
+                      Stream.of(request.getArtifact())
+                          .map(Artifact::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run artifacts added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1102,6 +1418,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logArtifacts(request.getId(), artifactList);
       var response = LogArtifacts.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("artifacts"),
+          Collections.singletonMap(
+              "artifact_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getArtifactsList().stream()
+                          .map(Artifact::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run artifacts added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1178,6 +1513,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
         }
       }
       var response = LogExperimentRunCodeVersion.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("code_version"),
+          Collections.emptyMap(),
+          "experiment_run code_version added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1247,6 +1594,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.logHyperparameters(
           request.getId(), Collections.singletonList(request.getHyperparameter()));
       var response = LogHyperparameter.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("hyperparameters"),
+          Collections.singletonMap(
+              "hyperparameter_keys",
+              new Gson()
+                  .toJsonTree(
+                      Stream.of(request.getHyperparameter())
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run hyperparameter added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1281,6 +1647,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logHyperparameters(request.getId(), request.getHyperparametersList());
       var response = LogHyperparameters.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("hyperparameters"),
+          Collections.singletonMap(
+              "hyperparameter_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getHyperparametersList().stream()
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run hyperparameters added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1343,7 +1728,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.logAttributes(
           request.getId(), Collections.singletonList(request.getAttribute()));
       var response = LogAttribute.Response.newBuilder().build();
-      LOGGER.info("Auditing complete, creating response.");
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      Stream.of(request.getAttribute())
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run attributes added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1376,6 +1779,25 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logAttributes(request.getId(), request.getAttributesList());
       var response = LogAttributes.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getAttributesList().stream()
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment_run attributes added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1550,6 +1972,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logJobId(request.getId(), request.getJobId());
       var response = LogJobId.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("job"),
+          Collections.emptyMap(),
+          "experiment_run job added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1659,6 +2093,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.setParentExperimentRunId(
           request.getExperimentRunId(), request.getParentId());
       var response = SetParentExperimentRunId.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getExperimentRunId(),
+          Optional.empty(),
+          parentExperimentRunProjectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("parent_id"),
+          Collections.singletonMap("parent_id", request.getParentId()),
+          "experiment_run parent_id added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1694,6 +2140,31 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.logDatasets(
           request.getId(), Collections.singletonList(dataset), request.getOverwrite());
       var response = LogDataset.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraFieldValue = new HashMap<>();
+      if (request.getOverwrite()) {
+        extraFieldValue.put("datasets_overwrite_all", true);
+      } else {
+        extraFieldValue.put(
+            "dataset_keys",
+            new Gson()
+                .toJsonTree(
+                    Stream.of(request.getDataset())
+                        .map(Artifact::getKey)
+                        .collect(Collectors.toSet()),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("datasets"),
+          extraFieldValue,
+          "experiment_run datasets added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1723,6 +2194,31 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.logDatasets(
           request.getId(), request.getDatasetsList(), request.getOverwrite());
       var response = LogDatasets.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraFieldValue = new HashMap<>();
+      if (request.getOverwrite()) {
+        extraFieldValue.put("datasets_overwrite_all", true);
+      } else {
+        extraFieldValue.put(
+            "dataset_keys",
+            new Gson()
+                .toJsonTree(
+                    request.getDatasetsList().stream()
+                        .map(Artifact::getKey)
+                        .collect(Collectors.toSet()),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("datasets"),
+          extraFieldValue,
+          "experiment_run datasets added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1755,6 +2251,23 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.deleteArtifacts(request.getId(), request.getKey());
       var response = DeleteArtifact.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("artifacts"),
+          Collections.singletonMap(
+              "artifact_keys",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getKey()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment artifact deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1781,6 +2294,21 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           DeleteExperimentRuns.Response.newBuilder()
               .setStatus(!deleteExperimentRunsIds.isEmpty())
               .build();
+
+      // Add succeeded event in local DB
+      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      for (String experimentRunId : deleteExperimentRunsIds) {
+        addEvent(
+            experimentRunId,
+            Optional.empty(),
+            projectIdsMap.get(experimentRunId),
+            authService.getWorkspaceIdFromUserInfo(userInfo),
+            DELETE_EXPERIMENT_RUN_EVENT_TYPE,
+            Optional.empty(),
+            Collections.emptyMap(),
+            "experiment_run deleted successfully");
+      }
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1811,6 +2339,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
       experimentRunDAO.logVersionedInput(request);
       var response = LogVersionedInput.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("version_input"),
+          Collections.emptyMap(),
+          "experiment version_input added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1957,6 +2497,29 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getDeleteAll(),
           ModelDBConstants.HYPERPARAMETERS);
       var response = DeleteHyperparameters.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraFieldValue = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraFieldValue.put("hyperparameters_deleted_all", true);
+      } else {
+        extraFieldValue.put(
+            "hyperparameter_keys",
+            new Gson()
+                .toJsonTree(
+                    request.getHyperparameterKeysList(),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("hyperparameters"),
+          extraFieldValue,
+          "experiment_run hyperparameters deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -1988,6 +2551,28 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getDeleteAll(),
           ModelDBConstants.METRICS);
       var response = DeleteMetrics.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraFieldValue = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraFieldValue.put("metrics_deleted_all", true);
+      } else {
+        extraFieldValue.put(
+            "metric_keys",
+            new Gson()
+                .toJsonTree(
+                    request.getMetricKeysList(), new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("metrics"),
+          extraFieldValue,
+          "experiment_run metrics deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2015,6 +2600,29 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       experimentRunDAO.deleteExperimentRunObservationsEntities(
           request.getId(), request.getObservationKeysList(), request.getDeleteAll());
       var response = DeleteObservations.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraFieldValue = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraFieldValue.put("observations_deleted_all", true);
+      } else {
+        extraFieldValue.put(
+            "observation_keys",
+            new Gson()
+                .toJsonTree(
+                    request.getObservationKeysList(),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("observations"),
+          extraFieldValue,
+          "experiment_run observations deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2109,6 +2717,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           experimentRunDAO.cloneExperimentRun(
               projectDAO, request, authService.getCurrentLoginUserInfo());
       var response = CloneExperimentRun.Response.newBuilder().setRun(clonedExperimentRun).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          clonedExperimentRun.getId(),
+          Optional.of(clonedExperimentRun.getExperimentId()),
+          clonedExperimentRun.getProjectId(),
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          ADD_EVENT_TYPE,
+          Optional.empty(),
+          Collections.emptyMap(),
+          "experiment_run cloned successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -2132,6 +2752,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       experimentRunDAO.logEnvironment(request.getId(), request.getEnvironment());
       var response = LogEnvironment.Response.newBuilder().build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          Optional.empty(),
+          projectId,
+          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
+          UPDATE_EVENT_TYPE,
+          Optional.of("environment"),
+          Collections.emptyMap(),
+          "experiment_run environment added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {

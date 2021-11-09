@@ -5,6 +5,7 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
+import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.TrialConfig;
@@ -25,6 +26,7 @@ import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.*;
+import ai.verta.uac.ServiceEnum;
 import java.util.concurrent.Executor;
 
 public class DAOSet {
@@ -42,6 +44,7 @@ public class DAOSet {
   public MetadataDAO metadataDAO;
   public ProjectDAO projectDAO;
   public RepositoryDAO repositoryDAO;
+  public FutureEventDAO futureEventDAO;
 
   public static DAOSet fromServices(
       ServiceSet services,
@@ -71,7 +74,6 @@ public class DAOSet {
     set.projectDAO =
         new ProjectDAORdbImpl(
             services.authService, services.mdbRoleService, set.experimentDAO, set.experimentRunDAO);
-    set.futureProjectDAO = new FutureProjectDAO(executor, jdbi, services.uac);
     if (services.artifactStoreService != null) {
       set.artifactStoreDAO = new ArtifactStoreDAORdbImpl(services.artifactStoreService, mdbConfig);
     } else {
@@ -84,6 +86,9 @@ public class DAOSet {
     set.datasetVersionDAO =
         new DatasetVersionDAORdbImpl(services.authService, services.mdbRoleService);
 
+    set.futureProjectDAO =
+        new FutureProjectDAO(
+            executor, jdbi, services.uac, set.artifactStoreDAO, set.datasetVersionDAO);
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(
             executor,
@@ -96,6 +101,8 @@ public class DAOSet {
             set.repositoryDAO,
             set.commitDAO,
             set.blobDAO);
+    set.futureEventDAO =
+        new FutureEventDAO(executor, jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
 
     return set;
   }
