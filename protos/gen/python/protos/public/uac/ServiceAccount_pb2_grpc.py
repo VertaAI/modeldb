@@ -30,6 +30,11 @@ class ServiceAccountServiceStub(object):
         request_serializer=uac_dot_ServiceAccount__pb2.DeleteServiceAccountRequest.SerializeToString,
         response_deserializer=uac_dot_UACService__pb2.Empty.FromString,
         )
+    self.updateServiceAccount = channel.unary_unary(
+        '/ai.verta.uac.ServiceAccountService/updateServiceAccount',
+        request_serializer=uac_dot_ServiceAccount__pb2.UpdateServiceAccountRequest.SerializeToString,
+        response_deserializer=uac_dot_ServiceAccount__pb2.ServiceAccount.FromString,
+        )
 
 
 class ServiceAccountServiceServicer(object):
@@ -57,6 +62,13 @@ class ServiceAccountServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def updateServiceAccount(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_ServiceAccountServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -74,6 +86,11 @@ def add_ServiceAccountServiceServicer_to_server(servicer, server):
           servicer.deleteServiceAccount,
           request_deserializer=uac_dot_ServiceAccount__pb2.DeleteServiceAccountRequest.FromString,
           response_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
+      ),
+      'updateServiceAccount': grpc.unary_unary_rpc_method_handler(
+          servicer.updateServiceAccount,
+          request_deserializer=uac_dot_ServiceAccount__pb2.UpdateServiceAccountRequest.FromString,
+          response_serializer=uac_dot_ServiceAccount__pb2.ServiceAccount.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
