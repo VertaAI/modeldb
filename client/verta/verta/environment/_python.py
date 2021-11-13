@@ -20,12 +20,6 @@ from . import _environment
 logger = logging.getLogger(__name__)
 
 
-_DEFAULT_SKIP_NON_PYPI_PACKAGES = [
-    _pip_requirements_utils.SPACY_MODEL_PATTERN,
-    "anaconda-client",
-]
-
-
 class Python(_environment._Environment):
     """Capture metadata about Python, installed packages, and system environment variables.
 
@@ -76,6 +70,11 @@ class Python(_environment._Environment):
             apt_packages=["python3-opencv"]
         )
     """
+
+    DEFAULT_EXCLUDED_PACKAGES = [
+        _pip_requirements_utils.SPACY_MODEL_PATTERN,
+        "anaconda-client",
+    ]
 
     def __init__(
         self,
@@ -355,7 +354,7 @@ class Python(_environment._Environment):
     @staticmethod
     def read_pip_environment(
         skip_options=False,
-        skip_non_pypi_packages=_DEFAULT_SKIP_NON_PYPI_PACKAGES,
+        exclude=DEFAULT_EXCLUDED_PACKAGES,
     ):
         """Read package versions from pip into a list.
 
@@ -369,7 +368,7 @@ class Python(_environment._Environment):
         ----------
         skip_options : bool, default False
             Whether to omit lines with advanced pip options.
-        skip_non_pypi_packages : list of str, default spaCy models and "anaconda-client"
+        exclude : list of str, default spaCy models and "anaconda-client"
             Regex patterns for packages to omit. Certain tools, such as conda
             and spaCy, install items into the pip environment that can't be
             installed from PyPI when a model is deployed in Verta.
@@ -393,10 +392,10 @@ class Python(_environment._Environment):
             requirements = _pip_requirements_utils.clean_reqs_file_lines(
                 requirements,
             )
-        if skip_non_pypi_packages:
+        if exclude:
             requirements = _pip_requirements_utils.remove_pinned_requirements(
                 requirements,
-                skip_non_pypi_packages,
+                exclude,
             )
 
         return requirements
