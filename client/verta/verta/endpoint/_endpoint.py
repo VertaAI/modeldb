@@ -105,7 +105,8 @@ class Endpoint(object):
         """
         production_stage = self._get_production_stage()
         components =  production_stage["components"]
-        build_id = next(six.moves.map(lambda component: component["build_id"], components),None)
+        # Note: the line below triggers a spurious and incorrect pylint error
+        build_id = next(six.moves.map(lambda component: component["build_id"], components),None) # pylint: disable=no-member
         if build_id:
             build = self._get_build(build_id)
             return build
