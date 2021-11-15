@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.query;
 
+import ai.verta.modeldb.common.config.DatabaseConfig;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -92,7 +93,15 @@ public class QueryFilterContext {
     return pageLimit * pageIndex;
   }
 
-  public String getLimitString() {
+  public String getLimitString(DatabaseConfig databaseConfig) {
+    if (databaseConfig.getRdbConfiguration().isMssql()) {
+      return getMSSQLLimitAndOffset();
+    } else {
+      return getMySQLLimitAndOffset();
+    }
+  }
+
+  private String getMySQLLimitAndOffset() {
     return pageSize
         .map(
             size -> {
@@ -107,6 +116,27 @@ public class QueryFilterContext {
                           })
                       .orElse("");
             })
+        .orElse("");
+  }
+
+  private String getMSSQLLimitAndOffset() {
+    if (pageSize.isPresent() && pageSize.get() == 0) {
+      return "";
+    }
+    return pageSize
+        .map(
+            size ->
+                pageNumber
+                        .map(
+                            number -> {
+                              final var pageIndex = calculatePageIndex(number);
+                              final var offset = calculateOffset(pageIndex, size);
+                              return " OFFSET " + offset;
+                            })
+                        .orElse("")
+                    + " ROWS FETCH NEXT "
+                    + size
+                    + " ROWS ONLY")
         .orElse("");
   }
 }
