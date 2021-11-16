@@ -39,7 +39,7 @@ public class UpdateExperimentTimestampReconcile
               .setFetchSize(config.getMaxSync())
               .map(
                   (rs, ctx) -> {
-                    var experimentId = rs.getString("expr.experiment_id");
+                    var experimentId = rs.getString("experiment_id");
                     var maxUpdatedDate = rs.getLong("max_date");
                     this.insert(new AbstractMap.SimpleEntry<>(experimentId, maxUpdatedDate));
                     return rs;

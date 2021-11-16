@@ -27,12 +27,14 @@ import ai.verta.uac.Workspace;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.*;
 import javax.persistence.criteria.CriteriaBuilder.Trimspec;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -719,7 +721,8 @@ public class RdbmsUtils {
         //            		builder.function("DECIMAL", BigDecimal.class,
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
-        if (App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isPostgres()) {
+        var dbConfig = App.getInstance().mdbConfig.getDatabase().getRdbConfiguration();
+        if (dbConfig.isPostgres() || dbConfig.isMssql()) {
           if (stringColumn) {
 
             return getOperatorPredicate(
@@ -2236,5 +2239,17 @@ public class RdbmsUtils {
             }
           });
     }
+  }
+
+  public static String getValueForKeyValueTable(KeyValue kv) {
+    // Logic to convert canonical number to double number
+    if (kv.getValue().hasNumberValue()) {
+      return BigDecimal.valueOf(kv.getValue().getNumberValue()).toPlainString();
+    } else if (kv.getValue().hasStringValue()
+        && NumberUtils.isCreatable(kv.getValue().getStringValue().trim())) {
+      return BigDecimal.valueOf(Double.parseDouble(kv.getValue().getStringValue().trim()))
+          .toPlainString();
+    }
+    return ModelDBUtils.getStringFromProtoObject(kv.getValue());
   }
 }

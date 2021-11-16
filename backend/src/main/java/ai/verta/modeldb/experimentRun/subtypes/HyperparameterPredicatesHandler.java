@@ -2,7 +2,6 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.exceptions.UnimplementedException;
@@ -36,15 +35,9 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
     try {
       switch (value.getKindCase()) {
         case NUMBER_VALUE:
-          sql += applyOperator(operator, colValue, ":" + valueBindingName);
-          if (App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()) {
-            queryContext =
-                queryContext.addBind(
-                    q -> q.bind(valueBindingName, String.format("'%s'", value.getNumberValue())));
-          } else {
-            queryContext =
-                queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
-          }
+          sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+          queryContext =
+              queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
           break;
         case STRING_VALUE:
           sql += applyOperator(operator, colValue, ":" + valueBindingName);
