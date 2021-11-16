@@ -43,7 +43,6 @@ import io.prometheus.jmx.JmxCollector;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -221,75 +220,81 @@ public class App implements ApplicationContextAware {
 
               Map<String, Map<String, Set<String>>> tableWiseIndexesMap = new HashMap<>();
               handle
-                      .createQuery(
-                              "SELECT\n"
-                                      + "     ix.name as [indexName],\n"
-                                      + "     tab.name as [tableName],\n"
-                                      + "     COL_NAME(ix.object_id, ixc.column_id) as [columnName]\n"
-                                      + "FROM\n"
-                                      + "     sys.indexes ix \n"
-                                      + "INNER JOIN\n"
-                                      + "     sys.index_columns ixc \n"
-                                      + "        ON  ix.object_id = ixc.object_id \n"
-                                      + "        and ix.index_id = ixc.index_id\n"
-                                      + "INNER JOIN\n"
-                                      + "     sys.tables tab \n"
-                                      + "        ON ix.object_id = tab.object_id \n"
-                                      + "WHERE\n"
-                                      + "     ix.is_primary_key = 0          /* Remove Primary Keys */\n"
-                                      + "     AND ix.is_unique = 0           /* Remove Unique Keys */\n"
-                                      + "     AND ix.is_unique_constraint = 0 /* Remove Unique Constraints */\n"
-                                      + "     AND tab.is_ms_shipped = 0      /* Remove SQL Server Default Tables */\n"
-                                      + "ORDER BY\n"
-                                      + "    ix.name, tab.name")
-                      .map(
-                              (rs, ctx) -> {
-                                var tableName = rs.getString("tableName");
-                                var indexName = rs.getString("indexName");
-                                var columnName = rs.getString("columnName");
+                  .createQuery(
+                      "SELECT\n"
+                          + "     ix.name as [indexName],\n"
+                          + "     tab.name as [tableName],\n"
+                          + "     COL_NAME(ix.object_id, ixc.column_id) as [columnName]\n"
+                          + "FROM\n"
+                          + "     sys.indexes ix \n"
+                          + "INNER JOIN\n"
+                          + "     sys.index_columns ixc \n"
+                          + "        ON  ix.object_id = ixc.object_id \n"
+                          + "        and ix.index_id = ixc.index_id\n"
+                          + "INNER JOIN\n"
+                          + "     sys.tables tab \n"
+                          + "        ON ix.object_id = tab.object_id \n"
+                          + "WHERE\n"
+                          + "     ix.is_primary_key = 0          /* Remove Primary Keys */\n"
+                          + "     AND ix.is_unique = 0           /* Remove Unique Keys */\n"
+                          + "     AND ix.is_unique_constraint = 0 /* Remove Unique Constraints */\n"
+                          + "     AND tab.is_ms_shipped = 0      /* Remove SQL Server Default Tables */\n"
+                          + "ORDER BY\n"
+                          + "    ix.name, tab.name")
+                  .map(
+                      (rs, ctx) -> {
+                        var tableName = rs.getString("tableName");
+                        var indexName = rs.getString("indexName");
+                        var columnName = rs.getString("columnName");
 
-                                if (tableName.equals("commit")){
-                                  tableName = "\"commit\"";
-                                }
+                        if (tableName.equals("commit")) {
+                          tableName = "\"commit\"";
+                        }
 
-                                Map<String, Set<String>> indexesMap = tableWiseIndexesMap.get(tableName);
-                                if (indexesMap == null) {
-                                  indexesMap = new HashMap<>();
-                                }
-                                Set<String> indexColumns = indexesMap.get(indexName);
-                                if (indexColumns == null) {
-                                  indexColumns = new HashSet<>();
-                                }
-                                indexColumns.add(columnName);
-                                indexesMap.put(indexName, indexColumns);
-                                tableWiseIndexesMap.put(tableName, indexesMap);
-                                return rs;
-                              })
-                      .list();
+                        Map<String, Set<String>> indexesMap = tableWiseIndexesMap.get(tableName);
+                        if (indexesMap == null) {
+                          indexesMap = new HashMap<>();
+                        }
+                        Set<String> indexColumns = indexesMap.get(indexName);
+                        if (indexColumns == null) {
+                          indexColumns = new HashSet<>();
+                        }
+                        indexColumns.add(columnName);
+                        indexesMap.put(indexName, indexColumns);
+                        tableWiseIndexesMap.put(tableName, indexesMap);
+                        return rs;
+                      })
+                  .list();
 
               for (Map.Entry<String, Map<String, Set<String>>> tableIndexesMap :
-                      tableWiseIndexesMap.entrySet()) {
+                  tableWiseIndexesMap.entrySet()) {
                 for (Map.Entry<String, Set<String>> indexesMap :
-                        tableIndexesMap.getValue().entrySet()) {
+                    tableIndexesMap.getValue().entrySet()) {
                   handle
-                          .createUpdate(String.format(
-                                  "IF EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
-                                          + "BEGIN "
-                                          + "DROP INDEX %s ON %s "
-                                          + "END", indexesMap.getKey(), indexesMap.getKey(), tableIndexesMap.getKey()))
-                          .execute();
+                      .createUpdate(
+                          String.format(
+                              "IF EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
+                                  + "BEGIN "
+                                  + "DROP INDEX %s ON %s "
+                                  + "END",
+                              indexesMap.getKey(), indexesMap.getKey(), tableIndexesMap.getKey()))
+                      .execute();
                 }
               }
 
               for (Map<String, Object> result : returnResults) {
                 String dataType = "nvarchar(255)";
-                var maxLength = result.get("max_length").equals("-1") ? "" : "("+ result.get("max_length")+")";
+                var maxLength =
+                    result.get("max_length").equals("-1")
+                        ? ""
+                        : "(" + result.get("max_length") + ")";
                 if (result.get("data_type").equals("varchar")
-                        && !result.get("max_length").equals("-1")) {
+                    && !result.get("max_length").equals("-1")) {
                   dataType = "nvarchar" + maxLength;
                 } else if (result.get("data_type").equals("char")) {
                   dataType = "nchar" + maxLength;
-                } else if (result.get("data_type").equals("text") || result.get("max_length").equals("-1")) {
+                } else if (result.get("data_type").equals("text")
+                    || result.get("max_length").equals("-1")) {
                   dataType = "ntext";
                 }
 
@@ -302,24 +307,25 @@ public class App implements ApplicationContextAware {
               }
 
               for (Map.Entry<String, Map<String, Set<String>>> tableIndexesMap :
-                      tableWiseIndexesMap.entrySet()) {
+                  tableWiseIndexesMap.entrySet()) {
                 for (Map.Entry<String, Set<String>> indexesMap :
-                        tableIndexesMap.getValue().entrySet()) {
+                    tableIndexesMap.getValue().entrySet()) {
                   handle
-                          .createUpdate(
-                                  "IF EXISTS (SELECT * FROM sys.indexes WHERE name = :indexName) "
-                                          + "BEGIN "
-                                          + "CREATE NONCLUSTERED INDEX :indexName "
-                                          + "ON :tableName "
-                                          + "INCLUDE (<columns>) "
-                                          + "END")
-                          .bind("indexName", indexesMap.getKey())
-                          .bind("tableName", tableIndexesMap.getKey())
-                          .bind("columns", indexesMap.getValue())
-                          .execute();
+                      .createUpdate(
+                          "IF EXISTS (SELECT * FROM sys.indexes WHERE name = :indexName) "
+                              + "BEGIN "
+                              + "CREATE NONCLUSTERED INDEX :indexName "
+                              + "ON :tableName "
+                              + "INCLUDE (<columns>) "
+                              + "END")
+                      .bind("indexName", indexesMap.getKey())
+                      .bind("tableName", tableIndexesMap.getKey())
+                      .bind("columns", indexesMap.getValue())
+                      .execute();
                 }
               }
-            }).get();
+            })
+        .get();
   }
 
   public static void main(String[] args) {
