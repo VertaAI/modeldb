@@ -15,6 +15,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.S3KeyFunction;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.VersioningUtils;
+import io.grpc.Status;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -35,6 +36,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
   private final DatasetVersionDAO datasetVersionDAO;
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
+  private final int artifactEntityType;
 
   public ArtifactHandler(
       Executor executor,
@@ -49,6 +51,14 @@ public class ArtifactHandler extends ArtifactHandlerBase {
     this.datasetHandler = datasetHandler;
     this.datasetVersionDAO = datasetVersionDAO;
     this.artifactStoreDAO = artifactStoreDAO;
+
+    if (entityName.equals("ProjectEntity")) {
+      this.artifactEntityType = ArtifactPartEntity.PROJECT_ARTIFACT;
+    } else if (entityName.equals("ExperimentRunEntity")) {
+      this.artifactEntityType = ArtifactPartEntity.EXP_RUN_ARTIFACT;
+    } else {
+      throw new ModelDBException("Invalid entity type for ArtifactPart", Status.Code.INTERNAL);
+    }
   }
 
   public InternalFuture<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
@@ -69,12 +79,12 @@ public class ArtifactHandler extends ArtifactHandlerBase {
         .thenCompose(
             unused -> {
               final InternalFuture<Map.Entry<String, String>> urlInfo;
-              String errorMessage = null;
+              String errorMessage;
 
               /*Process code*/
               if (request.getArtifactType() == ArtifactTypeEnum.ArtifactType.CODE) {
                 errorMessage =
-                    "Code versioning artifact not found at experimentRun, experiment and project level";
+                    String.format("Code versioning artifact not found at %s level", entityName);
                 urlInfo =
                     getUrlForCode(request)
                         .thenApply(s3Key -> new AbstractMap.SimpleEntry<>(s3Key, null), executor);
@@ -83,13 +93,15 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                 urlInfo = getUrlForData(request);
               } else {
                 errorMessage =
-                    "ExperimentRun ID "
-                        + request.getId()
-                        + " does not have the artifact "
-                        + request.getKey();
+                    String.format(
+                        "%s ID "
+                            + request.getId()
+                            + " does not have the artifact "
+                            + request.getKey(),
+                        entityName);
 
                 urlInfo =
-                    getExperimentRunArtifactS3PathAndMultipartUploadID(
+                    getEntityArtifactS3PathAndMultipartUploadID(
                         request.getId(),
                         request.getKey(),
                         request.getPartNumber(),
@@ -105,21 +117,17 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                       throw new NotFoundException(finalErrorMessage);
                     }
 
-                    var response =
-                        artifactStoreDAO.getUrlForArtifactMultipart(
-                            s3Key, request.getMethod(), request.getPartNumber(), uploadId);
-
-                    return response;
+                    return artifactStoreDAO.getUrlForArtifactMultipart(
+                        s3Key, request.getMethod(), request.getPartNumber(), uploadId);
                   },
                   executor);
             },
             executor);
   }
 
-  private InternalFuture<Map.Entry<String, String>>
-      getExperimentRunArtifactS3PathAndMultipartUploadID(
-          String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart) {
-    return getArtifactId(experimentRunId, key)
+  private InternalFuture<Map.Entry<String, String>> getEntityArtifactS3PathAndMultipartUploadID(
+      String entityId, String key, long partNumber, S3KeyFunction initializeMultipart) {
+    return getArtifactId(entityId, key)
         .thenApply(
             maybeId -> {
               final var id =
@@ -161,9 +169,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
           || artifactEntity.isUploadCompleted()) {
         session.beginTransaction();
         VersioningUtils.getArtifactPartEntities(
-                session,
-                String.valueOf(artifactEntity.getId()),
-                ArtifactPartEntity.EXP_RUN_ARTIFACT)
+                session, String.valueOf(artifactEntity.getId()), this.artifactEntityType)
             .forEach(session::delete);
         artifactEntity.setUploadId(uploadId);
         artifactEntity.setUploadCompleted(false);
@@ -206,9 +212,9 @@ public class ArtifactHandler extends ArtifactHandlerBase {
     return codeVersionHandler
         .getCodeVersion(request.getId())
         .thenApply(
-            maybeExprRun ->
-                maybeExprRun
-                    .map(exprRun -> exprRun.getCodeArchive().getPath())
+            maybeCodeVersion ->
+                maybeCodeVersion
+                    .map(codeVersion -> codeVersion.getCodeArchive().getPath())
                     .orElseThrow(
                         () -> new InvalidArgumentException("Code version has not been logged")),
             executor);
@@ -230,7 +236,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                     request.getArtifactPart(),
                     session,
                     String.valueOf(artifactEntity.getId()),
-                    ArtifactPartEntity.EXP_RUN_ARTIFACT);
+                    this.artifactEntityType);
               }
             },
             executor);
@@ -251,9 +257,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 Set<ArtifactPartEntity> artifactPartEntities =
                     VersioningUtils.getArtifactPartEntities(
-                        session,
-                        String.valueOf(artifactEntity.getId()),
-                        ArtifactPartEntity.EXP_RUN_ARTIFACT);
+                        session, String.valueOf(artifactEntity.getId()), this.artifactEntityType);
 
                 var response = GetCommittedArtifactParts.Response.newBuilder();
                 artifactPartEntities.forEach(
@@ -283,9 +287,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                 }
                 Set<ArtifactPartEntity> artifactPartEntities =
                     VersioningUtils.getArtifactPartEntities(
-                        session,
-                        String.valueOf(artifactEntity.getId()),
-                        ArtifactPartEntity.EXP_RUN_ARTIFACT);
+                        session, String.valueOf(artifactEntity.getId()), this.artifactEntityType);
                 final var partETags =
                     artifactPartEntities.stream()
                         .map(ArtifactPartEntity::toPartETag)

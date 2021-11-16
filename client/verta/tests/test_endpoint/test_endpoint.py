@@ -720,3 +720,17 @@ class TestEndpoint:
 
         excinfo_value = str(excinfo.value).strip()
         assert "403" in excinfo_value
+
+    def test_update_from_build(self, client, class_endpoint_updated, created_entities):
+        existing_endpoint = class_endpoint_updated
+        existing_build = existing_endpoint.wait_for_build(polling_seconds=5)
+        current_build = existing_endpoint.get_current_build()
+
+        new_path = verta._internal_utils._utils.generate_default_name()
+        new_endpoint = client.get_or_create_endpoint(path=new_path)
+        created_entities.append(new_endpoint)
+        new_endpoint.update(current_build)
+        new_endpoint_completed_build = new_endpoint.wait_for_build(polling_seconds=5)
+
+        assert existing_build.id == current_build.id
+        assert current_build.id == new_endpoint_completed_build.id

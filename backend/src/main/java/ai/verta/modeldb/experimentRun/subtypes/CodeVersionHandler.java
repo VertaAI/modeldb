@@ -21,16 +21,18 @@ import org.hibernate.LockMode;
 
 public class CodeVersionHandler {
   private static Logger LOGGER = LogManager.getLogger(CodeVersionHandler.class);
-  private static final String RUN_ID_QUERY_PARAM = "run_id";
+  private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
 
   private final Executor executor;
   private final FutureJdbi jdbi;
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
+  private final String entityTableName;
 
-  public CodeVersionHandler(Executor executor, FutureJdbi jdbi) {
+  public CodeVersionHandler(Executor executor, FutureJdbi jdbi, String entityTableName) {
     this.executor = executor;
     this.jdbi = jdbi;
+    this.entityTableName = entityTableName;
   }
 
   public InternalFuture<Optional<CodeVersion>> getCodeVersion(String entityId) {
@@ -38,8 +40,10 @@ public class CodeVersionHandler {
             handle ->
                 handle
                     .createQuery(
-                        "select code_version_snapshot_id from experiment_run where id=:run_id")
-                    .bind(RUN_ID_QUERY_PARAM, entityId)
+                        String.format(
+                            "select code_version_snapshot_id from %s where id=:entity_id",
+                            entityTableName))
+                    .bind(ENTITY_ID_QUERY_PARAM, entityId)
                     .mapTo(Long.class)
                     .findOne())
         .thenApply(
@@ -65,8 +69,10 @@ public class CodeVersionHandler {
             handle ->
                 handle
                     .createQuery(
-                        "select code_version_snapshot_id from experiment_run where id=:run_id")
-                    .bind(RUN_ID_QUERY_PARAM, request.getId())
+                        String.format(
+                            "select code_version_snapshot_id from %s where id=:entity_id",
+                            entityTableName))
+                    .bind(ENTITY_ID_QUERY_PARAM, request.getId())
                     .mapTo(Long.class)
                     .findOne())
         .thenAccept(
@@ -78,8 +84,10 @@ public class CodeVersionHandler {
                     var transaction = session.beginTransaction();
                     session
                         .createSQLQuery(
-                            "UPDATE experiment_run SET code_version_snapshot_id = null WHERE id=:run_id")
-                        .setParameter(RUN_ID_QUERY_PARAM, request.getId())
+                            String.format(
+                                "UPDATE %s SET code_version_snapshot_id = null WHERE id=:entity_id",
+                                entityTableName))
+                        .setParameter(ENTITY_ID_QUERY_PARAM, request.getId())
                         .executeUpdate();
                     final CodeVersionEntity entity =
                         session.get(
@@ -116,9 +124,11 @@ public class CodeVersionHandler {
                     handle ->
                         handle
                             .createUpdate(
-                                "update experiment_run set code_version_snapshot_id=:code_id where id=:run_id")
+                                String.format(
+                                    "update %s set code_version_snapshot_id=:code_id where id=:entity_id",
+                                    entityTableName))
                             .bind("code_id", snapshotId)
-                            .bind(RUN_ID_QUERY_PARAM, request.getId())
+                            .bind(ENTITY_ID_QUERY_PARAM, request.getId())
                             .execute()),
             executor);
   }
@@ -128,8 +138,10 @@ public class CodeVersionHandler {
             handle ->
                 handle
                     .createQuery(
-                        "select id, code_version_snapshot_id from experiment_run where id IN (<run_ids>) ")
-                    .bindList("run_ids", entityIds)
+                        String.format(
+                            "select id, code_version_snapshot_id from %s where id IN (<entity_ids>) ",
+                            entityTableName))
+                    .bindList("entity_ids", entityIds)
                     .map(
                         (rs, ctx) ->
                             new AbstractMap.SimpleEntry<>(

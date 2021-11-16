@@ -7,6 +7,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddProjectAttributes;
 import ai.verta.modeldb.AddProjectTag;
 import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.CreateProject;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.DeepCopyProject;
@@ -102,11 +103,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
   private void addEvent(
       String entityId,
-      long workspaceId,
+      Optional<Long> workspaceId,
       String eventType,
       Optional<String> updatedField,
       Map<String, Object> extraFieldsMap,
       String eventMessage) {
+
+    if (!App.getInstance().mdbConfig.isEvent_system_enabled()) {
+      return;
+    }
+
     // Add succeeded event in local DB
     JsonObject eventMetadata = new JsonObject();
     eventMetadata.addProperty("entity_id", entityId);
@@ -126,8 +132,16 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       eventMetadata.add("updated_field_value", updatedFieldValue);
     }
     eventMetadata.addProperty("message", eventMessage);
+
+    if (workspaceId.isEmpty()) {
+      GetResourcesResponseItem projectResource =
+          mdbRoleService.getEntityResource(
+              Optional.of(entityId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
+      workspaceId = Optional.of(projectResource.getWorkspaceId());
+    }
+
     futureEventDAO.addLocalEventWithBlocking(
-        ModelDBServiceResourceTypes.PROJECT.name(), eventType, workspaceId, eventMetadata);
+        ModelDBServiceResourceTypes.PROJECT.name(), eventType, workspaceId.get(), eventMetadata);
   }
 
   /**
@@ -153,7 +167,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           project.getId(),
-          project.getWorkspaceServiceId(),
+          Optional.of(project.getWorkspaceServiceId()),
           "add.resource.project.add_project_succeeded",
           Optional.empty(),
           Collections.emptyMap(),
@@ -197,7 +211,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("description"),
           Collections.emptyMap(),
@@ -240,7 +254,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var response = AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build();
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -299,7 +313,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -411,7 +425,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("attributes"),
           extraField,
@@ -454,7 +468,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
@@ -541,7 +555,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       }
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("tags"),
           extraField,
@@ -587,7 +601,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
@@ -635,7 +649,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
@@ -670,9 +684,6 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      GetResourcesResponseItem projectResource =
-          mdbRoleService.getEntityResource(
-              Optional.of(request.getId()), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       List<String> deletedProjectIds =
           projectDAO.deleteProjects(Collections.singletonList(request.getId()));
       var response =
@@ -681,7 +692,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           request.getId(),
-          projectResource.getWorkspaceId(),
+          Optional.empty(),
           DELETE_PROJECT_EVENT_TYPE,
           Optional.empty(),
           Collections.emptyMap(),
@@ -854,7 +865,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           project.getId(),
-          project.getWorkspaceServiceId(),
+          Optional.of(project.getWorkspaceServiceId()),
           "clone.resource.project.clone_project_succeeded",
           Optional.empty(),
           Collections.emptyMap(),
@@ -1023,7 +1034,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("read_me_text"),
           Collections.emptyMap(),
@@ -1098,7 +1109,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           project.getId(),
-          project.getWorkspaceServiceId(),
+          Optional.of(project.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("short_name"),
           Collections.singletonMap("short_name", project.getShortName()),
@@ -1176,7 +1187,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("code_version"),
           Collections.emptyMap(),
@@ -1330,7 +1341,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
@@ -1398,7 +1409,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           updatedProject.getId(),
-          updatedProject.getWorkspaceServiceId(),
+          Optional.of(updatedProject.getWorkspaceServiceId()),
           UPDATE_PROJECT_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
@@ -1433,12 +1444,9 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       // Add succeeded event in local DB
       for (String projectId : deletedProjectIds) {
-        GetResourcesResponseItem projectResource =
-            mdbRoleService.getEntityResource(
-                Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
         addEvent(
             projectId,
-            projectResource.getWorkspaceId(),
+            Optional.empty(),
             DELETE_PROJECT_EVENT_TYPE,
             Optional.empty(),
             Collections.emptyMap(),

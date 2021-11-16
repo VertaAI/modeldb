@@ -3,6 +3,7 @@ package ai.verta.modeldb.experimentRun;
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceImplBase;
@@ -24,6 +25,7 @@ import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
@@ -51,7 +53,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   protected final String ADD_EVENT_TYPE =
       "add.resource.experiment_run.add_experiment_run_succeeded";
   private final AuthService authService;
-  private final MDBRoleService mdbRoleService;
+  protected final MDBRoleService mdbRoleService;
   private final ExperimentRunDAO experimentRunDAO;
   private final ProjectDAO projectDAO;
   private final ExperimentDAO experimentDAO;
@@ -78,11 +80,15 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       String entityId,
       Optional<String> experimentId,
       String projectId,
-      long workspaceId,
       String eventType,
       Optional<String> updatedField,
       Map<String, Object> extraFieldsMap,
       String eventMessage) {
+
+    if (!App.getInstance().mdbConfig.isEvent_system_enabled()) {
+      return;
+    }
+
     // Add succeeded event in local DB
     JsonObject eventMetadata = new JsonObject();
     eventMetadata.addProperty("entity_id", entityId);
@@ -106,8 +112,18 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       eventMetadata.add("updated_field_value", updatedFieldValue);
     }
     eventMetadata.addProperty("message", eventMessage);
+
+    GetResourcesResponseItem projectResource =
+        mdbRoleService.getEntityResource(
+            Optional.of(projectId),
+            Optional.empty(),
+            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+
     futureEventDAO.addLocalEventWithBlocking(
-        ModelDBServiceResourceTypes.EXPERIMENT_RUN.name(), eventType, workspaceId, eventMetadata);
+        ModelDBServiceResourceTypes.EXPERIMENT_RUN.name(),
+        eventType,
+        projectResource.getWorkspaceId(),
+        eventMetadata);
   }
 
   private void validateExperimentEntity(String experimentId) {
@@ -220,7 +236,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           experimentRun.getId(),
           Optional.of(experimentRun.getExperimentId()),
           experimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(userInfo),
           ADD_EVENT_TYPE,
           Optional.empty(),
           Collections.emptyMap(),
@@ -255,7 +270,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           DELETE_EXPERIMENT_RUN_EVENT_TYPE,
           Optional.empty(),
           Collections.emptyMap(),
@@ -484,7 +498,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
           updatedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("description"),
           Collections.emptyMap(),
@@ -523,7 +536,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("name"),
           Collections.singletonMap("name", request.getName()),
@@ -573,7 +585,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
           updatedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
@@ -627,7 +638,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
           updatedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
@@ -718,7 +728,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
           updatedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("tags"),
           extraFieldValue,
@@ -769,7 +778,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           updatedExperimentRun.getId(),
           Optional.of(updatedExperimentRun.getExperimentId()),
           updatedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
@@ -821,7 +829,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -890,7 +897,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           extraFieldValue,
@@ -949,7 +955,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("observations"),
           Collections.singletonMap(
@@ -1005,7 +1010,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("observations"),
           Collections.singletonMap(
@@ -1085,7 +1089,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("metrics"),
           Collections.singletonMap(
@@ -1135,7 +1138,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("metrics"),
           Collections.singletonMap(
@@ -1370,7 +1372,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
@@ -1424,7 +1425,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
@@ -1519,7 +1519,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("code_version"),
           Collections.emptyMap(),
@@ -1600,7 +1599,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("hyperparameters"),
           Collections.singletonMap(
@@ -1653,7 +1651,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("hyperparameters"),
           Collections.singletonMap(
@@ -1734,7 +1731,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -1785,7 +1781,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -1978,7 +1973,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("job"),
           Collections.emptyMap(),
@@ -2099,7 +2093,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getExperimentRunId(),
           Optional.empty(),
           parentExperimentRunProjectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("parent_id"),
           Collections.singletonMap("parent_id", request.getParentId()),
@@ -2159,7 +2152,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("datasets"),
           extraFieldValue,
@@ -2213,7 +2205,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("datasets"),
           extraFieldValue,
@@ -2257,7 +2248,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("artifacts"),
           Collections.singletonMap(
@@ -2302,7 +2292,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             experimentRunId,
             Optional.empty(),
             projectIdsMap.get(experimentRunId),
-            authService.getWorkspaceIdFromUserInfo(userInfo),
             DELETE_EXPERIMENT_RUN_EVENT_TYPE,
             Optional.empty(),
             Collections.emptyMap(),
@@ -2345,7 +2334,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("version_input"),
           Collections.emptyMap(),
@@ -2514,7 +2502,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("hyperparameters"),
           extraFieldValue,
@@ -2567,7 +2554,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("metrics"),
           extraFieldValue,
@@ -2617,7 +2603,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("observations"),
           extraFieldValue,
@@ -2723,7 +2708,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           clonedExperimentRun.getId(),
           Optional.of(clonedExperimentRun.getExperimentId()),
           clonedExperimentRun.getProjectId(),
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           ADD_EVENT_TYPE,
           Optional.empty(),
           Collections.emptyMap(),
@@ -2758,7 +2742,6 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           request.getId(),
           Optional.empty(),
           projectId,
-          authService.getWorkspaceIdFromUserInfo(authService.getCurrentLoginUserInfo()),
           UPDATE_EVENT_TYPE,
           Optional.of("environment"),
           Collections.emptyMap(),

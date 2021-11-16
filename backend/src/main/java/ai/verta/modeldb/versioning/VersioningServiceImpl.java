@@ -48,6 +48,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   private final Validator validator = new Validator();
   private final ArtifactStoreDAO artifactStoreDAO;
   private final FutureEventDAO futureEventDAO;
+  private final boolean isEventSystemEnabled;
 
   public VersioningServiceImpl(ServiceSet serviceSet, DAOSet daoSet, FileHasher fileHasher) {
     this.authService = serviceSet.authService;
@@ -59,6 +60,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
     this.fileHasher = fileHasher;
     this.futureEventDAO = daoSet.futureEventDAO;
+    this.isEventSystemEnabled = serviceSet.app.mdbConfig.isEvent_system_enabled();
   }
 
   private void addEvent(
@@ -157,13 +159,15 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       var response = repositoryDAO.setRepository(requestBuilder.build(), userInfo, true);
 
       // Add succeeded event in local DB
-      addEvent(
-          response.getRepository().getId(),
-          response.getRepository().getWorkspaceServiceId(),
-          "add.resource.repository.add_repository_succeeded",
-          Optional.empty(),
-          Collections.emptyMap(),
-          "repository logged successfully");
+      if (isEventSystemEnabled) {
+        addEvent(
+            response.getRepository().getId(),
+            response.getRepository().getWorkspaceServiceId(),
+            "add.resource.repository.add_repository_succeeded",
+            Optional.empty(),
+            Collections.emptyMap(),
+            "repository logged successfully");
+      }
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -196,13 +200,15 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           repositoryDAO.setRepository(request, authService.getCurrentLoginUserInfo(), false);
 
       // Add succeeded event in local DB
-      addEvent(
-          response.getRepository().getId(),
-          response.getRepository().getWorkspaceServiceId(),
-          UPDATE_REPOSITORY_EVENT_TYPE,
-          Optional.empty(),
-          Collections.emptyMap(),
-          "repository updated successfully");
+      if (isEventSystemEnabled) {
+        addEvent(
+            response.getRepository().getId(),
+            response.getRepository().getWorkspaceServiceId(),
+            UPDATE_REPOSITORY_EVENT_TYPE,
+            Optional.empty(),
+            Collections.emptyMap(),
+            "repository updated successfully");
+      }
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -228,13 +234,15 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               RepositoryEnums.RepositoryTypeEnum.REGULAR);
 
       // Add succeeded event in local DB
-      addEvent(
-          repositoryResponse.getRepository().getId(),
-          repositoryResponse.getRepository().getWorkspaceServiceId(),
-          "delete.resource.repository.delete_repository_succeeded",
-          Optional.empty(),
-          Collections.emptyMap(),
-          "repository deleted successfully");
+      if (isEventSystemEnabled) {
+        addEvent(
+            repositoryResponse.getRepository().getId(),
+            repositoryResponse.getRepository().getWorkspaceServiceId(),
+            "delete.resource.repository.delete_repository_succeeded",
+            Optional.empty(),
+            Collections.emptyMap(),
+            "repository deleted successfully");
+      }
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -323,16 +331,18 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
               repositoryFunction);
 
       // Add succeeded event in local DB
-      GetRepositoryRequest.Response repositoryResponse =
-          repositoryDAO.getRepository(
-              GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
-      addEvent(
-          repositoryResponse.getRepository().getId(),
-          repositoryResponse.getRepository().getWorkspaceServiceId(),
-          UPDATE_REPOSITORY_EVENT_TYPE,
-          Optional.of("commit"),
-          Collections.singletonMap("commit_hash", response.getCommit().getCommitSha()),
-          "Commit added successfully");
+      if (isEventSystemEnabled) {
+        GetRepositoryRequest.Response repositoryResponse =
+            repositoryDAO.getRepository(
+                GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
+        addEvent(
+            repositoryResponse.getRepository().getId(),
+            repositoryResponse.getRepository().getWorkspaceServiceId(),
+            UPDATE_REPOSITORY_EVENT_TYPE,
+            Optional.of("commit"),
+            Collections.singletonMap("commit_hash", response.getCommit().getCommitSha()),
+            "Commit added successfully");
+      }
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -377,16 +387,18 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       var response = DeleteCommitRequest.Response.newBuilder().build();
 
       // Add succeeded event in local DB
-      GetRepositoryRequest.Response repositoryResponse =
-          repositoryDAO.getRepository(
-              GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
-      addEvent(
-          repositoryResponse.getRepository().getId(),
-          repositoryResponse.getRepository().getWorkspaceServiceId(),
-          UPDATE_REPOSITORY_EVENT_TYPE,
-          Optional.of("commit"),
-          Collections.singletonMap("commit_hash", request.getCommitSha()),
-          "Commit deleted successfully");
+      if (isEventSystemEnabled) {
+        GetRepositoryRequest.Response repositoryResponse =
+            repositoryDAO.getRepository(
+                GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
+        addEvent(
+            repositoryResponse.getRepository().getId(),
+            repositoryResponse.getRepository().getWorkspaceServiceId(),
+            UPDATE_REPOSITORY_EVENT_TYPE,
+            Optional.of("commit"),
+            Collections.singletonMap("commit_hash", request.getCommitSha()),
+            "Commit deleted successfully");
+      }
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -463,7 +475,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       var mergeResponse = blobDAO.mergeCommit(repositoryDAO, request);
 
       // Add succeeded event in local DB
-      if (!mergeResponse.hasCommonBase()) {
+      if (!mergeResponse.hasCommonBase() && isEventSystemEnabled) {
         GetRepositoryRequest.Response repositoryResponse =
             repositoryDAO.getRepository(
                 GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
@@ -491,16 +503,18 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       var mergeResponse = blobDAO.revertCommit(repositoryDAO, request);
 
-      GetRepositoryRequest.Response repositoryResponse =
-          repositoryDAO.getRepository(
-              GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
-      addEvent(
-          repositoryResponse.getRepository().getId(),
-          repositoryResponse.getRepository().getWorkspaceServiceId(),
-          UPDATE_REPOSITORY_EVENT_TYPE,
-          Optional.of("commit"),
-          Collections.singletonMap("commit_hash", mergeResponse.getCommit().getCommitSha()),
-          mergeResponse.getCommit().getMessage());
+      if (isEventSystemEnabled) {
+        GetRepositoryRequest.Response repositoryResponse =
+            repositoryDAO.getRepository(
+                GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
+        addEvent(
+            repositoryResponse.getRepository().getId(),
+            repositoryResponse.getRepository().getWorkspaceServiceId(),
+            UPDATE_REPOSITORY_EVENT_TYPE,
+            Optional.of("commit"),
+            Collections.singletonMap("commit_hash", mergeResponse.getCommit().getCommitSha()),
+            mergeResponse.getCommit().getMessage());
+      }
 
       responseObserver.onNext(mergeResponse);
       responseObserver.onCompleted();
@@ -544,19 +558,21 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           repositoryDAO.setBranch(request, true, RepositoryEnums.RepositoryTypeEnum.REGULAR);
 
       // Add succeeded event in local DB
-      Map<String, Object> updatedFieldValueMap = new HashMap<>();
-      updatedFieldValueMap.put("branch", request.getBranch());
-      updatedFieldValueMap.put("commit_hash", request.getCommitSha());
-      GetRepositoryRequest.Response repositoryResponse =
-          repositoryDAO.getRepository(
-              GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
-      addEvent(
-          repositoryResponse.getRepository().getId(),
-          repositoryResponse.getRepository().getWorkspaceServiceId(),
-          UPDATE_REPOSITORY_EVENT_TYPE,
-          Optional.of("branch"),
-          updatedFieldValueMap,
-          String.format("Set branch '%s' successfully", request.getBranch()));
+      if (isEventSystemEnabled) {
+        Map<String, Object> updatedFieldValueMap = new HashMap<>();
+        updatedFieldValueMap.put("branch", request.getBranch());
+        updatedFieldValueMap.put("commit_hash", request.getCommitSha());
+        GetRepositoryRequest.Response repositoryResponse =
+            repositoryDAO.getRepository(
+                GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
+        addEvent(
+            repositoryResponse.getRepository().getId(),
+            repositoryResponse.getRepository().getWorkspaceServiceId(),
+            UPDATE_REPOSITORY_EVENT_TYPE,
+            Optional.of("branch"),
+            updatedFieldValueMap,
+            String.format("Set branch '%s' successfully", request.getBranch()));
+      }
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -576,16 +592,18 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       var response = repositoryDAO.deleteBranch(request);
 
       // Add succeeded event in local DB
-      GetRepositoryRequest.Response repositoryResponse =
-          repositoryDAO.getRepository(
-              GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
-      addEvent(
-          repositoryResponse.getRepository().getId(),
-          repositoryResponse.getRepository().getWorkspaceServiceId(),
-          UPDATE_REPOSITORY_EVENT_TYPE,
-          Optional.of("branch"),
-          Collections.singletonMap("branch", request.getBranch()),
-          String.format("Branch '%s' deleted successfully", request.getBranch()));
+      if (isEventSystemEnabled) {
+        GetRepositoryRequest.Response repositoryResponse =
+            repositoryDAO.getRepository(
+                GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
+        addEvent(
+            repositoryResponse.getRepository().getId(),
+            repositoryResponse.getRepository().getWorkspaceServiceId(),
+            UPDATE_REPOSITORY_EVENT_TYPE,
+            Optional.of("branch"),
+            Collections.singletonMap("branch", request.getBranch()),
+            String.format("Branch '%s' deleted successfully", request.getBranch()));
+      }
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -640,19 +658,21 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       var response = repositoryDAO.setTag(request);
 
       // Add succeeded event in local DB
-      Map<String, Object> updatedFieldValueMap = new HashMap<>();
-      updatedFieldValueMap.put("tag", request.getTag());
-      updatedFieldValueMap.put("commit_hash", request.getCommitSha());
-      GetRepositoryRequest.Response repositoryResponse =
-          repositoryDAO.getRepository(
-              GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
-      addEvent(
-          repositoryResponse.getRepository().getId(),
-          repositoryResponse.getRepository().getWorkspaceServiceId(),
-          UPDATE_REPOSITORY_EVENT_TYPE,
-          Optional.of("tag"),
-          updatedFieldValueMap,
-          String.format("Set tag '%s' successfully", request.getTag()));
+      if (isEventSystemEnabled) {
+        Map<String, Object> updatedFieldValueMap = new HashMap<>();
+        updatedFieldValueMap.put("tag", request.getTag());
+        updatedFieldValueMap.put("commit_hash", request.getCommitSha());
+        GetRepositoryRequest.Response repositoryResponse =
+            repositoryDAO.getRepository(
+                GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
+        addEvent(
+            repositoryResponse.getRepository().getId(),
+            repositoryResponse.getRepository().getWorkspaceServiceId(),
+            UPDATE_REPOSITORY_EVENT_TYPE,
+            Optional.of("tag"),
+            updatedFieldValueMap,
+            String.format("Set tag '%s' successfully", request.getTag()));
+      }
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -671,16 +691,18 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       var response = repositoryDAO.deleteTag(request);
 
       // Add succeeded event in local DB
-      GetRepositoryRequest.Response repositoryResponse =
-          repositoryDAO.getRepository(
-              GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
-      addEvent(
-          repositoryResponse.getRepository().getId(),
-          repositoryResponse.getRepository().getWorkspaceServiceId(),
-          UPDATE_REPOSITORY_EVENT_TYPE,
-          Optional.of("tag"),
-          Collections.singletonMap("tag", request.getTag()),
-          String.format("Tag '%s' deleted successfully", request.getTag()));
+      if (isEventSystemEnabled) {
+        GetRepositoryRequest.Response repositoryResponse =
+            repositoryDAO.getRepository(
+                GetRepositoryRequest.newBuilder().setId(request.getRepositoryId()).build());
+        addEvent(
+            repositoryResponse.getRepository().getId(),
+            repositoryResponse.getRepository().getWorkspaceServiceId(),
+            UPDATE_REPOSITORY_EVENT_TYPE,
+            Optional.of("tag"),
+            Collections.singletonMap("tag", request.getTag()),
+            String.format("Tag '%s' deleted successfully", request.getTag()));
+      }
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
