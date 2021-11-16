@@ -75,7 +75,7 @@ public class CreateExperimentRunHandler {
     this.tagsHandler = tagsHandler;
     this.artifactHandler = artifactHandler;
     this.featureHandler = featureHandler;
-    this.codeVersionHandler = new CodeVersionHandler(executor, jdbi);
+    this.codeVersionHandler = new CodeVersionHandler(executor, jdbi, "experiment_run");
     this.datasetHandler = datasetHandler;
     this.versionInputHandler = versionInputHandler;
   }

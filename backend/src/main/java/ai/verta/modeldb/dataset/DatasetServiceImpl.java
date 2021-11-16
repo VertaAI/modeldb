@@ -4,6 +4,7 @@ import static io.grpc.Status.Code.INVALID_ARGUMENT;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
@@ -34,7 +35,6 @@ import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.UserInfo;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -71,6 +71,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private final ExperimentDAO experimentDAO;
   private final ExperimentRunDAO experimentRunDAO;
   private final FutureEventDAO futureEventDAO;
+  private final boolean isEventSystemEnabled;
 
   public DatasetServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
@@ -82,15 +83,21 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     this.commitDAO = daoSet.commitDAO;
     this.metadataDAO = daoSet.metadataDAO;
     this.futureEventDAO = daoSet.futureEventDAO;
+    this.isEventSystemEnabled = serviceSet.app.mdbConfig.isEvent_system_enabled();
   }
 
   private void addEvent(
       String entityId,
-      long workspaceId,
+      Optional<Long> workspaceId,
       String eventType,
       Optional<String> updatedField,
       Map<String, Object> extraFieldsMap,
       String eventMessage) {
+
+    if (!isEventSystemEnabled) {
+      return;
+    }
+
     // Add succeeded event in local DB
     JsonObject eventMetadata = new JsonObject();
     eventMetadata.addProperty("entity_id", entityId);
@@ -110,8 +117,17 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       eventMetadata.add("updated_field_value", updatedFieldValue);
     }
     eventMetadata.addProperty("message", eventMessage);
+
+    if (!workspaceId.isPresent()) {
+      GetResourcesResponseItem datasetResource =
+          mdbRoleService.getEntityResource(
+              Optional.of(entityId),
+              Optional.empty(),
+              ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
+      workspaceId = Optional.of(datasetResource.getWorkspaceId());
+    }
     futureEventDAO.addLocalEventWithBlocking(
-        ModelDBServiceResourceTypes.DATASET.name(), eventType, workspaceId, eventMetadata);
+        ModelDBServiceResourceTypes.DATASET.name(), eventType, workspaceId.get(), eventMetadata);
   }
 
   /**
@@ -136,7 +152,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           response.getDataset().getId(),
-          response.getDataset().getWorkspaceServiceId(),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
           "add.resource.dataset.add_dataset_succeeded",
           Optional.empty(),
           Collections.emptyMap(),
@@ -388,7 +404,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           response.getDataset().getId(),
-          Long.parseLong(response.getDataset().getWorkspaceId()),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
           UPDATE_DATASET_EVENT_TYPE,
           Optional.of("name"),
           Collections.singletonMap("name", response.getDataset().getName()),
@@ -433,7 +449,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           response.getDataset().getId(),
-          Long.parseLong(response.getDataset().getWorkspaceId()),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
           UPDATE_DATASET_EVENT_TYPE,
           Optional.of("description"),
           Collections.emptyMap(),
@@ -479,7 +495,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           response.getDataset().getId(),
-          Long.parseLong(response.getDataset().getWorkspaceId()),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
           UPDATE_DATASET_EVENT_TYPE,
           Optional.of("tags"),
           Collections.singletonMap(
@@ -549,7 +565,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
       addEvent(
           response.getDataset().getId(),
-          response.getDataset().getWorkspaceServiceId(),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
           UPDATE_DATASET_EVENT_TYPE,
           Optional.of("tags"),
           extraField,
@@ -600,7 +616,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       addEvent(
           updatedDataset.getId(),
-          updatedDataset.getWorkspaceServiceId(),
+          Optional.of(updatedDataset.getWorkspaceServiceId()),
           UPDATE_DATASET_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -655,7 +671,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       addEvent(
           updatedDataset.getId(),
-          updatedDataset.getWorkspaceServiceId(),
+          Optional.of(updatedDataset.getWorkspaceServiceId()),
           UPDATE_DATASET_EVENT_TYPE,
           Optional.of("attributes"),
           Collections.singletonMap(
@@ -729,7 +745,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
       addEvent(
           response.getDataset().getId(),
-          response.getDataset().getWorkspaceServiceId(),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
           UPDATE_DATASET_EVENT_TYPE,
           Optional.of("attributes"),
           extraField,
@@ -773,7 +789,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   }
 
   private void deleteRepositoriesByDatasetIds(List<String> datasetIds) throws ModelDBException {
-    UserInfo userInfo = authService.getCurrentLoginUserInfo();
     for (String datasetId : datasetIds) {
       repositoryDAO.deleteRepository(
           DeleteRepositoryRequest.newBuilder()
@@ -788,7 +803,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Add succeeded event in local DB
       addEvent(
           datasetId,
-          authService.getWorkspaceIdFromUserInfo(userInfo),
+          Optional.empty(),
           "delete.resource.dataset.delete_dataset_succeeded",
           Optional.empty(),
           Collections.emptyMap(),

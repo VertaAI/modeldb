@@ -175,7 +175,7 @@ public class FutureExperimentRunDAO {
     metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", EXPERIMENT_RUN_ENTITY_NAME);
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
-    codeVersionHandler = new CodeVersionHandler(executor, jdbi);
+    codeVersionHandler = new CodeVersionHandler(executor, jdbi, "experiment_run");
     datasetHandler = new DatasetHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     artifactHandler =
         new ArtifactHandler(

@@ -74,7 +74,6 @@ public class DAOSet {
     set.projectDAO =
         new ProjectDAORdbImpl(
             services.authService, services.mdbRoleService, set.experimentDAO, set.experimentRunDAO);
-    set.futureProjectDAO = new FutureProjectDAO(executor, jdbi, services.uac);
     if (services.artifactStoreService != null) {
       set.artifactStoreDAO = new ArtifactStoreDAORdbImpl(services.artifactStoreService, mdbConfig);
     } else {
@@ -87,6 +86,9 @@ public class DAOSet {
     set.datasetVersionDAO =
         new DatasetVersionDAORdbImpl(services.authService, services.mdbRoleService);
 
+    set.futureProjectDAO =
+        new FutureProjectDAO(
+            executor, jdbi, services.uac, set.artifactStoreDAO, set.datasetVersionDAO);
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(
             executor,

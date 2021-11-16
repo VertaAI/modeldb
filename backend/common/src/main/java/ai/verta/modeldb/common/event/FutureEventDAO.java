@@ -28,9 +28,9 @@ public class FutureEventDAO {
     this.serviceType = serviceType;
   }
 
-  public Void addLocalEventWithBlocking(
+  public void addLocalEventWithBlocking(
       String resourceType, String eventType, long workspaceId, JsonObject eventMetadata) {
-    return addLocalEvent(resourceType, eventType, workspaceId, eventMetadata).get();
+    addLocalEvent(resourceType, eventType, workspaceId, eventMetadata).get();
   }
 
   public InternalFuture<Void> addLocalEventWithAsync(
