@@ -122,21 +122,14 @@ class Client(object):
                  max_retries=5, ignore_conn_err=False, use_git=True, debug=False, extra_auth_headers={}, _connect=True):
         self._load_config()
 
-        if host is None and 'VERTA_HOST' in os.environ:
-            host = os.environ['VERTA_HOST']
-            print("set host from environment")
-        host = self._set_from_config_if_none(host, "host")
-        if email is None and 'VERTA_EMAIL' in os.environ:
-            email = os.environ['VERTA_EMAIL']
-            print("set email from environment")
-        email = self._set_from_config_if_none(email, "email")
-        if dev_key is None and 'VERTA_DEV_KEY' in os.environ:
-            dev_key = os.environ['VERTA_DEV_KEY']
-            print("set developer key from environment")
-        dev_key = self._set_from_config_if_none(dev_key, "dev_key")
-        self._workspace = os.environ.get('VERTA_WORKSPACE')
-        if self._workspace is not None:
-            print("set workspace from environment")
+        host = self._get_with_fallback(host, env_var="VERTA_HOST", config_var="host")
+        email = self._get_with_fallback(email, env_var="VERTA_EMAIL", config_var="email")
+        dev_key = self._get_with_fallback(dev_key, env_var="VERTA_DEV_KEY", config_var="dev_key")
+
+        jwt_token = self._get_with_fallback(jwt_token, env_var="VERTA_JWT_TOKEN", config_var="jwt_token")
+        jwt_token_sig = self._get_with_fallback(jwt_token_sig, env_var="VERTA_JWT_TOKEN_SIG", config_var="jwt_token_sig")
+
+        self.workspace = self._get_with_fallback(None, env_var="VERTA_WORKSPACE")
 
         if host is None:
             raise ValueError("`host` must be provided")
@@ -270,6 +263,23 @@ class Client(object):
             if var:
                 print("setting {} from config file".format(resource_name))
         return var or None
+
+
+    def _get_with_fallback(self, parameter, env_var=None, config_var=None):
+        if parameter:
+            return parameter
+        elif env_var:
+            from_env = os.environ.get(env_var)
+            if from_env:
+                print("got {} from environment".format(env_var))
+                return from_env
+        elif config_var:
+            from_config = self._config.get(config_var)
+            if from_config:
+                print("got {} from config file".format(config_var))
+                return from_config
+        else:
+            return None
 
     @staticmethod
     def _validate_visibility(visibility):
