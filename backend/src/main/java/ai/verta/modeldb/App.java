@@ -43,8 +43,13 @@ import io.prometheus.jmx.JmxCollector;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -160,7 +165,8 @@ public class App implements ApplicationContextAware {
             Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
                 .orElse("false"));
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-    modelDBHibernateUtil.initializedConfigAndDatabase(App.getInstance().mdbConfig, databaseConfig);
+    MDBConfig mdbConfig = App.getInstance().mdbConfig;
+    modelDBHibernateUtil.initializedConfigAndDatabase(mdbConfig, databaseConfig);
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
       modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
@@ -184,7 +190,136 @@ public class App implements ApplicationContextAware {
 
     modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
 
+    migrateToUTF16ForMssql(mdbConfig);
     return false;
+  }
+
+  private static void migrateToUTF16ForMssql(MDBConfig mdbConfig) {
+    mdbConfig
+        .getJdbi()
+        .useHandle(
+            handle -> {
+              List<Map<String, Object>> returnResults =
+                  handle
+                      .createQuery(
+                          "select schema_name(t.schema_id) + '.' + t.name as [table], c.column_id, "
+                              + "c.name as column_name, type_name(user_type_id) as data_type, max_length , c.object_id "
+                              + "from sys.columns c join sys.tables t on t.object_id = c.object_id "
+                              + "where type_name(user_type_id) in ('text', 'varchar', 'char') order by [table], c.column_id;")
+                      .map(
+                          (rs, ctx) -> {
+                            Map<String, Object> objects = new HashMap<>();
+                            objects.put("table", rs.getString("table"));
+                            objects.put("column_id", rs.getString("column_id"));
+                            objects.put("column_name", rs.getString("column_name"));
+                            objects.put("data_type", rs.getString("data_type"));
+                            objects.put("max_length", rs.getString("max_length"));
+                            objects.put("object_id", rs.getString("object_id"));
+                            return objects;
+                          })
+                      .list();
+
+              Map<String, Map<String, Set<String>>> tableWiseIndexesMap = new HashMap<>();
+              handle
+                      .createQuery(
+                              "SELECT\n"
+                                      + "     ix.name as [indexName],\n"
+                                      + "     tab.name as [tableName],\n"
+                                      + "     COL_NAME(ix.object_id, ixc.column_id) as [columnName]\n"
+                                      + "FROM\n"
+                                      + "     sys.indexes ix \n"
+                                      + "INNER JOIN\n"
+                                      + "     sys.index_columns ixc \n"
+                                      + "        ON  ix.object_id = ixc.object_id \n"
+                                      + "        and ix.index_id = ixc.index_id\n"
+                                      + "INNER JOIN\n"
+                                      + "     sys.tables tab \n"
+                                      + "        ON ix.object_id = tab.object_id \n"
+                                      + "WHERE\n"
+                                      + "     ix.is_primary_key = 0          /* Remove Primary Keys */\n"
+                                      + "     AND ix.is_unique = 0           /* Remove Unique Keys */\n"
+                                      + "     AND ix.is_unique_constraint = 0 /* Remove Unique Constraints */\n"
+                                      + "     AND tab.is_ms_shipped = 0      /* Remove SQL Server Default Tables */\n"
+                                      + "ORDER BY\n"
+                                      + "    ix.name, tab.name")
+                      .map(
+                              (rs, ctx) -> {
+                                var tableName = rs.getString("tableName");
+                                var indexName = rs.getString("indexName");
+                                var columnName = rs.getString("columnName");
+
+                                if (tableName.equals("commit")){
+                                  tableName = "\"commit\"";
+                                }
+
+                                Map<String, Set<String>> indexesMap = tableWiseIndexesMap.get(tableName);
+                                if (indexesMap == null) {
+                                  indexesMap = new HashMap<>();
+                                }
+                                Set<String> indexColumns = indexesMap.get(indexName);
+                                if (indexColumns == null) {
+                                  indexColumns = new HashSet<>();
+                                }
+                                indexColumns.add(columnName);
+                                indexesMap.put(indexName, indexColumns);
+                                tableWiseIndexesMap.put(tableName, indexesMap);
+                                return rs;
+                              })
+                      .list();
+
+              for (Map.Entry<String, Map<String, Set<String>>> tableIndexesMap :
+                      tableWiseIndexesMap.entrySet()) {
+                for (Map.Entry<String, Set<String>> indexesMap :
+                        tableIndexesMap.getValue().entrySet()) {
+                  handle
+                          .createUpdate(String.format(
+                                  "IF EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
+                                          + "BEGIN "
+                                          + "DROP INDEX %s ON %s "
+                                          + "END", indexesMap.getKey(), indexesMap.getKey(), tableIndexesMap.getKey()))
+                          .execute();
+                }
+              }
+
+              for (Map<String, Object> result : returnResults) {
+                String dataType = "nvarchar(255)";
+                var maxLength = result.get("max_length").equals("-1") ? "" : "("+ result.get("max_length")+")";
+                if (result.get("data_type").equals("varchar")
+                        && !result.get("max_length").equals("-1")) {
+                  dataType = "nvarchar" + maxLength;
+                } else if (result.get("data_type").equals("char")) {
+                  dataType = "nchar" + maxLength;
+                } else if (result.get("data_type").equals("text") || result.get("max_length").equals("-1")) {
+                  dataType = "ntext";
+                }
+
+                handle
+                    .createUpdate(
+                        String.format(
+                            "ALTER TABLE %s ALTER COLUMN %s %s;",
+                            result.get("table"), result.get("column_name"), dataType))
+                    .execute();
+              }
+
+              for (Map.Entry<String, Map<String, Set<String>>> tableIndexesMap :
+                      tableWiseIndexesMap.entrySet()) {
+                for (Map.Entry<String, Set<String>> indexesMap :
+                        tableIndexesMap.getValue().entrySet()) {
+                  handle
+                          .createUpdate(
+                                  "IF EXISTS (SELECT * FROM sys.indexes WHERE name = :indexName) "
+                                          + "BEGIN "
+                                          + "CREATE NONCLUSTERED INDEX :indexName "
+                                          + "ON :tableName "
+                                          + "INCLUDE (<columns>) "
+                                          + "END")
+                          .bind("indexName", indexesMap.getKey())
+                          .bind("tableName", tableIndexesMap.getKey())
+                          .bind("columns", indexesMap.getValue())
+                          .execute();
+                }
+              }
+            }).get();
   }
 
   public static void main(String[] args) {
