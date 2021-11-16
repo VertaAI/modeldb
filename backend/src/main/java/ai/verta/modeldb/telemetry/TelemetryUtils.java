@@ -6,6 +6,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.CommonHibernateUtil;
 import ai.verta.modeldb.common.config.InvalidConfigException;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.sql.PreparedStatement;
@@ -47,10 +48,20 @@ public class TelemetryUtils {
           LOGGER.warn("modeldb_deployment_info table not found");
           LOGGER.info("Table modeldb_deployment_info creating");
 
-          final var createModelDBDeploymentInfoQuery =
-              "create table modeldb_deployment_info (md_key varchar(50),md_value varchar(255), creation_timestamp BIGINT) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
-          final var createTelemetryInformationQuery =
-              "Create table telemetry_information (tel_key varchar(50),tel_value varchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer varchar(256)) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
+          String createModelDBDeploymentInfoQuery;
+          String createTelemetryInformationQuery;
+          MDBConfig config = App.getInstance().mdbConfig;
+          if (config.getDatabase().getRdbConfiguration().isMssql()) {
+            createModelDBDeploymentInfoQuery =
+                "create table modeldb_deployment_info (md_key varchar(50),md_value varchar(255), creation_timestamp BIGINT)";
+            createTelemetryInformationQuery =
+                "Create table telemetry_information (tel_key varchar(50),tel_value varchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer varchar(256))";
+          } else {
+            createModelDBDeploymentInfoQuery =
+                "create table modeldb_deployment_info (md_key varchar(50),md_value varchar(255), creation_timestamp BIGINT) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
+            createTelemetryInformationQuery =
+                "Create table telemetry_information (tel_key varchar(50),tel_value varchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer varchar(256)) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";
+          }
 
           try (var statement = connection.createStatement()) {
             statement.executeUpdate(createModelDBDeploymentInfoQuery);
