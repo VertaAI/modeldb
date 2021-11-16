@@ -287,7 +287,7 @@ public class VersionInputHandler {
               handle -> {
                 var queryStr =
                     "INSERT INTO versioning_modeldb_entity_mapping "
-                        + " (repository_id, commit, versioning_key, versioning_location, entity_type, versioning_blob_type, blob_hash, "
+                        + " (repository_id, \"commit\", versioning_key, versioning_location, entity_type, versioning_blob_type, blob_hash, "
                         + entityIdReferenceColumn
                         + ") "
                         + " VALUES (:repository_id, :commit, :versioning_key, :versioning_location, :entity_type, :versioning_blob_type, :blob_hash, :entityId)";
@@ -451,7 +451,7 @@ public class VersionInputHandler {
             handle ->
                 handle
                     .createQuery(
-                        "select vm.experiment_run_id, vm.repository_id, vm.commit, vm.versioning_key, vm.versioning_location  "
+                        "select vm.experiment_run_id, vm.repository_id, vm.\"commit\", vm.versioning_key, vm.versioning_location  "
                             + " from versioning_modeldb_entity_mapping as vm "
                             + " where vm.experiment_run_id in (<run_ids>) "
                             + " and vm.entity_type = :entityType")
