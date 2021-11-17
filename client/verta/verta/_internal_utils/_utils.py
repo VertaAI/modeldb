@@ -18,6 +18,7 @@ import warnings
 
 import click
 import requests
+from requests import codes as http_codes
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -43,9 +44,6 @@ _VALID_FLAT_KEY_CHARS = set(string.ascii_letters + string.digits + '_-/')
 
 THREAD_LOCALS = threading.local()
 THREAD_LOCALS.active_experiment_run = None
-
-# TODO: remove this in favor of _config_utils when #635 is merged
-HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
 
 
 class Connection:
@@ -82,7 +80,7 @@ class Connection:
         self.retry = Retry(total=max_retries,
                            backoff_factor=1,  # each retry waits (2**retry_num) seconds
                            method_whitelist=False,  # retry on all HTTP methods
-                           status_forcelist=(502, 503, 504),  # only retry on these status codes
+                           status_forcelist=(http_codes.bad_gateway, http_codes.unavailable, http_codes.gateway_timeout),  # only retry on these status codes
                            raise_on_redirect=False,  # return Response instead of raising after max retries
                            raise_on_status=False)  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
@@ -161,7 +159,7 @@ class Connection:
             err.args = ("connection failed; please check `host` and `port`; error message: \n\n{}".format(err.args[0]),) + err.args[1:]
             six.raise_from(err, None)
 
-        if response.status_code == requests.codes.unauthorized:
+        if response.status_code == http_codes.unauthorized:
             try:
                 response.raise_for_status()
             except requests.HTTPError as e:
@@ -190,8 +188,8 @@ class Connection:
             response_msg = json_to_proto(body_to_json(response), response_type)
             return response_msg
         else:
-            if ((response.status_code == 403 and body_to_json(response)['code'] == 7)
-                    or (response.status_code == 404 and     body_to_json(response)['code'] == 5)):
+            if ((response.status_code == http_codes.forbidden and body_to_json(response)['code'] == 7)
+                    or (response.status_code == http_codes.not_found and body_to_json(response)['code'] == 5)):
                 return NoneProtoResponse()
             else:
                 raise_for_http_error(response)
@@ -247,13 +245,18 @@ class Connection:
         curl = " \\\n    ".join(lines)
         print(curl)
 
+
+    # NB: Maybe replace use of this with a "not is_json_response" method?
     @staticmethod
     def is_html_response(response):
         return response.text.strip().endswith("</html>")
 
     @property
     def email(self):
-        return self.auth.get(_GRPC_PREFIX+"email") # TODO: fix me.
+        if self.credentials and isinstance(self.credentials, EmailCredentials):
+            return self.credentials.email
+        else:
+            return None
 
     def _get_visible_orgs(self):
         response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces")
@@ -311,7 +314,7 @@ class Connection:
             response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getUser", params=msg)
 
             if ((response.ok and self.is_html_response(response))  # fetched webapp
-                    or response.status_code == 404):  # UAC not found
+                    or response.status_code == http_codes.not_found):  # UAC not found
                 pass  # fall through to OSS default workspace
             else:
                 return self.must_proto_response(response, UACService_pb2.UserInfo).verta_info.username
@@ -356,7 +359,6 @@ class Configuration:
         self.debug = debug
 
 
-# TODO: Use connection cookie in make_request
 def make_request(method, url, conn, stream=False, **kwargs):
     """
     Makes a REST request.
@@ -383,12 +385,12 @@ def make_request(method, url, conn, stream=False, **kwargs):
         raise ValueError("`method` must be one of {}".format(_VALID_HTTP_METHODS))
 
     # add auth to headers
-    kwargs.setdefault('headers', {}).update(conn.auth)
+    kwargs.setdefault('headers', {}).update(conn.headers)
 
     with requests.Session() as session:
         session.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
-            request = requests.Request(method, url, **kwargs).prepare()
+            request = requests.Request(method, url, cookies=conn.cookies, **kwargs).prepare()
 
             # retry loop for broken connections
             MAX_RETRIES = conn.retry.total
