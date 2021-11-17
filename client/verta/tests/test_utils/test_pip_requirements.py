@@ -132,6 +132,42 @@ class TestPipRequirementsUtils:
         ) == "verta==0.20.0"
 
 
+class TestRemovePinnedRequirements:
+    @hypothesis.given(
+        library=libraries(),
+        other_library=libraries(),
+        version=versions(),
+    )
+    def test_remove_pinned_requirements(self, library, other_library, version):
+        hypothesis.assume(library != other_library)
+
+        pinned_library = "==".join([library, version])
+        pinned_other_library = "==".join([other_library, version])
+
+        filtered_requirements = _pip_requirements_utils.remove_pinned_requirements(
+            requirements=[pinned_library, pinned_other_library],
+            library_patterns=[library],
+        )
+        assert filtered_requirements == [pinned_other_library]
+
+    @hypothesis.example(
+        library="en-core-web-sm",
+        version=versions().example(),  # pylint: disable=no-member
+    )
+    @hypothesis.given(
+        library=st.from_regex(_pip_requirements_utils.SPACY_MODEL_PATTERN, fullmatch=True),
+        version=versions(),
+    )
+    def test_remove_spacy(self, library, version):
+        pinned_library = "==".join([library, version])
+
+        filtered_requirements = _pip_requirements_utils.remove_pinned_requirements(
+            requirements=[pinned_library],
+            library_patterns=[_pip_requirements_utils.SPACY_MODEL_PATTERN]
+        )
+        assert filtered_requirements == []
+
+
 class TestPinVertaAndCloudpickle:
     @hypothesis.given(
         library=libraries(),

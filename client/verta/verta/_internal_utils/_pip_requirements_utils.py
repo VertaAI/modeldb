@@ -359,6 +359,35 @@ def inject_requirement(requirements, library, version):
     return requirements
 
 
+def remove_pinned_requirements(requirements, library_patterns):
+    """Remove pinned libraries matching `library_patterns` from `requirements`.
+
+    Parameters
+    ----------
+    requirements : list of str
+        pip requirements, usually directly from :meth:`get_pip_freeze`.
+    library_patterns : list of str
+        Regex patterns for libraries to remove.
+
+    Returns
+    -------
+    list of str
+        Copy of `requirements` with `library_patterns` removed.
+
+    """
+    # append == to specifically match version pins (and not @-style VCS installs)
+    library_patterns = map("{}==".format, library_patterns)
+    # compile regex to slightly speed up pattern-matching
+    library_patterns = list(map(re.compile, library_patterns))
+
+    return list(
+        filter(
+            lambda req: not any(pattern.match(req) for pattern in library_patterns),
+            requirements,
+        )
+    )
+
+
 def preserve_req_suffixes(requirement, pinned_library_req):
     """Swap in `pinned_library_req` while preserving `requirement`'s environment marker and comment.
 
