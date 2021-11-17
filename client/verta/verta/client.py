@@ -140,30 +140,18 @@ class Client(object):
         self.auth_credentials = credentials.build(email=email, dev_key=dev_key, jwt_token=jwt_token, jwt_token_sig)
         self.workspace = self._get_with_fallback(None, env_var="VERTA_WORKSPACE")
 
-        auth = extra_auth_headers.copy()
-        auth.update({_utils._GRPC_PREFIX+'source': "PythonClient"})
-
         if self.auth_credentials is None:
             if debug:
                 print("[DEBUG] credentials not found; auth disabled")
-        elif email is not None and dev_key is not None:
-            if debug:
-                print("[DEBUG] using email: {}".format(email))
-                print("[DEBUG] using developer key: {}".format(dev_key[:8] + re.sub(r"[^-]", '*', dev_key[8:])))
-            auth.update({
-                _utils._GRPC_PREFIX+'email': email,
-                _utils._GRPC_PREFIX+'developer_key': dev_key,
-                # without underscore, for NGINX support
-                # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
-                _utils._GRPC_PREFIX+'developer-key': dev_key,
-            })
         else:
-            raise ValueError("`email` and `dev_key` must be provided together")
-
-        if self.auth_credentials is not None:
+            if debug:
+                # print("[DEBUG] using email: {}".format(email))
+                # print("[DEBUG] using developer key: {}".format(dev_key[:8] + re.sub(r"[^-]", '*', dev_key[8:])))
+                print("[DEBUG] using credentials: {}".format(repr(self.auth_credentials)))
             # save credentials to env for other Verta Client features
             self.auth_credentials.export_env_vars_to_os()
 
+        # NB: Perhaps these things should move into Connection as well?
         back_end_url = urlparse(host)
         socket = back_end_url.netloc + back_end_url.path.rstrip('/')
         if port is not None:
@@ -172,10 +160,9 @@ class Client(object):
                           category=FutureWarning)
             socket = "{}:{}".format(socket, port)
         scheme = back_end_url.scheme or ("https" if ".verta.ai" in socket else "http")
-        auth[_utils._GRPC_PREFIX+'scheme'] = scheme
 
         # verify connection
-        conn = _utils.Connection(scheme, socket, auth, max_retries, ignore_conn_err)
+        conn = _utils.Connection(scheme=scheme, socket=socket, max_retries=max_retries, ignore_conn_err=ignore_conn_err, credentials=self.auth_credentials, headers=extra_auth_headers)
         if _connect:
             try:
                 response = _utils.make_request("GET",

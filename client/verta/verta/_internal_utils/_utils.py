@@ -50,6 +50,8 @@ HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
 
 class Connection:
     _OSS_DEFAULT_WORKSPACE = "personal"
+    _DEFAULT_HEADERS = {_GRPC_PREFIX+'source': "PythonClient"}
+
 
     def __init__(self, scheme=None, socket=None, auth=None, max_retries=0, ignore_conn_err=False, credentials=None, headers=None):
         """
@@ -73,12 +75,9 @@ class Connection:
         headers: dict, optional
             Additional headers to attach to requests
         """
-        self._headers = dict()
-        self._auth_headers = dict()
-
+        self._init_headers()
         self.scheme = scheme
         self.socket = socket
-        self.auth = auth
         # TODO: retry on 404s, but only if we're sure it's not legitimate e.g. from a GET
         self.retry = Retry(total=max_retries,
                            backoff_factor=1,  # each retry waits (2**retry_num) seconds
@@ -107,13 +106,25 @@ class Connection:
     def headers(self):
         return self._computed_headers
 
+    # NB: Added for temporary backwards compatibility. Remove when possible.
+    @property
+    def auth(self):
+        return self.headers
+
     @headers.setter
     def headers(self, value):
         self._headers = value
         self._recompute_headers()
 
+    def _init_headers(self):
+        self._headers = {}
+        self._auth_headers = {}
+        self._computed_headers = {}
+
     def _recompute_headers(self):
-        copied_headers = self._headers.copy()
+        headers = self._headers.copy()
+        headers[_GRPC_PREFIX+'scheme'] = self.scheme
+        copied_headers.update(self._DEFAULT_HEADERS)
         copied_headers.update(self._auth_headers)
         self._computed_headers = copied_headers
 
