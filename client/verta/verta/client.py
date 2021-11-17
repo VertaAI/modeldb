@@ -145,8 +145,6 @@ class Client(object):
                 print("[DEBUG] credentials not found; auth disabled")
         else:
             if debug:
-                # print("[DEBUG] using email: {}".format(email))
-                # print("[DEBUG] using developer key: {}".format(dev_key[:8] + re.sub(r"[^-]", '*', dev_key[8:])))
                 print("[DEBUG] using credentials: {}".format(repr(self.auth_credentials)))
             # save credentials to env for other Verta Client features
             self.auth_credentials.export_env_vars_to_os()
