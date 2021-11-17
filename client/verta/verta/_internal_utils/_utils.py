@@ -51,7 +51,7 @@ HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
 class Connection:
     _OSS_DEFAULT_WORKSPACE = "personal"
 
-    def __init__(self, scheme=None, socket=None, auth=None, max_retries=0, ignore_conn_err=False):
+    def __init__(self, scheme=None, socket=None, auth=None, max_retries=0, ignore_conn_err=False, credentials=None, headers=None):
         """
         HTTP connection configuration utility struct.
 
@@ -68,8 +68,14 @@ class Connection:
             on HTTP codes {502, 503, 504} which commonly occur during back end connection lapses.
         ignore_conn_err : bool, default False
             Whether to ignore connection errors and instead return successes with empty contents.
-
+        credentials : :class:`~verta._internal_utils.credentials.EmailCredentials` or :class:`~verta._internal_utils.credentials.JWTCredentials`, optional
+            Either dev key or JWT token data to be used for authentication
+        headers: dict, optional
+            Additional headers to attach to requests
         """
+        self._headers = dict()
+        self._auth_headers = dict()
+
         self.scheme = scheme
         self.socket = socket
         self.auth = auth
@@ -81,6 +87,56 @@ class Connection:
                            raise_on_redirect=False,  # return Response instead of raising after max retries
                            raise_on_status=False)  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
+        self.credentials = credentials
+        self.headers = headers
+        self.cookies = None
+
+
+    @property
+    def credentials(self):
+        return self._credentials
+
+    @credentials.setter
+    def credentials(self, value):
+        self._credentials = value
+        self._auth_headers = self._headers_for_credentials(value)
+        self._recompute_headers()
+        self.cookies = self._cookie_for_credentials(value)
+
+    @property
+    def headers(self):
+        return self._computed_headers
+
+    @headers.setter
+    def headers(self, value):
+        self._headers = value
+        self._recompute_headers()
+
+    def _recompute_headers(self):
+        copied_headers = self._headers.copy()
+        copied_headers.update(self._auth_headers)
+        self._computed_headers = copied_headers
+
+    def _headers_for_credentials(self, credentials):
+        if isinstance(credentials, EmailCredentials):
+            return {
+                _utils._GRPC_PREFIX+'email': credentials.email,
+                _utils._GRPC_PREFIX+'developer_key': credentials.dev_key,
+                # without underscore, for NGINX support
+                # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
+                _utils._GRPC_PREFIX+'developer-key': credentials.dev_key,
+            }
+        else:
+            return {}
+
+    def _cookie_for_credentials(self, credentials):
+        if isinstance(credentials, JWTCredentials):
+            jar = requests.cookies.RequestsCookieJar()
+            jar.set("accessToken", credentials.jwt_token)
+            jar.set("accessToken.sig", credentials.jwt_token_sig)
+            return jar
+        else:
+            return None
 
     def make_proto_request(self, method, path, params=None, body=None, include_default=True):
         if params is not None:
@@ -117,7 +173,7 @@ class Connection:
     def must_response(response):
         raise_for_http_error(response)
 
-    @staticmethod
+    @staticmethod # TODO: update with possible cookie
     def _request_to_curl(request):
         """
         Prints a cURL to reproduce `request`.
@@ -162,7 +218,7 @@ class Connection:
 
     @property
     def email(self):
-        return self.auth.get(_GRPC_PREFIX+"email")
+        return self.auth.get(_GRPC_PREFIX+"email") # TODO: fix me.
 
     def _get_visible_orgs(self):
         response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces")
