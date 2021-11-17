@@ -206,46 +206,6 @@ class Connection:
     def must_response(response):
         raise_for_http_error(response)
 
-    @staticmethod # TODO: update with possible cookie
-    def _request_to_curl(request):
-        """
-        Prints a cURL to reproduce `request`.
-
-        Parameters
-        ----------
-        request : :class:`requests.PreparedRequest`
-
-        Examples
-        --------
-        From a :class:`~requests.Response`:
-
-        .. code-block:: python
-
-            response = _utils.make_request("GET", "https://www.google.com/", conn)
-            conn._request_to_curl(response.request)
-
-        From a :class:`~requests.HTTPError`:
-
-        .. code-block:: python
-
-            try:
-                pass  # insert bad call here
-            except Exception as e:
-                client._conn._request_to_curl(e.request)
-                raise
-
-        """
-        lines = []
-        lines.append("curl -X {} \"{}\"".format(request.method, request.url))
-        if request.headers:
-            lines.extend('-H "{}: {}"'.format(key, val) for key, val in request.headers.items())
-        if request.body:
-            lines.append("-d '{}'".format(request.body.decode()))
-
-        curl = " \\\n    ".join(lines)
-        print(curl)
-
-
     # NB: Maybe replace use of this with a "not is_json_response" method?
     @staticmethod
     def is_html_response(response):

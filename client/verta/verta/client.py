@@ -169,7 +169,6 @@ class Client(object):
 
         self._conn = conn
         self._conf = _utils.Configuration(use_git, debug)
-
         self._ctx = _Context(self._conn, self._conf)
 
     @property
