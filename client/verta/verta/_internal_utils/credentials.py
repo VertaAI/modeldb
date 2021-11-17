@@ -2,6 +2,7 @@
 
 import abc
 import os
+import re
 
 from verta.external import six
 
@@ -22,7 +23,8 @@ class Credentials(object):
     def export_env_vars_to_os(self):
         raise NotImplementedError
 
-class EmailCredentials:
+
+class EmailCredentials(Credentials):
 
     EMAIL_ENV = "VERTA_EMAIL"
     DEV_KEY_ENV = "VERTA_DEV_KEY"
@@ -36,9 +38,10 @@ class EmailCredentials:
         os.environ[self.DEV_KEY_ENV] = self.dev_key
 
     def __repr__(self):
-        return "" # TODO: implement and obscure dev key to avoid printing accidentally
+        key = self.dev_key[:8] + re.sub(r"[^-]", '*', self.dev_key[8:])
+        return "EmailCredentials({}, {})".format(self.email, key)
 
-class JWTCredentials:
+class JWTCredentials(Credentials):
 
     JWT_TOKEN_ENV = "VERTA_JWT_TOKEN"
     JWT_TOKEN_SIG_ENV = "VERTA_JWT_TOKEN_SIG"
@@ -52,4 +55,5 @@ class JWTCredentials:
         os.environ[self.JWT_TOKEN_SIG_ENV] = self.jwt_token_sig
 
     def __repr__(self):
-        return "" # TODO: implement and obscure as appropriate to avoid accidentally printing
+        token = self.jwt_token[:8] + re.sub(r"[^-]", '*', self.jwt_token[8:])
+        return "JWTCredentials({}, {})".format(token, self.jwt_token_sig)
