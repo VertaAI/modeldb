@@ -149,6 +149,30 @@ class Connection:
         else:
             return None
 
+    def test(self, print_success=True):
+        """
+        TODO: Describe me
+        """
+        try:
+            response = make_request("GET",
+                                           "{}://{}/api/v1/modeldb/project/verifyConnection".format(self.scheme, self.socket),
+                                           self)
+        except requests.ConnectionError as err:
+            err.args = ("connection failed; please check `host` and `port`; error message: \n\n{}".format(err.args[0]),) + err.args[1:]
+            six.raise_from(err, None)
+
+        if response.status_code == requests.codes.unauthorized:
+            try:
+                response.raise_for_status()
+            except requests.HTTPError as e:
+                e.args = ("authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY` or JWT credentials\n\n{}".format(
+                    e.args[0]),) + e.args[1:]
+                raise e
+        _utils.raise_for_http_error(response)
+        if print_success:
+            print("connection successfully established")
+        return True
+
     def make_proto_request(self, method, path, params=None, body=None, include_default=True):
         if params is not None:
             params = proto_to_json(params)
@@ -332,6 +356,7 @@ class Configuration:
         self.debug = debug
 
 
+# TODO: Use connection cookie in make_request
 def make_request(method, url, conn, stream=False, **kwargs):
     """
     Makes a REST request.

@@ -161,31 +161,11 @@ class Client(object):
             socket = "{}:{}".format(socket, port)
         scheme = back_end_url.scheme or ("https" if ".verta.ai" in socket else "http")
 
-        # verify connection
         conn = _utils.Connection(scheme=scheme, socket=socket, max_retries=max_retries, ignore_conn_err=ignore_conn_err, credentials=self.auth_credentials, headers=extra_auth_headers)
+
+        # verify connection
         if _connect:
-            try:
-                response = _utils.make_request("GET",
-                                               "{}://{}/api/v1/modeldb/project/verifyConnection".format(conn.scheme, conn.socket),
-                                               conn)
-            except requests.ConnectionError as err:
-                err.args = ("connection failed; please check `host` and `port`; error message: \n\n{}".format(err.args[0]),) + err.args[1:]
-                six.raise_from(err, None)
-
-            def is_unauthorized(response): return response.status_code == 401
-
-            if is_unauthorized(response):
-                # response.reason was "Unauthorized"
-                try:
-                    response.raise_for_status()
-                except requests.HTTPError as e:
-                    e.args = ("authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`\n\n{}".format(
-                        e.args[0]),) + e.args[1:]
-
-                    raise e
-
-            _utils.raise_for_http_error(response)
-            print("connection successfully established")
+            conn.test()
 
         self._conn = conn
         self._conf = _utils.Configuration(use_git, debug)
