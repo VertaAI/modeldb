@@ -19,6 +19,7 @@ from ._internal_utils import (
     _config_utils,
     _request_utils,
     _utils,
+    credentials,
 )
 
 from .tracking import _Context
@@ -123,18 +124,20 @@ class Client(object):
         self._load_config()
 
         host = self._get_with_fallback(host, env_var="VERTA_HOST", config_var="host")
+        if host is None:
+            raise ValueError("`host` must be provided")
+
         email = self._get_with_fallback(email, env_var="VERTA_EMAIL", config_var="email")
         dev_key = self._get_with_fallback(dev_key, env_var="VERTA_DEV_KEY", config_var="dev_key")
-
         jwt_token = self._get_with_fallback(jwt_token, env_var="VERTA_JWT_TOKEN", config_var="jwt_token")
         jwt_token_sig = self._get_with_fallback(jwt_token_sig, env_var="VERTA_JWT_TOKEN_SIG", config_var="jwt_token_sig")
 
+        self.auth_credentials = credentials.build(email=email, dev_key=dev_key, jwt_token=jwt_token, jwt_token_sig)
         self.workspace = self._get_with_fallback(None, env_var="VERTA_WORKSPACE")
 
-        if host is None:
-            raise ValueError("`host` must be provided")
         auth = extra_auth_headers.copy()
         auth.update({_utils._GRPC_PREFIX+'source': "PythonClient"})
+
         if email is None and dev_key is None:
             if debug:
                 print("[DEBUG] email and developer key not found; auth disabled")
