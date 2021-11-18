@@ -28,6 +28,11 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 from ..external import six
 from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
+from .credentials import (
+    EmailCredentials,
+    JWTCredentials,
+)
+
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.uac import Organization_pb2, UACService_pb2, Workspace_pb2
 
@@ -122,18 +127,18 @@ class Connection:
     def _recompute_headers(self):
         headers = self._headers.copy()
         headers[_GRPC_PREFIX+'scheme'] = self.scheme
-        copied_headers.update(self._DEFAULT_HEADERS)
-        copied_headers.update(self._auth_headers)
-        self._computed_headers = copied_headers
+        headers.update(self._DEFAULT_HEADERS)
+        headers.update(self._auth_headers)
+        self._computed_headers = headers
 
     def _headers_for_credentials(self, credentials):
         if isinstance(credentials, EmailCredentials):
             return {
-                _utils._GRPC_PREFIX+'email': credentials.email,
-                _utils._GRPC_PREFIX+'developer_key': credentials.dev_key,
+                _GRPC_PREFIX+'email': credentials.email,
+                _GRPC_PREFIX+'developer_key': credentials.dev_key,
                 # without underscore, for NGINX support
                 # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
-                _utils._GRPC_PREFIX+'developer-key': credentials.dev_key,
+                _GRPC_PREFIX+'developer-key': credentials.dev_key,
             }
         else:
             return {}
@@ -166,7 +171,7 @@ class Connection:
                 e.args = ("authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY` or JWT credentials\n\n{}".format(
                     e.args[0]),) + e.args[1:]
                 raise e
-        _utils.raise_for_http_error(response)
+        raise_for_http_error(response)
         if print_success:
             print("connection successfully established")
         return True

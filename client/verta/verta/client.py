@@ -125,7 +125,7 @@ class Client(object):
 
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
-                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, extra_auth_headers={}, _connect=True):
+                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, extra_auth_headers={}, _connect=True, jwt_token=None, jwt_token_sig=None):
         self._load_config()
 
         host = self._get_with_fallback(host, env_var="VERTA_HOST", config_var="host")
