@@ -1,4 +1,4 @@
-package ai.verta.modeldb.utils;
+package ai.verta.modeldb.common;
 
 import ai.verta.modeldb.config.MDBConfig;
 import java.util.AbstractMap;

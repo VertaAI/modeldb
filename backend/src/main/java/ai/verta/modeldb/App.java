@@ -30,7 +30,7 @@ import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.utils.MssqlMigrationUtil;
+import ai.verta.modeldb.common.MssqlMigrationUtil;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
 import io.grpc.BindableService;
