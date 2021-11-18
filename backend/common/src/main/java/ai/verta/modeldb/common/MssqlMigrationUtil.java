@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common;
 
+import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.config.MDBConfig;
 import java.util.AbstractMap;
 import java.util.HashMap;
@@ -19,10 +20,8 @@ public class MssqlMigrationUtil {
 
   private MssqlMigrationUtil() {}
 
-  public static void migrateToUTF16ForMssql(MDBConfig mdbConfig) {
-    mdbConfig
-        .getJdbi()
-        .useHandle(
+  public static void migrateToUTF16ForMssql(FutureJdbi futureJdbi) {
+    futureJdbi.useHandle(
             handle1 ->
                 handle1.useTransaction(
                     TransactionIsolationLevel.SERIALIZABLE,

@@ -175,7 +175,7 @@ public class App implements ApplicationContextAware {
       LOGGER.info("Code migration done");
 
       if (databaseConfig.getRdbConfiguration().isMssql()) {
-        MssqlMigrationUtil.migrateToUTF16ForMssql(mdbConfig);
+        MssqlMigrationUtil.migrateToUTF16ForMssql(mdbConfig.getJdbi());
       }
 
       var runLiquibaseSeparate =
