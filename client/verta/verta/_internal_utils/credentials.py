@@ -23,6 +23,10 @@ class Credentials(object):
     def export_env_vars_to_os(self):
         raise NotImplementedError
 
+    @abc.abstractmethod
+    def headers(self):
+        raise NotImplementedError
+
 
 class EmailCredentials(Credentials):
 
@@ -36,6 +40,16 @@ class EmailCredentials(Credentials):
     def export_env_vars_to_os(self):
         os.environ[self.EMAIL_ENV] = self.email
         os.environ[self.DEV_KEY_ENV] = self.dev_key
+
+    def headers(self):
+        return {
+            'source': 'PythonClient',
+            'email': self.email,
+            'developer_key': self.dev_key,
+            # without underscore, for NGINX support
+            # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
+            'developer-key': self.dev_key,
+        }
 
     def __repr__(self):
         key = self.dev_key[:8] + re.sub(r"[^-]", '*', self.dev_key[8:])
@@ -53,6 +67,17 @@ class JWTCredentials(Credentials):
     def export_env_vars_to_os(self):
         os.environ[self.JWT_TOKEN_ENV] = self.jwt_token
         os.environ[self.JWT_TOKEN_SIG_ENV] = self.jwt_token_sig
+
+    def headers(self):
+        return {
+            'source': 'JWT',
+            'bearer_access_token': self.jwt_token,
+            'bearer_access_token_sig': self.jwt_token_sig,
+            # without underscore, for NGINX support
+            # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
+            'bearer-access-token': self.jwt_token,
+            'bearer-access-token-sig': self.jwt_token_sig,
+        }
 
     def __repr__(self):
         token = self.jwt_token[:8] + re.sub(r"[^-]", '*', self.jwt_token[8:])

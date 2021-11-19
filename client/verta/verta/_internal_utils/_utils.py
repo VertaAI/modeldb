@@ -54,8 +54,6 @@ THREAD_LOCALS.active_experiment_run = None
 
 class Connection:
     _OSS_DEFAULT_WORKSPACE = "personal"
-    _DEFAULT_HEADERS = {_GRPC_PREFIX+'source': "PythonClient"}
-
 
     def __init__(self, scheme=None, socket=None, auth=None, max_retries=0, ignore_conn_err=False, credentials=None, headers=None):
         """
@@ -92,7 +90,6 @@ class Connection:
         self.ignore_conn_err = ignore_conn_err
         self.credentials = credentials
         self.headers = headers
-        self.cookies = None
 
 
     @property
@@ -104,7 +101,6 @@ class Connection:
         self._credentials = value
         self._auth_headers = self._headers_for_credentials(value)
         self._recompute_headers()
-        self.cookies = self._cookie_for_credentials(value)
 
     @property
     def headers(self):
@@ -128,30 +124,13 @@ class Connection:
     def _recompute_headers(self):
         headers = self._headers.copy()
         headers[_GRPC_PREFIX+'scheme'] = self.scheme
-        headers.update(self._DEFAULT_HEADERS)
         headers.update(self._auth_headers)
         self._computed_headers = headers
 
     def _headers_for_credentials(self, credentials):
-        if isinstance(credentials, EmailCredentials):
-            return {
-                _GRPC_PREFIX+'email': credentials.email,
-                _GRPC_PREFIX+'developer_key': credentials.dev_key,
-                # without underscore, for NGINX support
-                # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
-                _GRPC_PREFIX+'developer-key': credentials.dev_key,
-            }
-        else:
-            return {}
-
-    def _cookie_for_credentials(self, credentials):
-        if isinstance(credentials, JWTCredentials):
-            jar = requests.cookies.RequestsCookieJar()
-            jar.set("accessToken", credentials.jwt_token)
-            jar.set("accessToken.sig", credentials.jwt_token_sig)
-            return jar
-        else:
-            return None
+        if credentials:
+            return {(_GRPC_PREFIX + k): v for (k,v) in credentials.headers()}
+        return {}
 
     def test(self, print_success=True):
         """
@@ -356,7 +335,7 @@ def make_request(method, url, conn, stream=False, **kwargs):
     with requests.Session() as session:
         session.mount(url, HTTPAdapter(max_retries=conn.retry))
         try:
-            request = requests.Request(method, url, cookies=conn.cookies, **kwargs).prepare()
+            request = requests.Request(method, url, **kwargs).prepare()
 
             # retry loop for broken connections
             MAX_RETRIES = conn.retry.total
