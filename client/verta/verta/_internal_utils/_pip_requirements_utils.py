@@ -318,7 +318,7 @@ def inject_requirement(requirements, library, version, error_on_conflict=True):
         Python library, e.g. "verta".
     version : str
         Desired version number, e.g. "0.20.0".
-    error_on_conflict : bool
+    error_on_conflict : bool, default True
         If true, raise a `ValueError` on version mismatches. Otherwise issue a
         warning. Defaults to true.
 
