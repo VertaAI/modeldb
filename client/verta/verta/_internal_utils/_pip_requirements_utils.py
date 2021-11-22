@@ -350,7 +350,7 @@ def inject_requirement(requirements, library, version, error_on_conflict=True):
                         if error_on_conflict:
                             raise ValueError(msg)
                         else:
-                            warnings.warn(msg)
+                            warnings.warn(msg, stacklevel=2)
                     else:  # versions match: no action needed
                         continue
                 # TODO: check other operators (>=, >, ...)
