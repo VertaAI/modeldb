@@ -345,8 +345,8 @@ def inject_requirement(requirements, library, version, error_on_conflict=True):
                 if "==" in req:  # version pin: check version
                     their_ver = req.split('==')[-1]
                     if version != their_ver:  # versions conflict: raise exception
-                        msg = "Client is running with {} v{}, but the provided requirements specify v{};"
-                        " these should match".format(library, version, their_ver)
+                        msg = ("Client is running with {} v{}, but the provided requirements specify v{};"
+                               " these should match").format(library, version, their_ver)
                         if error_on_conflict:
                             raise ValueError(msg)
                         else:
