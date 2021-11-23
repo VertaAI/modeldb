@@ -11,6 +11,9 @@ import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
+import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
+import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
+import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.OrganizationServiceGrpc;
@@ -21,11 +24,13 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.concurrent.Executor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 public class TestsInit {
-
+  private static final Logger LOGGER = LogManager.getLogger(TestsInit.class);
   private static InProcessServerBuilder serverBuilder;
   protected static AuthClientInterceptor authClientInterceptor;
 
@@ -174,12 +179,31 @@ public class TestsInit {
     // Remove all entities
     // removeEntities();
     // Delete entities by cron job
-    ReconcilerInitializer.softDeleteProjects.resync();
-    Thread.sleep(5000);
-    ReconcilerInitializer.softDeleteExperiments.resync();
-    Thread.sleep(5000);
-    ReconcilerInitializer.softDeleteExperimentRuns.resync();
+    SoftDeleteProjects softDeleteProjects = ReconcilerInitializer.softDeleteProjects;
+    SoftDeleteExperiments softDeleteExperiments = ReconcilerInitializer.softDeleteExperiments;
+    SoftDeleteExperimentRuns softDeleteExperimentRuns =
+        ReconcilerInitializer.softDeleteExperimentRuns;
+
+    softDeleteProjects.resync();
+    while (softDeleteProjects.isElementsNotDeleted()) {
+      LOGGER.trace("Project deletion is still in progress");
+    }
+    softDeleteExperiments.resync();
+    while (softDeleteExperiments.isElementsNotDeleted()) {
+      LOGGER.trace("Experiment deletion is still in progress");
+    }
+    softDeleteExperimentRuns.resync();
+    while (softDeleteExperimentRuns.isElementsNotDeleted()) {
+      LOGGER.trace("ExperimentRun deletion is still in progress");
+    }
+
     ReconcilerInitializer.softDeleteDatasets.resync();
     ReconcilerInitializer.softDeleteRepositories.resync();
+  }
+
+  protected static void updateTimestampOfResources() {
+    ReconcilerInitializer.updateRepositoryTimestampReconcile.resync();
+    ReconcilerInitializer.updateExperimentTimestampReconcile.resync();
+    ReconcilerInitializer.updateProjectTimestampReconcile.resync();
   }
 }

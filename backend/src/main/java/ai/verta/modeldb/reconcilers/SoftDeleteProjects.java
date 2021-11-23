@@ -26,7 +26,7 @@ public class SoftDeleteProjects extends Reconciler<String> {
       MDBRoleService mdbRoleService,
       FutureJdbi futureJdbi,
       Executor executor) {
-    super(config, LogManager.getLogger(SoftDeleteProjects.class), futureJdbi, executor, false);
+    super(config, LogManager.getLogger(SoftDeleteProjects.class), futureJdbi, executor, true);
     this.mdbRoleService = mdbRoleService;
   }
 
