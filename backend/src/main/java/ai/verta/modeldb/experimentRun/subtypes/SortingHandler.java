@@ -21,8 +21,7 @@ public class SortingHandler {
       case "date_created":
       case "name":
         return InternalFuture.completedInternalFuture(
-            new QueryFilterContext()
-                .addOrderItem(new OrderColumn("experiment_run." + key, ascending)));
+            new QueryFilterContext().addOrderItem(new OrderColumn(key, ascending)));
       default:
         // Do nothing
         break;
@@ -55,7 +54,7 @@ public class SortingHandler {
 
   private QueryFilterContext processKeyValueSort(String key, boolean ascending, String fieldType) {
     var sql =
-        "select experiment_run_id as id, kv_value as value from keyvalue where entity_name=:entityName and field_type=:sort_field_type and kv_key=:sort_key";
+        "select experiment_run_id as runId, kv_value as value from keyvalue where entity_name=:entityName and field_type=:sort_field_type and kv_key=:sort_key";
     var queryContext =
         new QueryFilterContext()
             .addBind(q -> q.bind("sort_field_type", fieldType))
@@ -69,7 +68,7 @@ public class SortingHandler {
 
   private QueryFilterContext processConfigHyperparametersSort(String key, boolean ascending) {
     var hyperparameterFromBlobMappingSql =
-        "select distinct experiment_run_id as id, int_value, float_value, string_value from hyperparameter_element_mapping where entity_type=:entity_type and experiment_run_id IS NOT NULL and name=:name";
+        "select distinct experiment_run_id as runId, int_value, float_value, string_value from hyperparameter_element_mapping where entity_type=:entity_type and experiment_run_id IS NOT NULL and name=:name";
     var queryContext =
         new QueryFilterContext()
             .addBind(q -> q.bind("entity_type", "ExperimentRunEntity"))

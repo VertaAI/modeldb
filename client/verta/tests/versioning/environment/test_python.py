@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import copy
 import logging
-import os
+import re
 import sys
 
 import pytest
@@ -16,7 +15,11 @@ import verta
 from verta.environment import (
     Python,
 )
-from verta._internal_utils import _pip_requirements_utils
+from verta._internal_utils._pip_requirements_utils import (
+    SPACY_MODEL_PATTERN,
+    get_pip_freeze,
+    pin_verta_and_cloudpickle,
+)
 
 
 def assert_parsed_reqs_match(parsed_reqs, original_reqs):
@@ -60,7 +63,7 @@ class TestObject:
             env_vars=env_vars,
         )
 
-        requirements = _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        requirements = pin_verta_and_cloudpickle(requirements)
         for line in requirements:
             assert line in repr(env)
         for line in constraints:
@@ -82,7 +85,7 @@ class TestObject:
         assert env._msg.python.raw_requirements
         assert env._msg.python.raw_constraints
 
-        requirements = _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        requirements = pin_verta_and_cloudpickle(requirements)
         for line in requirements:
             assert line in repr(env)
         for line in constraints:
@@ -96,6 +99,18 @@ class TestObject:
             env_ver._msg,
             including_default_value_fields=False,
         )
+
+
+class TestReadPipEnvironment:
+    @pytest.mark.skipif(
+        not any(re.match(SPACY_MODEL_PATTERN + "==", req) for req in get_pip_freeze()),
+        reason="requires spaCy model pinned in environment (`python -m spacy download en_core_web_sm` with pip<20)",
+    )
+    def test_skip_spacy_models(self):
+        pattern = SPACY_MODEL_PATTERN + "=="
+        requirements = Python.read_pip_environment()
+
+        assert not any(re.match(pattern, req) for req in requirements)
 
 
 class TestPythonVersion:
@@ -137,7 +152,7 @@ class TestParsedRequirements:
         assert env._msg.python.requirements
         assert not env._msg.python.raw_requirements
 
-        reqs = _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        reqs = pin_verta_and_cloudpickle(reqs)
         assert_parsed_reqs_match(env.requirements, reqs)
 
     def test_from_files(self, requirements_file):
@@ -146,7 +161,7 @@ class TestParsedRequirements:
         assert env._msg.python.requirements
         assert not env._msg.python.raw_requirements
 
-        reqs = _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        reqs = pin_verta_and_cloudpickle(reqs)
         assert_parsed_reqs_match(env.requirements, reqs)
 
     def test_legacy_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
@@ -215,7 +230,7 @@ class TestRawRequirements:
             assert not env._msg.python.requirements
             assert env._msg.python.raw_requirements
 
-            expected_reqs = _pip_requirements_utils.pin_verta_and_cloudpickle([req])
+            expected_reqs = pin_verta_and_cloudpickle([req])
             assert env.requirements == expected_reqs
 
     def test_inject_verta_cloudpickle(self):

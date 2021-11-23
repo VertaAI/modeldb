@@ -770,31 +770,25 @@ public class FutureExperimentRunDAO {
         InternalFuture.supplyAsync(
             () -> {
               final var localQueryContext = new QueryFilterContext();
-              localQueryContext.getConditions().add("experiment_run.deleted = :deleted");
+              localQueryContext.getConditions().add("deleted = :deleted");
               localQueryContext.getBinds().add(q -> q.bind("deleted", false));
 
               if (!request.getProjectId().isEmpty()) {
-                localQueryContext
-                    .getConditions()
-                    .add("experiment_run.project_id=:request_project_id");
+                localQueryContext.getConditions().add("project_id=:request_project_id");
                 localQueryContext
                     .getBinds()
                     .add(q -> q.bind("request_project_id", request.getProjectId()));
               }
 
               if (!request.getExperimentId().isEmpty()) {
-                localQueryContext
-                    .getConditions()
-                    .add("experiment_run.experiment_id=:request_experiment_id");
+                localQueryContext.getConditions().add("experiment_id=:request_experiment_id");
                 localQueryContext
                     .getBinds()
                     .add(q -> q.bind("request_experiment_id", request.getExperimentId()));
               }
 
               if (!request.getExperimentRunIdsList().isEmpty()) {
-                localQueryContext
-                    .getConditions()
-                    .add("experiment_run.id in (<request_experiment_run_ids>)");
+                localQueryContext.getConditions().add("id in (<request_experiment_run_ids>)");
                 localQueryContext
                     .getBinds()
                     .add(
@@ -845,7 +839,7 @@ public class FutureExperimentRunDAO {
                           return jdbi.withHandle(
                                   handle -> {
                                     var sql =
-                                        "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id, experiment_run.version_number from experiment_run";
+                                        "select id, date_created, date_updated, experiment_id, name, project_id, description, start_time, end_time, owner, environment, code_version, job_id, version_number from experiment_run";
 
                                     // Add the sorting tables
                                     for (final var item :
@@ -854,7 +848,7 @@ public class FutureExperimentRunDAO {
                                       if (item.getValue().getTable() != null) {
                                         sql +=
                                             String.format(
-                                                " left join (%s) as join_table_%d on experiment_run.id=join_table_%d.id ",
+                                                " left join (%s) as join_table_%d on id=join_table_%d.runId ",
                                                 item.getValue().getTable(),
                                                 item.getIndex(),
                                                 item.getIndex());
@@ -905,7 +899,11 @@ public class FutureExperimentRunDAO {
                                       final var offset =
                                           (request.getPageNumber() - 1) * request.getPageLimit();
                                       final var limit = request.getPageLimit();
-                                      sql += " LIMIT :limit OFFSET :offset";
+                                      if (config.getDatabase().getRdbConfiguration().isMssql()) {
+                                        sql += " OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY ";
+                                      } else {
+                                        sql += " LIMIT :limit OFFSET :offset";
+                                      }
                                       queryContext.addBind(q -> q.bind("limit", limit));
                                       queryContext.addBind(q -> q.bind("offset", offset));
                                     }
@@ -918,37 +916,23 @@ public class FutureExperimentRunDAO {
                                             (rs, ctx) -> {
                                               var runBuilder =
                                                   ExperimentRun.newBuilder()
-                                                      .setId(rs.getString("experiment_run.id"))
-                                                      .setProjectId(
-                                                          rs.getString("experiment_run.project_id"))
+                                                      .setId(rs.getString("id"))
+                                                      .setProjectId(rs.getString("project_id"))
                                                       .setExperimentId(
-                                                          rs.getString(
-                                                              "experiment_run.experiment_id"))
-                                                      .setName(rs.getString("experiment_run.name"))
-                                                      .setDescription(
-                                                          rs.getString(
-                                                              "experiment_run.description"))
-                                                      .setDateUpdated(
-                                                          rs.getLong("experiment_run.date_updated"))
-                                                      .setDateCreated(
-                                                          rs.getLong("experiment_run.date_created"))
-                                                      .setStartTime(
-                                                          rs.getLong("experiment_run.start_time"))
-                                                      .setEndTime(
-                                                          rs.getLong("experiment_run.end_time"))
-                                                      .setOwner(
-                                                          rs.getString("experiment_run.owner"))
-                                                      .setCodeVersion(
-                                                          rs.getString(
-                                                              "experiment_run.code_version"))
-                                                      .setJobId(
-                                                          rs.getString("experiment_run.job_id"))
+                                                          rs.getString("experiment_id"))
+                                                      .setName(rs.getString("name"))
+                                                      .setDescription(rs.getString("description"))
+                                                      .setDateUpdated(rs.getLong("date_updated"))
+                                                      .setDateCreated(rs.getLong("date_created"))
+                                                      .setStartTime(rs.getLong("start_time"))
+                                                      .setEndTime(rs.getLong("end_time"))
+                                                      .setOwner(rs.getString("owner"))
+                                                      .setCodeVersion(rs.getString("code_version"))
+                                                      .setJobId(rs.getString("job_id"))
                                                       .setVersionNumber(
-                                                          rs.getLong(
-                                                              "experiment_run.version_number"));
+                                                          rs.getLong("version_number"));
 
-                                              var environment =
-                                                  rs.getString("experiment_run.environment");
+                                              var environment = rs.getString("environment");
                                               if (environment != null && !environment.isEmpty()) {
                                                 var environmentBlobBuilder =
                                                     EnvironmentBlob.newBuilder();
@@ -1240,7 +1224,7 @@ public class FutureExperimentRunDAO {
                         queryContext ->
                             jdbi.withHandle(
                                 handle -> {
-                                  var sql = "select count(experiment_run.id) from experiment_run";
+                                  var sql = "select count(id) from experiment_run";
 
                                   if (!queryContext.getConditions().isEmpty()) {
                                     sql +=
@@ -1336,7 +1320,7 @@ public class FutureExperimentRunDAO {
                     return null;
                   } else {
                     return new QueryFilterContext()
-                        .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                        .addCondition("project_id in (<authz_project_ids>)")
                         .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
                   }
                 }
@@ -1351,7 +1335,7 @@ public class FutureExperimentRunDAO {
                   return null;
                 } else {
                   return new QueryFilterContext()
-                      .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                      .addCondition("project_id in (<authz_project_ids>)")
                       .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
                 }
               },

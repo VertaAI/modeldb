@@ -71,6 +71,11 @@ class Python(_environment._Environment):
         )
     """
 
+    DEFAULT_EXCLUDED_PACKAGES = [
+        _pip_requirements_utils.SPACY_MODEL_PATTERN,
+        "anaconda-client",
+    ]
+
     def __init__(
         self,
         requirements,
@@ -318,6 +323,8 @@ class Python(_environment._Environment):
         ----------
         filepath : str
             Path to a pip requirements or constraints file.
+        skip_options : bool, default False
+            Whether to omit lines with advanced pip options.
 
         Returns
         -------
@@ -345,7 +352,10 @@ class Python(_environment._Environment):
         return requirements
 
     @staticmethod
-    def read_pip_environment(skip_options=False):
+    def read_pip_environment(
+        skip_options=False,
+        exclude=DEFAULT_EXCLUDED_PACKAGES,
+    ):
         """Read package versions from pip into a list.
 
         .. versionchanged:: 0.20.0
@@ -353,6 +363,15 @@ class Python(_environment._Environment):
             This method now includes, rather than skipping, pip packages
             installed via version control systems. The new `skip_options`
             parameter can be set to ``True`` to restore the old behavior.
+
+        Parameters
+        ----------
+        skip_options : bool, default False
+            Whether to omit lines with advanced pip options.
+        exclude : list of str, default spaCy models and "anaconda-client"
+            Regex patterns for packages to omit. Certain tools, such as conda
+            and spaCy, install items into the pip environment that can't be
+            installed from PyPI when a model is deployed in Verta.
 
         Returns
         -------
@@ -370,6 +389,13 @@ class Python(_environment._Environment):
         """
         requirements = _pip_requirements_utils.get_pip_freeze()
         if skip_options:
-            requirements = _pip_requirements_utils.clean_reqs_file_lines(requirements)
+            requirements = _pip_requirements_utils.clean_reqs_file_lines(
+                requirements,
+            )
+        if exclude:
+            requirements = _pip_requirements_utils.remove_pinned_requirements(
+                requirements,
+                exclude,
+            )
 
         return requirements

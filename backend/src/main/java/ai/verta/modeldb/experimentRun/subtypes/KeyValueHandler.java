@@ -7,7 +7,7 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;
 import java.util.HashSet;
@@ -182,7 +182,7 @@ public class KeyValueHandler {
     try (var queryHandler = handle.createUpdate(queryString)) {
       queryHandler
           .bind(KEY_QUERY_PARAM, kv.getKey())
-          .bind(VALUE_QUERY_PARAM, ModelDBUtils.getStringFromProtoObject(kv.getValue()))
+          .bind(VALUE_QUERY_PARAM, RdbmsUtils.getValueForKeyValueTable(kv))
           .bind(TYPE_QUERY_PARAM, kv.getValueTypeValue())
           .bind(ENTITY_ID_PARAM_QUERY, entityId)
           .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
@@ -250,9 +250,7 @@ public class KeyValueHandler {
                                             + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
                                         getTableName(), entityIdReferenceColumn))
                                 .bind(KEY_QUERY_PARAM, kv.getKey())
-                                .bind(
-                                    VALUE_QUERY_PARAM,
-                                    ModelDBUtils.getStringFromProtoObject(kv.getValue()))
+                                .bind(VALUE_QUERY_PARAM, RdbmsUtils.getValueForKeyValueTable(kv))
                                 .bind(TYPE_QUERY_PARAM, kv.getValueTypeValue())
                                 .bind(ENTITY_ID_PARAM_QUERY, entityId)
                                 .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
