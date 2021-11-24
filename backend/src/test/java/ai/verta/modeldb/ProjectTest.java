@@ -425,7 +425,7 @@ public class ProjectTest extends TestsInit {
       LOGGER.info("Project Created Successfully");
       projects.add(response.getProject());
 
-      projectName = "Code Versioning_ver-1.1 (none; git children)";
+      projectName = "Code Versioning_ver-1.1 (none; git children)" + new Date().getTime();
       createProjectRequest = getCreateProjectRequest(projectName);
       createProjectRequest = createProjectRequest.toBuilder().build();
       response = projectServiceStub.createProject(createProjectRequest);
