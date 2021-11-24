@@ -138,7 +138,7 @@ class Client(object):
         jwt_token_sig = self._get_with_fallback(jwt_token_sig, env_var=JWTCredentials.JWT_TOKEN_SIG_ENV, config_var="jwt_token_sig")
 
         self.auth_credentials = credentials.build(email=email, dev_key=dev_key, jwt_token=jwt_token, jwt_token_sig=jwt_token_sig)
-        self.workspace = self._get_with_fallback(None, env_var="VERTA_WORKSPACE")
+        self._workspace = self._get_with_fallback(None, env_var="VERTA_WORKSPACE")
 
         if self.auth_credentials is None:
             if debug:
