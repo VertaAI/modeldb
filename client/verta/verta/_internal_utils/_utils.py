@@ -71,9 +71,10 @@ class Connection:
         ignore_conn_err : bool, default False
             Whether to ignore connection errors and instead return successes with empty contents.
         credentials : :class:`~verta._internal_utils.credentials.EmailCredentials` or :class:`~verta._internal_utils.credentials.JWTCredentials`, optional
-            Either dev key or JWT token data to be used for authentication
+            Either dev key or JWT token data to be used for authentication.
         headers: dict, optional
-            Additional headers to attach to requests
+            Additional headers to attach to requests.
+
         """
         self._init_headers()
         self.scheme = scheme
@@ -97,7 +98,7 @@ class Connection:
     @credentials.setter
     def credentials(self, value):
         self._credentials = value
-        self._auth_headers = self._headers_for_credentials(value)
+        self._auth_headers = self._prefixed_headers_for_credentials(value)
         self._recompute_headers()
 
     @property
@@ -125,7 +126,7 @@ class Connection:
         headers.update(self._auth_headers)
         self._computed_headers = headers
 
-    def _headers_for_credentials(self, credentials):
+    def _prefixed_headers_for_credentials(self, credentials):
         if credentials:
             return {(_GRPC_PREFIX + k): v for (k,v) in credentials.headers().items()}
         return {}
