@@ -145,7 +145,7 @@ public abstract class Reconciler<T> {
 
   protected abstract ReconcileResult reconcile(Set<T> objs);
 
-  public boolean isElementsNotDeleted() {
+  public boolean isEmpty() {
     return !processingIdSet.isEmpty();
   }
 }

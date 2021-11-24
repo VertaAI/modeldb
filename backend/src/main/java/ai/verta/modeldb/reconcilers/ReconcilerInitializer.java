@@ -27,8 +27,7 @@ public class ReconcilerInitializer {
       Config config, ServiceSet services, DAOSet daos, FutureJdbi futureJdbi, Executor executor) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
 
-    ReconcilerConfig reconcilerConfig = new ReconcilerConfig();
-    reconcilerConfig.setTestReconciler(config instanceof TestConfig);
+    ReconcilerConfig reconcilerConfig = new ReconcilerConfig(config instanceof TestConfig);
 
     softDeleteProjects =
         new SoftDeleteProjects(reconcilerConfig, services.mdbRoleService, futureJdbi, executor);
