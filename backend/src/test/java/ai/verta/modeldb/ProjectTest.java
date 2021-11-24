@@ -2488,12 +2488,12 @@ public class ProjectTest extends TestsInit {
         if (pageNumber == 1) {
           assertEquals(
               "Project not match with expected Project",
-              projectsMap.get(responseList.get(0).getId()),
+              projectsMap.get(project3.getId()),
               project3);
         } else if (pageNumber == 3) {
           assertEquals(
               "Project not match with expected Project",
-              projectsMap.get(responseList.get(0).getId()),
+              projectsMap.get(project1.getId()),
               project1);
         }
 
