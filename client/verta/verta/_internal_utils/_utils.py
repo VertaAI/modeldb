@@ -98,7 +98,6 @@ class Connection:
     @credentials.setter
     def credentials(self, value):
         self._credentials = value
-        self._auth_headers = self._prefixed_headers_for_credentials(value)
         self._recompute_headers()
 
     @property
@@ -120,14 +119,13 @@ class Connection:
 
     def _init_headers(self):
         self._headers = {}
-        self._auth_headers = {}
         self._computed_headers = {}
 
     def _recompute_headers(self):
         headers = self._headers or dict()
         headers = headers.copy()
         headers[_GRPC_PREFIX+'scheme'] = self.scheme
-        headers.update(self._auth_headers)
+        headers.update(self._prefixed_headers_for_credentials(self.credentials))
         self._computed_headers = headers
 
     def _prefixed_headers_for_credentials(self, credentials):
