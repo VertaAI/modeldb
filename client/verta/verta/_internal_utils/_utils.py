@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-#pylint: disable=E1101
 
 import datetime
 import glob
@@ -19,7 +18,6 @@ import warnings
 
 import click
 import requests
-from requests import codes as http_codes
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
@@ -84,7 +82,7 @@ class Connection:
         self.retry = Retry(total=max_retries,
                            backoff_factor=1,  # each retry waits (2**retry_num) seconds
                            method_whitelist=False,  # retry on all HTTP methods
-                           status_forcelist=(http_codes.bad_gateway, http_codes.unavailable, http_codes.gateway_timeout),  # only retry on these status codes
+                           status_forcelist=(requests.codes.bad_gateway, requests.codes.unavailable, requests.codes.gateway_timeout),  # only retry on these status codes
                            raise_on_redirect=False,  # return Response instead of raising after max retries
                            raise_on_status=False)  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
@@ -129,7 +127,7 @@ class Connection:
 
     def _headers_for_credentials(self, credentials):
         if credentials:
-            return {(_GRPC_PREFIX + k): v for (k,v) in credentials.headers()}
+            return {(_GRPC_PREFIX + k): v for (k,v) in credentials.headers().items()}
         return {}
 
     def test(self, print_success=True):
@@ -144,7 +142,7 @@ class Connection:
             err.args = ("connection failed; please check `host` and `port`; error message: \n\n{}".format(err.args[0]),) + err.args[1:]
             six.raise_from(err, None)
 
-        if response.status_code == http_codes.unauthorized:
+        if response.status_code == requests.codes.unauthorized:
             try:
                 response.raise_for_status()
             except requests.HTTPError as e:
@@ -173,8 +171,8 @@ class Connection:
             response_msg = json_to_proto(body_to_json(response), response_type)
             return response_msg
         else:
-            if ((response.status_code == http_codes.forbidden and body_to_json(response)['code'] == 7)
-                    or (response.status_code == http_codes.not_found and body_to_json(response)['code'] == 5)):
+            if ((response.status_code == requests.codes.forbidden and body_to_json(response)['code'] == 7)
+                    or (response.status_code == requests.codes.not_found and body_to_json(response)['code'] == 5)):
                 return NoneProtoResponse()
             else:
                 raise_for_http_error(response)
@@ -259,7 +257,7 @@ class Connection:
             response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getUser", params=msg)
 
             if ((response.ok and self.is_html_response(response))  # fetched webapp
-                    or response.status_code == http_codes.not_found):  # UAC not found
+                    or response.status_code == requests.codes.not_found):  # UAC not found
                 pass  # fall through to OSS default workspace
             else:
                 return self.must_proto_response(response, UACService_pb2.UserInfo).verta_info.username
