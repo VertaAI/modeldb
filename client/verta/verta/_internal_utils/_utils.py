@@ -132,8 +132,27 @@ class Connection:
         return {}
 
     def test(self, print_success=True):
-        """
-        TODO: Describe me
+        """Verify connection viability with Verta Platform.
+
+        This method issues an API request against the Verta platform using the
+        configuration in this connection to validate that the Verta platform can
+        be connected to.
+
+        Parameters
+        ----------
+        print_success : bool, default True
+            Whether or not to print a success message.
+
+        Returns
+        -------
+        bool
+            Returns true upon success.
+
+        Raises
+        ------
+        :class:`requests.HTTPError`
+            If an HTTP error occured.
+
         """
         try:
             response = make_request("GET",
