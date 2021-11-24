@@ -189,10 +189,12 @@ class Connection:
     def must_response(response):
         raise_for_http_error(response)
 
-    # NB: Maybe replace use of this with a "not is_json_response" method?
     @staticmethod
     def is_html_response(response):
-        return response.text.strip().endswith("</html>")
+        content_type = response.headers.get('Content-Type')
+        if content_type:
+            return content_type.startswith('text/html')
+        return False
 
     @property
     def email(self):
