@@ -12,6 +12,10 @@ def build(email=None, dev_key=None, jwt_token=None, jwt_token_sig=None):
         return EmailCredentials(email, dev_key)
     elif jwt_token and jwt_token_sig:
         return JWTCredentials(jwt_token, jwt_token_sig)
+    elif email or dev_key:
+        raise ValueError("`email` and `dev_key` must be provided together")
+    elif jwt_token or jwt_token_sig:
+        raise ValueError("`jwt_token` and `jwt_token_sig` must be provided together")
     else:
         return None
 
