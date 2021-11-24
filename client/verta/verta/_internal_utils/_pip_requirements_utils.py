@@ -275,12 +275,6 @@ def pin_verta_and_cloudpickle(requirements):
     list of str
         Copy of `requirements` with pinned verta and cloudpickle.
 
-    Raises
-    ------
-    ValueError
-        If verta or cloudpickle already have a version pin specified in `requirements`, but it
-        conflicts with the version in the current environment.
-
     """
     requirements = copy.copy(requirements)
 
@@ -301,12 +295,12 @@ def pin_verta_and_cloudpickle(requirements):
         (__about__.__title__, __about__.__version__),  # verta
         (cloudpickle.__name__, cloudpickle.__version__),  # cloudpickle
     ]:
-        requirements = inject_requirement(requirements, library, version)
+        requirements = inject_requirement(requirements, library, version, error_on_conflict=False)
 
     return requirements
 
 
-def inject_requirement(requirements, library, version):
+def inject_requirement(requirements, library, version, error_on_conflict=True):
     """Return a copy of `requirements` with `library` pinned to `version`.
 
     If `library` is already in `requirements` and has a version pin, this
@@ -324,11 +318,20 @@ def inject_requirement(requirements, library, version):
         Python library, e.g. "verta".
     version : str
         Desired version number, e.g. "0.20.0".
+    error_on_conflict : bool, default True
+        If true, raise a `ValueError` on version mismatches. Otherwise issue a
+        warning. Defaults to true.
 
     Returns
     -------
     list of str
         Copy of `requirements` with `library` pinned to `version`.
+
+    Raises
+    ------
+    ValueError
+        If the provided library version conflicts with an already pinned version
+        of the library and `error_on_conflict` is True.
 
     """
     requirements = copy.copy(requirements)
@@ -342,10 +345,12 @@ def inject_requirement(requirements, library, version):
                 if "==" in req:  # version pin: check version
                     their_ver = req.split('==')[-1]
                     if version != their_ver:  # versions conflict: raise exception
-                        raise ValueError(
-                            "Client is running with {} v{}, but the provided requirements specify v{};"
-                            " these must match".format(library, version, their_ver)
-                        )
+                        msg = ("Client is running with {} v{}, but the provided requirements specify v{};"
+                               " these should match").format(library, version, their_ver)
+                        if error_on_conflict:
+                            raise ValueError(msg)
+                        else:
+                            warnings.warn(msg, stacklevel=2)
                     else:  # versions match: no action needed
                         continue
                 # TODO: check other operators (>=, >, ...)
