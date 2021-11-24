@@ -112,7 +112,10 @@ class Connection:
 
     @headers.setter
     def headers(self, value):
-        self._headers = value
+        if value:
+            self._headers = value
+        else:
+            self._headers = dict()
         self._recompute_headers()
 
     def _init_headers(self):
@@ -121,7 +124,8 @@ class Connection:
         self._computed_headers = {}
 
     def _recompute_headers(self):
-        headers = self._headers.copy()
+        headers = self._headers or dict()
+        headers = headers.copy()
         headers[_GRPC_PREFIX+'scheme'] = self.scheme
         headers.update(self._auth_headers)
         self._computed_headers = headers
