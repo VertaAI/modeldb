@@ -105,7 +105,7 @@ class Connection:
     def headers(self):
         return self._computed_headers
 
-    # NB: Added for temporary backwards compatibility. Remove when possible.
+    # Note: Added for temporary backwards compatibility. Remove when possible.
     @property
     def auth(self):
         return self.headers

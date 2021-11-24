@@ -149,7 +149,7 @@ class Client(object):
             # save credentials to env for other Verta Client features
             self.auth_credentials.export_env_vars_to_os()
 
-        # NB: Perhaps these things should move into Connection as well?
+        # TODO: Perhaps these things should move into Connection as well?
         back_end_url = urlparse(host)
         socket = back_end_url.netloc + back_end_url.path.rstrip('/')
         if port is not None:
