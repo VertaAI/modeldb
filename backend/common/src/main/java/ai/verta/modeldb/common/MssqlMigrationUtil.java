@@ -129,8 +129,9 @@ public class MssqlMigrationUtil {
                   type,
                   tableName,
                   constraintName,
-                  primaryKeyConstraint.getValue().getValue().stream().map(value -> String.format("\"%s\"", value)).collect(
-                      Collectors.joining(","))))
+                  primaryKeyConstraint.getValue().getValue().stream()
+                      .map(value -> String.format("\"%s\"", value))
+                      .collect(Collectors.joining(","))))
           .execute();
     }
   }
@@ -230,7 +231,8 @@ public class MssqlMigrationUtil {
 
       handle
           .createUpdate(
-              String.format("ALTER TABLE %s ALTER COLUMN \"%s\" %s;", tableName, columnName, dataType))
+              String.format(
+                  "ALTER TABLE %s ALTER COLUMN \"%s\" %s;", tableName, columnName, dataType))
           .execute();
     }
   }
