@@ -331,7 +331,8 @@
         "SERVICE_ACCOUNT",
         "CONTAINER_REGISTRY_CONFIGURATION",
         "EVENT",
-        "WEBHOOK"
+        "WEBHOOK",
+        "SYSTEM_ADMIN"
       ],
       "default": "UNKNOWN"
     },
