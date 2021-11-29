@@ -111,10 +111,7 @@ class Connection:
 
     @headers.setter
     def headers(self, value):
-        if value:
-            self._headers = value
-        else:
-            self._headers = dict()
+        self._headers = value or dict()
         self._recompute_headers()
 
     def _init_headers(self):
