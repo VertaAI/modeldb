@@ -125,7 +125,8 @@ class Connection:
         headers.update(self._prefixed_headers_for_credentials(self.credentials))
         self._computed_headers = headers
 
-    def _prefixed_headers_for_credentials(self, credentials):
+    @staticmethod
+    def _prefixed_headers_for_credentials(credentials):
         if credentials:
             return {(_GRPC_PREFIX + k): v for (k,v) in credentials.headers().items()}
         return {}
