@@ -8,10 +8,13 @@ import warnings
 
 import requests
 
+
 from ..external import six
 from ..external.six.moves.urllib.parse import urljoin, urlparse  # pylint: disable=import-error, no-name-in-module
 
-from .._internal_utils import _utils
+from .._internal_utils import (_utils, credentials)
+
+from verta.endpoint.access_token import AccessToken
 
 # NOTE: DeployedModel's mechanism for making requests is independent from the
 # rest of the client; Client's Connection deliberately instantiates a new
@@ -19,6 +22,7 @@ from .._internal_utils import _utils
 # issues during parallelism, whereas DeployedModel persists a Session for its
 # lifetime to use HTTP keep-alive and speed up consecutive predictions.
 
+# TODO: update docstrings
 class DeployedModel:
     """
     Object for interacting with deployed models.
@@ -54,47 +58,53 @@ class DeployedModel:
         # <DeployedModel 01234567-0123-0123-0123-012345678901>
 
     """
-    def __init__(self, _host=None, _run_id=None, _from_url=False, **kwargs):
-        # this is to temporarily maintain compatibility with anyone passing in `socket` and `model_id` as kwargs
-        # TODO: instate `host` and `run_id` params
-        # TODO: remove the following block of param checks
+    def __init__(self, host=None, run_id=None, _from_url=False, creds=None, access_token=None, prediction_url=None, **kwargs):
         # TODO: put automodule verta.deployment back on ReadTheDocs
-        if 'socket' in kwargs:
-            warnings.warn("`socket` will be renamed to `host` in an upcoming version",
-                          category=FutureWarning)
-        if 'model_id' in kwargs:
-            warnings.warn("`model_id` will be renamed to `run_id` in an upcoming version",
-                          category=FutureWarning)
-        host = kwargs.get('host', kwargs.get('socket', _host))
-        run_id = kwargs.get('run_id', kwargs.get('model_id', _run_id))
-        if host is None:
-            raise TypeError("missing required argument: `host`")
-        if run_id is None:
-            raise TypeError("missing required argument: `run_id`")
+        creds = creds or credentials.load_from_os_env()
+        self._session = self._make_session(creds, access_token)
 
-        self._session = requests.Session()
-        if not _from_url:
-            self._session.headers.update({_utils._GRPC_PREFIX+'source': "PythonClient"})
-            try:
-                self._session.headers.update({_utils._GRPC_PREFIX+'email': os.environ['VERTA_EMAIL']})
-            except KeyError:
-                six.raise_from(EnvironmentError("${} not found in environment".format('VERTA_EMAIL')), None)
-            try:
-                self._session.headers.update({
-                    _utils._GRPC_PREFIX+'developer_key': os.environ['VERTA_DEV_KEY'],
-                    _utils._GRPC_PREFIX+'developer-key': os.environ['VERTA_DEV_KEY'],  # see Client.__init__()
-                })
-            except KeyError:
-                six.raise_from(EnvironmentError("${} not found in environment".format('VERTA_DEV_KEY')), None)
+        # TODO: remove the following block of param checks
+        # this is to temporarily maintain compatibility with anyone passing in `socket` and `model_id` as kwargs
+        self._host = self._validate_host(host, kwargs.get('socket'))
+        self._id = self._validate_id(run_id, kwargs.get('model_id'))
+
+        self._prediction_url = prediction_url
+        self._validate_run_id_or_prediction_url()
 
         back_end_url = urlparse(host)
         self._socket = back_end_url.netloc + back_end_url.path.rstrip('/')
         self._scheme = back_end_url.scheme or ("https" if ".verta.ai" in self._socket else "http")
 
-        self._id = run_id
-        self._status_url = "{}://{}/api/v1/deployment/status/{}".format(self._scheme, self._socket, self._id)
 
-        self._prediction_url = None
+    def _make_session(self, credentials, access_token):
+        session = requests.Session()
+        if credentials:
+            session.headers.update(credentials.headers())
+        elif access_token:
+            session.headers.update(access_token.headers())
+        else:
+            raise TypeError("missing authentication: `creds` or `access_token`")
+        return session
+
+    def _validate_host(self, host, socket=None):
+        if socket:
+            warnings.warn("`socket` will be renamed to `host` in an upcoming version",
+                          category=FutureWarning)
+        host = host or socket
+        if host is None:
+            raise TypeError("missing required argument: `host`")
+        return host
+
+    def _validate_id(self, run_id, model_id=None):
+        if model_id:
+            warnings.warn("`model_id` will be renamed to `run_id` in an upcoming version",
+                          category=FutureWarning)
+        run_id = run_id or model_id
+        return run_id
+
+    def _validate_run_id_or_prediction_url(self):
+        if self._id is None and self._prediction_url is None:
+            raise ValueError("one of `run_id` or `prediction_url` must be supplied")
 
     def __repr__(self):
         if self._id is not None:
@@ -135,18 +145,22 @@ class DeployedModel:
 
         """
         parsed_url = urlparse(url)
-
-        deployed_model = cls(parsed_url.netloc, "", _from_url=True)
-        deployed_model._id = None
-        deployed_model._status_url = None
-
-        deployed_model._prediction_url = urljoin("{}://{}".format(parsed_url.scheme, parsed_url.netloc), parsed_url.path)
-        deployed_model._session.headers['Access-Token'] = token
-
+        prediction_url = urljoin("{}://{}".format(parsed_url.scheme, parsed_url.netloc), parsed_url.path)
+        deployed_model = cls(host=parsed_url.netloc, run_id=None, access_token=AccessToken(token), prediction_url=prediction_url)
         return deployed_model
 
+
+    def prediction_url(self):
+        if self._prediction_url:
+            return self._prediction_url
+        else:
+            self._set_token_and_url()
+            return self._prediction_url
+
+    # NOTE: This is only called to lazily initialize prediction_url when constructed from a run id
     def _set_token_and_url(self):
-        response = self._session.get(self._status_url)
+        status_url = "{}://{}/api/v1/deployment/status/{}".format(self._scheme, self._socket, self._id)
+        response = self._session.get(status_url)
         _utils.raise_for_http_error(response)
         status = _utils.body_to_json(response)
         if status['status'] == 'error':
@@ -154,14 +168,13 @@ class DeployedModel:
         elif status['status'] != 'deployed':
             raise RuntimeError("model is not yet ready, or has not yet been deployed")
         else:
-            self._session.headers['Access-Token'] = status.get('token')
+            self._session = self._make_session(None, AccessToken(status['token']))
             self._prediction_url = urljoin("{}://{}".format(self._scheme, self._socket), status['api'])
 
     def _predict(self, x, compress=False):
         """This is like ``DeployedModel.predict()``, but returns the raw ``Response`` for debugging."""
-        if 'Access-token' not in self._session.headers or self._prediction_url is None:
-            self._set_token_and_url()
 
+        prediction_url = self.prediction_url()
         x = _utils.to_builtin(x)
 
         if compress:
@@ -177,7 +190,7 @@ class DeployedModel:
                 data=gzstream.read(),
             )
         else:
-            return self._session.post(self._prediction_url, json=x)
+            return self._session.post(prediction_url, json=x)
 
     def get_curl(self):
         """
@@ -188,10 +201,8 @@ class DeployedModel:
         str
 
         """
-        if 'Access-token' not in self._session.headers or self._prediction_url is None:
-            self._set_token_and_url()
-
-        curl = "curl -X POST {} -d \'\' -H \"Content-Type: application/json\"".format(self._prediction_url)
+        prediction_url = self.prediction_url()
+        curl = "curl -X POST {} -d \'\' -H \"Content-Type: application/json\"".format(prediction_url)
         if self._session.headers.get('Access-token'):
             curl += " -H \"Access-token: {}\"".format(self._session.headers['Access-token'])
 

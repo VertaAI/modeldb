@@ -19,6 +19,11 @@ def build(email=None, dev_key=None, jwt_token=None, jwt_token_sig=None):
     else:
         return None
 
+def load_from_os_env():
+    credentials = EmailCredentials.load_from_os_env()
+    if not credentials:
+        credentials = JWTCredentials.load_from_os_env()
+    return credentials
 
 @six.add_metaclass(abc.ABCMeta)
 class Credentials(object):
@@ -59,6 +64,15 @@ class EmailCredentials(Credentials):
         key = self.dev_key[:8] + re.sub(r"[^-]", '*', self.dev_key[8:])
         return "EmailCredentials({}, {})".format(self.email, key)
 
+    @classmethod
+    def load_from_os_env(cls):
+        email_env = os.environ.get(cls.EMAIL_ENV)
+        dev_key_env = os.environ.get(cls.DEV_KEY_ENV)
+        if email_env and dev_key_env:
+            return cls(email_env, dev_key_env)
+        else:
+            return None
+
 class JWTCredentials(Credentials):
 
     JWT_TOKEN_ENV = "VERTA_JWT_TOKEN"
@@ -86,3 +100,12 @@ class JWTCredentials(Credentials):
     def __repr__(self):
         token = self.jwt_token[:8] + re.sub(r"[^-]", '*', self.jwt_token[8:])
         return "JWTCredentials({}, {})".format(token, self.jwt_token_sig)
+
+    @classmethod
+    def load_from_os_env(cls):
+        jwt_env = os.environ.get(cls.JWT_TOKEN_ENV)
+        jwt_sig_env = os.environ.get(cls.JWT_TOKEN_SIG_ENV)
+        if jwt_env and jwt_sig_env:
+            return cls(jwt_env, jwt_sig_env)
+        else:
+            return None
