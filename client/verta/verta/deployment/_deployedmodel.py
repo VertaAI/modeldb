@@ -208,10 +208,11 @@ class DeployedModel:
 
         """
         prediction_url = self.prediction_url()
+        headers = self.headers()
+        headers.update({"Content-Type": "application/json"})
         curl = "curl -X POST {} -d \'\' -H \"Content-Type: application/json\"".format(prediction_url)
-        if self._session.headers.get('Access-token'):
-            curl += " -H \"Access-token: {}\"".format(self._session.headers['Access-token'])
-
+        for header, value in headers.items():
+            curl += " -H \"{}: {}\" ".format(header, value)
         return curl
 
     def predict(self, x, compress=False, max_retries=5, always_retry_404=True, always_retry_429=True):

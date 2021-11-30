@@ -11,7 +11,6 @@ class TestDeployedModel:
 
     prediction_url = "https://app.verta.ai/api/v1/predict/fake-deployed-model"
 
-    # A deployed model with a prediction url and no access token or credentials should not have headers for these
     def test_authn_free_session(self, mock_env_authn_missing):
         deployed_model = DeployedModel.from_url(self.prediction_url, token=None, creds=None)
         headers = deployed_model.headers()
