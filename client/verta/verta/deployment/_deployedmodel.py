@@ -13,8 +13,7 @@ from ..external import six
 from ..external.six.moves.urllib.parse import urljoin, urlparse  # pylint: disable=import-error, no-name-in-module
 
 from .._internal_utils import (_utils, credentials)
-
-from verta.endpoint.access_token import AccessToken
+from .._internal_utils.access_token import AccessToken
 
 # NOTE: DeployedModel's mechanism for making requests is independent from the
 # rest of the client; Client's Connection deliberately instantiates a new
