@@ -57,7 +57,7 @@ class DeployedModel:
         # <DeployedModel 01234567-0123-0123-0123-012345678901>
 
     """
-    def __init__(self, host=None, run_id=None, _from_url=False, creds=None, access_token=None, prediction_url=None, **kwargs):
+    def __init__(self, host=None, run_id=None, creds=None, access_token=None, prediction_url=None, **kwargs):
         # TODO: put automodule verta.deployment back on ReadTheDocs
         creds = creds or credentials.load_from_os_env()
         self._session = self._make_session(creds, access_token)
@@ -78,13 +78,10 @@ class DeployedModel:
     def _make_session(self, credentials, access_token):
         session = requests.Session()
         if credentials:
-            auth_headers = credentials.headers()
-            auth_headers = _utils.Connection.prefixed_headers_for_credentials(auth_headers)
-        elif access_token:
-            auth_headers = access_token.headers()
-        else:
-            raise TypeError("missing authentication: `creds` or `access_token`")
-        session.headers.update(auth_headers)
+            creds_headers = _utils.Connection.prefixed_headers_for_credentials(credentials) # TODO: extract this?
+            session.headers.update(creds_headers)
+        if access_token:
+            session.headers.update(access_token.headers())
         return session
 
     def _validate_host(self, host, socket=None):
@@ -116,7 +113,7 @@ class DeployedModel:
             return "<{}>".format(self.__class__.__name__)
 
     @classmethod
-    def from_url(cls, url, token):
+    def from_url(cls, url, token=None, creds=None):
         """
         Returns a :class:`DeployedModel` based on a custom URL and token.
 
@@ -127,6 +124,8 @@ class DeployedModel:
         token : str or None
             Prediction token. Can be copy and pasted directly from the Verta Web App. If the deployment
             does not use a token, ``None`` should be passed in as the argument.
+        creds : :class:`~verta._internal_utils.credentials.Credentials, optional
+            Authentication credentials to attach to each prediction request.
 
         Returns
         -------
@@ -147,7 +146,9 @@ class DeployedModel:
         """
         parsed_url = urlparse(url)
         prediction_url = urljoin("{}://{}".format(parsed_url.scheme, parsed_url.netloc), parsed_url.path)
-        deployed_model = cls(host=parsed_url.netloc, run_id=None, access_token=AccessToken(token), prediction_url=prediction_url)
+        if token:
+            token = AccessToken(token)
+        deployed_model = cls(host=parsed_url.netloc, run_id=None, access_token=token, creds=creds, prediction_url=prediction_url)
         return deployed_model
 
 
@@ -169,7 +170,8 @@ class DeployedModel:
         elif status['status'] != 'deployed':
             raise RuntimeError("model is not yet ready, or has not yet been deployed")
         else:
-            self._session = self._make_session(None, AccessToken(status['token']))
+            access_token = AccessToken(status['token'])
+            self._session.headers.update(access_token.headers())
             self._prediction_url = urljoin("{}://{}".format(self._scheme, self._socket), status['api'])
 
     def _predict(self, x, compress=False):
@@ -192,6 +194,9 @@ class DeployedModel:
             )
         else:
             return self._session.post(prediction_url, json=x)
+
+    def headers(self):
+        return self._session.headers.copy()
 
     def get_curl(self):
         """
