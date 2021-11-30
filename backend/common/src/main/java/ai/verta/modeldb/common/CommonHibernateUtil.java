@@ -40,7 +40,7 @@ import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 import org.postgresql.ds.PGSimpleDataSource;
 
-public abstract class CommonHibernateUtil {
+public abstract class CommonHibernateUtil extends CommonJdbiUtil {
   private static final Logger LOGGER = LogManager.getLogger(CommonHibernateUtil.class);
   private StandardServiceRegistry registry;
   private SessionFactory sessionFactory;
@@ -116,7 +116,7 @@ public abstract class CommonHibernateUtil {
       // Check DB is up or not
       boolean dbConnectionStatus = checkDBConnection(rdb, config.getTimeout());
       if (!dbConnectionStatus) {
-        checkDBConnectionInLoop(true);
+        checkDBConnectionInLoop(config, true);
       }
 
       // Create session factory and validate entity
@@ -166,18 +166,6 @@ public abstract class CommonHibernateUtil {
     throw new ModelDBException("Unrecognized database " + rdbConfiguration.getRdbDialect());
   }
 
-  public static void changeCharsetToUtf(JdbcConnection jdbcCon)
-      throws DatabaseException, SQLException {
-    try (var stmt = jdbcCon.createStatement()) {
-      String dbName = jdbcCon.getCatalog();
-      var sql =
-          String.format(
-              "ALTER DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;", dbName);
-      int result = stmt.executeUpdate(sql);
-      LOGGER.info("ALTER charset execute result: {}", result);
-    }
-  }
-
   public SessionFactory getSessionFactory() {
     return createOrGetSessionFactory(config.getDatabase());
   }
@@ -195,7 +183,7 @@ public abstract class CommonHibernateUtil {
         // If DB is not live then backend is not ready yet
         isReady = false;
         // Check DB connection based on the periodic time logic
-        checkDBConnectionInLoop(false);
+        checkDBConnectionInLoop(databaseConfig, false);
       }
       // If DB is live then backend is not ready yet
       isReady = true;
@@ -214,34 +202,6 @@ public abstract class CommonHibernateUtil {
     }
   }
 
-  public void checkDBConnectionInLoop(boolean isStartUpTime) throws InterruptedException {
-    var loopBackTime = 5;
-    var loopIndex = 0;
-    var dbConnectionLive = false;
-    while (!dbConnectionLive) {
-      if (loopIndex < 10 || isStartUpTime) {
-        Thread.sleep(loopBackTime);
-        LOGGER.debug(
-            "CommonHibernateUtil checkDBConnectionInLoop() retrying for DB connection after {} millisecond ",
-            loopBackTime);
-        loopBackTime = loopBackTime * 2;
-        loopIndex = loopIndex + 1;
-        dbConnectionLive =
-            checkDBConnection(databaseConfig.getRdbConfiguration(), databaseConfig.getTimeout());
-        // While backend will start up and DB connection is still not accessible then backend will
-        // retry continuously for DB connection
-        // And if it is from the user call then it will retry continuously till 2560 millisecond and
-        // then return UnavailableException.
-        if (isStartUpTime && loopBackTime >= 2560) {
-          loopBackTime = 2560;
-        }
-      } else {
-        LOGGER.error("DB connection not found after 2560 millisecond");
-        throw new UnavailableException("Backend is unable to access database");
-      }
-    }
-  }
-
   private void exportSchema(Metadata buildMetadata) {
     String rootPath = System.getProperty(CommonConstants.USER_DIR);
     rootPath = rootPath + "\\src\\main\\resources\\liquibase\\hibernate-base-db-schema.sql";
@@ -254,135 +214,6 @@ public abstract class CommonHibernateUtil {
   public void shutdown() {
     if (registry != null) {
       StandardServiceRegistryBuilder.destroy(registry);
-    }
-  }
-
-  public void releaseLiquibaseLock(DatabaseConfig config)
-      throws LiquibaseException, SQLException, InterruptedException {
-    // Get database connection
-    try (var con = getDBConnection(config.getRdbConfiguration())) {
-      var existsStatus = tableExists(con, config, "database_change_log_lock");
-      if (!existsStatus) {
-        LOGGER.info("Table database_change_log_lock does not exists in DB");
-        LOGGER.info("Proceeding with liquibase assuming it has never been run");
-        return;
-      }
-
-      var jdbcCon = new JdbcConnection(con);
-      try (var stmt = jdbcCon.createStatement()) {
-
-        var sql = "SELECT * FROM database_change_log_lock WHERE ID = 1";
-        ResultSet rs = stmt.executeQuery(sql);
-
-        var lastLockAcquireTimestamp = 0L;
-        var locked = false;
-        // Extract data from result set
-        while (rs.next()) {
-          // Retrieve by column name
-          var id = rs.getInt("id");
-          locked = rs.getBoolean("locked");
-          var lockGrantedTimeStamp = rs.getTimestamp("lockgranted", Calendar.getInstance());
-          var lockedBy = rs.getString("lockedby");
-
-          // Display values
-          LOGGER.debug(
-              "Id: {}, Locked: {}, LockGrantedTimeStamp: {}, LockedBy: {}",
-              id,
-              locked,
-              lockGrantedTimeStamp,
-              lockedBy);
-
-          if (lockGrantedTimeStamp != null) {
-            lastLockAcquireTimestamp = lockGrantedTimeStamp.getTime();
-          }
-          LOGGER.debug("database locked by Liquibase: {}", locked);
-        }
-        rs.close();
-
-        var currentCalender = Calendar.getInstance();
-        long currentLockedTimeDiffSecond =
-            (currentCalender.getTimeInMillis() - lastLockAcquireTimestamp) / 1000;
-        LOGGER.debug(
-            "current liquibase locked time difference in second: {}", currentLockedTimeDiffSecond);
-        if (lastLockAcquireTimestamp != 0
-            && currentLockedTimeDiffSecond > config.getLiquibaseLockThreshold()) {
-          // Initialize Liquibase and run the update
-          var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
-          LockServiceFactory.getInstance().getLockService(database).forceReleaseLock();
-          locked = false;
-          LOGGER.debug("Release database lock executing query from backend");
-        }
-
-        if (locked) {
-          Thread.sleep(
-              config.getLiquibaseLockThreshold().longValue()
-                  * 1000L); // liquibaseLockThreshold = second
-          releaseLiquibaseLock(config);
-        }
-      }
-    } catch (InterruptedException e) {
-      LOGGER.error(e.getMessage(), e);
-      throw e;
-    }
-  }
-
-  public void createTablesLiquibaseMigration(
-      DatabaseConfig config, String changeSetToRevertUntilTag, String liquibaseRootPath)
-      throws LiquibaseException, SQLException, InterruptedException {
-    var rdb = config.getRdbConfiguration();
-
-    // Get database connection
-    try (var con = getDBConnection(rdb)) {
-      var jdbcCon = new JdbcConnection(con);
-      if (config.getRdbConfiguration().isMysql()) {
-        changeCharsetToUtf(jdbcCon);
-      }
-
-      // Overwrite default liquibase table names by custom
-      GlobalConfiguration liquibaseConfiguration =
-          LiquibaseConfiguration.getInstance().getConfiguration(GlobalConfiguration.class);
-      liquibaseConfiguration.setDatabaseChangeLogLockWaitTime(1L);
-
-      // Initialize Liquibase and run the update
-      var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
-      String rootPath = System.getProperty(CommonConstants.USER_DIR);
-      rootPath = rootPath + liquibaseRootPath;
-      var liquibase = new Liquibase(rootPath, new FileSystemResourceAccessor(), database);
-
-      var liquibaseExecuted = false;
-      while (!liquibaseExecuted) {
-        try {
-          if (changeSetToRevertUntilTag == null || changeSetToRevertUntilTag.isEmpty()) {
-            liquibase.update(new Contexts(), new LabelExpression());
-          } else {
-            liquibase.rollback(changeSetToRevertUntilTag, new Contexts(), new LabelExpression());
-          }
-          liquibaseExecuted = true;
-        } catch (LockException ex) {
-          LOGGER.warn(
-              "CommonHibernateUtil createTablesLiquibaseMigration() getting LockException ", ex);
-          releaseLiquibaseLock(config);
-        }
-      }
-    }
-  }
-
-  public boolean checkDBConnection() {
-    return checkDBConnection(databaseConfig.getRdbConfiguration(), databaseConfig.getTimeout());
-  }
-
-  public Connection getDBConnection(RdbConfig rdb) throws SQLException {
-    final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
-    return DriverManager.getConnection(
-        connectionString, rdb.getRdbUsername(), rdb.getRdbPassword());
-  }
-
-  public boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
-    try (var con = getDBConnection(rdb)) {
-      return con.isValid(timeout);
-    } catch (Exception ex) {
-      LOGGER.warn("CommonHibernateUtil checkDBConnection() got error ", ex);
-      return false;
     }
   }
 
@@ -422,147 +253,8 @@ public abstract class CommonHibernateUtil {
     return HealthCheckResponse.ServingStatus.SERVING;
   }
 
-  public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
-      throws SQLException {
-    var tExists = false;
-    try (ResultSet rs = getTableBasedOnDialect(conn, tableName, config.getRdbConfiguration())) {
-      while (rs.next()) {
-        var tName = rs.getString("TABLE_NAME");
-        if (tName != null && tName.equals(tableName)) {
-          tExists = true;
-          break;
-        }
-      }
-    }
-    return tExists;
-  }
-
-  private static ResultSet getTableBasedOnDialect(Connection conn, String tableName, RdbConfig rdb)
-      throws SQLException {
-    if (rdb.isPostgres()) {
-      // TODO: make postgres implementation multitenant as well.
-      return conn.getMetaData().getTables(null, null, tableName, null);
-    } else {
-      return conn.getMetaData().getTables(rdb.getRdbDatabaseName(), null, tableName, null);
-    }
-  }
-
-  protected boolean checkMigrationLockedStatus(String migrationName, RdbConfig rdb)
-      throws SQLException, DatabaseException {
-    // Get database connection
-    try (var con = getDBConnection(rdb)) {
-
-      var jdbcCon = new JdbcConnection(con);
-
-      try (var stmt = jdbcCon.createStatement()) {
-
-        var sql =
-            new StringBuilder("SELECT * FROM migration_status ms WHERE ms.migration_name = '")
-                .append(migrationName)
-                .append("'");
-        ResultSet rs = stmt.executeQuery(sql.toString());
-
-        var locked = false;
-        // Extract data from result set
-        while (rs.next()) {
-          // Retrieve by column name
-          var id = rs.getInt("id");
-          locked = rs.getBoolean("status");
-          var migrationNameDB = rs.getString("migration_name");
-
-          // Display values
-          LOGGER.debug("Id: {}, Locked: {}, migration_name: {}", id, locked, migrationNameDB);
-          LOGGER.debug("migration {} locked: {}", migrationNameDB, locked);
-        }
-        rs.close();
-
-        return locked;
-      }
-    } catch (DatabaseException e) {
-      LOGGER.error(e.getMessage(), e);
-      throw e;
-    }
-  }
-
-  protected void lockedMigration(String migrationName, RdbConfig rdb)
-      throws SQLException, DatabaseException {
-    // Get database connection
-    try (var con = getDBConnection(rdb)) {
-
-      var jdbcCon = new JdbcConnection(con);
-
-      try (var stmt = jdbcCon.createStatement()) {
-
-        var sql =
-            new StringBuilder("INSERT INTO migration_status (migration_name, status) VALUES ('")
-                .append(migrationName)
-                .append("', 1);");
-        int updatedRowCount = stmt.executeUpdate(sql.toString());
-        LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);
-      }
-    } catch (DatabaseException e) {
-      LOGGER.error(e.getMessage(), e);
-      throw e;
-    }
-  }
-
   public void runLiquibaseMigration(DatabaseConfig config)
       throws InterruptedException, LiquibaseException, SQLException {
     runLiquibaseMigration(config, liquibaseRootFilePath);
-  }
-
-  public void runLiquibaseMigration(DatabaseConfig config, String liquibaseRootPath)
-      throws InterruptedException, LiquibaseException, SQLException {
-    // Change liquibase default table names
-    System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
-    System.getProperties()
-        .put("liquibase.databaseChangeLogLockTableName", "database_change_log_lock");
-
-    // Lock to RDB for now
-    var rdb = config.getRdbConfiguration();
-
-    createDBIfNotExists(rdb);
-
-    // Check DB is up or not
-    boolean dbConnectionStatus = checkDBConnection(rdb, config.getTimeout());
-    if (!dbConnectionStatus) {
-      checkDBConnectionInLoop(true);
-    }
-
-    releaseLiquibaseLock(config);
-
-    // Run tables liquibase migration
-    createTablesLiquibaseMigration(
-        config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath);
-  }
-
-  public void createDBIfNotExists(RdbConfig rdb) throws SQLException {
-    LOGGER.info("Checking DB: {}", rdb.getRdbUrl());
-    var properties = new Properties();
-    properties.put("user", rdb.getRdbUsername());
-    properties.put("password", rdb.getRdbPassword());
-    properties.put("sslMode", rdb.getSslMode());
-    final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
-    LOGGER.info("Connecting to DB server url: {} ", dbUrl);
-    try (var connection = DriverManager.getConnection(dbUrl, properties)) {
-      var resultSet = connection.getMetaData().getCatalogs();
-
-      while (resultSet.next()) {
-        var databaseNameRes = resultSet.getString(1);
-        if (rdb.getRdbDatabaseName().equals(databaseNameRes)) {
-          LOGGER.info("the database {} exists", rdb.getRdbDatabaseName());
-          return;
-        }
-      }
-
-      var dbName = RdbConfig.buildDatabaseName(rdb);
-
-      LOGGER.info("the database {} does not exists", rdb.getRdbDatabaseName());
-      try (var statement = connection.createStatement()) {
-        var queryBuilder = new StringBuilder("CREATE DATABASE " + dbName);
-        statement.executeUpdate(queryBuilder.toString());
-        LOGGER.info("the database {} created successfully", rdb.getRdbDatabaseName());
-      }
-    }
   }
 }

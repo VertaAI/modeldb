@@ -140,7 +140,7 @@ public abstract class CommonJdbiUtil {
     }
   }
 
-  protected static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
+  public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
       throws SQLException {
     var tExists = false;
     try (ResultSet rs = getTableBasedOnDialect(conn, tableName, config.getRdbConfiguration())) {
@@ -217,67 +217,57 @@ public abstract class CommonJdbiUtil {
     }
   }
 
-  protected boolean checkMigrationLockedStatus(FutureJdbi dbFutureJdbi, String migrationName)
+  protected boolean checkMigrationLockedStatus(String migrationName, RdbConfig rdbConfig)
       throws SQLException, DatabaseException {
     // Get database connection
-    return dbFutureJdbi
-        .withHandle(
-            handle -> {
-              try (var con = handle.getConnection()) {
-                var jdbcCon = new JdbcConnection(con);
-                try (var stmt = jdbcCon.createStatement()) {
-                  String sql =
-                      String.format(
-                          "SELECT * FROM migration_status ms WHERE ms.migration_name = '%s'",
-                          migrationName);
-                  ResultSet rs = stmt.executeQuery(sql);
+    try (var con = getDBConnection(rdbConfig)) {
+      var jdbcCon = new JdbcConnection(con);
+      try (var stmt = jdbcCon.createStatement()) {
+        String sql =
+                String.format(
+                        "SELECT * FROM migration_status ms WHERE ms.migration_name = '%s'",
+                        migrationName);
+        ResultSet rs = stmt.executeQuery(sql);
 
-                  var locked = false;
-                  // Extract data from result set
-                  while (rs.next()) {
-                    // Retrieve by column name
-                    var id = rs.getInt("id");
-                    locked = rs.getBoolean("status");
-                    var migrationNameDB = rs.getString("migration_name");
+        var locked = false;
+        // Extract data from result set
+        while (rs.next()) {
+          // Retrieve by column name
+          var id = rs.getInt("id");
+          locked = rs.getBoolean("status");
+          var migrationNameDB = rs.getString("migration_name");
 
-                    // Display values
-                    LOGGER.debug(
-                        "Id: {}, Locked: {}, migration_name: {}", id, locked, migrationNameDB);
-                    LOGGER.debug("migration {} locked: {}", migrationNameDB, locked);
-                  }
-                  rs.close();
-                  return locked;
-                }
-              } catch (DatabaseException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw e;
-              }
-            })
-        .get();
+          // Display values
+          LOGGER.debug(
+                  "Id: {}, Locked: {}, migration_name: {}", id, locked, migrationNameDB);
+          LOGGER.debug("migration {} locked: {}", migrationNameDB, locked);
+        }
+        rs.close();
+        return locked;
+      }
+    } catch (DatabaseException e) {
+      LOGGER.error(e.getMessage(), e);
+      throw e;
+    }
   }
 
-  protected void lockedMigration(String migrationName, FutureJdbi dbFutureJdbi)
+  protected void lockedMigration(String migrationName, RdbConfig rdbConfig)
       throws SQLException, DatabaseException {
     // Get database connection
-    dbFutureJdbi
-        .useHandle(
-            handle -> {
-              try (var con = handle.getConnection()) {
-                var jdbcCon = new JdbcConnection(con);
-                try (var stmt = jdbcCon.createStatement()) {
-                  String sql =
-                      String.format(
-                          "INSERT INTO migration_status (migration_name, status) VALUES ('%s', 1);",
-                          migrationName);
-                  int updatedRowCount = stmt.executeUpdate(sql);
-                  LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);
-                }
-              } catch (DatabaseException e) {
-                LOGGER.error(e.getMessage(), e);
-                throw e;
-              }
-            })
-        .get();
+    try (var con = getDBConnection(rdbConfig)) {
+      var jdbcCon = new JdbcConnection(con);
+      try (var stmt = jdbcCon.createStatement()) {
+        String sql =
+                String.format(
+                        "INSERT INTO migration_status (migration_name, status) VALUES ('%s', 1);",
+                        migrationName);
+        int updatedRowCount = stmt.executeUpdate(sql);
+        LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);
+      }
+    } catch (DatabaseException e) {
+      LOGGER.error(e.getMessage(), e);
+      throw e;
+    }
   }
 
   protected void runLiquibaseMigration(DatabaseConfig config, String liquibaseRootPath)
