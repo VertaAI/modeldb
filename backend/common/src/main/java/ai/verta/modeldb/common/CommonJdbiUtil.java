@@ -32,8 +32,6 @@ import java.util.Properties;
 public abstract class CommonJdbiUtil {
   private static final Logger LOGGER = LogManager.getLogger(CommonJdbiUtil.class);
 
-  private CommonJdbiUtil() {}
-
   private static void checkDBConnectionInLoop(DatabaseConfig databaseConfig, boolean isStartUpTime)
       throws InterruptedException {
     var loopBackTime = 5;
