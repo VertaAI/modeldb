@@ -78,11 +78,13 @@ class DeployedModel:
     def _make_session(self, credentials, access_token):
         session = requests.Session()
         if credentials:
-            session.headers.update(credentials.headers())
+            auth_headers = credentials.headers()
+            auth_headers = _utils.Connection.prefixed_headers_for_credentials(auth_headers)
         elif access_token:
-            session.headers.update(access_token.headers())
+            auth_headers = access_token.headers()
         else:
             raise TypeError("missing authentication: `creds` or `access_token`")
+        session.headers.update(auth_headers)
         return session
 
     def _validate_host(self, host, socket=None):

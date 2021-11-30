@@ -122,11 +122,11 @@ class Connection:
         headers = self._headers or dict()
         headers = headers.copy()
         headers[_GRPC_PREFIX+'scheme'] = self.scheme
-        headers.update(self._prefixed_headers_for_credentials(self.credentials))
+        headers.update(self.prefixed_headers_for_credentials(self.credentials))
         self._computed_headers = headers
 
     @staticmethod
-    def _prefixed_headers_for_credentials(credentials):
+    def prefixed_headers_for_credentials(credentials):
         if credentials:
             return {(_GRPC_PREFIX + k): v for (k,v) in credentials.headers().items()}
         return {}
