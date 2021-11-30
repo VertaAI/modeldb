@@ -3,7 +3,6 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
-import ai.verta.modeldb.common.futures.FutureJdbi;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -224,9 +223,8 @@ public abstract class CommonJdbiUtil {
       var jdbcCon = new JdbcConnection(con);
       try (var stmt = jdbcCon.createStatement()) {
         String sql =
-                String.format(
-                        "SELECT * FROM migration_status ms WHERE ms.migration_name = '%s'",
-                        migrationName);
+            String.format(
+                "SELECT * FROM migration_status ms WHERE ms.migration_name = '%s'", migrationName);
         ResultSet rs = stmt.executeQuery(sql);
 
         var locked = false;
@@ -238,8 +236,7 @@ public abstract class CommonJdbiUtil {
           var migrationNameDB = rs.getString("migration_name");
 
           // Display values
-          LOGGER.debug(
-                  "Id: {}, Locked: {}, migration_name: {}", id, locked, migrationNameDB);
+          LOGGER.debug("Id: {}, Locked: {}, migration_name: {}", id, locked, migrationNameDB);
           LOGGER.debug("migration {} locked: {}", migrationNameDB, locked);
         }
         rs.close();
@@ -258,9 +255,9 @@ public abstract class CommonJdbiUtil {
       var jdbcCon = new JdbcConnection(con);
       try (var stmt = jdbcCon.createStatement()) {
         String sql =
-                String.format(
-                        "INSERT INTO migration_status (migration_name, status) VALUES ('%s', 1);",
-                        migrationName);
+            String.format(
+                "INSERT INTO migration_status (migration_name, status) VALUES ('%s', 1);",
+                migrationName);
         int updatedRowCount = stmt.executeUpdate(sql);
         LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);
       }
