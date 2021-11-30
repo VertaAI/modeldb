@@ -57,7 +57,7 @@ public abstract class CommonJdbiUtil {
     }
   }
 
-  private static Connection getDBConnection(RdbConfig rdb) throws SQLException {
+  protected static Connection getDBConnection(RdbConfig rdb) throws SQLException {
     final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
     return DriverManager.getConnection(
         connectionString, rdb.getRdbUsername(), rdb.getRdbPassword());
@@ -72,7 +72,7 @@ public abstract class CommonJdbiUtil {
     }
   }
 
-  public void releaseLiquibaseLock(DatabaseConfig config)
+  protected void releaseLiquibaseLock(DatabaseConfig config)
       throws InterruptedException, SQLException, DatabaseException, LockException {
     // Get database connection
     try (var con = getDBConnection(config.getRdbConfiguration())) {
@@ -140,7 +140,7 @@ public abstract class CommonJdbiUtil {
     }
   }
 
-  public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
+  protected static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
       throws SQLException {
     var tExists = false;
     try (ResultSet rs = getTableBasedOnDialect(conn, tableName, config.getRdbConfiguration())) {
@@ -165,7 +165,7 @@ public abstract class CommonJdbiUtil {
     }
   }
 
-  public void createTablesLiquibaseMigration(
+  protected void createTablesLiquibaseMigration(
       DatabaseConfig config, String changeSetToRevertUntilTag, String liquibaseRootPath)
       throws LiquibaseException, SQLException, InterruptedException {
     var rdb = config.getRdbConfiguration();
@@ -205,7 +205,7 @@ public abstract class CommonJdbiUtil {
     }
   }
 
-  public static void changeCharsetToUtf(JdbcConnection jdbcCon)
+  protected static void changeCharsetToUtf(JdbcConnection jdbcCon)
       throws DatabaseException, SQLException {
     try (var stmt = jdbcCon.createStatement()) {
       String dbName = jdbcCon.getCatalog();
@@ -280,7 +280,7 @@ public abstract class CommonJdbiUtil {
         .get();
   }
 
-  private void runLiquibaseMigration(DatabaseConfig config, String liquibaseRootPath)
+  protected void runLiquibaseMigration(DatabaseConfig config, String liquibaseRootPath)
       throws InterruptedException, LiquibaseException, SQLException {
     // Change liquibase default table names
     System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
