@@ -28,8 +28,8 @@ import org.apache.logging.log4j.Logger;
 public abstract class CommonJdbiUtil {
   private static final Logger LOGGER = LogManager.getLogger(CommonJdbiUtil.class);
 
-  protected static void checkDBConnectionInLoop(DatabaseConfig databaseConfig, boolean isStartUpTime)
-      throws InterruptedException {
+  protected static void checkDBConnectionInLoop(
+      DatabaseConfig databaseConfig, boolean isStartUpTime) throws InterruptedException {
     var loopBackTime = 5;
     var loopIndex = 0;
     var dbConnectionLive = false;
