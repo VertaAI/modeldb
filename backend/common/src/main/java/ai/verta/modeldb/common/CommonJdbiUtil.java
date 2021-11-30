@@ -4,8 +4,12 @@ import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalFuture;
-import io.grpc.health.v1.HealthCheckResponse;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.Properties;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -20,14 +24,6 @@ import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.FileSystemResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.exception.JDBCConnectionException;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.Properties;
 
 public abstract class CommonJdbiUtil {
   private static final Logger LOGGER = LogManager.getLogger(CommonJdbiUtil.class);
@@ -106,11 +102,11 @@ public abstract class CommonJdbiUtil {
 
           // Display values
           LOGGER.debug(
-                  "Id: {}, Locked: {}, LockGrantedTimeStamp: {}, LockedBy: {}",
-                  id,
-                  locked,
-                  lockGrantedTimeStamp,
-                  lockedBy);
+              "Id: {}, Locked: {}, LockGrantedTimeStamp: {}, LockedBy: {}",
+              id,
+              locked,
+              lockGrantedTimeStamp,
+              lockedBy);
 
           if (lockGrantedTimeStamp != null) {
             lastLockAcquireTimestamp = lockGrantedTimeStamp.getTime();
@@ -121,12 +117,11 @@ public abstract class CommonJdbiUtil {
 
         var currentCalender = Calendar.getInstance();
         long currentLockedTimeDiffSecond =
-                (currentCalender.getTimeInMillis() - lastLockAcquireTimestamp) / 1000;
+            (currentCalender.getTimeInMillis() - lastLockAcquireTimestamp) / 1000;
         LOGGER.debug(
-                "current liquibase locked time difference in second: {}",
-                currentLockedTimeDiffSecond);
+            "current liquibase locked time difference in second: {}", currentLockedTimeDiffSecond);
         if (lastLockAcquireTimestamp != 0
-                && currentLockedTimeDiffSecond > config.getLiquibaseLockThreshold()) {
+            && currentLockedTimeDiffSecond > config.getLiquibaseLockThreshold()) {
           // Initialize Liquibase and run the update
           var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
           LockServiceFactory.getInstance().getLockService(database).forceReleaseLock();
@@ -136,8 +131,8 @@ public abstract class CommonJdbiUtil {
 
         if (locked) {
           Thread.sleep(
-                  config.getLiquibaseLockThreshold().longValue()
-                          * 1000L); // liquibaseLockThreshold = second
+              config.getLiquibaseLockThreshold().longValue()
+                  * 1000L); // liquibaseLockThreshold = second
           releaseLiquibaseLock(config);
         }
       }
@@ -205,8 +200,7 @@ public abstract class CommonJdbiUtil {
           }
           liquibaseExecuted = true;
         } catch (LockException ex) {
-          LOGGER.warn(
-              "CommonJdbiUtil createTablesLiquibaseMigration() getting LockException ", ex);
+          LOGGER.warn("CommonJdbiUtil createTablesLiquibaseMigration() getting LockException ", ex);
           releaseLiquibaseLock(config);
         }
       }
@@ -234,7 +228,10 @@ public abstract class CommonJdbiUtil {
               try (var con = handle.getConnection()) {
                 var jdbcCon = new JdbcConnection(con);
                 try (var stmt = jdbcCon.createStatement()) {
-                  String sql = String.format("SELECT * FROM migration_status ms WHERE ms.migration_name = '%s'", migrationName);
+                  String sql =
+                      String.format(
+                          "SELECT * FROM migration_status ms WHERE ms.migration_name = '%s'",
+                          migrationName);
                   ResultSet rs = stmt.executeQuery(sql);
 
                   var locked = false;
@@ -271,7 +268,9 @@ public abstract class CommonJdbiUtil {
                 var jdbcCon = new JdbcConnection(con);
                 try (var stmt = jdbcCon.createStatement()) {
                   String sql =
-                          String.format("INSERT INTO migration_status (migration_name, status) VALUES ('%s', 1);", migrationName);
+                      String.format(
+                          "INSERT INTO migration_status (migration_name, status) VALUES ('%s', 1);",
+                          migrationName);
                   int updatedRowCount = stmt.executeUpdate(sql);
                   LOGGER.debug("migration {} locked: {}", migrationName, updatedRowCount > 0);
                 }
