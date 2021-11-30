@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 public abstract class CommonJdbiUtil {
   private static final Logger LOGGER = LogManager.getLogger(CommonJdbiUtil.class);
 
-  private static void checkDBConnectionInLoop(DatabaseConfig databaseConfig, boolean isStartUpTime)
+  protected static void checkDBConnectionInLoop(DatabaseConfig databaseConfig, boolean isStartUpTime)
       throws InterruptedException {
     var loopBackTime = 5;
     var loopIndex = 0;
@@ -63,7 +63,7 @@ public abstract class CommonJdbiUtil {
         connectionString, rdb.getRdbUsername(), rdb.getRdbPassword());
   }
 
-  private static boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
+  protected static boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
     try (var con = getDBConnection(rdb)) {
       return con.isValid(timeout);
     } catch (Exception ex) {
@@ -306,7 +306,7 @@ public abstract class CommonJdbiUtil {
         config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath);
   }
 
-  private static void createDBIfNotExists(RdbConfig rdb) throws SQLException {
+  protected static void createDBIfNotExists(RdbConfig rdb) throws SQLException {
     LOGGER.info("Checking DB: {}", rdb.getRdbUrl());
     var properties = new Properties();
     properties.put("user", rdb.getRdbUsername());
