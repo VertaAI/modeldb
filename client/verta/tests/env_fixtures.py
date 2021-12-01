@@ -2,7 +2,7 @@
 
 import pytest
 
-from verta._internal_utils.credentials import EmailCredentials, JWTCredentials
+from verta.credentials import EmailCredentials, JWTCredentials
 
 
 @pytest.fixture

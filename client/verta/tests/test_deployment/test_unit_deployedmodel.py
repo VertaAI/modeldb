@@ -2,7 +2,7 @@
 
 import pytest
 
-from verta._internal_utils.credentials import (EmailCredentials, JWTCredentials)
+from verta.credentials import (EmailCredentials, JWTCredentials)
 from verta.deployment import DeployedModel
 
 from verta._internal_utils._utils import _GRPC_PREFIX

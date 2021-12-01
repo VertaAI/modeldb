@@ -59,17 +59,17 @@ class DeployedModel:
         # TODO: put automodule verta.deployment back on ReadTheDocs
         self.prediction_url = prediction_url
         creds = creds or credentials.load_from_os_env()
-        if token:
-            token = AccessToken(token)
-        self._session = self._make_session(creds, token)
+        self._credentials = creds
+        self._access_token = token
+        self._session = self._make_session()
 
-    def _make_session(self, credentials, access_token):
+    def _make_session(self):
         session = requests.Session()
-        if credentials:
-            creds_headers = _utils.Connection.prefixed_headers_for_credentials(credentials) # TODO: extract this?
+        if self.credentials:
+            creds_headers = _utils.Connection.prefixed_headers_for_credentials(self.credentials) # TODO: extract this?
             session.headers.update(creds_headers)
-        if access_token:
-            session.headers.update(access_token.headers())
+        if self.access_token:
+            session.headers.update(AccessToken(self.access_token).headers())
         return session
 
     def __repr__(self):
@@ -119,6 +119,24 @@ class DeployedModel:
         if invalid:
             raise ValueError("not a valid prediction_url")
         self._prediction_url = parsed.geturl()
+
+    @property
+    def credentials(self):
+        return self._credentials
+
+    @credentials.setter
+    def credentials(self, value):
+        self._credentials = value
+        self._session = self._make_session()
+
+    @property
+    def access_token(self):
+        return self._access_token
+
+    @access_token.setter
+    def access_token(self, value):
+        self._access_token = value
+        self._session = self._make_session()
 
     def _predict(self, x, compress=False):
         """This is like ``DeployedModel.predict()``, but returns the raw ``Response`` for debugging."""

@@ -1921,11 +1921,18 @@ class ExperimentRun(_DeployableEntity):
 
         return self.get_deployment_status()
 
-    def get_deployed_model(self):
+    def get_deployed_model(self, credentials=None):
         """
         Returns an object for making predictions against the deployed model.
 
         .. versionadded:: 0.13.17
+
+        Parameters
+        ----------
+        credentials : :class:`~verta.credentials.Credentials`, optional
+            Authentication credentials to use with this deployed model.
+            Credentials will be inferred from the environment if not explicitly
+            provided.
 
         Returns
         -------
@@ -1943,7 +1950,7 @@ class ExperimentRun(_DeployableEntity):
                 "model is not currently deployed (status: {})".format(status))
 
         status = self.get_deployment_status()
-        return deployment.DeployedModel.from_url(status['url'], status['token'])
+        return deployment.DeployedModel.from_url(status['url'], status['token'], creds=credentials)
 
     def download_deployment_yaml(self, download_to_path, path=None, token=None, no_token=False):
         """
