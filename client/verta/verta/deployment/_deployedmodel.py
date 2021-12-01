@@ -12,7 +12,8 @@ import requests
 from ..external import six
 from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
-from .._internal_utils import (_utils, credentials)
+from .._internal_utils import _utils
+from verta import credentials
 from .._internal_utils.access_token import AccessToken
 
 # NOTE: DeployedModel's mechanism for making requests is independent from the
@@ -38,7 +39,7 @@ class DeployedModel:
         URL of the prediction endpoint
     token : str, optional
         Prediction token. Can be copy and pasted directly from the Verta Web App.
-    creds : :class:`~verta._internal_utils.credentials.Credentials`, optional
+    creds : :class:`~verta.credentials.Credentials`, optional
         Authentication credentials to attach to each prediction request.
 
     Examples
@@ -85,7 +86,7 @@ class DeployedModel:
             Full prediction endpoint URL. Can be copy and pasted directly from the Verta Web App.
         token : str, optional
             Prediction token. Can be copy and pasted directly from the Verta Web App.
-        creds : :class:`~verta._internal_utils.credentials.Credentials`, optional
+        creds : :class:`~verta.credentials.Credentials`, optional
             Authentication credentials to attach to each prediction request.
 
         Returns

@@ -7,24 +7,6 @@ import re
 from verta.external import six
 
 
-def build(email=None, dev_key=None, jwt_token=None, jwt_token_sig=None):
-    if email and dev_key:
-        return EmailCredentials(email, dev_key)
-    elif jwt_token and jwt_token_sig:
-        return JWTCredentials(jwt_token, jwt_token_sig)
-    elif email or dev_key:
-        raise ValueError("`email` and `dev_key` must be provided together")
-    elif jwt_token or jwt_token_sig:
-        raise ValueError("`jwt_token` and `jwt_token_sig` must be provided together")
-    else:
-        return None
-
-def load_from_os_env():
-    credentials = EmailCredentials.load_from_os_env()
-    if not credentials:
-        credentials = JWTCredentials.load_from_os_env()
-    return credentials
-
 @six.add_metaclass(abc.ABCMeta)
 class Credentials(object):
 
@@ -38,6 +20,15 @@ class Credentials(object):
 
 
 class EmailCredentials(Credentials):
+    """Container class for email and dev key credentials for the Verta Platform.
+
+    Attributes
+    ----------
+    email : str
+        A user email address.
+    dev_key : str
+        A dev key to use for authentication.
+    """
 
     EMAIL_ENV = "VERTA_EMAIL"
     DEV_KEY_ENV = "VERTA_DEV_KEY"
@@ -74,6 +65,15 @@ class EmailCredentials(Credentials):
             return None
 
 class JWTCredentials(Credentials):
+    """Container class for JWT token credentials for the Verta Platform.
+
+    Attributes
+    ----------
+    jwt_token : str
+        A jwt token.
+    jwt_token_sig : str
+        A jwt token signature.
+    """
 
     JWT_TOKEN_ENV = "VERTA_JWT_TOKEN"
     JWT_TOKEN_SIG_ENV = "VERTA_JWT_TOKEN_SIG"
@@ -109,3 +109,34 @@ class JWTCredentials(Credentials):
             return cls(jwt_env, jwt_sig_env)
         else:
             return None
+
+
+def load_from_os_env():
+    """Loads credentials from environment variables.
+
+    Attempts to load credentials from dev key and email first, and falls back
+    to loading credentials from JWT token variables otherwise. Returns `None` if
+    no complete credentials are found.
+
+    Returns
+    -------
+    :class:`~verta.credentials.Credentials` or None
+        Credentials if discovered.
+    """
+    credentials = EmailCredentials.load_from_os_env()
+    if not credentials:
+        credentials = JWTCredentials.load_from_os_env()
+    return credentials
+
+
+def _build(email=None, dev_key=None, jwt_token=None, jwt_token_sig=None):
+    if email and dev_key:
+        return EmailCredentials(email, dev_key)
+    elif jwt_token and jwt_token_sig:
+        return JWTCredentials(jwt_token, jwt_token_sig)
+    elif email or dev_key:
+        raise ValueError("`email` and `dev_key` must be provided together")
+    elif jwt_token or jwt_token_sig:
+        raise ValueError("`jwt_token` and `jwt_token_sig` must be provided together")
+    else:
+        return None

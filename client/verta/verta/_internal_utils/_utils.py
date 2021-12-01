@@ -27,7 +27,7 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 from ..external import six
 from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
-from .credentials import (
+from verta.credentials import (
     EmailCredentials,
     JWTCredentials,
 )
@@ -70,7 +70,7 @@ class Connection:
             on HTTP codes {502, 503, 504} which commonly occur during back end connection lapses.
         ignore_conn_err : bool, default False
             Whether to ignore connection errors and instead return successes with empty contents.
-        credentials : :class:`~verta._internal_utils.credentials.EmailCredentials` or :class:`~verta._internal_utils.credentials.JWTCredentials`, optional
+        credentials : :class:`~verta.credentials.Credentials`, optional
             Either dev key or JWT token data to be used for authentication.
         headers: dict, optional
             Additional headers to attach to requests.
