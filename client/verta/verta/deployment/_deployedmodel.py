@@ -10,7 +10,7 @@ import requests
 
 
 from ..external import six
-from ..external.six.moves.urllib.parse import urljoin, urlparse  # pylint: disable=import-error, no-name-in-module
+from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from .._internal_utils import (_utils, credentials)
 from .._internal_utils.access_token import AccessToken
@@ -26,23 +26,20 @@ class DeployedModel:
     """
     Object for interacting with deployed models.
 
-    .. deprecated:: 0.13.7
-        The `socket` parameter will be renamed to `host` in an upcoming version
-    .. deprecated:: 0.13.7
-        The `model_id` parameter will be renamed to `run_id` in an upcoming version
-
     This class provides functionality for sending predictions to a deployed model on the Verta
     backend.
 
-    Authentication credentials must be present in the environment through `$VERTA_EMAIL` and
-    `$VERTA_DEV_KEY`.
+    Authentication credentials will be picked up from environment variables if
+    they are not supplied explicitly in the creds parameter.
 
     Parameters
     ----------
-    host : str
-        Hostname of the Verta Web App.
-    run_id : str
-        ID of the deployed ExperimentRun.
+    prediction_url : str
+        URL of the prediction endpoint
+    token : str, optional
+        Prediction token. Can be copy and pasted directly from the Verta Web App.
+    creds : :class:`~verta._internal_utils.credentials.Credentials`, optional
+        Authentication credentials to attach to each prediction request.
 
     Examples
     --------
@@ -57,23 +54,13 @@ class DeployedModel:
         # <DeployedModel 01234567-0123-0123-0123-012345678901>
 
     """
-    def __init__(self, host=None, run_id=None, creds=None, access_token=None, prediction_url=None, **kwargs):
+    def __init__(self, prediction_url, token=None, creds=None):
         # TODO: put automodule verta.deployment back on ReadTheDocs
+        self.prediction_url = prediction_url
         creds = creds or credentials.load_from_os_env()
-        self._session = self._make_session(creds, access_token)
-
-        # TODO: remove the following block of param checks
-        # this is to temporarily maintain compatibility with anyone passing in `socket` and `model_id` as kwargs
-        self._host = self._validate_host(host, kwargs.get('socket'))
-        self._id = self._validate_id(run_id, kwargs.get('model_id'))
-
-        self._prediction_url = prediction_url
-        self._validate_run_id_or_prediction_url()
-
-        back_end_url = urlparse(host)
-        self._socket = back_end_url.netloc + back_end_url.path.rstrip('/')
-        self._scheme = back_end_url.scheme or ("https" if ".verta.ai" in self._socket else "http")
-
+        if token:
+            token = AccessToken(token)
+        self._session = self._make_session(creds, token)
 
     def _make_session(self, credentials, access_token):
         session = requests.Session()
@@ -84,33 +71,8 @@ class DeployedModel:
             session.headers.update(access_token.headers())
         return session
 
-    def _validate_host(self, host, socket=None):
-        if socket:
-            warnings.warn("`socket` will be renamed to `host` in an upcoming version",
-                          category=FutureWarning)
-        host = host or socket
-        if host is None:
-            raise TypeError("missing required argument: `host`")
-        return host
-
-    def _validate_id(self, run_id, model_id=None):
-        if model_id:
-            warnings.warn("`model_id` will be renamed to `run_id` in an upcoming version",
-                          category=FutureWarning)
-        run_id = run_id or model_id
-        return run_id
-
-    def _validate_run_id_or_prediction_url(self):
-        if self._id is None and self._prediction_url is None:
-            raise ValueError("one of `run_id` or `prediction_url` must be supplied")
-
     def __repr__(self):
-        if self._id is not None:
-            return "<{} {}>".format(self.__class__.__name__, self._id)
-        elif self._prediction_url:
-            return "<{} at {}>".format(self.__class__.__name__, self._prediction_url)
-        else:  # if someone's messing with the object's state
-            return "<{}>".format(self.__class__.__name__)
+        return "<{} at {}>".format(self.__class__.__name__, self.prediction_url)
 
     @classmethod
     def from_url(cls, url, token=None, creds=None):
@@ -143,42 +105,23 @@ class DeployedModel:
             # <DeployedModel at https://app.verta.ai/api/v1/predict/01234567-0123-0123-0123-012345678901>
 
         """
-        parsed_url = urlparse(url)
-        prediction_url = urljoin("{}://{}".format(parsed_url.scheme, parsed_url.netloc), parsed_url.path)
-        if token:
-            token = AccessToken(token)
-        deployed_model = cls(host=parsed_url.netloc, run_id=None, access_token=token, creds=creds, prediction_url=prediction_url)
-        return deployed_model
+        return cls(prediction_url=url, token=token, creds=creds)
 
-
+    @property
     def prediction_url(self):
-        if self._prediction_url:
-            return self._prediction_url
-        else:
-            self._set_token_and_url()
-            return self._prediction_url
+        return self._prediction_url
 
-    # NOTE: This is only called to lazily initialize prediction_url when constructed from a run id
-    def _set_token_and_url(self):
-        status_url = "{}://{}/api/v1/deployment/status/{}".format(self._scheme, self._socket, self._id)
-        response = self._session.get(status_url)
-        _utils.raise_for_http_error(response)
-        status = _utils.body_to_json(response)
-        if status['status'] == 'error':
-            raise RuntimeError(status['message'])
-        elif status['status'] != 'deployed':
-            raise RuntimeError("model is not yet ready, or has not yet been deployed")
-        else:
-            access_token = AccessToken(status['token'])
-            self._session.headers.update(access_token.headers())
-            self._prediction_url = urljoin("{}://{}".format(self._scheme, self._socket), status['api'])
+    @prediction_url.setter
+    def prediction_url(self, value):
+        parsed = urlparse(value)
+        invalid = not parsed or not parsed.scheme or not parsed.netloc or not parsed.path
+        if invalid:
+            raise ValueError("not a valid prediction_url")
+        self._prediction_url = parsed.geturl()
 
     def _predict(self, x, compress=False):
         """This is like ``DeployedModel.predict()``, but returns the raw ``Response`` for debugging."""
-
-        prediction_url = self.prediction_url()
         x = _utils.to_builtin(x)
-
         if compress:
             # create gzip
             gzstream = six.BytesIO()
@@ -192,7 +135,7 @@ class DeployedModel:
                 data=gzstream.read(),
             )
         else:
-            return self._session.post(prediction_url, json=x)
+            return self._session.post(self.prediction_url, json=x)
 
     def headers(self):
         return self._session.headers.copy()
@@ -206,10 +149,9 @@ class DeployedModel:
         str
 
         """
-        prediction_url = self.prediction_url()
         headers = self.headers()
         headers.update({"Content-Type": "application/json"})
-        curl = "curl -X POST {} -d \'\' -H \"Content-Type: application/json\"".format(prediction_url)
+        curl = "curl -X POST {} -d \'\' -H \"Content-Type: application/json\"".format(self.prediction_url)
         for header, value in headers.items():
             curl += " -H \"{}: {}\" ".format(header, value)
         return curl
