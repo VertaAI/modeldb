@@ -2,20 +2,19 @@ package ai.verta.modeldb.experiment;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
-import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.DeleteExperimentAttributes.Response;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceImplBase;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
@@ -24,30 +23,84 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentServiceImpl.class);
+  private static final String UPDATE_EVENT_TYPE =
+      "update.resource.experiment.update_experiment_succeeded";
+  private static final String DELETE_EXPERIMENT_EVENT_TYPE =
+      "delete.resource.experiment.delete_experiment_succeeded";
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final ExperimentDAO experimentDAO;
   private final ProjectDAO projectDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
+  private final FutureEventDAO futureEventDAO;
 
   public ExperimentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
-    this.roleService = serviceSet.roleService;
+    this.mdbRoleService = serviceSet.mdbRoleService;
     this.experimentDAO = daoSet.experimentDAO;
     this.projectDAO = daoSet.projectDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
+    this.futureEventDAO = daoSet.futureEventDAO;
+  }
+
+  private void addEvent(
+      String entityId,
+      String projectId,
+      String eventType,
+      Optional<String> updatedField,
+      Map<String, Object> extraFieldsMap,
+      String eventMessage) {
+
+    if (!App.getInstance().mdbConfig.isEvent_system_enabled()) {
+      return;
+    }
+
+    // Add succeeded event in local DB
+    JsonObject eventMetadata = new JsonObject();
+    eventMetadata.addProperty("entity_id", entityId);
+    eventMetadata.addProperty("project_id", projectId);
+    if (updatedField.isPresent() && !updatedField.get().isEmpty()) {
+      eventMetadata.addProperty("updated_field", updatedField.get());
+    }
+    if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
+      JsonObject updatedFieldValue = new JsonObject();
+      extraFieldsMap.forEach(
+          (key, value) -> {
+            if (value instanceof JsonElement) {
+              updatedFieldValue.add(key, (JsonElement) value);
+            } else {
+              updatedFieldValue.addProperty(key, String.valueOf(value));
+            }
+          });
+      eventMetadata.add("updated_field_value", updatedFieldValue);
+    }
+    eventMetadata.addProperty("message", eventMessage);
+
+    GetResourcesResponseItem projectResource =
+        mdbRoleService.getEntityResource(
+            Optional.of(projectId), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
+
+    futureEventDAO.addLocalEventWithBlocking(
+        ModelDBServiceResourceTypes.EXPERIMENT.name(),
+        eventType,
+        projectResource.getWorkspaceId(),
+        eventMetadata);
   }
 
   /**
@@ -75,7 +128,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
      * Create Experiment entity from given CreateExperiment request. generate UUID and put as id in
      * Experiment for uniqueness.
      */
-    Experiment.Builder experimentBuilder =
+    var experimentBuilder =
         Experiment.newBuilder()
             .setId(UUID.randomUUID().toString())
             .setProjectId(request.getProjectId())
@@ -114,19 +167,27 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
-      Experiment experiment = getExperimentFromRequest(request, userInfo);
+      var experiment = getExperimentFromRequest(request, userInfo);
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
           experiment.getProjectId(),
           ModelDBServiceActions.UPDATE);
 
       experiment = experimentDAO.insertExperiment(experiment, userInfo);
-      CreateExperiment.Response response =
-          CreateExperiment.Response.newBuilder().setExperiment(experiment).build();
+      var response = CreateExperiment.Response.newBuilder().setExperiment(experiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          experiment.getId(),
+          experiment.getProjectId(),
+          "add.resource.experiment.add_experiment_succeeded",
+          Optional.empty(),
+          Collections.emptyMap(),
+          "experiment added successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -143,20 +204,20 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       if (request.getProjectId().isEmpty()) {
-        String errorMessage = "Project ID not found in GetExperimentsInProject request";
+        var errorMessage = "Project ID not found in GetExperimentsInProject request";
         throw new InvalidArgumentException(errorMessage);
       }
 
       if (!projectDAO.projectExistsInDB(request.getProjectId())) {
-        String errorMessage = "Project ID not found.";
+        var errorMessage = "Project ID not found.";
         throw new NotFoundException(errorMessage);
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
-      ExperimentPaginationDTO experimentPaginationDTO =
+      var experimentPaginationDTO =
           experimentDAO.getExperimentsInProject(
               projectDAO,
               request.getProjectId(),
@@ -165,7 +226,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               request.getAscending(),
               request.getSortKey());
       List<Experiment> experiments = experimentPaginationDTO.getExperiments();
-      GetExperimentsInProject.Response response =
+      var response =
           GetExperimentsInProject.Response.newBuilder()
               .addAllExperiments(experiments)
               .setTotalRecords(experimentPaginationDTO.getTotalRecords())
@@ -185,19 +246,18 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in GetExperimentById request";
+        var errorMessage = "Experiment ID not found in GetExperimentById request";
         throw new InvalidArgumentException(errorMessage);
       }
 
-      Experiment experiment = experimentDAO.getExperiment(request.getId());
+      var experiment = experimentDAO.getExperiment(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
           experiment.getProjectId(),
           ModelDBServiceActions.READ);
 
-      GetExperimentById.Response response =
-          GetExperimentById.Response.newBuilder().setExperiment(experiment).build();
+      var response = GetExperimentById.Response.newBuilder().setExperiment(experiment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -226,12 +286,12 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
       List<KeyValue> keyValue = new ArrayList<>();
-      Value projectIdValue = Value.newBuilder().setStringValue(request.getProjectId()).build();
-      Value nameValue = Value.newBuilder().setStringValue(request.getName()).build();
+      var projectIdValue = Value.newBuilder().setStringValue(request.getProjectId()).build();
+      var nameValue = Value.newBuilder().setStringValue(request.getName()).build();
       keyValue.add(
           KeyValue.newBuilder()
               .setKey(ModelDBConstants.PROJECT_ID)
@@ -250,7 +310,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             "Multiple experiments with name " + nameValue + " found in project " + projectIdValue;
         throw new ModelDBException(errorMessage, Code.INTERNAL);
       }
-      GetExperimentByName.Response response =
+      var response =
           GetExperimentByName.Response.newBuilder().setExperiment(experiments.get(0)).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -273,8 +333,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<UpdateExperimentNameOrDescription.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
-        String errorMessage =
-            "Experiment ID not found in UpdateExperimentNameOrDescription request";
+        var errorMessage = "Experiment ID not found in UpdateExperimentNameOrDescription request";
         throw new InvalidArgumentException(errorMessage);
       } else if (request.getName().isEmpty()) {
         request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
@@ -284,14 +343,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       Experiment updatedExperiment = null;
+      Map<String, String> updatedFieldsMap = new HashMap<>();
       if (!request.getName().isEmpty()) {
         updatedExperiment =
             experimentDAO.updateExperimentName(
                 request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
+        updatedFieldsMap.put("name", updatedExperiment.getName());
       }
       // FIXME: this code never allows us to set the description as an empty string
       if (!request.getDescription().isEmpty()) {
@@ -299,10 +360,22 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
       }
 
-      UpdateExperimentNameOrDescription.Response response =
+      var response =
           UpdateExperimentNameOrDescription.Response.newBuilder()
               .setExperiment(updatedExperiment)
               .build();
+
+      // Add succeeded event in local DB
+      for (Map.Entry<String, String> entry : updatedFieldsMap.entrySet()) {
+        addEvent(
+            updatedExperiment.getId(),
+            updatedExperiment.getProjectId(),
+            UPDATE_EVENT_TYPE,
+            Optional.of(entry.getKey()),
+            Collections.singletonMap(entry.getKey(), entry.getValue()),
+            String.format("experiment %s updated successfully", entry.getKey()));
+      }
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -335,15 +408,25 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.updateExperimentName(
               request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
 
-      UpdateExperimentName.Response response =
+      var response =
           UpdateExperimentName.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          UPDATE_EVENT_TYPE,
+          Optional.of("name"),
+          Collections.singletonMap("name", updatedExperiment.getName()),
+          "experiment name updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -374,15 +457,24 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.updateExperimentDescription(request.getId(), request.getDescription());
-      UpdateExperimentDescription.Response response =
+      var response =
           UpdateExperimentDescription.Response.newBuilder()
               .setExperiment(updatedExperiment)
               .build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          UPDATE_EVENT_TYPE,
+          Optional.of("description"),
+          Collections.emptyMap(),
+          "experiment description updated successfully");
 
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -415,14 +507,28 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.addExperimentTags(
               request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
-      AddExperimentTags.Response response =
+      var response =
           AddExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment tags added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -454,15 +560,30 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.addExperimentTags(
               request.getId(),
               ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
-      AddExperimentTag.Response response =
+      var response =
           AddExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getTag()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment tag added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -476,7 +597,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       GetTags request, StreamObserver<GetTags.Response> responseObserver) {
     try {
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in GetTags request";
+        var errorMessage = "Experiment ID not found in GetTags request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -484,11 +605,11 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<String> experimentTags = experimentDAO.getExperimentTags(request.getId());
-      GetTags.Response response = GetTags.Response.newBuilder().addAllTags(experimentTags).build();
+      var response = GetTags.Response.newBuilder().addAllTags(experimentTags).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -520,14 +641,33 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.deleteExperimentTags(
               request.getId(), request.getTagsList(), request.getDeleteAll());
-      DeleteExperimentTags.Response response =
+      var response =
           DeleteExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
+      // Add succeeded event in local DB
+      Map<String, Object> extraField = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraField.put("tags_delete_all", true);
+      } else {
+        extraField.put(
+            "tags",
+            new Gson()
+                .toJsonTree(
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          extraField,
+          "experiment tags deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -559,14 +699,29 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.deleteExperimentTags(
               request.getId(), Collections.singletonList(request.getTag()), false);
-      DeleteExperimentTag.Response response =
+      var response =
           DeleteExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          UPDATE_EVENT_TYPE,
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getTag()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment tag deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -582,7 +737,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in AddAttributes request";
+        var errorMessage = "Experiment ID not found in AddAttributes request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -590,16 +745,33 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
         throw new PermissionDeniedException(
-            "Access is denied. Experiment not found for given id : " + request.getId());
+            ModelDBMessages.ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID + request.getId());
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       experimentDAO.addExperimentAttributes(
           request.getId(), Collections.singletonList(request.getAttribute()));
-      AddAttributes.Response response = AddAttributes.Response.newBuilder().setStatus(true).build();
+      var response = AddAttributes.Response.newBuilder().setStatus(true).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          projectId,
+          UPDATE_EVENT_TYPE,
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      Stream.of(request.getAttribute())
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment attribute added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -632,13 +804,30 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment experiment =
+      var experiment =
           experimentDAO.addExperimentAttributes(request.getId(), request.getAttributesList());
-      AddExperimentAttributes.Response response =
+      var response =
           AddExperimentAttributes.Response.newBuilder().setExperiment(experiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          projectId,
+          UPDATE_EVENT_TYPE,
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getAttributesList().stream()
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment attributes added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -672,18 +861,17 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
         throw new PermissionDeniedException(
-            "Access is denied. Experiment not found for given id : " + request.getId());
+            ModelDBMessages.ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID + request.getId());
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<KeyValue> attributes =
           experimentDAO.getExperimentAttributes(
               request.getId(), request.getAttributeKeysList(), request.getGetAll());
-      GetAttributes.Response response =
-          GetAttributes.Response.newBuilder().addAllAttributes(attributes).build();
+      var response = GetAttributes.Response.newBuilder().addAllAttributes(attributes).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -717,14 +905,35 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
+      var updatedExperiment =
           experimentDAO.deleteExperimentAttributes(
               request.getId(), request.getAttributeKeysList(), request.getDeleteAll());
-      DeleteExperimentAttributes.Response response =
+      var response =
           DeleteExperimentAttributes.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraField = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraField.put("attributes_delete_all", true);
+      } else {
+        extraField.put(
+            "attribute_keys",
+            new Gson()
+                .toJsonTree(
+                    request.getAttributeKeysList(),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          UPDATE_EVENT_TYPE,
+          Optional.of("attributes"),
+          extraField,
+          "experiment attributes deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -740,7 +949,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in DeleteExperiment request";
+        var errorMessage = "Experiment ID not found in DeleteExperiment request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -748,14 +957,24 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
         throw new PermissionDeniedException(
-            "Access is denied. Experiment not found for given id : " + request.getId());
+            ModelDBMessages.ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID + request.getId());
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
 
       List<String> deletedIds =
           experimentDAO.deleteExperiments(Collections.singletonList(request.getId()));
-      DeleteExperiment.Response response =
+      var response =
           DeleteExperiment.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          projectId,
+          DELETE_EXPERIMENT_EVENT_TYPE,
+          Optional.empty(),
+          Collections.emptyMap(),
+          "experiment deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -785,9 +1004,9 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       /*User validation*/
-      Experiment existingExperiment = experimentDAO.getExperiment(request.getId());
+      var existingExperiment = experimentDAO.getExperiment(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
           existingExperiment.getProjectId(),
           ModelDBServiceActions.UPDATE);
@@ -803,8 +1022,18 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         errorMessage = "Code version already logged for experiment " + existingExperiment.getId();
         throw new AlreadyExistsException(errorMessage);
       }
-      LogExperimentCodeVersion.Response response =
+      var response =
           LogExperimentCodeVersion.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          UPDATE_EVENT_TYPE,
+          Optional.of("code_version"),
+          Collections.emptyMap(),
+          "experiment code_version updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -821,22 +1050,22 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
       /*Parameter validation*/
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in GetExperimentCodeVersion request";
+        var errorMessage = "Experiment ID not found in GetExperimentCodeVersion request";
         throw new InvalidArgumentException(errorMessage);
       }
 
       /*User validation*/
-      Experiment existingExperiment = experimentDAO.getExperiment(request.getId());
+      var existingExperiment = experimentDAO.getExperiment(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT,
           existingExperiment.getProjectId(),
           ModelDBServiceActions.READ);
 
       /*Get code version*/
-      CodeVersion codeVersion = existingExperiment.getCodeVersionSnapshot();
+      var codeVersion = existingExperiment.getCodeVersionSnapshot();
 
-      GetExperimentCodeVersion.Response response =
+      var response =
           GetExperimentCodeVersion.Response.newBuilder().setCodeVersion(codeVersion).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -854,17 +1083,16 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       if (!request.getProjectId().isEmpty()) {
         // Validate if current user has access to the entity or not
-        roleService.validateEntityUserWithUserInfo(
+        mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT,
             request.getProjectId(),
             ModelDBServiceActions.READ);
       }
 
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      ExperimentPaginationDTO experimentPaginationDTO =
-          experimentDAO.findExperiments(projectDAO, userInfo, request);
+      var userInfo = authService.getCurrentLoginUserInfo();
+      var experimentPaginationDTO = experimentDAO.findExperiments(projectDAO, userInfo, request);
       List<Experiment> experiments = experimentPaginationDTO.getExperiments();
-      FindExperiments.Response response =
+      var response =
           FindExperiments.Response.newBuilder()
               .addAllExperiments(experiments)
               .setTotalRecords(experimentPaginationDTO.getTotalRecords())
@@ -907,7 +1135,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       String s3Key = null;
@@ -925,8 +1153,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       if (s3Key == null) {
         throw new NotFoundException(errorMessage);
       }
-      GetUrlForArtifact.Response response =
-          artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
+      var response = artifactStoreDAO.getUrlForArtifact(s3Key, request.getMethod());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -935,15 +1162,14 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     }
   }
 
-  private String getUrlForCode(GetUrlForArtifact request)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+  private String getUrlForCode(GetUrlForArtifact request) {
     String s3Key = null;
-    Experiment expr = experimentDAO.getExperiment(request.getId());
+    var expr = experimentDAO.getExperiment(request.getId());
     if (expr.getCodeVersionSnapshot() != null
         && expr.getCodeVersionSnapshot().getCodeArchive() != null) {
       s3Key = expr.getCodeVersionSnapshot().getCodeArchive().getPath();
     } else {
-      Project proj = projectDAO.getProjectByID(expr.getProjectId());
+      var proj = projectDAO.getProjectByID(expr.getProjectId());
       if (proj.getCodeVersionSnapshot() != null
           && proj.getCodeVersionSnapshot().getCodeArchive() != null) {
         s3Key = proj.getCodeVersionSnapshot().getCodeArchive().getPath();
@@ -974,20 +1200,37 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
         throw new PermissionDeniedException(
-            "Access is denied. Experiment not found for given id : " + request.getId());
+            ModelDBMessages.ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID + request.getId());
       }
 
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
       List<Artifact> artifactList =
           ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), request.getArtifactsList());
 
-      Experiment updatedExperiment = experimentDAO.logArtifacts(request.getId(), artifactList);
-      LogExperimentArtifacts.Response response =
+      var updatedExperiment = experimentDAO.logArtifacts(request.getId(), artifactList);
+      var response =
           LogExperimentArtifacts.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          request.getId(),
+          projectId,
+          UPDATE_EVENT_TYPE,
+          Optional.of("artifacts"),
+          Collections.singletonMap(
+              "artifact_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getArtifactsList().stream()
+                          .map(Artifact::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment artifacts added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1003,7 +1246,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     try {
 
       if (request.getId().isEmpty()) {
-        String errorMessage = "Experiment ID not found in GetArtifacts request";
+        var errorMessage = "Experiment ID not found in GetArtifacts request";
         throw new InvalidArgumentException(errorMessage);
       }
 
@@ -1011,16 +1254,15 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       if (projectIdFromExperimentMap.size() == 0) {
         throw new PermissionDeniedException(
-            "Access is denied. Experiment not found for given id : " + request.getId());
+            ModelDBMessages.ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID + request.getId());
       }
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
 
       List<Artifact> artifactList = experimentDAO.getExperimentArtifacts(request.getId());
-      GetArtifacts.Response response =
-          GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build();
+      var response = GetArtifacts.Response.newBuilder().addAllArtifacts(artifactList).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1051,13 +1293,27 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
           experimentDAO.getProjectIdsByExperimentIds(Collections.singletonList(request.getId()));
       String projectId = projectIdFromExperimentMap.get(request.getId());
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.UPDATE);
 
-      Experiment updatedExperiment =
-          experimentDAO.deleteArtifacts(request.getId(), request.getKey());
-      DeleteExperimentArtifact.Response response =
+      var updatedExperiment = experimentDAO.deleteArtifacts(request.getId(), request.getKey());
+      var response =
           DeleteExperimentArtifact.Response.newBuilder().setExperiment(updatedExperiment).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          updatedExperiment.getId(),
+          updatedExperiment.getProjectId(),
+          UPDATE_EVENT_TYPE,
+          Optional.of("artifacts"),
+          Collections.singletonMap(
+              "artifact_keys",
+              new Gson()
+                  .toJsonTree(
+                      Collections.singletonList(request.getKey()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "experiment artifact deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -1078,13 +1334,26 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       Map<String, String> projectIdFromExperimentMap =
           experimentDAO.getProjectIdsByExperimentIds(request.getIdsList());
       List<GetResourcesResponseItem> entityResources =
-          roleService.getResourceItems(
+          mdbRoleService.getResourceItems(
               null,
               new HashSet<>(projectIdFromExperimentMap.values()),
-              ModelDBServiceResourceTypes.PROJECT);
+              ModelDBServiceResourceTypes.PROJECT,
+              false);
       List<String> deletedIds = experimentDAO.deleteExperiments(request.getIdsList());
-      DeleteExperiments.Response response =
+      var response =
           DeleteExperiments.Response.newBuilder().setStatus(!deletedIds.isEmpty()).build();
+
+      // Add succeeded event in local DB
+      for (String experimentId : deletedIds) {
+        addEvent(
+            experimentId,
+            projectIdFromExperimentMap.get(experimentId),
+            DELETE_EXPERIMENT_EVENT_TYPE,
+            Optional.empty(),
+            Collections.emptyMap(),
+            "experiment deleted successfully");
+      }
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 

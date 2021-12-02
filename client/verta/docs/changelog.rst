@@ -37,6 +37,77 @@ Changelog
      (`# <>`__)
 
 
+v0.19.3 (2021-10-29)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- validate ``VertaModelBase.__init__()`` parameter names in ``RegisteredModel.create_standard_model()``
+  (`#2570 <https://github.com/VertaAI/modeldb/pull/2570>`__)
+- remove ``ExperimentRun.log_requirements()``
+  (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
+- remove ``ExperimentRun.log_model_for_deployment()``
+  (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
+- ``Python.read_pip_file()`` and ``Python.read_pip_environment()`` now include previously-unsupported lines rather than skipping them by default
+  (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__)
+
+New Features
+^^^^^^^^^^^^
+- add ``SummarySample.is_aggregate``
+  (`#2555 <https://github.com/VertaAI/modeldb/pull/2555>`__)
+- fall back to logging raw requirements if manual parsing fails
+  (`#2584 <https://github.com/VertaAI/modeldb/pull/2584>`__,
+  `#2643 <https://github.com/VertaAI/modeldb/pull/2643>`__,
+  `#2676 <https://github.com/VertaAI/modeldb/pull/2676>`__)
+- support setting custom environment variables in environment objects
+  (`#2634 <https://github.com/VertaAI/modeldb/pull/2634>`__)
+- add ``Docker`` environment object
+  (`#2636 <https://github.com/VertaAI/modeldb/pull/2636>`__)
+- support ``Docker`` in ``log_environment()``/``get_environment()``
+  (`#2637 <https://github.com/VertaAI/modeldb/pull/2637>`__)
+- add ``DockerImage`` and ``RegisteredModelVersion.log_docker()``
+  (`#2641 <https://github.com/VertaAI/modeldb/pull/2641>`__)
+- add ``RegisteredModel.create_containerized_model()``
+  (`#2648 <https://github.com/VertaAI/modeldb/pull/2648>`__)
+- add support for updating endpoints with existing builds
+  (`#2685 <https://github.com/VertaAI/modeldb/pull/2685>`__)
+
+Bug Fixes
+^^^^^^^^^
+- return zero-valued samples from ``profile_point()``
+  (`#2556 <https://github.com/VertaAI/modeldb/pull/2556>`__)
+- avoid divide-by-zero when a histogram's buckets add to zero
+  (`#2554 <https://github.com/VertaAI/modeldb/pull/2554>`__)
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- rename ``remove_public_version_identifier()`` to ``remove_local_version_identifier()``
+  (`#2601 <https://github.com/VertaAI/modeldb/pull/2601>`__)
+- move ``_get_artifact_msg()`` to ``_DeployableEntity`` interface
+  (`#2626 <https://github.com/VertaAI/modeldb/pull/2626>`__)
+- add ``_MODEL_KEY`` to ``_DeployableEntity`` interface
+  (`#2628 <https://github.com/VertaAI/modeldb/pull/2628>`__)
+- save metadata in ``Artifact`` proto when logging model
+  (`#2592 <https://github.com/VertaAI/modeldb/pull/2592>`__)
+- add ``ensure_starts_with_slash()``
+  (`#2640 <https://github.com/VertaAI/modeldb/pull/2640>`__)
+
+
+v0.19.2 (2021-09-30)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add ``RegisteredModelVersion.change_stage()``
+  (`#2654 <https://github.com/VertaAI/modeldb/pull/2654>`__)
+
+Bug Fixes
+^^^^^^^^^
+- restrict ``protobuf`` dependency version upper constraint from ``<4.0`` to ``<3.18`` `for Python 2 compatibility
+  <https://github.com/protocolbuffers/protobuf/issues/8984>`__
+  (`#2633 <https://github.com/VertaAI/modeldb/pull/2633>`__)
+
+
 v0.19.1 (2021-08-09)
 --------------------
 

@@ -19,7 +19,7 @@ public class FutureJdbi {
   public <R, T extends Exception> InternalFuture<R> withHandle(HandleCallback<R, T> callback) {
     return InternalFuture.trace(
         () -> {
-          CompletableFuture<R> promise = new CompletableFuture<R>();
+          CompletableFuture<R> promise = new CompletableFuture<>();
 
           executor.execute(
               () -> {
@@ -50,7 +50,7 @@ public class FutureJdbi {
   public <T extends Exception> InternalFuture<Void> useHandle(final HandleConsumer<T> consumer) {
     return InternalFuture.trace(
         () -> {
-          CompletableFuture<Void> promise = new CompletableFuture<Void>();
+          CompletableFuture<Void> promise = new CompletableFuture<>();
 
           executor.execute(
               () -> {

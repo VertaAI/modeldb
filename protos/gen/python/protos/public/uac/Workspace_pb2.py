@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x13uac/Workspace.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x14uac/UACService.proto\"\x1e\n\x10GetWorkspaceById\x12\n\n\x02id\x18\x01 \x01(\x04\"\"\n\x12GetWorkspaceByName\x12\x0c\n\x04name\x18\x01 \x01(\t\"n\n\x16GetWorkspaceByLegacyId\x12\n\n\x02id\x18\x01 \x01(\t\x12H\n\x0eworkspace_type\x18\x02 \x01(\x0e\x32\x30.ai.verta.common.WorkspaceTypeEnum.WorkspaceType\"\xd0\x01\n\tWorkspace\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x11\n\x07user_id\x18\x02 \x01(\tH\x00\x12\x10\n\x06org_id\x18\x03 \x01(\tH\x00\x12\x12\n\x08username\x18\x04 \x01(\tH\x01\x12\x12\n\x08org_name\x18\x05 \x01(\tH\x01\x12S\n\x14\x63ontainer_registries\x18\x06 \x03(\x0b\x32\x35.ai.verta.uac.WorkspaceContainerRegistryConfigurationB\r\n\x0binternal_idB\x06\n\x04name\"i\n\'WorkspaceContainerRegistryConfiguration\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04\x62\x61se\x18\x02 \x01(\t\x12\x10\n\x08username\x18\x03 \x01(\t\x12\x12\n\nsecret_key\x18\x04 \x01(\t\"\x16\n\x14GetVisibleWorkspaces\"8\n\nWorkspaces\x12*\n\tworkspace\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Workspace2\xa7\x07\n\x10WorkspaceService\x12s\n\x10getWorkspaceById\x12\x1e.ai.verta.uac.GetWorkspaceById\x1a\x17.ai.verta.uac.Workspace\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/workspace/getWorkspaceById\x12y\n\x12getWorkspaceByName\x12 .ai.verta.uac.GetWorkspaceByName\x1a\x17.ai.verta.uac.Workspace\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/workspace/getWorkspaceByName\x12\x85\x01\n\x16getWorkspaceByLegacyId\x12$.ai.verta.uac.GetWorkspaceByLegacyId\x1a\x17.ai.verta.uac.Workspace\",\x82\xd3\xe4\x93\x02&\x12$/v1/workspace/getWorkspaceByLegacyId\x12\x80\x01\n\x14getVisibleWorkspaces\x12\".ai.verta.uac.GetVisibleWorkspaces\x1a\x18.ai.verta.uac.Workspaces\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/workspace/getVisibleWorkspaces\x12\xe3\x01\n,createOrUpdateContainerRegistryConfiguration\x12\x35.ai.verta.uac.WorkspaceContainerRegistryConfiguration\x1a\x35.ai.verta.uac.WorkspaceContainerRegistryConfiguration\"E\x82\xd3\xe4\x93\x02?\":/v1/workspace/createOrUpdateContainerRegistryConfiguration:\x01*\x12\xb1\x01\n$deleteContainerRegistryConfiguration\x12\x35.ai.verta.uac.WorkspaceContainerRegistryConfiguration\x1a\x13.ai.verta.uac.Empty\"=\x82\xd3\xe4\x93\x02\x37\"2/v1/workspace/deleteContainerRegistryConfiguration:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x13uac/Workspace.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x14uac/UACService.proto\"\x1e\n\x10GetWorkspaceById\x12\n\n\x02id\x18\x01 \x01(\x04\"\"\n\x12GetWorkspaceByName\x12\x0c\n\x04name\x18\x01 \x01(\t\"n\n\x16GetWorkspaceByLegacyId\x12\n\n\x02id\x18\x01 \x01(\t\x12H\n\x0eworkspace_type\x18\x02 \x01(\x0e\x32\x30.ai.verta.common.WorkspaceTypeEnum.WorkspaceType\"\xd0\x01\n\tWorkspace\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x11\n\x07user_id\x18\x02 \x01(\tH\x00\x12\x10\n\x06org_id\x18\x03 \x01(\tH\x00\x12\x12\n\x08username\x18\x04 \x01(\tH\x01\x12\x12\n\x08org_name\x18\x05 \x01(\tH\x01\x12S\n\x14\x63ontainer_registries\x18\x06 \x03(\x0b\x32\x35.ai.verta.uac.WorkspaceContainerRegistryConfigurationB\r\n\x0binternal_idB\x06\n\x04name\"\x7f\n\'WorkspaceContainerRegistryConfiguration\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04\x62\x61se\x18\x02 \x01(\t\x12\x10\n\x08username\x18\x03 \x01(\t\x12\x12\n\nsecret_key\x18\x04 \x01(\t\x12\x14\n\x0cworkspace_id\x18\x05 \x01(\x04\"\x16\n\x14GetVisibleWorkspaces\"8\n\nWorkspaces\x12*\n\tworkspace\x18\x01 \x03(\x0b\x32\x17.ai.verta.uac.Workspace2\xa7\x07\n\x10WorkspaceService\x12s\n\x10getWorkspaceById\x12\x1e.ai.verta.uac.GetWorkspaceById\x1a\x17.ai.verta.uac.Workspace\"&\x82\xd3\xe4\x93\x02 \x12\x1e/v1/workspace/getWorkspaceById\x12y\n\x12getWorkspaceByName\x12 .ai.verta.uac.GetWorkspaceByName\x1a\x17.ai.verta.uac.Workspace\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/workspace/getWorkspaceByName\x12\x85\x01\n\x16getWorkspaceByLegacyId\x12$.ai.verta.uac.GetWorkspaceByLegacyId\x1a\x17.ai.verta.uac.Workspace\",\x82\xd3\xe4\x93\x02&\x12$/v1/workspace/getWorkspaceByLegacyId\x12\x80\x01\n\x14getVisibleWorkspaces\x12\".ai.verta.uac.GetVisibleWorkspaces\x1a\x18.ai.verta.uac.Workspaces\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/workspace/getVisibleWorkspaces\x12\xe3\x01\n,createOrUpdateContainerRegistryConfiguration\x12\x35.ai.verta.uac.WorkspaceContainerRegistryConfiguration\x1a\x35.ai.verta.uac.WorkspaceContainerRegistryConfiguration\"E\x82\xd3\xe4\x93\x02?\":/v1/workspace/createOrUpdateContainerRegistryConfiguration:\x01*\x12\xb1\x01\n$deleteContainerRegistryConfiguration\x12\x35.ai.verta.uac.WorkspaceContainerRegistryConfiguration\x1a\x13.ai.verta.uac.Empty\"=\x82\xd3\xe4\x93\x02\x37\"2/v1/workspace/deleteContainerRegistryConfiguration:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,uac_dot_UACService__pb2.DESCRIPTOR,])
 
@@ -235,6 +235,13 @@ _WORKSPACECONTAINERREGISTRYCONFIGURATION = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='workspace_id', full_name='ai.verta.uac.WorkspaceContainerRegistryConfiguration.workspace_id', index=4,
+      number=5, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -248,7 +255,7 @@ _WORKSPACECONTAINERREGISTRYCONFIGURATION = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=508,
-  serialized_end=613,
+  serialized_end=635,
 )
 
 
@@ -271,8 +278,8 @@ _GETVISIBLEWORKSPACES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=615,
-  serialized_end=637,
+  serialized_start=637,
+  serialized_end=659,
 )
 
 
@@ -302,8 +309,8 @@ _WORKSPACES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=639,
-  serialized_end=695,
+  serialized_start=661,
+  serialized_end=717,
 )
 
 _GETWORKSPACEBYLEGACYID.fields_by_name['workspace_type'].enum_type = common_dot_CommonService__pb2._WORKSPACETYPEENUM_WORKSPACETYPE
@@ -388,8 +395,8 @@ _WORKSPACESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=698,
-  serialized_end=1633,
+  serialized_start=720,
+  serialized_end=1655,
   methods=[
   _descriptor.MethodDescriptor(
     name='getWorkspaceById',

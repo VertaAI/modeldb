@@ -12,6 +12,8 @@ import org.apache.logging.log4j.Logger;
 
 public class TagsHandler {
   private static Logger LOGGER = LogManager.getLogger(TagsHandler.class);
+  private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
+  private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
 
   private final Executor executor;
   private final FutureJdbi jdbi;
@@ -40,12 +42,12 @@ public class TagsHandler {
         handle ->
             handle
                 .createQuery(
-                    "select tags from tag_mapping "
-                        + "where entity_name=:entity_name and "
-                        + entityIdReferenceColumn
-                        + "=:entity_id ORDER BY tags ASC")
-                .bind("entity_id", entityId)
-                .bind("entity_name", entityName)
+                    String.format(
+                        "select tags from tag_mapping "
+                            + "where entity_name=:entity_name and %s =:entity_id ORDER BY tags ASC",
+                        entityIdReferenceColumn))
+                .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                 .mapTo(String.class)
                 .list());
   }
@@ -55,18 +57,15 @@ public class TagsHandler {
             handle ->
                 handle
                     .createQuery(
-                        "select tags, "
-                            + entityIdReferenceColumn
-                            + " as entity_id from tag_mapping "
-                            + "where entity_name=:entity_name and "
-                            + entityIdReferenceColumn
-                            + " in (<entity_ids>) ORDER BY tags ASC")
+                        String.format(
+                            "select tags, %s as entity_id from tag_mapping where entity_name=:entity_name and %s in (<entity_ids>) ORDER BY tags ASC",
+                            entityIdReferenceColumn, entityIdReferenceColumn))
                     .bindList("entity_ids", entityIds)
-                    .bind("entity_name", entityName)
+                    .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                     .map(
                         (rs, ctx) ->
                             new AbstractMap.SimpleEntry<>(
-                                rs.getString("entity_id"), rs.getString("tags")))
+                                rs.getString(ENTITY_ID_QUERY_PARAM), rs.getString("tags")))
                     .list())
         .thenApply(MapSubtypes::from, executor);
   }
@@ -103,14 +102,14 @@ public class TagsHandler {
                   handle -> {
                     final var batch =
                         handle.prepareBatch(
-                            "insert into tag_mapping (entity_name, tags, "
-                                + entityIdReferenceColumn
-                                + ") VALUES(:entity_name, :tag, :entity_id)");
+                            String.format(
+                                "insert into tag_mapping (entity_name, tags, %s) VALUES(:entity_name, :tag, :entity_id)",
+                                entityIdReferenceColumn));
                     for (final var tag : tagsSet) {
                       batch
                           .bind("tag", tag)
-                          .bind("entity_id", entityId)
-                          .bind("entity_name", entityName)
+                          .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                           .add();
                     }
 
@@ -124,17 +123,19 @@ public class TagsHandler {
     return jdbi.useHandle(
         handle -> {
           var sql =
-              "delete from tag_mapping "
-                  + "where entity_name=:entity_name and "
-                  + entityIdReferenceColumn
-                  + "=:entity_id";
+              String.format(
+                  "delete from tag_mapping where entity_name=:entity_name and %s =:entity_id",
+                  entityIdReferenceColumn);
 
           if (maybeTags.isPresent()) {
             sql += " and tags in (<tags>)";
           }
 
           var query =
-              handle.createUpdate(sql).bind("entity_id", entityId).bind("entity_name", entityName);
+              handle
+                  .createUpdate(sql)
+                  .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                  .bind(ENTITY_NAME_QUERY_PARAM, entityName);
 
           if (maybeTags.isPresent()) {
             query = query.bindList("tags", maybeTags.get());

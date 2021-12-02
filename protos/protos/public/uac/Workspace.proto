@@ -40,6 +40,7 @@ message WorkspaceContainerRegistryConfiguration {
     string base = 2; // Unique per workspace
     string username = 3;
     string secret_key = 4; // Should be hidden from non-admins
+    uint64 workspace_id = 5;
 }
 
 message GetVisibleWorkspaces {

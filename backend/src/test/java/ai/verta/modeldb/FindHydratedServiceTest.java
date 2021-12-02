@@ -1,7 +1,7 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProject;
-import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInterceptor;
+import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProject;
+import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectInterceptor;
 import static org.junit.Assert.*;
 
 import ai.verta.common.CollaboratorTypeEnum;

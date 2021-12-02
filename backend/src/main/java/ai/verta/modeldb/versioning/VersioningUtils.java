@@ -3,7 +3,6 @@ package ai.verta.modeldb.versioning;
 import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
-import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
@@ -15,11 +14,8 @@ import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ResourceVisibility;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Value;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,7 +40,7 @@ public class VersioningUtils {
    */
   static boolean commitRepositoryMappingExists(
       Session session, String commitHash, Long repositoryId) {
-    Query query = session.createQuery(COMMIT_BELONGS_TO_REPO_QUERY);
+    var query = session.createQuery(COMMIT_BELONGS_TO_REPO_QUERY);
     query.setParameter("commitHash", commitHash);
     query.setParameter("repositoryId", repositoryId);
     Long count = (Long) query.getSingleResult();
@@ -73,7 +69,7 @@ public class VersioningUtils {
       List<String> parentCommitSHAs = sqlQuery.list();
       childCommitSHAs.addAll(parentCommitSHAs);
     }
-    String getChildCommits =
+    var getChildCommits =
         "FROM CommitEntity c WHERE c.commit_hash IN (:childCommitSHAs)  ORDER BY c.date_created DESC";
     @SuppressWarnings("unchecked")
     Query<CommitEntity> query = session.createQuery(getChildCommits);
@@ -94,7 +90,7 @@ public class VersioningUtils {
   public static String generateCommitSHA(
       List<String> parentSHAs, String message, long timeCreated, String author, String blobSHA)
       throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder();
+    var sb = new StringBuilder();
     if (!parentSHAs.isEmpty()) {
       parentSHAs = parentSHAs.stream().sorted().collect(Collectors.toList());
       sb.append("parent:");
@@ -141,8 +137,8 @@ public class VersioningUtils {
       StringBuilder queryBuilder,
       KeyValueQuery keyValueQuery,
       Map<String, Object> parametersMap) {
-    Value value = keyValueQuery.getValue();
-    OperatorEnum.Operator operator = keyValueQuery.getOperator();
+    var value = keyValueQuery.getValue();
+    var operator = keyValueQuery.getOperator();
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
         LOGGER.debug("Called switch case : number_value");
@@ -195,18 +191,14 @@ public class VersioningUtils {
       List<String> locations,
       List<String> attributeKeysList)
       throws ModelDBException {
-    try {
-      List<AttributeEntity> attributeEntities =
-          getAttributeEntities(session, repoId, commitHash, locations, attributeKeysList);
-      return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
-    } catch (InvalidProtocolBufferException e) {
-      throw new ModelDBException(e);
-    }
+    List<AttributeEntity> attributeEntities =
+        getAttributeEntities(session, repoId, commitHash, locations, attributeKeysList);
+    return RdbmsUtils.convertAttributeEntityListFromAttributes(attributeEntities);
   }
 
   public static void saveArtifactPartEntity(
       ArtifactPart artifactPart, Session session, String artifactId, int artifactType) {
-    ArtifactPartEntity artifactPartEntity =
+    var artifactPartEntity =
         new ArtifactPartEntity(
             artifactId, artifactType, artifactPart.getPartNumber(), artifactPart.getEtag());
     session.beginTransaction();
@@ -216,9 +208,9 @@ public class VersioningUtils {
 
   public static Set<ArtifactPartEntity> getArtifactPartEntities(
       Session session, String artifactId, int artifactType) {
-    String queryString =
+    var queryString =
         "From ArtifactPartEntity arp WHERE arp.artifact_type = :artifactType AND arp.artifact_id = :artifactId";
-    Query query = session.createQuery(queryString);
+    var query = session.createQuery(queryString);
     query.setParameter("artifactType", artifactType);
     query.setParameter("artifactId", artifactId);
     List<ArtifactPartEntity> artifactPartEntities = query.list();
@@ -231,7 +223,7 @@ public class VersioningUtils {
       String commitHash,
       List<String> locations,
       List<String> attributeKeys) {
-    StringBuilder getAttributesHQLBuilder =
+    var getAttributesHQLBuilder =
         new StringBuilder(
             "From AttributeEntity kv where kv.entity_hash = :entityHash "
                 + " AND kv.entity_name = :entityName AND kv.field_type = :fieldType");
@@ -239,7 +231,7 @@ public class VersioningUtils {
       getAttributesHQLBuilder.append(" AND kv.key IN (:keys) ");
     }
     getAttributesHQLBuilder.append(" ORDER BY kv.id");
-    Query getQuery = session.createQuery(getAttributesHQLBuilder.toString());
+    var getQuery = session.createQuery(getAttributesHQLBuilder.toString());
     getQuery.setParameter("entityName", ModelDBConstants.BLOB);
     getQuery.setParameter("entityHash", getVersioningCompositeId(repoId, commitHash, locations));
     getQuery.setParameter("fieldType", ModelDBConstants.ATTRIBUTES);
@@ -255,13 +247,12 @@ public class VersioningUtils {
       String datasetId,
       String datasetVersionId,
       boolean checkWrite)
-      throws ModelDBException, ExecutionException, InterruptedException {
+      throws ModelDBException {
     RepositoryEntity repositoryEntity;
 
-    RepositoryIdentification.Builder repositoryIdentification =
-        RepositoryIdentification.newBuilder();
+    var repositoryIdentification = RepositoryIdentification.newBuilder();
     if (datasetId == null || datasetId.isEmpty()) {
-      CommitEntity commitEntity = session.get(CommitEntity.class, datasetVersionId);
+      var commitEntity = session.get(CommitEntity.class, datasetVersionId);
 
       if (commitEntity == null) {
         throw new ModelDBException("DatasetVersion not found", io.grpc.Status.Code.NOT_FOUND);

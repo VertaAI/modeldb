@@ -28,11 +28,11 @@ public class EnumerateList<T> {
     final var iterator = other.listIterator();
     lst = new LinkedList<>();
     while (iterator.hasNext()) {
-      lst.add(new Item<T>(iterator.nextIndex(), iterator.next()));
+      lst.add(new Item<>(iterator.nextIndex(), iterator.next()));
     }
   }
 
-  public LinkedList<Item<T>> getList() {
+  public List<Item<T>> getList() {
     return lst;
   }
 }

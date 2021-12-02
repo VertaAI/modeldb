@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import copy
 import logging
-import os
+import re
 import sys
 
 import pytest
@@ -16,7 +15,11 @@ import verta
 from verta.environment import (
     Python,
 )
-from verta._internal_utils import _pip_requirements_utils
+from verta._internal_utils._pip_requirements_utils import (
+    SPACY_MODEL_PATTERN,
+    get_pip_freeze,
+    pin_verta_and_cloudpickle,
+)
 
 
 def assert_parsed_reqs_match(parsed_reqs, original_reqs):
@@ -60,7 +63,7 @@ class TestObject:
             env_vars=env_vars,
         )
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        requirements = pin_verta_and_cloudpickle(requirements)
         for line in requirements:
             assert line in repr(env)
         for line in constraints:
@@ -82,7 +85,7 @@ class TestObject:
         assert env._msg.python.raw_requirements
         assert env._msg.python.raw_constraints
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(requirements)
+        requirements = pin_verta_and_cloudpickle(requirements)
         for line in requirements:
             assert line in repr(env)
         for line in constraints:
@@ -98,6 +101,18 @@ class TestObject:
         )
 
 
+class TestReadPipEnvironment:
+    @pytest.mark.skipif(
+        not any(re.match(SPACY_MODEL_PATTERN + "==", req) for req in get_pip_freeze()),
+        reason="requires spaCy model pinned in environment (`python -m spacy download en_core_web_sm` with pip<20)",
+    )
+    def test_skip_spacy_models(self):
+        pattern = SPACY_MODEL_PATTERN + "=="
+        requirements = Python.read_pip_environment()
+
+        assert not any(re.match(pattern, req) for req in requirements)
+
+
 class TestPythonVersion:
     def test_py_ver(self):
         env = Python(requirements=[])
@@ -105,14 +120,6 @@ class TestPythonVersion:
         assert env._msg.python.version.major == sys.version_info.major
         assert env._msg.python.version.minor == sys.version_info.minor
         assert env._msg.python.version.patch == sys.version_info.micro
-
-
-class TestEnvironmentVariables:
-    def test_env_vars(self):
-        env_vars = os.environ.keys()
-        env = Python(requirements=[], env_vars=env_vars)
-
-        assert env._msg.environment_variables
 
 
 class TestAptPackages:
@@ -145,7 +152,7 @@ class TestParsedRequirements:
         assert env._msg.python.requirements
         assert not env._msg.python.raw_requirements
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        reqs = pin_verta_and_cloudpickle(reqs)
         assert_parsed_reqs_match(env.requirements, reqs)
 
     def test_from_files(self, requirements_file):
@@ -154,7 +161,7 @@ class TestParsedRequirements:
         assert env._msg.python.requirements
         assert not env._msg.python.raw_requirements
 
-        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        reqs = pin_verta_and_cloudpickle(reqs)
         assert_parsed_reqs_match(env.requirements, reqs)
 
     def test_legacy_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
@@ -198,7 +205,7 @@ class TestParsedRequirements:
         assert requirement.split("+")[0] in env_ver.requirements
 
     def test_inject_verta_cloudpickle(self):
-        env = Python(requirements=[])
+        env = Python(requirements=["pytest"])
         requirements = {req.library for req in env._msg.python.requirements}
 
         assert "verta" in requirements
@@ -214,7 +221,7 @@ class TestRawRequirements:
 
         # each line gets logged raw
         for req in reqs:
-            with caplog.at_level(logging.WARNING, logger="verta"):
+            with caplog.at_level(logging.INFO, logger="verta"):
                 env = Python(requirements=[req])
 
             assert "failed to manually parse requirements; falling back to capturing raw contents" in caplog.text
@@ -223,13 +230,12 @@ class TestRawRequirements:
             assert not env._msg.python.requirements
             assert env._msg.python.raw_requirements
 
-            expected_reqs = [req]
-            _pip_requirements_utils.pin_verta_and_cloudpickle(expected_reqs)
+            expected_reqs = pin_verta_and_cloudpickle([req])
             assert env.requirements == expected_reqs
 
     def test_inject_verta_cloudpickle(self):
         reqs = [
-            "-e client/verta"
+            "--no-binary :all:",
         ]
         env = Python(requirements=reqs)
 
@@ -261,7 +267,7 @@ class TestRawConstraints:
 
         # each line gets logged raw
         for constraint in constraints:
-            with caplog.at_level(logging.WARNING, logger="verta"):
+            with caplog.at_level(logging.INFO, logger="verta"):
                 env = Python(requirements=[], constraints=[constraint])
 
             assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text
@@ -277,7 +283,7 @@ class TestRawConstraints:
         self, requirements_file_without_versions, caplog
     ):
         constraints = Python.read_pip_file(requirements_file_without_versions.name)
-        with caplog.at_level(logging.WARNING, logger="verta"):
+        with caplog.at_level(logging.INFO, logger="verta"):
             env = Python(requirements=[], constraints=constraints)
 
         assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text
@@ -288,3 +294,21 @@ class TestRawConstraints:
 
         assert env._msg.python.raw_constraints == requirements_file_without_versions.read()
         assert set(env.constraints) == set(constraints)
+
+
+class TestVCSInstalledVerta:
+    @pytest.mark.parametrize(
+        "requirements",
+        [
+            ["-e git+git@github.com:VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
+            ["-e git+https://github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
+            ["-e git+ssh://git@github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
+        ],
+    )
+    def test_vcs_installed_verta(self, requirements):
+        vcs_verta_req = requirements[0]
+        pinned_verta_req = "verta=={}".format(verta.__version__)
+
+        env = Python(requirements=requirements)
+        assert vcs_verta_req not in env.requirements
+        assert pinned_verta_req in env.requirements

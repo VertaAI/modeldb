@@ -9,8 +9,6 @@ import javax.persistence.Table;
 @Table(name = "git_code_blob")
 public class GitCodeBlob {
 
-  public GitCodeBlob() {}
-
   @Id
   @Column(name = "blob_hash", nullable = false, columnDefinition = "varchar", length = 64)
   private String blob_hash;

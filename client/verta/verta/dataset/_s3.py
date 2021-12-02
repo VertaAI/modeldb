@@ -11,8 +11,11 @@ from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import
 
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 
-from .._internal_utils import _artifact_utils
-from .._internal_utils import _utils
+from .._internal_utils import (
+    _artifact_utils,
+    _config_utils,
+    _utils,
+)
 
 from . import _dataset
 
@@ -196,7 +199,7 @@ class S3(_dataset._Dataset):
             s3_loc = S3Location(component.path, component.s3_version_id)
 
             # download to file in ~/.verta/temp/
-            tempdir = os.path.join(_utils.HOME_VERTA_DIR, "temp")
+            tempdir = os.path.join(_config_utils.HOME_VERTA_DIR, "temp")
             pathlib2.Path(tempdir).mkdir(parents=True, exist_ok=True)
             print("downloading {} from S3".format(component.path))
             with tempfile.NamedTemporaryFile('w+b', dir=tempdir, delete=False) as tempf:

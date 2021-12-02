@@ -16,9 +16,6 @@ import java.util.List;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 
 public class CommentDAORdbImpl implements CommentDAO {
 
@@ -52,14 +49,14 @@ public class CommentDAORdbImpl implements CommentDAO {
 
   @Override
   public Comment addComment(String entityType, String entityId, Comment newComment) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery(ADD_ENTITY_COMMENT_QUERY);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var query = session.createQuery(ADD_ENTITY_COMMENT_QUERY);
       query.setParameter("entityId", entityId);
       query.setParameter("entityName", entityType);
-      CommentEntity commentEntity = (CommentEntity) query.uniqueResult();
+      var commentEntity = (CommentEntity) query.uniqueResult();
 
       if (commentEntity == null) {
-        EntityComment.Builder entityCommentBuilder =
+        var entityCommentBuilder =
             EntityComment.newBuilder()
                 .setId(UUID.randomUUID().toString())
                 .setEntityId(entityId)
@@ -67,10 +64,10 @@ public class CommentDAORdbImpl implements CommentDAO {
                 .addComments(newComment);
         commentEntity = RdbmsUtils.generateCommentEntity(entityCommentBuilder.build());
       } else {
-        UserCommentEntity newUserCommentEntity = new UserCommentEntity(commentEntity, newComment);
+        var newUserCommentEntity = new UserCommentEntity(commentEntity, newComment);
         commentEntity.getComments().add(newUserCommentEntity);
       }
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(commentEntity);
       transaction.commit();
       LOGGER.debug("Comment inserted successfully");
@@ -86,9 +83,8 @@ public class CommentDAORdbImpl implements CommentDAO {
 
   @Override
   public Comment updateComment(String entityType, String entityId, Comment updatedComment) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      UserCommentEntity userCommentEntity =
-          session.load(UserCommentEntity.class, updatedComment.getId());
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var userCommentEntity = session.load(UserCommentEntity.class, updatedComment.getId());
       if (userCommentEntity == null) {
         throw new NotFoundException("Comment does not exist in database");
       }
@@ -96,7 +92,7 @@ public class CommentDAORdbImpl implements CommentDAO {
       userCommentEntity.setOwner(updatedComment.getVertaId());
       userCommentEntity.setMessage(updatedComment.getMessage());
       userCommentEntity.setDate_time(updatedComment.getDateTime());
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.update(userCommentEntity);
       transaction.commit();
       LOGGER.debug("Comment updated successfully");
@@ -112,8 +108,8 @@ public class CommentDAORdbImpl implements CommentDAO {
 
   @Override
   public List<Comment> getComments(String entityType, String entityId) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery(GET_ENTITY_COMMENT_QUERY);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var query = session.createQuery(GET_ENTITY_COMMENT_QUERY);
       query.setParameter("entityId", entityId);
       query.setParameter("entityName", entityType);
       List<UserCommentEntity> userCommentEntities = query.list();
@@ -135,17 +131,17 @@ public class CommentDAORdbImpl implements CommentDAO {
   @Override
   public Boolean deleteComment(
       String entityType, String entityId, String commentId, UserInfo userInfo) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String finalQuery = DELETE_USER_COMMENTS_QUERY;
       if (userInfo != null) {
         finalQuery = finalQuery + " AND uc." + ModelDBConstants.OWNER + " = :vertaId";
       }
-      Query query = session.createQuery(finalQuery);
+      var query = session.createQuery(finalQuery);
       query.setParameter("id", commentId);
       if (userInfo != null) {
         query.setParameter("vertaId", authService.getVertaIdFromUserInfo(userInfo));
       }
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       query.executeUpdate();
       transaction.commit();
       LOGGER.debug("Comments deleted successfully");

@@ -83,6 +83,14 @@ message ModelDBResourceEnum {
         NOTIFICATION_CHANNEL = 12;
         ENDPOINT = 13;
         BUILD = 14;
+        ORGANIZATION = 15;
+        TEAM = 16;
+        WORKSPACE = 17;
+        USER = 18;
+        SERVICE_ACCOUNT = 19;
+        CONTAINER_REGISTRY_CONFIGURATION = 20;
+        STAGE = 21;
+        PROFILER = 22;
     }
 };
 

@@ -27,17 +27,18 @@ from verta._internal_utils import (
     _artifact_utils,
     _request_utils,
     _utils,
+    arg_handler,
     importer,
     time_utils,
 )
 from verta import utils
 
-from verta import _blob, code, data_types
-from verta.environment import _Environment, Python
+from verta import _blob, code, data_types, environment
 from verta.monitoring import profiler
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
-from .. import lock
+from .. import lock, DockerImage
+from ..stage_change import _StageChange
 
 
 logger = logging.getLogger(__name__)
@@ -63,6 +64,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         Whether there is a model associated with this Model Version.
     registered_model_id : int
         ID of this version's Registered Model.
+    stage : str
+        Model version stage.
 
     """
 
@@ -78,14 +81,12 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         msg = self._msg
         artifact_keys = self.get_artifact_keys()
         if self.has_model:
-            artifact_keys.append(_artifact_utils.REGISTRY_MODEL_KEY)
+            artifact_keys.append(self._MODEL_KEY)
 
         return "\n".join(
             (
                 "version: {}".format(msg.version),
-                "stage: {}".format(
-                    _StageService.StageEnum.Stage.Name(msg.stage).lower()
-                ),
+                "stage: {}".format(self.stage),
                 "lock level: {}".format(
                     _RegistryService.ModelVersionLockLevelEnum.ModelVersionLockLevel.Name(
                         msg.lock_level
@@ -123,16 +124,13 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         )
 
     @property
+    def _MODEL_KEY(self):
+        return _artifact_utils.REGISTRY_MODEL_KEY
+
+    @property
     def name(self):
         self._refresh_cache()
         return self._msg.version
-
-    @property
-    def has_environment(self):
-        self._refresh_cache()
-        return self._msg.environment.HasField(
-            "python"
-        ) or self._msg.environment.HasField("docker")
 
     @property
     def has_model(self):
@@ -143,6 +141,11 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def registered_model_id(self):
         self._refresh_cache()
         return self._msg.registered_model_id
+
+    @property
+    def stage(self):
+        self._refresh_cache()
+        return _StageService.StageEnum.Stage.Name(self._msg.stage).lower()
 
     # @property
     # def is_archived(self):
@@ -265,7 +268,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def _get_artifact_msg(self, key):
         self._refresh_cache()
 
-        if key == _artifact_utils.REGISTRY_MODEL_KEY:
+        if key == self._MODEL_KEY:
             if not self.has_model:
                 raise KeyError("no model associated with this version")
             return self._msg.model
@@ -275,6 +278,155 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 return artifact_msg
 
         raise KeyError("no artifact found with key {}".format(key))
+
+    def change_stage(self, stage_change):
+        """Change this model version's stage, bypassing the approval cycle.
+
+        .. versionadded:: 0.19.2
+
+        .. note::
+
+            User must have read-write permissions.
+
+        Parameters
+        ----------
+        stage_change : :mod:`~verta.registry.stage_change`
+            Desired stage change.
+
+        Returns
+        -------
+        str
+            This model version's new stage.
+
+        Examples
+        --------
+        See documentation for individual stage change objects for usage
+        examples.
+
+        """
+        if not isinstance(stage_change, _StageChange):
+            raise TypeError(
+                "`stage_change` must be an object from `verta.registry.stage_change`,"
+                " not {}".format(type(stage_change))
+            )
+
+        msg = stage_change._to_proto_request(self.id)
+        endpoint = "/api/v1/registry/stage/updateStage"
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        self._conn.must_response(response)
+        self._clear_cache()
+
+        return self.stage
+
+    def log_docker(
+        self,
+        docker_image,
+        model_api=None,
+        overwrite=False,
+    ):
+        """Log Docker image information for deployment.
+
+        .. versionadded:: 0.20.0
+
+        .. note::
+
+            |experimental|
+
+        .. note::
+
+            This method cannot be used alongside :meth:`log_environment`.
+
+        Parameters
+        ----------
+        docker_image : :class:`~verta.registry.DockerImage`
+            Docker image information.
+        model_api : :class:`~verta.utils.ModelAPI`, optional
+            Model API specifying the model's expected input and output
+        overwrite : bool, default False
+            Whether to allow overwriting existing Docker image information.
+
+        Examples
+        --------
+        .. code-block:: python
+
+            from verta.registry import DockerImage
+
+            model_ver.log_docker(
+                DockerImage(
+                    port=5000,
+                    request_path="/predict_json",
+                    health_path="/health",
+
+                    repository="012345678901.dkr.ecr.apne2-az1.amazonaws.com/models/example",
+                    tag="example",
+
+                    env_vars={"CUDA_VISIBLE_DEVICES": "0,1"},
+                )
+            )
+
+        """
+        if not isinstance(docker_image, DockerImage):
+            raise TypeError(
+                "`docker_image` must be type verta.registry.DockerImage,"
+                " not {}".format(type(docker_image))
+            )
+        if model_api and not isinstance(model_api, utils.ModelAPI):
+            raise ValueError(
+                "`model_api` must be `verta.utils.ModelAPI`, not {}".format(
+                    type(model_api)
+                )
+            )
+
+        # check for conflict
+        if not overwrite:
+            self._refresh_cache()
+            if self._msg.docker_metadata.request_port:
+                raise ValueError(
+                    "Docker image information already exists;"
+                    " consider setting overwrite=True"
+                )
+            if self.has_environment:
+                raise ValueError(
+                    "environment already exists;"
+                    " consider setting overwrite=True"
+                )
+
+        # log model API (first, in case there's a conflict)
+        if model_api:
+            self.log_artifact(
+                _artifact_utils.MODEL_API_KEY,
+                model_api,
+                overwrite,
+                "json",
+            )
+
+        # log docker
+        if overwrite:
+            self._fetch_with_no_cache()
+            docker_image._merge_into_model_ver_proto(self._msg)
+            self._update(self._msg, method="PUT")
+        else:
+            self._update(
+                docker_image._as_model_ver_proto(),
+                method="PATCH",
+                update_mask={"paths": ["docker_metadata", "environment"]},
+            )
+
+    def get_docker(self):
+        """Get logged Docker image information.
+
+        Returns
+        -------
+        :class:`~verta.registry.DockerImage`
+
+        """
+        self._refresh_cache()
+        if not self._msg.docker_metadata.request_port:
+            raise ValueError(
+                "Docker image information has not been logged"
+            )
+
+        return DockerImage._from_model_ver_proto(self._msg)
 
     def log_model(
         self,
@@ -324,24 +476,20 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         serialized_model, method, model_type = _artifact_utils.serialize_model(model)
 
-        try:
-            extension = _artifact_utils.get_file_ext(serialized_model)
-        except (TypeError, ValueError):
-            extension = _artifact_utils.ext_from_method(method)
-
         # Create artifact message and update ModelVersion's message:
         model_msg = self._create_artifact_msg(
-            _artifact_utils.REGISTRY_MODEL_KEY,
+            self._MODEL_KEY,
             serialized_model,
             artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL,
-            extension=extension,
+            method=method,
+            framework=model_type,
         )
         model_version_update = self.ModelVersionMessage(model=model_msg)
         self._update(model_version_update)
 
         # Upload the artifact to ModelDB:
         self._upload_artifact(
-            _artifact_utils.REGISTRY_MODEL_KEY,
+            self._MODEL_KEY,
             serialized_model,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
@@ -387,14 +535,14 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         """
         model_artifact = self._get_artifact(
-            _artifact_utils.REGISTRY_MODEL_KEY,
+            self._MODEL_KEY,
             _CommonCommonService.ArtifactTypeEnum.MODEL,
         )
         return _artifact_utils.deserialize_model(model_artifact, error_ok=True)
 
     def download_model(self, download_to_path):
         return self.download_artifact(
-            _artifact_utils.REGISTRY_MODEL_KEY, download_to_path
+            self._MODEL_KEY, download_to_path
         )
 
     def del_model(self):
@@ -441,11 +589,11 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         # TODO: should validate keys, but can't here because this public
         #       method is also used to log internal artifacts
         # _artifact_utils.validate_key(key)
-        if key == _artifact_utils.REGISTRY_MODEL_KEY:
+        if key == self._MODEL_KEY:
             raise ValueError(
                 'the key "{}" is reserved for model;'
                 " consider using log_model() instead".format(
-                    _artifact_utils.REGISTRY_MODEL_KEY
+                    self._MODEL_KEY
                 )
             )
 
@@ -471,14 +619,12 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 artifact = open(artifact, "rb")
         artifact_stream, method = _artifact_utils.ensure_bytestream(artifact)
 
-        if not _extension:
-            try:
-                _extension = _artifact_utils.get_file_ext(artifact_stream)
-            except (TypeError, ValueError):
-                _extension = _artifact_utils.ext_from_method(method)
-
         artifact_msg = self._create_artifact_msg(
-            key, artifact_stream, artifact_type=artifact_type, extension=_extension
+            key,
+            artifact_stream,
+            artifact_type=artifact_type,
+            method=method,
+            extension=_extension,
         )
         if same_key_ind == -1:
             self._msg.artifacts.append(artifact_msg)
@@ -564,7 +710,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             Name of the artifact.
 
         """
-        if key == _artifact_utils.REGISTRY_MODEL_KEY:
+        if key == self._MODEL_KEY:
             raise ValueError(
                 "model can't be deleted through del_artifact(); consider using del_model() instead"
             )
@@ -585,18 +731,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._update(self._msg, method="PUT")
 
     def log_environment(self, env, overwrite=False):
-        """
-        Logs an environment to this Model Version.
-
-        Parameters
-        ----------
-        env : :class:`~verta.environment.Python`
-            Environment to log.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing artifact with key `key`.
-
-        """
-        if not isinstance(env, _Environment):
+        if not isinstance(env, environment._Environment):
             raise TypeError(
                 "`env` must be of type Environment, not {}".format(type(env))
             )
@@ -625,22 +760,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._fetch_with_no_cache()
         self._msg.ClearField("environment")
         self._update(self._msg, method="PUT")
-
-    def get_environment(self):
-        """
-        Gets the environment of this Model Version.
-
-        Returns
-        -------
-        :class:`~verta.environment.Python`
-            Environment of this ModelVersion.
-
-        """
-        self._refresh_cache()
-        if not self.has_environment:
-            raise RuntimeError("environment was not previously set.")
-
-        return Python._from_proto(self._msg)
 
     def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         if method.upper() not in ("GET", "PUT"):
@@ -743,36 +862,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             _utils.raise_for_http_error(response)
 
         print("upload complete")
-
-    def _create_artifact_msg(self, key, artifact_stream, artifact_type, extension=None):
-        # calculate checksum
-        artifact_hash = _artifact_utils.calc_sha256(artifact_stream)
-        artifact_stream.seek(0)
-
-        # determine basename
-        #     The key might already contain the file extension, thanks to our hard-coded deployment
-        #     keys e.g. "model.pkl" and "model_api.json".
-        if extension is None:
-            basename = key
-        elif key.endswith(os.extsep + extension):
-            basename = key
-        else:
-            basename = key + os.extsep + extension
-
-        # build upload path from checksum and basename
-        artifact_path = os.path.join(artifact_hash, basename)
-
-        # TODO: support VERTA_ARTIFACT_DIR
-
-        # log key to ModelDB
-        artifact_msg = _CommonCommonService.Artifact(
-            key=key,
-            path=artifact_path,
-            path_only=False,
-            artifact_type=artifact_type,
-            filename_extension=extension,
-        )
-        return artifact_msg
 
     def _get_artifact(self, key, artifact_type=0):
         # check to see if key exists

@@ -3,7 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,11 +23,11 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "experiment")
-public class ExperimentEntity {
+public class ExperimentEntity implements Serializable {
 
   public ExperimentEntity() {}
 
-  public ExperimentEntity(Experiment experiment) throws InvalidProtocolBufferException {
+  public ExperimentEntity(Experiment experiment) {
     setId(experiment.getId());
     setProject_id(experiment.getProjectId());
     setName(experiment.getName());
@@ -254,8 +254,8 @@ public class ExperimentEntity {
     this.deleted = deleted;
   }
 
-  public Experiment getProtoObject() throws InvalidProtocolBufferException {
-    Experiment.Builder experimentBuilder =
+  public Experiment getProtoObject() {
+    var experimentBuilder =
         Experiment.newBuilder()
             .setId(getId())
             .setProjectId(getProject_id())

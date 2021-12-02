@@ -30,9 +30,9 @@ public class AuthServiceUtils implements AuthService {
   }
 
   private UserInfo getCurrentLoginUserInfo(boolean retry) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
-      UserInfo userInfo =
+      var userInfo =
           authServiceChannel.getUacServiceBlockingStub().getCurrentUser(Empty.newBuilder().build());
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
@@ -43,8 +43,7 @@ public class AuthServiceUtils implements AuthService {
       }
     } catch (StatusRuntimeException ex) {
       return (UserInfo)
-          CommonUtils.retryOrThrowException(
-              ex, retry, (RetryCallInterface<UserInfo>) this::getCurrentLoginUserInfo, timeout);
+          CommonUtils.retryOrThrowException(ex, retry, this::getCurrentLoginUserInfo, timeout);
     }
   }
 
@@ -54,12 +53,11 @@ public class AuthServiceUtils implements AuthService {
   }
 
   private UserInfo getUnsignedUser(boolean retry) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
-      GetUser getUserRequest =
-          GetUser.newBuilder().setUsername(CommonConstants.UNSIGNED_USER).build();
+      var getUserRequest = GetUser.newBuilder().setUsername(CommonConstants.UNSIGNED_USER).build();
       // Get the user info by vertaId form the AuthService
-      UserInfo userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
+      var userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
@@ -69,8 +67,7 @@ public class AuthServiceUtils implements AuthService {
       }
     } catch (StatusRuntimeException ex) {
       return (UserInfo)
-          CommonUtils.retryOrThrowException(
-              ex, retry, (RetryCallInterface<UserInfo>) this::getUnsignedUser, timeout);
+          CommonUtils.retryOrThrowException(ex, retry, this::getUnsignedUser, timeout);
     }
   }
 
@@ -81,7 +78,7 @@ public class AuthServiceUtils implements AuthService {
 
   private UserInfo getUserInfo(
       boolean retry, String vertaId, CommonConstants.UserIdentifier vertaIdentifier) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetUser getUserRequest;
       if (vertaIdentifier == CommonConstants.UserIdentifier.EMAIL_ID) {
         getUserRequest = GetUser.newBuilder().setEmail(vertaId).build();
@@ -93,7 +90,7 @@ public class AuthServiceUtils implements AuthService {
 
       LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
       // Get the user info by vertaId form the AuthService
-      UserInfo userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
+      var userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
@@ -107,7 +104,7 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (RetryCallInterface<UserInfo>)
-                  (retry1) -> getUserInfo(retry1, vertaId, vertaIdentifier),
+                  retry1 -> getUserInfo(retry1, vertaId, vertaIdentifier),
               timeout);
     }
   }
@@ -120,14 +117,21 @@ public class AuthServiceUtils implements AuthService {
    */
   @Override
   public Map<String, UserInfo> getUserInfoFromAuthServer(
-      Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
-    return getUserInfoFromAuthServer(true, vertaIdList, emailIdList, usernameList);
+      Set<String> vertaIdList,
+      Set<String> emailIdList,
+      List<String> usernameList,
+      boolean isServiceUser) {
+    return getUserInfoFromAuthServer(true, vertaIdList, emailIdList, usernameList, isServiceUser);
   }
 
   private Map<String, UserInfo> getUserInfoFromAuthServer(
-      boolean retry, Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      GetUsers.Builder getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
+      boolean retry,
+      Set<String> vertaIdList,
+      Set<String> emailIdList,
+      List<String> usernameList,
+      boolean isServiceUser) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+      var getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
       if (emailIdList != null && !emailIdList.isEmpty()) {
         getUserRequestBuilder.addAllEmails(emailIdList);
       }
@@ -138,8 +142,11 @@ public class AuthServiceUtils implements AuthService {
       LOGGER.trace("email Id List : {}", emailIdList);
       LOGGER.trace("username Id List : {}", usernameList);
       // Get the user info from the Context
-      GetUsers.Response response =
-          authServiceChannel.getUacServiceBlockingStub().getUsers(getUserRequestBuilder.build());
+      var blockingStub =
+          isServiceUser
+              ? authServiceChannel.getUacServiceBlockingStubForServiceUser()
+              : authServiceChannel.getUacServiceBlockingStub();
+      var response = blockingStub.getUsers(getUserRequestBuilder.build());
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       List<UserInfo> userInfoList = response.getUserInfosList();
 
@@ -154,8 +161,9 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (RetryCallInterface<Map<String, UserInfo>>)
-                  (retry1) ->
-                      getUserInfoFromAuthServer(retry1, vertaIdList, emailIdList, usernameList),
+                  retry1 ->
+                      getUserInfoFromAuthServer(
+                          retry1, vertaIdList, emailIdList, usernameList, isServiceUser),
               timeout);
     }
   }
@@ -200,24 +208,23 @@ public class AuthServiceUtils implements AuthService {
 
   private UserInfoPaginationDTO getFuzzyUserInfoList(boolean retry, String usernameChar) {
     if (usernameChar.isEmpty()) {
-      UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
+      var paginationDTO = new UserInfoPaginationDTO();
       paginationDTO.setUserInfoList(Collections.emptyList());
       paginationDTO.setTotalRecords(0L);
       return paginationDTO;
     }
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      GetUsersFuzzy.Builder getUserRequestBuilder =
-          GetUsersFuzzy.newBuilder().setUsername(usernameChar);
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+      var getUserRequestBuilder = GetUsersFuzzy.newBuilder().setUsername(usernameChar);
 
       LOGGER.trace("usernameChar : {}", usernameChar);
       // Get the user info from the Context
-      GetUsersFuzzy.Response response =
+      var response =
           authServiceChannel
               .getUacServiceBlockingStub()
               .getUsersFuzzy(getUserRequestBuilder.build());
       LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
-      UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
+      var paginationDTO = new UserInfoPaginationDTO();
       paginationDTO.setUserInfoList(response.getUserInfosList());
       paginationDTO.setTotalRecords(response.getTotalRecords());
       return paginationDTO;
@@ -227,20 +234,20 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<UserInfoPaginationDTO>)
-                  (retry1) -> getFuzzyUserInfoList(retry1, usernameChar),
+                  retry1 -> getFuzzyUserInfoList(retry1, usernameChar),
               timeout);
     }
   }
 
   @Override
   public Workspace workspaceIdByName(boolean retry, String workspaceName) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetWorkspaceByName.Builder getWorkspaceByName =
           GetWorkspaceByName.newBuilder().setName(workspaceName);
 
       LOGGER.trace("workspace : {}", workspaceName);
       // Get the user info from the Context
-      Workspace workspace =
+      var workspace =
           authServiceChannel
               .getWorkspaceServiceBlockingStub()
               .getWorkspaceByName(getWorkspaceByName.build());
@@ -251,19 +258,19 @@ public class AuthServiceUtils implements AuthService {
           CommonUtils.retryOrThrowException(
               ex,
               retry,
-              (RetryCallInterface<Workspace>) (retry1) -> workspaceIdByName(retry1, workspaceName),
+              (RetryCallInterface<Workspace>) retry1 -> workspaceIdByName(retry1, workspaceName),
               timeout);
     }
   }
 
   @Override
   public Workspace workspaceById(boolean retry, Long workspaceId) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetWorkspaceById.Builder getWorkspaceById = GetWorkspaceById.newBuilder().setId(workspaceId);
 
       LOGGER.trace("get workspaceById: ID : {}", workspaceId);
       // Get the user info from the Context
-      Workspace workspace =
+      var workspace =
           authServiceChannel
               .getWorkspaceServiceBlockingStub()
               .getWorkspaceById(getWorkspaceById.build());
@@ -275,7 +282,7 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<Workspace>)
-                  (retry1) -> workspaceById(retry1, workspaceId),
+                  retry1 -> workspaceById(retry1, workspaceId),
               timeout);
     }
   }

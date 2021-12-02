@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 public interface RoleService {
 
@@ -33,16 +32,14 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   default GetResourcesResponseItem getEntityResource(
-      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes)
-      throws ExecutionException, InterruptedException {
+      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return getEntityResource(Optional.of(entityId), Optional.empty(), modelDBServiceResourceTypes);
   }
 
   List<GetResourcesResponseItem> getEntityResourcesByName(
       Optional<String> entityName,
       Optional<String> workspaceName,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes)
-      throws ExecutionException, InterruptedException;
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   GeneratedMessageV3 getOrgById(String orgId);
 
@@ -51,7 +48,8 @@ public interface RoleService {
   List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,
       Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
+      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      boolean isServiceUser);
 
   List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
       Workspace workspace,
@@ -59,7 +57,7 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   List<String> getWorkspaceRoleBindings(
-      String workspace_id,
+      String workspaceId,
       WorkspaceTypeEnum.WorkspaceType workspaceType,
       String resourceId,
       String adminRole,

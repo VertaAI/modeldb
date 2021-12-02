@@ -19,6 +19,12 @@ from ._internal_utils import (
     _config_utils,
     _request_utils,
     _utils,
+    credentials,
+)
+
+from ._internal_utils.credentials import (
+    EmailCredentials,
+    JWTCredentials,
 )
 
 from .tracking import _Context
@@ -119,49 +125,31 @@ class Client(object):
 
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
-                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, extra_auth_headers={}, _connect=True):
+                 max_retries=5, ignore_conn_err=False, use_git=True, debug=False, extra_auth_headers={}, jwt_token=None, jwt_token_sig=None, _connect=True):
         self._load_config()
 
-        if host is None and 'VERTA_HOST' in os.environ:
-            host = os.environ['VERTA_HOST']
-            print("set host from environment")
-        host = self._set_from_config_if_none(host, "host")
-        if email is None and 'VERTA_EMAIL' in os.environ:
-            email = os.environ['VERTA_EMAIL']
-            print("set email from environment")
-        email = self._set_from_config_if_none(email, "email")
-        if dev_key is None and 'VERTA_DEV_KEY' in os.environ:
-            dev_key = os.environ['VERTA_DEV_KEY']
-            print("set developer key from environment")
-        dev_key = self._set_from_config_if_none(dev_key, "dev_key")
-        self._workspace = os.environ.get('VERTA_WORKSPACE')
-        if self._workspace is not None:
-            print("set workspace from environment")
-
+        host = self._get_with_fallback(host, env_var="VERTA_HOST", config_var="host")
         if host is None:
             raise ValueError("`host` must be provided")
-        auth = extra_auth_headers.copy()
-        auth.update({_utils._GRPC_PREFIX+'source': "PythonClient"})
-        if email is None and dev_key is None:
-            if debug:
-                print("[DEBUG] email and developer key not found; auth disabled")
-        elif email is not None and dev_key is not None:
-            if debug:
-                print("[DEBUG] using email: {}".format(email))
-                print("[DEBUG] using developer key: {}".format(dev_key[:8] + re.sub(r"[^-]", '*', dev_key[8:])))
-            auth.update({
-                _utils._GRPC_PREFIX+'email': email,
-                _utils._GRPC_PREFIX+'developer_key': dev_key,
-                # without underscore, for NGINX support
-                # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
-                _utils._GRPC_PREFIX+'developer-key': dev_key,
-            })
-            # save credentials to env for other Verta Client features
-            os.environ['VERTA_EMAIL'] = email
-            os.environ['VERTA_DEV_KEY'] = dev_key
-        else:
-            raise ValueError("`email` and `dev_key` must be provided together")
 
+        email = self._get_with_fallback(email, env_var=EmailCredentials.EMAIL_ENV, config_var="email")
+        dev_key = self._get_with_fallback(dev_key, env_var=EmailCredentials.DEV_KEY_ENV, config_var="dev_key")
+        jwt_token = self._get_with_fallback(jwt_token, env_var=JWTCredentials.JWT_TOKEN_ENV, config_var="jwt_token")
+        jwt_token_sig = self._get_with_fallback(jwt_token_sig, env_var=JWTCredentials.JWT_TOKEN_SIG_ENV, config_var="jwt_token_sig")
+
+        self.auth_credentials = credentials.build(email=email, dev_key=dev_key, jwt_token=jwt_token, jwt_token_sig=jwt_token_sig)
+        self._workspace = self._get_with_fallback(None, env_var="VERTA_WORKSPACE")
+
+        if self.auth_credentials is None:
+            if debug:
+                print("[DEBUG] credentials not found; auth disabled")
+        else:
+            if debug:
+                print("[DEBUG] using credentials: {}".format(repr(self.auth_credentials)))
+            # save credentials to env for other Verta Client features
+            self.auth_credentials.export_env_vars_to_os()
+
+        # TODO: Perhaps these things should move into Connection as well?
         back_end_url = urlparse(host)
         socket = back_end_url.netloc + back_end_url.path.rstrip('/')
         if port is not None:
@@ -170,37 +158,15 @@ class Client(object):
                           category=FutureWarning)
             socket = "{}:{}".format(socket, port)
         scheme = back_end_url.scheme or ("https" if ".verta.ai" in socket else "http")
-        auth[_utils._GRPC_PREFIX+'scheme'] = scheme
+
+        conn = _utils.Connection(scheme=scheme, socket=socket, max_retries=max_retries, ignore_conn_err=ignore_conn_err, credentials=self.auth_credentials, headers=extra_auth_headers)
 
         # verify connection
-        conn = _utils.Connection(scheme, socket, auth, max_retries, ignore_conn_err)
         if _connect:
-            try:
-                response = _utils.make_request("GET",
-                                               "{}://{}/api/v1/modeldb/project/verifyConnection".format(conn.scheme, conn.socket),
-                                               conn)
-            except requests.ConnectionError as err:
-                err.args = ("connection failed; please check `host` and `port`; error message: \n\n{}".format(err.args[0]),) + err.args[1:]
-                six.raise_from(err, None)
-
-            def is_unauthorized(response): return response.status_code == 401
-
-            if is_unauthorized(response):
-                # response.reason was "Unauthorized"
-                try:
-                    response.raise_for_status()
-                except requests.HTTPError as e:
-                    e.args = ("authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`\n\n{}".format(
-                        e.args[0]),) + e.args[1:]
-
-                    raise e
-
-            _utils.raise_for_http_error(response)
-            print("connection successfully established")
+            conn.test()
 
         self._conn = conn
         self._conf = _utils.Configuration(use_git, debug)
-
         self._ctx = _Context(self._conn, self._conf)
 
     @property
@@ -270,6 +236,23 @@ class Client(object):
             if var:
                 print("setting {} from config file".format(resource_name))
         return var or None
+
+
+    def _get_with_fallback(self, parameter, env_var=None, config_var=None):
+        if parameter:
+            return parameter
+        elif env_var:
+            from_env = os.environ.get(env_var)
+            if from_env:
+                print("got {} from environment".format(env_var))
+                return from_env
+        elif config_var:
+            from_config = self._config.get(config_var)
+            if from_config:
+                print("got {} from config file".format(config_var))
+                return from_config
+        else:
+            return None
 
     @staticmethod
     def _validate_visibility(visibility):

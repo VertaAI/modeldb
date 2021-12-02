@@ -6,9 +6,8 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.PathDatasetVersionInfo;
 import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -30,7 +29,6 @@ import ai.verta.uac.UserInfo;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.ProtocolStringList;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -39,7 +37,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -56,12 +53,15 @@ public class CommitDAORdbImpl implements CommitDAO {
   private static final Logger LOGGER = LogManager.getLogger(CommitDAORdbImpl.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
+  private static final String REPO_ID_QUERY_PARAM = "repoId";
+  private static final String COMMIT_HASHES_QUERY_PARAM = "commitHashes";
+  private static final String REPOSITORY_ID_QUERY_PARAM = "repositoryId";
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
-  public CommitDAORdbImpl(AuthService authService, RoleService roleService) {
+  public CommitDAORdbImpl(AuthService authService, MDBRoleService mdbRoleService) {
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
   }
 
   private static final long CACHE_SIZE = 1000;
@@ -78,10 +78,11 @@ public class CommitDAORdbImpl implements CommitDAO {
                 }
               });
 
+  @SuppressWarnings({"squid:S2222"})
   protected AutoCloseable acquireWriteLock(String lockKey) throws ExecutionException {
     LOGGER.debug("acquireWriteLock for key: {}", lockKey);
     ReadWriteLock lock = locks.get(lockKey);
-    Lock writeLock = lock.writeLock();
+    var writeLock = lock.writeLock();
     writeLock.lock();
     return writeLock::unlock;
   }
@@ -98,14 +99,13 @@ public class CommitDAORdbImpl implements CommitDAO {
       BlobFunction.BlobFunctionAttribute setBlobsAttributes,
       RepositoryFunction getRepository)
       throws ModelDBException, NoSuchAlgorithmException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession();
         AutoCloseable ignored = acquireWriteLock(commit.getCommitSha())) {
       session.beginTransaction();
       final String rootSha = setBlobs.apply(session);
-      RepositoryEntity repositoryEntity = getRepository.apply(session);
+      var repositoryEntity = getRepository.apply(session);
 
-      CommitEntity commitEntity =
-          saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
+      var commitEntity = saveCommitEntity(session, commit, rootSha, author, repositoryEntity);
       setBlobsAttributes.apply(session, repositoryEntity.getId(), commitEntity.getCommit_hash());
       session.getTransaction().commit();
       return CreateCommitRequest.Response.newBuilder()
@@ -129,11 +129,11 @@ public class CommitDAORdbImpl implements CommitDAO {
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       RepositoryEntity repositoryEntity)
-      throws ModelDBException, NoSuchAlgorithmException, ExecutionException, InterruptedException {
-    RepositoryIdentification repositoryIdentification =
+      throws ModelDBException, NoSuchAlgorithmException {
+    var repositoryIdentification =
         RepositoryIdentification.newBuilder().setRepoId(repositoryEntity.getId()).build();
     // Set parent datasetVersion
-    GetBranchRequest.Response getBranchResponse =
+    var getBranchResponse =
         repositoryDAO.getBranch(
             GetBranchRequest.newBuilder()
                 .setRepositoryId(repositoryIdentification)
@@ -147,16 +147,15 @@ public class CommitDAORdbImpl implements CommitDAO {
             .setParentId(getBranchResponse.getCommit().getCommitSha())
             .build();
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Blob.Builder blobBuilder = Blob.newBuilder();
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var blobBuilder = Blob.newBuilder();
       if (datasetVersion.hasDatasetBlob()) {
         blobBuilder.setDataset(datasetVersion.getDatasetBlob());
       } else {
-        DatasetBlob.Builder datasetBlobBuilder = DatasetBlob.newBuilder();
+        var datasetBlobBuilder = DatasetBlob.newBuilder();
         switch (datasetVersion.getDatasetVersionInfoCase()) {
           case PATH_DATASET_VERSION_INFO:
-            PathDatasetVersionInfo pathDatasetVersionInfo =
-                datasetVersion.getPathDatasetVersionInfo();
+            var pathDatasetVersionInfo = datasetVersion.getPathDatasetVersionInfo();
             List<DatasetPartInfo> partInfos = pathDatasetVersionInfo.getDatasetPartInfosList();
             Stream<PathDatasetComponentBlob> result =
                 partInfos.stream()
@@ -198,14 +197,14 @@ public class CommitDAORdbImpl implements CommitDAO {
       session.beginTransaction();
       final String rootSha = blobDAO.setBlobs(session, blobList, new FileHasher());
 
-      Commit.Builder builder = Commit.newBuilder();
+      var builder = Commit.newBuilder();
       if (!datasetVersion.getParentId().isEmpty()) {
         builder.addParentShas(datasetVersion.getParentId());
       }
       builder.setDateCreated(datasetVersion.getTimeLogged());
       builder.setDateUpdated(datasetVersion.getTimeUpdated());
       builder.setVersionNumber(datasetVersion.getVersionNumber());
-      Commit commit = builder.build();
+      var commit = builder.build();
 
       if (!repositoryEntity.isDataset()) {
         throw new ModelDBException(
@@ -213,7 +212,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             Status.Code.INVALID_ARGUMENT);
       }
 
-      CommitPaginationDTO commitPaginationDTO =
+      var commitPaginationDTO =
           findCommits(
               session,
               FindRepositoriesBlobs.newBuilder()
@@ -228,7 +227,7 @@ public class CommitDAORdbImpl implements CommitDAO {
               null,
               false);
 
-      CommitEntity commitEntity =
+      var commitEntity =
           saveCommitEntity(session, commit, rootSha, datasetVersion.getOwner(), repositoryEntity);
       blobDAO.setBlobsAttributes(
           session, repositoryEntity.getId(), commitEntity.getCommit_hash(), blobList, true);
@@ -352,11 +351,11 @@ public class CommitDAORdbImpl implements CommitDAO {
       }
     }
     Map<Integer, CommitEntity> parentOrderMap = new HashMap<>();
-    for (int index = 0; index < commit.getParentShasCount(); index++) {
+    for (var index = 0; index < commit.getParentShasCount(); index++) {
       parentOrderMap.put(index, parentCommitEntities.get(commit.getParentShas(index)));
     }
 
-    Commit internalCommit =
+    var internalCommit =
         Commit.newBuilder()
             .setDateCreated(timeCreated)
             .setDateUpdated(timeCreated)
@@ -365,8 +364,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             .setCommitSha(generateCommitSHA(rootSha, commit, timeCreated))
             .setVersionNumber(commit.getVersionNumber())
             .build();
-    CommitEntity commitEntity =
-        new CommitEntity(repositoryEntity, parentOrderMap, internalCommit, rootSha);
+    var commitEntity = new CommitEntity(repositoryEntity, parentOrderMap, internalCommit, rootSha);
     session.saveOrUpdate(commitEntity);
     return commitEntity;
   }
@@ -374,14 +372,14 @@ public class CommitDAORdbImpl implements CommitDAO {
   public CommitPaginationDTO fetchCommitEntityList(
       Session session, ListCommitsRequest request, Long repoId, boolean ascending)
       throws ModelDBException {
-    StringBuilder commitQueryBuilder =
+    var commitQueryBuilder =
         new StringBuilder(
             " FROM "
                 + CommitEntity.class.getSimpleName()
                 + " cm INNER JOIN cm.repository repo WHERE repo.id = :repoId ");
     Map<String, Long> parameterMap = new HashMap<>();
     if (!request.getCommitBase().isEmpty()) {
-      CommitEntity baseCommitEntity =
+      var baseCommitEntity =
           Optional.ofNullable(session.get(CommitEntity.class, request.getCommitBase()))
               .orElseThrow(
                   () ->
@@ -394,7 +392,7 @@ public class CommitDAORdbImpl implements CommitDAO {
     }
 
     if (!request.getCommitHead().isEmpty()) {
-      CommitEntity headCommitEntity =
+      var headCommitEntity =
           Optional.ofNullable(session.get(CommitEntity.class, request.getCommitHead()))
               .orElseThrow(
                   () ->
@@ -416,10 +414,10 @@ public class CommitDAORdbImpl implements CommitDAO {
     Query<CommitEntity> commitEntityQuery = session.createQuery(finalQueryBuilder.toString());
     StringBuilder finalCountBuilder =
         new StringBuilder("SELECT count(cm) ").append(commitQueryBuilder);
-    Query countQuery = session.createQuery(finalCountBuilder.toString());
+    var countQuery = session.createQuery(finalCountBuilder.toString());
 
-    commitEntityQuery.setParameter("repoId", repoId);
-    countQuery.setParameter("repoId", repoId);
+    commitEntityQuery.setParameter(REPO_ID_QUERY_PARAM, repoId);
+    countQuery.setParameter(REPO_ID_QUERY_PARAM, repoId);
     if (!parameterMap.isEmpty()) {
       parameterMap.forEach(
           (key, value) -> {
@@ -436,7 +434,7 @@ public class CommitDAORdbImpl implements CommitDAO {
     List<CommitEntity> commitEntities = commitEntityQuery.list();
     Long totalRecords = (long) countQuery.uniqueResult();
 
-    CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
+    var commitPaginationDTO = new CommitPaginationDTO();
     commitPaginationDTO.setCommitEntities(commitEntities);
     commitPaginationDTO.setTotalRecords(totalRecords);
     return commitPaginationDTO;
@@ -445,11 +443,11 @@ public class CommitDAORdbImpl implements CommitDAO {
   @Override
   public ListCommitsRequest.Response listCommits(
       ListCommitsRequest request, RepositoryFunction getRepository, boolean ascending)
-      throws ModelDBException, ExecutionException, InterruptedException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws ModelDBException {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repository = getRepository.apply(session);
 
-      CommitPaginationDTO commitPaginationDTO =
+      var commitPaginationDTO =
           fetchCommitEntityList(session, request, repository.getId(), ascending);
       List<Commit> commits =
           commitPaginationDTO.getCommitEntities().stream()
@@ -480,7 +478,7 @@ public class CommitDAORdbImpl implements CommitDAO {
    */
   private Map<String, CommitEntity> getCommits(
       Session session, Long repoId, ProtocolStringList parentShaList) {
-    StringBuilder commitQueryBuilder =
+    var commitQueryBuilder =
         new StringBuilder(
             "SELECT cm FROM "
                 + CommitEntity.class.getSimpleName()
@@ -488,17 +486,17 @@ public class CommitDAORdbImpl implements CommitDAO {
 
     Query<CommitEntity> commitEntityQuery =
         session.createQuery(commitQueryBuilder.append(" ORDER BY cm.date_created DESC").toString());
-    commitEntityQuery.setParameter("repoId", repoId);
-    commitEntityQuery.setParameter("commitHashes", parentShaList);
+    commitEntityQuery.setParameter(REPO_ID_QUERY_PARAM, repoId);
+    commitEntityQuery.setParameter(COMMIT_HASHES_QUERY_PARAM, parentShaList);
     return commitEntityQuery.list().stream()
         .collect(Collectors.toMap(CommitEntity::getCommit_hash, commitEntity -> commitEntity));
   }
 
   @Override
   public Commit getCommit(String commitHash, RepositoryFunction getRepository)
-      throws ModelDBException, ExecutionException, InterruptedException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      CommitEntity commitEntity = getCommitEntity(session, commitHash, getRepository);
+      throws ModelDBException {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var commitEntity = getCommitEntity(session, commitHash, getRepository);
 
       return commitEntity.toCommitProto();
     } catch (Exception ex) {
@@ -513,8 +511,8 @@ public class CommitDAORdbImpl implements CommitDAO {
   @Override
   public CommitEntity getCommitEntity(
       Session session, String commitHash, RepositoryFunction getRepositoryFunction)
-      throws ModelDBException, ExecutionException, InterruptedException {
-    RepositoryEntity repositoryEntity = getRepositoryFunction.apply(session);
+      throws ModelDBException {
+    var repositoryEntity = getRepositoryFunction.apply(session);
     boolean exists =
         VersioningUtils.commitRepositoryMappingExists(
             session, commitHash, repositoryEntity.getId());
@@ -528,8 +526,8 @@ public class CommitDAORdbImpl implements CommitDAO {
   @Override
   public String getDatasetIdByDatasetVersion(RepositoryDAO repositoryDAO, String commitHash)
       throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      CommitEntity commitEntity = session.get(CommitEntity.class, commitHash);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var commitEntity = session.get(CommitEntity.class, commitHash);
 
       if (commitEntity == null) {
         throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
@@ -537,9 +535,9 @@ public class CommitDAORdbImpl implements CommitDAO {
 
       if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
         throw new ModelDBException(
-            "DatasetVersion '"
-                + commitEntity.getCommit_hash()
-                + "' associated with multiple datasets",
+            String.format(
+                "DatasetVersion '%s' associated with multiple datasets",
+                commitEntity.getCommit_hash()),
             Code.INTERNAL);
       }
       return String.valueOf(new ArrayList<>(commitEntity.getRepository()).get(0).getId());
@@ -573,8 +571,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryIdentification repositoryIdentification,
       List<String> datasetVersionIds,
       RepositoryDAO repositoryDAO)
-      throws ModelDBException, ExecutionException, InterruptedException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws ModelDBException {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity = null;
       if (repositoryIdentification != null) {
         repositoryEntity =
@@ -591,7 +589,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             session.createQuery(
                 "From CommitEntity c WHERE c.commit_hash = :commitHash", CommitEntity.class);
         getCommitQuery.setParameter("commitHash", datasetVersionId);
-        CommitEntity commitEntity = getCommitQuery.uniqueResult();
+        var commitEntity = getCommitQuery.uniqueResult();
         if (commitEntity == null || commitEntity.getParent_commits().isEmpty()) {
           LOGGER.warn(
               "skipping deleting commit corresponding to dataset version {}", datasetVersionId);
@@ -600,9 +598,9 @@ public class CommitDAORdbImpl implements CommitDAO {
 
         if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
           throw new ModelDBException(
-              "DatasetVersion '"
-                  + commitEntity.getCommit_hash()
-                  + "' associated with multiple datasets",
+              String.format(
+                  "DatasetVersion '%s' associated with multiple datasets",
+                  commitEntity.getCommit_hash()),
               Code.INTERNAL);
         } else if (commitEntity.getRepository() == null) {
           throw new ModelDBException("DatasetVersion not associated with datasets", Code.INTERNAL);
@@ -614,9 +612,9 @@ public class CommitDAORdbImpl implements CommitDAO {
         } else {
           if (repositoryIdentification.getRepoId() != newRepoId) {
             throw new ModelDBException(
-                "DatasetVersion '"
-                    + commitEntity.getCommit_hash()
-                    + "' associated with multiple datasets",
+                String.format(
+                    "DatasetVersion '%s' associated with multiple datasets",
+                    commitEntity.getCommit_hash()),
                 Code.INTERNAL);
           }
         }
@@ -631,10 +629,10 @@ public class CommitDAORdbImpl implements CommitDAO {
                   RepositoryEnums.RepositoryTypeEnum.REGULAR);
         }
 
-        Query query = session.createQuery(RepositoryDAORdbImpl.CHECK_BRANCH_IN_REPOSITORY_HQL);
-        query.setParameter("repositoryId", repositoryEntity.getId());
+        var query = session.createQuery(RepositoryDAORdbImpl.CHECK_BRANCH_IN_REPOSITORY_HQL);
+        query.setParameter(REPOSITORY_ID_QUERY_PARAM, repositoryEntity.getId());
         query.setParameter("branch", ModelDBConstants.MASTER_BRANCH);
-        BranchEntity branchEntity = (BranchEntity) query.uniqueResult();
+        var branchEntity = (BranchEntity) query.uniqueResult();
 
         CommitEntity parentDatasetVersion = commitEntity.getParent_commits().get(0);
 
@@ -655,7 +653,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         if (!commitEntity.getChild_commits().isEmpty()) {
           CommitEntity childCommit = new ArrayList<>(commitEntity.getChild_commits()).get(0);
           session.lock(childCommit, LockMode.PESSIMISTIC_WRITE);
-          String updateChildEntity =
+          var updateChildEntity =
               "UPDATE commit_parent SET parent_hash = :parentHash WHERE child_hash = :childHash";
           Query updateChildQuery =
               session
@@ -692,12 +690,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       RepositoryIdentification repositoryIdentification,
       List<String> commitShas,
       RepositoryDAO repositoryDAO)
-      throws ModelDBException, ExecutionException, InterruptedException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws ModelDBException {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       Query<CommitEntity> getCommitQuery =
           session.createQuery(
               "From CommitEntity c WHERE c.commit_hash IN (:commitHashes)", CommitEntity.class);
-      getCommitQuery.setParameter("commitHashes", commitShas);
+      getCommitQuery.setParameter(COMMIT_HASHES_QUERY_PARAM, commitShas);
       List<CommitEntity> commitEntities = getCommitQuery.getResultList();
       if (commitEntities.isEmpty()) {
         throw new ModelDBException("Commits not found for the ids: " + commitShas, Code.NOT_FOUND);
@@ -713,7 +711,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         }
       }
 
-      RepositoryEntity repositoryEntity =
+      var repositoryEntity =
           repositoryDAO.getRepositoryById(
               session,
               repositoryIdentification,
@@ -726,14 +724,13 @@ public class CommitDAORdbImpl implements CommitDAO {
               + " AND br.commit_hash IN (:commitHashes) ";
       Query<BranchEntity> getBranchByCommitQuery =
           session.createQuery(getBranchByCommitHQLBuilder, BranchEntity.class);
-      getBranchByCommitQuery.setParameter("repositoryId", repositoryEntity.getId());
-      getBranchByCommitQuery.setParameter("commitHashes", commitShas);
+      getBranchByCommitQuery.setParameter(REPOSITORY_ID_QUERY_PARAM, repositoryEntity.getId());
+      getBranchByCommitQuery.setParameter(COMMIT_HASHES_QUERY_PARAM, commitShas);
       List<BranchEntity> branchEntities = getBranchByCommitQuery.list();
 
       if (branchEntities != null && !branchEntities.isEmpty()) {
-        StringBuilder errorMessage =
-            new StringBuilder("Commits are associated with branch name : ");
-        int count = 0;
+        var errorMessage = new StringBuilder("Commits are associated with branch name : ");
+        var count = 0;
         for (BranchEntity branchEntity : branchEntities) {
           errorMessage.append(branchEntity.getId().getBranch());
           if (count < branchEntities.size() - 1) {
@@ -751,8 +748,8 @@ public class CommitDAORdbImpl implements CommitDAO {
               + " AND te.commit_hash"
               + " IN (:commitHashes)";
       Query<TagsEntity> getTagsQuery = session.createQuery(getTagsHql, TagsEntity.class);
-      getTagsQuery.setParameter("repoId", repositoryEntity.getId());
-      getTagsQuery.setParameter("commitHashes", commitShas);
+      getTagsQuery.setParameter(REPO_ID_QUERY_PARAM, repositoryEntity.getId());
+      getTagsQuery.setParameter(COMMIT_HASHES_QUERY_PARAM, commitShas);
       List<TagsEntity> tagsEntities = getTagsQuery.list();
       if (tagsEntities.size() > 0) {
         throw new ModelDBException(
@@ -825,9 +822,9 @@ public class CommitDAORdbImpl implements CommitDAO {
       String datasetVersionId,
       List<String> tagsList,
       boolean deleteAll)
-      throws ModelDBException, ExecutionException, InterruptedException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      RepositoryEntity repositoryEntity =
+      throws ModelDBException {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var repositoryEntity =
           VersioningUtils.getDatasetRepositoryEntity(
               session, repositoryDAO, datasetId, datasetVersionId, true);
       addDeleteCommitLabels(
@@ -859,8 +856,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       boolean addLabels,
       List<String> labelsList,
       boolean deleteAll)
-      throws ModelDBException, ExecutionException, InterruptedException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws ModelDBException {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String compositeId =
           VersioningUtils.getVersioningCompositeId(
               repositoryEntity.getId(),
@@ -868,7 +865,7 @@ public class CommitDAORdbImpl implements CommitDAO {
               Collections.singletonList(ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
 
       session.beginTransaction();
-      IdentificationType identificationType =
+      var identificationType =
           IdentificationType.newBuilder()
               .setIdType(IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB)
               .setStringId(compositeId)
@@ -879,8 +876,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         metadataDAO.deleteLabels(
             identificationType, ModelDBUtils.checkEntityTagsLength(labelsList), deleteAll);
       }
-      CommitEntity commitEntity =
-          getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
+      var commitEntity = getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
       commitEntity.setDate_updated(new Date().getTime());
       commitEntity.increaseVersionNumber();
       session.update(commitEntity);
@@ -905,8 +901,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       String sortKey,
       boolean ascending)
       throws ModelDBException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      CommitPaginationDTO commitPaginationDTO =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var commitPaginationDTO =
           findCommits(
               session,
               request,
@@ -958,481 +954,471 @@ public class CommitDAORdbImpl implements CommitDAO {
       String sortKey,
       boolean ascending)
       throws ModelDBException {
-    try {
-      List<KeyValueQuery> predicates = new ArrayList<>(request.getPredicatesList());
-      for (KeyValueQuery predicate : predicates) {
-        Value.KindCase predicateCase = predicate.getValue().getKindCase();
-        if (predicate.getKey().equals(ModelDBConstants.ID)) {
-          throw new ModelDBException(
-              "predicates with ids not supported", Status.Code.INVALID_ARGUMENT);
-        }
-        if (predicate.getKey().isEmpty()) {
-          throw new ModelDBException(
-              "predicates with empty key not supported", Status.Code.INVALID_ARGUMENT);
-        }
-        if (predicateCase.equals(Value.KindCase.STRING_VALUE)
-            && predicate.getValue().getStringValue().isEmpty()) {
-          throw new ModelDBException(
-              "Predicate does not contain string value in request", Status.Code.INVALID_ARGUMENT);
-        }
-        if (!predicateCase.equals(Value.KindCase.STRING_VALUE)
-            && !predicateCase.equals(Value.KindCase.NUMBER_VALUE)
-            && !predicateCase.equals(Value.KindCase.BOOL_VALUE)) {
-          throw new ModelDBException(
-              "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE",
-              Status.Code.UNIMPLEMENTED);
-        }
-
-        if (predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE)
-            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_ID)
-            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_NAME)
-            || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_TYPE)) {
-          throw new ModelDBException(
-              "Workspace name OR type not supported as predicate", Status.Code.INVALID_ARGUMENT);
-        }
+    List<KeyValueQuery> predicates = new ArrayList<>(request.getPredicatesList());
+    for (KeyValueQuery predicate : predicates) {
+      var predicateCase = predicate.getValue().getKindCase();
+      if (predicate.getKey().equals(ModelDBConstants.ID)) {
+        throw new ModelDBException(
+            "predicates with ids not supported", Status.Code.INVALID_ARGUMENT);
+      }
+      if (predicate.getKey().isEmpty()) {
+        throw new ModelDBException(
+            "predicates with empty key not supported", Status.Code.INVALID_ARGUMENT);
+      }
+      if (predicateCase.equals(Value.KindCase.STRING_VALUE)
+          && predicate.getValue().getStringValue().isEmpty()) {
+        throw new ModelDBException(
+            "Predicate does not contain string value in request", Status.Code.INVALID_ARGUMENT);
+      }
+      if (!predicateCase.equals(Value.KindCase.STRING_VALUE)
+          && !predicateCase.equals(Value.KindCase.NUMBER_VALUE)
+          && !predicateCase.equals(Value.KindCase.BOOL_VALUE)) {
+        throw new ModelDBException(
+            "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE",
+            Status.Code.UNIMPLEMENTED);
       }
 
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-          ModelDBServiceResourceTypes.REPOSITORY;
-      if (isDatasetVersion) {
-        modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+      if (predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE)
+          || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_ID)
+          || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_NAME)
+          || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_TYPE)) {
+        throw new ModelDBException(
+            "Workspace name OR type not supported as predicate", Status.Code.INVALID_ARGUMENT);
       }
+    }
 
-      Set<String> accessibleResourceIds =
-          new HashSet<>(
-              roleService.getAccessibleResourceIds(
-                  null,
-                  new CollaboratorUser(authService, currentLoginUserInfo),
-                  modelDBServiceResourceTypes,
-                  request.getRepoIdsList().stream()
-                      .map(String::valueOf)
-                      .collect(Collectors.toList())));
+    var modelDBServiceResourceTypes = ModelDBServiceResourceTypes.REPOSITORY;
+    if (isDatasetVersion) {
+      modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
+    }
 
-      String workspaceName = request.getWorkspaceName();
-      LOGGER.debug("Workspace is : '{}'", workspaceName);
-      if (!workspaceName.isEmpty()) {
-        accessibleResourceIds =
-            ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
-                roleService,
-                accessibleResourceIds,
-                workspaceName,
-                currentLoginUserInfo,
-                modelDBServiceResourceTypes);
-      }
+    Set<String> accessibleResourceIds =
+        new HashSet<>(
+            mdbRoleService.getAccessibleResourceIds(
+                null,
+                new CollaboratorUser(authService, currentLoginUserInfo),
+                modelDBServiceResourceTypes,
+                request.getRepoIdsList().stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.toList())));
 
-      if (accessibleResourceIds.isEmpty() && roleService.IsImplemented()) {
-        LOGGER.debug("Accessible Repository Ids not found, size 0");
-        CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
-        commitPaginationDTO.setCommitEntities(Collections.emptyList());
-        commitPaginationDTO.setTotalRecords(0L);
-        return commitPaginationDTO;
-      }
+    String workspaceName = request.getWorkspaceName();
+    LOGGER.debug("Workspace is : '{}'", workspaceName);
+    if (!workspaceName.isEmpty()) {
+      accessibleResourceIds =
+          ModelDBUtils.filterWorkspaceOnlyAccessibleIds(
+              mdbRoleService,
+              accessibleResourceIds,
+              workspaceName,
+              currentLoginUserInfo,
+              modelDBServiceResourceTypes);
+    }
 
-      Set<String> commitHashList = new HashSet<>(request.getCommitsList());
+    if (accessibleResourceIds.isEmpty() && mdbRoleService.IsImplemented()) {
+      LOGGER.debug("Accessible Repository Ids not found, size 0");
+      var commitPaginationDTO = new CommitPaginationDTO();
+      commitPaginationDTO.setCommitEntities(Collections.emptyList());
+      commitPaginationDTO.setTotalRecords(0L);
+      return commitPaginationDTO;
+    }
 
-      Map<String, Object> parametersMap = new HashMap<>();
+    Set<String> commitHashList = new HashSet<>(request.getCommitsList());
 
-      String alias = "cm";
-      StringBuilder rootQueryStringBuilder =
-          new StringBuilder(" FROM ")
-              .append(CommitEntity.class.getSimpleName())
-              .append(" ")
-              .append(alias)
-              .append(" ");
+    Map<String, Object> parametersMap = new HashMap<>();
 
-      StringBuilder joinClause = new StringBuilder();
-      String repoAlias = "repo";
-      joinClause.append(" INNER JOIN ").append(alias).append(".repository ").append(repoAlias);
-      joinClause
-          .append(" INNER JOIN ")
-          .append(InternalFolderElementEntity.class.getSimpleName())
-          .append(" folderElm ")
-          .append(" ON ");
-      joinClause.append("folderElm.folder_hash = ").append(alias).append(".rootSha ");
+    var alias = "cm";
+    var rootQueryStringBuilder =
+        new StringBuilder(" FROM ")
+            .append(CommitEntity.class.getSimpleName())
+            .append(" ")
+            .append(alias)
+            .append(" ");
 
-      List<String> whereClauseList = new ArrayList<>();
+    var joinClause = new StringBuilder();
+    var repoAlias = "repo";
+    joinClause.append(" INNER JOIN ").append(alias).append(".repository ").append(repoAlias);
+    joinClause
+        .append(" INNER JOIN ")
+        .append(InternalFolderElementEntity.class.getSimpleName())
+        .append(" folderElm ")
+        .append(" ON ");
+    joinClause.append("folderElm.folder_hash = ").append(alias).append(".rootSha ");
 
-      if (!accessibleResourceIds.isEmpty()) {
-        whereClauseList.add(repoAlias + ".id IN (:repoIds) ");
-        parametersMap.put(
-            "repoIds",
-            accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()));
-      }
+    List<String> whereClauseList = new ArrayList<>();
 
-      if (!predicates.isEmpty()) {
-        for (int index = 0; index < predicates.size(); index++) {
-          KeyValueQuery predicate = predicates.get(index);
-          String[] names = predicate.getKey().split("\\.");
-          switch (names[0].toLowerCase()) {
-            case ModelDBConstants.COMMIT:
-              LOGGER.debug("switch case : commit");
-              if (names[1].contains(ModelDBConstants.LABEL)) {
-                StringBuilder subQueryBuilder =
-                    new StringBuilder("SELECT lb.id.entity_hash FROM ")
-                        .append(LabelsMappingEntity.class.getSimpleName())
-                        .append(" lb WHERE ")
-                        .append(" lb.id.entity_type ");
-                RdbmsUtils.setValueWithOperatorInQuery(
-                    index,
-                    subQueryBuilder,
-                    OperatorEnum.Operator.EQ,
-                    IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_VALUE,
-                    parametersMap);
-                subQueryBuilder.append(" AND lb.id.label ");
-                RdbmsUtils.setValueWithOperatorInQuery(
-                    index,
-                    subQueryBuilder,
-                    OperatorEnum.Operator.EQ,
-                    predicate.getValue().getStringValue(),
-                    parametersMap);
-                whereClauseList.add(
-                    alias + ".commit_hash IN (" + subQueryBuilder.toString() + ") ");
-              } else if (names[1].toLowerCase().equals("author")) {
-                StringBuilder authorBuilder = new StringBuilder(alias + "." + names[1]);
-                OperatorEnum.Operator operator = predicate.getOperator();
-                if ((operator.equals(OperatorEnum.Operator.CONTAIN)
-                    || operator.equals(OperatorEnum.Operator.NOT_CONTAIN))) {
-                  List<UserInfo> userInfoList =
-                      RdbmsUtils.getFuzzyUserInfos(authService, predicate);
-                  if (userInfoList != null && !userInfoList.isEmpty()) {
-                    List<String> vertaIds =
-                        userInfoList.stream()
-                            .map(authService::getVertaIdFromUserInfo)
-                            .collect(Collectors.toList());
-                    String key = "fuzzy_owners_" + index;
-                    if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-                      authorBuilder.append(" NOT IN (:").append(key).append(") ");
-                    } else {
-                      authorBuilder.append(" IN (:").append(key).append(") ");
-                    }
-                    parametersMap.put(key, vertaIds);
-                    whereClauseList.add(authorBuilder.toString());
-                  } else {
-                    CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
-                    commitPaginationDTO.setCommitEntities(Collections.emptyList());
-                    commitPaginationDTO.setTotalRecords(0L);
-                    return commitPaginationDTO;
-                  }
-                } else {
-                  VersioningUtils.setQueryParameters(
-                      index, authorBuilder, predicate, parametersMap);
-                  whereClauseList.add(authorBuilder.toString());
-                }
-              } else {
-                throw new ModelDBException(
-                    "Given predicate not supported yet : " + predicate, Code.UNIMPLEMENTED);
-              }
-              break;
-            case ModelDBConstants.ATTRIBUTES:
-              Map<String, Object> attrQueryParametersMap = new HashMap<>();
-              StringBuilder attrQueryBuilder =
-                  new StringBuilder(
-                          "SELECT attr.entity_hash From "
-                              + AttributeEntity.class.getSimpleName()
-                              + " attr where attr.")
-                      .append(ModelDBConstants.KEY);
-              RdbmsUtils.setValueWithOperatorInQuery(
-                  index,
-                  attrQueryBuilder,
-                  OperatorEnum.Operator.EQ,
-                  names[1],
-                  attrQueryParametersMap);
-              attrQueryBuilder.append("AND attr.value ");
-              RdbmsUtils.setValueWithOperatorInQuery(
-                  index,
-                  attrQueryBuilder,
-                  predicate.getOperator(),
-                  ModelDBUtils.getStringFromProtoObject(predicate.getValue()),
-                  attrQueryParametersMap);
-              attrQueryBuilder.append("AND attr.field_type ");
-              RdbmsUtils.setValueWithOperatorInQuery(
-                  index,
-                  attrQueryBuilder,
-                  OperatorEnum.Operator.EQ,
-                  ModelDBConstants.ATTRIBUTES,
-                  attrQueryParametersMap);
-              attrQueryBuilder.append("AND attr.entity_name ");
-              RdbmsUtils.setValueWithOperatorInQuery(
-                  index,
-                  attrQueryBuilder,
-                  OperatorEnum.Operator.EQ,
-                  ModelDBConstants.BLOB,
-                  attrQueryParametersMap);
+    if (!accessibleResourceIds.isEmpty()) {
+      whereClauseList.add(repoAlias + ".id IN (:repoIds) ");
+      parametersMap.put(
+          "repoIds",
+          accessibleResourceIds.stream().map(Long::valueOf).collect(Collectors.toList()));
+    }
 
-              Query attrQuery = session.createQuery(attrQueryBuilder.toString());
-              attrQueryParametersMap.forEach(attrQuery::setParameter);
-              LOGGER.debug(
-                  "Find attributes in datasetVersion final query : {}", attrQuery.getQueryString());
-              List<String> attrEntityHashes = attrQuery.list();
-              LOGGER.debug("Attributes in datasetVersion count: {}", attrEntityHashes.size());
-              Set<String> attrCommitHashes = new HashSet<>();
-              for (String blobHash : attrEntityHashes) {
-                String[] compositeIdArr =
-                    VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
-                attrCommitHashes.add(compositeIdArr[1]);
-              }
-              if (!attrCommitHashes.isEmpty()) {
-                whereClauseList.add(alias + ".commit_hash IN (:attr_" + index + "_CommitHashes)");
-                parametersMap.put("attr_" + index + "_CommitHashes", attrCommitHashes);
-              } else {
-                CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
-                commitPaginationDTO.setCommitEntities(Collections.emptyList());
-                commitPaginationDTO.setTotalRecords(0L);
-                return commitPaginationDTO;
-              }
-              break;
-            case ModelDBConstants.TAGS:
-            case ModelDBConstants.BLOB:
-              LOGGER.debug("switch case : Blob");
+    if (!predicates.isEmpty()) {
+      for (var index = 0; index < predicates.size(); index++) {
+        KeyValueQuery predicate = predicates.get(index);
+        String[] names = predicate.getKey().split("\\.");
+        switch (names[0].toLowerCase()) {
+          case ModelDBConstants.COMMIT:
+            LOGGER.debug("switch case : commit");
+            if (names[1].contains(ModelDBConstants.LABEL)) {
               StringBuilder subQueryBuilder =
                   new StringBuilder("SELECT lb.id.entity_hash FROM ")
                       .append(LabelsMappingEntity.class.getSimpleName())
                       .append(" lb WHERE ")
-                      .append(" lb.id.entity_type = :entityType");
-              subQueryBuilder.append(" AND lower(lb.id.label) ");
-
-              Map<String, Object> innerQueryParametersMap = new HashMap<>();
-              if (predicate.getOperator().equals(OperatorEnum.Operator.NE)
-                  || predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-                RdbmsUtils.setValueWithOperatorInQuery(
-                    index,
-                    subQueryBuilder,
-                    predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
-                        ? OperatorEnum.Operator.CONTAIN
-                        : OperatorEnum.Operator.EQ,
-                    predicate.getValue().getStringValue().toLowerCase(),
-                    innerQueryParametersMap);
-              } else {
-                RdbmsUtils.setValueWithOperatorInQuery(
-                    index,
-                    subQueryBuilder,
-                    predicate.getOperator(),
-                    predicate.getValue().getStringValue().toLowerCase(),
-                    innerQueryParametersMap);
-              }
-              subQueryBuilder.append(" GROUP BY lb.id.entity_hash");
-              Query labelQuery = session.createQuery(subQueryBuilder.toString());
-              labelQuery.setParameter(
-                  "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_VALUE);
-              innerQueryParametersMap.forEach(labelQuery::setParameter);
-              LOGGER.debug("Find tags OR blob final query : {}", labelQuery.getQueryString());
-              List<String> blobHashes = labelQuery.list();
-              LOGGER.debug("tags OR blob count : {}", blobHashes.size());
-              Set<String> commitHashes = new HashSet<>();
-              blobHashes.forEach(
-                  blobHash -> {
-                    String[] compositeIdArr =
-                        VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
-                    commitHashes.add(compositeIdArr[1]);
-                  });
-              LOGGER.debug(
-                  "tags OR blob in commit count : {}, commitHashes : {}",
-                  commitHashes.size(),
-                  commitHashes);
-              if (!commitHashes.isEmpty()) {
-                if (predicate.getOperator().equals(OperatorEnum.Operator.NE)
-                    || predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-                  whereClauseList.add(
-                      alias + ".commit_hash NOT IN (:label_" + index + "_CommitHashes)");
-                } else {
-                  whereClauseList.add(
-                      alias + ".commit_hash IN (:label_" + index + "_CommitHashes)");
-                }
-                parametersMap.put("label_" + index + "_CommitHashes", commitHashes);
-              } else {
-                CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
-                commitPaginationDTO.setCommitEntities(Collections.emptyList());
-                commitPaginationDTO.setTotalRecords(0L);
-                return commitPaginationDTO;
-              }
-              break;
-            case ModelDBConstants.TIME_LOGGED:
-            case ModelDBConstants.TIME_UPDATED:
-            case ModelDBConstants.DATE_CREATED:
-            case ModelDBConstants.DATE_UPDATED:
-              String key = predicate.getKey();
-              if (key.equals(ModelDBConstants.TIME_LOGGED)) {
-                key = ModelDBConstants.DATE_CREATED;
-              } else if (key.equals(ModelDBConstants.TIME_UPDATED)) {
-                key = ModelDBConstants.DATE_UPDATED;
-              }
-
-              Double value = predicate.getValue().getNumberValue();
-              StringBuilder dateQueryBuilder = new StringBuilder(alias);
-              dateQueryBuilder.append(".").append(key);
+                      .append(" lb.id.entity_type ");
               RdbmsUtils.setValueWithOperatorInQuery(
                   index,
-                  dateQueryBuilder,
-                  predicate.getOperator(),
-                  value.longValue(),
+                  subQueryBuilder,
+                  OperatorEnum.Operator.EQ,
+                  IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_VALUE,
                   parametersMap);
-              whereClauseList.add(dateQueryBuilder.toString());
-              break;
-            case ModelDBConstants.VERSION:
-              LOGGER.debug("switch case : Version");
-              StringBuilder versionQueryBuilder =
-                  new StringBuilder("SELECT mpm.id.commitSha FROM ")
-                      .append(MetadataPropertyMappingEntity.class.getSimpleName())
-                      .append(" mpm WHERE ")
-                      .append(" mpm.id.key = :key")
-                      .append(" AND mpm.id.repositoryId IN (:repositoryId) ");
-              versionQueryBuilder.append(" AND mpm.value ");
-
-              Map<String, Object> versionInnerQueryParametersMap = new HashMap<>();
-              versionInnerQueryParametersMap.put("key", ModelDBConstants.VERSION);
-              versionInnerQueryParametersMap.put(
-                  "repositoryId",
-                  accessibleResourceIds.stream().map(Long::parseLong).collect(Collectors.toList()));
-              Double version = predicate.getValue().getNumberValue();
-              if (predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
-                RdbmsUtils.setValueWithOperatorInQuery(
-                    index,
-                    versionQueryBuilder,
-                    predicate.getOperator(),
-                    String.valueOf(version.longValue()),
-                    versionInnerQueryParametersMap);
+              subQueryBuilder.append(" AND lb.id.label ");
+              RdbmsUtils.setValueWithOperatorInQuery(
+                  index,
+                  subQueryBuilder,
+                  OperatorEnum.Operator.EQ,
+                  predicate.getValue().getStringValue(),
+                  parametersMap);
+              whereClauseList.add(alias + ".commit_hash IN (" + subQueryBuilder.toString() + ") ");
+            } else if (names[1].toLowerCase().equals("author")) {
+              var authorBuilder = new StringBuilder(alias + "." + names[1]);
+              var operator = predicate.getOperator();
+              if ((operator.equals(OperatorEnum.Operator.CONTAIN)
+                  || operator.equals(OperatorEnum.Operator.NOT_CONTAIN))) {
+                List<UserInfo> userInfoList = RdbmsUtils.getFuzzyUserInfos(authService, predicate);
+                if (userInfoList != null && !userInfoList.isEmpty()) {
+                  List<String> vertaIds =
+                      userInfoList.stream()
+                          .map(authService::getVertaIdFromUserInfo)
+                          .collect(Collectors.toList());
+                  String key = "fuzzy_owners_" + index;
+                  if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+                    authorBuilder.append(" NOT IN (:").append(key).append(") ");
+                  } else {
+                    authorBuilder.append(" IN (:").append(key).append(") ");
+                  }
+                  parametersMap.put(key, vertaIds);
+                  whereClauseList.add(authorBuilder.toString());
+                } else {
+                  var commitPaginationDTO = new CommitPaginationDTO();
+                  commitPaginationDTO.setCommitEntities(Collections.emptyList());
+                  commitPaginationDTO.setTotalRecords(0L);
+                  return commitPaginationDTO;
+                }
               } else {
-                throw new InvalidArgumentException(
-                    "Operator EQ is only supported in predicate with `version` key");
+                VersioningUtils.setQueryParameters(index, authorBuilder, predicate, parametersMap);
+                whereClauseList.add(authorBuilder.toString());
               }
-              versionQueryBuilder.append(" GROUP BY mpm.id.commitSha");
-              Query versionQuery = session.createQuery(versionQueryBuilder.toString());
-              versionInnerQueryParametersMap.forEach(versionQuery::setParameter);
-              LOGGER.debug("Find version blob final query : {}", versionQuery.getQueryString());
-              List<String> versionCommitHashes = versionQuery.list();
-              LOGGER.debug("version blob count : {}", versionCommitHashes.size());
-              if (!versionCommitHashes.isEmpty()) {
-                whereClauseList.add(alias + ".commit_hash IN (:label_" + index + "_CommitHashes)");
-                parametersMap.put("label_" + index + "_CommitHashes", versionCommitHashes);
-              } else {
-                CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
-                commitPaginationDTO.setCommitEntities(Collections.emptyList());
-                commitPaginationDTO.setTotalRecords(0L);
-                return commitPaginationDTO;
-              }
-              break;
-            default:
+            } else {
               throw new ModelDBException(
-                  "Invalid predicate found : " + predicate, Code.INVALID_ARGUMENT);
-          }
-        }
-      }
+                  "Given predicate not supported yet : " + predicate, Code.UNIMPLEMENTED);
+            }
+            break;
+          case ModelDBConstants.ATTRIBUTES:
+            Map<String, Object> attrQueryParametersMap = new HashMap<>();
+            StringBuilder attrQueryBuilder =
+                new StringBuilder(
+                        "SELECT attr.entity_hash From "
+                            + AttributeEntity.class.getSimpleName()
+                            + " attr where attr.")
+                    .append(ModelDBConstants.KEY);
+            RdbmsUtils.setValueWithOperatorInQuery(
+                index,
+                attrQueryBuilder,
+                OperatorEnum.Operator.EQ,
+                names[1],
+                attrQueryParametersMap);
+            attrQueryBuilder.append("AND attr.value ");
+            RdbmsUtils.setValueWithOperatorInQuery(
+                index,
+                attrQueryBuilder,
+                predicate.getOperator(),
+                ModelDBUtils.getStringFromProtoObject(predicate.getValue()),
+                attrQueryParametersMap);
+            attrQueryBuilder.append("AND attr.field_type ");
+            RdbmsUtils.setValueWithOperatorInQuery(
+                index,
+                attrQueryBuilder,
+                OperatorEnum.Operator.EQ,
+                ModelDBConstants.ATTRIBUTES,
+                attrQueryParametersMap);
+            attrQueryBuilder.append("AND attr.entity_name ");
+            RdbmsUtils.setValueWithOperatorInQuery(
+                index,
+                attrQueryBuilder,
+                OperatorEnum.Operator.EQ,
+                ModelDBConstants.BLOB,
+                attrQueryParametersMap);
 
-      if (!commitHashList.isEmpty()) {
-        whereClauseList.add(alias + ".commit_hash IN (:commitHashList)");
-        parametersMap.put("commitHashList", commitHashList);
-      }
+            var attrQuery = session.createQuery(attrQueryBuilder.toString());
+            attrQueryParametersMap.forEach(attrQuery::setParameter);
+            LOGGER.debug(
+                "Find attributes in datasetVersion final query : {}", attrQuery.getQueryString());
+            List<String> attrEntityHashes = attrQuery.list();
+            LOGGER.debug("Attributes in datasetVersion count: {}", attrEntityHashes.size());
+            Set<String> attrCommitHashes = new HashSet<>();
+            for (String blobHash : attrEntityHashes) {
+              String[] compositeIdArr =
+                  VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
+              attrCommitHashes.add(compositeIdArr[1]);
+            }
+            if (!attrCommitHashes.isEmpty()) {
+              whereClauseList.add(
+                  String.format("%s.commit_hash IN (:attr_%s_CommitHashes)", alias, index));
+              parametersMap.put(String.format("attr_%s_CommitHashes", index), attrCommitHashes);
+            } else {
+              var commitPaginationDTO = new CommitPaginationDTO();
+              commitPaginationDTO.setCommitEntities(Collections.emptyList());
+              commitPaginationDTO.setTotalRecords(0L);
+              return commitPaginationDTO;
+            }
+            break;
+          case ModelDBConstants.TAGS:
+          case ModelDBConstants.BLOB:
+            LOGGER.debug("switch case : Blob");
+            StringBuilder subQueryBuilder =
+                new StringBuilder("SELECT lb.id.entity_hash FROM ")
+                    .append(LabelsMappingEntity.class.getSimpleName())
+                    .append(" lb WHERE ")
+                    .append(" lb.id.entity_type = :entityType");
+            subQueryBuilder.append(" AND lower(lb.id.label) ");
 
-      StringBuilder whereClause = new StringBuilder();
-      whereClause.append(
-          VersioningUtils.setPredicatesWithQueryOperator(
-              " AND ", whereClauseList.toArray(new String[0])));
-
-      // Order by clause
-      if (sortKey != null && !sortKey.isEmpty()) {
-        if (sortKey.equals(ModelDBConstants.TIME_LOGGED)) {
-          sortKey = ModelDBConstants.DATE_CREATED;
-        } else if (sortKey.equals(ModelDBConstants.TIME_UPDATED)) {
-          sortKey = ModelDBConstants.DATE_UPDATED;
-        }
-      } else {
-        if (isDatasetVersion) {
-          sortKey = ModelDBConstants.DATE_CREATED;
-        } else {
-          sortKey = ModelDBConstants.DATE_UPDATED;
-        }
-      }
-
-      StringBuilder orderClause =
-          new StringBuilder(" ORDER BY ")
-              .append(alias)
-              .append(".")
-              .append(sortKey)
-              .append(" ")
-              .append(ascending ? "ASC" : "DESC");
-
-      StringBuilder finalQueryBuilder = new StringBuilder();
-      if (idsOnly) {
-        finalQueryBuilder.append("SELECT ").append(alias).append(".commit_hash ");
-      } else if (rootSHAOnly) {
-        finalQueryBuilder.append("SELECT ").append(alias).append(".rootSha ");
-      } else {
-        finalQueryBuilder.append("SELECT ").append(alias).append(" ");
-      }
-      finalQueryBuilder.append(rootQueryStringBuilder);
-      finalQueryBuilder.append(joinClause);
-      if (!whereClause.toString().isEmpty()) {
-        finalQueryBuilder.append(" WHERE ").append(whereClause);
-      }
-      finalQueryBuilder.append(orderClause);
-
-      // Build count query
-      StringBuilder countQueryBuilder = new StringBuilder();
-      if (!joinClause.toString().isEmpty()) {
-        countQueryBuilder.append("SELECT COUNT(").append(alias).append(") ");
-      } else {
-        countQueryBuilder.append("SELECT COUNT(*) ");
-      }
-      countQueryBuilder.append(rootQueryStringBuilder);
-      countQueryBuilder.append(joinClause);
-      if (!whereClause.toString().isEmpty()) {
-        countQueryBuilder.append(" WHERE ").append(whereClause);
-      }
-
-      Query query = session.createQuery(finalQueryBuilder.toString());
-      LOGGER.debug("Find commits final query : {}", query.getQueryString());
-      Query countQuery = session.createQuery(countQueryBuilder.toString());
-      if (!parametersMap.isEmpty()) {
-        parametersMap.forEach(
-            (key, value) -> {
-              if (value instanceof List) {
-                List<Object> objectList = (List<Object>) value;
-                query.setParameterList(key, objectList);
-                countQuery.setParameterList(key, objectList);
+            Map<String, Object> innerQueryParametersMap = new HashMap<>();
+            if (predicate.getOperator().equals(OperatorEnum.Operator.NE)
+                || predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+              RdbmsUtils.setValueWithOperatorInQuery(
+                  index,
+                  subQueryBuilder,
+                  predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+                      ? OperatorEnum.Operator.CONTAIN
+                      : OperatorEnum.Operator.EQ,
+                  predicate.getValue().getStringValue().toLowerCase(),
+                  innerQueryParametersMap);
+            } else {
+              RdbmsUtils.setValueWithOperatorInQuery(
+                  index,
+                  subQueryBuilder,
+                  predicate.getOperator(),
+                  predicate.getValue().getStringValue().toLowerCase(),
+                  innerQueryParametersMap);
+            }
+            subQueryBuilder.append(" GROUP BY lb.id.entity_hash");
+            var labelQuery = session.createQuery(subQueryBuilder.toString());
+            labelQuery.setParameter(
+                "entityType", IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB_VALUE);
+            innerQueryParametersMap.forEach(labelQuery::setParameter);
+            LOGGER.debug("Find tags OR blob final query : {}", labelQuery.getQueryString());
+            List<String> blobHashes = labelQuery.list();
+            LOGGER.debug("tags OR blob count : {}", blobHashes.size());
+            Set<String> commitHashes = new HashSet<>();
+            blobHashes.forEach(
+                blobHash -> {
+                  String[] compositeIdArr =
+                      VersioningUtils.getDatasetVersionBlobCompositeIdString(blobHash);
+                  commitHashes.add(compositeIdArr[1]);
+                });
+            LOGGER.debug(
+                "tags OR blob in commit count : {}, commitHashes : {}",
+                commitHashes.size(),
+                commitHashes);
+            if (!commitHashes.isEmpty()) {
+              if (predicate.getOperator().equals(OperatorEnum.Operator.NE)
+                  || predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+                whereClauseList.add(
+                    String.format("%s.commit_hash NOT IN (:label_%s_CommitHashes)", alias, index));
               } else {
-                query.setParameter(key, value);
-                countQuery.setParameter(key, value);
+                whereClauseList.add(
+                    String.format("%s.commit_hash IN (:label_%s_CommitHashes)", alias, index));
               }
-            });
-      }
+              parametersMap.put("label_" + index + "_CommitHashes", commitHashes);
+            } else {
+              var commitPaginationDTO = new CommitPaginationDTO();
+              commitPaginationDTO.setCommitEntities(Collections.emptyList());
+              commitPaginationDTO.setTotalRecords(0L);
+              return commitPaginationDTO;
+            }
+            break;
+          case ModelDBConstants.TIME_LOGGED:
+          case ModelDBConstants.TIME_UPDATED:
+          case ModelDBConstants.DATE_CREATED:
+          case ModelDBConstants.DATE_UPDATED:
+            String key = predicate.getKey();
+            if (key.equals(ModelDBConstants.TIME_LOGGED)) {
+              key = ModelDBConstants.DATE_CREATED;
+            } else if (key.equals(ModelDBConstants.TIME_UPDATED)) {
+              key = ModelDBConstants.DATE_UPDATED;
+            }
 
-      if (request.getPageNumber() != 0 && request.getPageLimit() != 0) {
-        // Calculate number of documents to skip
-        int skips = request.getPageLimit() * (request.getPageNumber() - 1);
-        query.setFirstResult(skips);
-        query.setMaxResults(request.getPageLimit());
-      }
+            Double value = predicate.getValue().getNumberValue();
+            var dateQueryBuilder = new StringBuilder(alias);
+            dateQueryBuilder.append(".").append(key);
+            RdbmsUtils.setValueWithOperatorInQuery(
+                index, dateQueryBuilder, predicate.getOperator(), value.longValue(), parametersMap);
+            whereClauseList.add(dateQueryBuilder.toString());
+            break;
+          case ModelDBConstants.VERSION:
+            LOGGER.debug("switch case : Version");
+            StringBuilder versionQueryBuilder =
+                new StringBuilder("SELECT mpm.id.commitSha FROM ")
+                    .append(MetadataPropertyMappingEntity.class.getSimpleName())
+                    .append(" mpm WHERE ")
+                    .append(" mpm.id.key = :key")
+                    .append(" AND mpm.id.repositoryId IN (:repositoryId) ");
+            versionQueryBuilder.append(" AND mpm.value ");
 
-      List<CommitEntity> commitEntities;
-      if (idsOnly || rootSHAOnly) {
-        List<String> resultSet = query.list();
-        commitEntities =
-            resultSet.stream()
-                .map(
-                    selectedField -> {
-                      CommitEntity commitEntity = new CommitEntity();
-                      if (idsOnly) {
-                        commitEntity.setCommit_hash(selectedField);
-                      } else if (rootSHAOnly) {
-                        commitEntity.setRootSha(selectedField);
-                      }
-                      return commitEntity;
-                    })
-                .collect(Collectors.toList());
-      } else {
-        commitEntities = query.list();
+            Map<String, Object> versionInnerQueryParametersMap = new HashMap<>();
+            versionInnerQueryParametersMap.put("key", ModelDBConstants.VERSION);
+            versionInnerQueryParametersMap.put(
+                REPOSITORY_ID_QUERY_PARAM,
+                accessibleResourceIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+            Double version = predicate.getValue().getNumberValue();
+            if (predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
+              RdbmsUtils.setValueWithOperatorInQuery(
+                  index,
+                  versionQueryBuilder,
+                  predicate.getOperator(),
+                  String.valueOf(version.longValue()),
+                  versionInnerQueryParametersMap);
+            } else {
+              throw new InvalidArgumentException(
+                  "Operator EQ is only supported in predicate with `version` key");
+            }
+            versionQueryBuilder.append(" GROUP BY mpm.id.commitSha");
+            var versionQuery = session.createQuery(versionQueryBuilder.toString());
+            versionInnerQueryParametersMap.forEach(versionQuery::setParameter);
+            LOGGER.debug("Find version blob final query : {}", versionQuery.getQueryString());
+            List<String> versionCommitHashes = versionQuery.list();
+            LOGGER.debug("version blob count : {}", versionCommitHashes.size());
+            if (!versionCommitHashes.isEmpty()) {
+              whereClauseList.add(
+                  String.format("%s.commit_hash IN (:label_%s_CommitHashes)", alias, index));
+              parametersMap.put(String.format("label_%s_CommitHashes", index), versionCommitHashes);
+            } else {
+              var commitPaginationDTO = new CommitPaginationDTO();
+              commitPaginationDTO.setCommitEntities(Collections.emptyList());
+              commitPaginationDTO.setTotalRecords(0L);
+              return commitPaginationDTO;
+            }
+            break;
+          default:
+            throw new ModelDBException(
+                "Invalid predicate found : " + predicate, Code.INVALID_ARGUMENT);
+        }
       }
-      LOGGER.debug("Final find commit count: {}", commitEntities.size());
-
-      Long totalCount = (Long) countQuery.uniqueResult();
-      LOGGER.debug("Find commit totalCount: {}", totalCount);
-      CommitPaginationDTO commitPaginationDTO = new CommitPaginationDTO();
-      commitPaginationDTO.setCommitEntities(commitEntities);
-      commitPaginationDTO.setTotalRecords(totalCount);
-      return commitPaginationDTO;
-    } catch (InvalidProtocolBufferException e) {
-      throw new ModelDBException(e);
     }
+
+    if (!commitHashList.isEmpty()) {
+      whereClauseList.add(alias + ".commit_hash IN (:commitHashList)");
+      parametersMap.put("commitHashList", commitHashList);
+    }
+
+    var whereClause = new StringBuilder();
+    whereClause.append(
+        VersioningUtils.setPredicatesWithQueryOperator(
+            " AND ", whereClauseList.toArray(new String[0])));
+
+    // Order by clause
+    if (sortKey != null && !sortKey.isEmpty()) {
+      if (sortKey.equals(ModelDBConstants.TIME_LOGGED)) {
+        sortKey = ModelDBConstants.DATE_CREATED;
+      } else if (sortKey.equals(ModelDBConstants.TIME_UPDATED)) {
+        sortKey = ModelDBConstants.DATE_UPDATED;
+      }
+    } else {
+      if (isDatasetVersion) {
+        sortKey = ModelDBConstants.DATE_CREATED;
+      } else {
+        sortKey = ModelDBConstants.DATE_UPDATED;
+      }
+    }
+
+    StringBuilder orderClause =
+        new StringBuilder(" ORDER BY ")
+            .append(alias)
+            .append(".")
+            .append(sortKey)
+            .append(" ")
+            .append(ascending ? "ASC" : "DESC");
+
+    var finalQueryBuilder = new StringBuilder("SELECT ");
+    if (idsOnly) {
+      finalQueryBuilder.append(alias).append(".commit_hash ");
+    } else if (rootSHAOnly) {
+      finalQueryBuilder.append(alias).append(".rootSha ");
+    } else {
+      finalQueryBuilder.append(alias).append(" ");
+    }
+    finalQueryBuilder.append(rootQueryStringBuilder);
+    finalQueryBuilder.append(joinClause);
+    if (!whereClause.toString().isEmpty()) {
+      finalQueryBuilder.append(" WHERE ").append(whereClause);
+    }
+    finalQueryBuilder.append(orderClause);
+
+    // Build count query
+    var countQueryBuilder = new StringBuilder();
+    if (!joinClause.toString().isEmpty()) {
+      countQueryBuilder.append("SELECT COUNT(").append(alias).append(") ");
+    } else {
+      countQueryBuilder.append("SELECT COUNT(*) ");
+    }
+    countQueryBuilder.append(rootQueryStringBuilder);
+    countQueryBuilder.append(joinClause);
+    if (!whereClause.toString().isEmpty()) {
+      countQueryBuilder.append(" WHERE ").append(whereClause);
+    }
+
+    var query = session.createQuery(finalQueryBuilder.toString());
+    LOGGER.debug("Find commits final query : {}", query.getQueryString());
+    var countQuery = session.createQuery(countQueryBuilder.toString());
+    if (!parametersMap.isEmpty()) {
+      parametersMap.forEach(
+          (key, value) -> {
+            if (value instanceof List) {
+              List<Object> objectList = (List<Object>) value;
+              query.setParameterList(key, objectList);
+              countQuery.setParameterList(key, objectList);
+            } else {
+              query.setParameter(key, value);
+              countQuery.setParameter(key, value);
+            }
+          });
+    }
+
+    if (request.getPageNumber() != 0 && request.getPageLimit() != 0) {
+      // Calculate number of documents to skip
+      int skips = request.getPageLimit() * (request.getPageNumber() - 1);
+      query.setFirstResult(skips);
+      query.setMaxResults(request.getPageLimit());
+    }
+
+    List<CommitEntity> commitEntities;
+    if (idsOnly || rootSHAOnly) {
+      List<String> resultSet = query.list();
+      commitEntities =
+          resultSet.stream()
+              .map(
+                  selectedField -> {
+                    var commitEntity = new CommitEntity();
+                    if (idsOnly) {
+                      commitEntity.setCommit_hash(selectedField);
+                    } else if (rootSHAOnly) {
+                      commitEntity.setRootSha(selectedField);
+                    }
+                    return commitEntity;
+                  })
+              .collect(Collectors.toList());
+    } else {
+      commitEntities = query.list();
+    }
+    LOGGER.debug("Final find commit count: {}", commitEntities.size());
+
+    Long totalCount = (Long) countQuery.uniqueResult();
+    LOGGER.debug("Find commit totalCount: {}", totalCount);
+    var commitPaginationDTO = new CommitPaginationDTO();
+    commitPaginationDTO.setCommitEntities(commitEntities);
+    commitPaginationDTO.setTotalRecords(totalCount);
+    return commitPaginationDTO;
   }
 
   /**
@@ -1444,11 +1430,11 @@ public class CommitDAORdbImpl implements CommitDAO {
    */
   @Override
   public boolean isCommitExists(Session session, String commitHash) {
-    String checkDatasetVersionExistsByIdHql =
+    var checkDatasetVersionExistsByIdHql =
         new StringBuilder("Select count(cm.commit_hash) From CommitEntity cm where ")
             .append(" cm.commit_hash = :commitHash ")
             .toString();
-    Query query = session.createQuery(checkDatasetVersionExistsByIdHql);
+    var query = session.createQuery(checkDatasetVersionExistsByIdHql);
     query.setParameter("commitHash", commitHash);
     Long count = (Long) query.uniqueResult();
     return count > 0;
@@ -1462,13 +1448,12 @@ public class CommitDAORdbImpl implements CommitDAO {
       String datasetId,
       String datasetVersionId,
       String description)
-      throws ModelDBException, ExecutionException, InterruptedException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws ModelDBException {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       RepositoryEntity repositoryEntity;
       CommitEntity commitEntity = null;
 
-      RepositoryIdentification.Builder repositoryIdentification =
-          RepositoryIdentification.newBuilder();
+      var repositoryIdentification = RepositoryIdentification.newBuilder();
       if (datasetId == null || datasetId.isEmpty()) {
         commitEntity =
             session.get(CommitEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
@@ -1479,9 +1464,9 @@ public class CommitDAORdbImpl implements CommitDAO {
 
         if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
           throw new ModelDBException(
-              "DatasetVersion '"
-                  + commitEntity.getCommit_hash()
-                  + "' associated with multiple datasets",
+              String.format(
+                  "DatasetVersion '%s' associated with multiple datasets",
+                  commitEntity.getCommit_hash()),
               Code.INTERNAL);
         }
         Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
@@ -1533,8 +1518,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       BlobDAO blobDAO,
       MetadataDAO metadataDAO,
       String datasetVersionId)
-      throws ModelDBException, ExecutionException, InterruptedException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws ModelDBException {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       return blobDAO.convertToDatasetVersion(
           repositoryDAO, metadataDAO, null, datasetVersionId, false);
     } catch (Exception ex) {

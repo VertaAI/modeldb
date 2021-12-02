@@ -24,6 +24,22 @@ pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire 
 
 
 class TestEndpoint:
+    def test_path_ensure_starts_with_slash(self, client, created_entities):
+        # without slash
+        path = _utils.generate_default_name()
+        endpoint = client.create_endpoint(path)
+        created_entities.append(endpoint)
+
+        expected_path = "/" + path
+        assert endpoint.path == expected_path
+
+        # with slash
+        path = "/" + _utils.generate_default_name()
+        endpoint = client.create_endpoint(path)
+        created_entities.append(endpoint)
+
+        assert endpoint.path == path
+
     def test_create(self, client, created_entities):
         name = _utils.generate_default_name()
         endpoint = client.set_endpoint(name)
@@ -204,8 +220,8 @@ class TestEndpoint:
         excinfo_value = str(excinfo.value).strip()
         assert "Could not find a version that satisfies the requirement blahblahblah==3.6.0" in excinfo_value
 
-    def test_update_runtime_error(self, client, model_version, endpoint):
-        """Propagate errors from model being initialized at container runtime."""
+    def test_update_init_error(self, client, model_version, endpoint):
+        """Propagate errors from model being initialized at container init."""
         LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
 
         model_version.log_model(LogisticRegression(), custom_modules=[])
@@ -704,3 +720,17 @@ class TestEndpoint:
 
         excinfo_value = str(excinfo.value).strip()
         assert "403" in excinfo_value
+
+    def test_update_from_build(self, client, class_endpoint_updated, created_entities):
+        existing_endpoint = class_endpoint_updated
+        existing_build = existing_endpoint.wait_for_build(polling_seconds=5)
+        current_build = existing_endpoint.get_current_build()
+
+        new_path = verta._internal_utils._utils.generate_default_name()
+        new_endpoint = client.get_or_create_endpoint(path=new_path)
+        created_entities.append(new_endpoint)
+        new_endpoint.update(current_build)
+        new_endpoint_completed_build = new_endpoint.wait_for_build(polling_seconds=5)
+
+        assert existing_build.id == current_build.id
+        assert current_build.id == new_endpoint_completed_build.id

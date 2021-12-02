@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
+import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,13 +17,13 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "artifact")
-public class ArtifactEntity {
+public class ArtifactEntity implements Serializable {
 
   public ArtifactEntity() {}
 
   public ArtifactEntity(Object entity, String fieldType, Artifact artifact) {
-    App app = App.getInstance();
-    var artifactStoreConfig = app.config.artifactStoreConfig;
+    var app = App.getInstance();
+    var artifactStoreConfig = app.mdbConfig.artifactStoreConfig;
     setKey(artifact.getKey());
     setPath(artifact.getPath());
     if (!artifact.getPathOnly()) {
@@ -50,7 +51,11 @@ public class ArtifactEntity {
     }
 
     this.field_type = fieldType;
-    setUploadCompleted(!artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3));
+    var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3);
+    if (artifact.getUploadCompleted()) {
+      uploadCompleted = true;
+    }
+    setUploadCompleted(uploadCompleted);
   }
 
   @Id

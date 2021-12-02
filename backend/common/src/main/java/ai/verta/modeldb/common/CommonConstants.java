@@ -5,14 +5,12 @@ public interface CommonConstants {
   // String Constants
   String STRING_COLON = ":";
   String UNSIGNED_USER = "unsigned_user";
-  Integer MIN_CONNECTION_SIZE_DEFAULT = 5;
-  Integer MAX_CONNECTION_SIZE_DEFAULT = 20;
-  Integer CONNECTION_TIMEOUT_DEFAULT = 300;
   String INTERNAL_ERROR = "Internal server error";
   // Set to true to export the liquibase schema as sql statements
-  Boolean EXPORT_SCHEMA = false;
-  String userDir = "user.dir";
+  boolean EXPORT_SCHEMA = false;
+  String USER_DIR = "user.dir";
   String DELETED = "deleted";
+  String EMPTY_STRING = "";
 
   enum UserIdentifier {
     VERTA_ID,

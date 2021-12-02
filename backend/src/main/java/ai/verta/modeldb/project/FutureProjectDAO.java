@@ -3,19 +3,27 @@ package ai.verta.modeldb.project;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogAttributes;
+import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.UpdateProjectAttributes;
+import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
+import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
+import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.uac.Action;
 import ai.verta.uac.IsSelfAllowed;
@@ -27,27 +35,43 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class FutureProjectDAO {
-  private static Logger LOGGER = LogManager.getLogger(FutureProjectDAO.class);
 
   private final Executor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
+  private final boolean isMssql;
 
   private final AttributeHandler attributeHandler;
   private final TagsHandler tagsHandler;
+  private final ArtifactHandler artifactHandler;
 
-  public FutureProjectDAO(Executor executor, FutureJdbi jdbi, UAC uac) {
+  public FutureProjectDAO(
+      Executor executor,
+      FutureJdbi jdbi,
+      UAC uac,
+      ArtifactStoreDAO artifactStoreDAO,
+      DatasetVersionDAO datasetVersionDAO) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
+    this.isMssql = App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql();
 
-    String entityName = "ProjectEntity";
+    var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
     tagsHandler = new TagsHandler(executor, jdbi, entityName);
+    CodeVersionHandler codeVersionHandler = new CodeVersionHandler(executor, jdbi, "project");
+    DatasetHandler datasetHandler = new DatasetHandler(executor, jdbi, entityName);
+    artifactHandler =
+        new ArtifactHandler(
+            executor,
+            jdbi,
+            entityName,
+            codeVersionHandler,
+            datasetHandler,
+            artifactStoreDAO,
+            datasetVersionDAO);
   }
 
   public InternalFuture<Void> deleteAttributes(DeleteProjectAttributes request) {
@@ -58,7 +82,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               }
             },
             executor);
@@ -85,7 +109,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               } else if (keys.isEmpty() && !getAll) {
                 throw new InvalidArgumentException("Attribute keys not present");
               }
@@ -109,7 +133,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               } else if (attributes.isEmpty()) {
                 throw new InvalidArgumentException("Attributes not present");
               }
@@ -135,7 +159,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               } else if (attribute.getKey().isEmpty()) {
                 throw new InvalidArgumentException("Attribute not present");
               }
@@ -161,7 +185,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               } else if (tags.isEmpty()) {
                 throw new InvalidArgumentException("Tags not present");
               }
@@ -186,7 +210,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               }
             },
             executor);
@@ -210,7 +234,7 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (projectId.isEmpty()) {
-                throw new InvalidArgumentException("Project ID not present");
+                throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
               }
             },
             executor);
@@ -224,11 +248,21 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String projectId, Long now) {
+    String greatestValueStr;
+    if (isMssql) {
+      greatestValueStr =
+          "(SELECT MAX(value) FROM (VALUES (date_updated),(:now)) AS maxvalues(value))";
+    } else {
+      greatestValueStr = "greatest(date_updated, :now)";
+    }
+
     return jdbi.useHandle(
         handle ->
             handle
                 .createUpdate(
-                    "update project set date_updated=greatest(date_updated, :now) where id=:project_id")
+                    String.format(
+                        "update project set date_updated=%s where id=:project_id",
+                        greatestValueStr))
                 .bind("project_id", projectId)
                 .bind("now", now)
                 .execute());
@@ -290,5 +324,21 @@ public class FutureProjectDAO {
                           .one();
                     }),
             executor);
+  }
+
+  public InternalFuture<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
+    final var projectId = request.getId();
+
+    InternalFuture<Void> permissionCheck;
+    if (request.getMethod().equalsIgnoreCase("get")) {
+      permissionCheck =
+          checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ);
+    } else {
+      permissionCheck =
+          checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+    }
+
+    return permissionCheck.thenCompose(
+        unused -> artifactHandler.getUrlForArtifact(request), executor);
   }
 }

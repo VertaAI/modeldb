@@ -3,7 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.CascadeType;
@@ -20,11 +20,11 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "dataset_version")
-public class DatasetVersionEntity {
+public class DatasetVersionEntity implements Serializable {
 
   public DatasetVersionEntity() {}
 
-  public DatasetVersionEntity(DatasetVersion datasetVersion) throws InvalidProtocolBufferException {
+  public DatasetVersionEntity(DatasetVersion datasetVersion) {
     setId(datasetVersion.getId());
     setParent_id(datasetVersion.getParentId());
     setDataset_id(datasetVersion.getDatasetId());
@@ -257,8 +257,8 @@ public class DatasetVersionEntity {
     this.deleted = deleted;
   }
 
-  public DatasetVersion getProtoObject() throws InvalidProtocolBufferException {
-    DatasetVersion.Builder datasetVersionBuilder =
+  public DatasetVersion getProtoObject() {
+    var datasetVersionBuilder =
         DatasetVersion.newBuilder()
             .setId(getId())
             .setParentId(getParent_id() != null ? getParent_id() : "")

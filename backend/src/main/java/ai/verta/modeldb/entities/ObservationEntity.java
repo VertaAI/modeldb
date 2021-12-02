@@ -3,8 +3,8 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
+import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -20,12 +20,11 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "observation")
-public class ObservationEntity {
+public class ObservationEntity implements Serializable {
 
   public ObservationEntity() {}
 
-  public ObservationEntity(Object entity, String fieldType, Observation observation)
-      throws InvalidProtocolBufferException {
+  public ObservationEntity(Object entity, String fieldType, Observation observation) {
 
     setTimestamp(observation.getTimestamp());
     setEpochNumber((long) observation.getEpochNumber().getNumberValue());
@@ -156,8 +155,8 @@ public class ObservationEntity {
     this.epoch_number = epochNumber;
   }
 
-  public Observation getProtoObject() throws InvalidProtocolBufferException {
-    Observation.Builder builder = Observation.newBuilder();
+  public Observation getProtoObject() {
+    var builder = Observation.newBuilder();
     builder.setTimestamp(timestamp);
     if (epoch_number != null) {
       builder.setEpochNumber(Value.newBuilder().setNumberValue(epoch_number));

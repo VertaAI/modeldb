@@ -26,8 +26,6 @@ public class Validator extends Visitor {
   private static final String HAS_A_STRING_VALUE_WHICH_IS_NOT_IN_A_VALID_NUMERIC_NOTATION =
       "has a STRING_VALUE which is not in a valid numeric notation";
 
-  public Validator() {}
-
   private boolean isNull(ProtoType proto) {
     return proto == null;
   }

@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities.environment;
 
 import ai.verta.modeldb.versioning.DockerEnvironmentBlob;
+import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -8,7 +9,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "docker_environment_blob")
-public class DockerEnvironmentBlobEntity {
+public class DockerEnvironmentBlobEntity implements Serializable {
 
   public DockerEnvironmentBlobEntity() {}
 

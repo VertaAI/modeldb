@@ -16,7 +16,10 @@ public interface AuthService {
   UserInfo getUserInfo(String vertaId, CommonConstants.UserIdentifier vertaIdentifier);
 
   Map<String, UserInfo> getUserInfoFromAuthServer(
-      Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList);
+      Set<String> vertaIdList,
+      Set<String> emailIdList,
+      List<String> usernameList,
+      boolean isServiceUser);
 
   String getVertaIdFromUserInfo(UserInfo userInfo);
 
@@ -32,7 +35,7 @@ public interface AuthService {
    */
   boolean isCurrentUser(String vertaID);
 
-  UserInfoPaginationDTO getFuzzyUserInfoList(String username_char);
+  UserInfoPaginationDTO getFuzzyUserInfoList(String usernameChar);
 
   Workspace workspaceIdByName(boolean retry, String workspaceName);
 

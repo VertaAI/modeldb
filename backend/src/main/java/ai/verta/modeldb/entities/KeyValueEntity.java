@@ -2,10 +2,10 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.utils.ModelDBUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
+import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,16 +21,15 @@ import org.apache.logging.log4j.Logger;
 
 @Entity
 @Table(name = "keyvalue")
-public class KeyValueEntity {
+public class KeyValueEntity implements Serializable {
 
   private static Logger LOGGER = LogManager.getLogger(KeyValueEntity.class);
 
   public KeyValueEntity() {}
 
-  public KeyValueEntity(Object entity, String fieldType, KeyValue keyValue)
-      throws InvalidProtocolBufferException {
+  public KeyValueEntity(Object entity, String fieldType, KeyValue keyValue) {
     setKey(keyValue.getKey());
-    setValue(ModelDBUtils.getStringFromProtoObject(keyValue.getValue()));
+    setValue(RdbmsUtils.getValueForKeyValueTable(keyValue));
     setValue_type(keyValue.getValueTypeValue());
 
     if (entity instanceof ProjectEntity) {
@@ -186,14 +185,9 @@ public class KeyValueEntity {
     return field_type;
   }
 
-  public KeyValue getProtoKeyValue() throws InvalidProtocolBufferException {
-    Value.Builder valueBuilder = Value.newBuilder();
-    try {
-      valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(value, valueBuilder);
-    } catch (InvalidProtocolBufferException e) {
-      LOGGER.warn("Error generating builder for {}", value);
-      throw e;
-    }
+  public KeyValue getProtoKeyValue() {
+    var valueBuilder = Value.newBuilder();
+    valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(value, valueBuilder);
     return KeyValue.newBuilder()
         .setKey(key)
         .setValue(valueBuilder.build())

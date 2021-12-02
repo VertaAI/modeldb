@@ -13,8 +13,6 @@ import java.util.Set;
 
 public class PublicAuthServiceUtils implements AuthService {
 
-  public PublicAuthServiceUtils() {}
-
   @Override
   public UserInfo getCurrentLoginUserInfo() {
     return null;
@@ -38,7 +36,10 @@ public class PublicAuthServiceUtils implements AuthService {
    */
   @Override
   public Map<String, UserInfo> getUserInfoFromAuthServer(
-      Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
+      Set<String> vertaIdList,
+      Set<String> emailIdList,
+      List<String> usernameList,
+      boolean isServiceUser) {
     return new HashMap<>();
   }
 
@@ -64,7 +65,7 @@ public class PublicAuthServiceUtils implements AuthService {
 
   @Override
   public UserInfoPaginationDTO getFuzzyUserInfoList(String username_char) {
-    UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
+    var paginationDTO = new UserInfoPaginationDTO();
     paginationDTO.setUserInfoList(Collections.emptyList());
     paginationDTO.setTotalRecords(0L);
     return paginationDTO;

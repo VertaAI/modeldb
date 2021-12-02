@@ -14,28 +14,28 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Hex;
 
 public class S3SignatureUtil extends AWS4Signer {
-  private String serviceName;
+  private String awsServiceName;
   private AWSCredentials credentials;
   private String region;
 
-  public S3SignatureUtil(AWSCredentials credentials, String region, String serviceName) {
+  public S3SignatureUtil(AWSCredentials credentials, String region, String awsServiceName) {
     this.credentials = credentials;
     this.region = region;
-    this.serviceName = serviceName;
+    this.awsServiceName = awsServiceName;
   }
 
   public String getSignature(String policy, LocalDateTime dateTime) {
     try {
       String dateStamp = dateTime.format(ofPattern("yyyyMMdd"));
       return Hex.encodeHexString(
-          hmacSha256(newSigningKey(credentials, dateStamp, region, serviceName), policy));
+          hmacSha256(newSigningKey(credentials, dateStamp, region, awsServiceName), policy));
     } catch (Exception e) {
       throw new RuntimeException("Error", e);
     }
   }
 
   private byte[] hmacSha256(byte[] key, String data) throws Exception {
-    Mac mac = Mac.getInstance(SigningAlgorithm.HmacSHA256.name());
+    var mac = Mac.getInstance(SigningAlgorithm.HmacSHA256.name());
     mac.init(new SecretKeySpec(key, SigningAlgorithm.HmacSHA256.name()));
     return mac.doFinal(data.getBytes(UTF_8));
   }

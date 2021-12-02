@@ -5,8 +5,9 @@ import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
+import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -25,6 +26,7 @@ import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.versioning.*;
+import ai.verta.uac.ServiceEnum;
 import java.util.concurrent.Executor;
 
 public class DAOSet {
@@ -42,53 +44,56 @@ public class DAOSet {
   public MetadataDAO metadataDAO;
   public ProjectDAO projectDAO;
   public RepositoryDAO repositoryDAO;
+  public FutureEventDAO futureEventDAO;
 
   public static DAOSet fromServices(
       ServiceSet services,
       FutureJdbi jdbi,
       Executor executor,
-      Config config,
+      MDBConfig mdbConfig,
       TrialConfig trialConfig) {
-    DAOSet set = new DAOSet();
+    var set = new DAOSet();
 
     set.metadataDAO = new MetadataDAORdbImpl();
-    set.commitDAO = new CommitDAORdbImpl(services.authService, services.roleService);
+    set.commitDAO = new CommitDAORdbImpl(services.authService, services.mdbRoleService);
     set.repositoryDAO =
         new RepositoryDAORdbImpl(
-            services.authService, services.roleService, set.commitDAO, set.metadataDAO);
-    set.blobDAO = new BlobDAORdbImpl(services.authService, services.roleService);
+            services.authService, services.mdbRoleService, set.commitDAO, set.metadataDAO);
+    set.blobDAO = new BlobDAORdbImpl(services.authService, services.mdbRoleService);
 
-    set.experimentDAO = new ExperimentDAORdbImpl(services.authService, services.roleService);
+    set.experimentDAO = new ExperimentDAORdbImpl(services.authService, services.mdbRoleService);
     set.experimentRunDAO =
         new ExperimentRunDAORdbImpl(
-            config,
+            mdbConfig,
             services.authService,
-            services.roleService,
+            services.mdbRoleService,
             set.repositoryDAO,
             set.commitDAO,
             set.blobDAO,
             set.metadataDAO);
     set.projectDAO =
         new ProjectDAORdbImpl(
-            services.authService, services.roleService, set.experimentDAO, set.experimentRunDAO);
-    set.futureProjectDAO = new FutureProjectDAO(executor, jdbi, services.uac);
+            services.authService, services.mdbRoleService, set.experimentDAO, set.experimentRunDAO);
     if (services.artifactStoreService != null) {
-      set.artifactStoreDAO = new ArtifactStoreDAORdbImpl(services.artifactStoreService, config);
+      set.artifactStoreDAO = new ArtifactStoreDAORdbImpl(services.artifactStoreService, mdbConfig);
     } else {
       set.artifactStoreDAO = new ArtifactStoreDAODisabled();
     }
 
     set.commentDAO = new CommentDAORdbImpl(services.authService);
-    set.datasetDAO = new DatasetDAORdbImpl(services.authService, services.roleService);
+    set.datasetDAO = new DatasetDAORdbImpl(services.authService, services.mdbRoleService);
     set.lineageDAO = new LineageDAORdbImpl();
     set.datasetVersionDAO =
-        new DatasetVersionDAORdbImpl(services.authService, services.roleService);
+        new DatasetVersionDAORdbImpl(services.authService, services.mdbRoleService);
 
+    set.futureProjectDAO =
+        new FutureProjectDAO(
+            executor, jdbi, services.uac, set.artifactStoreDAO, set.datasetVersionDAO);
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(
             executor,
             jdbi,
-            config,
+            mdbConfig,
             trialConfig,
             services.uac,
             set.artifactStoreDAO,
@@ -96,6 +101,8 @@ public class DAOSet {
             set.repositoryDAO,
             set.commitDAO,
             set.blobDAO);
+    set.futureEventDAO =
+        new FutureEventDAO(executor, jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
 
     return set;
   }

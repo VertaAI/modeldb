@@ -4,7 +4,6 @@ import ai.verta.common.CodeVersion;
 import ai.verta.common.GitSnapshot;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
@@ -15,7 +14,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,8 +23,6 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
 
 public class CodeVersionFromBlobHandler {
   private static Logger LOGGER = LogManager.getLogger(CodeVersionFromBlobHandler.class);
@@ -60,7 +56,7 @@ public class CodeVersionFromBlobHandler {
     }
 
     List<Object[]> codeBlobEntities;
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       String queryBuilder =
           "SELECT vme.experimentRunEntity.id, vme.versioning_location, gcb, ncb, pdcb "
               + " From VersioningModeldbEntityMapping vme LEFT JOIN GitCodeBlobEntity gcb ON vme.blob_hash = gcb.blob_hash "
@@ -72,7 +68,7 @@ public class CodeVersionFromBlobHandler {
         queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
       }
 
-      Query query = session.createQuery(queryBuilder);
+      var query = session.createQuery(queryBuilder);
       query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
       query.setParameterList("expRunIds", expRunIds);
       if (!allowedAllRepositories) {
@@ -95,11 +91,10 @@ public class CodeVersionFromBlobHandler {
         String expRunId = (String) objects[0];
         String versioningLocation = (String) objects[1];
         GitCodeBlobEntity gitBlobEntity = (GitCodeBlobEntity) objects[2];
-        NotebookCodeBlobEntity notebookCodeBlobEntity = (NotebookCodeBlobEntity) objects[3];
-        PathDatasetComponentBlobEntity pathDatasetComponentBlobEntity =
-            (PathDatasetComponentBlobEntity) objects[4];
+        var notebookCodeBlobEntity = (NotebookCodeBlobEntity) objects[3];
+        var pathDatasetComponentBlobEntity = (PathDatasetComponentBlobEntity) objects[4];
 
-        CodeVersion.Builder codeVersionBuilder = CodeVersion.newBuilder();
+        var codeVersionBuilder = CodeVersion.newBuilder();
         LOGGER.trace("notebookCodeBlobEntity {}", notebookCodeBlobEntity);
         LOGGER.trace("pathDatasetComponentBlobEntity {}", pathDatasetComponentBlobEntity);
         LOGGER.trace("gitBlobEntity {}", gitBlobEntity);
@@ -120,13 +115,8 @@ public class CodeVersionFromBlobHandler {
         if (codeBlobMap == null) {
           codeBlobMap = new LinkedHashMap<>();
         }
-        Location.Builder locationBuilder = Location.newBuilder();
-        try {
-          CommonUtils.getProtoObjectFromString(versioningLocation, locationBuilder);
-        } catch (InvalidProtocolBufferException ex) {
-          throw new InternalErrorException(
-              "Error getting while converting versioning location:" + ex.getMessage());
-        }
+        var locationBuilder = Location.newBuilder();
+        CommonUtils.getProtoObjectFromString(versioningLocation, locationBuilder);
         codeBlobMap.put(
             ModelDBUtils.getLocationWithSlashOperator(locationBuilder.getLocationList()),
             codeVersionBuilder.build());
@@ -140,7 +130,7 @@ public class CodeVersionFromBlobHandler {
       CodeVersion.Builder codeVersionBuilder,
       GitCodeBlob codeBlob,
       PathDatasetComponentBlob pathComponentBlob) {
-    GitSnapshot.Builder gitSnapShot = GitSnapshot.newBuilder();
+    var gitSnapShot = GitSnapshot.newBuilder();
     if (codeBlob != null) {
       gitSnapShot
           .setRepo(codeBlob.getRepo())

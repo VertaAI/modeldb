@@ -8,6 +8,7 @@ import ai.verta.modeldb.FindAllInputsOutputs;
 import ai.verta.modeldb.FindAllOutputs;
 import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
+import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
@@ -43,7 +44,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
           throw new ModelDBException("Output not specified", Code.INVALID_ARGUMENT);
         }
       }
-      AddLineage.Response response = lineageDAO.addLineage(request, this::isResourceExists);
+      var response = lineageDAO.addLineage(request, this::isResourceExists);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -64,7 +65,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
           throw new ModelDBException("Output not specified", Code.INVALID_ARGUMENT);
         }
       }
-      DeleteLineage.Response response = lineageDAO.deleteLineage(request);
+      var response = lineageDAO.deleteLineage(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -77,9 +78,10 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       FindAllInputs request, StreamObserver<FindAllInputs.Response> responseObserver) {
     try {
       if (request.getItemsCount() == 0) {
-        throw new ModelDBException("Items not specified", Code.INVALID_ARGUMENT);
+        throw new ModelDBException(
+            ModelDBMessages.ITEMS_NOT_SPECIFIED_ERROR, Code.INVALID_ARGUMENT);
       }
-      FindAllInputs.Response response = lineageDAO.findAllInputs(request);
+      var response = lineageDAO.findAllInputs(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -92,9 +94,10 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       FindAllOutputs request, StreamObserver<FindAllOutputs.Response> responseObserver) {
     try {
       if (request.getItemsCount() == 0) {
-        throw new ModelDBException("Items not specified", Code.INVALID_ARGUMENT);
+        throw new ModelDBException(
+            ModelDBMessages.ITEMS_NOT_SPECIFIED_ERROR, Code.INVALID_ARGUMENT);
       }
-      FindAllOutputs.Response response = lineageDAO.findAllOutputs(request);
+      var response = lineageDAO.findAllOutputs(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
@@ -108,9 +111,10 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       StreamObserver<FindAllInputsOutputs.Response> responseObserver) {
     try {
       if (request.getItemsCount() == 0) {
-        throw new ModelDBException("Items not specified", Code.INVALID_ARGUMENT);
+        throw new ModelDBException(
+            ModelDBMessages.ITEMS_NOT_SPECIFIED_ERROR, Code.INVALID_ARGUMENT);
       }
-      FindAllInputsOutputs.Response response = lineageDAO.findAllInputsOutputs(request);
+      var response = lineageDAO.findAllInputsOutputs(request);
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {

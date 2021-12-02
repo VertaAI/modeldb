@@ -4,9 +4,7 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
-import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
-import com.google.protobuf.InvalidProtocolBufferException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -27,19 +25,18 @@ public class EnvironmentHandler {
     this.entityName = entityName;
   }
 
-  public String getEnvironmentStringFromBlob(EnvironmentBlob runEnvironmentBlob)
-      throws InvalidProtocolBufferException {
+  public String getEnvironmentStringFromBlob(EnvironmentBlob runEnvironmentBlob) {
     if (runEnvironmentBlob != null) {
-      EnvironmentBlob sortedEnvironmentBlob = sortPythonEnvironmentBlob(runEnvironmentBlob);
+      var sortedEnvironmentBlob = sortPythonEnvironmentBlob(runEnvironmentBlob);
       return ModelDBUtils.getStringFromProtoObject(sortedEnvironmentBlob);
     }
     return null;
   }
 
   private EnvironmentBlob sortPythonEnvironmentBlob(EnvironmentBlob environmentBlob) {
-    EnvironmentBlob.Builder builder = environmentBlob.toBuilder();
+    var builder = environmentBlob.toBuilder();
     if (builder.hasPython()) {
-      PythonEnvironmentBlob.Builder pythonEnvironmentBlobBuilder = builder.getPython().toBuilder();
+      var pythonEnvironmentBlobBuilder = builder.getPython().toBuilder();
 
       // Compare requirementEnvironmentBlobs
       List<PythonRequirementEnvironmentBlob> requirementEnvironmentBlobs =
