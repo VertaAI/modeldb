@@ -17,7 +17,6 @@ import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.uac.*;
-import com.mysql.cj.jdbc.exceptions.MySQLTransactionRollbackException;
 import java.util.*;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
@@ -250,13 +249,11 @@ public class CreateExperimentRunHandler {
                         int count = query.execute();
                         LOGGER.trace("ExperimentRun Inserted : " + (count > 0));
                       } catch (UnableToExecuteStatementException exception) {
-                        if (exception.getCause() instanceof MySQLTransactionRollbackException) {
-                          // take a brief pause before resubmitting its query/transaction
-                          Thread.sleep(config.getJdbi_retry_time()); // Time in ms
-                          LOGGER.trace("Retry to insert ExperimentRun");
-                          int count = query.execute();
-                          LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
-                        }
+                        // take a brief pause before resubmitting its query/transaction
+                        Thread.sleep(config.getJdbi_retry_time()); // Time in ms
+                        LOGGER.trace("Retry to insert ExperimentRun");
+                        int count = query.execute();
+                        LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
                       }
                     }))
         .thenCompose(

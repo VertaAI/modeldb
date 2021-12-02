@@ -34,8 +34,6 @@ import com.google.protobuf.*;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import com.mysql.cj.exceptions.CJCommunicationsException;
-import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.io.File;
@@ -369,20 +367,16 @@ public class ModelDBUtils {
 
   public static boolean needToRetry(Exception ex) {
     Throwable communicationsException = findCommunicationsFailedCause(ex);
-    if (communicationsException != null) {
-      if ((communicationsException.getCause() instanceof CommunicationsException)
-          || (communicationsException.getCause() instanceof SocketException)
-          || (communicationsException.getCause() instanceof CJCommunicationsException)) {
-        LOGGER.warn(communicationsException.getMessage());
-        LOGGER.warn(
-            "Detected communication exception of type {}",
-            communicationsException.getCause().getClass());
-        return true;
-      } else if ((communicationsException.getCause() instanceof LockAcquisitionException)) {
-        LOGGER.warn(communicationsException.getMessage());
-        LOGGER.warn("Retrying since could not get lock");
-        return true;
-      }
+    if (communicationsException.getCause() instanceof SocketException) {
+      LOGGER.warn(communicationsException.getMessage());
+      LOGGER.warn(
+          "Detected communication exception of type {}",
+          communicationsException.getCause().getClass());
+      return true;
+    } else if ((communicationsException.getCause() instanceof LockAcquisitionException)) {
+      LOGGER.warn(communicationsException.getMessage());
+      LOGGER.warn("Retrying since could not get lock");
+      return true;
     }
     LOGGER.debug(
         "Detected exception of type {}, which is not categorized as retryable",
@@ -397,9 +391,7 @@ public class ModelDBUtils {
     }
     var rootCause = throwable;
     while (rootCause.getCause() != null
-        && !(rootCause.getCause() instanceof CJCommunicationsException
-            || rootCause.getCause() instanceof CommunicationsException
-            || rootCause.getCause() instanceof SocketException
+        && !(rootCause.getCause() instanceof SocketException
             || rootCause.getCause() instanceof LockAcquisitionException)) {
       rootCause = rootCause.getCause();
     }
