@@ -101,7 +101,10 @@ public abstract class CommonHibernateUtil {
               .setProperty(AvailableSettings.QUERY_PLAN_CACHE_MAX_SIZE, String.valueOf(200))
               .setProperty(
                   AvailableSettings.QUERY_PLAN_CACHE_PARAMETER_METADATA_MAX_SIZE,
-                  String.valueOf(20));
+                  String.valueOf(20))
+              .setProperty(
+                  "hibernate.hikari.leakDetectionThreshold",
+                  String.valueOf(config.getLiquibaseLockThreshold()));
 
       LOGGER.trace("connectionString {}", connectionString);
       // Create registry builder
