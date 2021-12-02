@@ -12,6 +12,7 @@ public class DatabaseConfig {
   private String maxConnectionPoolSize = "20";
   private int threadCount = 8;
   private String connectionTimeout = "300";
+  private Long leakDetectionThresholdMs = 3000L;
 
   private RdbConfig RdbConfiguration;
 
@@ -58,5 +59,13 @@ public class DatabaseConfig {
 
   public RdbConfig getRdbConfiguration() {
     return RdbConfiguration;
+  }
+
+  public Long getLeakDetectionThresholdMs() {
+    return leakDetectionThresholdMs;
+  }
+
+  public void setLeakDetectionThresholdMs(Long leakDetectionThresholdMs) {
+    this.leakDetectionThresholdMs = leakDetectionThresholdMs;
   }
 }
