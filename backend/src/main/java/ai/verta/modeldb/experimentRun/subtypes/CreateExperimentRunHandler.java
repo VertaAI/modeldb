@@ -250,7 +250,7 @@ public class CreateExperimentRunHandler {
                         LOGGER.trace("ExperimentRun Inserted : " + (count > 0));
                       } catch (UnableToExecuteStatementException exception) {
                         // take a brief pause before resubmitting its query/transaction
-                        Thread.sleep(config.jdbi_retry_time); // Time in ms
+                        Thread.sleep(config.getJdbi_retry_time()); // Time in ms
                         LOGGER.trace("Retry to insert ExperimentRun");
                         int count = query.execute();
                         LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
