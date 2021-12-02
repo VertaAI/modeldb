@@ -6,7 +6,6 @@ import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
-import com.mysql.cj.jdbc.MysqlDataSource;
 import io.grpc.health.v1.HealthCheckResponse;
 import java.sql.*;
 import java.util.Calendar;
@@ -40,6 +39,7 @@ import org.hibernate.exception.JDBCConnectionException;
 import org.hibernate.hikaricp.internal.HikariCPConnectionProvider;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
+import org.mariadb.jdbc.MariaDbDataSource;
 import org.postgresql.ds.PGSimpleDataSource;
 
 public abstract class CommonHibernateUtil {
@@ -156,7 +156,7 @@ public abstract class CommonHibernateUtil {
       return SQLServerDataSource.class.getName();
     }
     if (rdbConfiguration.isMysql()) {
-      return MysqlDataSource.class.getName();
+      return MariaDbDataSource.class.getName();
     }
     if (rdbConfiguration.isPostgres()) {
       return PGSimpleDataSource.class.getName();
