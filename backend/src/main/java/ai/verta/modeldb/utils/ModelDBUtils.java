@@ -35,8 +35,6 @@ import com.google.protobuf.*;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import com.mysql.cj.exceptions.CJCommunicationsException;
-import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.io.File;
@@ -371,9 +369,7 @@ public class ModelDBUtils {
 
   public static boolean needToRetry(Exception ex) {
     Throwable communicationsException = findCommunicationsFailedCause(ex);
-    if ((communicationsException.getCause() instanceof CommunicationsException)
-        || (communicationsException.getCause() instanceof SocketException)
-        || (communicationsException.getCause() instanceof CJCommunicationsException)) {
+    if (communicationsException.getCause() instanceof SocketException) {
       LOGGER.warn(communicationsException.getMessage());
       LOGGER.warn(
           "Detected communication exception of type {}",
@@ -397,9 +393,7 @@ public class ModelDBUtils {
     }
     Throwable rootCause = throwable;
     while (rootCause.getCause() != null
-        && !(rootCause.getCause() instanceof CJCommunicationsException
-            || rootCause.getCause() instanceof CommunicationsException
-            || rootCause.getCause() instanceof SocketException
+        && !(rootCause.getCause() instanceof SocketException
             || rootCause.getCause() instanceof LockAcquisitionException)) {
       rootCause = rootCause.getCause();
     }
