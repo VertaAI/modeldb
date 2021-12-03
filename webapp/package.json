@@ -17,7 +17,7 @@
     "express": "^4.16.4",
     "express-http-proxy": "^1.5.1",
     "express-session": "^1.15.6",
-    "http-proxy-middleware": "^0.19.1",
+    "http-proxy-middleware": "^0.21.0",
     "jose-jwe-jws": "^0.1.7",
     "jwt-decode": "^2.2.0",
     "nodemon": "^1.18.10",
