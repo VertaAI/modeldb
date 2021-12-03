@@ -27,7 +27,7 @@ import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 import org.postgresql.ds.PGSimpleDataSource;
 
-public abstract class CommonHibernateUtil extends CommonJdbiUtil {
+public abstract class CommonHibernateUtil extends CommonDBUtil {
   private static final Logger LOGGER = LogManager.getLogger(CommonHibernateUtil.class);
   private StandardServiceRegistry registry;
   private SessionFactory sessionFactory;

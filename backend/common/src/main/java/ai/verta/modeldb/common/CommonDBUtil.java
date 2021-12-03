@@ -24,8 +24,8 @@ import liquibase.resource.FileSystemResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class CommonJdbiUtil {
-  private static final Logger LOGGER = LogManager.getLogger(CommonJdbiUtil.class);
+public abstract class CommonDBUtil {
+  private static final Logger LOGGER = LogManager.getLogger(CommonDBUtil.class);
 
   protected static void checkDBConnectionInLoop(
       DatabaseConfig databaseConfig, boolean isStartUpTime) throws InterruptedException {
@@ -36,7 +36,7 @@ public abstract class CommonJdbiUtil {
       if (loopIndex < 10 || isStartUpTime) {
         Thread.sleep(loopBackTime);
         LOGGER.debug(
-            "CommonJdbiUtil checkDBConnectionInLoop() retrying for DB connection after {} millisecond ",
+            "CommonDBUtil checkDBConnectionInLoop() retrying for DB connection after {} millisecond ",
             loopBackTime);
         loopBackTime = loopBackTime * 2;
         loopIndex = loopIndex + 1;
@@ -197,7 +197,7 @@ public abstract class CommonJdbiUtil {
           }
           liquibaseExecuted = true;
         } catch (LockException ex) {
-          LOGGER.warn("CommonJdbiUtil createTablesLiquibaseMigration() getting LockException ", ex);
+          LOGGER.warn("CommonDBUtil createTablesLiquibaseMigration() getting LockException ", ex);
           releaseLiquibaseLock(config);
         }
       }
