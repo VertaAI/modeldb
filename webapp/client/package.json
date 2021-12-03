@@ -41,7 +41,7 @@
     "moment": "^2.24.0",
     "normalize.css": "^8.0.1",
     "pixi-scrollbox": "^2.1.4",
-    "pixi-viewport": "^4.10.0",
+    "pixi-viewport": "^4.34.1",
     "pixi.js": "^5.2.1",
     "query-string": "^6.5.0",
     "ramda": "^0.26.1",
