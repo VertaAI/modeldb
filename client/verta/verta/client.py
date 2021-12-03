@@ -19,10 +19,10 @@ from ._internal_utils import (
     _config_utils,
     _request_utils,
     _utils,
-    credentials,
 )
 
-from ._internal_utils.credentials import (
+from verta import credentials
+from verta.credentials import (
     EmailCredentials,
     JWTCredentials,
 )
@@ -137,7 +137,7 @@ class Client(object):
         jwt_token = self._get_with_fallback(jwt_token, env_var=JWTCredentials.JWT_TOKEN_ENV, config_var="jwt_token")
         jwt_token_sig = self._get_with_fallback(jwt_token_sig, env_var=JWTCredentials.JWT_TOKEN_SIG_ENV, config_var="jwt_token_sig")
 
-        self.auth_credentials = credentials.build(email=email, dev_key=dev_key, jwt_token=jwt_token, jwt_token_sig=jwt_token_sig)
+        self.auth_credentials = credentials._build(email=email, dev_key=dev_key, jwt_token=jwt_token, jwt_token_sig=jwt_token_sig)
         self._workspace = self._get_with_fallback(None, env_var="VERTA_WORKSPACE")
 
         if self.auth_credentials is None:

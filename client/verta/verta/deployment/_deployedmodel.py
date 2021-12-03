@@ -8,10 +8,13 @@ import warnings
 
 import requests
 
+
 from ..external import six
-from ..external.six.moves.urllib.parse import urljoin, urlparse  # pylint: disable=import-error, no-name-in-module
+from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from .._internal_utils import _utils
+from verta import credentials
+from .._internal_utils.access_token import AccessToken
 
 # NOTE: DeployedModel's mechanism for making requests is independent from the
 # rest of the client; Client's Connection deliberately instantiates a new
@@ -23,89 +26,64 @@ class DeployedModel:
     """
     Object for interacting with deployed models.
 
-    .. deprecated:: 0.13.7
-        The `socket` parameter will be renamed to `host` in an upcoming version
-    .. deprecated:: 0.13.7
-        The `model_id` parameter will be renamed to `run_id` in an upcoming version
-
     This class provides functionality for sending predictions to a deployed model on the Verta
     backend.
 
-    Authentication credentials must be present in the environment through `$VERTA_EMAIL` and
-    `$VERTA_DEV_KEY`.
+    Authentication credentials will be picked up from environment variables if
+    they are not supplied explicitly in the creds parameter.
 
     Parameters
     ----------
-    host : str
-        Hostname of the Verta Web App.
-    run_id : str
-        ID of the deployed ExperimentRun.
+    prediction_url : str
+        URL of the prediction endpoint
+    token : str, optional
+        Prediction token. Can be copy and pasted directly from the Verta Web App.
+    creds : :class:`~verta.credentials.Credentials`, optional
+        Authentication credentials to attach to each prediction request.
+
+    Attributes
+    ----------
+    prediction_url : str
+        Full prediction endpoint URL. Can be copy and pasted directly from the Verta Web App.
+    access_token : str, optional
+        Prediction token. Can be copy and pasted directly from the Verta Web App.
+    credentials : class:`~verta.credentials.Credentials`, optional
+        Authentication credentials to attach to each prediction request.
 
     Examples
     --------
     .. code-block:: python
 
-        # host == "https://app.verta.ai/"
-        # run.id == "01234567-0123-0123-0123-012345678901"
         DeployedModel(
-            host="https://app.verta.ai/",
-            run_id="01234567-0123-0123-0123-012345678901",
+            "https://app.verta.ai/api/v1/predict/01234567-0123-0123-0123-012345678901",
+            token="abcdefgh-abcd-abcd-abcd-abcdefghijkl",
         )
-        # <DeployedModel 01234567-0123-0123-0123-012345678901>
+        # <DeployedModel at https://app.verta.ai/api/v1/predict/01234567-0123-0123-0123-012345678901>
 
     """
-    def __init__(self, _host=None, _run_id=None, _from_url=False, **kwargs):
-        # this is to temporarily maintain compatibility with anyone passing in `socket` and `model_id` as kwargs
-        # TODO: instate `host` and `run_id` params
-        # TODO: remove the following block of param checks
-        # TODO: put automodule verta.deployment back on ReadTheDocs
-        if 'socket' in kwargs:
-            warnings.warn("`socket` will be renamed to `host` in an upcoming version",
-                          category=FutureWarning)
-        if 'model_id' in kwargs:
-            warnings.warn("`model_id` will be renamed to `run_id` in an upcoming version",
-                          category=FutureWarning)
-        host = kwargs.get('host', kwargs.get('socket', _host))
-        run_id = kwargs.get('run_id', kwargs.get('model_id', _run_id))
-        if host is None:
-            raise TypeError("missing required argument: `host`")
-        if run_id is None:
-            raise TypeError("missing required argument: `run_id`")
+    def __init__(self, prediction_url, token=None, creds=None):
+        self.prediction_url = prediction_url
+        self._credentials = creds or credentials.load_from_os_env()
+        self._access_token = token
+        self._session = None
+        self._init_session()
 
-        self._session = requests.Session()
-        if not _from_url:
-            self._session.headers.update({_utils._GRPC_PREFIX+'source': "PythonClient"})
-            try:
-                self._session.headers.update({_utils._GRPC_PREFIX+'email': os.environ['VERTA_EMAIL']})
-            except KeyError:
-                six.raise_from(EnvironmentError("${} not found in environment".format('VERTA_EMAIL')), None)
-            try:
-                self._session.headers.update({
-                    _utils._GRPC_PREFIX+'developer_key': os.environ['VERTA_DEV_KEY'],
-                    _utils._GRPC_PREFIX+'developer-key': os.environ['VERTA_DEV_KEY'],  # see Client.__init__()
-                })
-            except KeyError:
-                six.raise_from(EnvironmentError("${} not found in environment".format('VERTA_DEV_KEY')), None)
-
-        back_end_url = urlparse(host)
-        self._socket = back_end_url.netloc + back_end_url.path.rstrip('/')
-        self._scheme = back_end_url.scheme or ("https" if ".verta.ai" in self._socket else "http")
-
-        self._id = run_id
-        self._status_url = "{}://{}/api/v1/deployment/status/{}".format(self._scheme, self._socket, self._id)
-
-        self._prediction_url = None
+    def _init_session(self):
+        if self._session:
+            self._session.close()
+        session = requests.Session()
+        if self.credentials:
+            creds_headers = _utils.Connection.prefixed_headers_for_credentials(self.credentials)
+            session.headers.update(creds_headers)
+        if self.access_token:
+            session.headers.update(AccessToken(self.access_token).headers())
+        self._session = session
 
     def __repr__(self):
-        if self._id is not None:
-            return "<{} {}>".format(self.__class__.__name__, self._id)
-        elif self._prediction_url:
-            return "<{} at {}>".format(self.__class__.__name__, self._prediction_url)
-        else:  # if someone's messing with the object's state
-            return "<{}>".format(self.__class__.__name__)
+        return "<{} at {}>".format(self.__class__.__name__, self.prediction_url)
 
     @classmethod
-    def from_url(cls, url, token):
+    def from_url(cls, url, token=None, creds=None):
         """
         Returns a :class:`DeployedModel` based on a custom URL and token.
 
@@ -113,9 +91,10 @@ class DeployedModel:
         ----------
         url : str
             Full prediction endpoint URL. Can be copy and pasted directly from the Verta Web App.
-        token : str or None
-            Prediction token. Can be copy and pasted directly from the Verta Web App. If the deployment
-            does not use a token, ``None`` should be passed in as the argument.
+        token : str, optional
+            Prediction token. Can be copy and pasted directly from the Verta Web App.
+        creds : :class:`~verta.credentials.Credentials`, optional
+            Authentication credentials to attach to each prediction request.
 
         Returns
         -------
@@ -134,36 +113,41 @@ class DeployedModel:
             # <DeployedModel at https://app.verta.ai/api/v1/predict/01234567-0123-0123-0123-012345678901>
 
         """
-        parsed_url = urlparse(url)
+        return cls(prediction_url=url, token=token, creds=creds)
 
-        deployed_model = cls(parsed_url.netloc, "", _from_url=True)
-        deployed_model._id = None
-        deployed_model._status_url = None
+    @property
+    def prediction_url(self):
+        return self._prediction_url
 
-        deployed_model._prediction_url = urljoin("{}://{}".format(parsed_url.scheme, parsed_url.netloc), parsed_url.path)
-        deployed_model._session.headers['Access-Token'] = token
+    @prediction_url.setter
+    def prediction_url(self, value):
+        parsed = urlparse(value)
+        invalid = not parsed or not parsed.scheme or not parsed.netloc or not parsed.path
+        if invalid:
+            raise ValueError("not a valid prediction_url")
+        self._prediction_url = parsed.geturl()
 
-        return deployed_model
+    @property
+    def credentials(self):
+        return self._credentials
 
-    def _set_token_and_url(self):
-        response = self._session.get(self._status_url)
-        _utils.raise_for_http_error(response)
-        status = _utils.body_to_json(response)
-        if status['status'] == 'error':
-            raise RuntimeError(status['message'])
-        elif status['status'] != 'deployed':
-            raise RuntimeError("model is not yet ready, or has not yet been deployed")
-        else:
-            self._session.headers['Access-Token'] = status.get('token')
-            self._prediction_url = urljoin("{}://{}".format(self._scheme, self._socket), status['api'])
+    @credentials.setter
+    def credentials(self, value):
+        self._credentials = value
+        self._init_session()
+
+    @property
+    def access_token(self):
+        return self._access_token
+
+    @access_token.setter
+    def access_token(self, value):
+        self._access_token = value
+        self._init_session()
 
     def _predict(self, x, compress=False):
         """This is like ``DeployedModel.predict()``, but returns the raw ``Response`` for debugging."""
-        if 'Access-token' not in self._session.headers or self._prediction_url is None:
-            self._set_token_and_url()
-
         x = _utils.to_builtin(x)
-
         if compress:
             # create gzip
             gzstream = six.BytesIO()
@@ -177,7 +161,11 @@ class DeployedModel:
                 data=gzstream.read(),
             )
         else:
-            return self._session.post(self._prediction_url, json=x)
+            return self._session.post(self.prediction_url, json=x)
+
+    def headers(self):
+        """Returns a copy of the headers attached to prediction requests."""
+        return self._session.headers.copy()
 
     def get_curl(self):
         """
@@ -188,13 +176,11 @@ class DeployedModel:
         str
 
         """
-        if 'Access-token' not in self._session.headers or self._prediction_url is None:
-            self._set_token_and_url()
-
-        curl = "curl -X POST {} -d \'\' -H \"Content-Type: application/json\"".format(self._prediction_url)
-        if self._session.headers.get('Access-token'):
-            curl += " -H \"Access-token: {}\"".format(self._session.headers['Access-token'])
-
+        headers = self.headers()
+        headers.update({"Content-Type": "application/json"})
+        curl = "curl -X POST {} -d \'\' -H \"Content-Type: application/json\"".format(self.prediction_url)
+        for header, value in headers.items():
+            curl += " -H \"{}: {}\" ".format(header, value)
         return curl
 
     def predict(self, x, compress=False, max_retries=5, always_retry_404=True, always_retry_429=True):

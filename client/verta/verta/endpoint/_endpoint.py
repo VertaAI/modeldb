@@ -754,9 +754,16 @@ class Endpoint(object):
 
         return update_body
 
-    def get_deployed_model(self):
+    def get_deployed_model(self, credentials=None):
         """
         Return an object for making predictions against the deployed model.
+
+        Parameters
+        ----------
+        credentials : :class:`~verta.credentials.Credentials`, optional
+            Authentication credentials to use with this deployed model.
+            Credentials will be inferred from the environment if not explicitly
+            provided.
 
         Returns
         -------
@@ -778,7 +785,7 @@ class Endpoint(object):
         url = "{}://{}/api/v1/predict{}".format(
             self._conn.scheme, self._conn.socket, self.path
         )
-        return DeployedModel.from_url(url, access_token)
+        return DeployedModel.from_url(url, access_token, creds=credentials)
 
     def get_update_status(self):
         """
