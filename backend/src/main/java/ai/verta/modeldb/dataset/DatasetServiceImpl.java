@@ -180,7 +180,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
-            .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
+            .addAllTags(CommonUtils.checkEntityTagsLength(request.getTagsList()))
             .setDatasetVisibility(request.getDatasetVisibility())
             .setVisibility(request.getVisibility())
             .setDatasetType(request.getDatasetType())
@@ -490,7 +490,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           repositoryDAO.addDatasetTags(
               metadataDAO,
               request.getId(),
-              ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+              CommonUtils.checkEntityTagsLength(request.getTagsList()));
 
       // Add succeeded event in local DB
       addEvent(

@@ -1,20 +1,18 @@
 package ai.verta.modeldb.common.handlers;
 
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.experimentRun.subtypes.MapSubtypes;
-import ai.verta.modeldb.utils.ModelDBUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import com.google.rpc.Code;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public abstract class TagsHandlerBase {
   private static final Logger LOGGER = LogManager.getLogger(TagsHandlerBase.class);
@@ -74,11 +72,11 @@ public abstract class TagsHandlerBase {
         InternalFuture.runAsync(
             () -> {
               if (tags.isEmpty()) {
-                throw new InvalidArgumentException("Tags not found");
+                throw new ModelDBException("Tags not found", Code.INVALID_ARGUMENT);
               } else {
                 for (String tag : tags) {
                   if (tag.isEmpty()) {
-                    throw new InvalidArgumentException("Tag should not be empty");
+                    throw new ModelDBException("Tag should not be empty", Code.INVALID_ARGUMENT);
                   }
                 }
               }
@@ -90,7 +88,7 @@ public abstract class TagsHandlerBase {
         .thenCompose(unused -> getTags(entityId), executor)
         .thenCompose(
             existingTags -> {
-              final var tagsSet = new HashSet<>(ModelDBUtils.checkEntityTagsLength(tags));
+              final var tagsSet = new HashSet<>(CommonUtils.checkEntityTagsLength(tags));
               tagsSet.removeAll(existingTags);
               if (tagsSet.isEmpty()) {
                 return InternalFuture.completedInternalFuture(null);

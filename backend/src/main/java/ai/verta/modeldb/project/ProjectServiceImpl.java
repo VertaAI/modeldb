@@ -462,7 +462,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       var updatedProject =
           projectDAO.addProjectTags(
-              request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+              request.getId(), CommonUtils.checkEntityTagsLength(request.getTagsList()));
       var response = AddProjectTags.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
@@ -595,7 +595,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var updatedProject =
           projectDAO.addProjectTags(
               request.getId(),
-              ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
+              CommonUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
       var response = AddProjectTag.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB

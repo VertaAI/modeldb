@@ -8,6 +8,7 @@ import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
 import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -871,10 +872,10 @@ public class CommitDAORdbImpl implements CommitDAO {
               .setStringId(compositeId)
               .build();
       if (addLabels) {
-        metadataDAO.addLabels(identificationType, ModelDBUtils.checkEntityTagsLength(labelsList));
+        metadataDAO.addLabels(identificationType, CommonUtils.checkEntityTagsLength(labelsList));
       } else {
         metadataDAO.deleteLabels(
-            identificationType, ModelDBUtils.checkEntityTagsLength(labelsList), deleteAll);
+            identificationType, CommonUtils.checkEntityTagsLength(labelsList), deleteAll);
       }
       var commitEntity = getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
       commitEntity.setDate_updated(new Date().getTime());

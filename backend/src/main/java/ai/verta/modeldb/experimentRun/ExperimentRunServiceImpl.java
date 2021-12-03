@@ -171,7 +171,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             .setEndTime(request.getEndTime())
             .setCodeVersion(request.getCodeVersion())
             .setParentId(request.getParentId())
-            .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
+            .addAllTags(CommonUtils.checkEntityTagsLength(request.getTagsList()))
             .addAllAttributes(request.getAttributesList())
             .addAllHyperparameters(request.getHyperparametersList())
             .addAllArtifacts(request.getArtifactsList())
@@ -576,7 +576,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       var updatedExperimentRun =
           experimentRunDAO.addExperimentRunTags(
-              request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+              request.getId(), CommonUtils.checkEntityTagsLength(request.getTagsList()));
       var response =
           AddExperimentRunTags.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
 
@@ -629,7 +629,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var updatedExperimentRun =
           experimentRunDAO.addExperimentRunTags(
               request.getId(),
-              ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
+              CommonUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
       var response =
           AddExperimentRunTag.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
 

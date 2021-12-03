@@ -4,6 +4,7 @@ import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
@@ -120,7 +121,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             .setShortName(projectShortName)
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
-            .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
+            .addAllTags(CommonUtils.checkEntityTagsLength(request.getTagsList()))
             .setProjectVisibility(request.getProjectVisibility())
             .setVisibility(request.getVisibility())
             .addAllArtifacts(request.getArtifactsList())

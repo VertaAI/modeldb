@@ -5,6 +5,7 @@ import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.handlers.MapSubtypes;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;

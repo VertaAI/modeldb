@@ -135,7 +135,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
-            .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
+            .addAllTags(CommonUtils.checkEntityTagsLength(request.getTagsList()))
             .addAllArtifacts(request.getArtifactsList())
             .setVersionNumber(1L);
 
@@ -512,7 +512,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       var updatedExperiment =
           experimentDAO.addExperimentTags(
-              request.getId(), ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+              request.getId(), CommonUtils.checkEntityTagsLength(request.getTagsList()));
       var response =
           AddExperimentTags.Response.newBuilder().setExperiment(updatedExperiment).build();
 
@@ -566,7 +566,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       var updatedExperiment =
           experimentDAO.addExperimentTags(
               request.getId(),
-              ModelDBUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
+              CommonUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
       var response =
           AddExperimentTag.Response.newBuilder().setExperiment(updatedExperiment).build();
 

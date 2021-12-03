@@ -7,6 +7,7 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.handlers.MapSubtypes;
 import ai.verta.modeldb.config.MDBArtifactStoreConfig;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.TrialConfig;
