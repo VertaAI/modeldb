@@ -65,6 +65,7 @@ class DeployedModel:
         self.prediction_url = prediction_url
         self._credentials = creds or credentials.load_from_os_env()
         self._access_token = token
+        self._session = None
         self._init_session()
 
     def _init_session(self):
