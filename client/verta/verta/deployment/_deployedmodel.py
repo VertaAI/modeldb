@@ -56,7 +56,6 @@ class DeployedModel:
 
     """
     def __init__(self, prediction_url, token=None, creds=None):
-        # TODO: put automodule verta.deployment back on ReadTheDocs
         self.prediction_url = prediction_url
         creds = creds or credentials.load_from_os_env()
         self._credentials = creds
