@@ -129,7 +129,9 @@ public class MssqlMigrationUtil {
                   type,
                   tableName,
                   constraintName,
-                  String.join(",", primaryKeyConstraint.getValue().getValue())))
+                  primaryKeyConstraint.getValue().getValue().stream()
+                      .map(value -> String.format("\"%s\"", value))
+                      .collect(Collectors.joining(","))))
           .execute();
     }
   }
@@ -191,7 +193,7 @@ public class MssqlMigrationUtil {
                 String.format(
                     "IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
                         + "BEGIN "
-                        + "CREATE NONCLUSTERED INDEX %s ON %s (%s) "
+                        + "CREATE NONCLUSTERED INDEX \"%s\" ON %s (%s) "
                         + "END",
                     indexesMap.getKey(),
                     indexesMap.getKey(),
@@ -229,7 +231,8 @@ public class MssqlMigrationUtil {
 
       handle
           .createUpdate(
-              String.format("ALTER TABLE %s ALTER COLUMN %s %s;", tableName, columnName, dataType))
+              String.format(
+                  "ALTER TABLE %s ALTER COLUMN \"%s\" %s;", tableName, columnName, dataType))
           .execute();
     }
   }
@@ -244,7 +247,7 @@ public class MssqlMigrationUtil {
                 String.format(
                     "IF EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
                         + "BEGIN "
-                        + "DROP INDEX %s ON %s "
+                        + "DROP INDEX \"%s\" ON %s "
                         + "END",
                     indexesMap.getKey(), indexesMap.getKey(), tableIndexesMap.getKey()))
             .execute();
