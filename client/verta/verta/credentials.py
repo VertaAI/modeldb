@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Classes and functions related to credentials used with the Verta Platform."""
 
 import abc
 import os
@@ -9,13 +10,26 @@ from verta.external import six
 
 @six.add_metaclass(abc.ABCMeta)
 class Credentials(object):
+    """Abstract base class for credentials usable with the Verta platform.
+
+    Users of this library should not extend or use this class directly but
+    instead use one of its subclasses.
+    """
 
     @abc.abstractmethod
     def export_env_vars_to_os(self):
+        """Write credential data to appropriate os environment variables."""
         raise NotImplementedError
 
     @abc.abstractmethod
     def headers(self):
+        """Return headers carrying the information of these credentials.
+
+        Returns
+        -------
+        dict
+            Dictionary of headers carrying credential information.
+        """
         raise NotImplementedError
 
 

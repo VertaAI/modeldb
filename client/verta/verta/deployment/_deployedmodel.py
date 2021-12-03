@@ -22,7 +22,6 @@ from .._internal_utils.access_token import AccessToken
 # issues during parallelism, whereas DeployedModel persists a Session for its
 # lifetime to use HTTP keep-alive and speed up consecutive predictions.
 
-# TODO: update docstrings
 class DeployedModel:
     """
     Object for interacting with deployed models.
@@ -42,33 +41,42 @@ class DeployedModel:
     creds : :class:`~verta.credentials.Credentials`, optional
         Authentication credentials to attach to each prediction request.
 
+    Attributes
+    ----------
+    prediction_url : str
+        Full prediction endpoint URL. Can be copy and pasted directly from the Verta Web App.
+    access_token : str, optional
+        Prediction token. Can be copy and pasted directly from the Verta Web App.
+    credentials : class:`~verta.credentials.Credentials`, optional
+        Authentication credentials to attach to each prediction request.
+
     Examples
     --------
     .. code-block:: python
 
-        # host == "https://app.verta.ai/"
-        # run.id == "01234567-0123-0123-0123-012345678901"
         DeployedModel(
-            host="https://app.verta.ai/",
-            run_id="01234567-0123-0123-0123-012345678901",
+            "https://app.verta.ai/api/v1/predict/01234567-0123-0123-0123-012345678901",
+            token="abcdefgh-abcd-abcd-abcd-abcdefghijkl",
         )
-        # <DeployedModel 01234567-0123-0123-0123-012345678901>
+        # <DeployedModel at https://app.verta.ai/api/v1/predict/01234567-0123-0123-0123-012345678901>
 
     """
     def __init__(self, prediction_url, token=None, creds=None):
         self.prediction_url = prediction_url
         self._credentials = creds or credentials.load_from_os_env()
         self._access_token = token
-        self._session = self._make_session()
+        self._init_session()
 
-    def _make_session(self):
+    def _init_session(self):
+        if self._session:
+            self._session.close()
         session = requests.Session()
         if self.credentials:
-            creds_headers = _utils.Connection.prefixed_headers_for_credentials(self.credentials) # TODO: extract this?
+            creds_headers = _utils.Connection.prefixed_headers_for_credentials(self.credentials)
             session.headers.update(creds_headers)
         if self.access_token:
             session.headers.update(AccessToken(self.access_token).headers())
-        return session
+        self._session = session
 
     def __repr__(self):
         return "<{} at {}>".format(self.__class__.__name__, self.prediction_url)
@@ -125,7 +133,7 @@ class DeployedModel:
     @credentials.setter
     def credentials(self, value):
         self._credentials = value
-        self._session = self._make_session()
+        self._init_session()
 
     @property
     def access_token(self):
@@ -134,7 +142,7 @@ class DeployedModel:
     @access_token.setter
     def access_token(self, value):
         self._access_token = value
-        self._session = self._make_session()
+        self._init_session()
 
     def _predict(self, x, compress=False):
         """This is like ``DeployedModel.predict()``, but returns the raw ``Response`` for debugging."""
@@ -155,6 +163,7 @@ class DeployedModel:
             return self._session.post(self.prediction_url, json=x)
 
     def headers(self):
+        """Returns a copy of the headers attached to prediction requests."""
         return self._session.headers.copy()
 
     def get_curl(self):
