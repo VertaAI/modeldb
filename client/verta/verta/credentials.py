@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Classes and functions related to credentials used with the Verta Platform."""
+"""Classes and functions related to credentials used with the Verta Platform.
+
+.. versionadded:: 0.20.0
+
+"""
 
 import abc
 import os
