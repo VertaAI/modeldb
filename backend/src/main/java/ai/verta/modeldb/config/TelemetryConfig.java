@@ -8,5 +8,7 @@ public class TelemetryConfig {
   // TODO: add default consumer
   public String consumer;
 
-  public void Validate(String base) throws InvalidConfigException {}
+  public void Validate(String base) throws InvalidConfigException {
+    // Do nothing
+  }
 }

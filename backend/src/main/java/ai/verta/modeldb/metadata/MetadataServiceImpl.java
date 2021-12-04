@@ -27,7 +27,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
     try {
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
-        String errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
+        var errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
         throw new InvalidArgumentException(errorMessage);
       }
 

@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.futures;
 
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -86,7 +87,11 @@ public class InternalFuture<T> {
                   values.add(future.get());
                 }
                 promise.complete(values);
-              } catch (Throwable t) {
+              } catch (RuntimeException | InterruptedException | ExecutionException t) {
+                if (t instanceof InterruptedException) {
+                  // Restore interrupted state...
+                  Thread.currentThread().interrupt();
+                }
                 promise.completeExceptionally(t);
               }
             },
@@ -159,9 +164,10 @@ public class InternalFuture<T> {
         .get()
         .whenComplete(
             (value, throwable) -> {
+              boolean retryCheckerFlag = retryChecker.apply(throwable);
               if (throwable == null) {
                 promise.complete(value);
-              } else if (retryChecker.apply(throwable)) {
+              } else if (retryCheckerFlag) {
                 // If we should retry, then perform the retry and map the result of the future to
                 // the current promise
                 // This build up a chain of promises, which can consume memory. I couldn't figure
@@ -192,8 +198,16 @@ public class InternalFuture<T> {
     return from(stage.whenCompleteAsync(action, executor));
   }
 
-  public T get() throws ExecutionException, InterruptedException {
-    return stage.toCompletableFuture().get();
+  public T get() {
+    try {
+      return stage.toCompletableFuture().get();
+    } catch (ExecutionException ex) {
+      throw new ModelDBException(ex);
+    } catch (InterruptedException ex) {
+      // Restore interrupted state...
+      Thread.currentThread().interrupt();
+      throw new ModelDBException(ex);
+    }
   }
 
   public CompletionStage<T> toCompletionStage() {

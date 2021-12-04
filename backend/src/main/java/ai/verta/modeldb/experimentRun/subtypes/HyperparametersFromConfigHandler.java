@@ -65,8 +65,8 @@ public class HyperparametersFromConfigHandler extends KeyValueHandler {
               return query
                   .map(
                       (rs, ctx) -> {
-                        Value.Builder valueBuilder = Value.newBuilder();
-                        HyperparameterValuesConfigBlob.ValueCase valueCase =
+                        var valueBuilder = Value.newBuilder();
+                        var valueCase =
                             HyperparameterValuesConfigBlob.ValueCase.forNumber(
                                 rs.getInt("value_type"));
                         switch (valueCase) {
@@ -78,6 +78,9 @@ public class HyperparametersFromConfigHandler extends KeyValueHandler {
                             break;
                           case STRING_VALUE:
                             valueBuilder.setStringValue(rs.getString("string_value"));
+                            break;
+                          default:
+                            // Do nothing
                             break;
                         }
 

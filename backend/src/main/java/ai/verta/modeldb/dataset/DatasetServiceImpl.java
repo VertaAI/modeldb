@@ -2,7 +2,9 @@ package ai.verta.modeldb.dataset;
 
 import static io.grpc.Status.Code.INVALID_ARGUMENT;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
@@ -10,14 +12,12 @@ import ai.verta.modeldb.*;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
 import ai.verta.modeldb.GetAllDatasets.Response;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.dto.DatasetPaginationDTO;
-import ai.verta.modeldb.dto.ExperimentPaginationDTO;
-import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
@@ -35,7 +35,10 @@ import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.UserInfo;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
@@ -43,34 +46,88 @@ import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class DatasetServiceImpl extends DatasetServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetServiceImpl.class);
+  private static final String UPDATE_DATASET_EVENT_TYPE =
+      "update.resource.dataset.update_dataset_succeeded";
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final MetadataDAO metadataDAO;
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final ProjectDAO projectDAO;
   private final ExperimentDAO experimentDAO;
   private final ExperimentRunDAO experimentRunDAO;
+  private final FutureEventDAO futureEventDAO;
+  private final boolean isEventSystemEnabled;
 
   public DatasetServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
-    this.roleService = serviceSet.roleService;
+    this.mdbRoleService = serviceSet.mdbRoleService;
     this.projectDAO = daoSet.projectDAO;
     this.experimentDAO = daoSet.experimentDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
     this.repositoryDAO = daoSet.repositoryDAO;
     this.commitDAO = daoSet.commitDAO;
     this.metadataDAO = daoSet.metadataDAO;
+    this.futureEventDAO = daoSet.futureEventDAO;
+    this.isEventSystemEnabled = serviceSet.app.mdbConfig.isEvent_system_enabled();
+  }
+
+  private void addEvent(
+      String entityId,
+      Optional<Long> workspaceId,
+      String eventType,
+      Optional<String> updatedField,
+      Map<String, Object> extraFieldsMap,
+      String eventMessage) {
+
+    if (!isEventSystemEnabled) {
+      return;
+    }
+
+    // Add succeeded event in local DB
+    JsonObject eventMetadata = new JsonObject();
+    eventMetadata.addProperty("entity_id", entityId);
+    if (updatedField.isPresent() && !updatedField.get().isEmpty()) {
+      eventMetadata.addProperty("updated_field", updatedField.get());
+    }
+    if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
+      JsonObject updatedFieldValue = new JsonObject();
+      extraFieldsMap.forEach(
+          (key, value) -> {
+            if (value instanceof JsonElement) {
+              updatedFieldValue.add(key, (JsonElement) value);
+            } else {
+              updatedFieldValue.addProperty(key, String.valueOf(value));
+            }
+          });
+      eventMetadata.add("updated_field_value", updatedFieldValue);
+    }
+    eventMetadata.addProperty("message", eventMessage);
+
+    if (!workspaceId.isPresent()) {
+      GetResourcesResponseItem datasetResource =
+          mdbRoleService.getEntityResource(
+              Optional.of(entityId),
+              Optional.empty(),
+              ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
+      workspaceId = Optional.of(datasetResource.getWorkspaceId());
+    }
+    futureEventDAO.addLocalEventWithBlocking(
+        ModelDBServiceResourceTypes.DATASET.name(), eventType, workspaceId.get(), eventMetadata);
   }
 
   /**
@@ -82,16 +139,25 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   public void createDataset(
       CreateDataset request, StreamObserver<CreateDataset.Response> responseObserver) {
     try {
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, null, ModelDBServiceActions.CREATE);
 
-      Dataset dataset = getDatasetFromRequest(request);
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      Dataset createdDataset =
+      var dataset = getDatasetFromRequest(request);
+      var userInfo = authService.getCurrentLoginUserInfo();
+      var createdDataset =
           repositoryDAO.createOrUpdateDataset(dataset, request.getWorkspaceName(), true, userInfo);
 
-      CreateDataset.Response response =
-          CreateDataset.Response.newBuilder().setDataset(createdDataset).build();
+      var response = CreateDataset.Response.newBuilder().setDataset(createdDataset).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          response.getDataset().getId(),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
+          "add.resource.dataset.add_dataset_succeeded",
+          Optional.empty(),
+          Collections.emptyMap(),
+          "dataset logged successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -109,7 +175,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     if (request.getName().isEmpty()) {
       request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
     }
-    Dataset.Builder datasetBuilder =
+    var datasetBuilder =
         Dataset.newBuilder()
             .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
             .setDescription(request.getDescription())
@@ -139,7 +205,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       GetAllDatasets request, StreamObserver<GetAllDatasets.Response> responseObserver) {
     try {
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
       FindDatasets.Builder findDatasets =
           FindDatasets.newBuilder()
@@ -156,13 +222,13 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         findDatasets.setSortKey(ModelDBConstants.DATE_CREATED);
       }
 
-      DatasetPaginationDTO datasetPaginationDTO =
+      var datasetPaginationDTO =
           repositoryDAO.findDatasets(
               metadataDAO, findDatasets.build(), userInfo, ResourceVisibility.PRIVATE);
 
       LOGGER.debug(
           ModelDBMessages.ACCESSIBLE_DATASET_IN_SERVICE, datasetPaginationDTO.getDatasets().size());
-      final Response response =
+      final var response =
           Response.newBuilder()
               .addAllDatasets(datasetPaginationDTO.getDatasets())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
@@ -186,9 +252,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       GetResourcesResponseItem entityResource =
-          roleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.DATASET);
-      deleteRepositoriesByDatasetIds(Collections.singletonList(request.getId()));
-      DeleteDataset.Response response = DeleteDataset.Response.newBuilder().setStatus(true).build();
+          mdbRoleService.getEntityResource(request.getId(), ModelDBServiceResourceTypes.DATASET);
+      deleteRepositoriesByDatasetIds(Collections.singletonList(entityResource.getResourceId()));
+      var response = DeleteDataset.Response.newBuilder().setStatus(true).build();
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -211,11 +278,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.READ);
 
-      final GetDatasetById.Response response =
-          repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      final var response = repositoryDAO.getDatasetById(metadataDAO, request.getId());
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -229,10 +295,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       FindDatasets request, StreamObserver<FindDatasets.Response> responseObserver) {
     try {
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      DatasetPaginationDTO datasetPaginationDTO =
+      var userInfo = authService.getCurrentLoginUserInfo();
+      var datasetPaginationDTO =
           repositoryDAO.findDatasets(metadataDAO, request, userInfo, ResourceVisibility.PRIVATE);
-      final FindDatasets.Response response =
+      final var response =
           FindDatasets.Response.newBuilder()
               .addAllDatasets(datasetPaginationDTO.getDatasets())
               .setTotalRecords(datasetPaginationDTO.getTotalRecords())
@@ -255,7 +321,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
       FindDatasets.Builder findDatasets =
           FindDatasets.newBuilder()
@@ -271,7 +337,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       ? authService.getUsernameFromUserInfo(userInfo)
                       : request.getWorkspaceName());
 
-      DatasetPaginationDTO datasetPaginationDTO =
+      var datasetPaginationDTO =
           repositoryDAO.findDatasets(
               metadataDAO, findDatasets.build(), userInfo, ResourceVisibility.PRIVATE);
 
@@ -292,7 +358,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         datasetIdSet.add(dataset.getId());
       }
 
-      GetDatasetByName.Response.Builder responseBuilder = GetDatasetByName.Response.newBuilder();
+      var responseBuilder = GetDatasetByName.Response.newBuilder();
       if (selfOwnerdataset != null) {
         responseBuilder.setDatasetByUser(selfOwnerdataset);
       }
@@ -324,18 +390,26 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
-      GetDatasetById.Response getDatasetResponse =
-          repositoryDAO.getDatasetById(metadataDAO, request.getId());
-      Dataset updatedDataset =
+      var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      var updatedDataset =
           getDatasetResponse.getDataset().toBuilder().setName(request.getName()).build();
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
       updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
 
-      UpdateDatasetName.Response response =
-          UpdateDatasetName.Response.newBuilder().setDataset(updatedDataset).build();
+      var response = UpdateDatasetName.Response.newBuilder().setDataset(updatedDataset).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          response.getDataset().getId(),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
+          UPDATE_DATASET_EVENT_TYPE,
+          Optional.of("name"),
+          Collections.singletonMap("name", response.getDataset().getName()),
+          "dataset name updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -357,21 +431,30 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
-      GetDatasetById.Response getDatasetResponse =
-          repositoryDAO.getDatasetById(metadataDAO, request.getId());
-      Dataset updatedDataset =
+      var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      var updatedDataset =
           getDatasetResponse
               .getDataset()
               .toBuilder()
               .setDescription(request.getDescription())
               .build();
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
       updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
-      UpdateDatasetDescription.Response response =
+      var response =
           UpdateDatasetDescription.Response.newBuilder().setDataset(updatedDataset).build();
+
+      // Add succeeded event in local DB
+      addEvent(
+          response.getDataset().getId(),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
+          UPDATE_DATASET_EVENT_TYPE,
+          Optional.of("description"),
+          Collections.emptyMap(),
+          "dataset description updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -400,14 +483,28 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
-      AddDatasetTags.Response response =
+      var response =
           repositoryDAO.addDatasetTags(
               metadataDAO,
               request.getId(),
               ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+
+      // Add succeeded event in local DB
+      addEvent(
+          response.getDataset().getId(),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
+          UPDATE_DATASET_EVENT_TYPE,
+          Optional.of("tags"),
+          Collections.singletonMap(
+              "tags",
+              new Gson()
+                  .toJsonTree(
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
+          "dataset tags added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -447,14 +544,33 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
-      Dataset updatedDataset =
+      var updatedDataset =
           repositoryDAO.deleteDatasetTags(
               metadataDAO, request.getId(), request.getTagsList(), request.getDeleteAll());
-      DeleteDatasetTags.Response response =
-          DeleteDatasetTags.Response.newBuilder().setDataset(updatedDataset).build();
+      var response = DeleteDatasetTags.Response.newBuilder().setDataset(updatedDataset).build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraField = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraField.put("tags_delete_all", true);
+      } else {
+        extraField.put(
+            "tags",
+            new Gson()
+                .toJsonTree(
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          response.getDataset().getId(),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
+          UPDATE_DATASET_EVENT_TYPE,
+          Optional.of("tags"),
+          extraField,
+          "dataset tags deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -484,21 +600,35 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
-      GetDatasetById.Response getDatasetResponse =
-          repositoryDAO.getDatasetById(metadataDAO, request.getId());
-      Dataset updatedDataset =
+      var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      var updatedDataset =
           getDatasetResponse
               .getDataset()
               .toBuilder()
               .addAllAttributes(request.getAttributesList())
               .build();
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
       updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
-      AddDatasetAttributes.Response response =
-          AddDatasetAttributes.Response.newBuilder().setDataset(updatedDataset).build();
+      var response = AddDatasetAttributes.Response.newBuilder().setDataset(updatedDataset).build();
+
+      addEvent(
+          updatedDataset.getId(),
+          Optional.of(updatedDataset.getWorkspaceServiceId()),
+          UPDATE_DATASET_EVENT_TYPE,
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      request.getAttributesList().stream()
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "dataset attributes added successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -528,17 +658,32 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
-      GetDatasetById.Response getDatasetResponse =
-          repositoryDAO.getDatasetById(metadataDAO, request.getId());
-      Dataset updatedDataset =
+      var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      var updatedDataset =
           getDatasetResponse.getDataset().toBuilder().addAttributes(request.getAttribute()).build();
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
       updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
-      UpdateDatasetAttributes.Response response =
+      var response =
           UpdateDatasetAttributes.Response.newBuilder().setDataset(updatedDataset).build();
+
+      addEvent(
+          updatedDataset.getId(),
+          Optional.of(updatedDataset.getWorkspaceServiceId()),
+          UPDATE_DATASET_EVENT_TYPE,
+          Optional.of("attributes"),
+          Collections.singletonMap(
+              "attribute_keys",
+              new Gson()
+                  .toJsonTree(
+                      Stream.of(request.getAttribute())
+                          .map(KeyValue::getKey)
+                          .collect(Collectors.toSet()),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
+          "dataset attributes updated successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -571,7 +716,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getId(), ModelDBServiceActions.UPDATE);
 
       repositoryDAO.deleteRepositoryAttributes(
@@ -580,12 +725,32 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           request.getDeleteAll(),
           false,
           RepositoryEnums.RepositoryTypeEnum.DATASET);
-      GetDatasetById.Response getDatasetResponse =
-          repositoryDAO.getDatasetById(metadataDAO, request.getId());
-      DeleteDatasetAttributes.Response response =
+      var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
+      var response =
           DeleteDatasetAttributes.Response.newBuilder()
               .setDataset(getDatasetResponse.getDataset())
               .build();
+
+      // Add succeeded event in local DB
+      Map<String, Object> extraField = new HashMap<>();
+      if (request.getDeleteAll()) {
+        extraField.put("attributes_delete_all", true);
+      } else {
+        extraField.put(
+            "attribute_keys",
+            new Gson()
+                .toJsonTree(
+                    request.getAttributeKeysList(),
+                    new TypeToken<ArrayList<String>>() {}.getType()));
+      }
+      addEvent(
+          response.getDataset().getId(),
+          Optional.of(response.getDataset().getWorkspaceServiceId()),
+          UPDATE_DATASET_EVENT_TYPE,
+          Optional.of("attributes"),
+          extraField,
+          "dataset attributes deleted successfully");
+
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -605,11 +770,16 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       List<GetResourcesResponseItem> responseItems =
-          roleService.getResourceItems(
-              null, new HashSet<>(request.getIdsList()), ModelDBServiceResourceTypes.DATASET);
-      deleteRepositoriesByDatasetIds(request.getIdsList());
-      DeleteDatasets.Response response =
-          DeleteDatasets.Response.newBuilder().setStatus(true).build();
+          mdbRoleService.getResourceItems(
+              null,
+              new HashSet<>(request.getIdsList()),
+              ModelDBServiceResourceTypes.DATASET,
+              false);
+      deleteRepositoriesByDatasetIds(
+          responseItems.stream()
+              .map(GetResourcesResponseItem::getResourceId)
+              .collect(Collectors.toList()));
+      var response = DeleteDatasets.Response.newBuilder().setStatus(true).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
 
@@ -618,8 +788,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     }
   }
 
-  private void deleteRepositoriesByDatasetIds(List<String> datasetIds)
-      throws ModelDBException, ExecutionException, InterruptedException {
+  private void deleteRepositoriesByDatasetIds(List<String> datasetIds) throws ModelDBException {
     for (String datasetId : datasetIds) {
       repositoryDAO.deleteRepository(
           DeleteRepositoryRequest.newBuilder()
@@ -630,6 +799,15 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           experimentRunDAO,
           false,
           RepositoryEnums.RepositoryTypeEnum.DATASET);
+
+      // Add succeeded event in local DB
+      addEvent(
+          datasetId,
+          Optional.empty(),
+          "delete.resource.dataset.delete_dataset_succeeded",
+          Optional.empty(),
+          Collections.emptyMap(),
+          "dataset delete successfully");
     }
   }
 
@@ -643,18 +821,18 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = authService.getCurrentLoginUserInfo();
 
-      RepositoryIdentification repositoryIdentification =
+      var repositoryIdentification =
           RepositoryIdentification.newBuilder()
               .setRepoId(Long.parseLong(request.getDatasetId()))
               .build();
       ListCommitsRequest.Builder listCommitsRequest =
           ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
-      ListCommitsRequest.Response listCommitsResponse =
+      var listCommitsResponse =
           commitDAO.listCommits(
               listCommitsRequest.build(),
               (session ->
@@ -666,7 +844,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       RepositoryEnums.RepositoryTypeEnum.DATASET)),
               false);
       List<String> datasetVersionIds = new ArrayList<>();
-      ListValue.Builder listValueBuilder = ListValue.newBuilder();
+      var listValueBuilder = ListValue.newBuilder();
       List<Commit> commitList = listCommitsResponse.getCommitsList();
       if (!commitList.isEmpty()) {
         for (Commit commit : commitList) {
@@ -679,15 +857,15 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       Experiment lastUpdatedExperiment = null;
       if (!datasetVersionIds.isEmpty()) {
 
-        KeyValueQuery keyValueQuery =
+        var keyValueQuery =
             KeyValueQuery.newBuilder()
                 .setKey(ModelDBConstants.DATASETS + "." + ModelDBConstants.LINKED_ARTIFACT_ID)
                 .setValue(Value.newBuilder().setListValue(listValueBuilder.build()).build())
                 .setOperator(OperatorEnum.Operator.IN)
                 .build();
-        FindExperimentRuns findExperimentRuns =
+        var findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
-        ExperimentRunPaginationDTO experimentRunPaginationDTO =
+        var experimentRunPaginationDTO =
             experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
         if (experimentRunPaginationDTO != null
             && experimentRunPaginationDTO.getExperimentRuns() != null
@@ -697,7 +875,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           for (ExperimentRun experimentRun : experimentRuns) {
             experimentIds.add(experimentRun.getExperimentId());
           }
-          FindExperiments findExperiments =
+          var findExperiments =
               FindExperiments.newBuilder()
                   .addAllExperimentIds(experimentIds)
                   .setPageLimit(1)
@@ -705,7 +883,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                   .setSortKey(ModelDBConstants.DATE_UPDATED)
                   .setAscending(false)
                   .build();
-          ExperimentPaginationDTO experimentPaginationDTO =
+          var experimentPaginationDTO =
               experimentDAO.findExperiments(projectDAO, userInfo, findExperiments);
           if (experimentPaginationDTO.getExperiments() != null
               && !experimentPaginationDTO.getExperiments().isEmpty()) {
@@ -743,18 +921,18 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Validate if current user has access to the entity or not
-      roleService.validateEntityUserWithUserInfo(
+      mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
 
       // Get the user info from the Context
-      UserInfo userInfo = authService.getCurrentLoginUserInfo();
-      RepositoryIdentification repositoryIdentification =
+      var userInfo = authService.getCurrentLoginUserInfo();
+      var repositoryIdentification =
           RepositoryIdentification.newBuilder()
               .setRepoId(Long.parseLong(request.getDatasetId()))
               .build();
       ListCommitsRequest.Builder listCommitsRequest =
           ListCommitsRequest.newBuilder().setRepositoryId(repositoryIdentification);
-      ListCommitsRequest.Response listCommitsResponse =
+      var listCommitsResponse =
           commitDAO.listCommits(
               listCommitsRequest.build(),
               (session ->
@@ -766,7 +944,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       RepositoryEnums.RepositoryTypeEnum.DATASET)),
               false);
       List<String> datasetVersionIds = new ArrayList<>();
-      ListValue.Builder listValueBuilder = ListValue.newBuilder();
+      var listValueBuilder = ListValue.newBuilder();
       List<Commit> commitList = listCommitsResponse.getCommitsList();
       if (!commitList.isEmpty()) {
         for (Commit commit : commitList) {
@@ -778,15 +956,15 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       List<ExperimentRun> experimentRuns = new ArrayList<>();
       if (!datasetVersionIds.isEmpty()) {
-        KeyValueQuery keyValueQuery =
+        var keyValueQuery =
             KeyValueQuery.newBuilder()
                 .setKey(ModelDBConstants.DATASETS + "." + ModelDBConstants.LINKED_ARTIFACT_ID)
                 .setValue(Value.newBuilder().setListValue(listValueBuilder.build()).build())
                 .setOperator(OperatorEnum.Operator.IN)
                 .build();
-        FindExperimentRuns findExperimentRuns =
+        var findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
-        ExperimentRunPaginationDTO experimentRunPaginationDTO =
+        var experimentRunPaginationDTO =
             experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
         if (experimentRunPaginationDTO != null
             && experimentRunPaginationDTO.getExperimentRuns() != null
@@ -795,7 +973,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         }
       }
 
-      final GetExperimentRunByDataset.Response response =
+      final var response =
           GetExperimentRunByDataset.Response.newBuilder()
               .addAllExperimentRuns(experimentRuns)
               .build();

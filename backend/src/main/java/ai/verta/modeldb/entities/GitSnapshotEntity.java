@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities;
 
 import ai.verta.common.GitSnapshot;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import javax.persistence.CollectionTable;
@@ -15,7 +16,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "git_snapshot")
-public class GitSnapshotEntity {
+public class GitSnapshotEntity implements Serializable {
 
   public GitSnapshotEntity() {}
 

@@ -11,13 +11,14 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.authservice.AuthServiceChannel;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
@@ -31,18 +32,16 @@ import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleServiceUtils
-    implements RoleService {
-  private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
+public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleService {
+  private static final Logger LOGGER = LogManager.getLogger(MDBRoleServiceUtils.class);
 
-  public static ai.verta.modeldb.authservice.RoleService FromConfig(
-      Config config, AuthService authService, UAC uac) {
-    if (!config.hasAuth()) return new PublicRoleServiceUtils(authService);
-    else return new RoleServiceUtils(config, authService, uac);
+  public static MDBRoleService FromConfig(Config config, AuthService authService, UAC uac) {
+    if (!config.hasAuth()) return new PublicMDBRoleServiceUtils(authService);
+    else return new MDBRoleServiceUtils(config, authService, uac);
   }
 
-  private RoleServiceUtils(Config config, AuthService authService, UAC uac) {
-    super(authService, config.grpcServer.requestTimeout, uac);
+  private MDBRoleServiceUtils(Config config, AuthService authService, UAC uac) {
+    super(authService, config.getGrpcServer().getRequestTimeout(), uac);
   }
 
   @Override
@@ -66,7 +65,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       String resourceId,
       String resourceOwnerId,
       Metadata requestHeaders) {
-    try (AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.debug("getting Resource collaborator with authChannel {}", authServiceChannel);
       return getCollaborators(
           authServiceChannel,
@@ -97,7 +96,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
       Metadata requestHeaders) {
-    GetAllowedEntities getAllowedEntitiesRequest =
+    var getAllowedEntitiesRequest =
         GetAllowedEntities.newBuilder()
             .addActions(
                 Action.newBuilder()
@@ -114,7 +113,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
                     .build())
             .build();
     LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-    GetAllowedEntities.Response getAllowedEntitiesResponse =
+    var getAllowedEntitiesResponse =
         authServiceChannel
             .getAuthzServiceBlockingStub(requestHeaders)
             .getAllowedEntities(getAllowedEntitiesRequest);
@@ -132,7 +131,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
             .forEach(
                 teamId -> {
                   try {
-                    CollaboratorTeam collaboratorTeam = new CollaboratorTeam(teamId);
+                    var collaboratorTeam = new CollaboratorTeam(teamId);
                     collaborators.add(collaboratorTeam);
                   } catch (StatusRuntimeException ex) {
                     if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
@@ -150,7 +149,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
             .forEach(
                 orgId -> {
                   try {
-                    CollaboratorOrg collaboratorOrg = new CollaboratorOrg(orgId);
+                    var collaboratorOrg = new CollaboratorOrg(orgId);
                     collaborators.add(collaboratorOrg);
                   } catch (StatusRuntimeException ex) {
                     if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
@@ -177,46 +176,46 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       Metadata requestHeaders) {
     List<GetCollaboratorResponseItem> getCollaboratorResponseList = new ArrayList<>();
 
+    // Run a task specified by a Supplier object asynchronously
+    CompletableFuture<Set<CollaboratorBase>> deployCollaboratorsFuture =
+        CompletableFuture.supplyAsync(
+            () ->
+                getCollaborators(
+                    authServiceChannel,
+                    resourceOwnerId,
+                    resourceId,
+                    modelDBServiceResourceTypes,
+                    ModelDBServiceActions.DEPLOY,
+                    requestHeaders));
+
+    CompletableFuture<Set<CollaboratorBase>> readOnlyCollaboratorsFuture =
+        CompletableFuture.supplyAsync(
+            () ->
+                getCollaborators(
+                    authServiceChannel,
+                    resourceOwnerId,
+                    resourceId,
+                    modelDBServiceResourceTypes,
+                    ModelDBServiceActions.READ,
+                    requestHeaders));
+
+    CompletableFuture<Set<CollaboratorBase>> readWriteCollaboratorsFuture =
+        CompletableFuture.supplyAsync(
+            () ->
+                getCollaborators(
+                    authServiceChannel,
+                    resourceOwnerId,
+                    resourceId,
+                    modelDBServiceResourceTypes,
+                    ModelDBServiceActions.UPDATE,
+                    requestHeaders));
+
+    CompletableFuture<Void> collaboratorCombineFuture =
+        CompletableFuture.allOf(
+            deployCollaboratorsFuture, readOnlyCollaboratorsFuture, readWriteCollaboratorsFuture);
+
+    // Wait for all task complete
     try {
-      // Run a task specified by a Supplier object asynchronously
-      CompletableFuture<Set<CollaboratorBase>> deployCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.DEPLOY,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> readOnlyCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.READ,
-                      requestHeaders));
-
-      CompletableFuture<Set<CollaboratorBase>> readWriteCollaboratorsFuture =
-          CompletableFuture.supplyAsync(
-              () ->
-                  getCollaborators(
-                      authServiceChannel,
-                      resourceOwnerId,
-                      resourceId,
-                      modelDBServiceResourceTypes,
-                      ModelDBServiceActions.UPDATE,
-                      requestHeaders));
-
-      CompletableFuture<Void> collaboratorCombineFuture =
-          CompletableFuture.allOf(
-              deployCollaboratorsFuture, readOnlyCollaboratorsFuture, readWriteCollaboratorsFuture);
-
-      // Wait for all task complete
       collaboratorCombineFuture.get();
 
       Set<CollaboratorBase> deployCollaborators = deployCollaboratorsFuture.get();
@@ -227,11 +226,11 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       if (readOnlyCollaborators.size() > 0) {
         LOGGER.debug("ReadOnly Collaborators count: " + readOnlyCollaborators.size());
         for (CollaboratorBase collaborator : readOnlyCollaborators) {
-          GetCollaboratorResponseItem.Builder getCollaboratorResponseBuilder =
+          var getCollaboratorResponseBuilder =
               GetCollaboratorResponseItem.newBuilder()
                   .setAuthzEntityType(collaborator.getAuthzEntityType())
                   .setVertaId(collaborator.getId());
-          CollaboratorPermissions.Builder collPermBuilder = CollaboratorPermissions.newBuilder();
+          var collPermBuilder = CollaboratorPermissions.newBuilder();
           collPermBuilder.setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY);
           if (deployCollaborators.contains(collaborator)) {
             collPermBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
@@ -247,11 +246,11 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
       if (readWriteCollaborators.size() > 0) {
         LOGGER.debug("ReadWrite Collaborators count: " + readWriteCollaborators.size());
         for (CollaboratorBase collaborator : readWriteCollaborators) {
-          GetCollaboratorResponseItem.Builder getCollaboratorResponseBuilder =
+          var getCollaboratorResponseBuilder =
               GetCollaboratorResponseItem.newBuilder()
                   .setAuthzEntityType(collaborator.getAuthzEntityType())
                   .setVertaId(collaborator.getId());
-          CollaboratorPermissions.Builder collPermBuilder = CollaboratorPermissions.newBuilder();
+          var collPermBuilder = CollaboratorPermissions.newBuilder();
           collPermBuilder.setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
           if (deployCollaborators.contains(collaborator)) {
             collPermBuilder.setCanDeploy(TernaryEnum.Ternary.TRUE);
@@ -262,8 +261,12 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
           getCollaboratorResponseList.add(getCollaboratorResponseBuilder.build());
         }
       }
-    } catch (InterruptedException | ExecutionException ex) {
-      throw new InternalErrorException(ex.getMessage());
+    } catch (ExecutionException ex) {
+      throw new ModelDBException(ex);
+    } catch (InterruptedException ex) {
+      // Restore interrupted state...
+      Thread.currentThread().interrupt();
+      throw new ModelDBException(ex);
     }
     LOGGER.debug("Total Collaborators count: " + getCollaboratorResponseList.size());
     return getCollaboratorResponseList;
@@ -309,7 +312,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
           collaborator,
           ModelDBServiceResourceTypes.REPOSITORY.name());
     } else {
-      return ModelDBConstants.EMPTY_STRING;
+      return CommonConstants.EMPTY_STRING;
     }
   }
 
@@ -318,9 +321,9 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
     if (legacyWorkspaceId == null || legacyWorkspaceId.isEmpty()) {
       return Optional.empty();
     }
-    try (final AuthServiceChannel authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+    try (final var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.trace("Fetching workspace " + legacyWorkspaceId);
-      final Workspace workspace =
+      final var workspace =
           authServiceChannel
               .getWorkspaceServiceBlockingStub()
               .getWorkspaceByLegacyId(
@@ -339,7 +342,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
   @Override
   public WorkspaceDTO getWorkspaceDTOByWorkspaceName(
       UserInfo currentLoginUserInfo, String workspaceName) {
-    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
+    var workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceName(workspaceName);
 
     /*from the name for workspace, get the workspace id and type.
@@ -368,7 +371,7 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
           workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
         }
       } catch (StatusRuntimeException e) {
-        CollaboratorUser collaboratorUser =
+        var collaboratorUser =
             new CollaboratorUser(
                 authService,
                 authService.getUserInfo(workspaceName, CommonConstants.UserIdentifier.USER_NAME));
@@ -403,27 +406,24 @@ public class RoleServiceUtils extends ai.verta.modeldb.common.authservice.RoleSe
    * workspace.
    */
   @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceId(
+  public WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
-    WorkspaceDTO workspaceDTO = new WorkspaceDTO();
+    var workspaceDTO = new WorkspaceDTO();
     workspaceDTO.setWorkspaceId(workspaceId);
 
     switch (workspaceType) {
       case WorkspaceType.ORGANIZATION_VALUE:
-        Organization organization = (Organization) getOrgById(workspaceId);
+        var organization = (Organization) getOrgById(true, workspaceId, true);
         workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
         workspaceDTO.setWorkspaceName(organization.getName());
         return workspaceDTO;
       case WorkspaceType.USER_VALUE:
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
-        if (currentLoginUserInfo == null) {
-          currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-        }
         if (workspaceId.equalsIgnoreCase(
             authService.getVertaIdFromUserInfo(currentLoginUserInfo))) {
           workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
         } else {
-          UserInfo userInfo =
+          var userInfo =
               authService.getUserInfo(workspaceId, CommonConstants.UserIdentifier.VERTA_ID);
           workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(userInfo));
         }

@@ -11,6 +11,7 @@ import io.grpc.stub.MetadataUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+@SuppressWarnings({"squid:S100"})
 public class UAC extends Connection {
   private static final Logger LOGGER = LogManager.getLogger(UAC.class);
 
@@ -24,6 +25,7 @@ public class UAC extends Connection {
   private final RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub;
   private final RoleServiceGrpc.RoleServiceFutureStub serviceAccountRoleServiceFutureStub;
   private final OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub;
+  private final EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub;
 
   public static UAC FromConfig(Config config) {
     if (!config.hasAuth()) return null;
@@ -31,7 +33,7 @@ public class UAC extends Connection {
   }
 
   private UAC(Config config) {
-    this(config.authService.host, config.authService.port, config);
+    this(config.getAuthService().getHost(), config.getAuthService().getPort(), config);
   }
 
   public UAC(String host, Integer port, Config config) {
@@ -58,6 +60,10 @@ public class UAC extends Connection {
             .withInterceptors(
                 MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
     organizationServiceFutureStub = OrganizationServiceGrpc.newFutureStub(authServiceChannel);
+    eventServiceFutureStub =
+        EventServiceGrpc.newFutureStub(authServiceChannel)
+            .withInterceptors(
+                MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
   }
 
   public AuthServiceChannel getBlockingAuthServiceChannel() {
@@ -65,18 +71,16 @@ public class UAC extends Connection {
   }
 
   private Metadata getServiceUserMetadata(Config config) {
-    Metadata requestHeaders = new Metadata();
-    Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-    Metadata.Key<String> dev_key =
-        Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
-    Metadata.Key<String> dev_key_hyphen =
-        Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
-    Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+    var requestHeaders = new Metadata();
+    var emailKey = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
+    var devKey = Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+    var devKeyHyphen = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+    var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-    requestHeaders.put(email_key, config.service_user.email);
-    requestHeaders.put(dev_key, config.service_user.devKey);
-    requestHeaders.put(dev_key_hyphen, config.service_user.devKey);
-    requestHeaders.put(source_key, "PythonClient");
+    requestHeaders.put(emailKey, config.getService_user().getEmail());
+    requestHeaders.put(devKey, config.getService_user().getDevKey());
+    requestHeaders.put(devKeyHyphen, config.getService_user().getDevKey());
+    requestHeaders.put(sourceKey, "PythonClient");
     return requestHeaders;
   }
 
@@ -106,5 +110,9 @@ public class UAC extends Connection {
 
   public RoleServiceGrpc.RoleServiceFutureStub getServiceAccountRoleServiceFutureStub() {
     return serviceAccountRoleServiceFutureStub;
+  }
+
+  public EventServiceGrpc.EventServiceFutureStub getEventService() {
+    return eventServiceFutureStub;
   }
 }

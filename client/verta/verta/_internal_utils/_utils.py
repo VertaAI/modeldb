@@ -27,6 +27,11 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 from ..external import six
 from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
+from verta.credentials import (
+    EmailCredentials,
+    JWTCredentials,
+)
+
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.uac import Organization_pb2, UACService_pb2, Workspace_pb2
 
@@ -44,14 +49,11 @@ _VALID_FLAT_KEY_CHARS = set(string.ascii_letters + string.digits + '_-/')
 THREAD_LOCALS = threading.local()
 THREAD_LOCALS.active_experiment_run = None
 
-# TODO: remove this in favor of _config_utils when #635 is merged
-HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
-
 
 class Connection:
     _OSS_DEFAULT_WORKSPACE = "personal"
 
-    def __init__(self, scheme=None, socket=None, auth=None, max_retries=0, ignore_conn_err=False):
+    def __init__(self, scheme=None, socket=None, auth=None, max_retries=0, ignore_conn_err=False, credentials=None, headers=None):
         """
         HTTP connection configuration utility struct.
 
@@ -68,19 +70,109 @@ class Connection:
             on HTTP codes {502, 503, 504} which commonly occur during back end connection lapses.
         ignore_conn_err : bool, default False
             Whether to ignore connection errors and instead return successes with empty contents.
+        credentials : :class:`~verta.credentials.Credentials`, optional
+            Either dev key or JWT token data to be used for authentication.
+        headers: dict, optional
+            Additional headers to attach to requests.
 
         """
+        self._init_headers()
         self.scheme = scheme
         self.socket = socket
-        self.auth = auth
         # TODO: retry on 404s, but only if we're sure it's not legitimate e.g. from a GET
         self.retry = Retry(total=max_retries,
                            backoff_factor=1,  # each retry waits (2**retry_num) seconds
                            method_whitelist=False,  # retry on all HTTP methods
-                           status_forcelist=(502, 503, 504),  # only retry on these status codes
+                           status_forcelist=(requests.codes.bad_gateway, requests.codes.unavailable, requests.codes.gateway_timeout),  # only retry on these status codes
                            raise_on_redirect=False,  # return Response instead of raising after max retries
                            raise_on_status=False)  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
+        self.credentials = credentials
+        self.headers = headers
+
+
+    @property
+    def credentials(self):
+        return self._credentials
+
+    @credentials.setter
+    def credentials(self, value):
+        self._credentials = value
+        self._recompute_headers()
+
+    @property
+    def headers(self):
+        return self._computed_headers
+
+    # Note: Added for temporary backwards compatibility. Remove when possible.
+    @property
+    def auth(self):
+        return self.headers
+
+    @headers.setter
+    def headers(self, value):
+        self._headers = value or dict()
+        self._recompute_headers()
+
+    def _init_headers(self):
+        self._headers = {}
+        self._computed_headers = {}
+
+    def _recompute_headers(self):
+        headers = self._headers or dict()
+        headers = headers.copy()
+        headers[_GRPC_PREFIX+'scheme'] = self.scheme
+        headers.update(self.prefixed_headers_for_credentials(self.credentials))
+        self._computed_headers = headers
+
+    @staticmethod
+    def prefixed_headers_for_credentials(credentials):
+        if credentials:
+            return {(_GRPC_PREFIX + k): v for (k,v) in credentials.headers().items()}
+        return {}
+
+    def test(self, print_success=True):
+        """Verify connection viability with Verta Platform.
+
+        This method issues an API request against the Verta platform using the
+        configuration in this connection to validate that the Verta platform can
+        be connected to.
+
+        Parameters
+        ----------
+        print_success : bool, default True
+            Whether or not to print a success message.
+
+        Returns
+        -------
+        bool
+            Returns true upon success.
+
+        Raises
+        ------
+        :class:`requests.HTTPError`
+            If an HTTP error occured.
+
+        """
+        try:
+            response = make_request("GET",
+                                           "{}://{}/api/v1/modeldb/project/verifyConnection".format(self.scheme, self.socket),
+                                           self)
+        except requests.ConnectionError as err:
+            err.args = ("connection failed; please check `host` and `port`; error message: \n\n{}".format(err.args[0]),) + err.args[1:]
+            six.raise_from(err, None)
+
+        if response.status_code == requests.codes.unauthorized:
+            try:
+                response.raise_for_status()
+            except requests.HTTPError as e:
+                e.args = ("authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY` or JWT credentials\n\n{}".format(
+                    e.args[0]),) + e.args[1:]
+                raise e
+        raise_for_http_error(response)
+        if print_success:
+            print("connection successfully established")
+        return True
 
     def make_proto_request(self, method, path, params=None, body=None, include_default=True):
         if params is not None:
@@ -99,8 +191,8 @@ class Connection:
             response_msg = json_to_proto(body_to_json(response), response_type)
             return response_msg
         else:
-            if ((response.status_code == 403 and body_to_json(response)['code'] == 7)
-                    or (response.status_code == 404 and     body_to_json(response)['code'] == 5)):
+            if ((response.status_code == requests.codes.forbidden and body_to_json(response)['code'] == 7)
+                    or (response.status_code == requests.codes.not_found and body_to_json(response)['code'] == 5)):
                 return NoneProtoResponse()
             else:
                 raise_for_http_error(response)
@@ -118,51 +210,18 @@ class Connection:
         raise_for_http_error(response)
 
     @staticmethod
-    def _request_to_curl(request):
-        """
-        Prints a cURL to reproduce `request`.
-
-        Parameters
-        ----------
-        request : :class:`requests.PreparedRequest`
-
-        Examples
-        --------
-        From a :class:`~requests.Response`:
-
-        .. code-block:: python
-
-            response = _utils.make_request("GET", "https://www.google.com/", conn)
-            conn._request_to_curl(response.request)
-
-        From a :class:`~requests.HTTPError`:
-
-        .. code-block:: python
-
-            try:
-                pass  # insert bad call here
-            except Exception as e:
-                client._conn._request_to_curl(e.request)
-                raise
-
-        """
-        lines = []
-        lines.append("curl -X {} \"{}\"".format(request.method, request.url))
-        if request.headers:
-            lines.extend('-H "{}: {}"'.format(key, val) for key, val in request.headers.items())
-        if request.body:
-            lines.append("-d '{}'".format(request.body.decode()))
-
-        curl = " \\\n    ".join(lines)
-        print(curl)
-
-    @staticmethod
     def is_html_response(response):
-        return response.text.strip().endswith("</html>")
+        content_type = response.headers.get('Content-Type')
+        if content_type:
+            return content_type.startswith('text/html')
+        return False
 
     @property
     def email(self):
-        return self.auth.get(_GRPC_PREFIX+"email")
+        if self.credentials and isinstance(self.credentials, EmailCredentials):
+            return self.credentials.email
+        else:
+            return None
 
     def _get_visible_orgs(self):
         response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces")
@@ -220,7 +279,7 @@ class Connection:
             response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getUser", params=msg)
 
             if ((response.ok and self.is_html_response(response))  # fetched webapp
-                    or response.status_code == 404):  # UAC not found
+                    or response.status_code == requests.codes.not_found):  # UAC not found
                 pass  # fall through to OSS default workspace
             else:
                 return self.must_proto_response(response, UACService_pb2.UserInfo).verta_info.username
@@ -291,7 +350,7 @@ def make_request(method, url, conn, stream=False, **kwargs):
         raise ValueError("`method` must be one of {}".format(_VALID_HTTP_METHODS))
 
     # add auth to headers
-    kwargs.setdefault('headers', {}).update(conn.auth)
+    kwargs.setdefault('headers', {}).update(conn.headers)
 
     with requests.Session() as session:
         session.mount(url, HTTPAdapter(max_retries=conn.retry))

@@ -3,12 +3,10 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;
 import java.util.List;
@@ -22,6 +20,12 @@ import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class ObservationHandler {
   private static Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
+  private static final String RUN_ID_QUERY_PARAM = "run_id";
+  private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
+  private static final String NAME_QUERY_PARAM = "name";
+  private static final String EXPERIMENT_RUN_ENTITY_QUERY_VALUE = "ExperimentRunEntity";
+  private static final String EPOCH_QUERY_PARAM = "epoch";
+  private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
 
   private final Executor executor;
   private final FutureJdbi jdbi;
@@ -56,15 +60,15 @@ public class ObservationHandler {
                                 + "where experiment_run_id =:run_id and entity_name = :entity_name) o, "
                                 + "(select id, kv_value, value_type from keyvalue where kv_key =:name and entity_name IS NULL) k "
                                 + "where o.keyvaluemapping_id = k.id")
-                        .bind("run_id", runId)
-                        .bind("entity_name", "ExperimentRunEntity")
-                        .bind("name", key)
+                        .bind(RUN_ID_QUERY_PARAM, runId)
+                        .bind(ENTITY_NAME_QUERY_PARAM, EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
+                        .bind(NAME_QUERY_PARAM, key)
                         .map(
-                            (rs, ctx) -> {
-                              try {
-                                return Observation.newBuilder()
+                            (rs, ctx) ->
+                                Observation.newBuilder()
                                     .setEpochNumber(
-                                        Value.newBuilder().setNumberValue(rs.getLong("epoch")))
+                                        Value.newBuilder()
+                                            .setNumberValue(rs.getLong(EPOCH_QUERY_PARAM)))
                                     .setAttribute(
                                         KeyValue.newBuilder()
                                             .setKey(key)
@@ -73,13 +77,7 @@ public class ObservationHandler {
                                                     CommonUtils.getProtoObjectFromString(
                                                         rs.getString("_value"), Value.newBuilder()))
                                             .setValueTypeValue(rs.getInt("_type")))
-                                    .build();
-                              } catch (InvalidProtocolBufferException e) {
-                                LOGGER.error(
-                                    "Error generating builder for {}", rs.getString("_value"));
-                                throw new ModelDBException(e);
-                              }
-                            })
+                                    .build())
                         .list()),
         executor);
   }
@@ -95,16 +93,16 @@ public class ObservationHandler {
                             + " on o.keyvaluemapping_id = k.id"
                             + " where o.experiment_run_id in (<run_ids>) and o.entity_name = :entityName and k.entity_name IS NULL")
                     .bindList("run_ids", runIds)
-                    .bind("entityName", "ExperimentRunEntity")
+                    .bind("entityName", EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
                     .map(
-                        (rs, ctx) -> {
-                          try {
-                            return new AbstractMap.SimpleEntry<>(
-                                rs.getString("run_id"),
+                        (rs, ctx) ->
+                            new AbstractMap.SimpleEntry<>(
+                                rs.getString(RUN_ID_QUERY_PARAM),
                                 Observation.newBuilder()
                                     .setTimestamp(rs.getLong("timestamp"))
                                     .setEpochNumber(
-                                        Value.newBuilder().setNumberValue(rs.getLong("epoch")))
+                                        Value.newBuilder()
+                                            .setNumberValue(rs.getLong(EPOCH_QUERY_PARAM)))
                                     .setAttribute(
                                         KeyValue.newBuilder()
                                             .setKey(rs.getString("_key"))
@@ -113,12 +111,7 @@ public class ObservationHandler {
                                                     CommonUtils.getProtoObjectFromString(
                                                         rs.getString("_value"), Value.newBuilder()))
                                             .setValueTypeValue(rs.getInt("_type")))
-                                    .build());
-                          } catch (InvalidProtocolBufferException e) {
-                            LOGGER.error("Error generating builder for {}", rs.getString("_value"));
-                            throw new ModelDBException(e);
-                          }
-                        })
+                                    .build()))
                     .list())
         .thenApply(MapSubtypes::from, executor);
   }
@@ -171,9 +164,9 @@ public class ObservationHandler {
                           handle ->
                               handle
                                   .createQuery(sql)
-                                  .bind("run_id", runId)
-                                  .bind("entity_name", "ExperimentRunEntity")
-                                  .bind("name", attribute.getKey())
+                                  .bind(RUN_ID_QUERY_PARAM, runId)
+                                  .bind(ENTITY_NAME_QUERY_PARAM, EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
+                                  .bind(NAME_QUERY_PARAM, attribute.getKey())
                                   .mapTo(Long.class)
                                   .findOne()
                                   .map(x -> x + 1)
@@ -191,7 +184,7 @@ public class ObservationHandler {
                                     .createUpdate(
                                         "insert into keyvalue (field_type, kv_key, kv_value, value_type) "
                                             + "values (:field_type, :key, :value, :type)")
-                                    .bind("field_type", "attributes")
+                                    .bind(FIELD_TYPE_QUERY_PARAM, "attributes")
                                     .bind("key", attribute.getKey())
                                     .bind(
                                         "value",
@@ -214,11 +207,11 @@ public class ObservationHandler {
                                     observation.getTimestamp() == 0
                                         ? now
                                         : observation.getTimestamp())
-                                .bind("entity_name", "ExperimentRunEntity")
-                                .bind("field_type", "observations")
-                                .bind("run_id", runId)
+                                .bind(ENTITY_NAME_QUERY_PARAM, EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
+                                .bind(FIELD_TYPE_QUERY_PARAM, "observations")
+                                .bind(RUN_ID_QUERY_PARAM, runId)
                                 .bind("kvid", kvId)
-                                .bind("epoch", epoch)
+                                .bind(EPOCH_QUERY_PARAM, epoch)
                                 .executeAndReturnGeneratedKeys()
                                 .mapTo(Long.class)
                                 .one();
@@ -249,8 +242,8 @@ public class ObservationHandler {
                 var query =
                     handle
                         .createQuery(fetchQueryString)
-                        .bind("run_id", runId)
-                        .bind("entityName", "ExperimentRunEntity");
+                        .bind(RUN_ID_QUERY_PARAM, runId)
+                        .bind("entityName", EXPERIMENT_RUN_ENTITY_QUERY_VALUE);
 
                 if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
                   query = query.bindList("keys", maybeKeys.get());
@@ -277,8 +270,8 @@ public class ObservationHandler {
                 // Delete KeyValue mapped with Observation by Ids
                 handle
                     .createUpdate("delete from keyvalue where id in (<kv_ids>)")
-                    .bind("entity_name", "ExperimentRunEntity")
-                    .bind("field_type", "observations")
+                    .bind(ENTITY_NAME_QUERY_PARAM, EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
+                    .bind(FIELD_TYPE_QUERY_PARAM, "observations")
                     .bindList(
                         "kv_ids",
                         observationKVMappingList.stream()

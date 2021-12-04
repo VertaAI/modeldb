@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import copy
 import importlib
 import re
 import subprocess
@@ -260,8 +261,7 @@ def set_version_pins(requirements):
 
 
 def pin_verta_and_cloudpickle(requirements):
-    """
-    Adds verta and cloudpickle to `requirements`, pinning their versions from the environment.
+    """Add verta and cloudpickle to `requirements`, pinning their versions from the environment.
 
     Model deserilization in most cases requires that ``verta`` and
     ``cloudpickle`` have the same versions as when the model was serialized.
@@ -270,48 +270,88 @@ def pin_verta_and_cloudpickle(requirements):
     ----------
     requirements : list of str
 
+    Returns
+    -------
+    list of str
+        Copy of `requirements` with pinned verta and cloudpickle.
+
+    """
+    requirements = copy.copy(requirements)
+
+    # replace git-installed verta (`pip install -e verta`) with "verta"
+    for i, req in enumerate(requirements):
+        if "VertaAI/modeldb.git" in req and "#egg=verta" in req:
+            # git+git is not installable
+            #     https://github.com/pypa/pip/issues/7554
+            #     https://github.com/pypa/pip/issues/9625
+            #     https://github.com/pypa/pip/pull/9436
+            #     https://github.com/pypa/pip/pull/9822
+            # git+ssh is not installable without ssh credentials
+            # TODO: maybe allow git+https because it's usable
+            requirements[i] = __about__.__title__
+            continue
+
+    for library, version in [
+        (__about__.__title__, __about__.__version__),  # verta
+        (cloudpickle.__name__, cloudpickle.__version__),  # cloudpickle
+    ]:
+        requirements = inject_requirement(requirements, library, version, error_on_conflict=False)
+
+    return requirements
+
+
+def inject_requirement(requirements, library, version, error_on_conflict=True):
+    """Return a copy of `requirements` with `library` pinned to `version`.
+
+    If `library` is already in `requirements` and has a version pin, this
+    function asserts that the pinned version matches the the current
+    environment's version.
+
+    If `library` is already in `requirements` without a version pin, it will
+    be pinned to the current environment's version.
+
+    Parameters
+    ----------
+    requirements : list of str
+        pip requirements.
+    library : str
+        Python library, e.g. "verta".
+    version : str
+        Desired version number, e.g. "0.20.0".
+    error_on_conflict : bool, default True
+        If true, raise a `ValueError` on version mismatches. Otherwise issue a
+        warning. Defaults to true.
+
+    Returns
+    -------
+    list of str
+        Copy of `requirements` with `library` pinned to `version`.
+
     Raises
     ------
     ValueError
-        If verta or cloudpickle already have a version pin specified in `requirements`, but it
-        conflicts with the version in the current environment.
+        If the provided library version conflicts with an already pinned version
+        of the library and `error_on_conflict` is True.
 
     """
-    for i, req in enumerate(requirements):
-        if req.startswith("-e git+git@github.com:VertaAI/modeldb.git"):
-            # `pip install -e modeldb/client/verta` can make `pip freeze` return
-            # this requirement item which is unusable by `pip install`
-            # https://github.com/pypa/pip/issues/7554
-            # https://github.com/pypa/pip/issues/9625
-            # https://github.com/pypa/pip/pull/9436
-            # https://github.com/pypa/pip/pull/9822
-            requirements[i] = __about__.__title__
-            break
+    requirements = copy.copy(requirements)
+    pinned_library_req = "{}=={}".format(library, version)
 
-    # add if not present
-    for library in [
-        __about__.__title__,
-        cloudpickle.__name__,
-    ]:
-        if not any(req.startswith(library) for req in requirements):
-            requirements.append(library)
-
-    # pin version
-    for library, our_ver in [
-        (__about__.__title__, __about__.__version__),
-        (cloudpickle.__name__, cloudpickle.__version__),
-    ]:
-        pinned_library_req = "{}=={}".format(library, our_ver)
+    if not any(req.startswith(library) for req in requirements):  # not present: add
+        requirements.append(pinned_library_req)
+    else:  # present: pin version
         for i, req in enumerate(requirements):
             if req.startswith(library):
                 if "==" in req:  # version pin: check version
                     their_ver = req.split('==')[-1]
-                    if our_ver != their_ver:  # versions conflict: raise exception
-                        raise ValueError(
-                            "Client is running with {} v{}, but the provided requirements specify v{};"
-                            " these must match".format(library, our_ver, their_ver)
-                        )
-                    else:  # versions match, so proceed
+                    if version != their_ver:  # versions conflict: raise exception
+                        msg = ("Client is running with {} v{}, but the provided requirements specify v{};"
+                               " these should match").format(library, version, their_ver)
+                        if error_on_conflict:
+                            raise ValueError(msg)
+                        else:
+                            warnings.warn(msg, stacklevel=2)
+                    else:  # versions match: no action needed
                         continue
                 # TODO: check other operators (>=, >, ...)
                 else:  # no version pin: set
@@ -320,6 +360,37 @@ def pin_verta_and_cloudpickle(requirements):
                         pinned_library_req,
                     )
                     continue
+
+    return requirements
+
+
+def remove_pinned_requirements(requirements, library_patterns):
+    """Remove pinned libraries matching `library_patterns` from `requirements`.
+
+    Parameters
+    ----------
+    requirements : list of str
+        pip requirements, usually directly from :meth:`get_pip_freeze`.
+    library_patterns : list of str
+        Regex patterns for libraries to remove.
+
+    Returns
+    -------
+    list of str
+        Copy of `requirements` with `library_patterns` removed.
+
+    """
+    # append == to specifically match version pins (and not @-style VCS installs)
+    library_patterns = map("{}==".format, library_patterns)
+    # compile regex to slightly speed up pattern-matching
+    library_patterns = list(map(re.compile, library_patterns))
+
+    return list(
+        filter(
+            lambda req: not any(pattern.match(req) for pattern in library_patterns),
+            requirements,
+        )
+    )
 
 
 def preserve_req_suffixes(requirement, pinned_library_req):

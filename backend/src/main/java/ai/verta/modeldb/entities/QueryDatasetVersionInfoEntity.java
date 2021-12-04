@@ -3,7 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.QueryDatasetVersionInfo;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.io.Serializable;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -19,13 +19,12 @@ import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "query_dataset_version_info")
-public class QueryDatasetVersionInfoEntity {
+public class QueryDatasetVersionInfoEntity implements Serializable {
 
   public QueryDatasetVersionInfoEntity() {}
 
   public QueryDatasetVersionInfoEntity(
-      String fieldType, QueryDatasetVersionInfo queryDatasetVersionInfo)
-      throws InvalidProtocolBufferException {
+      String fieldType, QueryDatasetVersionInfo queryDatasetVersionInfo) {
 
     setQuery(queryDatasetVersionInfo.getQuery());
     setQuery_template(queryDatasetVersionInfo.getQueryTemplate());
@@ -128,7 +127,7 @@ public class QueryDatasetVersionInfoEntity {
     this.num_records = num_records;
   }
 
-  public QueryDatasetVersionInfo getProtoObject() throws InvalidProtocolBufferException {
+  public QueryDatasetVersionInfo getProtoObject() {
     return QueryDatasetVersionInfo.newBuilder()
         .setQuery(getQuery())
         .setQueryTemplate(getQuery_template())

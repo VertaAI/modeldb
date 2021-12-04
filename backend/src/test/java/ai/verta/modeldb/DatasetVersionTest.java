@@ -1,6 +1,6 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestUser;
+import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestUser;
 import static org.junit.Assert.*;
 
 import ai.verta.common.ArtifactPart;

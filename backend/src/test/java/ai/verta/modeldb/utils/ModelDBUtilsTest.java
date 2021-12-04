@@ -4,7 +4,7 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.modeldb.CollaboratorUserInfo;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetCollaboratorResponseItem;
@@ -32,7 +32,7 @@ public class ModelDBUtilsTest {
   private static final String ORG_NAME = "org name";
   private static final String TEAM_NAME = "team_name";
   @Mock AuthService authService;
-  @Mock RoleService roleService;
+  @Mock MDBRoleService mdbRoleService;
 
   @Test
   public void getHydratedCollaboratorUserInfo() {
@@ -63,12 +63,12 @@ public class ModelDBUtilsTest {
             .build();
     userInfoMap.put(USER_ID, userInfo);
     Organization org = Organization.newBuilder().setId(ORG_ID).setName(ORG_NAME).build();
-    Mockito.when(roleService.getOrgById(ORG_ID)).thenReturn(org);
+    Mockito.when(mdbRoleService.getOrgById(ORG_ID)).thenReturn(org);
     Team team = Team.newBuilder().setId(TEAM_ID).setName(TEAM_NAME).build();
-    Mockito.when(roleService.getTeamById(TEAM_ID)).thenReturn(team);
+    Mockito.when(mdbRoleService.getTeamById(TEAM_ID)).thenReturn(team);
     List<CollaboratorUserInfo> info =
         ModelDBUtils.getHydratedCollaboratorUserInfo(
-            authService, roleService, collaboratorList, userInfoMap);
+            authService, mdbRoleService, collaboratorList, userInfoMap);
     Assert.assertEquals(
         Arrays.asList(
             CollaboratorUserInfo.newBuilder()

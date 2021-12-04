@@ -21,7 +21,6 @@ package ai.verta.modeldb.health;
 
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.health.v1.HealthCheckRequest;
@@ -60,7 +59,7 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
   @Override
   public void check(
       HealthCheckRequest request, StreamObserver<HealthCheckResponse> responseObserver) {
-    ServingStatus status = getServingStatus(request);
+    var status = getServingStatus(request);
     if (status == null) {
       responseObserver.onError(
           new StatusException(
@@ -109,32 +108,25 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       produces = "application/json")
   public ResponseEntity<String> check(@PathVariable("service") String service) {
     LOGGER.trace("Spring custom health check called");
-    try {
-      HealthCheckRequest request = HealthCheckRequest.newBuilder().setService(service).build();
-      ServingStatus status = getServingStatus(request);
-      if (status == null) {
-        LOGGER.error("Spring custom health check returned with unknown service");
-        throw new ResponseStatusException(
-            HttpStatus.INTERNAL_SERVER_ERROR,
-            "Unknown service found on health check request : '" + request.getService() + "'");
-      }
-
-      LOGGER.trace("Spring custom health check returned: {}", status);
-      HealthCheckResponse response = HealthCheckResponse.newBuilder().setStatus(status).build();
-      if (status.equals(ServingStatus.SERVING)) {
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(ModelDBUtils.getStringFromProtoObject(response));
-      } else {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(ModelDBUtils.getStringFromProtoObject(response));
-      }
-    } catch (InvalidProtocolBufferException ex) {
-      LOGGER.warn("Spring custom health check returned with response entity parsing", ex);
+    HealthCheckRequest request = HealthCheckRequest.newBuilder().setService(service).build();
+    var status = getServingStatus(request);
+    if (status == null) {
+      LOGGER.error("Spring custom health check returned with unknown service");
       throw new ResponseStatusException(
-          HttpStatus.EXPECTATION_FAILED,
-          "Unknown HealthCheckResponse parsing error : " + ex.getMessage());
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          "Unknown service found on health check request : '" + request.getService() + "'");
+    }
+
+    LOGGER.trace("Spring custom health check returned: {}", status);
+    HealthCheckResponse response = HealthCheckResponse.newBuilder().setStatus(status).build();
+    if (status.equals(ServingStatus.SERVING)) {
+      return ResponseEntity.ok()
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(ModelDBUtils.getStringFromProtoObject(response));
+    } else {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .contentType(MediaType.APPLICATION_JSON)
+          .body(ModelDBUtils.getStringFromProtoObject(response));
     }
   }
 }

@@ -18,11 +18,15 @@ import ai.verta.modeldb.versioning.TreeElem;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 
 public class ConfigContainer extends BlobContainer {
 
   private final ConfigBlob config;
+  private static final Logger LOGGER = LogManager.getLogger(ConfigContainer.class);
+  private static final String NAME_COMMON_FIELD = "name:";
 
   public ConfigContainer(BlobExpanded blobExpanded) {
     super(blobExpanded);
@@ -35,14 +39,14 @@ public class ConfigContainer extends BlobContainer {
       throws NoSuchAlgorithmException, ModelDBException {
     List<ConfigBlobEntity> hyperparameterBlobEntities = new LinkedList<>();
     List<ConfigBlobEntity> hyperparameterSetBlobEntities = new LinkedList<>();
-    int index = 0;
+    var index = 0;
     for (HyperparameterConfigBlob hyperparameterConfigBlob : config.getHyperparametersList()) {
       final String name = hyperparameterConfigBlob.getName();
       final HyperparameterValuesConfigBlob value = hyperparameterConfigBlob.getValue();
-      final HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntity =
+      final var hyperparameterElementConfigBlobEntity =
           getValueBlob(session, name, value, blobHashes);
       final String valueBlobHash = hyperparameterElementConfigBlobEntity.getBlobHash();
-      ConfigBlobEntity configBlobEntity =
+      var configBlobEntity =
           new ConfigBlobEntity(valueBlobHash, index++, hyperparameterElementConfigBlobEntity);
       hyperparameterBlobEntities.add(configBlobEntity);
     }
@@ -55,11 +59,11 @@ public class ConfigContainer extends BlobContainer {
         case CONTINUOUS:
           final ContinuousHyperparameterSetConfigBlob continuous =
               hyperparameterSetConfigBlob.getContinuous();
-          HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntityBegin =
+          var hyperparameterElementConfigBlobEntityBegin =
               getValueBlob(session, "", continuous.getIntervalBegin(), blobHashes);
-          HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntityEnd =
+          var hyperparameterElementConfigBlobEntityEnd =
               getValueBlob(session, "", continuous.getIntervalEnd(), blobHashes);
-          HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntityStep =
+          var hyperparameterElementConfigBlobEntityStep =
               getValueBlob(session, "", continuous.getIntervalStep(), blobHashes);
           hyperparameterSetBlobHash =
               computeContinuousSHA(
@@ -97,18 +101,22 @@ public class ConfigContainer extends BlobContainer {
 
           hyperparameterSetConfigBlobEntity.setHyperparameterSetConfigElementMapping(
               hyperparameterElementConfigBlobEntitySet.values());
-          hyperparameterElementConfigBlobEntitySet.values().stream()
-              .map(
-                  hyperparameterElementConfigBlobEntity ->
-                      "value:" + hyperparameterElementConfigBlobEntity.getBlobHash())
-              .reduce((s, s2) -> s + ":" + s2)
-              .orElseThrow(() -> new ModelDBException("Empty set found"));
+          var hecbesString =
+              hyperparameterElementConfigBlobEntitySet.values().stream()
+                  .map(
+                      hyperparameterElementConfigBlobEntity ->
+                          "value:" + hyperparameterElementConfigBlobEntity.getBlobHash())
+                  .reduce((s, s2) -> s + ":" + s2)
+                  .orElseThrow(() -> new ModelDBException("Empty set found"));
+          LOGGER.debug(
+              "Config container: hyperparameterElementConfigBlobEntitySet string: {}",
+              hecbesString);
           break;
         default:
           throw new ModelDBException(
               "Hyperparameter set " + name + " value has unknown type", Code.INTERNAL);
       }
-      ConfigBlobEntity configBlobEntity =
+      var configBlobEntity =
           new ConfigBlobEntity(
               hyperparameterSetBlobHash, index++, hyperparameterSetConfigBlobEntity);
       hyperparameterSetBlobEntities.add(configBlobEntity);
@@ -139,13 +147,15 @@ public class ConfigContainer extends BlobContainer {
   @Override
   public void processAttribute(
       Session session, Long repoId, String commitHash, boolean addAttribute)
-      throws ModelDBException {}
+      throws ModelDBException {
+    // attributes with config not implemented
+  }
 
   private String computeContinuousSHA(
       String name,
       Map<String, HyperparameterElementConfigBlobEntity> hyperparameterElementConfigBlobEntityMap)
       throws NoSuchAlgorithmException {
-    StringBuilder sb = new StringBuilder("name:" + name);
+    var sb = new StringBuilder(NAME_COMMON_FIELD + name);
     for (HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntity :
         hyperparameterElementConfigBlobEntityMap.values()) {
       sb.append(":entry:").append(hyperparameterElementConfigBlobEntity.getBlobHash());
@@ -159,7 +169,7 @@ public class ConfigContainer extends BlobContainer {
       String hyperparameterSetBlobHash,
       Set<String> blobHashes)
       throws ModelDBException {
-    HyperparameterSetConfigBlobEntity hyperparameterSetConfigBlobEntity =
+    var hyperparameterSetConfigBlobEntity =
         session.get(HyperparameterSetConfigBlobEntity.class, hyperparameterSetBlobHash);
     if (hyperparameterSetConfigBlobEntity == null) {
       hyperparameterSetConfigBlobEntity =
@@ -192,7 +202,7 @@ public class ConfigContainer extends BlobContainer {
       HyperparameterElementConfigBlobEntity hyperparameterElementConfigBlobEntityStep)
       throws NoSuchAlgorithmException {
     final String payload =
-        "name:"
+        NAME_COMMON_FIELD
             + name
             + ":begin:"
             + hyperparameterElementConfigBlobEntityBegin.getBlobHash()
@@ -210,7 +220,8 @@ public class ConfigContainer extends BlobContainer {
       Set<String> blobHashes)
       throws NoSuchAlgorithmException, ModelDBException {
     final String blobHash =
-        FileHasher.getSha("name:" + name + ":value:" + computeSHA(hyperparameterValuesConfigBlob));
+        FileHasher.getSha(
+            NAME_COMMON_FIELD + name + ":value:" + computeSHA(hyperparameterValuesConfigBlob));
     HyperparameterElementConfigBlobEntity entity =
         session.get(HyperparameterElementConfigBlobEntity.class, blobHash);
     if (entity == null) {

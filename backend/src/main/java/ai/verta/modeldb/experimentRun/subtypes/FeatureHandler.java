@@ -16,6 +16,8 @@ import org.apache.logging.log4j.Logger;
 
 public class FeatureHandler {
   private static Logger LOGGER = LogManager.getLogger(FeatureHandler.class);
+  private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
+  private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
 
   private final Executor executor;
   private final FutureJdbi jdbi;
@@ -48,8 +50,8 @@ public class FeatureHandler {
                         + "where entity_name=:entity_name and "
                         + entityIdReferenceColumn
                         + "=:entity_id")
-                .bind("entity_id", entityId)
-                .bind("entity_name", entityName)
+                .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                 .mapTo(String.class)
                 .list());
   }
@@ -91,8 +93,8 @@ public class FeatureHandler {
                     for (final var feature : featuresSet) {
                       batch
                           .bind("feature", feature)
-                          .bind("entity_id", entityId)
-                          .bind("entity_name", entityName)
+                          .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                           .add();
                     }
 
@@ -114,11 +116,11 @@ public class FeatureHandler {
                             + entityIdReferenceColumn
                             + " in (<entity_ids>)")
                     .bindList("entity_ids", entityIds)
-                    .bind("entity_name", entityName)
+                    .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                     .map(
                         (rs, ctx) ->
                             new AbstractMap.SimpleEntry<>(
-                                rs.getString("entity_id"),
+                                rs.getString(ENTITY_ID_QUERY_PARAM),
                                 Feature.newBuilder().setName(rs.getString("feature")).build()))
                     .list())
         .thenApply(MapSubtypes::from, executor);

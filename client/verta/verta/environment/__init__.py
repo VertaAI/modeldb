@@ -4,6 +4,7 @@
 from verta._internal_utils import documentation
 
 from ._environment import _Environment
+from ._docker import Docker
 from ._python import Python
 
 

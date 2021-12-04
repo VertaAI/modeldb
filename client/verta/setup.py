@@ -29,10 +29,10 @@ setup(
         "cloudpickle~=1.0",
         "googleapis-common-protos>=1.5, <2.0",
         "pathlib2>=2.2, <3.0",
-        "protobuf>=3.8, <4.0",
+        "protobuf>=3.8, <3.18",
         "pytimeparse>=1.1.8, <2.0",
-        "pyyaml>=5.1, <5.4",
-        "requests>=2.21, <3.0",
+        "pyyaml>=5.1, <6.0",
+        "requests>=2.21, <3.0"
     ],
     entry_points={
         "console_scripts": [

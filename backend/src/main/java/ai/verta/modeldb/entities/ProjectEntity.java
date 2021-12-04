@@ -5,27 +5,26 @@ import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
-import com.google.protobuf.InvalidProtocolBufferException;
+import java.io.Serializable;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import javax.persistence.*;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 
 @Entity
 @Table(name = "project")
-public class ProjectEntity {
+public class ProjectEntity implements Serializable {
 
   public ProjectEntity() {}
 
-  public ProjectEntity(Project project) throws InvalidProtocolBufferException {
+  public ProjectEntity(Project project) {
     setId(project.getId());
     setName(project.getName());
     setShort_name(project.getShortName());
@@ -335,12 +334,11 @@ public class ProjectEntity {
   }
 
   public Project getProtoObject(
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       AuthService authService,
       Map<Long, Workspace> cacheWorkspaceMap,
-      Map<String, GetResourcesResponseItem> getResourcesMap)
-      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
-    Project.Builder projectBuilder =
+      Map<String, GetResourcesResponseItem> getResourcesMap) {
+    var projectBuilder =
         Project.newBuilder()
             .setId(getId())
             .setName(getName())
@@ -370,7 +368,7 @@ public class ProjectEntity {
       projectResource = getResourcesMap.get(this.id);
     } else {
       projectResource =
-          roleService.getEntityResource(
+          mdbRoleService.getEntityResource(
               Optional.of(this.id), Optional.empty(), ModelDBServiceResourceTypes.PROJECT);
       if (getResourcesMap == null) {
         getResourcesMap = new HashMap<>();
@@ -397,6 +395,9 @@ public class ProjectEntity {
       case USER_ID:
         projectBuilder.setWorkspaceId(workspace.getUserId());
         projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+        break;
+      default:
+        // Do nothing
         break;
     }
 

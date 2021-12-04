@@ -6,9 +6,7 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -17,7 +15,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 public abstract class Reconciler<T> {
-  final Logger logger;
+  protected final Logger logger;
   protected final HashSet<T> elements = new HashSet<>();
   protected final LinkedList<T> order = new LinkedList<>();
   final Lock lock = new ReentrantLock();
@@ -56,13 +54,14 @@ public abstract class Reconciler<T> {
           }
         };
 
-    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    executor.scheduleAtFixedRate(runnable, 0, config.resyncPeriodSeconds, TimeUnit.SECONDS);
+    var executorService = Executors.newSingleThreadScheduledExecutor();
+    executorService.scheduleAtFixedRate(
+        runnable, 0, config.getResyncPeriodSeconds(), TimeUnit.SECONDS);
   }
 
   private void startWorkers() {
-    ExecutorService executor = Executors.newFixedThreadPool(config.workerCount);
-    for (int i = 0; i < config.workerCount; i++) {
+    var executorService = Executors.newFixedThreadPool(config.getWorkerCount());
+    for (var i = 0; i < config.getWorkerCount(); i++) {
       Runnable runnable =
           () -> {
             while (true) {
@@ -103,7 +102,7 @@ public abstract class Reconciler<T> {
               }
             }
           };
-      executor.execute(runnable);
+      executorService.execute(runnable);
     }
   }
 
@@ -126,13 +125,14 @@ public abstract class Reconciler<T> {
     try {
       while (elements.isEmpty()) notEmpty.await();
 
-      while (!elements.isEmpty() && ret.size() < config.batchSize) {
+      while (!elements.isEmpty() && ret.size() < config.getBatchSize()) {
         T obj = order.pop();
         elements.remove(obj);
         ret.add(obj);
       }
     } catch (InterruptedException ignored) {
-
+      // Restore interrupted state...
+      Thread.currentThread().interrupt();
     } finally {
       lock.unlock();
     }

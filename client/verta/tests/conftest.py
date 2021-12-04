@@ -19,11 +19,17 @@ import requests
 import verta
 from verta import Client
 from verta._internal_utils import _utils, _pip_requirements_utils
+from verta.environment import Python
 
 import hypothesis
 import pytest
 from . import constants, utils
 from . import clean_test_accounts
+from .env_fixtures import (
+    mock_env_dev_key_auth,
+    mock_env_jwt_auth,
+    mock_env_authn_missing,
+)
 
 
 RANDOM_SEED = 0
@@ -453,12 +459,20 @@ def dataset(client, created_entities):
     return dataset
 
 
+def registered_model_factory(client_param, created_entities_param):
+    model = client_param.get_or_create_registered_model()
+    created_entities_param.append(model)
+    return model
+
+
 @pytest.fixture
 def registered_model(client, created_entities):
-    model = client.get_or_create_registered_model()
-    created_entities.append(model)
+    return registered_model_factory(client, created_entities)
 
-    return model
+
+@pytest.fixture(scope="class")
+def class_registered_model(class_client, class_created_entities):
+    return registered_model_factory(class_client, class_created_entities)
 
 
 @pytest.fixture
@@ -508,13 +522,30 @@ def model_version(registered_model):
     yield registered_model.get_or_create_version()
 
 
+def endpoint_factory(client_param, created_entities_param):
+    path = _utils.generate_default_name()
+    endpoint = client_param.create_endpoint(path)
+    created_entities_param.append(endpoint)
+    return endpoint
+
+
 @pytest.fixture
 def endpoint(client, created_entities):
-    path = _utils.generate_default_name()
-    endpoint = client.create_endpoint(path)
-    created_entities.append(endpoint)
+    return endpoint_factory(client, created_entities)
 
-    return endpoint
+
+@pytest.fixture(scope="class")
+def class_endpoint_updated(class_client, class_registered_model, class_created_entities):
+    ep = endpoint_factory(class_client, class_created_entities)
+    mv = class_registered_model.get_or_create_version()
+    class EchoModel(object):
+        def predict(self, x):
+            return x
+    mv.log_model(EchoModel())
+    mv.log_environment(Python(requirements=[]))
+    ep.update(mv)
+    return ep
+
 
 
 @pytest.fixture

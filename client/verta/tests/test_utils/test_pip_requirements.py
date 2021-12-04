@@ -19,6 +19,12 @@ from verta._internal_utils import _pip_requirements_utils
 
 
 @st.composite
+def libraries(draw):
+    alphabet = string.ascii_letters + string.digits + "-_"
+    return draw(st.text(alphabet=alphabet, min_size=1))
+
+
+@st.composite
 def versions(draw):
     numbers = st.integers(min_value=0, max_value=(2 ** 31) - 1)
 
@@ -126,7 +132,77 @@ class TestPipRequirementsUtils:
         ) == "verta==0.20.0"
 
 
+class TestRemovePinnedRequirements:
+    @hypothesis.given(
+        library=libraries(),
+        other_library=libraries(),
+        version=versions(),
+    )
+    def test_remove_pinned_requirements(self, library, other_library, version):
+        hypothesis.assume(library != other_library)
+
+        pinned_library = "==".join([library, version])
+        pinned_other_library = "==".join([other_library, version])
+
+        filtered_requirements = _pip_requirements_utils.remove_pinned_requirements(
+            requirements=[pinned_library, pinned_other_library],
+            library_patterns=[library],
+        )
+        assert filtered_requirements == [pinned_other_library]
+
+    @hypothesis.example(
+        library="en-core-web-sm",
+        version=versions().example(),  # pylint: disable=no-member
+    )
+    @hypothesis.given(
+        library=st.from_regex(_pip_requirements_utils.SPACY_MODEL_PATTERN, fullmatch=True),
+        version=versions(),
+    )
+    def test_remove_spacy(self, library, version):
+        pinned_library = "==".join([library, version])
+
+        filtered_requirements = _pip_requirements_utils.remove_pinned_requirements(
+            requirements=[pinned_library],
+            library_patterns=[_pip_requirements_utils.SPACY_MODEL_PATTERN]
+        )
+        assert filtered_requirements == []
+
+
 class TestPinVertaAndCloudpickle:
+    @hypothesis.given(
+        library=libraries(),
+        version=versions(),
+        other_library=libraries(),
+    )
+    def test_inject_requirement(self, library, version, other_library):
+        # limitation of current implementation
+        # uses startswith() to avoid dealing with the ==, etc. operators
+        # which is fine since this is only used for verta & cloudpickle
+        hypothesis.assume(not other_library.startswith(library))
+
+        pinned_library_req = "{}=={}".format(library, version)
+
+        requirements = _pip_requirements_utils.inject_requirement(
+            [],
+            library,
+            version,
+        )
+        assert requirements == [pinned_library_req]
+
+        requirements = _pip_requirements_utils.inject_requirement(
+            [library],
+            library,
+            version,
+        )
+        assert requirements == [pinned_library_req]
+
+        requirements = _pip_requirements_utils.inject_requirement(
+            [other_library],
+            library,
+            version,
+        )
+        assert requirements == [other_library, pinned_library_req]
+
     def test_preserve_req_suffixes(self):
         # NOTE: the reqs here aren't technically valid themselves due to duplicates
         verta_reqs_suffixes = [
@@ -157,5 +233,5 @@ class TestPinVertaAndCloudpickle:
             for suffix in cloudpickle_reqs_suffixes
         ]
         expected_reqs = expected_verta_reqs + expected_cloudpickle_reqs
-        _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
+        reqs = _pip_requirements_utils.pin_verta_and_cloudpickle(reqs)
         assert reqs == expected_reqs

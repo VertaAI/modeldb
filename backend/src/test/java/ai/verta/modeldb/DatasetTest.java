@@ -414,7 +414,7 @@ public class DatasetTest extends TestsInit {
 
       if (testConfig.hasAuth()) {
         AddCollaboratorRequest addCollaboratorRequest =
-            CollaboratorTest.addCollaboratorRequestDataset(
+            CollaboratorUtils.addCollaboratorRequestDataset(
                 dataset,
                 authClientInterceptor.getClient1Email(),
                 CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
@@ -523,7 +523,7 @@ public class DatasetTest extends TestsInit {
     try {
 
       AddCollaboratorRequest addCollaboratorRequest =
-          CollaboratorTest.addCollaboratorRequestDataset(
+          CollaboratorUtils.addCollaboratorRequestDataset(
               dataset,
               authClientInterceptor.getClient1Email(),
               CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
@@ -1366,6 +1366,11 @@ public class DatasetTest extends TestsInit {
               .setPath("This is new added data artifact type in Google Pay datasets")
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion2.getId())
+              .setUploadCompleted(
+                  !testConfig
+                      .artifactStoreConfig
+                      .getArtifactStoreType()
+                      .equals(ModelDBConstants.S3))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1393,6 +1398,11 @@ public class DatasetTest extends TestsInit {
               .setPath("This is new added data artifact type in Google Pay datasets")
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion1.getId())
+              .setUploadCompleted(
+                  !testConfig
+                      .artifactStoreConfig
+                      .getArtifactStoreType()
+                      .equals(ModelDBConstants.S3))
               .build();
 
       logDatasetRequest =
@@ -1412,7 +1422,8 @@ public class DatasetTest extends TestsInit {
           experimentRun.getDateUpdated(),
           response.getExperimentRun().getDateUpdated());
 
-      ReconcilerInitializer.initialize(testConfig, services, testConfig.getJdbi(), handleExecutor);
+      ReconcilerInitializer.initialize(
+          testConfig, services, daos, testConfig.getJdbi(), handleExecutor);
 
       LastExperimentByDatasetId lastExperimentByDatasetId =
           LastExperimentByDatasetId.newBuilder().setDatasetId(dataset.getId()).build();
@@ -1567,6 +1578,11 @@ public class DatasetTest extends TestsInit {
               .setPath("This is new added data artifact type in Google Pay datasets")
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion2.getId())
+              .setUploadCompleted(
+                  !testConfig
+                      .artifactStoreConfig
+                      .getArtifactStoreType()
+                      .equals(ModelDBConstants.S3))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1594,6 +1610,11 @@ public class DatasetTest extends TestsInit {
               .setPath("This is new added data artifact type in Google Pay datasets")
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion1.getId())
+              .setUploadCompleted(
+                  !testConfig
+                      .artifactStoreConfig
+                      .getArtifactStoreType()
+                      .equals(ModelDBConstants.S3))
               .build();
 
       logDatasetRequest =

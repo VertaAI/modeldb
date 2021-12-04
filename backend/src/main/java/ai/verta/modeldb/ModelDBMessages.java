@@ -1,34 +1,50 @@
 package ai.verta.modeldb;
 
-public interface ModelDBMessages {
-  String USER_NOT_FOUND_ERROR_MSG = "Could not find owner details for {}";
-  String EXP_RUN_RECORD_COUNT_MSG = "ExperimentRunPaginationDTO record count : {}";
-  String PROJECT_RECORD_COUNT_MSG = "ProjectPaginationDTO record count : {}";
-  String DATASET_RECORD_COUNT_MSG = "DatasetPaginationDTO record count : {}";
-  String MAPPING_FOUND_MSG = "Collaborator mappings found in Collaborator entity";
-  String DATASET_UPDATE_SUCCESSFULLY_MSG = "Dataset updated successfully";
-  String DATA_VERSION_NOT_FOUND_ERROR_MSG = "DatasetVersion not found for given ID";
-  String EXPERIMENT_NOT_FOUND_ERROR_MSG = "Experiment not found for given ID : ";
-  String EXP_RUN_NOT_FOUND_ERROR_MSG = "ExperimentRun not found for given ID";
-  String JOB_NOT_FOUND_ERROR_MSG = "Job not found for given ID";
-  String GETTING_PROJECT_BY_ID_MSG_STR = "Got Project by Id successfully";
-  String GET_DATASET_VERSION_MSG = "Getting dataset version.";
-  String VALUE_ALREADY_PRESENT_IN_DATASET_MSG = "Updated value is already present in Dataset";
-  String ACCESS_IS_DENIED_DATASET_VERSION_ENTITIES_MSG =
-      "Access is denied. User is unauthorized for given DatasetVersion entities : ";
-  String ACCESS_IS_DENIDE_DATASET_ENTITITY_MSG =
-      "Access is denied. User is unauthorized for given Dataset entity";
-  String LOCATION_TYPE_NOT_MATCH_OF_PATH_DATASET_VERSION_INFO =
-      "Location type of PathDatasetVersionInfo does not match with PathDatasetVersionInfo of parent datsetVersion";
-  String INVALID_DATSET_TYPE = "Invalid or missing Dataset Type in CreateDatasetVersion request";
-  String DATASET_ID_NOT_FOUND_IN_REQUEST = "Dataset id not found";
-  String DATASET_NAME_NOT_FOUND_IN_REQUEST = "Dataset name not found";
-  String DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST = "Dataset id not found";
-  String DATASET_VERSION_TYPE_NOT_MATCH_WITH_DATSET_TYPE =
-      "Dataset version type does not match containing dataset type";
-  String ACCESSIBLE_DATASET_IN_SERVICE = "Accessible datasets in service : {}";
-  String DATSET_ALREADY_EXISTS_IN_DATABASE = "Dataset already exists in database";
-  String MODIFICATION_OF_ORG_ADMIN_COLLABORATOR_DENIED =
-      "Can not modify collaboration settings of organization admin user.";
-  String PROJECT_NOT_FOUND_FOR_ID = "Project not found for given ID";
+public abstract class ModelDBMessages {
+  private ModelDBMessages() {}
+
+  public static final String USER_NOT_FOUND_ERROR_MSG = "Could not find owner details for {}";
+  public static final String EXP_RUN_RECORD_COUNT_MSG =
+      "ExperimentRunPaginationDTO record count : {}";
+  public static final String PROJECT_RECORD_COUNT_MSG = "ProjectPaginationDTO record count : {}";
+  public static final String DATASET_RECORD_COUNT_MSG = "DatasetPaginationDTO record count : {}";
+  public static final String DATASET_UPDATE_SUCCESSFULLY_MSG = "Dataset updated successfully";
+  public static final String DATA_VERSION_NOT_FOUND_ERROR_MSG =
+      "DatasetVersion not found for given ID";
+  public static final String EXPERIMENT_NOT_FOUND_ERROR_MSG =
+      "Experiment not found for given ID : ";
+  public static final String EXP_RUN_NOT_FOUND_ERROR_MSG = "ExperimentRun not found for given ID";
+  public static final String GETTING_PROJECT_BY_ID_MSG_STR = "Got Project by Id successfully";
+  public static final String DATASET_ID_NOT_FOUND_IN_REQUEST = "Dataset id not found";
+  public static final String DATASET_NAME_NOT_FOUND_IN_REQUEST = "Dataset name not found";
+  public static final String DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST = "Dataset id not found";
+  public static final String ACCESSIBLE_DATASET_IN_SERVICE = "Accessible datasets in service : {}";
+  public static final String PROJECT_NOT_FOUND_FOR_ID = "Project not found for given ID";
+  public static final String ARTIFACT_STORE_DISABLED_LOGS = "Artifact store is disabled";
+  public static final String BUCKET_DOES_NOT_EXISTS = "Bucket does not exists";
+  public static final String ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID =
+      "Access is denied. Experiment not found for given id : ";
+  public static final String PERMISSION_DENIED = "Permission denied";
+  public static final String UNIMPLEMENTED = "Unimplemented";
+  public static final String ENTITY_ID_IS_EMPTY_ERROR = "Entity id is empty";
+  public static final String UNKNOWN_VALUE_TYPE_RECOGNIZED_ERROR =
+      "Unknown 'Value' type recognized";
+  public static final String ITEMS_NOT_SPECIFIED_ERROR = "Items not specified";
+  public static final String ACTIVE_REQUEST_COUNT_TRACE = "Active Request count {}";
+  public static final String PROJECT_ID_NOT_PRESENT_ERROR = "Project ID not present";
+  public static final String PROJECT_NOT_FOUND_FOR_GIVEN_ID_ERROR =
+      "Project not found for given ID: ";
+  public static final String ERROR_WHILE_INSERTION_ENTRY_ON_MODEL_DB_DEPLOYMENT_INFO_ERROR =
+      "Error while insertion entry on ModelDB deployment info : {}";
+  public static final String ERROR_WHILE_GETTING_DB_CONNECTION_ERROR =
+      "Error while getting DB connection : {}";
+  public static final String SWITCH_CASE_ARTIFACTS_DEBUG = "switch case : Artifacts";
+  public static final String SWITCH_CASE_DATASETS_DEBUG = "switch case : Datasets";
+  public static final String SWITCH_CASE_ATTRIBUTES_DEBUG = "switch case : Attributes";
+  public static final String SWITCH_CASE_HYPERPARAMETERS_DEBUG = "switch case : Hyperparameters";
+  public static final String SWITCH_CASE_METRICS_DEBUG = "switch case : Metrics";
+  public static final String SWITCH_CASE_OBSERVATION_DEBUG = "switch case : Observation";
+  public static final String SWITCH_CASE_FEATURE_DEBUG = "switch case : Feature";
+  public static final String SWITCH_CASE_TAGS_DEBUG = "switch case : tags";
+  public static final String DATASET_VERSION_NOT_FOUND_ERROR = "DatasetVersion not found";
 }

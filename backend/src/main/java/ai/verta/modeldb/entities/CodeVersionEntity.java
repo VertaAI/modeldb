@@ -3,6 +3,7 @@ package ai.verta.modeldb.entities;
 import ai.verta.common.CodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +16,7 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "code_version")
-public class CodeVersionEntity {
+public class CodeVersionEntity implements Serializable {
 
   public CodeVersionEntity() {}
 
@@ -86,7 +87,7 @@ public class CodeVersionEntity {
   }
 
   public CodeVersion getProtoObject() {
-    CodeVersion.Builder codeVersionBuilder = CodeVersion.newBuilder().setDateLogged(date_logged);
+    var codeVersionBuilder = CodeVersion.newBuilder().setDateLogged(date_logged);
     if (git_snapshot != null) {
       codeVersionBuilder.setGitSnapshot(git_snapshot.getProtoObject());
     } else if (code_archive != null) {

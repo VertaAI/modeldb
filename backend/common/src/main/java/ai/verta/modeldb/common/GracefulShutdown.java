@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.apache.catalina.connector.Connector;
@@ -13,7 +12,7 @@ import org.springframework.context.event.ContextClosedEvent;
 public class GracefulShutdown
     implements TomcatConnectorCustomizer, ApplicationListener<ContextClosedEvent> {
 
-  private volatile Connector connector;
+  private Connector connector;
   private long shutdownTimeout;
   private static final Logger LOGGER = LogManager.getLogger(GracefulShutdown.class);
 
@@ -29,42 +28,46 @@ public class GracefulShutdown
   @Override
   public void onApplicationEvent(ContextClosedEvent event) {
     this.connector.pause();
-    Executor executor = this.connector.getProtocolHandler().getExecutor();
+    var executor = this.connector.getProtocolHandler().getExecutor();
     if (executor instanceof ThreadPoolExecutor) {
       try {
-        ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
+        var threadPoolExecutor = (ThreadPoolExecutor) executor;
         int nfsActiveRequestCount = threadPoolExecutor.getActiveCount();
 
         while (nfsActiveRequestCount > 0) {
           nfsActiveRequestCount = threadPoolExecutor.getActiveCount();
-          System.err.println("NFS Active Request Count in while: " + nfsActiveRequestCount);
-          try {
-            Thread.sleep(1000); // wait for 1s
-          } catch (InterruptedException e) {
-            LOGGER.error(e.getMessage(), e);
-            // Restore interrupted state...
-            Thread.currentThread().interrupt();
-          }
+          LOGGER.info("NFS Active Request Count in while: {}", nfsActiveRequestCount);
+          waitForSomeTime();
         }
 
         threadPoolExecutor.shutdown();
         if (!threadPoolExecutor.awaitTermination(shutdownTimeout, TimeUnit.SECONDS)) {
-          System.err.println(
+          LOGGER.info(
               "NFS Server thread pool did not shut down gracefully within "
-                  + shutdownTimeout
-                  + " seconds. Proceeding with forceful shutdown");
+                  + "{} seconds. Proceeding with forceful shutdown",
+              shutdownTimeout);
 
           threadPoolExecutor.shutdownNow();
 
           if (!threadPoolExecutor.awaitTermination(shutdownTimeout, TimeUnit.SECONDS)) {
-            System.err.println("NFS Server thread pool did not terminate");
+            LOGGER.info("NFS Server thread pool did not terminate");
           }
         } else {
-          System.err.println("*** NFS Server Shutdown ***");
+          LOGGER.info("*** NFS Server Shutdown ***");
         }
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       }
+    }
+  }
+
+  private void waitForSomeTime() {
+    try {
+      Thread.sleep(1000); // wait for 1s
+    } catch (InterruptedException e) {
+      LOGGER.error(e.getMessage(), e);
+      // Restore interrupted state...
+      Thread.currentThread().interrupt();
     }
   }
 }

@@ -6,9 +6,9 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
+import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,14 +24,13 @@ import org.apache.logging.log4j.Logger;
 
 @Entity
 @Table(name = "attribute")
-public class AttributeEntity {
+public class AttributeEntity implements Serializable {
 
   private static Logger LOGGER = LogManager.getLogger(AttributeEntity.class);
 
   public AttributeEntity() {}
 
-  public AttributeEntity(Object entity, String fieldType, KeyValue keyValue)
-      throws InvalidProtocolBufferException {
+  public AttributeEntity(Object entity, String fieldType, KeyValue keyValue) {
     setKey(keyValue.getKey());
     setValue(ModelDBUtils.getStringFromProtoObject(keyValue.getValue()));
     setValue_type(keyValue.getValueTypeValue());
@@ -210,14 +209,9 @@ public class AttributeEntity {
     return field_type;
   }
 
-  public KeyValue getProtoObj() throws InvalidProtocolBufferException {
-    Builder valueBuilder = Value.newBuilder();
-    try {
-      valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(value, valueBuilder);
-    } catch (InvalidProtocolBufferException e) {
-      LOGGER.warn("Error generating builder for {}", value);
-      throw e;
-    }
+  public KeyValue getProtoObj() {
+    var valueBuilder = Value.newBuilder();
+    valueBuilder = (Builder) CommonUtils.getProtoObjectFromString(value, valueBuilder);
     return KeyValue.newBuilder()
         .setKey(key)
         .setValue(valueBuilder.build())

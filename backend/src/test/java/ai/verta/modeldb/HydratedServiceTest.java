@@ -1,7 +1,7 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProject;
-import static ai.verta.modeldb.CollaboratorTest.addCollaboratorRequestProjectInterceptor;
+import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProject;
+import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectInterceptor;
 import static org.junit.Assert.*;
 
 import ai.verta.common.*;
@@ -2992,15 +2992,15 @@ public class HydratedServiceTest extends TestsInit {
           hydratedServiceBlockingStub.findHydratedProjects(findProjects);
       List<Project> projectList = new ArrayList<>();
       for (HydratedProject hydratedProject : response.getHydratedProjectsList()) {
-        projectList.add(hydratedProject.getProject());
+        if (projectsMap.containsKey(hydratedProject.getProject().getId())) {
+          projectList.add(hydratedProject.getProject());
+        }
       }
       LOGGER.info("FindProjects Response : " + projectList.size());
       assertEquals("Project count not match with expected project count", 0, projectList.size());
 
       assertEquals(
-          "Total records count not matched with expected records count",
-          0,
-          response.getTotalRecords());
+          "Total records count not matched with expected records count", 0, projectList.size());
     } finally {
       for (String projectId : firstProjectMap.keySet()) {
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();

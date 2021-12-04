@@ -7,7 +7,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.config.Config;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
@@ -15,7 +15,7 @@ import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.S3KeyFunction;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.VersioningUtils;
-import com.google.protobuf.InvalidProtocolBufferException;
+import io.grpc.Status;
 import java.util.*;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -26,15 +26,17 @@ import org.hibernate.Session;
 
 public class ArtifactHandler extends ArtifactHandlerBase {
   private static Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
+  private static final String KEY_S_NOT_LOGGED_ERROR = "Key %s not logged";
 
   private final CodeVersionHandler codeVersionHandler;
   private final DatasetHandler datasetHandler;
-  private final Config config = App.getInstance().config;
+  private final MDBConfig mdbConfig = App.getInstance().mdbConfig;
 
   private final ArtifactStoreDAO artifactStoreDAO;
   private final DatasetVersionDAO datasetVersionDAO;
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
+  private final int artifactEntityType;
 
   public ArtifactHandler(
       Executor executor,
@@ -49,6 +51,14 @@ public class ArtifactHandler extends ArtifactHandlerBase {
     this.datasetHandler = datasetHandler;
     this.datasetVersionDAO = datasetVersionDAO;
     this.artifactStoreDAO = artifactStoreDAO;
+
+    if (entityName.equals("ProjectEntity")) {
+      this.artifactEntityType = ArtifactPartEntity.PROJECT_ARTIFACT;
+    } else if (entityName.equals("ExperimentRunEntity")) {
+      this.artifactEntityType = ArtifactPartEntity.EXP_RUN_ARTIFACT;
+    } else {
+      throw new ModelDBException("Invalid entity type for ArtifactPart", Status.Code.INTERNAL);
+    }
   }
 
   public InternalFuture<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
@@ -69,12 +79,12 @@ public class ArtifactHandler extends ArtifactHandlerBase {
         .thenCompose(
             unused -> {
               final InternalFuture<Map.Entry<String, String>> urlInfo;
-              String errorMessage = null;
+              String errorMessage;
 
               /*Process code*/
               if (request.getArtifactType() == ArtifactTypeEnum.ArtifactType.CODE) {
                 errorMessage =
-                    "Code versioning artifact not found at experimentRun, experiment and project level";
+                    String.format("Code versioning artifact not found at %s level", entityName);
                 urlInfo =
                     getUrlForCode(request)
                         .thenApply(s3Key -> new AbstractMap.SimpleEntry<>(s3Key, null), executor);
@@ -83,13 +93,15 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                 urlInfo = getUrlForData(request);
               } else {
                 errorMessage =
-                    "ExperimentRun ID "
-                        + request.getId()
-                        + " does not have the artifact "
-                        + request.getKey();
+                    String.format(
+                        "%s ID "
+                            + request.getId()
+                            + " does not have the artifact "
+                            + request.getKey(),
+                        entityName);
 
                 urlInfo =
-                    getExperimentRunArtifactS3PathAndMultipartUploadID(
+                    getEntityArtifactS3PathAndMultipartUploadID(
                         request.getId(),
                         request.getKey(),
                         request.getPartNumber(),
@@ -105,28 +117,25 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                       throw new NotFoundException(finalErrorMessage);
                     }
 
-                    GetUrlForArtifact.Response response =
-                        artifactStoreDAO.getUrlForArtifactMultipart(
-                            s3Key, request.getMethod(), request.getPartNumber(), uploadId);
-
-                    return response;
+                    return artifactStoreDAO.getUrlForArtifactMultipart(
+                        s3Key, request.getMethod(), request.getPartNumber(), uploadId);
                   },
                   executor);
             },
             executor);
   }
 
-  private InternalFuture<Map.Entry<String, String>>
-      getExperimentRunArtifactS3PathAndMultipartUploadID(
-          String experimentRunId, String key, long partNumber, S3KeyFunction initializeMultipart) {
-    return getArtifactId(experimentRunId, key)
+  private InternalFuture<Map.Entry<String, String>> getEntityArtifactS3PathAndMultipartUploadID(
+      String entityId, String key, long partNumber, S3KeyFunction initializeMultipart) {
+    return getArtifactId(entityId, key)
         .thenApply(
             maybeId -> {
               final var id =
                   maybeId.orElseThrow(
-                      () -> new InvalidArgumentException("Key " + key + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+                      () ->
+                          new InvalidArgumentException(String.format(KEY_S_NOT_LOGGED_ERROR, key)));
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 return getS3PathAndMultipartUploadId(
                     session, artifactEntity, partNumber != 0, initializeMultipart);
@@ -142,7 +151,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified
-        && config.artifactStoreConfig.artifactStoreType.equals(ModelDBConstants.S3)) {
+        && mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {
@@ -160,9 +169,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
           || artifactEntity.isUploadCompleted()) {
         session.beginTransaction();
         VersioningUtils.getArtifactPartEntities(
-                session,
-                String.valueOf(artifactEntity.getId()),
-                ArtifactPartEntity.EXP_RUN_ARTIFACT)
+                session, String.valueOf(artifactEntity.getId()), this.artifactEntityType)
             .forEach(session::delete);
         artifactEntity.setUploadId(uploadId);
         artifactEntity.setUploadCompleted(false);
@@ -190,16 +197,12 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                         artifacts -> {
                           if (artifacts.isEmpty()) {
                             throw new InvalidArgumentException(
-                                "Key " + request.getKey() + " not logged");
+                                String.format(KEY_S_NOT_LOGGED_ERROR, request.getKey()));
                           }
-                          try {
-                            return new AbstractMap.SimpleEntry<>(
-                                datasetVersionDAO.getUrlForDatasetVersion(
-                                    artifacts.get(0).getLinkedArtifactId(), request.getMethod()),
-                                null);
-                          } catch (InvalidProtocolBufferException e) {
-                            throw new ModelDBException(e);
-                          }
+                          return new AbstractMap.SimpleEntry<>(
+                              datasetVersionDAO.getUrlForDatasetVersion(
+                                  artifacts.get(0).getLinkedArtifactId(), request.getMethod()),
+                              null);
                         },
                         executor),
             executor);
@@ -209,9 +212,9 @@ public class ArtifactHandler extends ArtifactHandlerBase {
     return codeVersionHandler
         .getCodeVersion(request.getId())
         .thenApply(
-            maybeExprRun ->
-                maybeExprRun
-                    .map(exprRun -> exprRun.getCodeArchive().getPath())
+            maybeCodeVersion ->
+                maybeCodeVersion
+                    .map(codeVersion -> codeVersion.getCodeArchive().getPath())
                     .orElseThrow(
                         () -> new InvalidArgumentException("Code version has not been logged")),
             executor);
@@ -224,15 +227,16 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               final var id =
                   maybeId.orElseThrow(
                       () ->
-                          new InvalidArgumentException("Key " + request.getKey() + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+                          new InvalidArgumentException(
+                              String.format(KEY_S_NOT_LOGGED_ERROR, request.getKey())));
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 VersioningUtils.saveArtifactPartEntity(
                     request.getArtifactPart(),
                     session,
                     String.valueOf(artifactEntity.getId()),
-                    ArtifactPartEntity.EXP_RUN_ARTIFACT);
+                    this.artifactEntityType);
               }
             },
             executor);
@@ -246,18 +250,16 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               final var id =
                   maybeId.orElseThrow(
                       () ->
-                          new InvalidArgumentException("Key " + request.getKey() + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+                          new InvalidArgumentException(
+                              String.format(KEY_S_NOT_LOGGED_ERROR, request.getKey())));
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 Set<ArtifactPartEntity> artifactPartEntities =
                     VersioningUtils.getArtifactPartEntities(
-                        session,
-                        String.valueOf(artifactEntity.getId()),
-                        ArtifactPartEntity.EXP_RUN_ARTIFACT);
-                ;
-                GetCommittedArtifactParts.Response.Builder response =
-                    GetCommittedArtifactParts.Response.newBuilder();
+                        session, String.valueOf(artifactEntity.getId()), this.artifactEntityType);
+
+                var response = GetCommittedArtifactParts.Response.newBuilder();
                 artifactPartEntities.forEach(
                     artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
                 return response.build();
@@ -273,20 +275,19 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               final var id =
                   maybeId.orElseThrow(
                       () ->
-                          new InvalidArgumentException("Key " + request.getKey() + " not logged"));
-              try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final ArtifactEntity artifactEntity =
+                          new InvalidArgumentException(
+                              String.format(KEY_S_NOT_LOGGED_ERROR, request.getKey())));
+              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+                final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
                 if (artifactEntity.getUploadId() == null) {
-                  String message =
+                  var message =
                       "Multipart wasn't initialized OR Multipart artifact already committed";
                   throw new InvalidArgumentException(message);
                 }
                 Set<ArtifactPartEntity> artifactPartEntities =
                     VersioningUtils.getArtifactPartEntities(
-                        session,
-                        String.valueOf(artifactEntity.getId()),
-                        ArtifactPartEntity.EXP_RUN_ARTIFACT);
+                        session, String.valueOf(artifactEntity.getId()), this.artifactEntityType);
                 final var partETags =
                     artifactPartEntities.stream()
                         .map(ArtifactPartEntity::toPartETag)

@@ -45,6 +45,7 @@ import ai.verta.modeldb.LogMetrics;
 import ai.verta.modeldb.LogObservations;
 import ai.verta.modeldb.LogVersionedInput;
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.UpdateExperimentRunDescription;
 import ai.verta.modeldb.VersioningEntry;
@@ -86,6 +87,7 @@ import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
@@ -101,7 +103,6 @@ import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import java.util.ArrayList;
@@ -124,6 +125,7 @@ import org.apache.logging.log4j.Logger;
 
 public class FutureExperimentRunDAO {
   private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
+  private static final String EXPERIMENT_RUN_ENTITY_NAME = "ExperimentRunEntity";
 
   private final Executor executor;
   private final FutureJdbi jdbi;
@@ -167,31 +169,31 @@ public class FutureExperimentRunDAO {
     this.config = config;
     this.trialConfig = trialConfig;
 
-    attributeHandler = new AttributeHandler(executor, jdbi, "ExperimentRunEntity");
+    attributeHandler = new AttributeHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     hyperparametersHandler =
-        new KeyValueHandler(executor, jdbi, "hyperparameters", "ExperimentRunEntity");
-    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", "ExperimentRunEntity");
+        new KeyValueHandler(executor, jdbi, "hyperparameters", EXPERIMENT_RUN_ENTITY_NAME);
+    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", EXPERIMENT_RUN_ENTITY_NAME);
     observationHandler = new ObservationHandler(executor, jdbi);
-    tagsHandler = new TagsHandler(executor, jdbi, "ExperimentRunEntity");
-    codeVersionHandler = new CodeVersionHandler(executor, jdbi);
-    datasetHandler = new DatasetHandler(executor, jdbi, "ExperimentRunEntity");
+    tagsHandler = new TagsHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
+    codeVersionHandler = new CodeVersionHandler(executor, jdbi, "experiment_run");
+    datasetHandler = new DatasetHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     artifactHandler =
         new ArtifactHandler(
             executor,
             jdbi,
-            "ExperimentRunEntity",
+            EXPERIMENT_RUN_ENTITY_NAME,
             codeVersionHandler,
             datasetHandler,
             artifactStoreDAO,
             datasetVersionDAO);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
-    featureHandler = new FeatureHandler(executor, jdbi, "ExperimentRunEntity");
-    environmentHandler = new EnvironmentHandler(executor, jdbi, "ExperimentRunEntity");
+    featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
+    environmentHandler = new EnvironmentHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     privilegedDatasetsHandler = new FilterPrivilegedDatasetsHandler(executor, jdbi);
     versionInputHandler =
         new VersionInputHandler(
-            executor, jdbi, "ExperimentRunEntity", repositoryDAO, commitDAO, blobDAO);
+            executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME, repositoryDAO, commitDAO, blobDAO);
     privilegedVersionedInputsHandler = new FilterPrivilegedVersionedInputsHandler(executor, jdbi);
     createExperimentRunHandler =
         new CreateExperimentRunHandler(
@@ -211,9 +213,10 @@ public class FutureExperimentRunDAO {
             versionInputHandler);
     hyperparametersFromConfigHandler =
         new HyperparametersFromConfigHandler(
-            executor, jdbi, "hyperparameters", "ExperimentRunEntity");
+            executor, jdbi, "hyperparameters", EXPERIMENT_RUN_ENTITY_NAME);
     codeVersionFromBlobHandler =
-        new CodeVersionFromBlobHandler(executor, jdbi, config.populateConnectionsBasedOnPrivileges);
+        new CodeVersionFromBlobHandler(
+            executor, jdbi, config.isPopulateConnectionsBasedOnPrivileges());
   }
 
   public InternalFuture<Void> deleteObservations(DeleteObservations request) {
@@ -518,7 +521,7 @@ public class FutureExperimentRunDAO {
                   .thenAccept(
                       allowed -> {
                         if (!allowed) {
-                          throw new PermissionDeniedException("Permission denied");
+                          throw new PermissionDeniedException(ModelDBMessages.PERMISSION_DENIED);
                         }
                       },
                       executor);
@@ -528,7 +531,7 @@ public class FutureExperimentRunDAO {
                   .thenAccept(
                       allowed -> {
                         if (!allowed) {
-                          throw new PermissionDeniedException("Permission denied");
+                          throw new PermissionDeniedException(ModelDBMessages.PERMISSION_DENIED);
                         }
                       },
                       executor);
@@ -561,7 +564,7 @@ public class FutureExperimentRunDAO {
       Optional<List<String>> resourceIds,
       Long workspaceId,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    ResourceType resourceType =
+    var resourceType =
         ResourceType.newBuilder()
             .setModeldbServiceResourceType(modelDBServiceResourceTypes)
             .build();
@@ -767,31 +770,25 @@ public class FutureExperimentRunDAO {
         InternalFuture.supplyAsync(
             () -> {
               final var localQueryContext = new QueryFilterContext();
-              localQueryContext.getConditions().add("experiment_run.deleted = :deleted");
+              localQueryContext.getConditions().add("deleted = :deleted");
               localQueryContext.getBinds().add(q -> q.bind("deleted", false));
 
               if (!request.getProjectId().isEmpty()) {
-                localQueryContext
-                    .getConditions()
-                    .add("experiment_run.project_id=:request_project_id");
+                localQueryContext.getConditions().add("project_id=:request_project_id");
                 localQueryContext
                     .getBinds()
                     .add(q -> q.bind("request_project_id", request.getProjectId()));
               }
 
               if (!request.getExperimentId().isEmpty()) {
-                localQueryContext
-                    .getConditions()
-                    .add("experiment_run.experiment_id=:request_experiment_id");
+                localQueryContext.getConditions().add("experiment_id=:request_experiment_id");
                 localQueryContext
                     .getBinds()
                     .add(q -> q.bind("request_experiment_id", request.getExperimentId()));
               }
 
               if (!request.getExperimentRunIdsList().isEmpty()) {
-                localQueryContext
-                    .getConditions()
-                    .add("experiment_run.id in (<request_experiment_run_ids>)");
+                localQueryContext.getConditions().add("id in (<request_experiment_run_ids>)");
                 localQueryContext
                     .getBinds()
                     .add(
@@ -842,7 +839,7 @@ public class FutureExperimentRunDAO {
                           return jdbi.withHandle(
                                   handle -> {
                                     var sql =
-                                        "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id, experiment_run.version_number from experiment_run";
+                                        "select id, date_created, date_updated, experiment_id, name, project_id, description, start_time, end_time, owner, environment, code_version, job_id, version_number from experiment_run";
 
                                     // Add the sorting tables
                                     for (final var item :
@@ -851,7 +848,7 @@ public class FutureExperimentRunDAO {
                                       if (item.getValue().getTable() != null) {
                                         sql +=
                                             String.format(
-                                                " left join (%s) as join_table_%d on experiment_run.id=join_table_%d.id ",
+                                                " left join (%s) as join_table_%d on id=join_table_%d.runId ",
                                                 item.getValue().getTable(),
                                                 item.getIndex(),
                                                 item.getIndex());
@@ -902,7 +899,11 @@ public class FutureExperimentRunDAO {
                                       final var offset =
                                           (request.getPageNumber() - 1) * request.getPageLimit();
                                       final var limit = request.getPageLimit();
-                                      sql += " LIMIT :limit OFFSET :offset";
+                                      if (config.getDatabase().getRdbConfiguration().isMssql()) {
+                                        sql += " OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY ";
+                                      } else {
+                                        sql += " LIMIT :limit OFFSET :offset";
+                                      }
                                       queryContext.addBind(q -> q.bind("limit", limit));
                                       queryContext.addBind(q -> q.bind("offset", offset));
                                     }
@@ -913,50 +914,30 @@ public class FutureExperimentRunDAO {
                                     return query
                                         .map(
                                             (rs, ctx) -> {
-                                              ExperimentRun.Builder runBuilder =
+                                              var runBuilder =
                                                   ExperimentRun.newBuilder()
-                                                      .setId(rs.getString("experiment_run.id"))
-                                                      .setProjectId(
-                                                          rs.getString("experiment_run.project_id"))
+                                                      .setId(rs.getString("id"))
+                                                      .setProjectId(rs.getString("project_id"))
                                                       .setExperimentId(
-                                                          rs.getString(
-                                                              "experiment_run.experiment_id"))
-                                                      .setName(rs.getString("experiment_run.name"))
-                                                      .setDescription(
-                                                          rs.getString(
-                                                              "experiment_run.description"))
-                                                      .setDateUpdated(
-                                                          rs.getLong("experiment_run.date_updated"))
-                                                      .setDateCreated(
-                                                          rs.getLong("experiment_run.date_created"))
-                                                      .setStartTime(
-                                                          rs.getLong("experiment_run.start_time"))
-                                                      .setEndTime(
-                                                          rs.getLong("experiment_run.end_time"))
-                                                      .setOwner(
-                                                          rs.getString("experiment_run.owner"))
-                                                      .setCodeVersion(
-                                                          rs.getString(
-                                                              "experiment_run.code_version"))
-                                                      .setJobId(
-                                                          rs.getString("experiment_run.job_id"))
+                                                          rs.getString("experiment_id"))
+                                                      .setName(rs.getString("name"))
+                                                      .setDescription(rs.getString("description"))
+                                                      .setDateUpdated(rs.getLong("date_updated"))
+                                                      .setDateCreated(rs.getLong("date_created"))
+                                                      .setStartTime(rs.getLong("start_time"))
+                                                      .setEndTime(rs.getLong("end_time"))
+                                                      .setOwner(rs.getString("owner"))
+                                                      .setCodeVersion(rs.getString("code_version"))
+                                                      .setJobId(rs.getString("job_id"))
                                                       .setVersionNumber(
-                                                          rs.getLong(
-                                                              "experiment_run.version_number"));
+                                                          rs.getLong("version_number"));
 
-                                              var environment =
-                                                  rs.getString("experiment_run.environment");
+                                              var environment = rs.getString("environment");
                                               if (environment != null && !environment.isEmpty()) {
-                                                EnvironmentBlob.Builder environmentBlobBuilder =
+                                                var environmentBlobBuilder =
                                                     EnvironmentBlob.newBuilder();
-                                                try {
-                                                  CommonUtils.getProtoObjectFromString(
-                                                      environment, environmentBlobBuilder);
-                                                } catch (InvalidProtocolBufferException e) {
-                                                  LOGGER.error(
-                                                      "Error generating builder for environment");
-                                                  throw new ModelDBException(e);
-                                                }
+                                                CommonUtils.getProtoObjectFromString(
+                                                    environment, environmentBlobBuilder);
                                                 runBuilder.setEnvironment(
                                                     environmentBlobBuilder.build());
                                               }
@@ -1243,7 +1224,7 @@ public class FutureExperimentRunDAO {
                         queryContext ->
                             jdbi.withHandle(
                                 handle -> {
-                                  var sql = "select count(experiment_run.id) from experiment_run";
+                                  var sql = "select count(id) from experiment_run";
 
                                   if (!queryContext.getConditions().isEmpty()) {
                                     sql +=
@@ -1276,7 +1257,7 @@ public class FutureExperimentRunDAO {
   private List<ExperimentRun> sortExperimentRunFields(List<ExperimentRun> experimentRuns) {
     List<ExperimentRun> sortedRuns = new LinkedList<>();
     for (ExperimentRun run : experimentRuns) {
-      ExperimentRun.Builder experimentRunBuilder = ExperimentRun.newBuilder(run);
+      var experimentRunBuilder = ExperimentRun.newBuilder(run);
       experimentRunBuilder
           .clearTags()
           .addAllTags(run.getTagsList().stream().sorted().collect(Collectors.toList()))
@@ -1339,7 +1320,7 @@ public class FutureExperimentRunDAO {
                     return null;
                   } else {
                     return new QueryFilterContext()
-                        .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                        .addCondition("project_id in (<authz_project_ids>)")
                         .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
                   }
                 }
@@ -1354,7 +1335,7 @@ public class FutureExperimentRunDAO {
                   return null;
                 } else {
                   return new QueryFilterContext()
-                      .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                      .addCondition("project_id in (<authz_project_ids>)")
                       .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
                 }
               },
@@ -1389,7 +1370,7 @@ public class FutureExperimentRunDAO {
   }
 
   private boolean checkAllResourceAllowed(List<Resources> resources) {
-    boolean allowedAllResources = false;
+    var allowedAllResources = false;
     if (!resources.isEmpty()) {
       // This should always MODEL_DB_SERVICE be the case unless we have a bug.
       allowedAllResources = resources.get(0).getAllResourceIds();
@@ -1451,7 +1432,7 @@ public class FutureExperimentRunDAO {
 
   private InternalFuture<List<Resources>>
       getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges() {
-    return InternalFuture.completedInternalFuture(config.populateConnectionsBasedOnPrivileges)
+    return InternalFuture.completedInternalFuture(config.isPopulateConnectionsBasedOnPrivileges())
         .thenCompose(
             populateConnectionsBasedOnPrivileges -> {
               // If populateConnectionsBasedOnPrivileges = true then fetch all accessible
@@ -1491,7 +1472,7 @@ public class FutureExperimentRunDAO {
         .thenAccept(
             allowed -> {
               if (!allowed) {
-                throw new PermissionDeniedException("Permission denied");
+                throw new PermissionDeniedException(ModelDBMessages.PERMISSION_DENIED);
               }
             },
             executor)
@@ -1530,6 +1511,21 @@ public class FutureExperimentRunDAO {
         .thenCompose(unused -> createExperimentRunHandler.convertCreateRequest(request), executor)
         .thenCompose(
             experimentRun ->
+                findExperimentRuns(
+                        FindExperimentRuns.newBuilder()
+                            .setIdsOnly(true)
+                            .setProjectId(experimentRun.getProjectId())
+                            .build())
+                    .thenApply(
+                        runsResponse -> {
+                          TrialUtils.validateExperimentRunPerWorkspaceForTrial(
+                              trialConfig, Long.valueOf(runsResponse.getTotalRecords()).intValue());
+                          return experimentRun;
+                        },
+                        executor),
+            executor)
+        .thenCompose(
+            experimentRun ->
                 createExperimentRunHandler
                     .insertExperimentRun(experimentRun)
                     .thenApply(
@@ -1565,8 +1561,7 @@ public class FutureExperimentRunDAO {
             executor)
         .thenAccept(
             existingVersioningEntryMap -> {
-              VersioningEntry existingVersioningEntry =
-                  existingVersioningEntryMap.get(request.getId());
+              var existingVersioningEntry = existingVersioningEntryMap.get(request.getId());
               if (existingVersioningEntry != null) {
                 if (existingVersioningEntry.getRepositoryId()
                         != request.getVersionedInputs().getRepositoryId()
@@ -1617,12 +1612,15 @@ public class FutureExperimentRunDAO {
                 // Validate requested dataset version exists
                 jdbi.useHandle(
                     handle -> {
-                      handle
-                          .createQuery("SELECT COUNT(id) FROM commit WHERE id = :id")
-                          .bind("id", request.getDatasetVersionId())
-                          .mapTo(Long.class)
-                          .findOne()
-                          .orElseThrow(() -> new NotFoundException("DatasetVersion not found"));
+                      Optional<Long> count =
+                          handle
+                              .createQuery("SELECT COUNT(id) FROM commit WHERE id = :id")
+                              .bind("id", request.getDatasetVersionId())
+                              .mapTo(Long.class)
+                              .findOne();
+                      if (count.isEmpty() || count.get() == 0) {
+                        throw new NotFoundException("DatasetVersion not found");
+                      }
 
                       // Validate requested dataset version mappings with datasets
                       List<Long> mappingDatasetIds =
@@ -1713,7 +1711,7 @@ public class FutureExperimentRunDAO {
         InternalFuture.runAsync(
             () -> {
               if (request.getExperimentId().isEmpty()) {
-                String errorMessage = "Experiment ID not present";
+                var errorMessage = "Experiment ID not present";
                 throw new InvalidArgumentException(errorMessage);
               }
             },
@@ -1784,9 +1782,25 @@ public class FutureExperimentRunDAO {
                           if (findExperimentRuns.getExperimentRunsList().isEmpty()) {
                             throw new NotFoundException("Source experiment run not found");
                           }
-                          ExperimentRun srcExperimentRun = findExperimentRuns.getExperimentRuns(0);
+                          var srcExperimentRun = findExperimentRuns.getExperimentRuns(0);
                           return srcExperimentRun.toBuilder().clone();
                         },
+                        executor)
+                    .thenCompose(
+                        experimentRun ->
+                            findExperimentRuns(
+                                    FindExperimentRuns.newBuilder()
+                                        .setIdsOnly(true)
+                                        .setProjectId(experimentRun.getProjectId())
+                                        .build())
+                                .thenApply(
+                                    runsResponse -> {
+                                      TrialUtils.validateExperimentRunPerWorkspaceForTrial(
+                                          trialConfig,
+                                          Long.valueOf(runsResponse.getTotalRecords()).intValue());
+                                      return experimentRun;
+                                    },
+                                    executor),
                         executor)
                     .thenCompose(
                         cloneExperimentRunBuilder ->

@@ -5,6 +5,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import io.grpc.Status;
+import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
@@ -12,7 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 @Entity
 @Table(name = "hyperparameter_element_mapping")
-public class HyperparameterElementMappingEntity {
+public class HyperparameterElementMappingEntity implements Serializable {
   private HyperparameterElementMappingEntity() {}
 
   private static final Logger LOGGER =

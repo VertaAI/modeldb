@@ -8,7 +8,7 @@ import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.FindDatasetVersions;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -26,18 +26,14 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import javax.persistence.criteria.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 
 public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
@@ -45,7 +41,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final AuthService authService;
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
 
   private static final String CHECK_DATASET_VERSION_EXISTS_BY_ID_HQL =
       new StringBuilder(
@@ -97,9 +93,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           .append(" IN (:datasetIds)")
           .toString();
 
-  public DatasetVersionDAORdbImpl(AuthService authService, RoleService roleService) {
+  public DatasetVersionDAORdbImpl(AuthService authService, MDBRoleService mdbRoleService) {
     this.authService = authService;
-    this.roleService = roleService;
+    this.mdbRoleService = mdbRoleService;
   }
 
   @Override
@@ -111,9 +107,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       boolean isAscending,
       String sortKey,
       UserInfo currentLoginUser)
-      throws InvalidProtocolBufferException, PermissionDeniedException, ExecutionException,
-          InterruptedException {
-    FindDatasetVersions findDatasetVersions =
+      throws PermissionDeniedException {
+    var findDatasetVersions =
         FindDatasetVersions.newBuilder()
             .setDatasetId(datasetId)
             .setPageNumber(pageNumber)
@@ -126,9 +121,9 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public Boolean deleteDatasetVersionsByDatasetIDs(List<String> datasetIds) {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
-      Query query =
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
+      var query =
           session
               .createQuery(DELETED_STATUS_DATASET_VERSION_BY_DATASET_QUERY_STRING)
               .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -148,9 +143,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   }
 
   @Override
-  public DatasetVersion getDatasetVersion(String datasetVersionId)
-      throws InvalidProtocolBufferException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+  public DatasetVersion getDatasetVersion(String datasetVersionId) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId);
       if (datasetVersionObj == null || datasetVersionObj.getDeleted()) {
@@ -168,20 +162,18 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   }
 
   @Override
-  public String getUrlForDatasetVersion(String datasetVersionId, String method)
-      throws InvalidProtocolBufferException {
+  public String getUrlForDatasetVersion(String datasetVersionId, String method) {
     throw new InvalidArgumentException("Not supported yet");
   }
 
   @Override
-  public List<DatasetVersion> getDatasetVersionsByBatchIds(List<String> datasetVersionIds)
-      throws InvalidProtocolBufferException {
+  public List<DatasetVersion> getDatasetVersionsByBatchIds(List<String> datasetVersionIds) {
     if (datasetVersionIds == null || datasetVersionIds.isEmpty()) {
       LOGGER.info("Input datasetVersionIds is empty");
       return new ArrayList<>();
     }
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Query query = session.createQuery(DATASET_VERSION_BY_IDS_QUERY);
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var query = session.createQuery(DATASET_VERSION_BY_IDS_QUERY);
       query.setParameterList("ids", datasetVersionIds);
 
       @SuppressWarnings("unchecked")
@@ -214,8 +206,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
    * @return List<String> : list of accessible datasetVersion Id
    */
   public List<String> getAccessibleDatasetVersionIDs(
-      List<String> requestedDatasetVersionIds, ModelDBServiceActions modelDBServiceActions)
-      throws InvalidProtocolBufferException {
+      List<String> requestedDatasetVersionIds, ModelDBServiceActions modelDBServiceActions) {
     List<DatasetVersion> datasetVersionList =
         getDatasetVersionsByBatchIds(requestedDatasetVersionIds);
     Map<String, String> datasetIdDatasetVersionIdMap = new HashMap<>();
@@ -228,14 +219,14 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     List<String> allowedDatasetIds;
     // Validate if current user has access to the entity or not
     if (datasetIdSet.size() == 1) {
-      roleService.isSelfAllowed(
+      mdbRoleService.isSelfAllowed(
           ModelDBServiceResourceTypes.DATASET,
           modelDBServiceActions,
           new ArrayList<>(datasetIdSet).get(0));
       accessibleDatasetVersionIds.addAll(requestedDatasetVersionIds);
     } else {
       allowedDatasetIds =
-          roleService.getSelfAllowedResources(
+          mdbRoleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.DATASET, modelDBServiceActions);
       // Validate if current user has access to the entity or not
       allowedDatasetIds.retainAll(datasetIdSet);
@@ -251,9 +242,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   @Override
   public DatasetVersionDTO findDatasetVersions(
       DatasetDAO datasetDAO, FindDatasetVersions queryParameters, UserInfo currentLoginUserInfo)
-      throws InvalidProtocolBufferException, PermissionDeniedException, ExecutionException,
-          InterruptedException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      throws PermissionDeniedException {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
       List<String> accessibleDatasetVersionIds = new ArrayList<>();
       if (!queryParameters.getDatasetVersionIdsList().isEmpty()) {
@@ -280,11 +270,11 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
               ModelDBConstants.DATASETS_VERSIONS,
               accessibleDatasetVersionIds,
               predicate,
-              roleService);
+              mdbRoleService);
         }
       }
 
-      CriteriaBuilder builder = session.getCriteriaBuilder();
+      var builder = session.getCriteriaBuilder();
       // Using FROM and JOIN
       CriteriaQuery<DatasetVersionEntity> criteriaQuery =
           builder.createQuery(DatasetVersionEntity.class);
@@ -312,7 +302,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           LOGGER.debug(
               "accessible dataset for the datasetVersions not found for given workspace : {}",
               queryParameters.getWorkspaceName());
-          DatasetVersionDTO datasetVersionPaginationDTO = new DatasetVersionDTO();
+          var datasetVersionPaginationDTO = new DatasetVersionDTO();
           datasetVersionPaginationDTO.setDatasetVersions(Collections.emptyList());
           datasetVersionPaginationDTO.setTotalRecords(0L);
           return datasetVersionPaginationDTO;
@@ -328,17 +318,17 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       if (!datasetIds.isEmpty()) {
         Expression<String> datasetExpression = datasetVersionRoot.get(ModelDBConstants.DATASET_ID);
-        Predicate datasetsPredicate = datasetExpression.in(datasetIds);
+        var datasetsPredicate = datasetExpression.in(datasetIds);
         finalPredicatesList.add(datasetsPredicate);
       }
 
       if (!accessibleDatasetVersionIds.isEmpty()) {
         Expression<String> exp = datasetVersionRoot.get(ModelDBConstants.ID);
-        Predicate predicate2 = exp.in(accessibleDatasetVersionIds);
+        var predicate2 = exp.in(accessibleDatasetVersionIds);
         finalPredicatesList.add(predicate2);
       }
 
-      String entityName = "datasetVersionEntity";
+      var entityName = "datasetVersionEntity";
       try {
         List<Predicate> queryPredicatesList =
             RdbmsUtils.getQueryPredicatesFromPredicateList(
@@ -348,7 +338,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
                 criteriaQuery,
                 datasetVersionRoot,
                 authService,
-                roleService,
+                mdbRoleService,
                 ModelDBServiceResourceTypes.DATASET_VERSION);
         if (!queryPredicatesList.isEmpty()) {
           finalPredicatesList.addAll(queryPredicatesList);
@@ -357,7 +347,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         if (ex.getCode().ordinal() == Code.FAILED_PRECONDITION_VALUE
             && ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND.equals(ex.getMessage())) {
           LOGGER.info(ex.getMessage());
-          DatasetVersionDTO datasetVersionDTO = new DatasetVersionDTO();
+          var datasetVersionDTO = new DatasetVersionDTO();
           datasetVersionDTO.setDatasetVersions(Collections.emptyList());
           datasetVersionDTO.setTotalRecords(0L);
           return datasetVersionDTO;
@@ -375,21 +365,21 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         sortBy = ModelDBConstants.TIME_UPDATED;
       }
 
-      Order orderBy =
+      var orderBy =
           RdbmsUtils.getOrderBasedOnSortKey(
               sortBy, queryParameters.getAscending(), builder, datasetVersionRoot, entityName);
 
-      Predicate[] predicateArr = new Predicate[finalPredicatesList.size()];
-      for (int index = 0; index < finalPredicatesList.size(); index++) {
+      var predicateArr = new Predicate[finalPredicatesList.size()];
+      for (var index = 0; index < finalPredicatesList.size(); index++) {
         predicateArr[index] = finalPredicatesList.get(index);
       }
 
-      Predicate predicateWhereCause = builder.and(predicateArr);
+      var predicateWhereCause = builder.and(predicateArr);
       criteriaQuery.select(datasetVersionRoot);
       criteriaQuery.where(predicateWhereCause);
       criteriaQuery.orderBy(orderBy);
 
-      Query query = session.createQuery(criteriaQuery);
+      var query = session.createQuery(criteriaQuery);
       LOGGER.debug("Final datasetVersions final query : {}", query.getQueryString());
       if (queryParameters.getPageNumber() != 0 && queryParameters.getPageLimit() != 0) {
         // Calculate number of documents to skip
@@ -417,11 +407,11 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
             throw new PermissionDeniedException(
                 "Access is denied. User is unauthorized for given DatasetVersion entity ID");
           } else {
-            String datasetVersionId = predicate.getValue().getStringValue();
+            var datasetVersionId = predicate.getValue().getStringValue();
             for (DatasetVersion datasetVersion : datasetVersionList) {
               if (datasetVersion.getId().equals(datasetVersionId)) {
                 // Validate if current user has access to the entity or not
-                roleService.validateEntityUserWithUserInfo(
+                mdbRoleService.validateEntityUserWithUserInfo(
                     ModelDBServiceResourceTypes.DATASET,
                     datasetVersion.getDatasetId(),
                     ModelDBServiceActions.READ);
@@ -447,7 +437,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
       long totalRecords = RdbmsUtils.count(session, datasetVersionRoot, criteriaQuery);
 
-      DatasetVersionDTO datasetVersionPaginationDTO = new DatasetVersionDTO();
+      var datasetVersionPaginationDTO = new DatasetVersionDTO();
       datasetVersionPaginationDTO.setDatasetVersions(datasetVersions);
       datasetVersionPaginationDTO.setTotalRecords(totalRecords);
       return datasetVersionPaginationDTO;
@@ -462,15 +452,14 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public DatasetVersion updateDatasetVersionDescription(
-      String datasetVersionId, String datasetVersionDescription)
-      throws InvalidProtocolBufferException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      String datasetVersionId, String datasetVersionDescription) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       datasetVersionObj.setDescription(datasetVersionDescription);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.update(datasetVersionObj);
       transaction.commit();
       LOGGER.debug("DatasetVersion updated successfully");
@@ -485,16 +474,15 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   }
 
   @Override
-  public DatasetVersion addDatasetVersionTags(String datasetVersionId, List<String> tagsList)
-      throws InvalidProtocolBufferException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+  public DatasetVersion addDatasetVersionTags(String datasetVersionId, List<String> tagsList) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       if (datasetVersionObj == null) {
         throw new NotFoundException(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
       }
       List<String> newTags = new ArrayList<>();
-      DatasetVersion existingProtoDatasetVersionObj = datasetVersionObj.getProtoObject();
+      var existingProtoDatasetVersionObj = datasetVersionObj.getProtoObject();
       for (String tag : tagsList) {
         if (!existingProtoDatasetVersionObj.getTagsList().contains(tag)) {
           newTags.add(tag);
@@ -506,7 +494,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
             RdbmsUtils.convertTagListFromTagMappingList(datasetVersionObj, newTags);
         datasetVersionObj.getTags().addAll(newTagMappings);
         datasetVersionObj.setTime_updated(currentTimestamp);
-        Transaction transaction = session.beginTransaction();
+        var transaction = session.beginTransaction();
         session.saveOrUpdate(datasetVersionObj);
         transaction.commit();
       }
@@ -523,13 +511,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public DatasetVersion deleteDatasetVersionTags(
-      String datasetVersionId, List<String> datasetVersionTagList, Boolean deleteAll)
-      throws InvalidProtocolBufferException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+      String datasetVersionId, List<String> datasetVersionTagList, Boolean deleteAll) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
 
       if (deleteAll) {
-        Query query =
+        var query =
             session
                 .createQuery(DELETE_DATASET_VERSION_QUERY_PREFIX)
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -539,7 +526,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
         StringBuilder stringQueryBuilder =
             new StringBuilder(DELETE_DATASET_VERSION_QUERY_PREFIX)
                 .append(" AND tm." + ModelDBConstants.TAGS + " in (:tags)");
-        Query query =
+        var query =
             session
                 .createQuery(stringQueryBuilder.toString())
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -566,9 +553,8 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public DatasetVersion addDatasetVersionAttributes(
-      String datasetVersionId, List<KeyValue> attributesList)
-      throws InvalidProtocolBufferException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      String datasetVersionId, List<KeyValue> attributesList) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       datasetVersionObj.setAttributeMapping(
@@ -576,7 +562,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
               datasetVersionObj, ModelDBConstants.ATTRIBUTES, attributesList));
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(datasetVersionObj);
       transaction.commit();
       LOGGER.debug("DatasetVersion attributes added successfully");
@@ -591,22 +577,22 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
   }
 
   @Override
-  public DatasetVersion updateDatasetVersionAttributes(String datasetVersionId, KeyValue attribute)
-      throws InvalidProtocolBufferException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+  public DatasetVersion updateDatasetVersionAttributes(
+      String datasetVersionId, KeyValue attribute) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       DatasetVersionEntity datasetVersionObj =
           session.get(DatasetVersionEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
       if (datasetVersionObj == null) {
         throw new NotFoundException(ModelDBMessages.DATA_VERSION_NOT_FOUND_ERROR_MSG);
       }
 
-      AttributeEntity updatedAttributeObj =
+      var updatedAttributeObj =
           RdbmsUtils.generateAttributeEntity(
               datasetVersionObj, ModelDBConstants.ATTRIBUTES, attribute);
 
       List<AttributeEntity> existingAttributes = datasetVersionObj.getAttributeMapping();
       if (!existingAttributes.isEmpty()) {
-        boolean doesExist = false;
+        var doesExist = false;
         for (AttributeEntity existingAttribute : existingAttributes) {
           if (existingAttribute.getKey().equals(attribute.getKey())) {
             existingAttribute.setKey(updatedAttributeObj.getKey());
@@ -624,7 +610,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       }
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       datasetVersionObj.setTime_updated(currentTimestamp);
-      Transaction transaction = session.beginTransaction();
+      var transaction = session.beginTransaction();
       session.saveOrUpdate(datasetVersionObj);
       transaction.commit();
       return datasetVersionObj.getProtoObject();
@@ -639,15 +625,14 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public List<KeyValue> getDatasetVersionAttributes(
-      String datasetVersionId, List<String> attributeKeyList, Boolean getAll)
-      throws InvalidProtocolBufferException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      String datasetVersionId, List<String> attributeKeyList, Boolean getAll) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       if (getAll) {
         DatasetVersionEntity datasetVersionObj =
             session.get(DatasetVersionEntity.class, datasetVersionId);
         return datasetVersionObj.getProtoObject().getAttributesList();
       } else {
-        Query query = session.createQuery(GET_KEY_VALUE_DATASET_VERSION_QUERY);
+        var query = session.createQuery(GET_KEY_VALUE_DATASET_VERSION_QUERY);
         query.setParameterList("keys", attributeKeyList);
         query.setParameter(ModelDBConstants.DATASET_VERSION_ID_STR, datasetVersionId);
         query.setParameter("fieldType", ModelDBConstants.ATTRIBUTES);
@@ -667,13 +652,12 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public DatasetVersion deleteDatasetVersionAttributes(
-      String datasetVersionId, List<String> attributeKeyList, Boolean deleteAll)
-      throws InvalidProtocolBufferException {
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      Transaction transaction = session.beginTransaction();
+      String datasetVersionId, List<String> attributeKeyList, Boolean deleteAll) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      var transaction = session.beginTransaction();
 
       if (deleteAll) {
-        Query query =
+        var query =
             session
                 .createQuery(DELETE_KEY_VALUE_DATASET_VERSION_QUERY_PREFIX)
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -685,7 +669,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
                 .append(" AND attr.")
                 .append(ModelDBConstants.KEY)
                 .append(" in (:keys)");
-        Query query =
+        var query =
             session
                 .createQuery(deleteKeyValueDatasetVersionQuery.toString())
                 .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
@@ -711,7 +695,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   @Override
   public boolean isDatasetVersionExists(Session session, String datasetVersionId) {
-    Query query = session.createQuery(CHECK_DATASET_VERSION_EXISTS_BY_ID_HQL);
+    var query = session.createQuery(CHECK_DATASET_VERSION_EXISTS_BY_ID_HQL);
     query.setParameter("datasetVersionId", datasetVersionId);
     Long count = (Long) query.uniqueResult();
     return count > 0;

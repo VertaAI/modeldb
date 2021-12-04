@@ -2,7 +2,7 @@ package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -18,17 +18,15 @@ import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.hibernate.Transaction;
-import org.hibernate.query.Query;
 
 public class CleanUpEntitiesCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(CleanUpEntitiesCron.class);
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-  private final RoleService roleService;
+  private final MDBRoleService mdbRoleService;
   private final Integer recordUpdateLimit;
 
-  public CleanUpEntitiesCron(RoleService roleService, Integer recordUpdateLimit) {
-    this.roleService = roleService;
+  public CleanUpEntitiesCron(MDBRoleService mdbRoleService, Integer recordUpdateLimit) {
+    this.mdbRoleService = mdbRoleService;
     this.recordUpdateLimit = recordUpdateLimit;
   }
 
@@ -37,7 +35,7 @@ public class CleanUpEntitiesCron extends TimerTask {
   public void run() {
     LOGGER.info("CleanUpEntitiesCron wakeup");
 
-    try (Session session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       // Clean up projects
       cleanProjects(session);
 
@@ -60,8 +58,8 @@ public class CleanUpEntitiesCron extends TimerTask {
 
   private void cleanProjects(Session session) {
     LOGGER.trace("Project cleaning");
-    String alias = "pr";
-    String deleteProjectsQueryString =
+    var alias = "pr";
+    var deleteProjectsQueryString =
         new StringBuilder("FROM ")
             .append(ProjectEntity.class.getSimpleName())
             .append(" ")
@@ -81,7 +79,7 @@ public class CleanUpEntitiesCron extends TimerTask {
     // Time less then a minute because possible to have create project request running when cron job
     // running
     long time = Calendar.getInstance().getTimeInMillis() - 300000; // 5 minute lesser time
-    Query projectDeleteQuery = session.createQuery(deleteProjectsQueryString);
+    var projectDeleteQuery = session.createQuery(deleteProjectsQueryString);
     projectDeleteQuery.setParameter("created", false);
     projectDeleteQuery.setParameter("created_date", time);
     projectDeleteQuery.setMaxResults(this.recordUpdateLimit);
@@ -94,11 +92,11 @@ public class CleanUpEntitiesCron extends TimerTask {
       }
 
       try {
-        roleService.deleteEntityResourcesWithServiceUser(
+        mdbRoleService.deleteEntityResourcesWithServiceUser(
             projectIds, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
         for (ProjectEntity projectEntity : projectEntities) {
           try {
-            Transaction transaction = session.beginTransaction();
+            var transaction = session.beginTransaction();
             session.delete(projectEntity);
             transaction.commit();
           } catch (OptimisticLockException ex) {
@@ -117,8 +115,8 @@ public class CleanUpEntitiesCron extends TimerTask {
 
   private void cleanRepositories(Session session) {
     LOGGER.trace("Repository cleaning");
-    String alias = "r";
-    String deleteRepositoriesQueryString =
+    var alias = "r";
+    var deleteRepositoriesQueryString =
         new StringBuilder("FROM ")
             .append(RepositoryEntity.class.getSimpleName())
             .append(" ")
@@ -138,7 +136,7 @@ public class CleanUpEntitiesCron extends TimerTask {
     // Time less then a minute because possible to have create project request running when cron job
     // running
     long time = Calendar.getInstance().getTimeInMillis() - 300000; // 5 minute lesser time
-    Query repositoryDeleteQuery = session.createQuery(deleteRepositoriesQueryString);
+    var repositoryDeleteQuery = session.createQuery(deleteRepositoriesQueryString);
     repositoryDeleteQuery.setParameter("created", false);
     repositoryDeleteQuery.setParameter("created_date", time);
     repositoryDeleteQuery.setMaxResults(this.recordUpdateLimit);
@@ -181,11 +179,11 @@ public class CleanUpEntitiesCron extends TimerTask {
       Map<String, RepositoryEntity> repositoryEntityMap,
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
     try {
-      roleService.deleteEntityResourcesWithServiceUser(
+      mdbRoleService.deleteEntityResourcesWithServiceUser(
           new ArrayList<>(repositoryEntityMap.keySet()), resourceType);
       for (RepositoryEntity repositoryEntity : repositoryEntities) {
         try {
-          Transaction transaction = session.beginTransaction();
+          var transaction = session.beginTransaction();
           session.delete(repositoryEntity);
           transaction.commit();
         } catch (OptimisticLockException ex) {

@@ -4,9 +4,8 @@ import static java.time.format.DateTimeFormatter.ofPattern;
 
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.Project;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3SignatureUtil;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.TrialConfig;
@@ -16,12 +15,10 @@ import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.uac.UserInfo;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSSessionCredentials;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.rpc.Code;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,17 +49,16 @@ public class TrialUtils {
   public static void validateExperimentRunPerWorkspaceForTrial(
       TrialConfig config,
       ProjectDAO projectDAO,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       ExperimentRunDAO experimentRunDAO,
       String projectId,
       UserInfo userInfo)
-      throws InvalidProtocolBufferException, ModelDBException, ExecutionException,
-          InterruptedException {
+      throws ModelDBException {
     if (config != null) {
-      Project project = projectDAO.getProjectByID(projectId);
+      var project = projectDAO.getProjectByID(projectId);
       if (project.getWorkspaceId() != null && !project.getWorkspaceId().isEmpty()) {
         // TODO: We can be replaced by a count(*) query instead .setIdsOnly(true)
-        FindExperimentRuns findExperimentRuns =
+        var findExperimentRuns =
             FindExperimentRuns.newBuilder().setIdsOnly(true).setProjectId(projectId).build();
         ExperimentRunPaginationDTO paginationDTO =
             experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
@@ -76,6 +72,21 @@ public class TrialUtils {
                   + " experiment runs. Try deleting prior experiment runs in order to proceed.",
               Code.RESOURCE_EXHAUSTED);
         }
+      }
+    }
+  }
+
+  public static void validateExperimentRunPerWorkspaceForTrial(
+      TrialConfig config, int existingCount) throws ModelDBException {
+    if (config != null) {
+      if (config.restrictions.max_experiment_run_per_workspace != null
+          && existingCount >= config.restrictions.max_experiment_run_per_workspace) {
+        throw new ModelDBException(
+            ModelDBConstants.LIMIT_RUN_NUMBER
+                + "“Number of experiment runs exceeded”: Your trial account allows you to log upto "
+                + config.restrictions.max_experiment_run_per_workspace
+                + " experiment runs. Try deleting prior experiment runs in order to proceed.",
+            Code.RESOURCE_EXHAUSTED);
       }
     }
   }
@@ -110,11 +121,11 @@ public class TrialUtils {
       String s3Key,
       String region,
       int maxArtifactSize) {
-    LocalDateTime localDateTime = LocalDateTime.now();
+    var localDateTime = LocalDateTime.now();
     String dateTimeStr = localDateTime.format(ofPattern("yyyyMMdd'T'HHmmss'Z'"));
     String date = localDateTime.format(ofPattern("yyyyMMdd"));
 
-    S3SignatureUtil s3SignatureUtil =
+    var s3SignatureUtil =
         new S3SignatureUtil(awsCredentials, region, ModelDBConstants.S3.toLowerCase());
 
     String policy = s3SignatureUtil.readPolicy(bucketName, maxArtifactSize, awsCredentials);

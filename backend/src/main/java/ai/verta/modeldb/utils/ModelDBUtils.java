@@ -9,11 +9,10 @@ import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.CollaboratorUserInfo;
-import ai.verta.modeldb.CollaboratorUserInfo.Builder;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
-import ai.verta.modeldb.authservice.RoleService;
+import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
@@ -35,8 +34,6 @@ import com.google.protobuf.*;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
-import com.mysql.cj.exceptions.CJCommunicationsException;
-import com.mysql.cj.jdbc.exceptions.CommunicationsException;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import java.io.File;
@@ -68,22 +65,18 @@ public class ModelDBUtils {
     LOGGER.info("Reading File {} as YAML", filePath);
     filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
     InputStream inputStream = new FileInputStream(new File(filePath));
-    Yaml yaml = new Yaml();
+    var yaml = new Yaml();
     @SuppressWarnings("unchecked")
     Map<String, Object> prop = (Map<String, Object>) yaml.load(inputStream);
     return prop;
   }
 
-  public static String getStringFromProtoObject(MessageOrBuilder object)
-      throws InvalidProtocolBufferException {
-    return JsonFormat.printer().preservingProtoFieldNames().print(object);
-  }
-
-  public static String getStringFromProtoObjectSilent(MessageOrBuilder object) {
+  public static String getStringFromProtoObject(MessageOrBuilder object) {
     try {
-      return getStringFromProtoObject(object);
-    } catch (InvalidProtocolBufferException e) {
-      throw new ModelDBException(e);
+      return JsonFormat.printer().preservingProtoFieldNames().print(object);
+    } catch (InvalidProtocolBufferException ex) {
+      LOGGER.warn("Error generating while convert MessageOrBuilder to string", ex);
+      throw new RuntimeException(ex);
     }
   }
 
@@ -94,7 +87,7 @@ public class ModelDBUtils {
             + "(?:[a-zA-Z0-9-]+\\.)+[a-z"
             + "A-Z]{2,7}$";
 
-    Pattern pat = Pattern.compile(emailRegex);
+    var pat = Pattern.compile(emailRegex);
     if (email == null) return false;
     return pat.matcher(email).matches();
   }
@@ -102,11 +95,11 @@ public class ModelDBUtils {
   private static String getMd5String(String inputString) {
     try {
       @SuppressWarnings("squid:S4790")
-      MessageDigest md = MessageDigest.getInstance("MD5");
+      var md = MessageDigest.getInstance("MD5");
       byte[] messageDigest = md.digest(inputString.getBytes());
-      BigInteger no = new BigInteger(1, messageDigest);
-      String hashtext = no.toString(16);
-      StringBuilder outputStringBuilder = new StringBuilder(hashtext);
+      var no = new BigInteger(1, messageDigest);
+      var hashtext = no.toString(16);
+      var outputStringBuilder = new StringBuilder(hashtext);
       while (outputStringBuilder.toString().length() < 32) {
         outputStringBuilder.append("0").append(outputStringBuilder.toString());
       }
@@ -124,9 +117,9 @@ public class ModelDBUtils {
     // underscore and hyphen
     String projectShortName = projectName.replaceAll("[^a-zA-Z0-9_.-]+", "-");
     if (projectShortName.length() > ModelDBConstants.NAME_MAX_LENGTH) {
-      String first10Characters = projectShortName.substring(0, 10);
-      String remainingCharacters = projectShortName.substring(11);
-      String md5RemainingCharacters = ModelDBUtils.getMd5String(remainingCharacters);
+      var first10Characters = projectShortName.substring(0, 10);
+      var remainingCharacters = projectShortName.substring(11);
+      var md5RemainingCharacters = ModelDBUtils.getMd5String(remainingCharacters);
       projectShortName = first10Characters + md5RemainingCharacters;
     }
     return projectShortName;
@@ -144,7 +137,7 @@ public class ModelDBUtils {
   public static List<String> checkEntityTagsLength(List<String> tags) {
     for (String tag : tags) {
       if (tag.isEmpty()) {
-        String errorMessage = "Invalid tag found, Tag shouldn't be empty";
+        var errorMessage = "Invalid tag found, Tag shouldn't be empty";
         throw new InvalidArgumentException(errorMessage);
       } else if (tag.length() > ModelDBConstants.TAG_LENGTH) {
         String errorMessage =
@@ -204,17 +197,17 @@ public class ModelDBUtils {
    */
   public static List<CollaboratorUserInfo> getHydratedCollaboratorUserInfo(
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       List<GetCollaboratorResponseItem> collaboratorList,
       Map<String, UserInfo> userInfoMap) {
 
     return getHydratedCollaboratorUserInfoByAuthz(
-        authService, roleService, collaboratorList, userInfoMap);
+        authService, mdbRoleService, collaboratorList, userInfoMap);
   }
 
   private static List<CollaboratorUserInfo> getHydratedCollaboratorUserInfoByAuthz(
       AuthService authService,
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       List<GetCollaboratorResponseItem> collaboratorList,
       Map<String, UserInfo> userInfoMap) {
 
@@ -227,27 +220,29 @@ public class ModelDBUtils {
           CollaboratorBase collaborator1 = null;
           switch (collaborator.getAuthzEntityType()) {
             case USER:
-              UserInfo userInfoValue = userInfoMap.get(collaborator.getVertaId());
+              var userInfoValue = userInfoMap.get(collaborator.getVertaId());
               if (userInfoValue != null) {
                 collaborator1 = new CollaboratorUser(authService, userInfoValue);
               } else {
-                LOGGER.info("skipping " + collaborator.getVertaId() + " because it is not found");
+                LOGGER.info(
+                    String.format(
+                        "skipping %s because it is not found", collaborator.getVertaId()));
               }
               break;
             case ORGANIZATION:
-              collaborator1 = new CollaboratorOrg(collaborator.getVertaId(), roleService);
+              collaborator1 = new CollaboratorOrg(collaborator.getVertaId(), mdbRoleService);
               break;
             case TEAM:
-              collaborator1 = new CollaboratorTeam(collaborator.getVertaId(), roleService);
+              collaborator1 = new CollaboratorTeam(collaborator.getVertaId(), mdbRoleService);
               break;
             default:
               throw new InternalErrorException(CommonConstants.INTERNAL_ERROR);
           }
 
-          final Builder builder = CollaboratorUserInfo.newBuilder();
+          final var builder = CollaboratorUserInfo.newBuilder();
           if (collaborator1 != null) {
             collaborator1.addToResponse(builder);
-            CollaboratorUserInfo collaboratorUserInfo =
+            var collaboratorUserInfo =
                 builder
                     .setCanDeploy(collaborator.getPermission().getCanDeploy())
                     .setCollaboratorType(collaborator.getPermission().getCollaboratorType())
@@ -257,11 +252,12 @@ public class ModelDBUtils {
         } catch (StatusRuntimeException ex) {
           if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
             LOGGER.info(
-                "skipping "
-                    + collaborator.getVertaId()
-                    + " because the current user doesn't have access to it");
+                String.format(
+                    "skipping %s because the current user doesn't have access to it",
+                    collaborator.getVertaId()));
           } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
-            LOGGER.info("skipping " + collaborator.getVertaId() + " because it is not found");
+            LOGGER.info(
+                String.format("skipping %s because it is not found", collaborator.getVertaId()));
           } else {
             LOGGER.debug(ex.getMessage(), ex);
             throw ex;
@@ -320,7 +316,7 @@ public class ModelDBUtils {
             .findFirst()
             .orElseThrow(
                 () -> {
-                  Status status =
+                  var status =
                       Status.newBuilder()
                           .setCode(Code.INTERNAL_VALUE)
                           .setMessage("Can't find allowed actions of current user for: " + ids)
@@ -331,8 +327,8 @@ public class ModelDBUtils {
   }
 
   public static List<KeyValueQuery> getKeyValueQueriesByWorkspace(
-      RoleService roleService, UserInfo userInfo, String workspaceName) {
-    WorkspaceDTO workspaceDTO = roleService.getWorkspaceDTOByWorkspaceName(userInfo, workspaceName);
+      MDBRoleService mdbRoleService, UserInfo userInfo, String workspaceName) {
+    var workspaceDTO = mdbRoleService.getWorkspaceDTOByWorkspaceName(userInfo, workspaceName);
     return getKeyValueQueriesByWorkspaceDTO(workspaceDTO);
   }
 
@@ -371,9 +367,7 @@ public class ModelDBUtils {
 
   public static boolean needToRetry(Exception ex) {
     Throwable communicationsException = findCommunicationsFailedCause(ex);
-    if ((communicationsException.getCause() instanceof CommunicationsException)
-        || (communicationsException.getCause() instanceof SocketException)
-        || (communicationsException.getCause() instanceof CJCommunicationsException)) {
+    if (communicationsException.getCause() instanceof SocketException) {
       LOGGER.warn(communicationsException.getMessage());
       LOGGER.warn(
           "Detected communication exception of type {}",
@@ -395,11 +389,9 @@ public class ModelDBUtils {
     if (throwable == null) {
       return null;
     }
-    Throwable rootCause = throwable;
+    var rootCause = throwable;
     while (rootCause.getCause() != null
-        && !(rootCause.getCause() instanceof CJCommunicationsException
-            || rootCause.getCause() instanceof CommunicationsException
-            || rootCause.getCause() instanceof SocketException
+        && !(rootCause.getCause() instanceof SocketException
             || rootCause.getCause() instanceof LockAcquisitionException)) {
       rootCause = rootCause.getCause();
     }
@@ -424,14 +416,14 @@ public class ModelDBUtils {
   }
 
   public static void checkIfEntityAlreadyExists(
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       Workspace workspace,
       String name,
       List<String> projectEntityIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     List<GetResourcesResponseItem> responseItems =
-        roleService.getResourceItems(
-            workspace, new HashSet<>(projectEntityIds), modelDBServiceResourceTypes);
+        mdbRoleService.getResourceItems(
+            workspace, new HashSet<>(projectEntityIds), modelDBServiceResourceTypes, false);
     for (GetResourcesResponseItem item : responseItems) {
       if (workspace.getId() == item.getWorkspaceId()) {
         // Throw error if it is an insert request and project with same name already exists
@@ -443,15 +435,15 @@ public class ModelDBUtils {
   }
 
   public static Set<String> filterWorkspaceOnlyAccessibleIds(
-      RoleService roleService,
+      MDBRoleService mdbRoleService,
       Set<String> accessibleAllWorkspaceProjectIds,
       String workspaceName,
       UserInfo userInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    Workspace workspace = roleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+    var workspace = mdbRoleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
     List<GetResourcesResponseItem> items =
-        roleService.getResourceItems(
-            workspace, accessibleAllWorkspaceProjectIds, modelDBServiceResourceTypes);
+        mdbRoleService.getResourceItems(
+            workspace, accessibleAllWorkspaceProjectIds, modelDBServiceResourceTypes, false);
     return items.stream().map(GetResourcesResponseItem::getResourceId).collect(Collectors.toSet());
   }
 
@@ -556,13 +548,15 @@ public class ModelDBUtils {
   public static Object retryOrThrowException(
       StatusRuntimeException ex, boolean retry, RetryCallInterface<?> retryCallInterface) {
     return CommonUtils.retryOrThrowException(
-        ex, retry, retryCallInterface, App.getInstance().config.grpcServer.requestTimeout);
+        ex,
+        retry,
+        retryCallInterface,
+        App.getInstance().mdbConfig.getGrpcServer().getRequestTimeout());
   }
 
   public static ModelDBServiceResourceTypes getModelDBServiceResourceTypesFromRepository(
       RepositoryEntity repository) {
-    ModelDBServiceResourceTypes modelDBServiceResourceTypes =
-        ModelDBServiceResourceTypes.REPOSITORY;
+    var modelDBServiceResourceTypes = ModelDBServiceResourceTypes.REPOSITORY;
     if (repository.isDataset()) {
       modelDBServiceResourceTypes = ModelDBServiceResourceTypes.DATASET;
     }
