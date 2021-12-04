@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from verta._internal_utils import credentials
+from verta import credentials
 from verta._internal_utils._utils import Connection, _GRPC_PREFIX
 
 
