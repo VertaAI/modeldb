@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/ramda": "^0.26.21",
+    "@types/ramda": "^0.27.49",
     "authenticator": "^1.1.5",
     "axios": "^0.21.1",
     "chai": "^4.2.0",
