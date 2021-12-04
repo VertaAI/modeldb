@@ -22,10 +22,7 @@ from ._internal_utils import (
 )
 
 from verta import credentials
-from verta.credentials import (
-    EmailCredentials,
-    JWTCredentials,
-)
+from verta.credentials import EmailCredentials, JWTCredentials
 
 from .tracking import _Context
 from .tracking.entities import (
