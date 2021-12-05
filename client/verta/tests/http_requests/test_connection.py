@@ -37,7 +37,7 @@ class TestConnection:
     def test_dev_key_auth(self):
         fake_email = "test@verta.ai"
         fake_dev_key = "1234"
-        email_credentials = credentials.build(email=fake_email, dev_key=fake_dev_key)
+        email_credentials = credentials._build(email=fake_email, dev_key=fake_dev_key)
         conn = Connection(
             scheme=https_scheme,
             socket=fake_socket,
@@ -58,7 +58,7 @@ class TestConnection:
     def test_jwt_auth(self):
         fake_token = "token"
         fake_token_sig = "token_sig"
-        jwt_credentials = credentials.build(
+        jwt_credentials = credentials._build(
             jwt_token=fake_token, jwt_token_sig=fake_token_sig
         )
         conn = Connection(
