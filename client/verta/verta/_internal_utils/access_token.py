@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-class AccessToken:
+class AccessToken(object):
 
     def __init__(self, token):
         self.access_token = token

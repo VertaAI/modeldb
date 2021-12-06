@@ -7,7 +7,7 @@ MODEL_LANGUAGE_ATTR_KEY = "__verta_reserved__model_language"
 MODEL_TYPE_ATTR_KEY = "__verta_reserved__model_type"
 
 
-class ModelLanguage:
+class ModelLanguage(object):
     UNKNOWN = ModelMetadata_pb2.ModelLanguageEnum.ModelLanguage.Name(
         ModelMetadata_pb2.ModelLanguageEnum.Unknown,
     )
@@ -16,7 +16,7 @@ class ModelLanguage:
     )
 
 
-class ModelType:
+class ModelType(object):
     CUSTOM = ModelMetadata_pb2.ModelTypeEnum.ModelType.Name(
         ModelMetadata_pb2.ModelTypeEnum.Custom,
     )
