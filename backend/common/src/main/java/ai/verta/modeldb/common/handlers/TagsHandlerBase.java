@@ -1,6 +1,6 @@
 package ai.verta.modeldb.common.handlers;
 
-import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -29,6 +29,23 @@ public abstract class TagsHandlerBase {
     this.jdbi = jdbi;
     this.entityName = entityName;
     setEntityIdReferenceColumn(entityName);
+  }
+
+  public static List<String> checkEntityTagsLength(List<String> tags) {
+    for (String tag : tags) {
+      if (tag.isEmpty()) {
+        var errorMessage = "Invalid tag found, Tag shouldn't be empty";
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      } else if (tag.length() > CommonConstants.TAG_LENGTH) {
+        String errorMessage =
+            "Tag name can not be more than "
+                + CommonConstants.TAG_LENGTH
+                + " characters. Limit exceeded tag is: "
+                + tag;
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      }
+    }
+    return tags;
   }
 
   protected abstract void setEntityIdReferenceColumn(String entityName);
@@ -88,7 +105,7 @@ public abstract class TagsHandlerBase {
         .thenCompose(unused -> getTags(entityId), executor)
         .thenCompose(
             existingTags -> {
-              final var tagsSet = new HashSet<>(CommonUtils.checkEntityTagsLength(tags));
+              final var tagsSet = new HashSet<>(checkEntityTagsLength(tags));
               tagsSet.removeAll(existingTags);
               if (tagsSet.isEmpty()) {
                 return InternalFuture.completedInternalFuture(null);

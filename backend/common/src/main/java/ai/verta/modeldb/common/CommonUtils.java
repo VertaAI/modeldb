@@ -13,7 +13,6 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.net.SocketException;
-import java.util.List;
 import java.util.concurrent.CompletionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,23 +40,6 @@ public class CommonUtils {
       LOGGER.warn("Error generating builder for {}", jsonString, ex);
       throw new RuntimeException(ex);
     }
-  }
-
-  public static List<String> checkEntityTagsLength(List<String> tags) {
-    for (String tag : tags) {
-      if (tag.isEmpty()) {
-        var errorMessage = "Invalid tag found, Tag shouldn't be empty";
-        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
-      } else if (tag.length() > CommonConstants.TAG_LENGTH) {
-        String errorMessage =
-            "Tag name can not be more than "
-                + CommonConstants.TAG_LENGTH
-                + " characters. Limit exceeded tag is: "
-                + tag;
-        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
-      }
-    }
-    return tags;
   }
 
   public interface RetryCallInterface<T> {

@@ -16,6 +16,7 @@ import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -171,7 +172,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             .setEndTime(request.getEndTime())
             .setCodeVersion(request.getCodeVersion())
             .setParentId(request.getParentId())
-            .addAllTags(CommonUtils.checkEntityTagsLength(request.getTagsList()))
+            .addAllTags(TagsHandlerBase.checkEntityTagsLength(request.getTagsList()))
             .addAllAttributes(request.getAttributesList())
             .addAllHyperparameters(request.getHyperparametersList())
             .addAllArtifacts(request.getArtifactsList())
@@ -576,7 +577,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
       var updatedExperimentRun =
           experimentRunDAO.addExperimentRunTags(
-              request.getId(), CommonUtils.checkEntityTagsLength(request.getTagsList()));
+              request.getId(), TagsHandlerBase.checkEntityTagsLength(request.getTagsList()));
       var response =
           AddExperimentRunTags.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
 
@@ -629,7 +630,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
       var updatedExperimentRun =
           experimentRunDAO.addExperimentRunTags(
               request.getId(),
-              CommonUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
+              TagsHandlerBase.checkEntityTagsLength(Collections.singletonList(request.getTag())));
       var response =
           AddExperimentRunTag.Response.newBuilder().setExperimentRun(updatedExperimentRun).build();
 

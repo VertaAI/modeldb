@@ -4,13 +4,13 @@ import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
@@ -121,7 +121,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             .setShortName(projectShortName)
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
-            .addAllTags(CommonUtils.checkEntityTagsLength(request.getTagsList()))
+            .addAllTags(TagsHandlerBase.checkEntityTagsLength(request.getTagsList()))
             .setProjectVisibility(request.getProjectVisibility())
             .setVisibility(request.getVisibility())
             .addAllArtifacts(request.getArtifactsList())

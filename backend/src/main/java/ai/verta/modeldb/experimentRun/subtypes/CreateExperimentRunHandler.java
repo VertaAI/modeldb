@@ -6,13 +6,13 @@ import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
-import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -148,7 +148,7 @@ public class CreateExperimentRunHandler {
             .setEndTime(request.getEndTime())
             .setCodeVersion(request.getCodeVersion())
             .setParentId(request.getParentId())
-            .addAllTags(CommonUtils.checkEntityTagsLength(request.getTagsList()))
+            .addAllTags(TagsHandlerBase.checkEntityTagsLength(request.getTagsList()))
             .addAllAttributes(request.getAttributesList())
             .addAllHyperparameters(request.getHyperparametersList())
             .addAllArtifacts(request.getArtifactsList())

@@ -62,6 +62,7 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.MapSubtypes;
+import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.TrialConfig;
@@ -402,7 +403,8 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> tagsHandler.addTags(runId, CommonUtils.checkEntityTagsLength(tags)), executor)
+            unused -> tagsHandler.addTags(runId, TagsHandlerBase.checkEntityTagsLength(tags)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }

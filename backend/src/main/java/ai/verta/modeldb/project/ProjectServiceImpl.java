@@ -53,6 +53,7 @@ import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -462,7 +463,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
 
       var updatedProject =
           projectDAO.addProjectTags(
-              request.getId(), CommonUtils.checkEntityTagsLength(request.getTagsList()));
+              request.getId(), TagsHandlerBase.checkEntityTagsLength(request.getTagsList()));
       var response = AddProjectTags.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
@@ -595,7 +596,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
       var updatedProject =
           projectDAO.addProjectTags(
               request.getId(),
-              CommonUtils.checkEntityTagsLength(Collections.singletonList(request.getTag())));
+              TagsHandlerBase.checkEntityTagsLength(Collections.singletonList(request.getTag())));
       var response = AddProjectTag.Response.newBuilder().setProject(updatedProject).build();
 
       // Add succeeded event in local DB
