@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.common.reconcilers.SendEventsWithCleanUp;
+import ai.verta.modeldb.config.TestConfig;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,32 +26,33 @@ public class ReconcilerInitializer {
   public static void initialize(
       Config config, ServiceSet services, DAOSet daos, FutureJdbi futureJdbi, Executor executor) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
+
+    ReconcilerConfig reconcilerConfig = new ReconcilerConfig(config instanceof TestConfig);
+
     softDeleteProjects =
-        new SoftDeleteProjects(
-            new ReconcilerConfig(), services.mdbRoleService, futureJdbi, executor);
+        new SoftDeleteProjects(reconcilerConfig, services.mdbRoleService, futureJdbi, executor);
     softDeleteExperiments =
-        new SoftDeleteExperiments(
-            new ReconcilerConfig(), services.mdbRoleService, futureJdbi, executor);
+        new SoftDeleteExperiments(reconcilerConfig, services.mdbRoleService, futureJdbi, executor);
     softDeleteExperimentRuns =
         new SoftDeleteExperimentRuns(
-            new ReconcilerConfig(), services.mdbRoleService, futureJdbi, executor);
+            reconcilerConfig, services.mdbRoleService, futureJdbi, executor);
     softDeleteRepositories =
         new SoftDeleteRepositories(
-            new ReconcilerConfig(), services.mdbRoleService, false, futureJdbi, executor);
+            reconcilerConfig, services.mdbRoleService, false, futureJdbi, executor);
     softDeleteDatasets =
         new SoftDeleteRepositories(
-            new ReconcilerConfig(), services.mdbRoleService, true, futureJdbi, executor);
+            reconcilerConfig, services.mdbRoleService, true, futureJdbi, executor);
     updateRepositoryTimestampReconcile =
-        new UpdateRepositoryTimestampReconcile(new ReconcilerConfig(), futureJdbi, executor);
+        new UpdateRepositoryTimestampReconcile(reconcilerConfig, futureJdbi, executor);
     updateExperimentTimestampReconcile =
-        new UpdateExperimentTimestampReconcile(new ReconcilerConfig(), futureJdbi, executor);
+        new UpdateExperimentTimestampReconcile(reconcilerConfig, futureJdbi, executor);
     updateProjectTimestampReconcile =
-        new UpdateProjectTimestampReconcile(new ReconcilerConfig(), futureJdbi, executor);
+        new UpdateProjectTimestampReconcile(reconcilerConfig, futureJdbi, executor);
 
     if (config.isEvent_system_enabled()) {
       sendEventsWithCleanUp =
           new SendEventsWithCleanUp(
-              new ReconcilerConfig(), services.uac, daos.futureEventDAO, futureJdbi, executor);
+              reconcilerConfig, services.uac, daos.futureEventDAO, futureJdbi, executor);
     }
 
     LOGGER.info("Exit from ReconcilerUtils: initialize()");

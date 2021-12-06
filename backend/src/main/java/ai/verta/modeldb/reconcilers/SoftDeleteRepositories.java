@@ -180,6 +180,8 @@ public class SoftDeleteRepositories extends Reconciler<String> {
           if (transaction != null && transaction.getStatus().canRollback()) {
             transaction.rollback();
           }
+
+          deleteRepositories(session, ids);
         } catch (Exception ex) {
           logger.error("SoftDeleteRepositories : deleteRepositories : Exception: ", ex);
           if (transaction != null && transaction.getStatus().canRollback()) {

@@ -8,10 +8,12 @@ import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
-import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
+import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
+import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
+import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.OrganizationServiceGrpc;
@@ -22,16 +24,17 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.concurrent.Executor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 public class TestsInit {
-
+  private static final Logger LOGGER = LogManager.getLogger(TestsInit.class);
   private static InProcessServerBuilder serverBuilder;
   protected static AuthClientInterceptor authClientInterceptor;
 
   protected static TestConfig testConfig;
-  protected static DeleteEntitiesCron deleteEntitiesCron;
   protected static AuthService authService;
   protected static Executor handleExecutor;
   protected static ServiceSet services;
@@ -105,8 +108,6 @@ public class TestsInit {
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
-    deleteEntitiesCron =
-        new DeleteEntitiesCron(services.authService, services.mdbRoleService, 1000);
 
     if (testConfig.getAuthService() != null) {
       ManagedChannel authServiceChannel =
@@ -165,15 +166,47 @@ public class TestsInit {
   }
 
   @AfterClass
-  public static void removeServerAndService() {
+  public static void removeServerAndService() throws InterruptedException {
     App.initiateShutdown(0);
 
-    // Remove all entities
-    // removeEntities();
-    // Delete entities by cron job
-    deleteEntitiesCron.run();
+    cleanUpResources();
 
     // shutdown test server
     serverBuilder.build().shutdownNow();
+  }
+
+  protected static void cleanUpResources() throws InterruptedException {
+    // Remove all entities
+    // removeEntities();
+    // Delete entities by cron job
+    SoftDeleteProjects softDeleteProjects = ReconcilerInitializer.softDeleteProjects;
+    SoftDeleteExperiments softDeleteExperiments = ReconcilerInitializer.softDeleteExperiments;
+    SoftDeleteExperimentRuns softDeleteExperimentRuns =
+        ReconcilerInitializer.softDeleteExperimentRuns;
+
+    softDeleteProjects.resync();
+    while (softDeleteProjects.isNotEmpty()) {
+      LOGGER.trace("Project deletion is still in progress");
+      Thread.sleep(10);
+    }
+    softDeleteExperiments.resync();
+    while (softDeleteExperiments.isNotEmpty()) {
+      LOGGER.trace("Experiment deletion is still in progress");
+      Thread.sleep(10);
+    }
+    softDeleteExperimentRuns.resync();
+    while (softDeleteExperimentRuns.isNotEmpty()) {
+      LOGGER.trace("ExperimentRun deletion is still in progress");
+      Thread.sleep(10);
+    }
+
+    ReconcilerInitializer.softDeleteDatasets.resync();
+    ReconcilerInitializer.softDeleteRepositories.resync();
+  }
+
+  protected static void updateTimestampOfResources() {
+    ReconcilerInitializer.updateRepositoryTimestampReconcile.resync();
+    ReconcilerInitializer.updateExperimentTimestampReconcile.resync();
+    ReconcilerInitializer.updateProjectTimestampReconcile.resync();
   }
 }
