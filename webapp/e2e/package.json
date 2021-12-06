@@ -20,7 +20,7 @@
     "mocha": "^8.2.1",
     "mochawesome": "^4.1.0",
     "ramda": "^0.26.1",
-    "selenium-webdriver": "^4.0.0-alpha.4"
+    "selenium-webdriver": "^4.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.0",
