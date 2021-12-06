@@ -185,17 +185,17 @@ public class TestsInit {
         ReconcilerInitializer.softDeleteExperimentRuns;
 
     softDeleteProjects.resync();
-    while (softDeleteProjects.isEmpty()) {
+    while (softDeleteProjects.isNotEmpty()) {
       LOGGER.trace("Project deletion is still in progress");
       Thread.sleep(10);
     }
     softDeleteExperiments.resync();
-    while (softDeleteExperiments.isEmpty()) {
+    while (softDeleteExperiments.isNotEmpty()) {
       LOGGER.trace("Experiment deletion is still in progress");
       Thread.sleep(10);
     }
     softDeleteExperimentRuns.resync();
-    while (softDeleteExperimentRuns.isEmpty()) {
+    while (softDeleteExperimentRuns.isNotEmpty()) {
       LOGGER.trace("ExperimentRun deletion is still in progress");
       Thread.sleep(10);
     }

@@ -145,7 +145,7 @@ public abstract class Reconciler<T> {
 
   protected abstract ReconcileResult reconcile(Set<T> objs);
 
-  public boolean isEmpty() {
+  public boolean isNotEmpty() {
     return !processingIdSet.isEmpty();
   }
 }
