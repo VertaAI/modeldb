@@ -11,8 +11,10 @@ from verta.environment import (
     Python,
 )
 
+from .. import utils
 
-@pytest.fixture(params=_DeployableEntity.__subclasses__())
+
+@pytest.fixture(params=utils.sorted_subclasses(_DeployableEntity))
 def deployable_entity(request, client, created_entities):
     cls = request.param
     if cls is ExperimentRun:
@@ -32,7 +34,7 @@ def deployable_entity(request, client, created_entities):
     return entity
 
 
-@pytest.fixture(params=_Environment.__subclasses__())
+@pytest.fixture(params=utils.sorted_subclasses(_Environment))
 def environment(request):
     cls = request.param
     if cls is Docker:
