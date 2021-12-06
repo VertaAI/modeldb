@@ -15,7 +15,7 @@
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chromedriver": "^87.0.0",
-    "dotenv": "^8.1.0",
+    "dotenv": "^8.6.0",
     "faker": "^4.1.0",
     "mocha": "^8.2.1",
     "mochawesome": "^4.1.0",
