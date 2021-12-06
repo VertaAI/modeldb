@@ -47,7 +47,7 @@ THREAD_LOCALS = threading.local()
 THREAD_LOCALS.active_experiment_run = None
 
 
-class Connection:
+class Connection(object):
     _OSS_DEFAULT_WORKSPACE = "personal"
 
     def __init__(self, scheme=None, socket=None, auth=None, max_retries=0, ignore_conn_err=False, credentials=None, headers=None):
@@ -306,7 +306,7 @@ class NoneProtoResponse(object):
         return False
 
 
-class Configuration:
+class Configuration(object):
     def __init__(self, use_git=True, debug=False):
         """
         Client behavior configuration utility struct.

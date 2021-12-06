@@ -19,7 +19,7 @@ from .summary import Summary
 from .queries import SummaryQuery
 
 
-class Summaries:
+class Summaries(object):
     """Collection object for creating and finding summaries.
 
     Parameters
