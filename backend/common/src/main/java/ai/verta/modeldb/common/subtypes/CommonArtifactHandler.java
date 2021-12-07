@@ -29,9 +29,7 @@ public abstract class CommonArtifactHandler {
   }
 
   public CommonArtifactHandler(
-      Executor executor,
-      FutureJdbi jdbi,
-      ArtifactStoreConfig artifactStoreConfig) {
+      Executor executor, FutureJdbi jdbi, ArtifactStoreConfig artifactStoreConfig) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.artifactStoreConfig = artifactStoreConfig;
