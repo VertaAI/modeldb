@@ -22,6 +22,7 @@ Verta
 
         code
         configuration
+        credentials
         data_types
         dataset
         deployment
