@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
-public abstract class ArtifactHandlerBase {
+public abstract class CommonArtifactHandler {
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   protected final Executor executor;
   protected final FutureJdbi jdbi;
@@ -33,7 +33,7 @@ public abstract class ArtifactHandlerBase {
 
   protected abstract void setEntityIdReferenceColumn(String entityName);
 
-  public ArtifactHandlerBase(
+  public CommonArtifactHandler(
       Executor executor,
       FutureJdbi jdbi,
       String fieldType,

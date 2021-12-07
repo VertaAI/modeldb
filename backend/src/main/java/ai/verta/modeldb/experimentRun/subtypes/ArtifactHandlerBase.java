@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.subtypes.CommonArtifactHandler;
 import com.google.rpc.Code;
 import java.util.List;
 import java.util.Optional;
@@ -16,7 +17,7 @@ import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
 public abstract class ArtifactHandlerBase
-    extends ai.verta.modeldb.common.subtypes.ArtifactHandlerBase {
+    extends CommonArtifactHandler {
 
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
