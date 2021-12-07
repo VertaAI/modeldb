@@ -3023,7 +3023,7 @@ public class HydratedServiceTest extends TestsInit {
   }
 
   @Test
-  public void checkCollaboratorDeleteActionTest() {
+  public void checkCollaboratorDeleteActionTest() throws InterruptedException {
     LOGGER.info("Check collaborator has delete action test start.........");
 
     if (!testConfig.hasAuth()) {
@@ -3189,7 +3189,7 @@ public class HydratedServiceTest extends TestsInit {
       LOGGER.info(deleteProjectResponse.toString());
       assertTrue(deleteProjectResponse.getStatus());
 
-      deleteEntitiesCron.run();
+      cleanUpResources();
     }
 
     LOGGER.info("Check collaborator has delete action test stop.........");

@@ -1,4 +1,4 @@
-class AsciiTable:
+class AsciiTable(object):
     GAP = "   "
     def __init__(self, table):
         self.table = ""

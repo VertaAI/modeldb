@@ -426,7 +426,7 @@ public class ProjectTest extends TestsInit {
       LOGGER.info("Project Created Successfully");
       projects.add(response.getProject());
 
-      projectName = "Code Versioning_ver-1.1 (none; git children)";
+      projectName = "Code Versioning_ver-1.1 (none; git children)" + new Date().getTime();
       createProjectRequest = getCreateProjectRequest(projectName);
       createProjectRequest = createProjectRequest.toBuilder().build();
       response = projectServiceStub.createProject(createProjectRequest);
@@ -2035,65 +2035,233 @@ public class ProjectTest extends TestsInit {
   }
 
   @Test
-  public void y_projectCascadeDeleteTest() {
+  public void y_projectCascadeDeleteTest() throws InterruptedException {
     LOGGER.info("Project delete with cascading test start................................");
+    cleanUpResources();
+
+    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
+
+    Project project = null;
+    ExperimentRun experimentRun1;
+    ExperimentRun experimentRun3;
     try {
-      deleteEntitiesCron.run();
+      // Create project
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
+      CreateProject.Response createProjectResponse =
+          projectServiceStub.createProject(createProjectRequest);
+      project = createProjectResponse.getProject();
+      LOGGER.info("\n Project created successfully \n");
 
-      ExperimentRunTest experimentRunTest = new ExperimentRunTest();
+      // Create two experiment of above project
+      CreateExperiment request =
+          ExperimentTest.getCreateExperimentRequest(
+              project.getId(), "Experiment-1-" + new Date().getTime());
+      CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
+      Experiment experiment1 = response.getExperiment();
+      LOGGER.info("\n Experiment1 created successfully \n");
+      request =
+          ExperimentTest.getCreateExperimentRequest(
+              project.getId(), "Experiment-2-" + new Date().getTime());
+      response = experimentServiceStub.createExperiment(request);
+      Experiment experiment2 = response.getExperiment();
+      LOGGER.info("\n Experiment2 created successfully \n");
 
-      Project project = null;
-      ExperimentRun experimentRun1;
-      ExperimentRun experimentRun3;
+      // Create four ExperimentRun of above two experiment, each experiment has two experimentRun
+      // For ExperiemntRun of Experiment1
+      CreateExperimentRun createExperimentRunRequest =
+          experimentRunTest.getCreateExperimentRunRequest(
+              project.getId(), experiment1.getId(), "ExperiemntRun-1-" + new Date().getTime());
+      CreateExperimentRun.Response createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      experimentRun1 = createExperimentRunResponse.getExperimentRun();
+      LOGGER.info("\n ExperimentRun1 created successfully \n");
+      createExperimentRunRequest =
+          experimentRunTest.getCreateExperimentRunRequest(
+              project.getId(), experiment1.getId(), "ExperiemntRun-2-" + new Date().getTime());
+      experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("\n ExperimentRun2 created successfully \n");
+
+      // For ExperiemntRun of Experiment2
+      createExperimentRunRequest =
+          experimentRunTest.getCreateExperimentRunRequest(
+              project.getId(), experiment2.getId(), "ExperiemntRun-3-" + new Date().getTime());
+      createExperimentRunResponse =
+          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      experimentRun3 = createExperimentRunResponse.getExperimentRun();
+      LOGGER.info("\n ExperimentRun3 created successfully \n");
+      createExperimentRunRequest =
+          experimentRunTest.getCreateExperimentRunRequest(
+              project.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
+      experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
+      LOGGER.info("\n ExperimentRun4 created successfully \n");
+
+      // Create comment for above experimentRun1 & experimentRun3
+      // comment for experiment1
+      AddComment addCommentRequest =
+          AddComment.newBuilder()
+              .setEntityId(experimentRun1.getId())
+              .setMessage(
+                  "Hello, this project is intreasting." + Calendar.getInstance().getTimeInMillis())
+              .build();
+      commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
+      LOGGER.info("\n Comment added successfully for ExperimentRun1 \n");
+      // comment for experimentRun3
+      addCommentRequest =
+          AddComment.newBuilder()
+              .setEntityId(experimentRun3.getId())
+              .setMessage(
+                  "Hello, this project is intreasting." + Calendar.getInstance().getTimeInMillis())
+              .build();
+      commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
+      LOGGER.info("\n Comment added successfully for ExperimentRun3 \n");
+
+      // Create two collaborator for above project
+      // For Collaborator1
+      if (testConfig.hasAuth()) {
+        AddCollaboratorRequest addCollaboratorRequest =
+            CollaboratorUtils.addCollaboratorRequestProjectInterceptor(
+                project, CollaboratorType.READ_WRITE, authClientInterceptor);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("\n Collaborator1 added successfully \n");
+      }
+    } finally {
+      if (project != null) {
+        // Delete all data related to project
+        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+        DeleteProject.Response deleteProjectResponse =
+            projectServiceStub.deleteProject(deleteProject);
+        LOGGER.info("Project deleted successfully");
+        LOGGER.info(deleteProjectResponse.toString());
+        assertTrue(deleteProjectResponse.getStatus());
+      }
+    }
+
+    // Delete entities by cron job
+    // 3 calls to ensure all P, E and ER are deleted.
+    cleanUpResources();
+
+    // Start cross-checking of deleted the project all data from DB from here.
+    try {
+      GetProjectById getProject = GetProjectById.newBuilder().setId(project.getId()).build();
+      projectServiceStub.getProjectById(getProject);
+      fail();
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
+
+    // Start cross-checking for experiment
+
+    try {
+      GetExperimentsInProject getExperiment =
+          GetExperimentsInProject.newBuilder().setProjectId(project.getId()).build();
+      experimentServiceStub.getExperimentsInProject(getExperiment);
+      if (testConfig.hasAuth()) {
+        fail();
+      }
+    } catch (StatusRuntimeException ex) {
+      checkEqualsAssert(ex);
+    }
+
+    // Start cross-checking for experimentRun
+    try {
+      GetExperimentRunsInProject getExperimentRuns =
+          GetExperimentRunsInProject.newBuilder().setProjectId(project.getId()).build();
+      GetExperimentRunsInProject.Response runResponse =
+          experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
+      if (testConfig.hasAuth()) {
+        assertEquals(0, runResponse.getExperimentRunsCount());
+        assertEquals(0, runResponse.getTotalRecords());
+      }
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
+
+    // Start cross-checking for comment of experimentRun
+    // For experimentRun1
+    GetComments getCommentsRequest =
+        GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
+    GetComments.Response getCommentsResponse;
+    try {
+      commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+      if (testConfig.hasAuth()) {
+        fail();
+      }
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
+    // For experimentRun3
+    getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
+    try {
+      getCommentsResponse = commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+      assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+    } catch (StatusRuntimeException e) {
+      checkEqualsAssert(e);
+    }
+
+    // Start cross-checking for project collaborator
+    if (testConfig.hasAuth()) {
+      GetCollaborator getCollaboratorRequest =
+          GetCollaborator.newBuilder().setEntityId(project.getId()).build();
       try {
+        collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
+        fail();
+      } catch (StatusRuntimeException e) {
+        checkEqualsAssert(e);
+      }
+    }
+
+    List<String> projectIds = new ArrayList<>();
+    try {
+      for (int count = 0; count < 5; count++) {
         // Create project
         CreateProject createProjectRequest =
-            getCreateProjectRequest("project-" + new Date().getTime());
+            getCreateProjectRequest("project-" + new Date().getTime() + "-" + count);
         CreateProject.Response createProjectResponse =
             projectServiceStub.createProject(createProjectRequest);
+        projectIds.add(createProjectResponse.getProject().getId());
         project = createProjectResponse.getProject();
         LOGGER.info("\n Project created successfully \n");
 
         // Create two experiment of above project
         CreateExperiment request =
-            ExperimentTest.getCreateExperimentRequest(
-                project.getId(), "Experiment-1-" + new Date().getTime());
+            ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment1_" + count);
         CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
         Experiment experiment1 = response.getExperiment();
         LOGGER.info("\n Experiment1 created successfully \n");
         request =
-            ExperimentTest.getCreateExperimentRequest(
-                project.getId(), "Experiment-2-" + new Date().getTime());
+            ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment2_" + count);
         response = experimentServiceStub.createExperiment(request);
         Experiment experiment2 = response.getExperiment();
         LOGGER.info("\n Experiment2 created successfully \n");
 
-        // Create four ExperimentRun of above two experiment, each experiment has two experimentRun
+        // Create four ExperimentRun of above two experiment, each experiment has two
+        // experimentRun
         // For ExperiemntRun of Experiment1
         CreateExperimentRun createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment1.getId(), "ExperiemntRun-1-" + new Date().getTime());
+                project.getId(), experiment1.getId(), "ExperiemntRun1_" + count);
         CreateExperimentRun.Response createExperimentRunResponse =
             experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         experimentRun1 = createExperimentRunResponse.getExperimentRun();
         LOGGER.info("\n ExperimentRun1 created successfully \n");
         createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment1.getId(), "ExperiemntRun-2-" + new Date().getTime());
+                project.getId(), experiment1.getId(), "ExperiemntRun2_" + count);
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         LOGGER.info("\n ExperimentRun2 created successfully \n");
 
         // For ExperiemntRun of Experiment2
         createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment2.getId(), "ExperiemntRun-3-" + new Date().getTime());
+                project.getId(), experiment2.getId(), "ExperiemntRun3_" + count);
         createExperimentRunResponse =
             experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         experimentRun3 = createExperimentRunResponse.getExperimentRun();
         LOGGER.info("\n ExperimentRun3 created successfully \n");
         createExperimentRunRequest =
             experimentRunTest.getCreateExperimentRunRequest(
-                project.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
+                project.getId(), experiment2.getId(), "ExperimentRun4_" + count);
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         LOGGER.info("\n ExperimentRun4 created successfully \n");
 
@@ -2128,35 +2296,33 @@ public class ProjectTest extends TestsInit {
           collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
           LOGGER.info("\n Collaborator1 added successfully \n");
         }
-      } finally {
-        if (project != null) {
-          // Delete all data related to project
-          DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-          DeleteProject.Response deleteProjectResponse =
-              projectServiceStub.deleteProject(deleteProject);
-          LOGGER.info("Project deleted successfully");
-          LOGGER.info(deleteProjectResponse.toString());
-          assertTrue(deleteProjectResponse.getStatus());
-        }
       }
+    } finally {
+      // Delete all data related to project
+      DeleteProjects deleteProjects = DeleteProjects.newBuilder().addAllIds(projectIds).build();
+      DeleteProjects.Response deleteProjectsResponse =
+          projectServiceStub.deleteProjects(deleteProjects);
+      LOGGER.info("Project deleted successfully");
+      LOGGER.info(deleteProjectsResponse.toString());
+      assertTrue(deleteProjectsResponse.getStatus());
+    }
 
-      // Delete entities by cron job
-      // 3 calls to ensure all P, E and ER are deleted.
-      deleteEntitiesCron.run();
-      deleteEntitiesCron.run();
-      deleteEntitiesCron.run();
+    // Delete entities by cron job
+    cleanUpResources();
 
+    for (String projectId : projectIds) {
       // Start cross-checking of deleted the project all data from DB from here.
       try {
-        GetProjectById getProject = GetProjectById.newBuilder().setId(project.getId()).build();
+        GetProjectById getProject = GetProjectById.newBuilder().setId(projectId).build();
         projectServiceStub.getProjectById(getProject);
         fail();
       } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.info("Error Code : " + status.getCode() + " Error : " + status.getDescription());
         checkEqualsAssert(e);
       }
 
       // Start cross-checking for experiment
-
       try {
         GetExperimentsInProject getExperiment =
             GetExperimentsInProject.newBuilder().setProjectId(project.getId()).build();
@@ -2172,11 +2338,10 @@ public class ProjectTest extends TestsInit {
       try {
         GetExperimentRunsInProject getExperimentRuns =
             GetExperimentRunsInProject.newBuilder().setProjectId(project.getId()).build();
-        GetExperimentRunsInProject.Response runResponse =
+        GetExperimentRunsInProject.Response getResponse =
             experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
-        if (testConfig.hasAuth()) {
-          assertEquals(0, runResponse.getExperimentRunsCount());
-          assertEquals(0, runResponse.getTotalRecords());
+        if (testConfig.hasAuth() && getResponse.getExperimentRunsCount() > 0) {
+          fail();
         }
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
@@ -2184,9 +2349,7 @@ public class ProjectTest extends TestsInit {
 
       // Start cross-checking for comment of experimentRun
       // For experimentRun1
-      GetComments getCommentsRequest =
-          GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
-      GetComments.Response getCommentsResponse;
+      getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
       try {
         commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
         if (testConfig.hasAuth()) {
@@ -2195,12 +2358,14 @@ public class ProjectTest extends TestsInit {
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
       }
+
       // For experimentRun3
       getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
       try {
-        getCommentsResponse =
-            commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-        assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+        commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+        if (testConfig.hasAuth()) {
+          fail();
+        }
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
       }
@@ -2210,193 +2375,14 @@ public class ProjectTest extends TestsInit {
         GetCollaborator getCollaboratorRequest =
             GetCollaborator.newBuilder().setEntityId(project.getId()).build();
         try {
-          collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
+          GetCollaborator.Response getCollaboratorResponse =
+              collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
+          assertTrue(getCollaboratorResponse.getSharedUsersList().isEmpty());
           fail();
         } catch (StatusRuntimeException e) {
           checkEqualsAssert(e);
         }
       }
-
-      List<String> projectIds = new ArrayList<>();
-      try {
-        for (int count = 0; count < 5; count++) {
-          // Create project
-          CreateProject createProjectRequest =
-              getCreateProjectRequest("project-" + new Date().getTime() + "-" + count);
-          CreateProject.Response createProjectResponse =
-              projectServiceStub.createProject(createProjectRequest);
-          projectIds.add(createProjectResponse.getProject().getId());
-          project = createProjectResponse.getProject();
-          LOGGER.info("\n Project created successfully \n");
-
-          // Create two experiment of above project
-          CreateExperiment request =
-              ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment1_" + count);
-          CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
-          Experiment experiment1 = response.getExperiment();
-          LOGGER.info("\n Experiment1 created successfully \n");
-          request =
-              ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment2_" + count);
-          response = experimentServiceStub.createExperiment(request);
-          Experiment experiment2 = response.getExperiment();
-          LOGGER.info("\n Experiment2 created successfully \n");
-
-          // Create four ExperimentRun of above two experiment, each experiment has two
-          // experimentRun
-          // For ExperiemntRun of Experiment1
-          CreateExperimentRun createExperimentRunRequest =
-              experimentRunTest.getCreateExperimentRunRequest(
-                  project.getId(), experiment1.getId(), "ExperiemntRun1_" + count);
-          CreateExperimentRun.Response createExperimentRunResponse =
-              experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-          experimentRun1 = createExperimentRunResponse.getExperimentRun();
-          LOGGER.info("\n ExperimentRun1 created successfully \n");
-          createExperimentRunRequest =
-              experimentRunTest.getCreateExperimentRunRequest(
-                  project.getId(), experiment1.getId(), "ExperiemntRun2_" + count);
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-          LOGGER.info("\n ExperimentRun2 created successfully \n");
-
-          // For ExperiemntRun of Experiment2
-          createExperimentRunRequest =
-              experimentRunTest.getCreateExperimentRunRequest(
-                  project.getId(), experiment2.getId(), "ExperiemntRun3_" + count);
-          createExperimentRunResponse =
-              experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-          experimentRun3 = createExperimentRunResponse.getExperimentRun();
-          LOGGER.info("\n ExperimentRun3 created successfully \n");
-          createExperimentRunRequest =
-              experimentRunTest.getCreateExperimentRunRequest(
-                  project.getId(), experiment2.getId(), "ExperimentRun4_" + count);
-          experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
-          LOGGER.info("\n ExperimentRun4 created successfully \n");
-
-          // Create comment for above experimentRun1 & experimentRun3
-          // comment for experiment1
-          AddComment addCommentRequest =
-              AddComment.newBuilder()
-                  .setEntityId(experimentRun1.getId())
-                  .setMessage(
-                      "Hello, this project is intreasting."
-                          + Calendar.getInstance().getTimeInMillis())
-                  .build();
-          commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
-          LOGGER.info("\n Comment added successfully for ExperimentRun1 \n");
-          // comment for experimentRun3
-          addCommentRequest =
-              AddComment.newBuilder()
-                  .setEntityId(experimentRun3.getId())
-                  .setMessage(
-                      "Hello, this project is intreasting."
-                          + Calendar.getInstance().getTimeInMillis())
-                  .build();
-          commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
-          LOGGER.info("\n Comment added successfully for ExperimentRun3 \n");
-
-          // Create two collaborator for above project
-          // For Collaborator1
-          if (testConfig.hasAuth()) {
-            AddCollaboratorRequest addCollaboratorRequest =
-                CollaboratorUtils.addCollaboratorRequestProjectInterceptor(
-                    project, CollaboratorType.READ_WRITE, authClientInterceptor);
-            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-            LOGGER.info("\n Collaborator1 added successfully \n");
-          }
-        }
-      } finally {
-        // Delete all data related to project
-        DeleteProjects deleteProjects = DeleteProjects.newBuilder().addAllIds(projectIds).build();
-        DeleteProjects.Response deleteProjectsResponse =
-            projectServiceStub.deleteProjects(deleteProjects);
-        LOGGER.info("Project deleted successfully");
-        LOGGER.info(deleteProjectsResponse.toString());
-        assertTrue(deleteProjectsResponse.getStatus());
-      }
-
-      // Delete entities by cron job
-      deleteEntitiesCron.run();
-      deleteEntitiesCron.run();
-      deleteEntitiesCron.run();
-
-      for (String projectId : projectIds) {
-        // Start cross-checking of deleted the project all data from DB from here.
-        try {
-          GetProjectById getProject = GetProjectById.newBuilder().setId(projectId).build();
-          projectServiceStub.getProjectById(getProject);
-          fail();
-        } catch (StatusRuntimeException e) {
-          Status status = Status.fromThrowable(e);
-          LOGGER.info("Error Code : " + status.getCode() + " Error : " + status.getDescription());
-          checkEqualsAssert(e);
-        }
-
-        // Start cross-checking for experiment
-        try {
-          GetExperimentsInProject getExperiment =
-              GetExperimentsInProject.newBuilder().setProjectId(project.getId()).build();
-          experimentServiceStub.getExperimentsInProject(getExperiment);
-          if (testConfig.hasAuth()) {
-            fail();
-          }
-        } catch (StatusRuntimeException ex) {
-          checkEqualsAssert(ex);
-        }
-
-        // Start cross-checking for experimentRun
-        try {
-          GetExperimentRunsInProject getExperimentRuns =
-              GetExperimentRunsInProject.newBuilder().setProjectId(project.getId()).build();
-          GetExperimentRunsInProject.Response getResponse =
-              experimentRunServiceStub.getExperimentRunsInProject(getExperimentRuns);
-          if (testConfig.hasAuth() && getResponse.getExperimentRunsCount() > 0) {
-            fail();
-          }
-        } catch (StatusRuntimeException e) {
-          checkEqualsAssert(e);
-        }
-
-        // Start cross-checking for comment of experimentRun
-        // For experimentRun1
-        getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
-        try {
-          commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-          if (testConfig.hasAuth()) {
-            fail();
-          }
-        } catch (StatusRuntimeException e) {
-          checkEqualsAssert(e);
-        }
-
-        // For experimentRun3
-        getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
-        try {
-          commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-          if (testConfig.hasAuth()) {
-            fail();
-          }
-        } catch (StatusRuntimeException e) {
-          checkEqualsAssert(e);
-        }
-
-        // Start cross-checking for project collaborator
-        if (testConfig.hasAuth()) {
-          GetCollaborator getCollaboratorRequest =
-              GetCollaborator.newBuilder().setEntityId(project.getId()).build();
-          try {
-            GetCollaborator.Response getCollaboratorResponse =
-                collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
-            assertTrue(getCollaboratorResponse.getSharedUsersList().isEmpty());
-            fail();
-          } catch (StatusRuntimeException e) {
-            checkEqualsAssert(e);
-          }
-        }
-      }
-
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.info("Error Code : " + status.getCode() + " Error : " + status.getDescription());
-      fail();
     }
 
     LOGGER.info("Project delete with cascading test stop................................");
@@ -2503,12 +2489,12 @@ public class ProjectTest extends TestsInit {
         if (pageNumber == 1) {
           assertEquals(
               "Project not match with expected Project",
-              projectsMap.get(responseList.get(0).getId()),
+              projectsMap.get(project3.getId()),
               project3);
         } else if (pageNumber == 3) {
           assertEquals(
               "Project not match with expected Project",
-              projectsMap.get(responseList.get(0).getId()),
+              projectsMap.get(project1.getId()),
               project1);
         }
 

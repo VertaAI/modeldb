@@ -3,7 +3,7 @@ from .._protos.public.uac import Organization_pb2 as _Organization
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 
-class CollaboratorType:
+class CollaboratorType(object):
     def __init__(self, global_collaborator_type=None, default_repo_collaborator_type=None,
                  default_endpoint_collaborator_type=None, default_dataset_collaborator_type=None):
         self.global_collaborator_type = global_collaborator_type
@@ -12,7 +12,7 @@ class CollaboratorType:
         self.default_dataset_collaborator_type = default_dataset_collaborator_type
 
 
-class Organization:
+class Organization(object):
     """
     Object representing an Organization.
 

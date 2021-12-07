@@ -5,6 +5,11 @@ public class ReconcilerConfig {
   private int batchSize = 10;
   private int workerCount = 10;
   private int maxSync = 10000;
+  private boolean isTestReconciler;
+
+  public ReconcilerConfig(boolean isTestReconciler) {
+    this.isTestReconciler = isTestReconciler;
+  }
 
   public int getResyncPeriodSeconds() {
     return resyncPeriodSeconds;
@@ -24,5 +29,9 @@ public class ReconcilerConfig {
 
   public int getMaxSync() {
     return maxSync;
+  }
+
+  public boolean isTestReconciler() {
+    return isTestReconciler;
   }
 }

@@ -22,7 +22,7 @@ from .._internal_utils.access_token import AccessToken
 # issues during parallelism, whereas DeployedModel persists a Session for its
 # lifetime to use HTTP keep-alive and speed up consecutive predictions.
 
-class DeployedModel:
+class DeployedModel(object):
     """
     Object for interacting with deployed models.
 

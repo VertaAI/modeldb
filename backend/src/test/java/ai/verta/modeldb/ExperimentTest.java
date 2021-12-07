@@ -1715,7 +1715,7 @@ public class ExperimentTest extends TestsInit {
   }
 
   @Test
-  public void deleteExperiments() {
+  public void deleteExperiments() throws InterruptedException {
     LOGGER.info("Batch Delete Experiment test start................................");
 
     ExperimentRunTest experimentRunTest = new ExperimentRunTest();
@@ -1806,8 +1806,7 @@ public class ExperimentTest extends TestsInit {
     assertTrue(response.getStatus());
 
     // Delete entities by cron job
-    deleteEntitiesCron.run();
-    deleteEntitiesCron.run();
+    cleanUpResources();
 
     for (String experimentId : experimentIds) {
 
