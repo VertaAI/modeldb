@@ -22,27 +22,19 @@ public abstract class CommonArtifactHandler {
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   protected final Executor executor;
   protected final FutureJdbi jdbi;
-  protected final String fieldType;
-  protected final String entityName;
-  protected String entityIdReferenceColumn;
   private final ArtifactStoreConfig artifactStoreConfig;
 
   protected String getTableName() {
     return "artifact";
   }
 
-  protected abstract void setEntityIdReferenceColumn(String entityName);
-
   public CommonArtifactHandler(
       Executor executor,
       FutureJdbi jdbi,
-      String fieldType,
       String entityName,
       ArtifactStoreConfig artifactStoreConfig) {
     this.executor = executor;
     this.jdbi = jdbi;
-    this.fieldType = fieldType;
-    this.entityName = entityName;
     this.artifactStoreConfig = artifactStoreConfig;
   }
 

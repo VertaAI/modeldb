@@ -21,6 +21,9 @@ public abstract class ArtifactHandlerBase
 
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
+  protected final String entityName;
+  protected final String fieldType;
+  protected String entityIdReferenceColumn;
 
   public ArtifactHandlerBase(
       Executor executor,
@@ -28,11 +31,10 @@ public abstract class ArtifactHandlerBase
       String fieldType,
       String entityName,
       ArtifactStoreConfig artifactStoreConfig) {
-    super(executor, jdbi, fieldType, entityName, artifactStoreConfig);
-  }
+    super(executor, jdbi, entityName, artifactStoreConfig);
+    this.fieldType = fieldType;
+    this.entityName = entityName;
 
-  @Override
-  protected void setEntityIdReferenceColumn(String entityName) {
     switch (entityName) {
       case "ProjectEntity":
         this.entityIdReferenceColumn = "project_id";
