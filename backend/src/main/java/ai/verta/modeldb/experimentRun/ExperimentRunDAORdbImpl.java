@@ -7,6 +7,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.CommitArtifactPart.Response;
 import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
@@ -2419,7 +2420,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified
-        && mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3)) {
+        && mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {

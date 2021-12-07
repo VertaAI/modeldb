@@ -3,7 +3,6 @@ package ai.verta.modeldb.project;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.AddProjectTags;
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.GetAttributes;
@@ -17,6 +16,7 @@ import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -52,17 +52,18 @@ public class FutureProjectDAO {
       FutureJdbi jdbi,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      DatasetVersionDAO datasetVersionDAO,
+      MDBConfig mdbConfig) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
-    this.isMssql = App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql();
+    this.isMssql = mdbConfig.getDatabase().getRdbConfiguration().isMssql();
 
     var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
     tagsHandler = new TagsHandler(executor, jdbi, entityName);
     CodeVersionHandler codeVersionHandler = new CodeVersionHandler(executor, jdbi, "project");
-    DatasetHandler datasetHandler = new DatasetHandler(executor, jdbi, entityName);
+    DatasetHandler datasetHandler = new DatasetHandler(executor, jdbi, entityName, mdbConfig);
     artifactHandler =
         new ArtifactHandler(
             executor,
@@ -71,7 +72,8 @@ public class FutureProjectDAO {
             codeVersionHandler,
             datasetHandler,
             artifactStoreDAO,
-            datasetVersionDAO);
+            datasetVersionDAO,
+            mdbConfig);
   }
 
   public InternalFuture<Void> deleteAttributes(DeleteProjectAttributes request) {

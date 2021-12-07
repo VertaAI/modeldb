@@ -8,6 +8,7 @@ import ai.verta.common.CodeVersion;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import com.google.protobuf.ListValue;
@@ -189,7 +190,7 @@ public class ProjectTest extends TestsInit {
             .setArtifactType(ArtifactType.MODEL)
             .setLinkedArtifactId(datasetVersion1.getId())
             .setUploadCompleted(
-                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3))
+                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
             .build());
     datasets.add(
         Artifact.newBuilder()
@@ -198,7 +199,7 @@ public class ProjectTest extends TestsInit {
             .setArtifactType(ArtifactType.DATA)
             .setLinkedArtifactId(datasetVersion1.getId())
             .setUploadCompleted(
-                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3))
+                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
             .build());
     CreateExperimentRun createExperimentRunRequest =
         ExperimentRunTest.getCreateExperimentRunRequest(
@@ -305,7 +306,7 @@ public class ProjectTest extends TestsInit {
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Flh3.googleusercontent.com%2FFyZA5SbKPJA7Y3XCeb9-uGwow8pugxj77Z1xvs8vFS6EI3FABZDCDtA9ScqzHKjhU8av_Ck95ET-P_rPJCbC2v_OswCN8A%3Ds688&imgrefurl=https%3A%2F%2Fdevelopers.google.com%2F&docid=1MVaWrOPIjYeJM&tbnid=I7xZkRN5m6_z-M%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw..i&w=688&h=387&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw&iact=mrc&uact=8")
             .setArtifactType(ArtifactType.BLOB)
             .setUploadCompleted(
-                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3))
+                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
             .build());
     artifactList.add(
         Artifact.newBuilder()
@@ -314,7 +315,7 @@ public class ProjectTest extends TestsInit {
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Fpay.google.com%2Fabout%2Fstatic%2Fimages%2Fsocial%2Fknowledge_graph_logo.png&imgrefurl=https%3A%2F%2Fpay.google.com%2Fabout%2F&docid=zmoE9BrSKYr4xM&tbnid=eCL1Y6f9xrPtDM%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg..i&w=1200&h=630&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg&iact=mrc&uact=8")
             .setArtifactType(ArtifactType.IMAGE)
             .setUploadCompleted(
-                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3))
+                !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
             .build());
 
     return CreateProject.newBuilder()
@@ -2566,7 +2567,7 @@ public class ProjectTest extends TestsInit {
                                   !testConfig
                                       .artifactStoreConfig
                                       .getArtifactStoreType()
-                                      .equals(ModelDBConstants.S3))
+                                      .equals(CommonConstants.S3))
                               .build())
                       .build())
               .build();
@@ -2633,7 +2634,7 @@ public class ProjectTest extends TestsInit {
                                 !testConfig
                                     .artifactStoreConfig
                                     .getArtifactStoreType()
-                                    .equals(ModelDBConstants.S3))
+                                    .equals(CommonConstants.S3))
                             .build())
                     .build())
             .build();

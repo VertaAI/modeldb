@@ -6,6 +6,7 @@ import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3SignatureUtil;
 import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.TrialConfig;
@@ -126,7 +127,7 @@ public class TrialUtils {
     String date = localDateTime.format(ofPattern("yyyyMMdd"));
 
     var s3SignatureUtil =
-        new S3SignatureUtil(awsCredentials, region, ModelDBConstants.S3.toLowerCase());
+        new S3SignatureUtil(awsCredentials, region, CommonConstants.S3.toLowerCase());
 
     String policy = s3SignatureUtil.readPolicy(bucketName, maxArtifactSize, awsCredentials);
     String signature = s3SignatureUtil.getSignature(policy, localDateTime);

@@ -26,7 +26,6 @@ public abstract class ModelDBMessages {
       "Access is denied. Experiment not found for given id : ";
   public static final String PERMISSION_DENIED = "Permission denied";
   public static final String UNIMPLEMENTED = "Unimplemented";
-  public static final String ENTITY_ID_IS_EMPTY_ERROR = "Entity id is empty";
   public static final String UNKNOWN_VALUE_TYPE_RECOGNIZED_ERROR =
       "Unknown 'Value' type recognized";
   public static final String ITEMS_NOT_SPECIFIED_ERROR = "Items not specified";

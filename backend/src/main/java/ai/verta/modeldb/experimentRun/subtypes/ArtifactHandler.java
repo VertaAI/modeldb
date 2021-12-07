@@ -3,10 +3,13 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.ArtifactTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.subtypes.ArtifactHandlerBase;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.entities.ArtifactEntity;
@@ -14,6 +17,7 @@ import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experimentRun.S3KeyFunction;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import io.grpc.Status;
 import java.util.*;
@@ -45,8 +49,9 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       CodeVersionHandler codeVersionHandler,
       DatasetHandler datasetHandler,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO) {
-    super(executor, jdbi, "artifacts", entityName);
+      DatasetVersionDAO datasetVersionDAO,
+      MDBConfig mdbConfig) {
+    super(executor, jdbi, "artifacts", entityName, mdbConfig.artifactStoreConfig);
     this.codeVersionHandler = codeVersionHandler;
     this.datasetHandler = datasetHandler;
     this.datasetVersionDAO = datasetVersionDAO;
@@ -58,6 +63,20 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       this.artifactEntityType = ArtifactPartEntity.EXP_RUN_ARTIFACT;
     } else {
       throw new ModelDBException("Invalid entity type for ArtifactPart", Status.Code.INTERNAL);
+    }
+  }
+
+  @Override
+  protected void setEntityIdReferenceColumn(String entityName) {
+    switch (entityName) {
+      case "ProjectEntity":
+        this.entityIdReferenceColumn = "project_id";
+        break;
+      case "ExperimentRunEntity":
+        this.entityIdReferenceColumn = "experiment_run_id";
+        break;
+      default:
+        throw new InternalErrorException("Invalid entity name: " + entityName);
     }
   }
 
@@ -151,7 +170,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified
-        && mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3)) {
+        && mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {
@@ -301,5 +320,12 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               }
             },
             executor);
+  }
+
+  @Override
+  public void validateMaxArtifactsForTrial(int newArtifactsCount, int existingArtifactsCount)
+      throws ModelDBException {
+    TrialUtils.validateMaxArtifactsForTrial(
+        mdbConfig.trial, newArtifactsCount, existingArtifactsCount);
   }
 }

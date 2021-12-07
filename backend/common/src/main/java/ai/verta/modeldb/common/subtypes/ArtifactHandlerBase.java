@@ -1,18 +1,14 @@
-package ai.verta.modeldb.experimentRun.subtypes;
+package ai.verta.modeldb.common.subtypes;
 
 import ai.verta.common.Artifact;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.CommonMessages;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.config.MDBArtifactStoreConfig;
-import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.config.TrialConfig;
-import ai.verta.modeldb.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.utils.TrialUtils;
+import com.google.rpc.Code;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +16,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
-public class ArtifactHandlerBase {
+public abstract class ArtifactHandlerBase {
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
   private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
@@ -28,41 +24,36 @@ public class ArtifactHandlerBase {
   protected final FutureJdbi jdbi;
   protected final String fieldType;
   protected final String entityName;
-  protected final String entityIdReferenceColumn;
-  private final MDBArtifactStoreConfig artifactStoreConfig;
-  private final TrialConfig trialConfig;
+  protected String entityIdReferenceColumn;
+  private final ArtifactStoreConfig artifactStoreConfig;
 
   protected String getTableName() {
     return "artifact";
   }
 
+  protected abstract void setEntityIdReferenceColumn(String entityName);
+
   public ArtifactHandlerBase(
-      Executor executor, FutureJdbi jdbi, String fieldType, String entityName) {
+      Executor executor,
+      FutureJdbi jdbi,
+      String fieldType,
+      String entityName,
+      ArtifactStoreConfig artifactStoreConfig) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.fieldType = fieldType;
     this.entityName = entityName;
-    MDBConfig mdbConfig = App.getInstance().mdbConfig;
-    this.artifactStoreConfig = mdbConfig.artifactStoreConfig;
-    this.trialConfig = mdbConfig.trial;
-
-    switch (entityName) {
-      case "ProjectEntity":
-        this.entityIdReferenceColumn = "project_id";
-        break;
-      case "ExperimentRunEntity":
-        this.entityIdReferenceColumn = "experiment_run_id";
-        break;
-      default:
-        throw new InternalErrorException("Invalid entity name: " + entityName);
-    }
+    this.artifactStoreConfig = artifactStoreConfig;
   }
+
+  public abstract void validateMaxArtifactsForTrial(
+      int newArtifactsCount, int existingArtifactsCount) throws ModelDBException;
 
   protected InternalFuture<Optional<Long>> getArtifactId(String entityId, String key) {
     return InternalFuture.runAsync(
             () -> {
               if (key.isEmpty()) {
-                throw new InvalidArgumentException("Key must be provided");
+                throw new ModelDBException("Key must be provided", Code.INVALID_ARGUMENT);
               }
             },
             executor)
@@ -89,7 +80,8 @@ public class ArtifactHandlerBase {
         InternalFuture.runAsync(
             () -> {
               if (entityId == null || entityId.isEmpty()) {
-                throw new InvalidArgumentException(ModelDBMessages.ENTITY_ID_IS_EMPTY_ERROR);
+                throw new ModelDBException(
+                    CommonMessages.ENTITY_ID_IS_EMPTY_ERROR, Code.INVALID_ARGUMENT);
               }
             },
             executor);
@@ -174,7 +166,8 @@ public class ArtifactHandlerBase {
     return InternalFuture.runAsync(
             () -> {
               if (entityId == null || entityId.isEmpty()) {
-                throw new InvalidArgumentException(ModelDBMessages.ENTITY_ID_IS_EMPTY_ERROR);
+                throw new ModelDBException(
+                    CommonMessages.ENTITY_ID_IS_EMPTY_ERROR, Code.INVALID_ARGUMENT);
               }
               for (final var artifact : artifacts) {
                 String errorMessage = null;
@@ -188,7 +181,7 @@ public class ArtifactHandlerBase {
                 }
 
                 if (errorMessage != null) {
-                  throw new InvalidArgumentException(errorMessage);
+                  throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
                 }
               }
             },
@@ -251,9 +244,7 @@ public class ArtifactHandlerBase {
                                 .mapTo(Long.class)
                                 .one())
                     .thenAccept(
-                        count ->
-                            TrialUtils.validateMaxArtifactsForTrial(
-                                trialConfig, artifacts.size(), count.intValue()),
+                        count -> validateMaxArtifactsForTrial(artifacts.size(), count.intValue()),
                         executor);
               }
             },
@@ -265,7 +256,7 @@ public class ArtifactHandlerBase {
                     handle -> {
                       for (final var artifact : artifacts) {
                         var uploadCompleted =
-                            !artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3);
+                            !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
                         if (artifact.getUploadCompleted()) {
                           uploadCompleted = true;
                         }
@@ -305,7 +296,8 @@ public class ArtifactHandlerBase {
         InternalFuture.runAsync(
             () -> {
               if (entityId == null || entityId.isEmpty()) {
-                throw new InvalidArgumentException(ModelDBMessages.ENTITY_ID_IS_EMPTY_ERROR);
+                throw new ModelDBException(
+                    CommonMessages.ENTITY_ID_IS_EMPTY_ERROR, Code.INVALID_ARGUMENT);
               }
             },
             executor);

@@ -13,7 +13,6 @@ public abstract class ModelDBConstants {
   public static final String NFS_ROOT_PATH = "nfsRootPath";
   public static final String PATH = "path";
   public static final String PORT = "port";
-  public static final String S3 = "S3";
   public static final String STORE_TYPE_PATH = "store_type_path";
   public static final String LIQUIBASE_MIGRATION = "LIQUIBASE_MIGRATION";
   public static final String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
