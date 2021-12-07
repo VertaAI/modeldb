@@ -141,7 +141,7 @@ public abstract class CommonArtifactHandler {
                 jdbi.useHandle(
                     handle -> {
                       if (overwrite) {
-                          deleteArtifactsWithHandle(
+                        deleteArtifactsWithHandle(
                             entityId,
                             Optional.of(
                                 artifacts.stream()
@@ -191,6 +191,6 @@ public abstract class CommonArtifactHandler {
   protected abstract void deleteArtifactsWithHandle(
       String entityId, Optional<List<String>> maybeKeys, Handle handle);
 
-    public abstract InternalFuture<Void> deleteArtifacts(
-            String entityId, Optional<List<String>> maybeKeys);
+  public abstract InternalFuture<Void> deleteArtifacts(
+      String entityId, Optional<List<String>> maybeKeys);
 }
