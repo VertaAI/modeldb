@@ -136,3 +136,24 @@ def assert_dirs_match(dir1, dir2):
     assert not dircmp.diff_files
     assert not dircmp.left_only
     assert not dircmp.right_only
+
+
+def sorted_subclasses(cls):
+    """Return subclasses of `cls`, sorted alphabetically by name.
+
+    ``pytest-xdist`` requires tests to be collected in a deterministic order.
+    This function is to be used for tests parametrized on subclasses.
+
+    Parameters
+    ----------
+    cls
+
+    Returns
+    -------
+    list of cls
+
+    """
+    return sorted(
+        cls.__subclasses__(),
+        key=lambda subcls: subcls.__name__,
+    )

@@ -5,13 +5,15 @@ import hypothesis.strategies as st
 import pytest
 
 from verta._protos.public.registry import StageService_pb2
-from verta.registry import stage_change
+from verta.registry.stage_change import _StageChange
+
+from .. import utils
 
 
 class TestStageChange:
 
     @pytest.mark.parametrize(
-        "stage_change_cls", stage_change._StageChange.__subclasses__(),
+        "stage_change_cls", utils.sorted_subclasses(_StageChange),
     )
     @hypothesis.given(
         comment=st.one_of(st.none(), st.text()),
@@ -33,7 +35,7 @@ class TestStageChange:
         )
 
     @pytest.mark.parametrize(
-        "stage_change_cls", stage_change._StageChange.__subclasses__(),
+        "stage_change_cls", utils.sorted_subclasses(_StageChange),
     )
     @hypothesis.given(
         comment=st.one_of(st.none(), st.text()),
