@@ -151,9 +151,9 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler {
       int newArtifactsCount, int existingArtifactsCount) throws ModelDBException;
 
   @Override
-  protected void validateArtifactsForTrial(String entityId, List<Artifact> artifacts) {
+  protected InternalFuture<Void> validateArtifactsForTrial(String entityId, List<Artifact> artifacts) {
     if (entityName.equals("ExperimentRunEntity") && fieldType.equals("artifacts")) {
-      jdbi.withHandle(
+      return jdbi.withHandle(
               handle ->
                   handle
                       .createQuery(
@@ -168,6 +168,7 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler {
           .thenAccept(
               count -> validateMaxArtifactsForTrial(artifacts.size(), count.intValue()), executor);
     }
+    return InternalFuture.completedInternalFuture(null);
   }
 
   @Override

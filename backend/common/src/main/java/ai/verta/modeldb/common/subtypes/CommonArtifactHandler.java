@@ -174,7 +174,7 @@ public abstract class CommonArtifactHandler {
       boolean uploadCompleted,
       String storeTypePath);
 
-  protected abstract void validateArtifactsForTrial(String entityId, List<Artifact> artifacts);
+  protected abstract InternalFuture<Void> validateArtifactsForTrial(String entityId, List<Artifact> artifacts);
 
   protected abstract void validateAndThrowErrorAlreadyExistsArtifacts(
       String entityId, List<Artifact> artifacts, Handle handle);
