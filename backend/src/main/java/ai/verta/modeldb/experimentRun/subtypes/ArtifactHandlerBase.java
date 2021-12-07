@@ -30,7 +30,7 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler {
       String fieldType,
       String entityName,
       ArtifactStoreConfig artifactStoreConfig) {
-    super(executor, jdbi, entityName, artifactStoreConfig);
+    super(executor, jdbi, artifactStoreConfig);
     this.fieldType = fieldType;
     this.entityName = entityName;
 
