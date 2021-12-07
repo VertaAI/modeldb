@@ -12,6 +12,9 @@ with open(os.path.join(HERE, "verta", "__about__.py"), "r") as f:
 with open("README.md", "r") as f:
     readme = f.read()
 
+with open("requirements.txt", "r") as f:
+    install_requires = f.read().splitlines()
+
 setup(
     name=about["__title__"],
     version=about["__version__"],
@@ -24,16 +27,7 @@ setup(
     url=about["__url__"],
     packages=find_packages(),
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
-    install_requires=[
-        "click~=7.0",
-        "cloudpickle~=1.0",
-        "googleapis-common-protos>=1.5, <2.0",
-        "pathlib2>=2.2, <3.0",
-        "protobuf>=3.8, <3.18",
-        "pytimeparse>=1.1.8, <2.0",
-        "pyyaml>=5.1, <6.0",
-        "requests>=2.21, <3.0"
-    ],
+    install_requires=install_requires,
     entry_points={
         "console_scripts": [
             "verta = verta._cli:cli",
