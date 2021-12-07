@@ -4,12 +4,10 @@ import ai.verta.common.ArtifactTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonConstants;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.common.subtypes.ArtifactHandlerBase;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.entities.ArtifactEntity;
@@ -63,20 +61,6 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       this.artifactEntityType = ArtifactPartEntity.EXP_RUN_ARTIFACT;
     } else {
       throw new ModelDBException("Invalid entity type for ArtifactPart", Status.Code.INTERNAL);
-    }
-  }
-
-  @Override
-  protected void setEntityIdReferenceColumn(String entityName) {
-    switch (entityName) {
-      case "ProjectEntity":
-        this.entityIdReferenceColumn = "project_id";
-        break;
-      case "ExperimentRunEntity":
-        this.entityIdReferenceColumn = "experiment_run_id";
-        break;
-      default:
-        throw new InternalErrorException("Invalid entity name: " + entityName);
     }
   }
 
