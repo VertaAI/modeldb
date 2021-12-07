@@ -16,8 +16,7 @@ import java.util.concurrent.Executor;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
-public abstract class ArtifactHandlerBase
-    extends CommonArtifactHandler {
+public abstract class ArtifactHandlerBase extends CommonArtifactHandler {
 
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
