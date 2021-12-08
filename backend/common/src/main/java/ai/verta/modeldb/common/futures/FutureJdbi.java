@@ -16,7 +16,28 @@ public class FutureJdbi {
     this.jdbi = jdbi;
   }
 
+  @FunctionalInterface
+  public interface SupplierWithException<R, T extends Exception> {
+    R get() throws T;
+  }
+
+  @FunctionalInterface
+  public interface RunnableWithException<T extends Exception> {
+    void run() throws T;
+  }
+
   public <R, T extends Exception> InternalFuture<R> withHandle(HandleCallback<R, T> callback) {
+    SupplierWithException<R, T> supplierWithException = () -> jdbi.withHandle(callback);
+    return withHandleOrTransaction(supplierWithException);
+  }
+
+  public <R, T extends Exception> InternalFuture<R> withTransaction(HandleCallback<R, T> callback) {
+    SupplierWithException<R, T> supplierWithException = () -> jdbi.inTransaction(callback);
+    return withHandleOrTransaction(supplierWithException);
+  }
+
+  private <R, T extends Exception> InternalFuture<R> withHandleOrTransaction(
+      SupplierWithException<R, T> supplier) {
     return InternalFuture.trace(
         () -> {
           CompletableFuture<R> promise = new CompletableFuture<>();
@@ -24,7 +45,7 @@ public class FutureJdbi {
           executor.execute(
               () -> {
                 try {
-                  promise.complete(jdbi.withHandle(callback));
+                  promise.complete(supplier.get());
                 } catch (Throwable e) {
                   promise.completeExceptionally(e);
                 }
@@ -48,6 +69,16 @@ public class FutureJdbi {
   }
 
   public <T extends Exception> InternalFuture<Void> useHandle(final HandleConsumer<T> consumer) {
+    RunnableWithException<T> runnableWithException = () -> jdbi.useHandle(consumer);
+    return useHandleOrTransaction(runnableWithException);
+  }
+
+  public <T extends Exception> InternalFuture<Void> useTransaction(final HandleConsumer<T> consumer) {
+    RunnableWithException<T> runnableWithException = () -> jdbi.useTransaction(consumer);
+    return useHandleOrTransaction(runnableWithException);
+  }
+
+  private <T extends Exception> InternalFuture<Void> useHandleOrTransaction(final RunnableWithException<T> runnableWithException) {
     return InternalFuture.trace(
         () -> {
           CompletableFuture<Void> promise = new CompletableFuture<>();
@@ -55,7 +86,7 @@ public class FutureJdbi {
           executor.execute(
               () -> {
                 try {
-                  jdbi.useHandle(consumer);
+                  runnableWithException.run();
                   promise.complete(null);
                 } catch (Throwable e) {
                   promise.completeExceptionally(e);
