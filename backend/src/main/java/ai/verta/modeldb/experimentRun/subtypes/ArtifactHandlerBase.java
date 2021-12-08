@@ -151,7 +151,8 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler {
       int newArtifactsCount, int existingArtifactsCount) throws ModelDBException;
 
   @Override
-  protected InternalFuture<Void> validateArtifactsForTrial(String entityId, List<Artifact> artifacts) {
+  protected InternalFuture<Void> validateArtifactsForTrial(
+      String entityId, List<Artifact> artifacts) {
     if (entityName.equals("ExperimentRunEntity") && fieldType.equals("artifacts")) {
       return jdbi.withHandle(
               handle ->
