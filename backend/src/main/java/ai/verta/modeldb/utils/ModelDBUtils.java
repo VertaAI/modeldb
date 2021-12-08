@@ -31,7 +31,6 @@ import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility
 import ai.verta.uac.*;
 import com.amazonaws.AmazonServiceException;
 import com.google.protobuf.*;
-import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -69,15 +68,6 @@ public class ModelDBUtils {
     @SuppressWarnings("unchecked")
     Map<String, Object> prop = (Map<String, Object>) yaml.load(inputStream);
     return prop;
-  }
-
-  public static String getStringFromProtoObject(MessageOrBuilder object) {
-    try {
-      return JsonFormat.printer().preservingProtoFieldNames().print(object);
-    } catch (InvalidProtocolBufferException ex) {
-      LOGGER.warn("Error generating while convert MessageOrBuilder to string", ex);
-      throw new RuntimeException(ex);
-    }
   }
 
   public static boolean isValidEmail(String email) {

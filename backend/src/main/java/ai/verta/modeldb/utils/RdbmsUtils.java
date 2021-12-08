@@ -27,14 +27,12 @@ import ai.verta.uac.Workspace;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
 import com.google.rpc.Code;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.persistence.criteria.*;
 import javax.persistence.criteria.CriteriaBuilder.Trimspec;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -747,7 +745,7 @@ public class RdbmsUtils {
           if (fieldName.equals(ModelDBConstants.ATTRIBUTES)
               && !(operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
             return getOperatorPredicate(
-                builder, valueExpression, operator, ModelDBUtils.getStringFromProtoObject(value));
+                builder, valueExpression, operator, CommonUtils.getStringFromProtoObject(value));
           } else if (keyValueQuery.getKey().equals(ModelDBConstants.VISIBILITY)) {
             return getOperatorPredicate(
                 builder,
@@ -2080,7 +2078,7 @@ public class RdbmsUtils {
                 versioningEntry.getRepositoryId(),
                 versioningEntry.getCommit(),
                 locationEntry.getKey(),
-                ModelDBUtils.getStringFromProtoObject(locationEntry.getValue()),
+                CommonUtils.getStringFromProtoObject(locationEntry.getValue()),
                 blob.getContentCase().getNumber(),
                 blobExpandedWithHashMap.getValue(),
                 entity);
@@ -2239,17 +2237,5 @@ public class RdbmsUtils {
             }
           });
     }
-  }
-
-  public static String getValueForKeyValueTable(KeyValue kv) {
-    // Logic to convert canonical number to double number
-    if (kv.getValue().hasNumberValue()) {
-      return BigDecimal.valueOf(kv.getValue().getNumberValue()).toPlainString();
-    } else if (kv.getValue().hasStringValue()
-        && NumberUtils.isCreatable(kv.getValue().getStringValue().trim())) {
-      return BigDecimal.valueOf(Double.parseDouble(kv.getValue().getStringValue().trim()))
-          .toPlainString();
-    }
-    return ModelDBUtils.getStringFromProtoObject(kv.getValue());
   }
 }

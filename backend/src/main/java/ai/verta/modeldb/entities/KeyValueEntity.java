@@ -2,7 +2,7 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
 import java.io.Serializable;
@@ -29,7 +29,7 @@ public class KeyValueEntity implements Serializable {
 
   public KeyValueEntity(Object entity, String fieldType, KeyValue keyValue) {
     setKey(keyValue.getKey());
-    setValue(RdbmsUtils.getValueForKeyValueTable(keyValue));
+    setValue(KeyValueHandler.getValueForKeyValueTable(keyValue));
     setValue_type(keyValue.getValueTypeValue());
 
     if (entity instanceof ProjectEntity) {

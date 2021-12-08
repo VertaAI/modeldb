@@ -5,14 +5,10 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import java.util.concurrent.Executor;
 
-public class AttributeHandler extends KeyValueHandler {
-  public AttributeHandler(Executor executor, FutureJdbi jdbi, String entityName) {
-    super(executor, jdbi, "attributes", entityName);
-  }
-
-  @Override
-  protected String getTableName() {
-    return "attribute";
+public class KeyValueBaseHandler extends KeyValueHandler {
+  public KeyValueBaseHandler(
+      Executor executor, FutureJdbi jdbi, String fieldType, String entityName) {
+    super(executor, jdbi, fieldType, entityName);
   }
 
   @Override

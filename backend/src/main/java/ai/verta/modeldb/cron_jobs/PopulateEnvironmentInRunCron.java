@@ -4,12 +4,12 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonEnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
@@ -115,7 +115,7 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
               var environmentBlobBuilder = EnvironmentBlob.newBuilder();
               environmentBlobBuilder.setPython(pythonEnvironmentBuilder.build());
               experimentRunEntity.setEnvironment(
-                  ModelDBUtils.getStringFromProtoObject(environmentBlobBuilder.build()));
+                  CommonUtils.getStringFromProtoObject(environmentBlobBuilder.build()));
             }
 
             try {

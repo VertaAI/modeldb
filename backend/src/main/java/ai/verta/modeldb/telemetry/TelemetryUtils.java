@@ -5,10 +5,10 @@ import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.CommonHibernateUtil;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -162,7 +162,7 @@ public class TelemetryUtils {
           "INSERT INTO telemetry_information (tel_key, tel_value, collection_timestamp, telemetry_consumer) VALUES(?,?,?,?)";
       try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
         pstmt.setString(1, telemetryMetric.getKey());
-        pstmt.setString(2, ModelDBUtils.getStringFromProtoObject(telemetryMetric.getValue()));
+        pstmt.setString(2, CommonUtils.getStringFromProtoObject(telemetryMetric.getValue()));
         pstmt.setLong(3, Calendar.getInstance().getTimeInMillis());
         pstmt.setString(4, consumer);
         pstmt.executeUpdate();

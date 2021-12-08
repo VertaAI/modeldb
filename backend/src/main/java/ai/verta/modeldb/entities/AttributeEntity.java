@@ -4,7 +4,6 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.blob.container.BlobContainer;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
@@ -32,7 +31,7 @@ public class AttributeEntity implements Serializable {
 
   public AttributeEntity(Object entity, String fieldType, KeyValue keyValue) {
     setKey(keyValue.getKey());
-    setValue(ModelDBUtils.getStringFromProtoObject(keyValue.getValue()));
+    setValue(CommonUtils.getStringFromProtoObject(keyValue.getValue()));
     setValue_type(keyValue.getValueTypeValue());
 
     if (entity instanceof ProjectEntity) {

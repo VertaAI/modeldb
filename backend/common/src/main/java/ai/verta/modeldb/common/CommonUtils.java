@@ -3,9 +3,11 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -42,7 +44,16 @@ public class CommonUtils {
     }
   }
 
-  public interface RetryCallInterface<T> {
+    public static String getStringFromProtoObject(MessageOrBuilder object) {
+      try {
+        return JsonFormat.printer().preservingProtoFieldNames().print(object);
+      } catch (InvalidProtocolBufferException ex) {
+        LOGGER.warn("Error generating while convert MessageOrBuilder to string", ex);
+        throw new RuntimeException(ex);
+      }
+    }
+
+    public interface RetryCallInterface<T> {
     T retryCall(boolean retry);
   }
 

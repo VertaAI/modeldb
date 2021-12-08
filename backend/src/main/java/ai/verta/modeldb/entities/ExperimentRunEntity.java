@@ -6,7 +6,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
@@ -88,7 +87,7 @@ public class ExperimentRunEntity implements Serializable {
 
     if (experimentRun.getEnvironment().hasPython() || experimentRun.getEnvironment().hasDocker()) {
       var environmentBlob = sortPythonEnvironmentBlob(experimentRun.getEnvironment());
-      this.environment = ModelDBUtils.getStringFromProtoObject(environmentBlob);
+      this.environment = CommonUtils.getStringFromProtoObject(environmentBlob);
     }
 
     this.version_number = experimentRun.getVersionNumber();

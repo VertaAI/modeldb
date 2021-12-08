@@ -8,6 +8,7 @@ import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
 import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -1133,7 +1134,7 @@ public class CommitDAORdbImpl implements CommitDAO {
                 index,
                 attrQueryBuilder,
                 predicate.getOperator(),
-                ModelDBUtils.getStringFromProtoObject(predicate.getValue()),
+                CommonUtils.getStringFromProtoObject(predicate.getValue()),
                 attrQueryParametersMap);
             attrQueryBuilder.append("AND attr.field_type ");
             RdbmsUtils.setValueWithOperatorInQuery(

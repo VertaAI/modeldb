@@ -5,9 +5,9 @@ import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;
 import java.util.List;
@@ -189,7 +189,7 @@ public class ObservationHandler {
                                     .bind("key", attribute.getKey())
                                     .bind(
                                         "value",
-                                        ModelDBUtils.getStringFromProtoObject(attribute.getValue()))
+                                        CommonUtils.getStringFromProtoObject(attribute.getValue()))
                                     .bind("type", attribute.getValueTypeValue())
                                     .executeAndReturnGeneratedKeys()
                                     .mapTo(Long.class)
