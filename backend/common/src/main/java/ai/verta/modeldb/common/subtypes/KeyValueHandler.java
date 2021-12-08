@@ -2,12 +2,12 @@ package ai.verta.modeldb.common.subtypes;
 
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import com.google.protobuf.Value;
-
+import com.google.rpc.Code;
 import java.math.BigDecimal;
 import java.util.AbstractMap;
 import java.util.HashSet;
@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
-
-import com.google.rpc.Code;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,23 +35,23 @@ public abstract class KeyValueHandler {
   private final String entityName;
   protected String entityIdReferenceColumn;
 
-    protected String getTableName() {
+  protected String getTableName() {
     return "keyvalue";
   }
 
   protected abstract void setEntityIdReferenceColumn(String entityName);
 
-    public static String getValueForKeyValueTable(KeyValue kv) {
-        // Logic to convert canonical number to double number
-        if (kv.getValue().hasNumberValue()) {
-            return BigDecimal.valueOf(kv.getValue().getNumberValue()).toPlainString();
-        } else if (kv.getValue().hasStringValue()
-                && NumberUtils.isCreatable(kv.getValue().getStringValue().trim())) {
-            return BigDecimal.valueOf(Double.parseDouble(kv.getValue().getStringValue().trim()))
-                    .toPlainString();
-        }
-        return CommonUtils.getStringFromProtoObject(kv.getValue());
+  public static String getValueForKeyValueTable(KeyValue kv) {
+    // Logic to convert canonical number to double number
+    if (kv.getValue().hasNumberValue()) {
+      return BigDecimal.valueOf(kv.getValue().getNumberValue()).toPlainString();
+    } else if (kv.getValue().hasStringValue()
+        && NumberUtils.isCreatable(kv.getValue().getStringValue().trim())) {
+      return BigDecimal.valueOf(Double.parseDouble(kv.getValue().getStringValue().trim()))
+          .toPlainString();
     }
+    return CommonUtils.getStringFromProtoObject(kv.getValue());
+  }
 
   public KeyValueHandler(Executor executor, FutureJdbi jdbi, String fieldType, String entityName) {
     this.executor = executor;
