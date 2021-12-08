@@ -27,10 +27,7 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 from ..external import six
 from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
-from .credentials import (
-    EmailCredentials,
-    JWTCredentials,
-)
+from verta.credentials import EmailCredentials, JWTCredentials
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.uac import Organization_pb2, UACService_pb2, Workspace_pb2
@@ -50,7 +47,7 @@ THREAD_LOCALS = threading.local()
 THREAD_LOCALS.active_experiment_run = None
 
 
-class Connection:
+class Connection(object):
     _OSS_DEFAULT_WORKSPACE = "personal"
 
     def __init__(self, scheme=None, socket=None, auth=None, max_retries=0, ignore_conn_err=False, credentials=None, headers=None):
@@ -70,7 +67,7 @@ class Connection:
             on HTTP codes {502, 503, 504} which commonly occur during back end connection lapses.
         ignore_conn_err : bool, default False
             Whether to ignore connection errors and instead return successes with empty contents.
-        credentials : :class:`~verta._internal_utils.credentials.EmailCredentials` or :class:`~verta._internal_utils.credentials.JWTCredentials`, optional
+        credentials : :class:`~verta.credentials.Credentials`, optional
             Either dev key or JWT token data to be used for authentication.
         headers: dict, optional
             Additional headers to attach to requests.
@@ -122,11 +119,11 @@ class Connection:
         headers = self._headers or dict()
         headers = headers.copy()
         headers[_GRPC_PREFIX+'scheme'] = self.scheme
-        headers.update(self._prefixed_headers_for_credentials(self.credentials))
+        headers.update(self.prefixed_headers_for_credentials(self.credentials))
         self._computed_headers = headers
 
     @staticmethod
-    def _prefixed_headers_for_credentials(credentials):
+    def prefixed_headers_for_credentials(credentials):
         if credentials:
             return {(_GRPC_PREFIX + k): v for (k,v) in credentials.headers().items()}
         return {}
@@ -309,7 +306,7 @@ class NoneProtoResponse(object):
         return False
 
 
-class Configuration:
+class Configuration(object):
     def __init__(self, use_git=True, debug=False):
         """
         Client behavior configuration utility struct.

@@ -10,7 +10,7 @@ from .queries import SummarySampleQuery
 from .summary_sample import SummarySample
 
 
-class SummarySamples:
+class SummarySamples(object):
     """Collection object for finding summary samples.
 
     Parameters

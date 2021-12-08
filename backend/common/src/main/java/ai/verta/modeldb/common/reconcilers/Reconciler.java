@@ -40,7 +40,9 @@ public abstract class Reconciler<T> {
     this.executor = executor;
     this.deduplicate = deduplicate;
 
-    startResync();
+    if (!config.isTestReconciler()) {
+      startResync();
+    }
     startWorkers();
   }
 
@@ -142,4 +144,8 @@ public abstract class Reconciler<T> {
   public abstract void resync();
 
   protected abstract ReconcileResult reconcile(Set<T> objs);
+
+  public boolean isNotEmpty() {
+    return !processingIdSet.isEmpty();
+  }
 }
