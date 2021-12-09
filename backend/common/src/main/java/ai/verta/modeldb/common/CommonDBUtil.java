@@ -80,6 +80,7 @@ public abstract class CommonDBUtil {
       if (!existsStatus) {
         LOGGER.info("Table database_change_log_lock does not exists in DB");
         LOGGER.info("Proceeding with liquibase assuming it has never been run");
+        return;
       }
 
       try (var stmt = jdbcCon.createStatement()) {

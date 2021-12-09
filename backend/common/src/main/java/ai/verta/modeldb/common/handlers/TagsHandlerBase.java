@@ -6,6 +6,8 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import com.google.rpc.Code;
+
+import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,9 +17,9 @@ import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class TagsHandlerBase {
+public abstract class TagsHandlerBase<T> {
   private static final Logger LOGGER = LogManager.getLogger(TagsHandlerBase.class);
-  private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
+  protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
 
   private final Executor executor;
@@ -51,7 +53,7 @@ public abstract class TagsHandlerBase {
 
   protected abstract void setEntityIdReferenceColumn(String entityName);
 
-  public InternalFuture<List<String>> getTags(String entityId) {
+  public InternalFuture<List<String>> getTags(T entityId) {
     return jdbi.withHandle(
         handle ->
             handle
@@ -66,7 +68,7 @@ public abstract class TagsHandlerBase {
                 .list());
   }
 
-  public InternalFuture<MapSubtypes<String>> getTagsMap(Set<String> entityIds) {
+  public InternalFuture<MapSubtypes<String>> getTagsMap(Set<T> entityIds) {
     return jdbi.withHandle(
             handle ->
                 handle
@@ -78,13 +80,13 @@ public abstract class TagsHandlerBase {
                     .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                     .map(
                         (rs, ctx) ->
-                            new AbstractMap.SimpleEntry<>(
-                                rs.getString(ENTITY_ID_QUERY_PARAM), rs.getString("tags")))
+                                getSimpleEntryFromResultSet(rs))
                     .list())
         .thenApply(MapSubtypes::from, executor);
   }
+    protected abstract AbstractMap.SimpleEntry<String, String> getSimpleEntryFromResultSet(java.sql.ResultSet rs) throws SQLException;
 
-  public InternalFuture<Void> addTags(String entityId, List<String> tags) {
+    public InternalFuture<Void> addTags(T entityId, List<String> tags) {
     // Validate input
     var currentFuture =
         InternalFuture.runAsync(
@@ -133,7 +135,7 @@ public abstract class TagsHandlerBase {
             executor);
   }
 
-  public InternalFuture<Void> deleteTags(String entityId, Optional<List<String>> maybeTags) {
+  public InternalFuture<Void> deleteTags(T entityId, Optional<List<String>> maybeTags) {
     return jdbi.useHandle(
         handle -> {
           var sql =
