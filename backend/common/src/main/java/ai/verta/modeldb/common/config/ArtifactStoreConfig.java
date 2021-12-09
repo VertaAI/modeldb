@@ -1,6 +1,6 @@
 package ai.verta.modeldb.common.config;
 
-public class ArtifactStoreConfig {
+public abstract class ArtifactStoreConfig {
   private String artifactStoreType;
   private boolean pickArtifactStoreHostFromConfig = false;
   private boolean enabled = true;
@@ -39,4 +39,6 @@ public class ArtifactStoreConfig {
   public NFSEndpointConfig getArtifactEndpoint() {
     return artifactEndpoint;
   }
+
+  public abstract String storeTypePathPrefix();
 }

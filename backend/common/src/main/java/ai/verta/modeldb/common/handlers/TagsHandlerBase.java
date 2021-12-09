@@ -4,6 +4,7 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import com.google.rpc.Code;
 import java.util.AbstractMap;
 import java.util.HashSet;

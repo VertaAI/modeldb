@@ -52,7 +52,6 @@ import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -61,10 +60,11 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.common.handlers.MapSubtypes;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
+import ai.verta.modeldb.common.subtypes.MapSubtypes;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
@@ -148,15 +148,14 @@ public class FutureExperimentRunDAO {
   private final FilterPrivilegedVersionedInputsHandler privilegedVersionedInputsHandler;
   private final CreateExperimentRunHandler createExperimentRunHandler;
   private final HyperparametersFromConfigHandler hyperparametersFromConfigHandler;
-  private final Config config;
+  private final MDBConfig config;
   private final TrialConfig trialConfig;
   private final CodeVersionFromBlobHandler codeVersionFromBlobHandler;
 
   public FutureExperimentRunDAO(
       Executor executor,
       FutureJdbi jdbi,
-      Config config,
-      TrialConfig trialConfig,
+      MDBConfig config,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
       DatasetVersionDAO datasetVersionDAO,
@@ -167,7 +166,7 @@ public class FutureExperimentRunDAO {
     this.jdbi = jdbi;
     this.uac = uac;
     this.config = config;
-    this.trialConfig = trialConfig;
+    this.trialConfig = config.trial;
 
     attributeHandler = new AttributeHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     hyperparametersHandler =
@@ -176,7 +175,7 @@ public class FutureExperimentRunDAO {
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     codeVersionHandler = new CodeVersionHandler(executor, jdbi, "experiment_run");
-    datasetHandler = new DatasetHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
+    datasetHandler = new DatasetHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME, config);
     artifactHandler =
         new ArtifactHandler(
             executor,
@@ -185,7 +184,8 @@ public class FutureExperimentRunDAO {
             codeVersionHandler,
             datasetHandler,
             artifactStoreDAO,
-            datasetVersionDAO);
+            datasetVersionDAO,
+            config);
     predicatesHandler = new PredicatesHandler();
     sortingHandler = new SortingHandler();
     featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);

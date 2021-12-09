@@ -11,6 +11,7 @@ public interface CommonConstants {
   String USER_DIR = "user.dir";
   String DELETED = "deleted";
   String EMPTY_STRING = "";
+  String S3 = "S3";
   Integer TAG_LENGTH = 40;
 
   enum UserIdentifier {

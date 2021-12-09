@@ -1,6 +1,7 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +23,9 @@ public class ArtifactPathMigrationUtils {
     String artifactStoreType =
         (String) artifactStoreConfigMap.get(ModelDBConstants.ARTIFACT_STORE_TYPE);
     String storeTypePathPrefix = null;
-    if (artifactStoreType.equals(ModelDBConstants.S3)) {
+    if (artifactStoreType.equals(CommonConstants.S3)) {
       Map<String, Object> s3ConfigMap =
-          (Map<String, Object>) artifactStoreConfigMap.get(ModelDBConstants.S3);
+          (Map<String, Object>) artifactStoreConfigMap.get(CommonConstants.S3);
       String cloudBucketName = (String) s3ConfigMap.get(ModelDBConstants.CLOUD_BUCKET_NAME);
       LOGGER.trace("S3 cloud bucket name {}", cloudBucketName);
       storeTypePathPrefix = "s3://" + cloudBucketName + ModelDBConstants.PATH_DELIMITER;

@@ -1,4 +1,4 @@
-package ai.verta.modeldb.common.handlers;
+package ai.verta.modeldb.common.subtypes;
 
 import java.util.*;
 

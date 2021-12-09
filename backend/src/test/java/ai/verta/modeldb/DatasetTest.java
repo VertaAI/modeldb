@@ -9,6 +9,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
@@ -1367,10 +1368,7 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion2.getId())
               .setUploadCompleted(
-                  !testConfig
-                      .artifactStoreConfig
-                      .getArtifactStoreType()
-                      .equals(ModelDBConstants.S3))
+                  !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1399,10 +1397,7 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion1.getId())
               .setUploadCompleted(
-                  !testConfig
-                      .artifactStoreConfig
-                      .getArtifactStoreType()
-                      .equals(ModelDBConstants.S3))
+                  !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
               .build();
 
       logDatasetRequest =
@@ -1580,10 +1575,7 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion2.getId())
               .setUploadCompleted(
-                  !testConfig
-                      .artifactStoreConfig
-                      .getArtifactStoreType()
-                      .equals(ModelDBConstants.S3))
+                  !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1612,10 +1604,7 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion1.getId())
               .setUploadCompleted(
-                  !testConfig
-                      .artifactStoreConfig
-                      .getArtifactStoreType()
-                      .equals(ModelDBConstants.S3))
+                  !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
               .build();
 
       logDatasetRequest =

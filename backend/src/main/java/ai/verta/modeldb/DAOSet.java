@@ -88,13 +88,12 @@ public class DAOSet {
 
     set.futureProjectDAO =
         new FutureProjectDAO(
-            executor, jdbi, services.uac, set.artifactStoreDAO, set.datasetVersionDAO);
+            executor, jdbi, services.uac, set.artifactStoreDAO, set.datasetVersionDAO, mdbConfig);
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(
             executor,
             jdbi,
             mdbConfig,
-            trialConfig,
             services.uac,
             set.artifactStoreDAO,
             set.datasetVersionDAO,
