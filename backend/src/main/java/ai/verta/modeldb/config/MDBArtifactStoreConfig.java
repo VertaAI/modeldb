@@ -34,6 +34,7 @@ public class MDBArtifactStoreConfig extends ArtifactStoreConfig {
     }
   }
 
+  @Override
   public String storeTypePathPrefix() {
     switch (getArtifactStoreType()) {
       case "S3":

@@ -3,8 +3,8 @@ package ai.verta.modeldb.artifactStore;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetUrlForArtifact.Response;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.HttpCodeToGRPCCode;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.MDBConfig;
@@ -49,7 +49,7 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
             artifactStoreService.generatePresignedUrl(s3Key, method, partNumber, uploadId);
         return GetUrlForArtifact.Response.newBuilder()
             .setMultipartUploadOk(
-                mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(ModelDBConstants.S3)
+                mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3)
                     && uploadId != null)
             .setUrl(presignedUrl)
             .build();
