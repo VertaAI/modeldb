@@ -17,12 +17,12 @@ public class FutureJdbi {
   }
 
   @FunctionalInterface
-  public interface SupplierWithException<R, T extends Exception> {
+  private interface SupplierWithException<R, T extends Exception> {
     R get() throws T;
   }
 
   @FunctionalInterface
-  public interface RunnableWithException<T extends Exception> {
+  private interface RunnableWithException<T extends Exception> {
     void run() throws T;
   }
 
