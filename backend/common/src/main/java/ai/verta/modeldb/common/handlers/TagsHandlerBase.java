@@ -6,7 +6,6 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import com.google.rpc.Code;
-
 import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.HashSet;
@@ -78,15 +77,15 @@ public abstract class TagsHandlerBase<T> {
                             entityIdReferenceColumn, entityIdReferenceColumn))
                     .bindList("entity_ids", entityIds)
                     .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                    .map(
-                        (rs, ctx) ->
-                                getSimpleEntryFromResultSet(rs))
+                    .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
                     .list())
         .thenApply(MapSubtypes::from, executor);
   }
-    protected abstract AbstractMap.SimpleEntry<String, String> getSimpleEntryFromResultSet(java.sql.ResultSet rs) throws SQLException;
 
-    public InternalFuture<Void> addTags(T entityId, List<String> tags) {
+  protected abstract AbstractMap.SimpleEntry<String, String> getSimpleEntryFromResultSet(
+      java.sql.ResultSet rs) throws SQLException;
+
+  public InternalFuture<Void> addTags(T entityId, List<String> tags) {
     // Validate input
     var currentFuture =
         InternalFuture.runAsync(
