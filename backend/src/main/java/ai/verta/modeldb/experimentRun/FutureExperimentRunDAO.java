@@ -1378,7 +1378,7 @@ public class FutureExperimentRunDAO {
     return allowedAllResources;
   }
 
-  private InternalFuture<MapSubtypes<KeyValue>> getFutureHyperparamsFromConfigBlobs(
+  private InternalFuture<MapSubtypes<String, KeyValue>> getFutureHyperparamsFromConfigBlobs(
       Set<String> ids) {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(

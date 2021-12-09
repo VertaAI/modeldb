@@ -9,6 +9,9 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.CommonArtifactHandler;
 import com.google.rpc.Code;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -16,7 +19,7 @@ import java.util.concurrent.Executor;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
-public abstract class ArtifactHandlerBase extends CommonArtifactHandler {
+public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> {
 
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
@@ -201,5 +204,23 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler {
         .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
         .bind(ENTITY_NAME_QUERY_PARAM, entityName)
         .execute();
+  }
+
+  @Override
+  protected AbstractMap.SimpleEntry<String, Artifact> getSimpleEntryFromResultSet(ResultSet rs)
+      throws SQLException {
+    return new AbstractMap.SimpleEntry<>(
+        rs.getString(ENTITY_ID_QUERY_PARAM),
+        Artifact.newBuilder()
+            .setKey(rs.getString("k"))
+            .setPath(rs.getString("p"))
+            .setArtifactTypeValue(rs.getInt("at"))
+            .setPathOnly(rs.getBoolean("po"))
+            .setLinkedArtifactId(rs.getString("lai"))
+            .setFilenameExtension(rs.getString("fe"))
+            .setSerialization(rs.getString("ser"))
+            .setArtifactSubtype(rs.getString("ast"))
+            .setUploadCompleted(rs.getBoolean("uc"))
+            .build());
   }
 }
