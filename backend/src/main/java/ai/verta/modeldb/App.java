@@ -6,6 +6,7 @@ import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.GracefulShutdown;
+import ai.verta.modeldb.common.MssqlMigrationUtil;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
@@ -160,7 +161,8 @@ public class App implements ApplicationContextAware {
             Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
                 .orElse("false"));
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-    modelDBHibernateUtil.initializedConfigAndDatabase(App.getInstance().mdbConfig, databaseConfig);
+    MDBConfig mdbConfig = App.getInstance().mdbConfig;
+    modelDBHibernateUtil.initializedConfigAndDatabase(mdbConfig, databaseConfig);
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
       modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
@@ -171,6 +173,10 @@ public class App implements ApplicationContextAware {
       LOGGER.info("Code migration starting");
       modelDBHibernateUtil.runMigration(databaseConfig, migrations);
       LOGGER.info("Code migration done");
+
+      if (databaseConfig.getRdbConfiguration().isMssql()) {
+        MssqlMigrationUtil.migrateToUTF16ForMssql(mdbConfig.getJdbi());
+      }
 
       var runLiquibaseSeparate =
           Boolean.parseBoolean(
@@ -183,7 +189,6 @@ public class App implements ApplicationContextAware {
     }
 
     modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
-
     return false;
   }
 

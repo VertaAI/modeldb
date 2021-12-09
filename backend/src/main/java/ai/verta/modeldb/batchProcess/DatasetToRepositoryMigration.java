@@ -110,7 +110,7 @@ public class DatasetToRepositoryMigration {
         createDatasetMigrationTable =
             "IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = N'dataset_migration_status' AND type = 'U') "
                 + "BEGIN "
-                + "CREATE TABLE dataset_migration_status (dataset_id varchar(225) NOT NULL, repo_id bigint NOT NULL, status varchar(255) DEFAULT NULL) "
+                + "CREATE TABLE dataset_migration_status (dataset_id nvarchar(225) NOT NULL, repo_id bigint NOT NULL, status nvarchar(255) DEFAULT NULL) "
                 + "END";
       } else {
         createDatasetMigrationTable =
