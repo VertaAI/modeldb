@@ -204,7 +204,7 @@ public abstract class CommonDBUtil {
     }
   }
 
-  protected static void changeCharsetToUtf(JdbcConnection jdbcCon)
+  public static void changeCharsetToUtf(JdbcConnection jdbcCon)
       throws DatabaseException, SQLException {
     try (var stmt = jdbcCon.createStatement()) {
       String dbName = jdbcCon.getCatalog();
