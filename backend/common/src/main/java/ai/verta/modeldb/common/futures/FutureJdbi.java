@@ -73,12 +73,14 @@ public class FutureJdbi {
     return useHandleOrTransaction(runnableWithException);
   }
 
-  public <T extends Exception> InternalFuture<Void> useTransaction(final HandleConsumer<T> consumer) {
+  public <T extends Exception> InternalFuture<Void> useTransaction(
+      final HandleConsumer<T> consumer) {
     RunnableWithException<T> runnableWithException = () -> jdbi.useTransaction(consumer);
     return useHandleOrTransaction(runnableWithException);
   }
 
-  private <T extends Exception> InternalFuture<Void> useHandleOrTransaction(final RunnableWithException<T> runnableWithException) {
+  private <T extends Exception> InternalFuture<Void> useHandleOrTransaction(
+      final RunnableWithException<T> runnableWithException) {
     return InternalFuture.trace(
         () -> {
           CompletableFuture<Void> promise = new CompletableFuture<>();
