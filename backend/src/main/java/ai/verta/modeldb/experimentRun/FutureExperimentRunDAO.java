@@ -844,9 +844,9 @@ public class FutureExperimentRunDAO {
                                         "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id, experiment_run.version_number from experiment_run";
 
                                     sql +=
-                                        " left join project p ON p.id = experiment_run.project_id ";
+                                        " inner join project p ON p.id = experiment_run.project_id ";
                                     sql +=
-                                        " left join experiment e ON e.id = experiment_run.experiment_id ";
+                                        " inner join experiment e ON e.id = experiment_run.experiment_id ";
 
                                     // Add the sorting tables
                                     for (final var item :
@@ -1234,9 +1234,9 @@ public class FutureExperimentRunDAO {
                                   var sql = "select count(experiment_run.id) from experiment_run";
 
                                   sql +=
-                                      " left join project p ON p.id = experiment_run.project_id ";
+                                      " inner join project p ON p.id = experiment_run.project_id ";
                                   sql +=
-                                      " left join experiment e ON e.id = experiment_run.experiment_id ";
+                                      " inner join experiment e ON e.id = experiment_run.experiment_id ";
 
                                   if (!queryContext.getConditions().isEmpty()) {
                                     sql +=
