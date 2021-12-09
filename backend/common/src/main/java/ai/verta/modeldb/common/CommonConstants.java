@@ -12,6 +12,7 @@ public interface CommonConstants {
   String DELETED = "deleted";
   String EMPTY_STRING = "";
   String S3 = "S3";
+  Integer TAG_LENGTH = 40;
 
   enum UserIdentifier {
     VERTA_ID,

@@ -28,7 +28,6 @@ public abstract class ModelDBConstants {
   public static final Integer NAME_MAX_LENGTH = 40;
   public static final Integer NAME_LENGTH = 256;
   public static final String PATH_DELIMITER = "/";
-  public static final Integer TAG_LENGTH = 40;
 
   // Column/protos field names
   public static final String ARTIFACTS = "artifacts";
