@@ -95,7 +95,7 @@ public abstract class KeyValueHandler {
         });
   }
 
-  public InternalFuture<MapSubtypes<KeyValue>> getKeyValuesMap(Set<String> entityIds) {
+  public InternalFuture<MapSubtypes<String, KeyValue>> getKeyValuesMap(Set<String> entityIds) {
     return jdbi.withHandle(
             handle ->
                 handle

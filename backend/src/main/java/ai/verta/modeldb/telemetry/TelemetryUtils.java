@@ -53,9 +53,9 @@ public class TelemetryUtils {
           MDBConfig config = App.getInstance().mdbConfig;
           if (config.getDatabase().getRdbConfiguration().isMssql()) {
             createModelDBDeploymentInfoQuery =
-                "create table modeldb_deployment_info (md_key varchar(50),md_value varchar(255), creation_timestamp BIGINT)";
+                "create table modeldb_deployment_info (md_key nvarchar(50),md_value nvarchar(255), creation_timestamp BIGINT)";
             createTelemetryInformationQuery =
-                "Create table telemetry_information (tel_key varchar(50),tel_value varchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer varchar(256))";
+                "Create table telemetry_information (tel_key nvarchar(50),tel_value nvarchar(255), collection_timestamp BIGINT, transfer_timestamp BIGINT, telemetry_consumer nvarchar(256))";
           } else {
             createModelDBDeploymentInfoQuery =
                 "create table modeldb_deployment_info (md_key varchar(50),md_value varchar(255), creation_timestamp BIGINT) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci";

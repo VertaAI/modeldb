@@ -28,7 +28,7 @@ public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
     this.jdbi = jdbi;
   }
 
-  public InternalFuture<MapSubtypes<KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
+  public InternalFuture<MapSubtypes<String, KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
       List<String> expRunIds,
       List<String> selfAllowedRepositoryIds,
       boolean allowedAllRepositories) {

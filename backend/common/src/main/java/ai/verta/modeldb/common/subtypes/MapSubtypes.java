@@ -2,13 +2,13 @@ package ai.verta.modeldb.common.subtypes;
 
 import java.util.*;
 
-public class MapSubtypes<T> {
-  private Map<String, List<T>> map = null;
+public class MapSubtypes<S, T> {
+  private Map<S, List<T>> map = null;
 
   private MapSubtypes() {}
 
-  public static <T> MapSubtypes<T> from(List<AbstractMap.SimpleEntry<String, T>> entries) {
-    final var map = new HashMap<String, List<T>>();
+  public static <S, T> MapSubtypes<S, T> from(List<AbstractMap.SimpleEntry<S, T>> entries) {
+    final var map = new HashMap<S, List<T>>();
     for (final var entry : entries) {
       final var key = entry.getKey();
       final var val = entry.getValue();
@@ -18,12 +18,12 @@ public class MapSubtypes<T> {
       map.get(key).add(val);
     }
 
-    final var ret = new MapSubtypes<T>();
+    final var ret = new MapSubtypes<S, T>();
     ret.map = map;
     return ret;
   }
 
-  public List<T> get(String key) {
+  public List<T> get(S key) {
     return map.computeIfAbsent(key, k -> new LinkedList<>());
   }
 }

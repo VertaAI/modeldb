@@ -83,7 +83,7 @@ public class ObservationHandler {
         executor);
   }
 
-  public InternalFuture<MapSubtypes<Observation>> getObservationsMap(Set<String> runIds) {
+  public InternalFuture<MapSubtypes<String, Observation>> getObservationsMap(Set<String> runIds) {
     return jdbi.withHandle(
             handle ->
                 handle

@@ -105,7 +105,7 @@ public class FeatureHandler {
             executor);
   }
 
-  public InternalFuture<MapSubtypes<Feature>> getFeaturesMap(Set<String> entityIds) {
+  public InternalFuture<MapSubtypes<String, Feature>> getFeaturesMap(Set<String> entityIds) {
     return jdbi.withHandle(
             handle ->
                 handle

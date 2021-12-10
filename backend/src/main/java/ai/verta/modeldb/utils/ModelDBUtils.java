@@ -124,23 +124,6 @@ public class ModelDBUtils {
     return entityName;
   }
 
-  public static List<String> checkEntityTagsLength(List<String> tags) {
-    for (String tag : tags) {
-      if (tag.isEmpty()) {
-        var errorMessage = "Invalid tag found, Tag shouldn't be empty";
-        throw new InvalidArgumentException(errorMessage);
-      } else if (tag.length() > ModelDBConstants.TAG_LENGTH) {
-        String errorMessage =
-            "Tag name can not be more than "
-                + ModelDBConstants.TAG_LENGTH
-                + " characters. Limit exceeded tag is: "
-                + tag;
-        throw new InvalidArgumentException(errorMessage);
-      }
-    }
-    return tags;
-  }
-
   /**
    * VERTA <br>
    * Function to divide the list of collaborators by one's which can be resolved by email_id and

@@ -12,6 +12,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.dto.CommitPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
@@ -872,10 +873,11 @@ public class CommitDAORdbImpl implements CommitDAO {
               .setStringId(compositeId)
               .build();
       if (addLabels) {
-        metadataDAO.addLabels(identificationType, ModelDBUtils.checkEntityTagsLength(labelsList));
+        metadataDAO.addLabels(
+            identificationType, TagsHandlerBase.checkEntityTagsLength(labelsList));
       } else {
         metadataDAO.deleteLabels(
-            identificationType, ModelDBUtils.checkEntityTagsLength(labelsList), deleteAll);
+            identificationType, TagsHandlerBase.checkEntityTagsLength(labelsList), deleteAll);
       }
       var commitEntity = getCommitEntity(session, commitHash, (session1 -> repositoryEntity));
       commitEntity.setDate_updated(new Date().getTime());

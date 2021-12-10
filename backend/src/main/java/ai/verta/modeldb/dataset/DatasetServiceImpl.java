@@ -18,6 +18,7 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
@@ -180,7 +181,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
             .setDescription(request.getDescription())
             .addAllAttributes(request.getAttributesList())
-            .addAllTags(ModelDBUtils.checkEntityTagsLength(request.getTagsList()))
+            .addAllTags(TagsHandlerBase.checkEntityTagsLength(request.getTagsList()))
             .setDatasetVisibility(request.getDatasetVisibility())
             .setVisibility(request.getVisibility())
             .setDatasetType(request.getDatasetType())
@@ -490,7 +491,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           repositoryDAO.addDatasetTags(
               metadataDAO,
               request.getId(),
-              ModelDBUtils.checkEntityTagsLength(request.getTagsList()));
+              TagsHandlerBase.checkEntityTagsLength(request.getTagsList()));
 
       // Add succeeded event in local DB
       addEvent(

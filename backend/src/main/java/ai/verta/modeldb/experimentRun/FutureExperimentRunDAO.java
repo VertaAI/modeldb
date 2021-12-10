@@ -60,6 +60,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
@@ -86,7 +87,6 @@ import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
@@ -404,7 +404,7 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> tagsHandler.addTags(runId, ModelDBUtils.checkEntityTagsLength(tags)),
+            unused -> tagsHandler.addTags(runId, TagsHandlerBase.checkEntityTagsLength(tags)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
@@ -771,7 +771,9 @@ public class FutureExperimentRunDAO {
         InternalFuture.supplyAsync(
             () -> {
               final var localQueryContext = new QueryFilterContext();
-              localQueryContext.getConditions().add("deleted = :deleted");
+              localQueryContext.getConditions().add("experiment_run.deleted = :deleted");
+              localQueryContext.getConditions().add("p.deleted = :deleted");
+              localQueryContext.getConditions().add("e.deleted = :deleted");
               localQueryContext.getBinds().add(q -> q.bind("deleted", false));
 
               if (!request.getProjectId().isEmpty()) {
@@ -840,7 +842,12 @@ public class FutureExperimentRunDAO {
                           return jdbi.withHandle(
                                   handle -> {
                                     var sql =
-                                        "select id, date_created, date_updated, experiment_id, name, project_id, description, start_time, end_time, owner, environment, code_version, job_id, version_number from experiment_run";
+                                        "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id, experiment_run.version_number from experiment_run";
+
+                                    sql +=
+                                        " inner join project p ON p.id = experiment_run.project_id ";
+                                    sql +=
+                                        " inner join experiment e ON e.id = experiment_run.experiment_id ";
 
                                     // Add the sorting tables
                                     for (final var item :
@@ -1225,7 +1232,12 @@ public class FutureExperimentRunDAO {
                         queryContext ->
                             jdbi.withHandle(
                                 handle -> {
-                                  var sql = "select count(id) from experiment_run";
+                                  var sql = "select count(experiment_run.id) from experiment_run";
+
+                                  sql +=
+                                      " inner join project p ON p.id = experiment_run.project_id ";
+                                  sql +=
+                                      " inner join experiment e ON e.id = experiment_run.experiment_id ";
 
                                   if (!queryContext.getConditions().isEmpty()) {
                                     sql +=
@@ -1379,7 +1391,7 @@ public class FutureExperimentRunDAO {
     return allowedAllResources;
   }
 
-  private InternalFuture<MapSubtypes<KeyValue>> getFutureHyperparamsFromConfigBlobs(
+  private InternalFuture<MapSubtypes<String, KeyValue>> getFutureHyperparamsFromConfigBlobs(
       Set<String> ids) {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
