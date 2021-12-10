@@ -8,7 +8,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.UnimplementedException;
 import com.google.protobuf.Value;
 import java.util.Arrays;

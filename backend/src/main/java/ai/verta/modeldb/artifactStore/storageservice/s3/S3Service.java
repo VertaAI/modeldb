@@ -9,7 +9,7 @@ import ai.verta.modeldb.common.HttpCodeToGRPCCode;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.AmazonServiceException;

@@ -24,7 +24,7 @@ import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.*;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;

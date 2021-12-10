@@ -68,7 +68,7 @@ import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;

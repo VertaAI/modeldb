@@ -6,7 +6,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.TrialUtils;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.api.client.util.IOUtils;

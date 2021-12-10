@@ -7,7 +7,7 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;
 import java.util.List;

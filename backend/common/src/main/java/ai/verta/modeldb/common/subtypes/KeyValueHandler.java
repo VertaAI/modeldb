@@ -3,11 +3,10 @@ package ai.verta.modeldb.common.subtypes;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.protobuf.Value;
-import com.google.rpc.Code;
 import java.math.BigDecimal;
 import java.util.AbstractMap;
 import java.util.HashSet;
@@ -129,11 +128,11 @@ public abstract class KeyValueHandler {
               Set<String> keySet = new HashSet<>();
               for (final var kv : kvs) {
                 if (kv.getKey().isEmpty()) {
-                  throw new ModelDBException("Empty key", Code.INVALID_ARGUMENT);
+                  throw new InvalidArgumentException("Empty key");
                 }
                 if (keySet.contains(kv.getKey())) {
-                  throw new ModelDBException(
-                      "Multiple key " + kv.getKey() + " found in request", Code.INVALID_ARGUMENT);
+                  throw new InvalidArgumentException(
+                      "Multiple key " + kv.getKey() + " found in request");
                 }
                 keySet.add(kv.getKey());
               }
@@ -230,7 +229,7 @@ public abstract class KeyValueHandler {
         InternalFuture.runAsync(
             () -> {
               if (kv.getKey().isEmpty()) {
-                throw new ModelDBException("Empty key", Code.INVALID_ARGUMENT);
+                throw new InvalidArgumentException("Empty key");
               }
             },
             executor);
