@@ -19,8 +19,8 @@
 
 package ai.verta.modeldb.health;
 
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.health.v1.HealthCheckRequest;
@@ -122,11 +122,11 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
     if (status.equals(ServingStatus.SERVING)) {
       return ResponseEntity.ok()
           .contentType(MediaType.APPLICATION_JSON)
-          .body(ModelDBUtils.getStringFromProtoObject(response));
+          .body(CommonUtils.getStringFromProtoObject(response));
     } else {
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .contentType(MediaType.APPLICATION_JSON)
-          .body(ModelDBUtils.getStringFromProtoObject(response));
+          .body(CommonUtils.getStringFromProtoObject(response));
     }
   }
 }

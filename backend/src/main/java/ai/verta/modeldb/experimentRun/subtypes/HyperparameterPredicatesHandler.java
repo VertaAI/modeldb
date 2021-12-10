@@ -2,10 +2,10 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.exceptions.UnimplementedException;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.Date;
 
 public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
@@ -41,7 +41,7 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
           break;
         case STRING_VALUE:
           sql += applyOperator(operator, colValue, ":" + valueBindingName);
-          var valueStr = ModelDBUtils.getStringFromProtoObject(value);
+          var valueStr = CommonUtils.getStringFromProtoObject(value);
           if (operator.equals(OperatorEnum.Operator.CONTAIN)
               || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
             valueStr = value.getStringValue();

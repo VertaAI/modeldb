@@ -4,12 +4,12 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.UnimplementedException;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Value;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -344,7 +344,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       switch (value.getKindCase()) {
         case STRING_VALUE:
           sql += applyOperator(operator, colValue, ":" + valueBindingName);
-          var valueStr = ModelDBUtils.getStringFromProtoObject(value);
+          var valueStr = CommonUtils.getStringFromProtoObject(value);
           if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
             valueStr = value.getStringValue();
           }
@@ -357,7 +357,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
           List<Object> valueList = new LinkedList<>();
           for (final var value1 : value.getListValue().getValuesList()) {
             if (value1.getKindCase().ordinal() == Value.KindCase.STRING_VALUE.ordinal()) {
-              var valueStr1 = ModelDBUtils.getStringFromProtoObject(value1);
+              var valueStr1 = CommonUtils.getStringFromProtoObject(value1);
               if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
                 valueStr1 = value.getStringValue();
               }
@@ -428,7 +428,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
               || operator.equals(OperatorEnum.Operator.CONTAIN)) {
             valueStr = value.getStringValue();
           } else {
-            valueStr = ModelDBUtils.getStringFromProtoObject(value);
+            valueStr = CommonUtils.getStringFromProtoObject(value);
           }
           String finalValueStr = valueStr;
           queryContext =
@@ -439,7 +439,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
           List<Object> valueList = new LinkedList<>();
           for (final var value1 : value.getListValue().getValuesList()) {
             if (value1.getKindCase().ordinal() == Value.KindCase.STRING_VALUE.ordinal()) {
-              var valueStr1 = ModelDBUtils.getStringFromProtoObject(value1);
+              var valueStr1 = CommonUtils.getStringFromProtoObject(value1);
               if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
                 valueStr1 = value.getStringValue();
               }

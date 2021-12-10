@@ -80,7 +80,7 @@ import ai.verta.modeldb.experimentRun.subtypes.FeatureHandler;
 import ai.verta.modeldb.experimentRun.subtypes.FilterPrivilegedDatasetsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.FilterPrivilegedVersionedInputsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.HyperparametersFromConfigHandler;
-import ai.verta.modeldb.experimentRun.subtypes.KeyValueHandler;
+import ai.verta.modeldb.experimentRun.subtypes.KeyValueBaseHandler;
 import ai.verta.modeldb.experimentRun.subtypes.ObservationHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
@@ -132,8 +132,8 @@ public class FutureExperimentRunDAO {
   private final UAC uac;
 
   private final AttributeHandler attributeHandler;
-  private final KeyValueHandler hyperparametersHandler;
-  private final KeyValueHandler metricsHandler;
+  private final KeyValueBaseHandler hyperparametersHandler;
+  private final KeyValueBaseHandler metricsHandler;
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
@@ -170,8 +170,8 @@ public class FutureExperimentRunDAO {
 
     attributeHandler = new AttributeHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     hyperparametersHandler =
-        new KeyValueHandler(executor, jdbi, "hyperparameters", EXPERIMENT_RUN_ENTITY_NAME);
-    metricsHandler = new KeyValueHandler(executor, jdbi, "metrics", EXPERIMENT_RUN_ENTITY_NAME);
+        new KeyValueBaseHandler(executor, jdbi, "hyperparameters", EXPERIMENT_RUN_ENTITY_NAME);
+    metricsHandler = new KeyValueBaseHandler(executor, jdbi, "metrics", EXPERIMENT_RUN_ENTITY_NAME);
     observationHandler = new ObservationHandler(executor, jdbi);
     tagsHandler = new TagsHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     codeVersionHandler = new CodeVersionHandler(executor, jdbi, "experiment_run");

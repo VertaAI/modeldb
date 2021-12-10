@@ -15,7 +15,6 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -339,7 +338,7 @@ public class VersionInputHandler {
                       keysAndParameterMap.put(VERSIONING_KEY_QUERY_PARAM, locationEntry.getKey());
                       keysAndParameterMap.put(
                           VERSIONING_LOCATION_QUERY_PARAM,
-                          ModelDBUtils.getStringFromProtoObject(locationEntry.getValue()));
+                          CommonUtils.getStringFromProtoObject(locationEntry.getValue()));
                       keysAndParameterMap.put(
                           "versioning_blob_type", blob.getContentCase().getNumber());
                       keysAndParameterMap.put(

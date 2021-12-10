@@ -2,7 +2,6 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.modeldb.QueryParameter;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.Builder;
 import javax.persistence.CascadeType;
@@ -24,7 +23,7 @@ public class QueryParameterEntity {
 
   public QueryParameterEntity(Object entity, String fieldType, QueryParameter queryParameter) {
     setParameter_name(queryParameter.getParameterName());
-    setValue(ModelDBUtils.getStringFromProtoObject(queryParameter.getValue()));
+    setValue(CommonUtils.getStringFromProtoObject(queryParameter.getValue()));
     setParameter_type(queryParameter.getParameterTypeValue());
 
     if (entity instanceof QueryDatasetVersionInfoEntity) {

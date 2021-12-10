@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
+import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.util.JsonFormat;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -38,6 +39,15 @@ public class CommonUtils {
       return builder;
     } catch (InvalidProtocolBufferException ex) {
       LOGGER.warn("Error generating builder for {}", jsonString, ex);
+      throw new RuntimeException(ex);
+    }
+  }
+
+  public static String getStringFromProtoObject(MessageOrBuilder object) {
+    try {
+      return JsonFormat.printer().preservingProtoFieldNames().print(object);
+    } catch (InvalidProtocolBufferException ex) {
+      LOGGER.warn("Error generating while convert MessageOrBuilder to string", ex);
       throw new RuntimeException(ex);
     }
   }

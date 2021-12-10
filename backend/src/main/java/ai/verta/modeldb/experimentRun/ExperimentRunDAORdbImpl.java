@@ -2311,8 +2311,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .setKey(
                   ModelDBConstants.VERSIONED_INPUTS + "." + ModelDBConstants.VERSIONING_LOCATION)
               .setValue(
-                  Value.newBuilder()
-                      .setStringValue(ModelDBUtils.getStringFromProtoObject(location)))
+                  Value.newBuilder().setStringValue(CommonUtils.getStringFromProtoObject(location)))
               .setOperator(OperatorEnum.Operator.EQ)
               .setValueType(ValueTypeEnum.ValueType.STRING)
               .build();
@@ -2775,7 +2774,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       if (experimentRunEntity == null) {
         throw new NotFoundException(ModelDBMessages.EXP_RUN_NOT_FOUND_ERROR_MSG);
       }
-      experimentRunEntity.setEnvironment(ModelDBUtils.getStringFromProtoObject(environmentBlob));
+      experimentRunEntity.setEnvironment(CommonUtils.getStringFromProtoObject(environmentBlob));
       session.update(experimentRunEntity);
       transaction.commit();
       LOGGER.debug("EnvironmentBlob logged successfully");

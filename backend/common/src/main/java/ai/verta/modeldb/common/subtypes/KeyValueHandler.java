@@ -1,28 +1,30 @@
-package ai.verta.modeldb.experimentRun.subtypes;
+package ai.verta.modeldb.common.subtypes;
 
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.common.subtypes.MapSubtypes;
-import ai.verta.modeldb.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.Value;
+import com.google.rpc.Code;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
 
-public class KeyValueHandler {
-  private static Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
-  private static final String ENTITY_ID_PARAM_QUERY = "entity_id";
+public abstract class KeyValueHandler<T> {
+  private static final Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
+  protected static final String ENTITY_ID_PARAM_QUERY = "entity_id";
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
   private static final String KEY_QUERY_PARAM = "key";
@@ -33,10 +35,22 @@ public class KeyValueHandler {
   private final FutureJdbi jdbi;
   private final String fieldType;
   private final String entityName;
-  private final String entityIdReferenceColumn;
+  protected String entityIdReferenceColumn;
 
-  protected String getTableName() {
-    return "keyvalue";
+  protected abstract String getTableName();
+
+  protected abstract void setEntityIdReferenceColumn(String entityName);
+
+  public static String getValueForKeyValueTable(KeyValue kv) {
+    // Logic to convert canonical number to double number
+    if (kv.getValue().hasNumberValue()) {
+      return BigDecimal.valueOf(kv.getValue().getNumberValue()).toPlainString();
+    } else if (kv.getValue().hasStringValue()
+        && NumberUtils.isCreatable(kv.getValue().getStringValue().trim())) {
+      return BigDecimal.valueOf(Double.parseDouble(kv.getValue().getStringValue().trim()))
+          .toPlainString();
+    }
+    return CommonUtils.getStringFromProtoObject(kv.getValue());
   }
 
   public KeyValueHandler(Executor executor, FutureJdbi jdbi, String fieldType, String entityName) {
@@ -44,21 +58,11 @@ public class KeyValueHandler {
     this.jdbi = jdbi;
     this.fieldType = fieldType;
     this.entityName = entityName;
-
-    switch (entityName) {
-      case "ProjectEntity":
-        this.entityIdReferenceColumn = "project_id";
-        break;
-      case "ExperimentRunEntity":
-        this.entityIdReferenceColumn = "experiment_run_id";
-        break;
-      default:
-        throw new InternalErrorException("Invalid entity name: " + entityName);
-    }
+    setEntityIdReferenceColumn(entityName);
   }
 
   public InternalFuture<List<KeyValue>> getKeyValues(
-      String entityId, List<String> attrKeys, boolean getAll) {
+      T entityId, List<String> attrKeys, boolean getAll) {
     return jdbi.withHandle(
         handle -> {
           var queryString =
@@ -91,7 +95,7 @@ public class KeyValueHandler {
         });
   }
 
-  public InternalFuture<MapSubtypes<String, KeyValue>> getKeyValuesMap(Set<String> entityIds) {
+  public InternalFuture<MapSubtypes<T, KeyValue>> getKeyValuesMap(Set<T> entityIds) {
     return jdbi.withHandle(
             handle ->
                 handle
@@ -102,34 +106,26 @@ public class KeyValueHandler {
                     .bindList("entity_ids", entityIds)
                     .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
                     .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                    .map(
-                        (rs, ctx) ->
-                            new AbstractMap.SimpleEntry<>(
-                                rs.getString(ENTITY_ID_PARAM_QUERY),
-                                KeyValue.newBuilder()
-                                    .setKey(rs.getString("k"))
-                                    .setValue(
-                                        (Value.Builder)
-                                            CommonUtils.getProtoObjectFromString(
-                                                rs.getString("v"), Value.newBuilder()))
-                                    .setValueTypeValue(rs.getInt("t"))
-                                    .build()))
+                    .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
                     .list())
         .thenApply(MapSubtypes::from, executor);
   }
 
-  public InternalFuture<Void> logKeyValues(String entityId, List<KeyValue> kvs) {
+  protected abstract AbstractMap.SimpleEntry<T, KeyValue> getSimpleEntryFromResultSet(ResultSet rs)
+      throws SQLException;
+
+  public InternalFuture<Void> logKeyValues(T entityId, List<KeyValue> kvs) {
     // Validate input
     return InternalFuture.runAsync(
             () -> {
               Set<String> keySet = new HashSet<>();
               for (final var kv : kvs) {
                 if (kv.getKey().isEmpty()) {
-                  throw new InvalidArgumentException("Empty key");
+                  throw new ModelDBException("Empty key", Code.INVALID_ARGUMENT);
                 }
                 if (keySet.contains(kv.getKey())) {
-                  throw new InvalidArgumentException(
-                      "Multiple key " + kv.getKey() + " found in request");
+                  throw new ModelDBException(
+                      "Multiple key " + kv.getKey() + " found in request", Code.INVALID_ARGUMENT);
                 }
                 keySet.add(kv.getKey());
               }
@@ -172,7 +168,7 @@ public class KeyValueHandler {
             executor);
   }
 
-  private void insertKeyValue(String entityId, Handle handle, KeyValue kv) {
+  private void insertKeyValue(T entityId, Handle handle, KeyValue kv) {
     var queryString =
         "insert into "
             + getTableName()
@@ -183,7 +179,7 @@ public class KeyValueHandler {
     try (var queryHandler = handle.createUpdate(queryString)) {
       queryHandler
           .bind(KEY_QUERY_PARAM, kv.getKey())
-          .bind(VALUE_QUERY_PARAM, RdbmsUtils.getValueForKeyValueTable(kv))
+          .bind(VALUE_QUERY_PARAM, getValueForKeyValueTable(kv))
           .bind(TYPE_QUERY_PARAM, kv.getValueTypeValue())
           .bind(ENTITY_ID_PARAM_QUERY, entityId)
           .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
@@ -192,7 +188,7 @@ public class KeyValueHandler {
     }
   }
 
-  public InternalFuture<Void> deleteKeyValues(String entityId, Optional<List<String>> maybeKeys) {
+  public InternalFuture<Void> deleteKeyValues(T entityId, Optional<List<String>> maybeKeys) {
     return jdbi.useHandle(
         handle -> {
           var sql =
@@ -221,12 +217,12 @@ public class KeyValueHandler {
 
   // TODO: We might end up removing this update since ERs don't have them.
   // Comment: https://github.com/VertaAI/modeldb/pull/2118#discussion_r613762413
-  public InternalFuture<Void> updateKeyValue(String entityId, KeyValue kv) {
+  public InternalFuture<Void> updateKeyValue(T entityId, KeyValue kv) {
     var currentFuture =
         InternalFuture.runAsync(
             () -> {
               if (kv.getKey().isEmpty()) {
-                throw new InvalidArgumentException("Empty key");
+                throw new ModelDBException("Empty key", Code.INVALID_ARGUMENT);
               }
             },
             executor);
@@ -251,7 +247,7 @@ public class KeyValueHandler {
                                             + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
                                         getTableName(), entityIdReferenceColumn))
                                 .bind(KEY_QUERY_PARAM, kv.getKey())
-                                .bind(VALUE_QUERY_PARAM, RdbmsUtils.getValueForKeyValueTable(kv))
+                                .bind(VALUE_QUERY_PARAM, getValueForKeyValueTable(kv))
                                 .bind(TYPE_QUERY_PARAM, kv.getValueTypeValue())
                                 .bind(ENTITY_ID_PARAM_QUERY, entityId)
                                 .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
@@ -265,7 +261,7 @@ public class KeyValueHandler {
     return currentFuture;
   }
 
-  private InternalFuture<Boolean> keyValueExists(String entityId, KeyValue kv) {
+  private InternalFuture<Boolean> keyValueExists(T entityId, KeyValue kv) {
     // Check for conflicts
     return jdbi.withHandle(
             handle ->

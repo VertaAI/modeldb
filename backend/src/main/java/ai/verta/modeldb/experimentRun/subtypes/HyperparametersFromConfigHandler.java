@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class HyperparametersFromConfigHandler extends KeyValueHandler {
+public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
   private static Logger LOGGER = LogManager.getLogger(HyperparametersFromConfigHandler.class);
   private final FutureJdbi jdbi;
   private final Executor executor;

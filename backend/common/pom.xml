@@ -25,6 +25,7 @@
         <postgres.version>42.2.13</postgres.version>
         <liquibase.version>3.8.1</liquibase.version>
         <protobuf.version>3.17.3</protobuf.version>
+        <prometheus.version>0.10.0</prometheus.version>
     </properties>
 
     <dependencies>
@@ -120,6 +121,12 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
             <version>${liquibase.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_spring_boot</artifactId>
+            <version>${prometheus.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client -->
         <dependency>

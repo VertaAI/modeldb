@@ -1,8 +1,8 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ public class EnvironmentHandler {
   public String getEnvironmentStringFromBlob(EnvironmentBlob runEnvironmentBlob) {
     if (runEnvironmentBlob != null) {
       var sortedEnvironmentBlob = sortPythonEnvironmentBlob(runEnvironmentBlob);
-      return ModelDBUtils.getStringFromProtoObject(sortedEnvironmentBlob);
+      return CommonUtils.getStringFromProtoObject(sortedEnvironmentBlob);
     }
     return null;
   }

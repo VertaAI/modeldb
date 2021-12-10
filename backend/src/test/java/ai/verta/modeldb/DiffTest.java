@@ -3,8 +3,7 @@ package ai.verta.modeldb;
 import static ai.verta.modeldb.CommitTest.getDatasetBlobFromPath;
 import static org.junit.Assert.*;
 
-import ai.verta.modeldb.authservice.*;
-import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDiff;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -217,7 +216,7 @@ public class DiffTest extends TestsInit {
             .build();
     ComputeRepositoryDiffRequest.Response repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", ModelDBUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
     LOGGER.info("Diff Response: {}", repositoryDiffResponse);
     List<BlobDiff> blobDiffs = repositoryDiffResponse.getDiffsList();
     final boolean differentTypesModified = blobType > 1;
@@ -352,7 +351,7 @@ public class DiffTest extends TestsInit {
             .build();
     ComputeRepositoryDiffRequest.Response repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", ModelDBUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
     LOGGER.info("Diff Response: {}", repositoryDiffResponse);
     List<BlobDiff> blobDiffs = repositoryDiffResponse.getDiffsList();
     final boolean differentTypesModified = blobType > 1;
@@ -703,7 +702,7 @@ public class DiffTest extends TestsInit {
             .build();
     ComputeRepositoryDiffRequest.Response repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", ModelDBUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
     LOGGER.info("Diff Response: {}", repositoryDiffResponse);
     List<BlobDiff> blobDiffs = repositoryDiffResponse.getDiffsList();
     boolean differentTypesModified = blobType > 1;
@@ -744,7 +743,7 @@ public class DiffTest extends TestsInit {
             .build();
     repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", ModelDBUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
     LOGGER.info("Diff Response: {}", repositoryDiffResponse);
     blobDiffs = repositoryDiffResponse.getDiffsList();
     differentTypesModified = blobType > 1;
@@ -785,7 +784,7 @@ public class DiffTest extends TestsInit {
             .build();
     repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", ModelDBUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
     LOGGER.info("Diff Response: {}", repositoryDiffResponse);
     blobDiffs = repositoryDiffResponse.getDiffsList();
     differentTypesModified = blobType > 1;
@@ -826,7 +825,7 @@ public class DiffTest extends TestsInit {
             .build();
     repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", ModelDBUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
     LOGGER.info("Diff Response: {}", repositoryDiffResponse);
     blobDiffs = repositoryDiffResponse.getDiffsList();
     differentTypesModified = blobType > 1;

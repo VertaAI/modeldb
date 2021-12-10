@@ -9,6 +9,7 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import com.google.protobuf.ListValue;
@@ -1595,7 +1596,7 @@ public class ProjectTest extends TestsInit {
 
     GetSummary getSummaryRequest = GetSummary.newBuilder().setEntityId(project.getId()).build();
     GetSummary.Response response = projectServiceStub.getSummary(getSummaryRequest);
-    LOGGER.info("Response Project Summary : " + ModelDBUtils.getStringFromProtoObject(response));
+    LOGGER.info("Response Project Summary : " + CommonUtils.getStringFromProtoObject(response));
 
     GetExperimentsInProject getExperiment =
         GetExperimentsInProject.newBuilder().setProjectId(project.getId()).build();

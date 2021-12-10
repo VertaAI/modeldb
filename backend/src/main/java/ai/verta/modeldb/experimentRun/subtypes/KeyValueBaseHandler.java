@@ -11,28 +11,10 @@ import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.concurrent.Executor;
 
-public class AttributeHandler extends KeyValueHandler<String> {
-  public AttributeHandler(Executor executor, FutureJdbi jdbi, String entityName) {
-    super(executor, jdbi, "attributes", entityName);
-  }
-
-  @Override
-  protected String getTableName() {
-    return "attribute";
-  }
-
-  @Override
-  protected void setEntityIdReferenceColumn(String entityName) {
-    switch (entityName) {
-      case "ProjectEntity":
-        this.entityIdReferenceColumn = "project_id";
-        break;
-      case "ExperimentRunEntity":
-        this.entityIdReferenceColumn = "experiment_run_id";
-        break;
-      default:
-        throw new InternalErrorException("Invalid entity name: " + entityName);
-    }
+public class KeyValueBaseHandler extends KeyValueHandler<String> {
+  public KeyValueBaseHandler(
+      Executor executor, FutureJdbi jdbi, String fieldType, String entityName) {
+    super(executor, jdbi, fieldType, entityName);
   }
 
   @Override
@@ -47,5 +29,24 @@ public class AttributeHandler extends KeyValueHandler<String> {
                     CommonUtils.getProtoObjectFromString(rs.getString("v"), Value.newBuilder()))
             .setValueTypeValue(rs.getInt("t"))
             .build());
+  }
+
+  @Override
+  protected String getTableName() {
+    return "keyvalue";
+  }
+
+  @Override
+  protected void setEntityIdReferenceColumn(String entityName) {
+    switch (entityName) {
+      case "ProjectEntity":
+        this.entityIdReferenceColumn = "project_id";
+        break;
+      case "ExperimentRunEntity":
+        this.entityIdReferenceColumn = "experiment_run_id";
+        break;
+      default:
+        throw new InternalErrorException("Invalid entity name: " + entityName);
+    }
   }
 }
