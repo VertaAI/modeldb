@@ -8,6 +8,8 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.rpc.Code;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +20,7 @@ import java.util.stream.Collectors;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
-public abstract class CommonArtifactHandler {
+public abstract class CommonArtifactHandler<T> {
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   protected final Executor executor;
   protected final FutureJdbi jdbi;
@@ -35,16 +37,8 @@ public abstract class CommonArtifactHandler {
     this.artifactStoreConfig = artifactStoreConfig;
   }
 
-  public InternalFuture<List<Artifact>> getArtifacts(String entityId, Optional<String> maybeKey) {
-    var currentFuture =
-        InternalFuture.runAsync(
-            () -> {
-              if (entityId == null || entityId.isEmpty()) {
-                throw new ModelDBException(
-                    CommonMessages.ENTITY_ID_IS_EMPTY_ERROR, Code.INVALID_ARGUMENT);
-              }
-            },
-            executor);
+  public InternalFuture<List<Artifact>> getArtifacts(T entityId, Optional<String> maybeKey) {
+    var currentFuture = InternalFuture.runAsync(() -> validateField(entityId), executor);
     return currentFuture.thenCompose(
         unused ->
             jdbi.withHandle(
@@ -70,43 +64,36 @@ public abstract class CommonArtifactHandler {
         executor);
   }
 
-  protected abstract Query buildGetArtifactsQuery(
-      Set<String> entityIds, Optional<String> maybeKey, Handle handle);
+  private void validateField(T entityId) {
+    if (entityId == null
+        || ((entityId instanceof String) && ((String) entityId).isEmpty())
+        || ((entityId instanceof Number) && ((Long) entityId == 0))) {
+      throw new ModelDBException(CommonMessages.ENTITY_ID_IS_EMPTY_ERROR, Code.INVALID_ARGUMENT);
+    }
+  }
 
-  public InternalFuture<MapSubtypes<Artifact>> getArtifactsMap(Set<String> entityIds) {
+  protected abstract Query buildGetArtifactsQuery(
+      Set<T> entityIds, Optional<String> maybeKey, Handle handle);
+
+  public InternalFuture<MapSubtypes<T, Artifact>> getArtifactsMap(Set<T> entityIds) {
     return jdbi.withHandle(
             handle -> {
               Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle);
-              return query
-                  .map(
-                      (rs, ctx) ->
-                          new AbstractMap.SimpleEntry<>(
-                              rs.getString(ENTITY_ID_QUERY_PARAM),
-                              Artifact.newBuilder()
-                                  .setKey(rs.getString("k"))
-                                  .setPath(rs.getString("p"))
-                                  .setArtifactTypeValue(rs.getInt("at"))
-                                  .setPathOnly(rs.getBoolean("po"))
-                                  .setLinkedArtifactId(rs.getString("lai"))
-                                  .setFilenameExtension(rs.getString("fe"))
-                                  .setSerialization(rs.getString("ser"))
-                                  .setArtifactSubtype(rs.getString("ast"))
-                                  .setUploadCompleted(rs.getBoolean("uc"))
-                                  .build()))
-                  .list();
+              return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
             })
         .thenApply(MapSubtypes::from, executor);
   }
 
+  protected abstract AbstractMap.SimpleEntry<T, Artifact> getSimpleEntryFromResultSet(ResultSet rs)
+      throws SQLException;
+
   public InternalFuture<Void> logArtifacts(
-      String entityId, List<Artifact> artifacts, boolean overwrite) {
+      T entityId, List<Artifact> artifacts, boolean overwrite) {
     // Validate input
     return InternalFuture.runAsync(
             () -> {
-              if (entityId == null || entityId.isEmpty()) {
-                throw new ModelDBException(
-                    CommonMessages.ENTITY_ID_IS_EMPTY_ERROR, Code.INVALID_ARGUMENT);
-              }
+              validateField(entityId);
+
               for (final var artifact : artifacts) {
                 String errorMessage = null;
                 if (artifact.getKey().isEmpty()
@@ -166,21 +153,17 @@ public abstract class CommonArtifactHandler {
   }
 
   protected abstract void insertArtifactInDB(
-      String entityId,
-      Handle handle,
-      Artifact artifact,
-      boolean uploadCompleted,
-      String storeTypePath);
+      T entityId, Handle handle, Artifact artifact, boolean uploadCompleted, String storeTypePath);
 
   protected abstract InternalFuture<Void> validateArtifactsForTrial(
-      String entityId, List<Artifact> artifacts);
+      T entityId, List<Artifact> artifacts);
 
   protected abstract void validateAndThrowErrorAlreadyExistsArtifacts(
-      String entityId, List<Artifact> artifacts, Handle handle);
+      T entityId, List<Artifact> artifacts, Handle handle);
 
   protected abstract void deleteArtifactsWithHandle(
-      String entityId, Optional<List<String>> maybeKeys, Handle handle);
+      T entityId, Optional<List<String>> maybeKeys, Handle handle);
 
   public abstract InternalFuture<Void> deleteArtifacts(
-      String entityId, Optional<List<String>> maybeKeys);
+      T entityId, Optional<List<String>> maybeKeys);
 }
