@@ -1,14 +1,39 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
+import ai.verta.common.KeyValue;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
+import com.google.protobuf.Value;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.AbstractMap;
 import java.util.concurrent.Executor;
 
-public class KeyValueBaseHandler extends KeyValueHandler {
+public class KeyValueBaseHandler extends KeyValueHandler<String> {
   public KeyValueBaseHandler(
       Executor executor, FutureJdbi jdbi, String fieldType, String entityName) {
     super(executor, jdbi, fieldType, entityName);
+  }
+
+  @Override
+  protected AbstractMap.SimpleEntry<String, KeyValue> getSimpleEntryFromResultSet(ResultSet rs)
+      throws SQLException {
+    return new AbstractMap.SimpleEntry<>(
+        rs.getString(ENTITY_ID_PARAM_QUERY),
+        KeyValue.newBuilder()
+            .setKey(rs.getString("k"))
+            .setValue(
+                (Value.Builder)
+                    CommonUtils.getProtoObjectFromString(rs.getString("v"), Value.newBuilder()))
+            .setValueTypeValue(rs.getInt("t"))
+            .build());
+  }
+
+  @Override
+  protected String getTableName() {
+    return "keyvalue";
   }
 
   @Override

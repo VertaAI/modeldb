@@ -63,7 +63,6 @@ import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
-import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.TrialConfig;
@@ -133,8 +132,8 @@ public class FutureExperimentRunDAO {
   private final UAC uac;
 
   private final AttributeHandler attributeHandler;
-  private final KeyValueHandler hyperparametersHandler;
-  private final KeyValueHandler metricsHandler;
+  private final KeyValueBaseHandler hyperparametersHandler;
+  private final KeyValueBaseHandler metricsHandler;
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
