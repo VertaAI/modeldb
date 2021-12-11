@@ -20,7 +20,7 @@
 
     <properties>
         <hibernate.version>5.4.24.Final</hibernate.version>
-        <log4j.version>2.13.2</log4j.version>
+        <log4j.version>2.15.0</log4j.version>
         <grpc.version>1.40.1</grpc.version>
         <postgres.version>42.2.13</postgres.version>
         <liquibase.version>3.8.1</liquibase.version>
