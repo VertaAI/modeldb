@@ -1332,7 +1332,7 @@ public class FutureExperimentRunDAO {
                     return null;
                   } else {
                     return new QueryFilterContext()
-                        .addCondition("project_id in (<authz_project_ids>)")
+                        .addCondition("experiment_run.project_id in (<authz_project_ids>)")
                         .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
                   }
                 }
@@ -1347,7 +1347,7 @@ public class FutureExperimentRunDAO {
                   return null;
                 } else {
                   return new QueryFilterContext()
-                      .addCondition("project_id in (<authz_project_ids>)")
+                      .addCondition("experiment_run.project_id in (<authz_project_ids>)")
                       .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
                 }
               },
