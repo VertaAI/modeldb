@@ -776,21 +776,27 @@ public class FutureExperimentRunDAO {
               localQueryContext.getBinds().add(q -> q.bind("deleted", false));
 
               if (!request.getProjectId().isEmpty()) {
-                localQueryContext.getConditions().add("project_id=:request_project_id");
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.project_id=:request_project_id");
                 localQueryContext
                     .getBinds()
                     .add(q -> q.bind("request_project_id", request.getProjectId()));
               }
 
               if (!request.getExperimentId().isEmpty()) {
-                localQueryContext.getConditions().add("experiment_id=:request_experiment_id");
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.experiment_id=:request_experiment_id");
                 localQueryContext
                     .getBinds()
                     .add(q -> q.bind("request_experiment_id", request.getExperimentId()));
               }
 
               if (!request.getExperimentRunIdsList().isEmpty()) {
-                localQueryContext.getConditions().add("id in (<request_experiment_run_ids>)");
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.id in (<request_experiment_run_ids>)");
                 localQueryContext
                     .getBinds()
                     .add(
@@ -855,7 +861,7 @@ public class FutureExperimentRunDAO {
                                       if (item.getValue().getTable() != null) {
                                         sql +=
                                             String.format(
-                                                " left join (%s) as join_table_%d on id=join_table_%d.runId ",
+                                                " left join (%s) as join_table_%d on experiment_run.id=join_table_%d.runId ",
                                                 item.getValue().getTable(),
                                                 item.getIndex(),
                                                 item.getIndex());
