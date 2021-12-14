@@ -2,8 +2,8 @@ package ai.verta.modeldb.metadata;
 
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc.MetadataServiceImplBase;
 import com.google.rpc.Code;
 import com.oblac.nomen.Nomen;
