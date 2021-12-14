@@ -8,6 +8,8 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.protobuf.Value;
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,9 +21,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
 
-public abstract class KeyValueHandler {
+public abstract class KeyValueHandler<T> {
   private static final Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
-  private static final String ENTITY_ID_PARAM_QUERY = "entity_id";
+  protected static final String ENTITY_ID_PARAM_QUERY = "entity_id";
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
   private static final String KEY_QUERY_PARAM = "key";
@@ -34,9 +36,7 @@ public abstract class KeyValueHandler {
   private final String entityName;
   protected String entityIdReferenceColumn;
 
-  protected String getTableName() {
-    return "keyvalue";
-  }
+  protected abstract String getTableName();
 
   protected abstract void setEntityIdReferenceColumn(String entityName);
 
@@ -61,7 +61,7 @@ public abstract class KeyValueHandler {
   }
 
   public InternalFuture<List<KeyValue>> getKeyValues(
-      String entityId, List<String> attrKeys, boolean getAll) {
+      T entityId, List<String> attrKeys, boolean getAll) {
     return jdbi.withHandle(
         handle -> {
           var queryString =
@@ -94,7 +94,7 @@ public abstract class KeyValueHandler {
         });
   }
 
-  public InternalFuture<MapSubtypes<String, KeyValue>> getKeyValuesMap(Set<String> entityIds) {
+  public InternalFuture<MapSubtypes<T, KeyValue>> getKeyValuesMap(Set<T> entityIds) {
     return jdbi.withHandle(
             handle ->
                 handle
@@ -105,23 +105,15 @@ public abstract class KeyValueHandler {
                     .bindList("entity_ids", entityIds)
                     .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
                     .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                    .map(
-                        (rs, ctx) ->
-                            new AbstractMap.SimpleEntry<>(
-                                rs.getString(ENTITY_ID_PARAM_QUERY),
-                                KeyValue.newBuilder()
-                                    .setKey(rs.getString("k"))
-                                    .setValue(
-                                        (Value.Builder)
-                                            CommonUtils.getProtoObjectFromString(
-                                                rs.getString("v"), Value.newBuilder()))
-                                    .setValueTypeValue(rs.getInt("t"))
-                                    .build()))
+                    .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
                     .list())
         .thenApply(MapSubtypes::from, executor);
   }
 
-  public InternalFuture<Void> logKeyValues(String entityId, List<KeyValue> kvs) {
+  protected abstract AbstractMap.SimpleEntry<T, KeyValue> getSimpleEntryFromResultSet(ResultSet rs)
+      throws SQLException;
+
+  public InternalFuture<Void> logKeyValues(T entityId, List<KeyValue> kvs) {
     // Validate input
     return InternalFuture.runAsync(
             () -> {
@@ -175,7 +167,7 @@ public abstract class KeyValueHandler {
             executor);
   }
 
-  private void insertKeyValue(String entityId, Handle handle, KeyValue kv) {
+  private void insertKeyValue(T entityId, Handle handle, KeyValue kv) {
     var queryString =
         "insert into "
             + getTableName()
@@ -195,7 +187,7 @@ public abstract class KeyValueHandler {
     }
   }
 
-  public InternalFuture<Void> deleteKeyValues(String entityId, Optional<List<String>> maybeKeys) {
+  public InternalFuture<Void> deleteKeyValues(T entityId, Optional<List<String>> maybeKeys) {
     return jdbi.useHandle(
         handle -> {
           var sql =
@@ -224,7 +216,7 @@ public abstract class KeyValueHandler {
 
   // TODO: We might end up removing this update since ERs don't have them.
   // Comment: https://github.com/VertaAI/modeldb/pull/2118#discussion_r613762413
-  public InternalFuture<Void> updateKeyValue(String entityId, KeyValue kv) {
+  public InternalFuture<Void> updateKeyValue(T entityId, KeyValue kv) {
     var currentFuture =
         InternalFuture.runAsync(
             () -> {
@@ -268,7 +260,7 @@ public abstract class KeyValueHandler {
     return currentFuture;
   }
 
-  private InternalFuture<Boolean> keyValueExists(String entityId, KeyValue kv) {
+  private InternalFuture<Boolean> keyValueExists(T entityId, KeyValue kv) {
     // Check for conflicts
     return jdbi.withHandle(
             handle ->
