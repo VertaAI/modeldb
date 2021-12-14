@@ -200,7 +200,7 @@ class TFSavedModel(object):
     Warnings
     --------
     This utility is deprecated in favor of the simpler and more flexible class-as-model setup. See
-    `the Client repository <https://github.com/VertaAI/modeldb/blob/master/client/workflows/demos/Nearest-Neighbors-TF-Glove.ipynb>`__
+    `the Client repository <https://github.com/VertaAI/examples/blob/main/deployment/tensorflow/nearest-neighbors-tf-glove.ipynb>`__
     for an example.
 
     """

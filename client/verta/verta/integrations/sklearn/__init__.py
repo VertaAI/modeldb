@@ -6,7 +6,7 @@ This patch adds a ``run`` parameter to the ``fit()`` methods of most scikit-lear
 the model's hyperparameters.
 
 See our `GitHub repository
-<https://github.com/VertaAI/modeldb/blob/master/client/workflows/examples/sklearn-integration.ipynb>`__
+<https://github.com/VertaAI/examples/blob/main/experiment-management/sklearn/sklearn-integration.ipynb>`__
 for an example of this intergation in action.
 
 .. versionadded:: 0.13.20

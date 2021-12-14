@@ -20,7 +20,7 @@ class VertaCallback(keras.callbacks.Callback):
     and accuracy during fitting.
 
     See our `GitHub repository
-    <https://github.com/VertaAI/modeldb/blob/master/client/workflows/examples/keras-integration.ipynb>`__
+    <https://github.com/VertaAI/examples/blob/main/experiment-management/tensorflow/keras-integration.ipynb>`__
     for an example of this intergation in action.
 
     .. versionadded:: 0.13.20
