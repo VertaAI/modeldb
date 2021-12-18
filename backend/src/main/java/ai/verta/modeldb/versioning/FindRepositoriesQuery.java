@@ -151,11 +151,11 @@ public class FindRepositoriesQuery {
                 var joinClauses = new String[2];
                 joinClauses[0] =
                     joinAlias
-                        + ".id.entity_hash = CAST("
+                        + ".id.entity_hash = concat("
                         + alias
                         + "."
                         + ModelDBConstants.ID
-                        + " as string)";
+                        + " ) ";
                 joinClauses[1] =
                     joinAlias
                         + ".id.entity_type = "
