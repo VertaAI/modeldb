@@ -9,11 +9,10 @@ from verta.environment import Python
 from verta._internal_utils._utils import generate_default_name
 
 
-pytestmark = pytest.mark.not_oss  # skip if run in oss setup
+pytestmark = [pytest.mark.deployment, pytest.mark.not_oss]
 
 
 class TestDeployedModel:
-    @pytest.mark.not_oss
     def test_ca_bundle_env_var(self, https_client, created_entities):
         """Verify predict() honors REQUESTS_CA_BUNDLE env var."""
         LogisticRegression = pytest.importorskip(

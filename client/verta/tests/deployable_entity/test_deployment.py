@@ -184,6 +184,7 @@ class TestLogModel:
                 artifacts=strs[1:],
             )
 
+    @pytest.mark.deployment
     def test_overwrite_artifacts(self, deployable_entity, endpoint, in_tempdir):
         key = "foo"
         val = {'a': 1}
@@ -547,6 +548,7 @@ class TestDeployability:
                 map(os.path.basename, zipf.namelist())
             )
 
+    @pytest.mark.deployment
     def test_download_docker_context(
         self, deployable_entity, model_for_deployment, in_tempdir, registered_model
     ):
@@ -588,6 +590,7 @@ class TestDeployability:
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
+    @pytest.mark.deployment
     def test_model_artifacts(self, deployable_entity, endpoint, in_tempdir):
         key = "foo"
         val = {"a": 1}
