@@ -476,6 +476,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         serialized_model, method, model_type = _artifact_utils.serialize_model(model)
 
+        if artifacts and model_type != "class":
+            raise ValueError(
+                "`artifacts` can only be provided if `model` is a class")
+
         # Create artifact message and update ModelVersion's message:
         model_msg = self._create_artifact_msg(
             self._MODEL_KEY,
