@@ -422,18 +422,6 @@ class TestEnvironment:
         deployable_entity.log_environment(environment, overwrite=True)
         assert environment == deployable_entity.get_environment()
 
-    def test_del_environment(self, deployable_entity, environment):
-        deployable_entity.log_environment(environment)
-
-        deployable_entity.del_environment()
-        assert not deployable_entity.has_environment
-
-        with pytest.raises(
-            RuntimeError,
-            match="environment was not previously set",
-        ):
-            deployable_entity.get_environment()
-
 
 class TestDeployability:
     """Deployment-related functionality"""

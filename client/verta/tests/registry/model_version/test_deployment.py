@@ -79,6 +79,21 @@ class TestArbitraryModels:
         utils.assert_dirs_match(dirpath, download_path)
 
 
+class TestEnvironment:
+
+    def test_del_environment(self, model_version, environment):
+        model_version.log_environment(environment)
+
+        model_version.del_environment()
+        assert not model_version.has_environment
+
+        with pytest.raises(
+            RuntimeError,
+            match="environment was not previously set",
+        ):
+            model_version.get_environment()
+
+
 class TestAutoMonitoring:
     @staticmethod
     def assert_feature_data_correctness(feature_data, in_df, out_df):
