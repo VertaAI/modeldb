@@ -19,7 +19,7 @@ import requests
 import verta
 from verta import Client
 from verta._internal_utils import _utils, _pip_requirements_utils
-from verta.environment import Python
+from verta.environment import _Environment, Docker, Python
 
 import hypothesis
 import pytest
@@ -577,3 +577,23 @@ def with_boto3():
     """For tests that require AWS's boto3."""
     pytest.importorskip("boto3")
     yield
+
+
+@pytest.fixture(params=utils.sorted_subclasses(_Environment))
+def environment(request):
+    # TODO: move to deployable_entity/conftest.py when no longer used in registry/model_version/test_deployment.py
+    cls = request.param
+    if cls is Docker:
+        env = Docker(
+            repository="012345678901.dkr.ecr.apne2-az1.amazonaws.com/models/example",
+            tag="example",
+        )
+    elif cls is Python:
+        env = Python(requirements=["pytest=={}".format(pytest.__version__)])
+    else:
+        raise RuntimeError(
+            "_Environment appears to have a subclass {} that is not"
+            " accounted for in this fixture".format(cls)
+        )
+
+    return env
