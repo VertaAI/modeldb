@@ -1,0 +1,5 @@
+hypothesis
+pytest >= 4.3
+pytest-timeout == 1.4.2
+pytest-xdist
+six >= 1.11
