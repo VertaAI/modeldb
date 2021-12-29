@@ -186,8 +186,8 @@ public class FutureExperimentRunDAO {
             artifactStoreDAO,
             datasetVersionDAO,
             config);
-    predicatesHandler = new PredicatesHandler();
-    sortingHandler = new SortingHandler();
+    predicatesHandler = new PredicatesHandler("experiment_run", "experiment_run");
+    sortingHandler = new SortingHandler("experiment_run");
     featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     environmentHandler = new EnvironmentHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     privilegedDatasetsHandler = new FilterPrivilegedDatasetsHandler(executor, jdbi);
@@ -861,7 +861,7 @@ public class FutureExperimentRunDAO {
                                       if (item.getValue().getTable() != null) {
                                         sql +=
                                             String.format(
-                                                " left join (%s) as join_table_%d on experiment_run.id=join_table_%d.runId ",
+                                                " left join (%s) as join_table_%d on experiment_run.id=join_table_%d.entityId ",
                                                 item.getValue().getTable(),
                                                 item.getIndex(),
                                                 item.getIndex());
