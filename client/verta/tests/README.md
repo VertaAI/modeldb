@@ -35,6 +35,11 @@ pytest test_entities.py::TestProject # specific class
 pytest test_entities.py::TestProject::test_create # specific function within specific class
 ```
 
+Tests can also be run by specifying markers (defined in [`pytest.ini`](pytest.ini)):
+```bash
+pytest -m deployment
+```
+
 ### Pytest invocation flags
 
 `pytest` has a few flags that can be mixed and matched to customize output while tests are running.
@@ -77,6 +82,8 @@ Note that for CLI tests, `click` provides [its own testing utilities](https://cl
 ### Fixtures
 
 [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture.html) are reusable items that are passed to test functions.
-Most fixtures are defined in [`conftest.py`](conftest.py).  
-To use a fixture: simply write the name of the fixture as a parameter to your test function; `pytest` will automatically pass it in at runtime.  
+Most fixtures are defined in [`conftest.py`](conftest.py).
+
+To use a fixture: simply write the name of the fixture as a parameter to your test function; `pytest` will automatically pass it in at runtime.
+
 To write a fixture: write code for setup, `yield` the object that should be passed to the test function, then write code for cleanup.

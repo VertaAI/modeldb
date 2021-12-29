@@ -32,6 +32,7 @@ def assert_visibility(entity, visibility, entity_name):
         assert entity._msg.visibility == visibility._visibility
 
 
+@pytest.mark.deployment
 def assert_endpoint_visibility(endpoint, visibility):
     endpoint_json = endpoint._get_json_by_id(endpoint._conn, endpoint.workspace, endpoint.id)
     if 'custom_permission' not in endpoint_json['creator_request']:
@@ -95,6 +96,7 @@ class TestSet:
             entity.delete()
             client._ctx.proj = None  # otherwise client teardown tries to delete
 
+    @pytest.mark.deployment
     def test_endpoint(self, client, organization, created_entities):
         visibility = OrgCustom(write=True)
 
@@ -128,6 +130,7 @@ class TestPublicWithinOrg:
         else:
             assert dataset._msg.dataset_visibility == _DatasetService.DatasetVisibilityEnum.PRIVATE
 
+    @pytest.mark.deployment
     def test_endpoint(self, client, organization, created_entities):
         visibility = OrgCustom(write=True)
         endpoint = client.set_endpoint(
