@@ -27,6 +27,7 @@ from ...monitoring import strategies
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
 
+@pytest.mark.deployment
 class TestDeployability:
     def test_from_run_download_docker_context(
         self, experiment_run, model_for_deployment, in_tempdir, registered_model
