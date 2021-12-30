@@ -15,6 +15,9 @@ with open("README.md", "r") as f:
 with open("requirements.txt", "r") as f:
     install_requires = f.read().splitlines()
 
+with open("requirements-unit-tests.txt", "r") as f:
+    unit_tests_requires = f.read().splitlines()
+
 setup(
     name=about["__title__"],
     version=about["__version__"],
@@ -28,6 +31,9 @@ setup(
     packages=find_packages(),
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*",
     install_requires=install_requires,
+    extras_require={
+        "unit_tests": unit_tests_requires,
+    },
     entry_points={
         "console_scripts": [
             "verta = verta._cli:cli",

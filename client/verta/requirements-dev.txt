@@ -7,10 +7,7 @@ twine>=1.13
 wheel>=0.32
 
 # unit testing
-hypothesis
-six>=1.11
-pytest>=4.3
-pytest-timeout==1.4.2
+-r requirements-unit-tests.txt
 
 # unit testing dependencies
 boto3
