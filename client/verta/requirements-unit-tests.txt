@@ -1,3 +1,4 @@
+execnet == 1.8.0  # mitigates a bug between timeout and xdist; https://github.com/pytest-dev/pytest-xdist/issues/620#issuecomment-808175875
 hypothesis
 pytest >= 4.3
 pytest-timeout == 1.4.2
