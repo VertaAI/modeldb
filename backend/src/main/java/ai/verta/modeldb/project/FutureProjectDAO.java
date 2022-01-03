@@ -599,7 +599,8 @@ public class FutureProjectDAO {
                                                       .map(Project.Builder::getId)
                                                       .collect(Collectors.toSet());
 
-                                              // TODO: populate other dependent fields in project builder here
+                                              // TODO: populate other dependent fields in project
+                                              // builder here
 
                                               return futureBuildersStream.thenApply(
                                                   projectBuilders ->
