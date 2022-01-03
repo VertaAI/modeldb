@@ -78,6 +78,7 @@ public class FutureProjectDAO {
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
   private final PredicatesHandler predicatesHandler;
+  private final CodeVersionHandler codeVersionHandler;
   private final SortingHandler sortingHandler;
 
   public FutureProjectDAO(
@@ -95,7 +96,7 @@ public class FutureProjectDAO {
     var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
     tagsHandler = new TagsHandler(executor, jdbi, entityName);
-    CodeVersionHandler codeVersionHandler = new CodeVersionHandler(executor, jdbi, "project");
+    codeVersionHandler = new CodeVersionHandler(executor, jdbi, "project");
     DatasetHandler datasetHandler = new DatasetHandler(executor, jdbi, entityName, mdbConfig);
     artifactHandler =
         new ArtifactHandler(
@@ -598,45 +599,7 @@ public class FutureProjectDAO {
                                                       .map(Project.Builder::getId)
                                                       .collect(Collectors.toSet());
 
-                                              // Get tags
-                                              final var futureTags = tagsHandler.getTagsMap(ids);
-                                              futureBuildersStream =
-                                                  futureBuildersStream.thenCombine(
-                                                      futureTags,
-                                                      (stream, tags) ->
-                                                          stream.map(
-                                                              builder ->
-                                                                  builder.addAllTags(
-                                                                      tags.get(builder.getId()))),
-                                                      executor);
-
-                                              // Get attributes
-                                              final var futureAttributes =
-                                                  attributeHandler.getKeyValuesMap(ids);
-                                              futureBuildersStream =
-                                                  futureBuildersStream.thenCombine(
-                                                      futureAttributes,
-                                                      (stream, attributes) ->
-                                                          stream.map(
-                                                              builder ->
-                                                                  builder.addAllAttributes(
-                                                                      attributes.get(
-                                                                          builder.getId()))),
-                                                      executor);
-
-                                              // Get artifacts
-                                              final var futureArtifacts =
-                                                  artifactHandler.getArtifactsMap(ids);
-                                              futureBuildersStream =
-                                                  futureBuildersStream.thenCombine(
-                                                      futureArtifacts,
-                                                      (stream, artifacts) ->
-                                                          stream.map(
-                                                              builder ->
-                                                                  builder.addAllArtifacts(
-                                                                      artifacts.get(
-                                                                          builder.getId()))),
-                                                      executor);
+                                              // TODO: populate other dependent fields in project builder here
 
                                               return futureBuildersStream.thenApply(
                                                   projectBuilders ->
