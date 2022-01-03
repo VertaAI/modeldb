@@ -222,8 +222,7 @@ public class App implements ApplicationContextAware {
           FutureGrpc.initializeExecutor(config.getGrpcServer().getThreadCount());
 
       // Initialize data access
-      var daos =
-          DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config, config.trial);
+      var daos = DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config);
 
       // Initialize telemetry
       initializeTelemetryBasedOnConfig(config);

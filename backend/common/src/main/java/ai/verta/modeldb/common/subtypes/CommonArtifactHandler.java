@@ -129,7 +129,6 @@ public abstract class CommonArtifactHandler<T> {
                       }
                     }),
             executor)
-        .thenAccept(unused -> validateArtifactsForTrial(entityId, artifacts), executor)
         .thenCompose(
             unused ->
                 // Log
@@ -154,9 +153,6 @@ public abstract class CommonArtifactHandler<T> {
 
   protected abstract void insertArtifactInDB(
       T entityId, Handle handle, Artifact artifact, boolean uploadCompleted, String storeTypePath);
-
-  protected abstract InternalFuture<Void> validateArtifactsForTrial(
-      T entityId, List<Artifact> artifacts);
 
   protected abstract void validateAndThrowErrorAlreadyExistsArtifacts(
       T entityId, List<Artifact> artifacts, Handle handle);
