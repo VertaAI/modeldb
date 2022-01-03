@@ -475,7 +475,28 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void getProjects(
       GetProjects request, StreamObserver<GetProjects.Response> responseObserver) {
-    super.getProjects(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .findProjects(
+                  FindProjects.newBuilder()
+                      .setWorkspaceName(request.getWorkspaceName())
+                      .setAscending(request.getAscending())
+                      .setSortKey(request.getSortKey())
+                      .setPageNumber(request.getPageNumber())
+                      .setPageLimit(request.getPageLimit())
+                      .build())
+              .thenApply(
+                  findProjectResponse ->
+                      GetProjects.Response.newBuilder()
+                          .addAllProjects(findProjectResponse.getProjectsList())
+                          .setTotalRecords(findProjectResponse.getTotalRecords())
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
