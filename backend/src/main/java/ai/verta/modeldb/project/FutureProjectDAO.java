@@ -4,6 +4,7 @@ import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.Pagination;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.AddProjectTags;
 import ai.verta.modeldb.DeleteProjectAttributes;
@@ -19,13 +20,12 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.common.EnumerateList;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
@@ -64,6 +64,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.statement.Query;
 
 public class FutureProjectDAO {
   private static final Logger LOGGER = LogManager.getLogger(FutureProjectDAO.class);
@@ -484,86 +485,17 @@ public class FutureProjectDAO {
                                                       + "p.short_name, p.project_visibility, p.readme_text, "
                                                       + "p.deleted, p.version_number from project p ";
 
-                                              // Add the sorting tables
-                                              for (final var item :
-                                                  new EnumerateList<>(queryContext.getOrderItems())
-                                                      .getList()) {
-                                                if (item.getValue().getTable() != null) {
-                                                  sql +=
-                                                      String.format(
-                                                          " left join (%s) as join_table_%d on p.id=join_table_%d.entityId ",
-                                                          item.getValue().getTable(),
-                                                          item.getIndex(),
-                                                          item.getIndex());
-                                                }
-                                              }
-
-                                              if (!queryContext.getConditions().isEmpty()) {
-                                                sql +=
-                                                    " WHERE "
-                                                        + String.join(
-                                                            " AND ", queryContext.getConditions());
-                                              }
-
-                                              if (!queryContext.getOrderItems().isEmpty()) {
-                                                sql += " ORDER BY ";
-                                                List<String> orderColumnQueryString =
-                                                    new ArrayList<>();
-                                                for (final var item :
-                                                    new EnumerateList<>(
-                                                            queryContext.getOrderItems())
-                                                        .getList()) {
-                                                  if (item.getValue().getTable() != null) {
-                                                    for (OrderColumn orderColumn :
-                                                        item.getValue().getColumns()) {
-                                                      var orderColumnStr =
-                                                          String.format(
-                                                              " join_table_%d.%s ",
-                                                              item.getIndex(),
-                                                              orderColumn.getColumn());
-                                                      orderColumnStr +=
-                                                          String.format(
-                                                              " %s ",
-                                                              orderColumn.getAscending()
-                                                                  ? "ASC"
-                                                                  : "DESC");
-                                                      orderColumnQueryString.add(orderColumnStr);
-                                                    }
-                                                  } else if (item.getValue().getColumn() != null) {
-                                                    var orderColumnStr =
-                                                        String.format(
-                                                            " %s ", item.getValue().getColumn());
-                                                    orderColumnStr +=
-                                                        String.format(
-                                                            " %s ",
-                                                            item.getValue().getAscending()
-                                                                ? "ASC"
-                                                                : "DESC");
-                                                    orderColumnQueryString.add(orderColumnStr);
-                                                  }
-                                                }
-                                                sql += String.join(",", orderColumnQueryString);
-                                              }
-
-                                              // Backwards compatibility: fetch everything
-                                              if (request.getPageNumber() != 0
-                                                  && request.getPageLimit() != 0) {
-                                                final var offset =
-                                                    (request.getPageNumber() - 1)
-                                                        * request.getPageLimit();
-                                                final var limit = request.getPageLimit();
-                                                if (isMssql) {
-                                                  sql +=
-                                                      " OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY ";
-                                                } else {
-                                                  sql += " LIMIT :limit OFFSET :offset";
-                                                }
-                                                queryContext.addBind(q -> q.bind("limit", limit));
-                                                queryContext.addBind(q -> q.bind("offset", offset));
-                                              }
-
-                                              var query = handle.createQuery(sql);
-                                              queryContext.getBinds().forEach(b -> b.accept(query));
+                                              Query query =
+                                                  CommonUtils.buildQueryFromQueryContext(
+                                                      "p",
+                                                      Pagination.newBuilder()
+                                                          .setPageLimit(request.getPageLimit())
+                                                          .setPageNumber(request.getPageNumber())
+                                                          .build(),
+                                                      queryContext,
+                                                      handle,
+                                                      sql,
+                                                      isMssql);
 
                                               Map<Long, Workspace> cacheWorkspaceMap =
                                                   new HashMap<>();
