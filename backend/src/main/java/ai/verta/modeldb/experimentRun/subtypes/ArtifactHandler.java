@@ -15,7 +15,6 @@ import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.experimentRun.S3KeyFunction;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import io.grpc.Status;
 import java.util.*;
@@ -304,12 +303,5 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               }
             },
             executor);
-  }
-
-  @Override
-  public void validateMaxArtifactsForTrial(int newArtifactsCount, int existingArtifactsCount)
-      throws ModelDBException {
-    TrialUtils.validateMaxArtifactsForTrial(
-        mdbConfig.trial, newArtifactsCount, existingArtifactsCount);
   }
 }

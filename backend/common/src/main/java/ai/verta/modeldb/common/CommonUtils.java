@@ -1,8 +1,11 @@
 package ai.verta.modeldb.common;
 
+import ai.verta.common.Pagination;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import ai.verta.modeldb.common.query.OrderColumn;
+import ai.verta.modeldb.common.query.QueryFilterContext;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -14,10 +17,14 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
 import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.LockAcquisitionException;
+import org.jdbi.v3.core.Handle;
+import org.jdbi.v3.core.statement.Query;
 
 public class CommonUtils {
   private static final Logger LOGGER = LogManager.getLogger(CommonUtils.class);
@@ -228,5 +235,79 @@ public class CommonUtils {
         logger.warn("{}: {}", n, stack[n].toString());
       }
     }
+  }
+
+  public static Query buildQueryFromQueryContext(String alias, Pagination pagination, QueryFilterContext queryContext, Handle handle, String queryStr, boolean isMssql) {
+    // Add the sorting tables
+    for (final var item :
+            new EnumerateList<>(queryContext.getOrderItems())
+                    .getList()) {
+      if (item.getValue().getTable() != null) {
+        queryStr +=
+                String.format(
+                        " left join (%s) as join_table_%d on %s.id=join_table_%d.entityId ",
+                        item.getValue().getTable(),
+                        item.getIndex(),
+                        alias,
+                        item.getIndex());
+      }
+    }
+
+    if (!queryContext.getConditions().isEmpty()) {
+      queryStr +=
+              " WHERE "
+                      + String.join(" AND ", queryContext.getConditions());
+    }
+
+    if (!queryContext.getOrderItems().isEmpty()) {
+      queryStr += " ORDER BY ";
+      List<String> orderColumnQueryString = new ArrayList<>();
+      for (final var item :
+              new EnumerateList<>(queryContext.getOrderItems())
+                      .getList()) {
+        if (item.getValue().getTable() != null) {
+          for (OrderColumn orderColumn :
+                  item.getValue().getColumns()) {
+            var orderColumnStr =
+                    String.format(
+                            " join_table_%d.%s ",
+                            item.getIndex(), orderColumn.getColumn());
+            orderColumnStr +=
+                    String.format(
+                            " %s ",
+                            orderColumn.getAscending() ? "ASC" : "DESC");
+            orderColumnQueryString.add(orderColumnStr);
+          }
+        } else if (item.getValue().getColumn() != null) {
+          var orderColumnStr =
+                  String.format(" %s ", item.getValue().getColumn());
+          orderColumnStr +=
+                  String.format(
+                          " %s ",
+                          item.getValue().getAscending() ? "ASC" : "DESC");
+          orderColumnQueryString.add(orderColumnStr);
+        }
+      }
+      queryStr += String.join(",", orderColumnQueryString);
+    }
+
+    // Backwards compatibility: fetch everything
+    if (pagination.getPageNumber() != 0
+            && pagination.getPageLimit() != 0) {
+      final var offset =
+              (pagination.getPageNumber() - 1) * pagination.getPageLimit();
+      final var limit = pagination.getPageLimit();
+      if (isMssql) {
+        queryStr += " OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY ";
+      } else {
+        queryStr += " LIMIT :limit OFFSET :offset";
+      }
+      queryContext.addBind(q -> q.bind("limit", limit));
+      queryContext.addBind(q -> q.bind("offset", offset));
+    }
+
+    var query = handle.createQuery(queryStr);
+    queryContext.getBinds().forEach(b -> b.accept(query));
+    return query;
   }
 }

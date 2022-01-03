@@ -8,7 +8,6 @@ import ai.verta.modeldb.comment.CommentDAORdbImpl;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
@@ -47,11 +46,7 @@ public class DAOSet {
   public FutureEventDAO futureEventDAO;
 
   public static DAOSet fromServices(
-      ServiceSet services,
-      FutureJdbi jdbi,
-      Executor executor,
-      MDBConfig mdbConfig,
-      TrialConfig trialConfig) {
+      ServiceSet services, FutureJdbi jdbi, Executor executor, MDBConfig mdbConfig) {
     var set = new DAOSet();
 
     set.metadataDAO = new MetadataDAORdbImpl();

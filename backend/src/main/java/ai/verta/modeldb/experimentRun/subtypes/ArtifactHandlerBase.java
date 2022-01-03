@@ -150,31 +150,6 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
     }
   }
 
-  protected abstract void validateMaxArtifactsForTrial(
-      int newArtifactsCount, int existingArtifactsCount) throws ModelDBException;
-
-  @Override
-  protected InternalFuture<Void> validateArtifactsForTrial(
-      String entityId, List<Artifact> artifacts) {
-    if (entityName.equals("ExperimentRunEntity") && fieldType.equals("artifacts")) {
-      return jdbi.withHandle(
-              handle ->
-                  handle
-                      .createQuery(
-                          String.format(
-                              "select count(id) from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id ",
-                              getTableName(), entityIdReferenceColumn))
-                      .bind(ENTITY_ID_QUERY_PARAM, entityId)
-                      .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-                      .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                      .mapTo(Long.class)
-                      .one())
-          .thenAccept(
-              count -> validateMaxArtifactsForTrial(artifacts.size(), count.intValue()), executor);
-    }
-    return InternalFuture.completedInternalFuture(null);
-  }
-
   @Override
   protected void insertArtifactInDB(
       String entityId,
