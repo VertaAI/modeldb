@@ -1286,7 +1286,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               ModelDBConstants.EXPERIMENT_RUNS,
               accessibleExperimentRunIds,
               predicate,
-              mdbRoleService);
+              mdbRoleService.IsImplemented());
         }
       }
 

@@ -2135,14 +2135,14 @@ public class RdbmsUtils {
       String entityName,
       List<String> accessibleEntityIds,
       KeyValueQuery predicate,
-      MDBRoleService mdbRoleService) {
+      boolean roleServiceImplemented) {
     if (predicate.getKey().equals(ModelDBConstants.ID)) {
       if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
         throw new InvalidArgumentException(ModelDBConstants.NON_EQ_ID_PRED_ERROR_MESSAGE);
       }
       var entityId = predicate.getValue().getStringValue();
       if ((accessibleEntityIds.isEmpty() || !accessibleEntityIds.contains(entityId))
-          && mdbRoleService.IsImplemented()) {
+          && roleServiceImplemented) {
         throw new PermissionDeniedException(
             "Access is denied. User is unauthorized for given "
                 + entityName

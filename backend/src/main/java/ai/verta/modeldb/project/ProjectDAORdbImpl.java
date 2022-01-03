@@ -876,7 +876,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
             ModelDBConstants.PROJECTS,
             new ArrayList<>(accessibleProjectIds),
             predicate,
-            mdbRoleService);
+            mdbRoleService.IsImplemented());
       }
 
       if (!accessibleProjectIds.isEmpty()) {
