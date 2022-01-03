@@ -41,8 +41,6 @@ import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
-import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.gson.Gson;
@@ -519,7 +517,12 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void findProjects(
       FindProjects request, StreamObserver<FindProjects.Response> responseObserver) {
-    super.findProjects(request, responseObserver);
+    try {
+      final var futureResponse = futureProjectDAO.findProjects(request);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
