@@ -26,7 +26,7 @@ def configure_logger():
     logger.addHandler(handler)
 
 
-def publish(branch="master"):
+def publish(branch="main"):
     url = os.environ[URL_ENV_VAR]
     token = os.environ[TOKEN_ENV_VAR]
 
