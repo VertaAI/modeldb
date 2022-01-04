@@ -4,10 +4,6 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import com.google.rpc.Code;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.Handle;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap;
@@ -15,6 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Handle;
 
 public abstract class TagsHandlerBase<T> {
   private static final Logger LOGGER = LogManager.getLogger(TagsHandlerBase.class);
