@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Handle;
 
 public class VersionInputHandler {
   private static final String REPOSITORY_ID_QUERY_PARAM = "repository_id";
@@ -88,33 +89,25 @@ public class VersionInputHandler {
    * then again we are keep hyperparameter element blob mapping for those run in separate mapping
    * table called `hyperparameter_element_mapping`
    */
-  public InternalFuture<Void> validateAndInsertVersionedInputs(
-      String runId, VersioningEntry versioningEntry) {
+  public void validateAndInsertVersionedInputs(
+      Handle handle, String runId, VersioningEntry versioningEntry) {
     if (versioningEntry == null) {
-      return InternalFuture.failedStage(
-          new InvalidArgumentException("VersionedInput not found in request"));
+      throw new InvalidArgumentException("VersionedInput not found in request");
     } else {
-      InternalFuture<Map<String, Map.Entry<BlobExpanded, String>>> versionedInputFutureTask =
-          validateVersioningEntity(versioningEntry);
-      return versionedInputFutureTask.thenCompose(
-          locationBlobWithHashMap ->
-              // Insert version input for run in versioning_modeldb_entity_mapping mapping table
-              insertVersioningInput(versioningEntry, locationBlobWithHashMap, runId)
-                  .thenCompose(
-                      unused ->
-                          // Insert config blob and version input mapping in
-                          // versioning_modeldb_entity_mapping_config_blob mapping table
-                          insertVersioningInputMappingConfigBlob(
-                              versioningEntry, locationBlobWithHashMap, runId),
-                      executor)
-                  .thenCompose(
-                      unused ->
-                          // Insert hyperparameter element and run mapping in
-                          // hyperparameter_element_mapping table
-                          insertHyperparameterElementMapping(
-                              versioningEntry, locationBlobWithHashMap, runId),
-                      executor),
-          executor);
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
+          validateVersioningEntity(versioningEntry).get();
+
+      // Insert version input for run in versioning_modeldb_entity_mapping mapping table
+      insertVersioningInput(handle, versioningEntry, locationBlobWithHashMap, runId);
+
+      // Insert config blob and version input mapping in
+      // versioning_modeldb_entity_mapping_config_blob mapping table
+      insertVersioningInputMappingConfigBlob(
+          handle, versioningEntry, locationBlobWithHashMap, runId);
+
+      // Insert hyperparameter element and run mapping in
+      // hyperparameter_element_mapping table
+      insertHyperparameterElementMapping(handle, versioningEntry, locationBlobWithHashMap, runId);
     }
   }
 
@@ -123,74 +116,70 @@ public class VersionInputHandler {
    * previous function based on requested repository, commit, and key - locations and insert it in
    * run and config_blob mapping table called `versioning_modeldb_entity_mapping_config_blob`
    */
-  private InternalFuture<Void> insertVersioningInputMappingConfigBlob(
+  private void insertVersioningInputMappingConfigBlob(
+      Handle handle,
       VersioningEntry versioningEntry,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
       String entityId) {
     if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
-      return jdbi.useHandle(
-          handle -> {
-            List<Map<String, Object>> argsMaps = new ArrayList<>();
-            for (Map.Entry<String, Location> locationEntry :
-                versioningEntry.getKeyLocationMapMap().entrySet()) {
-              // Prepare location key from list of locations in Versioning entry
-              var locationKey = String.join("#", locationEntry.getValue().getLocationList());
-              Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
-                  locationBlobWithHashMap.get(locationKey);
+      List<Map<String, Object>> argsMaps = new ArrayList<>();
+      for (Map.Entry<String, Location> locationEntry :
+          versioningEntry.getKeyLocationMapMap().entrySet()) {
+        // Prepare location key from list of locations in Versioning entry
+        var locationKey = String.join("#", locationEntry.getValue().getLocationList());
+        Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
+            locationBlobWithHashMap.get(locationKey);
 
-              // Get blob from blob map for location key build from Versioning entry locations
-              var blob = blobExpandedWithHashMap.getKey().getBlob();
+        // Get blob from blob map for location key build from Versioning entry locations
+        var blob = blobExpandedWithHashMap.getKey().getBlob();
 
-              // If blob type have the config then we will add mapping entry in
-              // versioning_modeldb_entity_mapping_config_blob
-              if (blob.getContentCase().equals(Blob.ContentCase.CONFIG)) {
-                var configBlobQuery =
-                    "SELECT cb.blob_hash, cb.config_seq_number, cb.hyperparameter_type, hecbs.name, hecbs.int_value, hecbs.float_value, hecbs.string_value "
-                        + " FROM config_blob cb "
-                        + " JOIN hyperparameter_element_config_blob hecbs ON cb.hyperparameter_element_config_blob_hash = hecbs.blob_hash"
-                        + " WHERE cb.blob_hash = :blobHash";
-                handle
-                    .createQuery(configBlobQuery)
-                    .bind("blobHash", blobExpandedWithHashMap.getValue())
-                    .map(
-                        (rs, ctx) -> {
-                          Map<String, Object> argsMap = new HashMap<>();
-                          argsMap.put(REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
-                          argsMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
-                          argsMap.put(VERSIONING_KEY_QUERY_PARAM, locationEntry.getKey());
-                          argsMap.put(ENTITY_ID_QUERY_PARAM, entityId);
-                          argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
-                          argsMap.put(BLOB_HASH_QUERY_PARAM, rs.getString(BLOB_HASH_QUERY_PARAM));
-                          argsMap.put("config_seq_number", rs.getString("config_seq_number"));
-                          argsMaps.add(argsMap);
-                          return rs;
-                        })
-                    .list();
-              }
-            }
-            if (!argsMaps.isEmpty()) {
-              var blobMappingQueryStr =
-                  " INSERT INTO versioning_modeldb_entity_mapping_config_blob "
-                      + " (versioning_modeldb_entity_mapping_repository_id, "
-                      + " versioning_modeldb_entity_mapping_commit, "
-                      + " versioning_modeldb_entity_mapping_versioning_key, "
-                      + " versioning_modeldb_entity_mapping_"
-                      + entityIdReferenceColumn
-                      + ", "
-                      + " versioning_modeldb_entity_mapping_entity_type, "
-                      + " config_blob_entity_blob_hash, "
-                      + " config_blob_entity_config_seq_number) "
-                      + " VALUES (:repository_id, :commit, :versioning_key, :entityId, :entity_type, :blob_hash, :config_seq_number)";
-              var preparedBatch = handle.prepareBatch(blobMappingQueryStr);
-              argsMaps.forEach(preparedBatch::add);
-              int[] insertedCount = preparedBatch.execute();
-              LOGGER.trace(
-                  "Inserted versioning_modeldb_entity_mapping_config_blob count: "
-                      + insertedCount.length);
-            }
-          });
-    } else {
-      return InternalFuture.runAsync(() -> {}, executor);
+        // If blob type have the config then we will add mapping entry in
+        // versioning_modeldb_entity_mapping_config_blob
+        if (blob.getContentCase().equals(Blob.ContentCase.CONFIG)) {
+          var configBlobQuery =
+              "SELECT cb.blob_hash, cb.config_seq_number, cb.hyperparameter_type, hecbs.name, hecbs.int_value, hecbs.float_value, hecbs.string_value "
+                  + " FROM config_blob cb "
+                  + " JOIN hyperparameter_element_config_blob hecbs ON cb.hyperparameter_element_config_blob_hash = hecbs.blob_hash"
+                  + " WHERE cb.blob_hash = :blobHash";
+          handle
+              .createQuery(configBlobQuery)
+              .bind("blobHash", blobExpandedWithHashMap.getValue())
+              .map(
+                  (rs, ctx) -> {
+                    Map<String, Object> argsMap = new HashMap<>();
+                    argsMap.put(REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
+                    argsMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
+                    argsMap.put(VERSIONING_KEY_QUERY_PARAM, locationEntry.getKey());
+                    argsMap.put(ENTITY_ID_QUERY_PARAM, entityId);
+                    argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+                    argsMap.put(BLOB_HASH_QUERY_PARAM, rs.getString(BLOB_HASH_QUERY_PARAM));
+                    argsMap.put("config_seq_number", rs.getString("config_seq_number"));
+                    argsMaps.add(argsMap);
+                    return rs;
+                  })
+              .list();
+        }
+      }
+      if (!argsMaps.isEmpty()) {
+        var blobMappingQueryStr =
+            " INSERT INTO versioning_modeldb_entity_mapping_config_blob "
+                + " (versioning_modeldb_entity_mapping_repository_id, "
+                + " versioning_modeldb_entity_mapping_commit, "
+                + " versioning_modeldb_entity_mapping_versioning_key, "
+                + " versioning_modeldb_entity_mapping_"
+                + entityIdReferenceColumn
+                + ", "
+                + " versioning_modeldb_entity_mapping_entity_type, "
+                + " config_blob_entity_blob_hash, "
+                + " config_blob_entity_config_seq_number) "
+                + " VALUES (:repository_id, :commit, :versioning_key, :entityId, :entity_type, :blob_hash, :config_seq_number)";
+        var preparedBatch = handle.prepareBatch(blobMappingQueryStr);
+        argsMaps.forEach(preparedBatch::add);
+        int[] insertedCount = preparedBatch.execute();
+        LOGGER.trace(
+            "Inserted versioning_modeldb_entity_mapping_config_blob count: "
+                + insertedCount.length);
+      }
     }
   }
 
@@ -199,167 +188,149 @@ public class VersionInputHandler {
    * hyperparameter then we will keep run and hyperparameter element mapping in separate mapping
    * table.
    */
-  private InternalFuture<Void> insertHyperparameterElementMapping(
+  private void insertHyperparameterElementMapping(
+      Handle handle,
       VersioningEntry versioningEntry,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
       String entityId) {
     if (!versioningEntry.getKeyLocationMapMap().isEmpty()) {
-      return jdbi.useHandle(
-          handle -> {
-            List<Map<String, Object>> argsMaps = new ArrayList<>();
-            for (Map.Entry<String, Location> locationEntry :
-                versioningEntry.getKeyLocationMapMap().entrySet()) {
-              // Prepare location key from list of locations in Versioning entry
-              var locationKey = String.join("#", locationEntry.getValue().getLocationList());
-              Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
-                  locationBlobWithHashMap.get(locationKey);
+      List<Map<String, Object>> argsMaps = new ArrayList<>();
+      for (Map.Entry<String, Location> locationEntry :
+          versioningEntry.getKeyLocationMapMap().entrySet()) {
+        // Prepare location key from list of locations in Versioning entry
+        var locationKey = String.join("#", locationEntry.getValue().getLocationList());
+        Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
+            locationBlobWithHashMap.get(locationKey);
 
-              // Get blob from blob map for location key build from Versioning entry locations
-              var blob = blobExpandedWithHashMap.getKey().getBlob();
+        // Get blob from blob map for location key build from Versioning entry locations
+        var blob = blobExpandedWithHashMap.getKey().getBlob();
 
-              // If blob type have the config and it has the HYPERPARAMETER then we will add mapping
-              // entry in hyperparameter_element_mapping
-              if (blob.getContentCase().equals(Blob.ContentCase.CONFIG)) {
-                var configBlobQuery =
-                    "SELECT hecbs.name, hecbs.int_value, hecbs.float_value, hecbs.string_value "
-                        + " FROM config_blob cb "
-                        + " JOIN hyperparameter_element_config_blob hecbs ON cb.hyperparameter_element_config_blob_hash = hecbs.blob_hash"
-                        + " WHERE cb.blob_hash = :blobHash AND cb.hyperparameter_type = :hyperparameter_type";
-                handle
-                    .createQuery(configBlobQuery)
-                    .bind("blobHash", blobExpandedWithHashMap.getValue())
-                    .bind("hyperparameter_type", HYPERPARAMETER)
-                    .map(
-                        (rs, ctx) -> {
-                          Map<String, Object> argsMap = new HashMap<>();
-                          argsMap.put("name", rs.getString("name"));
-                          argsMap.put(
-                              INT_VALUE_QUERY_SELECTED_PARAM,
-                              rs.getInt(INT_VALUE_QUERY_SELECTED_PARAM) != 0
-                                  ? rs.getInt(INT_VALUE_QUERY_SELECTED_PARAM)
-                                  : null);
-                          argsMap.put("float_value", rs.getFloat("float_value"));
-                          argsMap.put("string_value", rs.getString("string_value"));
-                          argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
-                          argsMap.put("entity_id", entityId);
-                          argsMaps.add(argsMap);
-                          return rs;
-                        })
-                    .list();
-              }
-            }
-            if (!argsMaps.isEmpty()) {
-              var hemeStr =
-                  "INSERT INTO hyperparameter_element_mapping (name, int_value, float_value, string_value, entity_type, "
-                      + entityIdReferenceColumn
-                      + " ) VALUES (:name, :int_value, :float_value, :string_value, :entity_type, :entity_id )";
-              var preparedBatch = handle.prepareBatch(hemeStr);
-              argsMaps.forEach(preparedBatch::add);
-              int[] insertedCount = preparedBatch.execute();
-              LOGGER.trace(
-                  "Inserted hyperparameter_element_mapping count: " + insertedCount.length);
-            }
-          });
+        // If blob type have the config and it has the HYPERPARAMETER then we will add mapping
+        // entry in hyperparameter_element_mapping
+        if (blob.getContentCase().equals(Blob.ContentCase.CONFIG)) {
+          var configBlobQuery =
+              "SELECT hecbs.name, hecbs.int_value, hecbs.float_value, hecbs.string_value "
+                  + " FROM config_blob cb "
+                  + " JOIN hyperparameter_element_config_blob hecbs ON cb.hyperparameter_element_config_blob_hash = hecbs.blob_hash"
+                  + " WHERE cb.blob_hash = :blobHash AND cb.hyperparameter_type = :hyperparameter_type";
+          handle
+              .createQuery(configBlobQuery)
+              .bind("blobHash", blobExpandedWithHashMap.getValue())
+              .bind("hyperparameter_type", HYPERPARAMETER)
+              .map(
+                  (rs, ctx) -> {
+                    Map<String, Object> argsMap = new HashMap<>();
+                    argsMap.put("name", rs.getString("name"));
+                    argsMap.put(
+                        INT_VALUE_QUERY_SELECTED_PARAM,
+                        rs.getInt(INT_VALUE_QUERY_SELECTED_PARAM) != 0
+                            ? rs.getInt(INT_VALUE_QUERY_SELECTED_PARAM)
+                            : null);
+                    argsMap.put("float_value", rs.getFloat("float_value"));
+                    argsMap.put("string_value", rs.getString("string_value"));
+                    argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+                    argsMap.put("entity_id", entityId);
+                    argsMaps.add(argsMap);
+                    return rs;
+                  })
+              .list();
+        }
+      }
+      if (!argsMaps.isEmpty()) {
+        var hemeStr =
+            "INSERT INTO hyperparameter_element_mapping (name, int_value, float_value, string_value, entity_type, "
+                + entityIdReferenceColumn
+                + " ) VALUES (:name, :int_value, :float_value, :string_value, :entity_type, :entity_id )";
+        var preparedBatch = handle.prepareBatch(hemeStr);
+        argsMaps.forEach(preparedBatch::add);
+        int[] insertedCount = preparedBatch.execute();
+        LOGGER.trace("Inserted hyperparameter_element_mapping count: " + insertedCount.length);
+      }
     }
-    return InternalFuture.runAsync(() -> {}, executor);
   }
 
-  private InternalFuture<Void> insertVersioningInput(
+  private void insertVersioningInput(
+      Handle handle,
       VersioningEntry versioningEntry,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
       String entityId) {
-    var existingEntityFuture =
+    var existingVersioningEntry =
         getVersionedInputs(Collections.singleton(entityId))
             .thenApply(
-                existingVersioningEntryMap -> existingVersioningEntryMap.get(entityId), executor);
-    return existingEntityFuture.thenCompose(
-        existingVersioningEntry -> {
-          if (existingVersioningEntry != null) {
-            if (existingVersioningEntry.getRepositoryId() != versioningEntry.getRepositoryId()
-                || !existingVersioningEntry.getCommit().equals(versioningEntry.getCommit())) {
-              return InternalFuture.failedStage(
-                  new AlreadyExistsException(
-                      ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE));
-            }
-          }
+                existingVersioningEntryMap -> existingVersioningEntryMap.get(entityId), executor)
+            .get();
 
-          return jdbi.useHandle(
-              handle -> {
-                var queryStr =
-                    String.format(
-                        "INSERT INTO versioning_modeldb_entity_mapping "
-                            + " (repository_id, %s, versioning_key, versioning_location, entity_type, versioning_blob_type, blob_hash, %s) "
-                            + " VALUES (:repository_id, :commit, :versioning_key, :versioning_location, :entity_type, :versioning_blob_type, :blob_hash, :entityId)",
-                        App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()
-                            ? "\"commit\""
-                            : "commit",
-                        entityIdReferenceColumn);
+    if (existingVersioningEntry != null) {
+      if (existingVersioningEntry.getRepositoryId() != versioningEntry.getRepositoryId()
+          || !existingVersioningEntry.getCommit().equals(versioningEntry.getCommit())) {
+        throw new AlreadyExistsException(ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE);
+      }
+    }
 
-                if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
-                  Map<String, Object> keysAndParameterMap = new HashMap<>();
-                  keysAndParameterMap.put(
-                      REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
-                  keysAndParameterMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
-                  keysAndParameterMap.put(ENTITY_ID_QUERY_PARAM, entityId);
-                  keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
-                  keysAndParameterMap.put(VERSIONING_KEY_QUERY_PARAM, CommonConstants.EMPTY_STRING);
-                  keysAndParameterMap.put(VERSIONING_LOCATION_QUERY_PARAM, null);
-                  keysAndParameterMap.put("versioning_blob_type", null);
-                  keysAndParameterMap.put(BLOB_HASH_QUERY_PARAM, null);
+    var queryStr =
+        String.format(
+            "INSERT INTO versioning_modeldb_entity_mapping "
+                + " (repository_id, %s, versioning_key, versioning_location, entity_type, versioning_blob_type, blob_hash, %s) "
+                + " VALUES (:repository_id, :commit, :versioning_key, :versioning_location, :entity_type, :versioning_blob_type, :blob_hash, :entityId)",
+            App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()
+                ? "\"commit\""
+                : "commit",
+            entityIdReferenceColumn);
 
-                  LOGGER.trace("insert experiment run query string: " + queryStr);
-                  var query = handle.createUpdate(queryStr);
+    if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
+      Map<String, Object> keysAndParameterMap = new HashMap<>();
+      keysAndParameterMap.put(REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
+      keysAndParameterMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
+      keysAndParameterMap.put(ENTITY_ID_QUERY_PARAM, entityId);
+      keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+      keysAndParameterMap.put(VERSIONING_KEY_QUERY_PARAM, CommonConstants.EMPTY_STRING);
+      keysAndParameterMap.put(VERSIONING_LOCATION_QUERY_PARAM, null);
+      keysAndParameterMap.put("versioning_blob_type", null);
+      keysAndParameterMap.put(BLOB_HASH_QUERY_PARAM, null);
 
-                  // Inserting fields arguments based on the keys and value of map
-                  for (Map.Entry<String, Object> objectEntry : keysAndParameterMap.entrySet()) {
-                    query.bind(objectEntry.getKey(), objectEntry.getValue());
-                  }
-                  query.execute();
-                } else {
-                  List<Map<String, Object>> argsMaps = new ArrayList<>();
-                  for (Map.Entry<String, Location> locationEntry :
-                      versioningEntry.getKeyLocationMapMap().entrySet()) {
-                    if (existingVersioningEntry == null
-                        || !existingVersioningEntry.containsKeyLocationMap(
-                            locationEntry.getKey())) {
-                      var locationKey =
-                          String.join("#", locationEntry.getValue().getLocationList());
-                      Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
-                          locationBlobWithHashMap.get(locationKey);
+      LOGGER.trace("insert experiment run query string: " + queryStr);
+      var query = handle.createUpdate(queryStr);
 
-                      var blob = blobExpandedWithHashMap.getKey().getBlob();
+      // Inserting fields arguments based on the keys and value of map
+      for (Map.Entry<String, Object> objectEntry : keysAndParameterMap.entrySet()) {
+        query.bind(objectEntry.getKey(), objectEntry.getValue());
+      }
+      query.execute();
+    } else {
+      List<Map<String, Object>> argsMaps = new ArrayList<>();
+      for (Map.Entry<String, Location> locationEntry :
+          versioningEntry.getKeyLocationMapMap().entrySet()) {
+        if (existingVersioningEntry == null
+            || !existingVersioningEntry.containsKeyLocationMap(locationEntry.getKey())) {
+          var locationKey = String.join("#", locationEntry.getValue().getLocationList());
+          Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
+              locationBlobWithHashMap.get(locationKey);
 
-                      Map<String, Object> keysAndParameterMap = new HashMap<>();
-                      keysAndParameterMap.put(
-                          REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
-                      keysAndParameterMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
-                      keysAndParameterMap.put(ENTITY_ID_QUERY_PARAM, entityId);
-                      keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
-                      keysAndParameterMap.put(VERSIONING_KEY_QUERY_PARAM, locationEntry.getKey());
-                      keysAndParameterMap.put(
-                          VERSIONING_LOCATION_QUERY_PARAM,
-                          CommonUtils.getStringFromProtoObject(locationEntry.getValue()));
-                      keysAndParameterMap.put(
-                          "versioning_blob_type", blob.getContentCase().getNumber());
-                      keysAndParameterMap.put(
-                          BLOB_HASH_QUERY_PARAM, blobExpandedWithHashMap.getValue());
+          var blob = blobExpandedWithHashMap.getKey().getBlob();
 
-                      argsMaps.add(keysAndParameterMap);
-                    }
-                  }
+          Map<String, Object> keysAndParameterMap = new HashMap<>();
+          keysAndParameterMap.put(REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
+          keysAndParameterMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
+          keysAndParameterMap.put(ENTITY_ID_QUERY_PARAM, entityId);
+          keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+          keysAndParameterMap.put(VERSIONING_KEY_QUERY_PARAM, locationEntry.getKey());
+          keysAndParameterMap.put(
+              VERSIONING_LOCATION_QUERY_PARAM,
+              CommonUtils.getStringFromProtoObject(locationEntry.getValue()));
+          keysAndParameterMap.put("versioning_blob_type", blob.getContentCase().getNumber());
+          keysAndParameterMap.put(BLOB_HASH_QUERY_PARAM, blobExpandedWithHashMap.getValue());
 
-                  if (!argsMaps.isEmpty()) {
-                    var preparedBatch = handle.prepareBatch(queryStr);
-                    argsMaps.forEach(preparedBatch::add);
-                    int[] insertedCount = preparedBatch.execute();
-                    LOGGER.trace(
-                        "Inserted versioning_modeldb_entity_mapping count: "
-                            + insertedCount.length);
-                  }
-                }
-              });
-        },
-        executor);
+          argsMaps.add(keysAndParameterMap);
+        }
+      }
+
+      if (!argsMaps.isEmpty()) {
+        var preparedBatch = handle.prepareBatch(queryStr);
+        argsMaps.forEach(preparedBatch::add);
+        int[] insertedCount = preparedBatch.execute();
+        LOGGER.trace("Inserted versioning_modeldb_entity_mapping count: " + insertedCount.length);
+      }
+    }
   }
 
   /**
