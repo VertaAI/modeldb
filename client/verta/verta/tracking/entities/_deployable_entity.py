@@ -461,7 +461,8 @@ class _DeployableEntity(_ModelDBEntity):
 
         return artifacts
 
-    def _custom_modules_as_artifact(self, paths=None):
+    @staticmethod
+    def _custom_modules_as_artifact(paths=None):
         if isinstance(paths, six.string_types):
             paths = [paths]
 
