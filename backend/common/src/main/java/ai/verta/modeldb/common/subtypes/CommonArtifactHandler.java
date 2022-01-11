@@ -82,9 +82,12 @@ public abstract class CommonArtifactHandler<T> {
               Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle);
               return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
             })
-            .thenApply(simpleEntries -> simpleEntries.stream()
+        .thenApply(
+            simpleEntries ->
+                simpleEntries.stream()
                     .sorted(Comparator.comparing(entry -> entry.getValue().getKey()))
-                    .collect(Collectors.toList()), executor)
+                    .collect(Collectors.toList()),
+            executor)
         .thenApply(MapSubtypes::from, executor);
   }
 
