@@ -125,7 +125,8 @@ message AuthzResourceEnum {
         CONTAINER_REGISTRY_CONFIGURATION = 7;
         EVENT = 8;
         WEBHOOK = 9;
-        PYPI_CONFIGURATION = 10;
+        SYSTEM_ADMIN = 10;
+        PYPI_CONFIGURATION = 11;
     }
 };
 
