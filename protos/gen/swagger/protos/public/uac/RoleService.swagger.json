@@ -68,8 +68,7 @@
               "SERVICE_ACCOUNT",
               "CONTAINER_REGISTRY_CONFIGURATION",
               "EVENT",
-              "WEBHOOK",
-              "SYSTEM_ADMIN"
+              "WEBHOOK"
             ],
             "default": "UNKNOWN"
           },
@@ -538,8 +537,7 @@
         "SERVICE_ACCOUNT",
         "CONTAINER_REGISTRY_CONFIGURATION",
         "EVENT",
-        "WEBHOOK",
-        "SYSTEM_ADMIN"
+        "WEBHOOK"
       ],
       "default": "UNKNOWN"
     },
