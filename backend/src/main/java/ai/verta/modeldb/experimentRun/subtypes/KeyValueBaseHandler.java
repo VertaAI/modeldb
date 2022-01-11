@@ -14,7 +14,7 @@ import java.util.concurrent.Executor;
 public class KeyValueBaseHandler extends KeyValueHandler<String> {
   public KeyValueBaseHandler(
       Executor executor, FutureJdbi jdbi, String fieldType, String entityName) {
-    super(jdbi, fieldType, entityName);
+    super(executor, jdbi, fieldType, entityName);
   }
 
   @Override

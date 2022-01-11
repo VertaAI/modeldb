@@ -2,6 +2,8 @@ package ai.verta.modeldb.common.handlers;
 
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import com.google.rpc.Code;
 import java.sql.ResultSet;
@@ -11,6 +13,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executor;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
@@ -20,10 +24,14 @@ public abstract class TagsHandlerBase<T> {
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
 
+  private final Executor executor;
+  private final FutureJdbi jdbi;
   private final String entityName;
   protected String entityIdReferenceColumn;
 
-  public TagsHandlerBase(String entityName) {
+  public TagsHandlerBase(Executor executor, FutureJdbi jdbi, String entityName) {
+    this.executor = executor;
+    this.jdbi = jdbi;
     this.entityName = entityName;
     setEntityIdReferenceColumn(entityName);
   }
@@ -47,31 +55,38 @@ public abstract class TagsHandlerBase<T> {
 
   protected abstract void setEntityIdReferenceColumn(String entityName);
 
-  public List<String> getTags(Handle handle, T entityId) {
-    return handle
-        .createQuery(
-            String.format(
-                "select tags from tag_mapping "
-                    + "where entity_name=:entity_name and %s =:entity_id ORDER BY tags ASC",
-                entityIdReferenceColumn))
-        .bind(ENTITY_ID_QUERY_PARAM, entityId)
-        .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-        .mapTo(String.class)
-        .list();
+  public InternalFuture<List<String>> getTags(T entityId) {
+    return jdbi.withHandle(
+            handle ->
+                    getTags(entityId, handle));
   }
 
-  public MapSubtypes<T, String> getTagsMap(Handle handle, Set<T> entityIds) {
-    var entities =
-        handle
+  private List<String> getTags(T entityId, Handle handle) {
+    return handle
             .createQuery(
-                String.format(
-                    "select tags, %s as entity_id from tag_mapping where entity_name=:entity_name and %s in (<entity_ids>) ORDER BY tags ASC",
-                    entityIdReferenceColumn, entityIdReferenceColumn))
-            .bindList("entity_ids", entityIds)
+                    String.format(
+                            "select tags from tag_mapping "
+                                    + "where entity_name=:entity_name and %s =:entity_id ORDER BY tags ASC",
+                            entityIdReferenceColumn))
+            .bind(ENTITY_ID_QUERY_PARAM, entityId)
             .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-            .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
+            .mapTo(String.class)
             .list();
-    return MapSubtypes.from(entities);
+  }
+
+  public InternalFuture<MapSubtypes<T, String>> getTagsMap(Set<T> entityIds) {
+    return jdbi.withHandle(
+            handle ->
+                    handle
+                            .createQuery(
+                                    String.format(
+                                            "select tags, %s as entity_id from tag_mapping where entity_name=:entity_name and %s in (<entity_ids>) ORDER BY tags ASC",
+                                            entityIdReferenceColumn, entityIdReferenceColumn))
+                            .bindList("entity_ids", entityIds)
+                            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                            .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
+                            .list())
+            .thenApply(MapSubtypes::from, executor);
   }
 
   protected abstract AbstractMap.SimpleEntry<T, String> getSimpleEntryFromResultSet(ResultSet rs)
@@ -90,7 +105,7 @@ public abstract class TagsHandlerBase<T> {
     }
 
     // TODO: is there a way to push this to the db?
-    var existingTags = getTags(handle, entityId);
+    var existingTags = getTags(entityId, handle);
     final var tagsSet = new HashSet<>(checkEntityTagsLength(tags));
     tagsSet.removeAll(existingTags);
     if (tagsSet.isEmpty()) {

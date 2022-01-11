@@ -257,7 +257,10 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> observationHandler.logObservations(runId, observations, now), executor)
+            unused ->
+                jdbi.useHandle(
+                    handle -> observationHandler.logObservations(handle, runId, observations, now)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -360,7 +363,9 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> metricsHandler.logKeyValues(runId, metrics), executor)
+        .thenCompose(
+            unused -> jdbi.useHandle(handle -> metricsHandler.logKeyValues(handle, runId, metrics)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -373,7 +378,10 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> hyperparametersHandler.logKeyValues(runId, hyperparameters), executor)
+            unused ->
+                jdbi.useHandle(
+                    handle -> hyperparametersHandler.logKeyValues(handle, runId, hyperparameters)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -385,7 +393,10 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> attributeHandler.logKeyValues(runId, attributes), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(handle -> attributeHandler.logKeyValues(handle, runId, attributes)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -398,7 +409,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> tagsHandler.addTags(runId, TagsHandlerBase.checkEntityTagsLength(tags)),
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        tagsHandler.addTags(
+                            handle, runId, TagsHandlerBase.checkEntityTagsLength(tags))),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
@@ -413,7 +428,9 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> tagsHandler.deleteTags(runId, maybeTags), executor)
+        .thenCompose(
+            unused -> jdbi.useHandle(handle -> tagsHandler.deleteTags(handle, runId, maybeTags)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -626,7 +643,11 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.logArtifacts(runId, artifacts, false), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> artifactHandler.logArtifacts(handle, runId, artifacts, false)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -676,7 +697,10 @@ public class FutureExperimentRunDAO {
             executor)
         .thenCompose(
             privilegedDatasets ->
-                datasetHandler.logArtifacts(runId, privilegedDatasets, request.getOverwrite()),
+                jdbi.useHandle(
+                    handle ->
+                        datasetHandler.logArtifacts(
+                            handle, runId, privilegedDatasets, request.getOverwrite())),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
@@ -701,7 +725,9 @@ public class FutureExperimentRunDAO {
     final var now = Calendar.getInstance().getTimeInMillis();
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> codeVersionHandler.logCodeVersion(request), executor)
+        .thenCompose(
+            unused -> jdbi.useHandle(handle -> codeVersionHandler.logCodeVersion(handle, request)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -1525,8 +1551,10 @@ public class FutureExperimentRunDAO {
             executor)
         .thenCompose(
             unused ->
-                versionInputHandler.validateAndInsertVersionedInputs(
-                    request.getId(), request.getVersionedInputs()),
+                jdbi.useHandle(
+                    handle ->
+                        versionInputHandler.validateAndInsertVersionedInputs(
+                            handle, request.getId(), request.getVersionedInputs())),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);

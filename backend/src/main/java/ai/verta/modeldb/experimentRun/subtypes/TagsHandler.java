@@ -11,7 +11,7 @@ import java.util.concurrent.Executor;
 public class TagsHandler extends TagsHandlerBase<String> {
 
   public TagsHandler(Executor executor, FutureJdbi jdbi, String entityName) {
-    super(entityName);
+    super(executor, jdbi, entityName);
   }
 
   @Override
