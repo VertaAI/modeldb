@@ -2,6 +2,7 @@
 
 from datetime import timedelta
 import os
+import re
 import string
 import warnings
 
@@ -44,6 +45,14 @@ def filepath(draw):
 
     segments = [draw(st.text(legal_chars, min_size=1)) for _ in range(num_segments)]
     return os.path.join(*segments)
+
+
+@st.composite
+def python_module_name(draw):
+    # intersection of package and module name requirements
+    pattern = r"[A-Z]|[A-Z][A-Z0-9_]*[A-Z0-9]"
+    regex = re.compile(pattern, flags=re.IGNORECASE)
+    return draw(st.from_regex(regex, fullmatch=True))
 
 
 @st.composite
