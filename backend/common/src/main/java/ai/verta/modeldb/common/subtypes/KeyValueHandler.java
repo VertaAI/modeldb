@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.subtypes;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
@@ -12,11 +13,15 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -108,6 +113,9 @@ public abstract class KeyValueHandler<T> {
                     .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                     .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
                     .list())
+            .thenApply(simpleEntries -> simpleEntries.stream()
+                    .sorted(Comparator.comparing(entry -> entry.getValue().getKey()))
+                    .collect(Collectors.toList()), executor)
         .thenApply(MapSubtypes::from, executor);
   }
 

@@ -1,6 +1,5 @@
 package ai.verta.modeldb.project;
 
-import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
@@ -53,7 +52,6 @@ import ai.verta.uac.Workspace;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -698,16 +696,14 @@ public class FutureProjectDAO {
                                         }),
                                 executor);
 
-                    return futureProjects
-                        .thenApply(this::sortProjectFields, executor)
-                        .thenCombine(
-                            futureCount,
-                            (projects, count) ->
-                                FindProjects.Response.newBuilder()
-                                    .addAllProjects(projects)
-                                    .setTotalRecords(count)
-                                    .build(),
-                            executor);
+                    return futureProjects.thenCombine(
+                        futureCount,
+                        (projects, count) ->
+                            FindProjects.Response.newBuilder()
+                                .addAllProjects(projects)
+                                .setTotalRecords(count)
+                                .build(),
+                        executor);
                   },
                   executor);
             },
@@ -719,28 +715,6 @@ public class FutureProjectDAO {
         uac.getWorkspaceService()
             .getWorkspaceById(GetWorkspaceById.newBuilder().setId(workspaceId).build()),
         executor);
-  }
-
-  private List<Project> sortProjectFields(List<Project> projects) {
-    List<Project> sortedProjects = new LinkedList<>();
-    for (Project project : projects) {
-      var projectBuilder = Project.newBuilder(project);
-      projectBuilder
-          .clearTags()
-          .addAllTags(project.getTagsList().stream().sorted().collect(Collectors.toList()))
-          .clearAttributes()
-          .addAllAttributes(
-              project.getAttributesList().stream()
-                  .sorted(Comparator.comparing(KeyValue::getKey))
-                  .collect(Collectors.toList()))
-          .clearArtifacts()
-          .addAllArtifacts(
-              project.getArtifactsList().stream()
-                  .sorted(Comparator.comparing(Artifact::getKey))
-                  .collect(Collectors.toList()));
-      sortedProjects.add(projectBuilder.build());
-    }
-    return sortedProjects;
   }
 
   private InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForLoginUserWorkspace(

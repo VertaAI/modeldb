@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -81,6 +82,9 @@ public abstract class CommonArtifactHandler<T> {
               Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle);
               return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
             })
+            .thenApply(simpleEntries -> simpleEntries.stream()
+                    .sorted(Comparator.comparing(entry -> entry.getValue().getKey()))
+                    .collect(Collectors.toList()), executor)
         .thenApply(MapSubtypes::from, executor);
   }
 
