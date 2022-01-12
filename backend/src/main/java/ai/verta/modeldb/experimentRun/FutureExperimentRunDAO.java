@@ -274,7 +274,10 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> metricsHandler.deleteKeyValues(runId, maybeKeys), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(handle -> metricsHandler.deleteKeyValues(handle, runId, maybeKeys)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -290,7 +293,11 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> hyperparametersHandler.deleteKeyValues(runId, maybeKeys), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> hyperparametersHandler.deleteKeyValues(handle, runId, maybeKeys)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -304,7 +311,11 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> attributeHandler.deleteKeyValues(runId, maybeKeys), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> attributeHandler.deleteKeyValues(handle, runId, maybeKeys)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }

@@ -172,31 +172,28 @@ public abstract class KeyValueHandler<T> {
     }
   }
 
-  public InternalFuture<Void> deleteKeyValues(T entityId, Optional<List<String>> maybeKeys) {
-    return jdbi.useHandle(
-        handle -> {
-          var sql =
+  public void deleteKeyValues(Handle handle, T entityId, Optional<List<String>> maybeKeys) {
+      var sql =
               String.format(
-                  "delete from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id",
-                  getTableName(), entityIdReferenceColumn);
+                      "delete from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id",
+                      getTableName(), entityIdReferenceColumn);
 
-          if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
-            sql += " and kv_key in (<keys>)";
-          }
+      if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
+          sql += " and kv_key in (<keys>)";
+      }
 
-          var query =
+      var query =
               handle
-                  .createUpdate(sql)
-                  .bind(ENTITY_ID_PARAM_QUERY, entityId)
-                  .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-                  .bind(ENTITY_NAME_QUERY_PARAM, entityName);
+                      .createUpdate(sql)
+                      .bind(ENTITY_ID_PARAM_QUERY, entityId)
+                      .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                      .bind(ENTITY_NAME_QUERY_PARAM, entityName);
 
-          if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
-            query = query.bindList("keys", maybeKeys.get());
-          }
+      if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
+          query = query.bindList("keys", maybeKeys.get());
+      }
 
-          query.execute();
-        });
+      query.execute();
   }
 
   // TODO: We might end up removing this update since ERs don't have them.
