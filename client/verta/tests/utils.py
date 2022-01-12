@@ -3,8 +3,10 @@ import copy
 import filecmp
 import random
 import os
+import shutil
 import sys
 from string import printable
+import tempfile
 
 import requests
 
@@ -12,6 +14,9 @@ from verta._internal_utils import _utils
 from verta._protos.public.uac import Organization_pb2 as _OrganizationService
 
 from hypothesis import strategies as st
+
+
+TEMPDIR_ROOT = os.environ.get("TEMPDIR_ROOT")
 
 
 def gen_none():
@@ -105,6 +110,28 @@ def chdir(new_dir):
         yield
     finally:
         os.chdir(old_dir)
+
+
+@contextlib.contextmanager
+def chtempdir():
+    """Context manager for safely changing into a temporary directory.
+
+    The :func:`in_tempdir` fixture should be preferred in general; this
+    context manager is for ``hypothesis`` tests because the fixture doesn't
+    reset between ``hypothesis`` examples.
+
+    Yields
+    ------
+    str
+        Absolute path to the temporary working directory.
+
+    """
+    dirpath = tempfile.mkdtemp(dir=TEMPDIR_ROOT)
+    try:
+        with chdir(dirpath):
+            yield dirpath
+    finally:
+        shutil.rmtree(dirpath)
 
 
 @contextlib.contextmanager

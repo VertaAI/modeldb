@@ -1,0 +1,112 @@
+# -*- coding: utf-8 -*-
+
+import contextlib
+import os
+import shutil
+import subprocess
+import sys
+import textwrap
+
+
+@contextlib.contextmanager
+def installable_package(name, dir=None):
+    """Make a simple pip-installable package in the local filesystem.
+
+    Parameters
+    ----------
+    name : str
+        Name of the package.
+    dir : str, optional
+        Directory in which to create the package. If not provided, the
+        current directory will be used.
+
+    Yields
+    ------
+    str
+        Absolute path to the created package.
+
+    Warnings
+    --------
+    Packages should not be moved in the filesystem after they are created,
+    otherwise cleanup will be unable to delete them.
+
+    Notes
+    -----
+    In the spirit of general convention, the package and its root module have
+    the same name. This isn't required nor universal however, and they have
+    divergent character restrictions.
+
+    The package is declared using a ``setup.py`` to reflect today's
+    ecosystem; it could be migrated to ``setup.cfg`` in the future [1]_.
+
+    References
+    ----------
+    .. [1] https://setuptools.pypa.io/en/latest/userguide/quickstart.html?highlight=setup.py#transitioning-from-setup-py-to-setup-cfg
+
+    """
+    if not dir:
+        dir = os.curdir
+
+    dir = os.path.abspath(dir)
+    pkg_dir = os.path.join(dir, name)
+    code_dir = os.path.join(pkg_dir, name)
+
+    os.mkdir(pkg_dir)
+    with open(os.path.join(pkg_dir, "setup.py"), "w") as f:
+        content = textwrap.dedent(
+            """\
+            # -*- coding: utf-8 -*-
+
+            from setuptools import find_packages, setup
+
+            setup(
+                name="{}",
+                version="0.0.1",
+                packages=find_packages(),
+            )
+            """.format(name)
+        )
+        f.write(content)
+    os.mkdir(code_dir)
+    with open(os.path.join(code_dir, "__init__.py"), "w") as f:
+        content = textwrap.dedent(
+            """\
+            # -*- coding: utf-8 -*-
+
+            is_successful = True
+            """
+        )
+        f.write(content)
+
+    try:
+        yield pkg_dir
+    finally:
+        shutil.rmtree(pkg_dir)
+
+
+# TODO: try to get this to work in a virtual environment
+@contextlib.contextmanager
+def installed_local_package(pkg_dir, name):
+    """pip install a locally-defined package.
+
+    Parameters
+    ----------
+    pkg_dir : str
+        Absolute path to the package.
+    name : str
+        Name of the package. This is used to uninstall the package on
+        cleanup.
+
+    Warnings
+    --------
+    While packages are uninstalled on cleanup, their dependencies might not be.
+
+    """
+    subprocess.check_call([sys.executable, "-m", "pip", "install", pkg_dir])
+
+    try:
+        yield
+    finally:
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "uninstall", "-y", name],
+        )
