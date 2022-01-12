@@ -31,3 +31,33 @@ def in_fake_venv():
             yield dirpath
     finally:
         shutil.rmtree(dirpath)
+
+
+# TODO: move to root conftest and substitute for `mkdtemp`s in tests
+@pytest.fixture(scope="class")
+def make_tempdir():
+    """Make temporary directories.
+
+    Analogous to ``pytest``'s built-in ``tmp_path_factory`` fixture, except
+    this doesn't require explicit names for its directories.
+
+    """
+    created_dirs = []
+
+    def _make_tempdir():
+        """Make a temporary directory.
+
+        Returns
+        -------
+        str
+            Absolute path to the created directory.
+
+        """
+        dirpath = tempfile.mkdtemp(dir=utils.TEMPDIR_ROOT)
+        created_dirs.append(dirpath)
+        return dirpath
+
+    yield _make_tempdir
+
+    for dirpath in created_dirs:
+        shutil.rmtree(dirpath)
