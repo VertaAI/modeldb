@@ -2,6 +2,8 @@
 
 import os
 import shutil
+import subprocess
+import sys
 import tempfile
 import textwrap
 
@@ -54,7 +56,7 @@ def make_package():
     created_packages = []
 
     def _make_package(name, dir=None):
-        """Make a simple pip-installable package
+        """Make a simple pip-installable package.
 
         Parameters
         ----------
@@ -118,5 +120,39 @@ def make_package():
 
     yield _make_package
 
-    for package in created_packages:
-        shutil.rmtree(package)
+    for pkg_dir in created_packages:
+        shutil.rmtree(pkg_dir, ignore_errors=True)
+
+
+@pytest.fixture
+def install_local_package():
+    """pip install locally-defined packages.
+
+    Warnings
+    --------
+    While packages are uninstalled on teardown, their dependencies may not be.
+
+    """
+    installed_packages = []
+
+    def _install_local_package(pkg_dir, name):
+        """pip install a locally-defined package.
+
+        Parameters
+        ----------
+        pkg_dir : str
+            Absolute path to the package.
+        name : str
+            Name of the package. This is used to uninstall the package on
+            teardown.
+
+        """
+        subprocess.check_call([sys.executable, "-m", "pip", "install", pkg_dir])
+        installed_packages.append(name)
+
+    yield _install_local_package
+
+    for name in installed_packages:
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "uninstall", "-y", name],
+        )
