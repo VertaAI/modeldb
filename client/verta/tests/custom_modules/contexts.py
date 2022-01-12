@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import ast
 import contextlib
 import os
 import shutil
 import subprocess
 import sys
 import textwrap
+
+from verta._internal_utils.custom_modules import CustomModules
 
 
 @contextlib.contextmanager
@@ -103,6 +106,7 @@ def installed_local_package(pkg_dir, name):
 
     """
     subprocess.check_call([sys.executable, "-m", "pip", "install", pkg_dir])
+    assert CustomModules.is_importable(name)  # verify installation
 
     try:
         yield
