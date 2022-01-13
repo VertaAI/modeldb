@@ -112,6 +112,27 @@ def chdir(new_dir):
         os.chdir(old_dir)
 
 
+# TODO: move to client utils and use everywhere
+@contextlib.contextmanager
+def tempdir():
+    """Context manager for creating a temporary directory.
+
+    Similar to Python 3's :func:`tempfile.TemporaryDirectory`.
+
+    Yields
+    ------
+    str
+        Absolute path to the created directory.
+
+    """
+    dirpath = tempfile.mkdtemp(dir=TEMPDIR_ROOT)
+
+    try:
+        yield dirpath
+    finally:
+        shutil.rmtree(dirpath)
+
+
 @contextlib.contextmanager
 def chtempdir():
     """Context manager for safely changing into a temporary directory.
@@ -126,12 +147,9 @@ def chtempdir():
         Absolute path to the temporary working directory.
 
     """
-    dirpath = tempfile.mkdtemp(dir=TEMPDIR_ROOT)
-    try:
+    with tempdir() as dirpath:
         with chdir(dirpath):
             yield dirpath
-    finally:
-        shutil.rmtree(dirpath)
 
 
 @contextlib.contextmanager
