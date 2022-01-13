@@ -13,8 +13,6 @@ from verta._internal_utils.custom_modules import CustomModules
 from .. import strategies, utils
 from . import contexts
 
-# also deployable_entity/test_deployment.py::TestLogModel::test_custom_modules
-
 
 class TestCollection:
     @hypothesis.settings(deadline=None)
