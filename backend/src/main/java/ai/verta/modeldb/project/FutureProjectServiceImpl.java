@@ -32,8 +32,6 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogProjectArtifacts;
 import ai.verta.modeldb.LogProjectCodeVersion;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.SetProjectReadme;
 import ai.verta.modeldb.SetProjectShortName;
@@ -42,9 +40,6 @@ import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
-import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.gson.Gson;
@@ -123,23 +118,25 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       StreamObserver<UpdateProjectDescription.Response> responseObserver) {
     try {
       final var futureResponse =
-              futureProjectDAO
-                      .updateProjectDescription(request)
-                      .thenCompose(
-                              updatedProject ->
-                                      addEvent(
-                                              updatedProject.getId(),
-                                              updatedProject.getWorkspaceServiceId(),
-                                              UPDATE_PROJECT_EVENT_TYPE,
-                                              Optional.of("description"),
-                                              Collections.emptyMap(),
-                                              "project description updated successfully")
-                                              .thenApply(eventLoggedStatus -> updatedProject, executor),
-                              executor)
-                      .thenApply(
-                              updatedProject ->
-                                      UpdateProjectDescription.Response.newBuilder().setProject(updatedProject).build(),
-                              executor);
+          futureProjectDAO
+              .updateProjectDescription(request)
+              .thenCompose(
+                  updatedProject ->
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("description"),
+                              Collections.emptyMap(),
+                              "project description updated successfully")
+                          .thenApply(eventLoggedStatus -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      UpdateProjectDescription.Response.newBuilder()
+                          .setProject(updatedProject)
+                          .build(),
+                  executor);
       FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
@@ -518,7 +515,8 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       GetProjectById request, StreamObserver<GetProjectById.Response> responseObserver) {
     try {
       final var response =
-          futureProjectDAO.getProjectById(request.getId())
+          futureProjectDAO
+              .getProjectById(request.getId())
               .thenApply(
                   project -> GetProjectById.Response.newBuilder().setProject(project).build(),
                   executor);

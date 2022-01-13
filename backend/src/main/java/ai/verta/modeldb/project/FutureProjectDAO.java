@@ -920,50 +920,52 @@ public class FutureProjectDAO {
             executor);
   }
 
-    public InternalFuture<Project> getProjectById(String projectId) {
-        try {
-            var validateArgumentFuture =
-                    InternalFuture.runAsync(
-                            () -> {
-                                if (projectId.isEmpty()) {
-                                    throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
-                                }
-                            },
-                            executor);
-            return validateArgumentFuture
-                    .thenCompose(
-                            unused ->
-                                    findProjects(
-                                            FindProjects.newBuilder()
-                                                    .addProjectIds(projectId)
-                                                    .setPageLimit(1)
-                                                    .setPageNumber(1)
-                                                    .build()),
-                            executor)
-                    .thenApply(
-                            response -> {
-                                if (response.getProjectsList().isEmpty()) {
-                                    throw new NotFoundException("Project not found for given Id");
-                                } else if (response.getProjectsCount() > 1) {
-                                    throw new InternalErrorException("More then one projects found");
-                                }
-                                return response.getProjects(0);
-                            },
-                            executor);
-        } catch (Exception e) {
-            return InternalFuture.failedStage(e);
-        }
+  public InternalFuture<Project> getProjectById(String projectId) {
+    try {
+      var validateArgumentFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (projectId.isEmpty()) {
+                  throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
+                }
+              },
+              executor);
+      return validateArgumentFuture
+          .thenCompose(
+              unused ->
+                  findProjects(
+                      FindProjects.newBuilder()
+                          .addProjectIds(projectId)
+                          .setPageLimit(1)
+                          .setPageNumber(1)
+                          .build()),
+              executor)
+          .thenApply(
+              response -> {
+                if (response.getProjectsList().isEmpty()) {
+                  throw new NotFoundException("Project not found for given Id");
+                } else if (response.getProjectsCount() > 1) {
+                  throw new InternalErrorException("More then one projects found");
+                }
+                return response.getProjects(0);
+              },
+              executor);
+    } catch (Exception e) {
+      return InternalFuture.failedStage(e);
     }
+  }
 
-    public InternalFuture<Project> updateProjectDescription(UpdateProjectDescription request) {
-        InternalFuture<Void> validateParametersFuture =
-                InternalFuture.runAsync(() -> {
-                    // Request Parameter Validation
-                    if (request.getId().isEmpty()) {
-                        var errorMessage = "Project ID is not found in UpdateProjectDescription request";
-                        throw new InvalidArgumentException(errorMessage);
-                    }
-                }, executor);
+  public InternalFuture<Project> updateProjectDescription(UpdateProjectDescription request) {
+    InternalFuture<Void> validateParametersFuture =
+        InternalFuture.runAsync(
+            () -> {
+              // Request Parameter Validation
+              if (request.getId().isEmpty()) {
+                var errorMessage = "Project ID is not found in UpdateProjectDescription request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
 
     return validateParametersFuture
         .thenCompose(
@@ -976,7 +978,7 @@ public class FutureProjectDAO {
             project ->
                 jdbi.withHandle(
                     handle -> {
-                        var now = new Date().getTime();
+                      var now = new Date().getTime();
                       handle
                           .createUpdate(
                               "update project set description = :description, date_updated = :dateUpdated, version_number=(version_number + 1) where id = :id")
@@ -984,12 +986,13 @@ public class FutureProjectDAO {
                           .bind("description", request.getDescription())
                           .bind("dateUpdated", now)
                           .execute();
-                      return project.toBuilder()
-                              .setDateUpdated(now)
+                      return project
+                          .toBuilder()
+                          .setDateUpdated(now)
                           .setDescription(request.getDescription())
                           .setVersionNumber(project.getVersionNumber() + 1L)
                           .build();
                     }),
             executor);
-    }
+  }
 }
