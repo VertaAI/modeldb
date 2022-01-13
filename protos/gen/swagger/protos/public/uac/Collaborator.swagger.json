@@ -548,7 +548,8 @@
               "CONTAINER_REGISTRY_CONFIGURATION",
               "EVENT",
               "WEBHOOK",
-              "SYSTEM_ADMIN"
+              "SYSTEM_ADMIN",
+              "PYPI_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -687,7 +688,8 @@
               "CONTAINER_REGISTRY_CONFIGURATION",
               "EVENT",
               "WEBHOOK",
-              "SYSTEM_ADMIN"
+              "SYSTEM_ADMIN",
+              "PYPI_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -846,7 +848,8 @@
               "CONTAINER_REGISTRY_CONFIGURATION",
               "EVENT",
               "WEBHOOK",
-              "SYSTEM_ADMIN"
+              "SYSTEM_ADMIN",
+              "PYPI_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -1411,7 +1414,8 @@
         "CONTAINER_REGISTRY_CONFIGURATION",
         "EVENT",
         "WEBHOOK",
-        "SYSTEM_ADMIN"
+        "SYSTEM_ADMIN",
+        "PYPI_CONFIGURATION"
       ],
       "default": "UNKNOWN"
     },
