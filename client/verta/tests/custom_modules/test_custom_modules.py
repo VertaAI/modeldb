@@ -46,6 +46,12 @@ class TestCollectPipInstalledModule:
         sorted(module[1] for module in pkgutil.iter_modules()),
     )
     def test_module(self, name):
+        if name == "tests" or name.startswith("test_"):
+            pytest.skip(
+                "pytest modifies both import mechanisms and module objects,"
+                " which we can't handle right now"
+            )
+
         custom_modules = _DeployableEntity._custom_modules_as_artifact([name])
         self.assert_in_custom_modules(custom_modules, name)
 
