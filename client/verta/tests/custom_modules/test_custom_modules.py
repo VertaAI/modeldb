@@ -2,10 +2,10 @@
 
 import json
 import os
+import pkgutil
 import zipfile
 
 import hypothesis
-import pytest
 
 from verta.tracking.entities._deployable_entity import _DeployableEntity
 from verta._internal_utils.custom_modules import CustomModules
@@ -35,18 +35,18 @@ class TestCollection:
                 with contexts.installed_local_package(pkg_dir, name):
                     # collect and extract custom modules
                     custom_modules = _DeployableEntity._custom_modules_as_artifact([name])
-                    custom_modules_dir = os.path.abspath("custom_modules")
+                    custom_modules_dir = make_tempdir()
                     with zipfile.ZipFile(custom_modules, "r") as zipf:
                         zipf.extractall(custom_modules_dir)
 
                     utils.assert_dirs_match(
                         os.path.join(custom_modules_dir, name),
-                        local_dir,  # TODO: this is incorrect
+                        pkgutil.find_loader(name).filename,
                     )
 
     @hypothesis.settings(deadline=None)
     @hypothesis.given(name=strategies.python_module_name())  # pylint: disable=no-value-for-parameter
-    def test_module_and_local_pkg_have_same_name(self, name):
+    def test_module_and_local_pkg_have_same_name(self, name, make_tempdir):
         """A specific case of :meth:`test_module_and_local_dir_have_same_name`.
 
         The local package is *not* directly ``import``able because it is
@@ -62,11 +62,11 @@ class TestCollection:
                 with contexts.installed_local_package(pkg_dir, name):
                     # collect and extract custom modules
                     custom_modules = _DeployableEntity._custom_modules_as_artifact([name])
-                    custom_modules_dir = os.path.abspath("custom_modules")
+                    custom_modules_dir = make_tempdir()
                     with zipfile.ZipFile(custom_modules, "r") as zipf:
                         zipf.extractall(custom_modules_dir)
 
                     utils.assert_dirs_match(
                         os.path.join(custom_modules_dir, name),
-                        pkg_dir,  # TODO: this is incorrect
+                        pkgutil.find_loader(name).filename,
                     )
