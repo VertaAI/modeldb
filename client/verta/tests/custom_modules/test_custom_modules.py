@@ -19,7 +19,7 @@ from . import contexts
 class TestCollectPipInstalledModule:
     @staticmethod
     def assert_in_custom_modules(custom_modules, module_name):
-        module = pkgutil.find_loader(module_name).filename  # TODO: Python 3
+        module = CustomModules.get_module_path(module_name)
 
         with utils.tempdir() as custom_modules_dir:
             with zipfile.ZipFile(custom_modules, "r") as zipf:
