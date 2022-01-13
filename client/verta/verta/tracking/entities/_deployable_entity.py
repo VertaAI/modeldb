@@ -473,15 +473,16 @@ class _DeployableEntity(_ModelDBEntity):
             new_paths = []
             for p in paths:
                 abspath = os.path.abspath(os.path.expanduser(p))
-                if os.path.exists(abspath):
-                    new_paths.append(abspath)
-                else:
-                    try:
-                        mod = importlib.import_module(p)
-                        new_paths.extend(mod.__path__)
-                        forced_local_sys_paths.extend(map(os.path.dirname, mod.__path__))
-                    except ImportError:
+                try:
+                    mod = importlib.import_module(p)
+                except ImportError:
+                    if os.path.exists(abspath):
+                        new_paths.append(abspath)
+                    else:
                         raise ValueError("custom module {} does not correspond to an existing folder or module".format(p))
+                else:
+                    new_paths.extend(mod.__path__)
+                    forced_local_sys_paths.extend(map(os.path.dirname, mod.__path__))
 
             paths = new_paths
 
