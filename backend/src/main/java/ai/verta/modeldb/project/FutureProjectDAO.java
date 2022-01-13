@@ -11,6 +11,7 @@ import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.GetAttributes;
+import ai.verta.modeldb.GetProjectByName;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogAttributes;
@@ -415,7 +416,7 @@ public class FutureProjectDAO {
               } else {
                 resourcesFuture =
                     getResourceItemsForWorkspace(
-                        request.getWorkspaceName(),
+                        Optional.of(request.getWorkspaceName()),
                         Optional.of(request.getProjectIdsList()),
                         Optional.empty(),
                         ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
@@ -787,7 +788,7 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForWorkspace(
-      String workspaceName,
+      Optional<String> workspaceName,
       Optional<List<String>> resourceIdsOptional,
       Optional<String> resourceName,
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceTypes) {
@@ -804,7 +805,7 @@ public class FutureProjectDAO {
     }
 
     var builder = GetResources.newBuilder().setResources(resources.build());
-    builder.setWorkspaceName(workspaceName);
+    workspaceName.ifPresent(builder::setWorkspaceName);
     resourceName.ifPresent(builder::setResourceName);
     return FutureGrpc.ClientRequest(
             uac.getCollaboratorService().getResources(builder.build()), executor)
@@ -846,7 +847,7 @@ public class FutureProjectDAO {
         .thenCompose(
             allowedProjectIds -> {
               return getResourceItemsForWorkspace(
-                  "",
+                  Optional.empty(),
                   Optional.of(allowedProjectIds),
                   Optional.empty(),
                   ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
@@ -920,50 +921,52 @@ public class FutureProjectDAO {
             executor);
   }
 
-    public InternalFuture<Project> getProjectById(String projectId) {
-        try {
-            var validateArgumentFuture =
-                    InternalFuture.runAsync(
-                            () -> {
-                                if (projectId.isEmpty()) {
-                                    throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
-                                }
-                            },
-                            executor);
-            return validateArgumentFuture
-                    .thenCompose(
-                            unused ->
-                                    findProjects(
-                                            FindProjects.newBuilder()
-                                                    .addProjectIds(projectId)
-                                                    .setPageLimit(1)
-                                                    .setPageNumber(1)
-                                                    .build()),
-                            executor)
-                    .thenApply(
-                            response -> {
-                                if (response.getProjectsList().isEmpty()) {
-                                    throw new NotFoundException("Project not found for given Id");
-                                } else if (response.getProjectsCount() > 1) {
-                                    throw new InternalErrorException("More then one projects found");
-                                }
-                                return response.getProjects(0);
-                            },
-                            executor);
-        } catch (Exception e) {
-            return InternalFuture.failedStage(e);
-        }
+  public InternalFuture<Project> getProjectById(String projectId) {
+    try {
+      var validateArgumentFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (projectId.isEmpty()) {
+                  throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
+                }
+              },
+              executor);
+      return validateArgumentFuture
+          .thenCompose(
+              unused ->
+                  findProjects(
+                      FindProjects.newBuilder()
+                          .addProjectIds(projectId)
+                          .setPageLimit(1)
+                          .setPageNumber(1)
+                          .build()),
+              executor)
+          .thenApply(
+              response -> {
+                if (response.getProjectsList().isEmpty()) {
+                  throw new NotFoundException("Project not found for given Id");
+                } else if (response.getProjectsCount() > 1) {
+                  throw new InternalErrorException("More then one projects found");
+                }
+                return response.getProjects(0);
+              },
+              executor);
+    } catch (Exception e) {
+      return InternalFuture.failedStage(e);
     }
+  }
 
-    public InternalFuture<Project> updateProjectDescription(UpdateProjectDescription request) {
-        InternalFuture<Void> validateParametersFuture =
-                InternalFuture.runAsync(() -> {
-                    // Request Parameter Validation
-                    if (request.getId().isEmpty()) {
-                        var errorMessage = "Project ID is not found in UpdateProjectDescription request";
-                        throw new InvalidArgumentException(errorMessage);
-                    }
-                }, executor);
+  public InternalFuture<Project> updateProjectDescription(UpdateProjectDescription request) {
+    InternalFuture<Void> validateParametersFuture =
+        InternalFuture.runAsync(
+            () -> {
+              // Request Parameter Validation
+              if (request.getId().isEmpty()) {
+                var errorMessage = "Project ID is not found in UpdateProjectDescription request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
 
     return validateParametersFuture
         .thenCompose(
@@ -976,7 +979,7 @@ public class FutureProjectDAO {
             project ->
                 jdbi.withHandle(
                     handle -> {
-                        var now = new Date().getTime();
+                      var now = new Date().getTime();
                       handle
                           .createUpdate(
                               "update project set description = :description, date_updated = :dateUpdated, version_number=(version_number + 1) where id = :id")
@@ -984,12 +987,89 @@ public class FutureProjectDAO {
                           .bind("description", request.getDescription())
                           .bind("dateUpdated", now)
                           .execute();
-                      return project.toBuilder()
-                              .setDateUpdated(now)
+                      return project
+                          .toBuilder()
+                          .setDateUpdated(now)
                           .setDescription(request.getDescription())
                           .setVersionNumber(project.getVersionNumber() + 1L)
                           .build();
                     }),
             executor);
-    }
+  }
+
+  public InternalFuture<GetProjectByName.Response> getProjectByName(GetProjectByName request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getName().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project name is not found in GetProjectByName request");
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                FutureGrpc.ClientRequest(
+                    uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
+            executor)
+        .thenCompose(
+            userInfo -> {
+              // Get the user info from the Context
+              return getResourceItemsForWorkspace(
+                      Optional.empty(),
+                      Optional.empty(),
+                      Optional.of(request.getName()),
+                      ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                  .thenCompose(
+                      responseItem -> {
+                        if (responseItem.size() == 0) {
+                          throw new NotFoundException("Project not found");
+                        }
+
+                        String workspaceName =
+                            request.getWorkspaceName().isEmpty()
+                                ? userInfo.getVertaInfo().getUsername()
+                                : request.getWorkspaceName();
+
+                        FindProjects.Builder findProjects =
+                            FindProjects.newBuilder()
+                                .addAllProjectIds(
+                                    responseItem.stream()
+                                        .map(GetResourcesResponseItem::getResourceId)
+                                        .collect(Collectors.toList()))
+                                .setWorkspaceName(workspaceName);
+                        return findProjects(findProjects.build())
+                            .thenApply(
+                                response -> {
+                                  Project selfOwnerProject = null;
+                                  List<Project> sharedProjects = new ArrayList<>();
+
+                                  for (Project project : response.getProjectsList()) {
+                                    if (userInfo == null
+                                        || project
+                                            .getOwner()
+                                            .equals(userInfo.getVertaInfo().getUserId())) {
+                                      selfOwnerProject = project;
+                                    } else {
+                                      sharedProjects.add(project);
+                                    }
+                                  }
+
+                                  var responseBuilder = GetProjectByName.Response.newBuilder();
+                                  if (selfOwnerProject != null) {
+                                    responseBuilder.setProjectByUser(selfOwnerProject);
+                                  }
+                                  responseBuilder.addAllSharedProjects(sharedProjects);
+
+                                  return responseBuilder.build();
+                                },
+                                executor);
+                      },
+                      executor);
+            },
+            executor);
+  }
 }
