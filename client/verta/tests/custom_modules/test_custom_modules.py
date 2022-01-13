@@ -42,13 +42,21 @@ class TestCollectPipInstalledModule:
                 utils.assert_dirs_match(module, retrieved_module)
 
     @pytest.mark.parametrize(
+        "name",
+        sorted(module[1] for module in pkgutil.iter_modules()),
+    )
+    def test_module(self, name):
+        custom_modules = _DeployableEntity._custom_modules_as_artifact([name])
+        self.assert_in_custom_modules(custom_modules, name)
+
+    @pytest.mark.parametrize(
         "names",
         [
-            ["cloudpickle"],
             ["cloudpickle", "hypothesis"],
+            ["cloudpickle", "hypothesis", "pytest"],
         ],
     )
-    def test_module(self, names):
+    def test_multiple_modules(self, names):
         custom_modules = _DeployableEntity._custom_modules_as_artifact(names)
         for name in names:
             self.assert_in_custom_modules(custom_modules, name)
