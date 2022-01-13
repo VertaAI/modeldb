@@ -87,7 +87,8 @@ def installable_package(name, dir=None):
         shutil.rmtree(pkg_dir)
 
 
-# TODO: try to get this to work in a virtual environment
+# TODO: try to create and install into a virtual environment
+#       pytest-venv looks good, but need to be able to import from it in the test
 @contextlib.contextmanager
 def installed_local_package(pkg_dir, name):
     """pip install a locally-defined package.
