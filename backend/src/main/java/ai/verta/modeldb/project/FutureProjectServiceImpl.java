@@ -1,5 +1,6 @@
 package ai.verta.modeldb.project;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddProjectAttributes;
@@ -618,19 +619,93 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   public void logArtifacts(
       LogProjectArtifacts request, StreamObserver<LogProjectArtifacts.Response> responseObserver) {
     super.logArtifacts(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureProjectDAO
+              .logArtifacts(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("artifacts"),
+                              Collections.singletonMap(
+                                  "artifact_keys",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getArtifactsList().stream()
+                                              .map(Artifact::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "project artifacts added successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      LogProjectArtifacts.Response.newBuilder().setProject(updatedProject).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getArtifacts(
       GetArtifacts request, StreamObserver<GetArtifacts.Response> responseObserver) {
-    super.getArtifacts(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureProjectDAO
+              .getArtifacts(request)
+              .thenApply(
+                  artifacts ->
+                      GetArtifacts.Response.newBuilder().addAllArtifacts(artifacts).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteArtifact(
       DeleteProjectArtifact request,
       StreamObserver<DeleteProjectArtifact.Response> responseObserver) {
-    super.deleteArtifact(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureProjectDAO
+              .deleteArtifacts(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("artifacts"),
+                              Collections.singletonMap(
+                                  "artifact_keys",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getKey()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "project artifact deleted successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      DeleteProjectArtifact.Response.newBuilder()
+                          .setProject(updatedProject)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

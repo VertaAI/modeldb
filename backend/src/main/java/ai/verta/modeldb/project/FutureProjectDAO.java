@@ -7,14 +7,17 @@ import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.Pagination;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.DeleteProjectArtifact;
 import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
 import ai.verta.modeldb.FindProjects;
+import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetProjectByName;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogAttributes;
+import ai.verta.modeldb.LogProjectArtifacts;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
@@ -59,6 +62,7 @@ import ai.verta.uac.Workspace;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -1071,5 +1075,63 @@ public class FutureProjectDAO {
                       executor);
             },
             executor);
+  }
+
+  public InternalFuture<Void> logArtifacts(LogProjectArtifacts request) {
+    final var projectId = request.getId();
+    final var artifacts = request.getArtifactsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> artifactHandler.logArtifacts(handle, projectId, artifacts, false)),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(projectId), executor);
+  }
+
+  public InternalFuture<List<Artifact>> getArtifacts(GetArtifacts request) {
+    final var projectId = request.getId();
+    final var key = request.getKey();
+    Optional<String> maybeKey = key.isEmpty() ? Optional.empty() : Optional.of(key);
+
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                throw new InvalidArgumentException("Project ID not found in GetArtifacts request");
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> artifactHandler.getArtifacts(projectId, maybeKey), executor)
+        .thenApply(
+            artifacts ->
+                artifacts.stream()
+                    .sorted(Comparator.comparing(Artifact::getKey))
+                    .collect(Collectors.toList()),
+            executor);
+  }
+
+  public InternalFuture<Void> deleteArtifacts(DeleteProjectArtifact request) {
+    final var projectId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    final var keys =
+        request.getKey().isEmpty()
+            ? new ArrayList<String>()
+            : Collections.singletonList(request.getKey());
+    Optional<List<String>> optionalKeys = keys.isEmpty() ? Optional.empty() : Optional.of(keys);
+
+    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> artifactHandler.deleteArtifacts(projectId, optionalKeys), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
 }
