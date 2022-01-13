@@ -111,41 +111,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
         ModelDBServiceResourceTypes.PROJECT.name(), eventType, workspaceId, eventMetadata);
   }
 
-  private InternalFuture<Project> getProjectById(String projectId) {
-    try {
-      var validateArgumentFuture =
-          InternalFuture.runAsync(
-              () -> {
-                if (projectId.isEmpty()) {
-                  throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
-                }
-              },
-              executor);
-      return validateArgumentFuture
-          .thenCompose(
-              unused ->
-                  futureProjectDAO.findProjects(
-                      FindProjects.newBuilder()
-                          .addProjectIds(projectId)
-                          .setPageLimit(1)
-                          .setPageNumber(1)
-                          .build()),
-              executor)
-          .thenApply(
-              response -> {
-                if (response.getProjectsList().isEmpty()) {
-                  throw new NotFoundException("Project not found for given Id");
-                } else if (response.getProjectsCount() > 1) {
-                  throw new InternalErrorException("More then one projects found");
-                }
-                return response.getProjects(0);
-              },
-              executor);
-    } catch (Exception e) {
-      return InternalFuture.failedStage(e);
-    }
-  }
-
   @Override
   public void createProject(
       CreateProject request, StreamObserver<CreateProject.Response> responseObserver) {
@@ -156,7 +121,29 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   public void updateProjectDescription(
       UpdateProjectDescription request,
       StreamObserver<UpdateProjectDescription.Response> responseObserver) {
-    super.updateProjectDescription(request, responseObserver);
+    try {
+      final var futureResponse =
+              futureProjectDAO
+                      .updateProjectDescription(request)
+                      .thenCompose(
+                              updatedProject ->
+                                      addEvent(
+                                              updatedProject.getId(),
+                                              updatedProject.getWorkspaceServiceId(),
+                                              UPDATE_PROJECT_EVENT_TYPE,
+                                              Optional.of("description"),
+                                              Collections.emptyMap(),
+                                              "project description updated successfully")
+                                              .thenApply(eventLoggedStatus -> updatedProject, executor),
+                              executor)
+                      .thenApply(
+                              updatedProject ->
+                                      UpdateProjectDescription.Response.newBuilder().setProject(updatedProject).build(),
+                              executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -171,7 +158,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .setId(request.getId())
                       .addAllAttributes(request.getAttributesList())
                       .build())
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject ->
                       addEvent(
@@ -208,7 +195,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var futureResponse =
           futureProjectDAO
               .updateProjectAttributes(request)
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject ->
                       addEvent(
@@ -264,7 +251,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var futureResponse =
           futureProjectDAO
               .deleteAttributes(request)
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject -> {
                     // Add succeeded event in local DB
@@ -308,7 +295,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var response =
           futureProjectDAO
               .addTags(request)
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject ->
                       addEvent(
@@ -355,7 +342,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var response =
           futureProjectDAO
               .deleteTags(request)
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject -> {
                     // Add succeeded event in local DB
@@ -401,7 +388,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .setId(request.getId())
                       .addTags(request.getTag())
                       .build())
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject ->
                       addEvent(
@@ -440,7 +427,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .addTags(request.getTag())
                       .setDeleteAll(false)
                       .build())
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject ->
                       addEvent(
@@ -531,7 +518,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       GetProjectById request, StreamObserver<GetProjectById.Response> responseObserver) {
     try {
       final var response =
-          getProjectById(request.getId())
+          futureProjectDAO.getProjectById(request.getId())
               .thenApply(
                   project -> GetProjectById.Response.newBuilder().setProject(project).build(),
                   executor);

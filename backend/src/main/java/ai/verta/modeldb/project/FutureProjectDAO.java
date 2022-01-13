@@ -19,11 +19,14 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.UpdateProjectAttributes;
+import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -56,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -915,4 +919,77 @@ public class FutureProjectDAO {
             },
             executor);
   }
+
+    public InternalFuture<Project> getProjectById(String projectId) {
+        try {
+            var validateArgumentFuture =
+                    InternalFuture.runAsync(
+                            () -> {
+                                if (projectId.isEmpty()) {
+                                    throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
+                                }
+                            },
+                            executor);
+            return validateArgumentFuture
+                    .thenCompose(
+                            unused ->
+                                    findProjects(
+                                            FindProjects.newBuilder()
+                                                    .addProjectIds(projectId)
+                                                    .setPageLimit(1)
+                                                    .setPageNumber(1)
+                                                    .build()),
+                            executor)
+                    .thenApply(
+                            response -> {
+                                if (response.getProjectsList().isEmpty()) {
+                                    throw new NotFoundException("Project not found for given Id");
+                                } else if (response.getProjectsCount() > 1) {
+                                    throw new InternalErrorException("More then one projects found");
+                                }
+                                return response.getProjects(0);
+                            },
+                            executor);
+        } catch (Exception e) {
+            return InternalFuture.failedStage(e);
+        }
+    }
+
+    public InternalFuture<Project> updateProjectDescription(UpdateProjectDescription request) {
+        InternalFuture<Void> validateParametersFuture =
+                InternalFuture.runAsync(() -> {
+                    // Request Parameter Validation
+                    if (request.getId().isEmpty()) {
+                        var errorMessage = "Project ID is not found in UpdateProjectDescription request";
+                        throw new InvalidArgumentException(errorMessage);
+                    }
+                }, executor);
+
+    return validateParametersFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(unused -> getProjectById(request.getId()), executor)
+        .thenCompose(
+            project ->
+                jdbi.withHandle(
+                    handle -> {
+                        var now = new Date().getTime();
+                      handle
+                          .createUpdate(
+                              "update project set description = :description, date_updated = :dateUpdated, version_number=(version_number + 1) where id = :id")
+                          .bind("id", project.getId())
+                          .bind("description", request.getDescription())
+                          .bind("dateUpdated", now)
+                          .execute();
+                      return project.toBuilder()
+                              .setDateUpdated(now)
+                          .setDescription(request.getDescription())
+                          .setVersionNumber(project.getVersionNumber() + 1L)
+                          .build();
+                    }),
+            executor);
+    }
 }
