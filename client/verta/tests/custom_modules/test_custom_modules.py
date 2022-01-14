@@ -46,6 +46,7 @@ class TestCollectPipInstalledModule:
         sorted(module[1] for module in pkgutil.iter_modules()),
     )
     def test_module(self, name):
+        """pip-installed module can be collected."""
         if name == "tests" or name.startswith("test_"):
             pytest.skip(
                 "pytest modifies both import mechanisms and module objects,"
@@ -63,6 +64,7 @@ class TestCollectPipInstalledModule:
         ],
     )
     def test_multiple_modules(self, names):
+        """Multiple pip-installed modules can be collected at once."""
         custom_modules = _DeployableEntity._custom_modules_as_artifact(names)
         for name in names:
             self.assert_in_custom_modules(custom_modules, name)
@@ -70,6 +72,7 @@ class TestCollectPipInstalledModule:
     @hypothesis.settings(deadline=None)
     @hypothesis.given(name=strategies.python_module_name())  # pylint: disable=no-value-for-parameter
     def test_module_and_local_dir_have_same_name(self, name, testrun_uid):
+        """If a pip-installed module and a local directory share a name, the module is collected."""
         name += testrun_uid
 
         # avoid using an existing package name
@@ -97,8 +100,8 @@ class TestCollectPipInstalledModule:
 
         """A specific case of :meth:`test_module_and_local_dir_have_same_name`.
 
-        The local package is *not* directly ``import``able because it is
-        nested one level in, but the root directory still bears its name.
+        The local directory *is* a Python package repository
+        (but not directly importable without ``cd``ing one level into it).
 
         """
         # avoid using an existing package name
