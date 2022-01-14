@@ -34,8 +34,8 @@ public class FutureJdbi {
 
   public <R, T extends Exception> InternalFuture<R> withTransactionIsolationLevel(
       HandleCallback<R, T> callback, TransactionIsolationLevel transactionIsolationLevel) {
-    SupplierWithException<R, T> supplierWithException = () -> jdbi.inTransaction(
-        transactionIsolationLevel, callback);
+    SupplierWithException<R, T> supplierWithException =
+        () -> jdbi.inTransaction(transactionIsolationLevel, callback);
     return withHandleOrTransaction(supplierWithException);
   }
 
@@ -80,15 +80,15 @@ public class FutureJdbi {
     return useHandleOrTransaction(runnableWithException);
   }
 
-  public <T extends Exception> InternalFuture<Void> useTransaction(final HandleConsumer<T>
-      consumer) {
+  public <T extends Exception> InternalFuture<Void> useTransaction(
+      final HandleConsumer<T> consumer) {
     return useTransactionIsolationLevel(consumer, TransactionIsolationLevel.SERIALIZABLE);
   }
 
   public <T extends Exception> InternalFuture<Void> useTransactionIsolationLevel(
       final HandleConsumer<T> consumer, TransactionIsolationLevel transactionIsolationLevel) {
-    RunnableWithException<T> runnableWithException = () -> jdbi.useTransaction(
-        transactionIsolationLevel, consumer);
+    RunnableWithException<T> runnableWithException =
+        () -> jdbi.useTransaction(transactionIsolationLevel, consumer);
     return useHandleOrTransaction(runnableWithException);
   }
 
