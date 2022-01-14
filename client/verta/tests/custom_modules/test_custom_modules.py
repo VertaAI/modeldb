@@ -69,7 +69,9 @@ class TestCollectPipInstalledModule:
 
     @hypothesis.settings(deadline=None)
     @hypothesis.given(name=strategies.python_module_name())  # pylint: disable=no-value-for-parameter
-    def test_module_and_local_dir_have_same_name(self, name):
+    def test_module_and_local_dir_have_same_name(self, name, testrun_uid):
+        name += testrun_uid
+
         # avoid using an existing package name
         hypothesis.assume(not CustomModules.is_importable(name))
 
@@ -90,7 +92,9 @@ class TestCollectPipInstalledModule:
 
     @hypothesis.settings(deadline=None)
     @hypothesis.given(name=strategies.python_module_name())  # pylint: disable=no-value-for-parameter
-    def test_module_and_local_pkg_have_same_name(self, name):
+    def test_module_and_local_pkg_have_same_name(self, name, testrun_uid):
+        name += testrun_uid
+
         """A specific case of :meth:`test_module_and_local_dir_have_same_name`.
 
         The local package is *not* directly ``import``able because it is
