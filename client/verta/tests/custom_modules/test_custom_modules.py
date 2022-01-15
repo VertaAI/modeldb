@@ -57,10 +57,15 @@ class TestCollectPipInstalledModule:
                 "pytest modifies both import mechanisms and module objects,"
                 " which we can't handle right now"
             )
-        if six.PY2 and (name.startswith("tensorflow_") or name == "torch"):
-            pytest.skip("takes too long")
+        if six.Py2 and name == "pytest_forked":
+            pytest.skip(
+                "pytest_forked insists on having an empty __pycache__,"
+                " which custom modules ignores, which fails our match check"
+            )
         if CustomModules.get_module_path(name) == "built-in":
             pytest.skip("built into Python; no module file to collect")
+        if six.PY2 and (name.startswith("tensorflow_") or name == "torch"):
+            pytest.skip("takes too long")
 
         custom_modules = _DeployableEntity._custom_modules_as_artifact([name])
         self.assert_in_custom_modules(custom_modules, name)
@@ -105,14 +110,14 @@ class TestCollectPipInstalledModule:
     @hypothesis.settings(deadline=None)
     @hypothesis.given(name=strategies.python_module_name())  # pylint: disable=no-value-for-parameter
     def test_module_and_local_pkg_have_same_name(self, name, testrun_uid):
-        name += testrun_uid
-
         """A specific case of :meth:`test_module_and_local_dir_have_same_name`.
 
         The local directory *is* a Python package repository
         (but not directly importable without ``cd``ing one level into it).
 
         """
+        name += testrun_uid
+
         # avoid using an existing package name
         hypothesis.assume(not CustomModules.is_importable(name))
 
