@@ -62,7 +62,7 @@ class TestCollectPipInstalledModule:
                 "pytest_forked insists on having an empty __pycache__,"
                 " which custom modules ignores, which fails our match check"
             )
-        if CustomModules.get_module_path(name) == "built-in":
+        if CustomModules.get_module_path(name) in ("built-in", "frozen"):
             pytest.skip("built into Python; no module file to collect")
         if six.PY2 and (name.startswith("tensorflow_") or name == "torch"):
             pytest.skip("takes too long")
