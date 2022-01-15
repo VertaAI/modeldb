@@ -6,6 +6,7 @@ import re
 import string
 import warnings
 
+import hypothesis
 import hypothesis.strategies as st
 from verta._internal_utils.time_utils import duration_millis
 
@@ -30,8 +31,13 @@ json_strategy = st.recursive(
 
 
 @st.composite
-def filepath(draw):
+def filepath(draw, allow_parent_dir_segments=False):
     """A valid filepath. Does **not** create the file.
+
+    Parameters
+    ----------
+    allow_parent_dir_segments : bool, default False
+        Whether to allow paths that contain `".."` segments.
 
     Returns
     -------
@@ -44,6 +50,9 @@ def filepath(draw):
     num_segments = draw(st.integers(min_value=1, max_value=6))
 
     segments = [draw(st.text(legal_chars, min_size=1)) for _ in range(num_segments)]
+    if not allow_parent_dir_segments:
+        hypothesis.assume(".." not in segments)
+
     return os.path.join(*segments)
 
 
