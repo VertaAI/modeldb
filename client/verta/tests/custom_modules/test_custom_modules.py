@@ -8,6 +8,7 @@ import zipfile
 
 import hypothesis
 import pytest
+import six
 
 from verta.tracking.entities._deployable_entity import _DeployableEntity
 from verta._internal_utils.custom_modules import CustomModules
@@ -47,11 +48,19 @@ class TestCollectPipInstalledModule:
     )
     def test_module(self, name):
         """pip-installed module can be collected."""
-        if name == "tests" or name.startswith("test_"):
+        if (
+            name == "tests"
+            or name == "conftest"
+            or name.startswith("test_")
+        ):
             pytest.skip(
                 "pytest modifies both import mechanisms and module objects,"
                 " which we can't handle right now"
             )
+        if six.PY2 and (name.startswith("tensorflow_") or name == "torch"):
+            pytest.skip("takes too long")
+        if CustomModules.get_module_path(name) == "built-in":
+            pytest.skip("built into Python; no module file to collect")
 
         custom_modules = _DeployableEntity._custom_modules_as_artifact([name])
         self.assert_in_custom_modules(custom_modules, name)
