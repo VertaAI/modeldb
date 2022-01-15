@@ -57,7 +57,7 @@ class TestCollectPipInstalledModule:
                 "pytest modifies both import mechanisms and module objects,"
                 " which we can't handle right now"
             )
-        if six.Py2 and name == "pytest_forked":
+        if six.PY2 and name == "pytest_forked":
             pytest.skip(
                 "pytest_forked insists on having an empty __pycache__,"
                 " which custom modules ignores, which fails our match check"
