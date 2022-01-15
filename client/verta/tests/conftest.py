@@ -23,6 +23,7 @@ from verta.environment import Python
 
 import hypothesis
 import pytest
+pytest.register_assert_rewrite("tests.utils")
 from . import constants, utils
 from . import clean_test_accounts
 from .env_fixtures import (
