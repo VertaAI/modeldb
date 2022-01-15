@@ -104,7 +104,9 @@ def installed_local_package(pkg_dir, name):
     While packages are uninstalled on cleanup, their dependencies might not be.
 
     """
-    subprocess.check_call([sys.executable, "-m", "pip", "install", pkg_dir])
+    subprocess.check_call(
+        [sys.executable, "-m", "pip", "install", "-qq", pkg_dir],
+    )
     assert CustomModules.is_importable(name)  # verify installation
 
     try:
