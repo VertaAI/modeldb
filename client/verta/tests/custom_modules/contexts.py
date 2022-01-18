@@ -67,7 +67,9 @@ def installable_package(name, dir=None):
                 version="0.0.1",
                 packages=find_packages(),
             )
-            """.format(name)
+            """.format(
+                name,
+            ),
         )
         f.write(content)
     os.mkdir(code_dir)
@@ -105,7 +107,15 @@ def installed_local_package(pkg_dir, name):
 
     """
     subprocess.check_call(
-        [sys.executable, "-m", "pip", "install", "-qq", pkg_dir],
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "--no-python-version-warning",
+            "install",
+            "-qq",
+            pkg_dir,
+        ],
     )
     assert CustomModules.is_importable(name)  # verify installation
 
@@ -113,5 +123,13 @@ def installed_local_package(pkg_dir, name):
         yield
     finally:
         subprocess.check_call(
-            [sys.executable, "-m", "pip", "uninstall", "-y", name],
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "--no-python-version-warning",
+                "uninstall",
+                "-y",
+                name,
+            ],
         )
