@@ -48,11 +48,7 @@ class TestCollectPipInstalledModule:
     )
     def test_module(self, name):
         """pip-installed module can be collected."""
-        if (
-            name == "tests"
-            or name == "conftest"
-            or name.startswith("test_")
-        ):
+        if name == "tests" or name == "conftest" or name.startswith("test_"):
             pytest.skip(
                 "pytest modifies both import mechanisms and module objects,"
                 " which we can't handle right now"
@@ -84,7 +80,9 @@ class TestCollectPipInstalledModule:
             self.assert_in_custom_modules(custom_modules, name)
 
     @hypothesis.settings(deadline=None)
-    @hypothesis.given(name=strategies.python_module_name())  # pylint: disable=no-value-for-parameter
+    @hypothesis.given(
+        name=strategies.python_module_name(),  # pylint: disable=no-value-for-parameter
+    )
     def test_module_and_local_dir_have_same_name(self, name, worker_id):
         """If a pip-installed module and a local directory share a name, the module is collected."""
         name += worker_id
@@ -104,11 +102,15 @@ class TestCollectPipInstalledModule:
                 with contexts.installable_package(name, dir=tempd) as pkg_dir:
                     with contexts.installed_local_package(pkg_dir, name):
                         # collect and validate custom modules
-                        custom_modules = _DeployableEntity._custom_modules_as_artifact([name])
+                        custom_modules = _DeployableEntity._custom_modules_as_artifact(
+                            [name],
+                        )
                         self.assert_in_custom_modules(custom_modules, name)
 
     @hypothesis.settings(deadline=None)
-    @hypothesis.given(name=strategies.python_module_name())  # pylint: disable=no-value-for-parameter
+    @hypothesis.given(
+        name=strategies.python_module_name(),  # pylint: disable=no-value-for-parameter
+    )
     def test_module_and_local_pkg_have_same_name(self, name, worker_id):
         """A specific case of :meth:`test_module_and_local_dir_have_same_name`.
 
@@ -126,5 +128,7 @@ class TestCollectPipInstalledModule:
             with contexts.installable_package(name, dir=".") as pkg_dir:
                 with contexts.installed_local_package(pkg_dir, name):
                     # collect and validate custom modules
-                    custom_modules = _DeployableEntity._custom_modules_as_artifact([name])
+                    custom_modules = _DeployableEntity._custom_modules_as_artifact(
+                        [name],
+                    )
                     self.assert_in_custom_modules(custom_modules, name)
