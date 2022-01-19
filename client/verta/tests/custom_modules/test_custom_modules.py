@@ -79,13 +79,10 @@ class TestCollectPipInstalledModule:
         for name in names:
             self.assert_in_custom_modules(custom_modules, name)
 
-    @hypothesis.settings(deadline=None)
-    @hypothesis.given(
-        name=strategies.python_module_name(),  # pylint: disable=no-value-for-parameter
-    )
-    def test_module_and_local_dir_have_same_name(self, name, worker_id):
+    def test_module_and_local_dir_have_same_name(self, worker_id):
         """If a pip-installed module and a local directory share a name, the module is collected."""
-        name += worker_id
+        name = worker_id
+        del worker_id
 
         # avoid using an existing package name
         hypothesis.assume(not CustomModules.is_importable(name))
@@ -107,18 +104,15 @@ class TestCollectPipInstalledModule:
                         )
                         self.assert_in_custom_modules(custom_modules, name)
 
-    @hypothesis.settings(deadline=None)
-    @hypothesis.given(
-        name=strategies.python_module_name(),  # pylint: disable=no-value-for-parameter
-    )
-    def test_module_and_local_pkg_have_same_name(self, name, worker_id):
+    def test_module_and_local_pkg_have_same_name(self, worker_id):
         """A specific case of :meth:`test_module_and_local_dir_have_same_name`.
 
         The local directory *is* a Python package repository
         (but not directly importable without ``cd``ing one level into it).
 
         """
-        name += worker_id
+        name = worker_id
+        del worker_id
 
         # avoid using an existing package name
         hypothesis.assume(not CustomModules.is_importable(name))

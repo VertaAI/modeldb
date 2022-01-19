@@ -57,14 +57,6 @@ def filepath(draw, allow_parent_dir_segments=False):
 
 
 @st.composite
-def python_module_name(draw):
-    # intersection of package and module name requirements
-    pattern = r"[A-Z]|[A-Z][A-Z0-9_]*[A-Z0-9]"
-    regex = re.compile(pattern, flags=re.IGNORECASE)
-    return draw(st.from_regex(regex, fullmatch=True))
-
-
-@st.composite
 def env_vars(draw):
     """For use as Environment versioning's `env_var` parameter.
 
