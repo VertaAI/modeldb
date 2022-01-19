@@ -23,6 +23,7 @@ from verta.environment import Python
 
 import hypothesis
 import pytest
+pytest.register_assert_rewrite("tests.utils")
 from . import constants, utils
 from . import clean_test_accounts
 from .env_fixtures import (
@@ -332,20 +333,11 @@ def random_data():
             return data
 
 
-@pytest.fixture(scope="session")
-def tempdir_root():
-    return os.environ.get("TEMPDIR_ROOT")
-
-
 @pytest.fixture
-def in_tempdir(tempdir_root):
+def in_tempdir():
     """Moves test to execute inside a temporary directory."""
-    dirpath = tempfile.mkdtemp(dir=tempdir_root)
-    try:
-        with utils.chdir(dirpath):
-            yield dirpath
-    finally:
-        shutil.rmtree(dirpath)
+    with utils.chtempdir() as dirpath:
+        yield dirpath
 
 
 @pytest.fixture

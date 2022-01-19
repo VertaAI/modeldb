@@ -48,7 +48,7 @@ class TestLogModel:
         custom_modules_dir = "."
 
         deployable_entity.log_model(
-            model_for_deployment['model'],
+            model_for_deployment["model"],
             custom_modules=["."],
         )
 
@@ -57,13 +57,19 @@ class TestLogModel:
             # skip venvs
             #     This logic is from _utils.find_filepaths().
             exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-            dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+            dirnames[:] = [
+                dirname
+                for dirname in dirnames
+                if not glob.glob(exec_path_glob.format(dirname))
+            ]
 
             custom_module_filenames.update(map(os.path.basename, filenames))
 
         custom_modules = deployable_entity.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
-        with zipfile.ZipFile(custom_modules, 'r') as zipf:
-            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+        with zipfile.ZipFile(custom_modules, "r") as zipf:
+            assert custom_module_filenames == set(
+                map(os.path.basename, zipf.namelist())
+            )
 
     def test_no_custom_modules(self, deployable_entity, model_for_deployment):
         deployable_entity.log_model(model_for_deployment['model'])
@@ -520,33 +526,6 @@ class TestDeployability:
             downloaded_model = pickle.load(f)
 
         assert downloaded_model.get_params() == model.get_params()
-
-    def test_log_model_with_custom_modules(self, deployable_entity, model_for_deployment):
-        custom_modules_dir = "."
-
-        deployable_entity.log_model(
-            model_for_deployment["model"],
-            custom_modules=["."],
-        )
-
-        custom_module_filenames = {"__init__.py", "_verta_config.py"}
-        for parent_dir, dirnames, filenames in os.walk(custom_modules_dir):
-            # skip venvs
-            #     This logic is from _utils.find_filepaths().
-            exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-            dirnames[:] = [
-                dirname
-                for dirname in dirnames
-                if not glob.glob(exec_path_glob.format(dirname))
-            ]
-
-            custom_module_filenames.update(map(os.path.basename, filenames))
-
-        custom_modules = deployable_entity.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
-        with zipfile.ZipFile(custom_modules, "r") as zipf:
-            assert custom_module_filenames == set(
-                map(os.path.basename, zipf.namelist())
-            )
 
     @pytest.mark.deployment
     def test_download_docker_context(
