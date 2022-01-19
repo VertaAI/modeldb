@@ -16,6 +16,9 @@ from verta._protos.public.uac import Organization_pb2 as _OrganizationService
 from hypothesis import strategies as st
 
 
+# Jenkins workers had been getting lost during artifact tests;
+# we added this env var to ensure files are written to disk
+# (and not, say, into RAM)
 TEMPDIR_ROOT = os.environ.get("TEMPDIR_ROOT")
 
 
