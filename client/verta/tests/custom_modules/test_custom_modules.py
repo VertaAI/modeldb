@@ -80,7 +80,14 @@ class TestPipInstalledModule:
             self.assert_in_custom_modules(custom_modules, name)
 
     def test_module_and_local_dir_have_same_name(self, worker_id):
-        """If a pip-installed module and a local directory share a name, the module is collected."""
+        """If a pip-installed module and a local directory share a name, the module is collected.
+
+        If a user can import a package "foo" in their environment, and uses
+        custom modules to find "foo", we will prefer that package over a
+        directory/file "foo" in the cwd. Otherwise, it is very difficult or
+        impossible to force the installed package.
+
+        """
         name = worker_id
 
         # avoid using an existing package name
@@ -106,8 +113,12 @@ class TestPipInstalledModule:
     def test_module_and_local_pkg_have_same_name(self, worker_id):
         """A specific case of :meth:`test_module_and_local_dir_have_same_name`.
 
-        The local directory *is* a Python package repository
-        (but not directly importable without ``cd``ing one level into it).
+        The local directory *is* a Python package repository (but not directly
+        importable without ``cd``ing one level into it).
+
+        A user may have a monolithic project with model management scripts
+        alongside Python package directories (that may *also* be installed
+        into the environment).
 
         """
         name = worker_id
