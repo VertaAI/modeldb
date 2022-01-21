@@ -133,3 +133,7 @@ def installed_local_package(pkg_dir, name):
                 name,
             ],
         )
+
+        # delete cached module to disallow subsequent imports
+        if name in sys.modules:
+            del sys.modules[name]

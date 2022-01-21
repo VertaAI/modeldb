@@ -13,11 +13,11 @@ import six
 from verta.tracking.entities._deployable_entity import _DeployableEntity
 from verta._internal_utils.custom_modules import CustomModules
 
-from .. import strategies, utils
+from .. import utils
 from . import contexts
 
 
-class TestCollectPipInstalledModule:
+class TestPipInstalledModule:
     @staticmethod
     def assert_in_custom_modules(custom_modules, module_name):
         module = CustomModules.get_module_path(module_name)
@@ -82,7 +82,6 @@ class TestCollectPipInstalledModule:
     def test_module_and_local_dir_have_same_name(self, worker_id):
         """If a pip-installed module and a local directory share a name, the module is collected."""
         name = worker_id
-        del worker_id
 
         # avoid using an existing package name
         hypothesis.assume(not CustomModules.is_importable(name))
@@ -112,7 +111,6 @@ class TestCollectPipInstalledModule:
 
         """
         name = worker_id
-        del worker_id
 
         # avoid using an existing package name
         hypothesis.assume(not CustomModules.is_importable(name))
