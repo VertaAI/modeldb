@@ -42,8 +42,8 @@ class TestPipInstalledModule:
                     assert Model().predict("") == name  # sanity check
 
                     deployable_entity.log_model(Model, custom_modules=[name])
-                    deployable_entity.log_environment(Python([]))
+        deployable_entity.log_environment(Python([]))
 
-                    endpoint.update(deployable_entity, wait=True)
+        endpoint.update(deployable_entity, wait=True)
 
-                    assert endpoint.get_deployed_model().predict("") == name
+        assert endpoint.get_deployed_model().predict("") == name
