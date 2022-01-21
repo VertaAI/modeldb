@@ -17,10 +17,7 @@ class CustomModules(object):
         bool
 
         """
-        try:
-            return True if pkgutil.find_loader(module_name) else False
-        except ImportError:
-            return False
+        return True if pkgutil.find_loader(module_name) else False
 
     @staticmethod
     def get_module_path(module_name):

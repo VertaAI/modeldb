@@ -20,7 +20,6 @@ from verta._internal_utils import (
     _histogram_utils,
     _utils,
 )
-from verta._internal_utils.custom_modules import CustomModules
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta.environment import _Environment
 
@@ -474,14 +473,14 @@ class _DeployableEntity(_ModelDBEntity):
             new_paths = []
             for p in paths:
                 abspath = os.path.abspath(os.path.expanduser(p))
-                if CustomModules.is_importable(p):
-                    mod_path = CustomModules.get_module_path(p)
-                    new_paths.append(mod_path)
-                    forced_local_sys_paths.append(os.path.dirname(mod_path))
+                if os.path.exists(abspath):
+                    new_paths.append(abspath)
                 else:
-                    if os.path.exists(abspath):
-                        new_paths.append(abspath)
-                    else:
+                    try:
+                        mod = importlib.import_module(p)
+                        new_paths.extend(mod.__path__)
+                        forced_local_sys_paths.extend(map(os.path.dirname, mod.__path__))
+                    except ImportError:
                         raise ValueError("custom module {} does not correspond to an existing folder or module".format(p))
 
             paths = new_paths
