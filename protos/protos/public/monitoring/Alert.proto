@@ -10,7 +10,7 @@ import "google/protobuf/struct.proto";
 
 import "common/CommonService.proto";
 
-import "monitoring/Summary.proto";
+import "monitoring/MonitoredEntity.proto";
 
 /************************
  * Notification channel *
@@ -114,7 +114,28 @@ message AlertStatusEnum {
     }
 }
 
+message EvaluationFrequencyEnum {
+    enum EvaluationFrequency {
+        UNKNOWN = 0;
+        FIVE_MINUTES = 1;
+        HOUR = 2;
+        DAY = 3;
+    }
+}
+
+message AggregationWindowEnum {
+    enum AggregationWindow {
+        UNKNOWN = 0;
+        FIVE_MINUTES = 1;
+        HOUR = 2;
+        DAY = 3;
+    }
+}
+
 message Alert {
+    reserved 8; // removed
+    reserved 10; // removed
+
     uint64 id = 1;
     string name = 2; // Names are unique within a monitored entity
     uint64 monitored_entity_id = 3;
@@ -124,21 +145,10 @@ message Alert {
     // Add some robustness in case the alert isn't evaluated in a while
     uint64 last_evaluated_at_millis = 6;
 
-    // We're explicitly not adding the frequency evaluation period as it's not super relevant for the batch case, as long as it's "fast"
-    // We'll revisit this later for live
-
     // Use a map instead of a list to represent that this is a set
     map<uint64,bool> notification_channels = 7;
-
-    // Base for finding samples to be evaluated. The time will be the only field changing here
-    // If the base defines an aggregation, the alert is an aggregate alert.
-    FindSummarySampleRequest sample_find_base = 8;
-
     // Current status of this alert
     AlertStatusEnum.AlertStatus status = 9;
-
-    // If the alert is triggering right now, then this contains the list of sample ids that are making it trigger
-    repeated uint64 violating_summary_sample_ids = 10;
 
     // Information about the alerter that should be used to evaluate this alert
     AlerterTypeEnum.AlerterType alerter_type = 11;
@@ -148,10 +158,17 @@ message Alert {
         AlertRange alerter_range = 14;
     }
     uint64 version_number = 15;
+
+    string feature = 16;
+    AggregationWindowEnum.AggregationWindow aggregation_window = 18;
+    EvaluationFrequencyEnum.EvaluationFrequency evaluation_frequency = 19;
+    string aggregation_type = 20;
+    string aggregation_algorithm = 21;
+    bool enabled = 22;
 }
 
 message AlertFixed {
-    // Alert is fired if summary sample is $operator $threshold
+    // Alert is fired if value is $operator $threshold
     float threshold = 1;
     common.OperatorEnum.Operator operator = 2; // Default = GTE
 }
@@ -159,16 +176,15 @@ message AlertFixed {
 message AlertRange {
     float lower_bound = 1;
     float upper_bound = 2;
-    bool alert_if_outside_range = 3; // if true, alert when sample value is outside the range.  If false, alert when sample value is inside the range.
+    bool alert_if_outside_range = 3; // if true, alert when value is outside the range.  If false, alert when value is inside the range.
 }
 
 message AlertReference {
-    // Alert is fired if summary sample is $operator $threshold
+    reserved 2;
+    // Alert is fired if value $operator $threshold
     float threshold = 1;
-    uint64 reference_sample_id = 2;
     common.OperatorEnum.Operator operator = 3; // Default = GTE
-    // TODO: add some information about the comparison type
-    // For now, assume it's the default defined in the data format
+    // TODO: define the reference for comparison
 }
 
 message CreateAlertRequest {
@@ -210,17 +226,16 @@ message DeleteAlertRequest {
     repeated uint64 ids = 1;
 }
 
-// Allow the alerter to trigger an alert (in which case it shares what is the sample that failed)
-// or change the status (most likely to OK if was triggering before)
+// Allow the alerter to trigger an alert or change the status (most likely to OK if was triggering before)
 // We provide this in addition to UpdateAlertRequest so that we can do the small change to this field atomically
 message UpdateAlertStatusRequest {
     reserved 4; // Field removed
+    reserved 5; // Field removed
+    reserved 6; // Field removed
+    reserved 7; // Field removed
     uint64 alert_id = 1;
     uint64 event_time_millis = 2; // Optional field that the alerter can set to provide past events (backfill)
     AlertStatusEnum.AlertStatus status = 3;
-    repeated uint64 alerting_sample_ids = 5; // If status is ALERTING, adds these sample IDs to the violating samples
-    repeated uint64 ok_sample_ids = 6; // If status is OK, clears these sample IDs from the violating samples
-    bool clear_alerting_sample_ids = 7; // If status is OK clears all samples IDs from the violating samples
 }
 
 // History of the status of the alerts
@@ -236,9 +251,10 @@ message ListAlertHistoryRequest {
 message ListAlertHistoryItem {
     uint64 event_time_millis = 1;
     AlertStatusEnum.AlertStatus status = 2;
-    repeated uint64 violating_summary_sample_ids = 3;
-    // Optional. Doesn't need to be output on the response
+    reserved 3; // Removed
+    // Optional. ID of this item. Doesn't need to be output on the response
     string event_id = 4;
+    Alert alert = 5; // Deep copy of the original alert to preserve history
 }
 
 service AlertService {
