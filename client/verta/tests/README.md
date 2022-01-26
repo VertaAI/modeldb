@@ -69,13 +69,13 @@ bases/test_deployable_entity.py::TestCreateArtifactMsg::test_with_ext PASSED    
 `-rfE` outputs a summary (`r`) when tests are complete, listing failures (`f`) and errors (`E`):
 
 ```bash
-============================= short test summary info ==============================
-FAILED monitoring/alerts/test_entities.py::TestAlert::test_update_last_evaluated_at
+================================== short test summary info ===================================
+FAILED versioning/environment/test_environment.py::TestEnvironmentVariables::test_empty[None]
 ```
 
 ## Writing tests
 
-Tests are loosely organized by files and classes of related functionality. See [`versioning/`](https://github.com/VertaAI/modeldb/tree/master/client/verta/tests/versioning) or [`monitoring/alerts/`](https://github.com/VertaAI/modeldb/tree/master/client/verta/tests/monitoring/alerts) for decent examples.
+Tests are loosely organized by files and classes of related functionality. See [`versioning/`](https://github.com/VertaAI/modeldb/tree/main/client/verta/tests/versioning) or [`registry/`](https://github.com/VertaAI/modeldb/tree/main/client/verta/tests/registry) for decent examples.
 
 Note that for CLI tests, `click` provides [its own testing utilities](https://click.palletsprojects.com/en/7.x/testing/). See [`test_cli.py`](test_cli.py) for examples.
 
