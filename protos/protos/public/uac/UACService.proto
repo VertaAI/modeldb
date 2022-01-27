@@ -91,9 +91,14 @@ message UserInfo {
     IdServiceProviderEnum.IdServiceProvider id_service_provider = 6;
     repeated string roles = 7;
     string image_url = 8;
-    string dev_key = 9;
     VertaUserInfo verta_info = 10;
-    string secondary_dev_key = 11;
+    bool has_primary_dev_key = 12;
+    bool has_secondary_dev_key = 13;
+}
+
+message UserWithDevKey {
+    string dev_key = 1;
+    UserInfo user = 2;
 }
 
 message CreateUser {
@@ -161,7 +166,7 @@ service UACService {
     };
 
     // adds new user developer key
-    rpc addDevKeyForUser(ChangeDevKeyForUser) returns (UserInfo) {
+    rpc addDevKeyForUser(ChangeDevKeyForUser) returns (UserWithDevKey) {
         option (google.api.http) = {
             post: "/v1/uac/addDevKeyForUser"
             body: "*"
