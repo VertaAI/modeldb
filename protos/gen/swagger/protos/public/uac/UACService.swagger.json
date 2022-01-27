@@ -52,7 +52,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacUserInfo"
+              "$ref": "#/definitions/uacUserWithDevKey"
             }
           },
           "default": {
@@ -671,14 +671,27 @@
         "image_url": {
           "type": "string"
         },
-        "dev_key": {
-          "type": "string"
-        },
         "verta_info": {
           "$ref": "#/definitions/uacVertaUserInfo"
         },
-        "secondary_dev_key": {
+        "has_primary_dev_key": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "has_secondary_dev_key": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacUserWithDevKey": {
+      "type": "object",
+      "properties": {
+        "dev_key": {
           "type": "string"
+        },
+        "user": {
+          "$ref": "#/definitions/uacUserInfo"
         }
       }
     },

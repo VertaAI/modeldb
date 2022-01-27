@@ -37,7 +37,7 @@ class UACServiceStub(object):
     self.addDevKeyForUser = channel.unary_unary(
         '/ai.verta.uac.UACService/addDevKeyForUser',
         request_serializer=uac_dot_UACService__pb2.ChangeDevKeyForUser.SerializeToString,
-        response_deserializer=uac_dot_UACService__pb2.UserInfo.FromString,
+        response_deserializer=uac_dot_UACService__pb2.UserWithDevKey.FromString,
         )
     self.deletePrimaryDevKeyForUser = channel.unary_unary(
         '/ai.verta.uac.UACService/deletePrimaryDevKeyForUser',
@@ -202,7 +202,7 @@ def add_UACServiceServicer_to_server(servicer, server):
       'addDevKeyForUser': grpc.unary_unary_rpc_method_handler(
           servicer.addDevKeyForUser,
           request_deserializer=uac_dot_UACService__pb2.ChangeDevKeyForUser.FromString,
-          response_serializer=uac_dot_UACService__pb2.UserInfo.SerializeToString,
+          response_serializer=uac_dot_UACService__pb2.UserWithDevKey.SerializeToString,
       ),
       'deletePrimaryDevKeyForUser': grpc.unary_unary_rpc_method_handler(
           servicer.deletePrimaryDevKeyForUser,

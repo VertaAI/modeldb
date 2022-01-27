@@ -2171,14 +2171,16 @@
         "image_url": {
           "type": "string"
         },
-        "dev_key": {
-          "type": "string"
-        },
         "verta_info": {
           "$ref": "#/definitions/uacVertaUserInfo"
         },
-        "secondary_dev_key": {
-          "type": "string"
+        "has_primary_dev_key": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "has_secondary_dev_key": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
