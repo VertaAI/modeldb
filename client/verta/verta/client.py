@@ -49,7 +49,6 @@ from .endpoint import Endpoint
 from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
-from .monitoring.client import Client as MonitoringClient
 
 class Client(object):
     """
@@ -99,8 +98,6 @@ class Client(object):
     debug : bool
         Whether to print extra verbose information to aid in debugging. Changes to this value propagate
         to any objects that are/were created from this client.
-    monitoring : :class:`verta.monitoring.client.Client`
-        Monitoring sub-client
     proj : :class:`~verta.tracking.entities.Project` or None
         Currently active project.
     projects : :class:`~verta.tracking.entities.Projects`
@@ -206,10 +203,6 @@ class Client(object):
     @debug.setter
     def debug(self, value):
         self._conf.debug = value
-
-    @property
-    def monitoring(self):
-        return MonitoringClient(self)
 
     @property
     def projects(self):
