@@ -101,6 +101,12 @@ message UserWithDevKey {
     UserInfo user = 2;
 }
 
+message UserWithDevKeyCreate {
+    string dev_key = 1;
+    UserInfo user = 2;
+    string password = 3; // If empty, create one.
+}
+
 message CreateUser {
     UserInfo info = 1;
     string password = 2; // If empty, create one.
