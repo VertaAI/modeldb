@@ -132,10 +132,3 @@ cron_job:
 populateConnectionsBasedOnPrivileges: false
 disabled_audits: true
 jdbi_retry_time: 100 # Time in ms
-
-trial:
-  enable: true
-  restrictions:
-    max_artifact_size_MB: #Integer value
-    max_artifact_per_run: #Integer value
-    max_experiment_run_per_workspace: #Integer value

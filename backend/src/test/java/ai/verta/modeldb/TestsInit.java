@@ -88,9 +88,7 @@ public class TestsInit {
     services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
     authService = services.authService;
     // Initialize data access
-    daos =
-        DAOSet.fromServices(
-            services, testConfig.getJdbi(), handleExecutor, testConfig, testConfig.trial);
+    daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
     App.migrate(testConfig.getDatabase(), testConfig.migrations);
 
     App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
