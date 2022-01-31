@@ -5,7 +5,7 @@ from verta.endpoint.update import DirectUpdateStrategy
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
-
+@pytest.mark.deployment
 @pytest.mark.parametrize("data, strategy", [(3, DirectUpdateStrategy()), (64, None)])
 def test_download_endpoint_manifest(client, data, strategy, in_tempdir):
     resources = Resources(cpu=data)
@@ -35,6 +35,7 @@ def test_cpu_milli_negative_type(data):
         Resources(cpu=data)
 
 
+@pytest.mark.deployment
 @pytest.mark.parametrize("data", ['128974848', '129e6', '129M', '123Mi'])
 def test_memory(client, data, in_tempdir):
     resources = Resources(memory=data)

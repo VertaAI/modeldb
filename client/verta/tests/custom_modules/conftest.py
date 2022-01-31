@@ -11,9 +11,9 @@ from .. import utils
 
 
 @pytest.fixture(scope="class")
-def in_fake_venv(tempdir_root):
+def in_fake_venv():
     """Move test to execute inside a mocked, empty virtual environment."""
-    dirpath = tempfile.mkdtemp(dir=tempdir_root)
+    dirpath = tempfile.mkdtemp(dir=utils.TEMPDIR_ROOT)
 
     # empty site-packages/
     os.makedirs(os.path.join(dirpath, constants.LIB_SITE_PACKAGES))

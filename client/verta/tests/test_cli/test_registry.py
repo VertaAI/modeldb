@@ -207,6 +207,7 @@ class TestCreate:
         created_entities.append(model)
         assert model.workspace == organization.name
 
+    @pytest.mark.deployment
     def test_create_version_with_custom_modules(self, client, registered_model, created_entities):
         torch = pytest.importorskip("torch")
         np = pytest.importorskip("numpy")

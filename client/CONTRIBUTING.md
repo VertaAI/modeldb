@@ -7,9 +7,9 @@ From the root directory of the repository, run these commands:
    - for both Python 2 and Python 3, you can replace the `venv/` argument with any unique name you'd like
 1. `source venv/bin/activate` to activate the virtual environment
 1. `python -m pip install -e .` to install the client editably from source, which means `import`ing the client will load it from whichever commit of the modeldb repo you currently have checked out.
-   - alternatively, `python -m pip install -r dev-requirements.txt` to install a full suite of packages for development, testing, and documentation
+   - alternatively, `python -m pip install -r requirements-dev.txt` to install a full suite of packages for development, testing, and documentation
    - if you see `error: [Errno 13] Permission denied: 'verta.egg-info/requires.txt'`, delete the `verta.egg-info/` directory and try again
-   
+
 ## Linting
 Python doesn't have complete static nor compile-time checking, so linting is important for catching potential bugs.
 
