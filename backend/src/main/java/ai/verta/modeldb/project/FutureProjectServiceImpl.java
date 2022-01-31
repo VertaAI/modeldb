@@ -462,7 +462,12 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void verifyConnection(
       Empty request, StreamObserver<VerifyConnectionResponse> responseObserver) {
-    super.verifyConnection(request, responseObserver);
+    try {
+      final var response = futureProjectDAO.verifyConnection(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
