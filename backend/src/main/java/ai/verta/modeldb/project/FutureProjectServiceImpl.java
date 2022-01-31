@@ -552,7 +552,12 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
 
   @Override
   public void getSummary(GetSummary request, StreamObserver<GetSummary.Response> responseObserver) {
-    super.getSummary(request, responseObserver);
+    try {
+      final var response = futureProjectDAO.getSummary(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
