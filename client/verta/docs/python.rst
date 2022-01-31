@@ -29,7 +29,6 @@ Verta
         endpoint
         environment
         integrations
-        monitoring
         registry
         tracking
         utils

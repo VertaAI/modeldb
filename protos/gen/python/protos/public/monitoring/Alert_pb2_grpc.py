@@ -2,7 +2,7 @@
 import grpc
 
 from ..monitoring import Alert_pb2 as monitoring_dot_Alert__pb2
-from ..monitoring import Summary_pb2 as monitoring_dot_Summary__pb2
+from ..monitoring import MonitoredEntity_pb2 as monitoring_dot_MonitoredEntity__pb2
 
 
 class AlertServiceStub(object):
@@ -33,7 +33,7 @@ class AlertServiceStub(object):
     self.deleteNotificationChannel = channel.unary_unary(
         '/ai.verta.monitoring.AlertService/deleteNotificationChannel',
         request_serializer=monitoring_dot_Alert__pb2.DeleteNotificationChannelRequest.SerializeToString,
-        response_deserializer=monitoring_dot_Summary__pb2.Empty.FromString,
+        response_deserializer=monitoring_dot_MonitoredEntity__pb2.Empty.FromString,
         )
     self.createAlert = channel.unary_unary(
         '/ai.verta.monitoring.AlertService/createAlert',
@@ -48,7 +48,7 @@ class AlertServiceStub(object):
     self.updateAlertStatus = channel.unary_unary(
         '/ai.verta.monitoring.AlertService/updateAlertStatus',
         request_serializer=monitoring_dot_Alert__pb2.UpdateAlertStatusRequest.SerializeToString,
-        response_deserializer=monitoring_dot_Summary__pb2.Empty.FromString,
+        response_deserializer=monitoring_dot_MonitoredEntity__pb2.Empty.FromString,
         )
     self.findAlert = channel.unary_unary(
         '/ai.verta.monitoring.AlertService/findAlert',
@@ -63,7 +63,7 @@ class AlertServiceStub(object):
     self.deleteAlert = channel.unary_unary(
         '/ai.verta.monitoring.AlertService/deleteAlert',
         request_serializer=monitoring_dot_Alert__pb2.DeleteAlertRequest.SerializeToString,
-        response_deserializer=monitoring_dot_Summary__pb2.Empty.FromString,
+        response_deserializer=monitoring_dot_MonitoredEntity__pb2.Empty.FromString,
         )
 
 
@@ -162,7 +162,7 @@ def add_AlertServiceServicer_to_server(servicer, server):
       'deleteNotificationChannel': grpc.unary_unary_rpc_method_handler(
           servicer.deleteNotificationChannel,
           request_deserializer=monitoring_dot_Alert__pb2.DeleteNotificationChannelRequest.FromString,
-          response_serializer=monitoring_dot_Summary__pb2.Empty.SerializeToString,
+          response_serializer=monitoring_dot_MonitoredEntity__pb2.Empty.SerializeToString,
       ),
       'createAlert': grpc.unary_unary_rpc_method_handler(
           servicer.createAlert,
@@ -177,7 +177,7 @@ def add_AlertServiceServicer_to_server(servicer, server):
       'updateAlertStatus': grpc.unary_unary_rpc_method_handler(
           servicer.updateAlertStatus,
           request_deserializer=monitoring_dot_Alert__pb2.UpdateAlertStatusRequest.FromString,
-          response_serializer=monitoring_dot_Summary__pb2.Empty.SerializeToString,
+          response_serializer=monitoring_dot_MonitoredEntity__pb2.Empty.SerializeToString,
       ),
       'findAlert': grpc.unary_unary_rpc_method_handler(
           servicer.findAlert,
@@ -192,7 +192,7 @@ def add_AlertServiceServicer_to_server(servicer, server):
       'deleteAlert': grpc.unary_unary_rpc_method_handler(
           servicer.deleteAlert,
           request_deserializer=monitoring_dot_Alert__pb2.DeleteAlertRequest.FromString,
-          response_serializer=monitoring_dot_Summary__pb2.Empty.SerializeToString,
+          response_serializer=monitoring_dot_MonitoredEntity__pb2.Empty.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
