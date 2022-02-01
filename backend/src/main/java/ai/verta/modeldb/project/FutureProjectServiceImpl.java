@@ -563,7 +563,32 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void setProjectReadme(
       SetProjectReadme request, StreamObserver<SetProjectReadme.Response> responseObserver) {
-    super.setProjectReadme(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .setProjectReadme(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("readme_text"),
+                              Collections.singletonMap(
+                                  "readme_text", updatedProject.getReadmeText()),
+                              "project readme_text updated successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      SetProjectReadme.Response.newBuilder().setProject(updatedProject).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
