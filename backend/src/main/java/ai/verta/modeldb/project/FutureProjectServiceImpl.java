@@ -605,7 +605,31 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void setProjectShortName(
       SetProjectShortName request, StreamObserver<SetProjectShortName.Response> responseObserver) {
-    super.setProjectShortName(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .setProjectShortName(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("short_name"),
+                              Collections.singletonMap("short_name", updatedProject.getShortName()),
+                              "project short_name updated successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      SetProjectShortName.Response.newBuilder().setProject(updatedProject).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

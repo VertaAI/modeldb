@@ -29,12 +29,14 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.SetProjectReadme;
+import ai.verta.modeldb.SetProjectShortName;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -930,7 +932,9 @@ public class FutureProjectDAO {
                   resourcesIds.addAll(resources.getResourceIdsList());
                 }
                 // Validate if current user has access to the entity or not
-                resourcesIds.retainAll(requestedResourcesIds);
+                if (requestedResourcesIds != null && !requestedResourcesIds.isEmpty()) {
+                  resourcesIds.retainAll(requestedResourcesIds);
+                }
               }
               return resourcesIds;
             },
@@ -1366,5 +1370,86 @@ public class FutureProjectDAO {
               return response.build();
             },
             executor);
+  }
+
+  public InternalFuture<Void> setProjectShortName(SetProjectShortName request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty() && request.getShortName().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project ID and Project shortName not found in SetProjectShortName request");
+              } else if (request.getId().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project ID not found in SetProjectShortName request");
+              } else if (request.getShortName().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project shortName not found in SetProjectShortName request");
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                getSelfAllowedResources(
+                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                    ModelDBActionEnum.ModelDBServiceActions.READ,
+                    Collections.emptyList()),
+            executor)
+        .thenCompose(
+            selfAllowedResources -> {
+              InternalFuture<Optional<Long>> countFuture =
+                  InternalFuture.completedInternalFuture(Optional.of(0L));
+              if (!selfAllowedResources.isEmpty()) {
+                countFuture =
+                    jdbi.withHandle(
+                        handle ->
+                            handle
+                                .createQuery(
+                                    "select count(p.id) from project p where p.deleted = false AND p.short_name = :projectShortName AND p.id IN (<projectIds>)")
+                                .bind("projectShortName", request.getShortName())
+                                .bindList("projectIds", selfAllowedResources)
+                                .mapTo(Long.class)
+                                .findOne());
+              }
+              return countFuture.thenCompose(
+                  count -> {
+                    if (count.isPresent() && count.get() > 0) {
+                      return InternalFuture.failedStage(
+                          new AlreadyExistsException(
+                              "Project already exist with given short name"));
+                    }
+                    return InternalFuture.completedInternalFuture(null);
+                  },
+                  executor);
+            },
+            executor)
+        .thenCompose(
+            unused -> {
+              String projectShortName =
+                  ModelDBUtils.convertToProjectShortName(request.getShortName());
+              if (!projectShortName.equals(request.getShortName())) {
+                throw new InternalErrorException("Project short name is not valid");
+              }
+
+              return jdbi.useHandle(
+                  handle ->
+                      handle
+                          .createUpdate("update project set short_name = :shortName where id = :id")
+                          .bind("id", request.getId())
+                          .bind("shortName", projectShortName)
+                          .execute());
+            },
+            executor)
+        .thenCompose(
+            unused -> updateModifiedTimestamp(request.getId(), new Date().getTime()), executor)
+        .thenCompose(unused -> updateVersionNumber(request.getId()), executor);
   }
 }
