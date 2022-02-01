@@ -594,7 +594,12 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void getProjectReadme(
       GetProjectReadme request, StreamObserver<GetProjectReadme.Response> responseObserver) {
-    super.getProjectReadme(request, responseObserver);
+    try {
+      final var response = futureProjectDAO.getProjectReadme(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
