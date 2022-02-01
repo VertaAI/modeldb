@@ -635,7 +635,12 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void getProjectShortName(
       GetProjectShortName request, StreamObserver<GetProjectShortName.Response> responseObserver) {
-    super.getProjectShortName(request, responseObserver);
+    try {
+      final var response = futureProjectDAO.getProjectShortName(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

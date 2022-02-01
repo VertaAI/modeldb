@@ -17,6 +17,7 @@ import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetProjectByName;
 import ai.verta.modeldb.GetProjectReadme;
+import ai.verta.modeldb.GetProjectShortName;
 import ai.verta.modeldb.GetSummary;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
@@ -1451,5 +1452,43 @@ public class FutureProjectDAO {
         .thenCompose(
             unused -> updateModifiedTimestamp(request.getId(), new Date().getTime()), executor)
         .thenCompose(unused -> updateVersionNumber(request.getId()), executor);
+  }
+
+  public InternalFuture<GetProjectShortName.Response> getProjectShortName(
+      GetProjectShortName request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                var errorMessage = "Project ID not found in GetProjectShortName request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.withHandle(
+                    handle ->
+                        handle
+                            .createQuery("select short_name from project where id = :id")
+                            .bind("id", request.getId())
+                            .mapTo(String.class)
+                            .findOne()),
+            executor)
+        .thenApply(
+            readmeTextOptional -> {
+              var response = GetProjectShortName.Response.newBuilder();
+              readmeTextOptional.ifPresent(response::setShortName);
+              return response.build();
+            },
+            executor);
   }
 }
