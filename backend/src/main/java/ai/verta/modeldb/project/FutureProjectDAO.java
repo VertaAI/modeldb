@@ -16,6 +16,7 @@ import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetProjectByName;
+import ai.verta.modeldb.GetProjectCodeVersion;
 import ai.verta.modeldb.GetProjectReadme;
 import ai.verta.modeldb.GetProjectShortName;
 import ai.verta.modeldb.GetSummary;
@@ -1489,6 +1490,34 @@ public class FutureProjectDAO {
               readmeTextOptional.ifPresent(response::setShortName);
               return response.build();
             },
+            executor);
+  }
+
+  public InternalFuture<GetProjectCodeVersion.Response> getProjectCodeVersion(
+      GetProjectCodeVersion request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                var errorMessage = "Project ID not found in GetProjectCodeVersion request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> getProjectById(request.getId()), executor)
+        .thenApply(
+            project ->
+                GetProjectCodeVersion.Response.newBuilder()
+                    .setCodeVersion(project.getCodeVersionSnapshot())
+                    .build(),
             executor);
   }
 }

@@ -654,7 +654,12 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   public void getProjectCodeVersion(
       GetProjectCodeVersion request,
       StreamObserver<GetProjectCodeVersion.Response> responseObserver) {
-    super.getProjectCodeVersion(request, responseObserver);
+    try {
+      final var response = futureProjectDAO.getProjectCodeVersion(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
