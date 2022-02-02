@@ -270,7 +270,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
               ModelDBConstants.DATASETS_VERSIONS,
               accessibleDatasetVersionIds,
               predicate,
-              mdbRoleService);
+              mdbRoleService.IsImplemented());
         }
       }
 

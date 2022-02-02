@@ -770,7 +770,10 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           accessibleExperimentIds.addAll(accessibleExperimentId);
           // Validate if current user has access to the entity or not where predicate key has an id
           RdbmsUtils.validatePredicates(
-              ModelDBConstants.EXPERIMENTS, accessibleExperimentIds, predicate, mdbRoleService);
+              ModelDBConstants.EXPERIMENTS,
+              accessibleExperimentIds,
+              predicate,
+              mdbRoleService.IsImplemented());
         }
       }
 

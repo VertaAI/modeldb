@@ -522,7 +522,12 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void findProjects(
       FindProjects request, StreamObserver<FindProjects.Response> responseObserver) {
-    super.findProjects(request, responseObserver);
+    try {
+      final var futureResponse = futureProjectDAO.findProjects(request);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
