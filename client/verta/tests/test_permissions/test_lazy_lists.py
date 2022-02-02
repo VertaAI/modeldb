@@ -72,6 +72,7 @@ class TestClient:
 
         assert set(model_ver.id for model_ver in client.registered_model_versions) == model_ver_ids
 
+    @pytest.mark.deployment
     def test_endpoints(self, client, organization, created_entities):
         client.set_workspace(organization.name)
 
