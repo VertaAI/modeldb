@@ -130,7 +130,12 @@ public class MssqlMigrationUtil {
                   tableName,
                   constraintName,
                   primaryKeyConstraint.getValue().getValue().stream()
-                      .map(value -> String.format("\"%s\"", value))
+                      .map(value -> {
+                          if (value.equals("commit")){
+                              return String.format("\"%s\"", value);
+                          }
+                          return String.format("%s", value);
+                      })
                       .collect(Collectors.joining(","))))
           .execute();
     }
@@ -225,9 +230,9 @@ public class MssqlMigrationUtil {
         tableName = "\"commit\"";
       }
       String columnName = String.valueOf(result.get("column_name"));
-      if (columnName.equals("commit")) {
+      /*if (columnName.equals("commit")) {
         columnName = "\"commit\"";
-      }
+      }*/
 
       handle
           .createUpdate(
