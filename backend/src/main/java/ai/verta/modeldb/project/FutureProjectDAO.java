@@ -411,17 +411,6 @@ public class FutureProjectDAO {
 
               return resourcesFuture.thenCompose(
                   getResourceItems -> {
-                    final InternalFuture<QueryFilterContext> futureLocalContext =
-                        getFutureLocalContext();
-
-                    // futurePredicatesContext
-                    final var futurePredicatesContext =
-                        predicatesHandler.processPredicates(request.getPredicatesList(), executor);
-
-                    // futureSortingContext
-                    final var futureSortingContext =
-                        sortingHandler.processSort(request.getSortKey(), request.getAscending());
-
                     Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
                     Set<String> accessibleResourceIdsWithCollaborator =
                         getResourceItems.stream()
@@ -436,6 +425,17 @@ public class FutureProjectDAO {
                       return InternalFuture.completedInternalFuture(
                           FindProjects.Response.newBuilder().build());
                     }
+
+                    final InternalFuture<QueryFilterContext> futureLocalContext =
+                        getFutureLocalContext();
+
+                    // futurePredicatesContext
+                    final var futurePredicatesContext =
+                        predicatesHandler.processPredicates(request.getPredicatesList(), executor);
+
+                    // futureSortingContext
+                    final var futureSortingContext =
+                        sortingHandler.processSort(request.getSortKey(), request.getAscending());
 
                     var futureProjectIdsContext =
                         getFutureProjectIdsContext(request, accessibleResourceIdsWithCollaborator);
@@ -496,8 +496,66 @@ public class FutureProjectDAO {
                                                       .map(Project.Builder::getId)
                                                       .collect(Collectors.toSet());
 
-                                              // TODO: populate other dependent fields in project
-                                              // builder here
+                                              // Get tags
+                                              final var futureTags = tagsHandler.getTagsMap(ids);
+                                              futureBuildersStream =
+                                                  futureBuildersStream.thenCombine(
+                                                      futureTags,
+                                                      (stream, tags) ->
+                                                          stream.map(
+                                                              builder ->
+                                                                  builder.addAllTags(
+                                                                      tags.get(builder.getId()))),
+                                                      executor);
+
+                                              // Get attributes
+                                              final var futureAttributes =
+                                                  attributeHandler.getKeyValuesMap(ids);
+                                              futureBuildersStream =
+                                                  futureBuildersStream.thenCombine(
+                                                      futureAttributes,
+                                                      (stream, attributes) ->
+                                                          stream.map(
+                                                              builder ->
+                                                                  builder.addAllAttributes(
+                                                                      attributes.get(
+                                                                          builder.getId()))),
+                                                      executor);
+
+                                              // Get artifacts
+                                              final var futureArtifacts =
+                                                  artifactHandler.getArtifactsMap(ids);
+                                              futureBuildersStream =
+                                                  futureBuildersStream.thenCombine(
+                                                      futureArtifacts,
+                                                      (stream, artifacts) ->
+                                                          stream.map(
+                                                              builder ->
+                                                                  builder.addAllArtifacts(
+                                                                      artifacts.get(
+                                                                          builder.getId()))),
+                                                      executor);
+
+                                              final var futureCodeVersions =
+                                                  codeVersionHandler.getCodeVersionMap(
+                                                      new ArrayList<>(ids));
+                                              futureBuildersStream =
+                                                  futureBuildersStream.thenCombine(
+                                                      futureCodeVersions,
+                                                      (stream, codeVersionMap) ->
+                                                          stream.map(
+                                                              builder -> {
+                                                                if (codeVersionMap.containsKey(
+                                                                    builder.getId())) {
+                                                                  return builder
+                                                                      .setCodeVersionSnapshot(
+                                                                          codeVersionMap.get(
+                                                                              builder.getId()));
+                                                                } else {
+                                                                  return builder;
+                                                                }
+                                                              }),
+                                                      executor);
 
                                               return futureBuildersStream.thenApply(
                                                   projectBuilders ->
