@@ -9,6 +9,7 @@ import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.AddProjectTags;
 import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
+import ai.verta.modeldb.Empty;
 import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
@@ -19,6 +20,7 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.UpdateProjectAttributes;
+import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
@@ -40,7 +42,6 @@ import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.Action;
-import ai.verta.uac.Empty;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetWorkspaceById;
@@ -381,9 +382,14 @@ public class FutureProjectDAO {
         unused -> artifactHandler.getUrlForArtifact(request), executor);
   }
 
+  public InternalFuture<VerifyConnectionResponse> verifyConnection(Empty request) {
+    return InternalFuture.completedInternalFuture(
+        VerifyConnectionResponse.newBuilder().setStatus(true).build());
+  }
+
   public InternalFuture<FindProjects.Response> findProjects(FindProjects request) {
     return FutureGrpc.ClientRequest(
-            uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
+            uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()), executor)
         .thenCompose(
             userInfo -> {
               InternalFuture<List<GetResourcesResponseItem>> resourcesFuture;
