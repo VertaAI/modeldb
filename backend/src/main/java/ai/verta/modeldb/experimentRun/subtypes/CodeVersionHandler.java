@@ -18,6 +18,7 @@ import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
+import org.jdbi.v3.core.Handle;
 
 public class CodeVersionHandler {
   private static Logger LOGGER = LogManager.getLogger(CodeVersionHandler.class);
@@ -62,75 +63,61 @@ public class CodeVersionHandler {
             executor);
   }
 
-  public InternalFuture<Void> logCodeVersion(LogExperimentRunCodeVersion request) {
+  public void logCodeVersion(Handle handle, LogExperimentRunCodeVersion request) {
     // TODO: input validation
-    return jdbi.withHandle(
-            // Check if it existed before
-            handle ->
-                handle
-                    .createQuery(
-                        String.format(
-                            "select code_version_snapshot_id from %s where id=:entity_id",
-                            entityTableName))
-                    .bind(ENTITY_ID_QUERY_PARAM, request.getId())
-                    .mapTo(Long.class)
-                    .findOne())
-        .thenAccept(
-            // Check if we can overwrite
-            maybeSnapshotId -> {
-              if (maybeSnapshotId.isPresent()) {
-                if (request.getOverwrite()) {
-                  try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                    var transaction = session.beginTransaction();
-                    session
-                        .createSQLQuery(
-                            String.format(
-                                "UPDATE %s SET code_version_snapshot_id = null WHERE id=:entity_id",
-                                entityTableName))
-                        .setParameter(ENTITY_ID_QUERY_PARAM, request.getId())
-                        .executeUpdate();
-                    final CodeVersionEntity entity =
-                        session.get(
-                            CodeVersionEntity.class,
-                            maybeSnapshotId.get(),
-                            LockMode.PESSIMISTIC_WRITE);
-                    session.delete(entity);
-                    transaction.commit();
-                  }
-                } else {
-                  throw new AlreadyExistsException("Code version already logged");
-                }
-              }
-            },
-            executor)
-        .thenApply(
-            // Create the new snapshot using hibernate
-            unused -> {
-              try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                final var snapshot =
-                    RdbmsUtils.generateCodeVersionEntity(
-                        ModelDBConstants.CODE_VERSION, request.getCodeVersion());
-                var transaction = session.beginTransaction();
-                session.saveOrUpdate(snapshot);
-                transaction.commit();
-                return snapshot.getId();
-              }
-            },
-            executor)
-        .thenCompose(
-            // Save the snapshot to the ER
-            snapshotId ->
-                jdbi.useHandle(
-                    handle ->
-                        handle
-                            .createUpdate(
-                                String.format(
-                                    "update %s set code_version_snapshot_id=:code_id where id=:entity_id",
-                                    entityTableName))
-                            .bind("code_id", snapshotId)
-                            .bind(ENTITY_ID_QUERY_PARAM, request.getId())
-                            .execute()),
-            executor);
+    // Check if it existed before
+    var maybeSnapshotId =
+        handle
+            .createQuery(
+                String.format(
+                    "select code_version_snapshot_id from %s where id=:entity_id", entityTableName))
+            .bind(ENTITY_ID_QUERY_PARAM, request.getId())
+            .mapTo(Long.class)
+            .findOne();
+
+    // Check if we can overwrite
+    if (maybeSnapshotId.isPresent()) {
+      if (request.getOverwrite()) {
+        try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+          var transaction = session.beginTransaction();
+          session
+              .createSQLQuery(
+                  String.format(
+                      "UPDATE %s SET code_version_snapshot_id = null WHERE id=:entity_id",
+                      entityTableName))
+              .setParameter(ENTITY_ID_QUERY_PARAM, request.getId())
+              .executeUpdate();
+          final CodeVersionEntity entity =
+              session.get(
+                  CodeVersionEntity.class, maybeSnapshotId.get(), LockMode.PESSIMISTIC_WRITE);
+          session.delete(entity);
+          transaction.commit();
+        }
+      } else {
+        throw new AlreadyExistsException("Code version already logged");
+      }
+    }
+
+    // Create the new snapshot using hibernate
+    try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+      final var snapshot =
+          RdbmsUtils.generateCodeVersionEntity(
+              ModelDBConstants.CODE_VERSION, request.getCodeVersion());
+      var transaction = session.beginTransaction();
+      session.saveOrUpdate(snapshot);
+      transaction.commit();
+      var snapshotId = snapshot.getId();
+
+      // Save the snapshot to the ER
+      handle
+          .createUpdate(
+              String.format(
+                  "update %s set code_version_snapshot_id=:code_id where id=:entity_id",
+                  entityTableName))
+          .bind("code_id", snapshotId)
+          .bind(ENTITY_ID_QUERY_PARAM, request.getId())
+          .execute();
+    }
   }
 
   public InternalFuture<Map<String, CodeVersion>> getCodeVersionMap(List<String> entityIds) {

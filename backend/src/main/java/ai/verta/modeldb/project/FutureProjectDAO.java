@@ -135,7 +135,11 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
-        .thenCompose(unused -> attributeHandler.deleteKeyValues(projectId, maybeKeys), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> attributeHandler.deleteKeyValues(handle, projectId, maybeKeys)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
@@ -185,7 +189,11 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
-        .thenCompose(unused -> attributeHandler.logKeyValues(projectId, attributes), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> attributeHandler.logKeyValues(handle, projectId, attributes)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
@@ -237,7 +245,9 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
-        .thenCompose(unused -> tagsHandler.addTags(projectId, tags), executor)
+        .thenCompose(
+            unused -> jdbi.useHandle(handle -> tagsHandler.addTags(handle, projectId, tags)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
@@ -263,7 +273,10 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
-        .thenCompose(unused -> tagsHandler.deleteTags(projectId, maybeTags), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(handle -> tagsHandler.deleteTags(handle, projectId, maybeTags)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }

@@ -244,70 +244,77 @@ public class CreateExperimentRunHandler {
                         int count = query.execute();
                         LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
                       }
+
+                      final var futureLogs = new LinkedList<InternalFuture<Void>>();
+
+                      if (!newExperimentRun.getTagsList().isEmpty()) {
+                        tagsHandler.addTags(
+                            handleForTransaction,
+                            newExperimentRun.getId(),
+                            newExperimentRun.getTagsList());
+                      }
+                      if (!newExperimentRun.getAttributesList().isEmpty()) {
+                        attributeHandler.logKeyValues(
+                            handleForTransaction,
+                            newExperimentRun.getId(),
+                            newExperimentRun.getAttributesList());
+                      }
+                      if (!newExperimentRun.getHyperparametersList().isEmpty()) {
+                        hyperparametersHandler.logKeyValues(
+                            handleForTransaction,
+                            newExperimentRun.getId(),
+                            newExperimentRun.getHyperparametersList());
+                      }
+                      if (!newExperimentRun.getMetricsList().isEmpty()) {
+                        metricsHandler.logKeyValues(
+                            handleForTransaction,
+                            newExperimentRun.getId(),
+                            newExperimentRun.getMetricsList());
+                      }
+                      if (!newExperimentRun.getObservationsList().isEmpty()) {
+                        observationHandler.logObservations(
+                            handleForTransaction,
+                            newExperimentRun.getId(),
+                            newExperimentRun.getObservationsList(),
+                            now);
+                      }
+                      if (!newExperimentRun.getArtifactsList().isEmpty()) {
+                        artifactHandler.logArtifacts(
+                            handleForTransaction,
+                            newExperimentRun.getId(),
+                            newExperimentRun.getArtifactsList(),
+                            false);
+                      }
+                      if (!newExperimentRun.getFeaturesList().isEmpty()) {
+                        featureHandler.logFeatures(
+                            handleForTransaction,
+                            newExperimentRun.getId(),
+                            newExperimentRun.getFeaturesList());
+                      }
+                      if (newExperimentRun.getCodeVersionSnapshot().hasCodeArchive()
+                          || newExperimentRun.getCodeVersionSnapshot().hasGitSnapshot()) {
+                        codeVersionHandler.logCodeVersion(
+                            handleForTransaction,
+                            LogExperimentRunCodeVersion.newBuilder()
+                                .setId(newExperimentRun.getId())
+                                .setCodeVersion(newExperimentRun.getCodeVersionSnapshot())
+                                .setOverwrite(false)
+                                .build());
+                      }
+                      if (!newExperimentRun.getDatasetsList().isEmpty()) {
+                        datasetHandler.logArtifacts(
+                            handleForTransaction,
+                            newExperimentRun.getId(),
+                            newExperimentRun.getDatasetsList(),
+                            false);
+                      }
+                      if (newExperimentRun.getVersionedInputs().getRepositoryId() != 0) {
+                        versionInputHandler.validateAndInsertVersionedInputs(
+                            handleForTransaction,
+                            newExperimentRun.getId(),
+                            newExperimentRun.getVersionedInputs());
+                      }
                     }))
-        .thenCompose(
-            unused -> {
-              final var futureLogs = new LinkedList<InternalFuture<Void>>();
-
-              if (!newExperimentRun.getTagsList().isEmpty()) {
-                futureLogs.add(
-                    tagsHandler.addTags(newExperimentRun.getId(), newExperimentRun.getTagsList()));
-              }
-              if (!newExperimentRun.getAttributesList().isEmpty()) {
-                futureLogs.add(
-                    attributeHandler.logKeyValues(
-                        newExperimentRun.getId(), newExperimentRun.getAttributesList()));
-              }
-              if (!newExperimentRun.getHyperparametersList().isEmpty()) {
-                futureLogs.add(
-                    hyperparametersHandler.logKeyValues(
-                        newExperimentRun.getId(), newExperimentRun.getHyperparametersList()));
-              }
-              if (!newExperimentRun.getMetricsList().isEmpty()) {
-                futureLogs.add(
-                    metricsHandler.logKeyValues(
-                        newExperimentRun.getId(), newExperimentRun.getMetricsList()));
-              }
-              if (!newExperimentRun.getObservationsList().isEmpty()) {
-                futureLogs.add(
-                    observationHandler.logObservations(
-                        newExperimentRun.getId(), newExperimentRun.getObservationsList(), now));
-              }
-              if (!newExperimentRun.getArtifactsList().isEmpty()) {
-                futureLogs.add(
-                    artifactHandler.logArtifacts(
-                        newExperimentRun.getId(), newExperimentRun.getArtifactsList(), false));
-              }
-              if (!newExperimentRun.getFeaturesList().isEmpty()) {
-                futureLogs.add(
-                    featureHandler.logFeatures(
-                        newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
-              }
-              if (newExperimentRun.getCodeVersionSnapshot().hasCodeArchive()
-                  || newExperimentRun.getCodeVersionSnapshot().hasGitSnapshot()) {
-                futureLogs.add(
-                    codeVersionHandler.logCodeVersion(
-                        LogExperimentRunCodeVersion.newBuilder()
-                            .setId(newExperimentRun.getId())
-                            .setCodeVersion(newExperimentRun.getCodeVersionSnapshot())
-                            .setOverwrite(false)
-                            .build()));
-              }
-              if (!newExperimentRun.getDatasetsList().isEmpty()) {
-                futureLogs.add(
-                    datasetHandler.logArtifacts(
-                        newExperimentRun.getId(), newExperimentRun.getDatasetsList(), false));
-              }
-              if (newExperimentRun.getVersionedInputs().getRepositoryId() != 0) {
-                futureLogs.add(
-                    versionInputHandler.validateAndInsertVersionedInputs(
-                        newExperimentRun.getId(), newExperimentRun.getVersionedInputs()));
-              }
-
-              return InternalFuture.sequence(futureLogs, executor)
-                  .thenAccept(unused2 -> {}, executor);
-            },
-            executor)
         .thenCompose(unused2 -> createRoleBindingsForExperimentRun(newExperimentRun), executor)
         .thenCompose(
             unused2 ->
