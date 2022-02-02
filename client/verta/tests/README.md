@@ -35,6 +35,11 @@ pytest test_entities.py::TestProject # specific class
 pytest test_entities.py::TestProject::test_create # specific function within specific class
 ```
 
+Tests can also be run by specifying markers (defined in [`pytest.ini`](pytest.ini)):
+```bash
+pytest -m deployment
+```
+
 ### Pytest invocation flags
 
 `pytest` has a few flags that can be mixed and matched to customize output while tests are running.
@@ -64,19 +69,21 @@ bases/test_deployable_entity.py::TestCreateArtifactMsg::test_with_ext PASSED    
 `-rfE` outputs a summary (`r`) when tests are complete, listing failures (`f`) and errors (`E`):
 
 ```bash
-============================= short test summary info ==============================
-FAILED monitoring/alerts/test_entities.py::TestAlert::test_update_last_evaluated_at
+================================== short test summary info ===================================
+FAILED versioning/environment/test_environment.py::TestEnvironmentVariables::test_empty[None]
 ```
 
 ## Writing tests
 
-Tests are loosely organized by files and classes of related functionality. See [`versioning/`](https://github.com/VertaAI/modeldb/tree/master/client/verta/tests/versioning) or [`monitoring/alerts/`](https://github.com/VertaAI/modeldb/tree/master/client/verta/tests/monitoring/alerts) for decent examples.
+Tests are loosely organized by files and classes of related functionality. See [`versioning/`](https://github.com/VertaAI/modeldb/tree/main/client/verta/tests/versioning) or [`registry/`](https://github.com/VertaAI/modeldb/tree/main/client/verta/tests/registry) for decent examples.
 
 Note that for CLI tests, `click` provides [its own testing utilities](https://click.palletsprojects.com/en/7.x/testing/). See [`test_cli.py`](test_cli.py) for examples.
 
 ### Fixtures
 
 [`pytest` fixtures](https://docs.pytest.org/en/stable/fixture.html) are reusable items that are passed to test functions.
-Most fixtures are defined in [`conftest.py`](conftest.py).  
-To use a fixture: simply write the name of the fixture as a parameter to your test function; `pytest` will automatically pass it in at runtime.  
+Most fixtures are defined in [`conftest.py`](conftest.py).
+
+To use a fixture: simply write the name of the fixture as a parameter to your test function; `pytest` will automatically pass it in at runtime.
+
 To write a fixture: write code for setup, `yield` the object that should be passed to the test function, then write code for cleanup.
