@@ -247,7 +247,34 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
   private InternalFuture<QueryFilterContext> processProjectPredicates(
       long index, String bindingName, KeyValueQuery predicate) {
-    return null;
+    var value = predicate.getValue();
+    switch (predicate.getKey()) {
+      case "name":
+        var sql = String.format("select distinct id from %s where ", tableName);
+        sql += applyOperator(predicate.getOperator(), "name", ":" + bindingName);
+
+        var queryContext =
+            new QueryFilterContext()
+                .addBind(
+                    q ->
+                        q.bind(
+                            bindingName,
+                            wrapValue(predicate.getOperator(), value.getStringValue())));
+        if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+            || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+          queryContext =
+              queryContext.addCondition(
+                  String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
+        } else {
+          queryContext =
+              queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
+        }
+
+        return InternalFuture.completedInternalFuture(queryContext);
+      default:
+        // return null for further process
+        return null;
+    }
   }
 
   private InternalFuture<QueryFilterContext> processTagsPredicate(
@@ -271,6 +298,10 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
       switch (value.getKindCase()) {
         case STRING_VALUE:
+          if (value.getStringValue().isEmpty()) {
+            throw new InvalidArgumentException(
+                "Predicate does not contain string value in request");
+          }
           sql += applyOperator(operator, colValue, ":" + valueBindingName);
           queryContext =
               queryContext.addBind(
@@ -419,7 +450,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
       var sql =
           String.format(
-              "select distinct %s from attribute where entity_name=%s and field_type=:%s",
+              "select distinct %s from attribute where entity_name= '%s' and field_type=:%s",
               getEntityColumn(), getEntityName(), fieldTypeName);
       sql += String.format(" and kv_key=:%s ", valueBindingKey);
       sql += " and ";
@@ -431,7 +462,16 @@ public class PredicatesHandler extends PredicateHandlerUtils {
               .addBind(q -> q.bind(fieldTypeName, fieldType));
 
       switch (value.getKindCase()) {
+        case NUMBER_VALUE:
+          sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+          queryContext =
+              queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
+          break;
         case STRING_VALUE:
+          if (value.getStringValue().isEmpty()) {
+            throw new InvalidArgumentException(
+                "Predicate does not contain string value in request");
+          }
           sql += applyOperator(operator, colValue, ":" + valueBindingName);
           var valueStr = CommonUtils.getStringFromProtoObject(value);
           if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
@@ -511,6 +551,11 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       sql += " and ";
 
       switch (value.getKindCase()) {
+        case NUMBER_VALUE:
+          sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+          queryContext =
+              queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
+          break;
         case STRING_VALUE:
           sql += applyOperator(operator, colValue, ":" + valueBindingName);
           String valueStr;
