@@ -126,6 +126,7 @@ message AuthzResourceEnum {
         EVENT = 8;
         WEBHOOK = 9;
         SYSTEM_ADMIN = 10;
+        PYPI_CONFIGURATION = 11;
     }
 };
 

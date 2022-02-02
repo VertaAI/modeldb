@@ -144,6 +144,7 @@ class TestLink:
         model_ver = reg_model.create_version_from_run(run.id)
         assert model_ver._msg.experiment_run_id == run.id
 
+    @pytest.mark.deployment
     def test_endpoint_update_run(self, client_2, client_3, organization, created_entities):
         """Update endpoint from someone else's run."""
         LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
@@ -179,6 +180,7 @@ class TestLink:
         run.log_environment(Python(["scikit-learn"]))
         assert endpoint.update(run)
 
+    @pytest.mark.deployment
     def test_endpoint_update_model_version(self, client_2, client_3, organization, created_entities):
         """Update endpoint from someone else's model version."""
         LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
