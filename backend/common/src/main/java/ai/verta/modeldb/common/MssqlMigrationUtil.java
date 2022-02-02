@@ -130,12 +130,13 @@ public class MssqlMigrationUtil {
                   tableName,
                   constraintName,
                   primaryKeyConstraint.getValue().getValue().stream()
-                      .map(value -> {
-                          if (value.equals("commit")){
+                      .map(
+                          value -> {
+                            if (value.equals("commit")) {
                               return String.format("\"%s\"", value);
-                          }
-                          return String.format("%s", value);
-                      })
+                            }
+                            return String.format("%s", value);
+                          })
                       .collect(Collectors.joining(","))))
           .execute();
     }
