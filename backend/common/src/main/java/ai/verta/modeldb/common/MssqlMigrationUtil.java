@@ -110,7 +110,7 @@ public class MssqlMigrationUtil {
       String query =
           "IF (OBJECT_ID('%s', '%s') IS NULL) "
               + "BEGIN "
-              + "ALTER TABLE %s ADD CONSTRAINT %s PRIMARY KEY (%s) "
+              + "ALTER TABLE \"%s\" ADD CONSTRAINT %s PRIMARY KEY (%s) "
               + "END";
       if (constraintName.toLowerCase().startsWith("ck_")
           || constraintName.toLowerCase().startsWith("uq_")) {
@@ -118,21 +118,22 @@ public class MssqlMigrationUtil {
         query =
             "IF (OBJECT_ID('%s', '%s') IS NULL) "
                 + "BEGIN "
-                + "ALTER TABLE %s ADD CONSTRAINT %s UNIQUE (%s) "
+                + "ALTER TABLE \"%s\" ADD CONSTRAINT %s UNIQUE (%s) "
                 + "END";
       }
+      final String format = String.format(
+          query,
+          constraintName,
+          type,
+          tableName,
+          constraintName,
+          primaryKeyConstraint.getValue().getValue().stream()
+              .map(
+                  value -> String.format("\"%s\"", value))
+              .collect(Collectors.joining(",")));
       handle
           .createUpdate(
-              String.format(
-                  query,
-                  constraintName,
-                  type,
-                  tableName,
-                  constraintName,
-                  primaryKeyConstraint.getValue().getValue().stream()
-                      .map(
-                          value -> String.format("\"%s\"", value))
-                      .collect(Collectors.joining(","))))
+              format)
           .execute();
     }
   }
@@ -149,7 +150,7 @@ public class MssqlMigrationUtil {
               String.format(
                   "IF (OBJECT_ID('%s', 'F') IS NULL) "
                       + "BEGIN "
-                      + "ALTER TABLE %s ADD CONSTRAINT \"%s\" FOREIGN KEY (%s) REFERENCES %s(%s) "
+                      + "ALTER TABLE \"%s\" ADD CONSTRAINT \"%s\" FOREIGN KEY (%s) REFERENCES \"%s\"(%s) "
                       + "END",
                   tableConstraintsMap.getKey(),
                   baseTableMap.getKey(),
@@ -173,7 +174,7 @@ public class MssqlMigrationUtil {
                 String.format(
                     "IF (OBJECT_ID('%s', 'D') IS NULL) "
                         + "BEGIN "
-                        + "ALTER TABLE %s ADD CONSTRAINT \"%s\" default %s for %s "
+                        + "ALTER TABLE \"%s\" ADD CONSTRAINT \"%s\" default %s for %s "
                         + "END",
                     tableConstraintsMap.getKey(),
                     entry.getKey(),
@@ -194,12 +195,13 @@ public class MssqlMigrationUtil {
                 String.format(
                     "IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
                         + "BEGIN "
-                        + "CREATE NONCLUSTERED INDEX \"%s\" ON %s (%s) "
+                        + "CREATE NONCLUSTERED INDEX \"%s\" ON \"%s\" (%s) "
                         + "END",
                     indexesMap.getKey(),
                     indexesMap.getKey(),
                     tableIndexesMap.getKey(),
-                    String.join(",", indexesMap.getValue())))
+                    indexesMap.getValue().stream().map(word -> "\"" + word + "\"").collect(
+                        Collectors.joining(","))))
             .execute();
       }
     }
@@ -227,7 +229,7 @@ public class MssqlMigrationUtil {
       handle
           .createUpdate(
               String.format(
-                  "ALTER TABLE %s ALTER COLUMN \"%s\" %s;", tableName, columnName, dataType))
+                  "ALTER TABLE \"%s\" ALTER COLUMN \"%s\" %s;", tableName, columnName, dataType))
           .execute();
     }
   }
@@ -237,14 +239,15 @@ public class MssqlMigrationUtil {
     for (Map.Entry<String, Map<String, Set<String>>> tableIndexesMap :
         tableWiseIndexesMap.entrySet()) {
       for (Map.Entry<String, Set<String>> indexesMap : tableIndexesMap.getValue().entrySet()) {
+        final String format = String.format(
+            "IF EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
+                + "BEGIN "
+                + "DROP INDEX \"%s\" ON \"%s\" "
+                + "END",
+            indexesMap.getKey(), indexesMap.getKey(), tableIndexesMap.getKey());
         handle
             .createUpdate(
-                String.format(
-                    "IF EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
-                        + "BEGIN "
-                        + "DROP INDEX \"%s\" ON %s "
-                        + "END",
-                    indexesMap.getKey(), indexesMap.getKey(), tableIndexesMap.getKey()))
+                format)
             .execute();
       }
     }
@@ -283,12 +286,6 @@ public class MssqlMigrationUtil {
               var indexName = rs.getString("indexName");
               var columnName = rs.getString("columnName");
 
-              if (tableName.equals("commit")) {
-                tableName = "\"commit\"";
-              } else if (columnName.equals("commit")) {
-                columnName = "\"commit\"";
-              }
-
               Map<String, Set<String>> indexesMap = tableWiseIndexesMap.get(tableName);
               if (indexesMap == null) {
                 indexesMap = new HashMap<>();
@@ -322,7 +319,7 @@ public class MssqlMigrationUtil {
               String.format(
                   "IF (OBJECT_ID('%s', '%s') IS NOT NULL) "
                       + "BEGIN "
-                      + "ALTER TABLE %s DROP CONSTRAINT \"%s\"; "
+                      + "ALTER TABLE \"%s\" DROP CONSTRAINT \"%s\"; "
                       + "END",
                   constraintName, type, tableName, constraintName))
           .execute();
@@ -353,12 +350,6 @@ public class MssqlMigrationUtil {
               var tableName = rs.getString("table");
               var constraintName = rs.getString("constraint_name");
               var columnName = rs.getString("column_name");
-
-              if (tableName.equals("commit")) {
-                tableName = "\"commit\"";
-              } else if (columnName.equals("commit")) {
-                columnName = "\"commit\"";
-              }
 
               Map.Entry<String, Set<String>> constraintsMap =
                   tableWisePrimaryMap.get(constraintName);
@@ -408,7 +399,7 @@ public class MssqlMigrationUtil {
                 String.format(
                     "IF (OBJECT_ID('%s', 'D') IS NOT NULL) "
                         + "BEGIN "
-                        + "ALTER TABLE %s DROP CONSTRAINT \"%s\"; "
+                        + "ALTER TABLE \"%s\" DROP CONSTRAINT \"%s\"; "
                         + "END",
                     tableConstraintsMap.getKey(),
                     constraintEntry.getKey(),
@@ -449,12 +440,6 @@ public class MssqlMigrationUtil {
               var columnName = rs.getString("column");
               var refColumnName = rs.getString("referenced_column");
 
-              if (tableName.equals("commit")) {
-                tableName = "\"commit\"";
-              } else if (refTableName.equals("commit")) {
-                refTableName = "\"commit\"";
-              }
-
               Map<String, Map.Entry<String, String>> constraintsMap =
                   tableWiseConstraintsMap.get(fkName);
               if (constraintsMap == null) {
@@ -494,12 +479,6 @@ public class MssqlMigrationUtil {
               var tableName = rs.getString("tableName");
               var columnName = rs.getString("columnName");
               var defaultValue = rs.getString("DEFAULT_VALUE");
-
-              if (tableName.equals("commit")) {
-                tableName = "\"commit\"";
-              } else if (columnName.equals("commit")) {
-                columnName = "\"commit\"";
-              }
 
               Map<String, Map.Entry<String, String>> constraintsMap =
                   tableWiseConstraintsMap.get(fkName);
