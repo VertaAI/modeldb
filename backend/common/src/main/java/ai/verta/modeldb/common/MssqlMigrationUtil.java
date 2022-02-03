@@ -130,8 +130,7 @@ public class MssqlMigrationUtil {
                   tableName,
                   constraintName,
                   primaryKeyConstraint.getValue().getValue().stream()
-                      .map(
-                          value -> String.format("\"%s\"", value))
+                      .map(value -> String.format("\"%s\"", value))
                       .collect(Collectors.joining(","))))
           .execute();
     }
