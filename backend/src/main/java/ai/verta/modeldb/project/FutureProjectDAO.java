@@ -40,6 +40,7 @@ import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.Action;
@@ -830,13 +831,12 @@ public class FutureProjectDAO {
             },
             executor)
         .thenCompose(
-            allowedProjectIds -> {
-              return getResourceItemsForWorkspace(
-                  "",
-                  Optional.of(allowedProjectIds),
-                  Optional.empty(),
-                  ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
-            },
+            allowedProjectIds ->
+                getResourceItemsForWorkspace(
+                    "",
+                    Optional.of(allowedProjectIds),
+                    Optional.empty(),
+                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT),
             executor)
         .thenCompose(
             allowedProjectResources ->
@@ -857,11 +857,10 @@ public class FutureProjectDAO {
                               "Mark Projects as deleted : {}, count : {}",
                               allowedProjectResources,
                               updatedCount);
-                          //                          allowedProjectResources.forEach(
-                          //                              allowedResource ->
-                          //
-                          // ReconcilerInitializer.softDeleteProjects.insert(
-                          //                                      allowedResource.getResourceId()));
+                          allowedProjectResources.forEach(
+                              allowedResource ->
+                                  ReconcilerInitializer.softDeleteProjects.insert(
+                                      allowedResource.getResourceId()));
                           LOGGER.debug("Project deleted successfully");
                         })
                     .thenApply(unused -> allowedProjectResources, executor),
