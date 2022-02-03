@@ -91,6 +91,24 @@ public class PredicatesHandler extends PredicateHandlerUtils {
             new QueryFilterContext()
                 .addCondition(String.format("%s.id = :%s", alias, bindingName))
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
+      case "date_created":
+        var date =
+            value.getKindCase().equals(Value.KindCase.STRING_VALUE)
+                ? Double.parseDouble(value.getStringValue())
+                : value.getNumberValue();
+        return InternalFuture.completedInternalFuture(
+            new QueryFilterContext()
+                .addCondition(String.format("%s.date_created = :%s", alias, bindingName))
+                .addBind(q -> q.bind(bindingName, date)));
+      case "date_updated":
+        var dateUpdated =
+            value.getKindCase().equals(Value.KindCase.STRING_VALUE)
+                ? Double.parseDouble(value.getStringValue())
+                : value.getNumberValue();
+        return InternalFuture.completedInternalFuture(
+            new QueryFilterContext()
+                .addCondition(String.format("%s.date_updated = :%s", alias, bindingName))
+                .addBind(q -> q.bind(bindingName, dateUpdated)));
       case "owner":
         // case time created/updated:
         // case visibility:
