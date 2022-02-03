@@ -211,9 +211,9 @@ public class CreateExperimentRunHandler {
     queryStrBuilder.append(bindArguments);
     queryStrBuilder.append(" ) ");
 
-    return jdbi.withHandleCompose(
+    return jdbi.useHandle(
             handle ->
-                handle.inTransaction(
+                handle.useTransaction(
                     TransactionIsolationLevel.READ_COMMITTED,
                     handleForTransaction -> {
                       Boolean exists =
@@ -309,14 +309,11 @@ public class CreateExperimentRunHandler {
                             false);
                       }
                       if (newExperimentRun.getVersionedInputs().getRepositoryId() != 0) {
-                        futureLogs.add(
-                            versionInputHandler.validateAndInsertVersionedInputs(
-                                handleForTransaction,
-                                newExperimentRun.getId(),
-                                newExperimentRun.getVersionedInputs()));
+                        versionInputHandler.validateAndInsertVersionedInputs(
+                            handleForTransaction,
+                            newExperimentRun.getId(),
+                            newExperimentRun.getVersionedInputs());
                       }
-
-                      return InternalFuture.sequence(futureLogs, executor);
                     }))
         .thenCompose(unused2 -> createRoleBindingsForExperimentRun(newExperimentRun), executor)
         .thenCompose(

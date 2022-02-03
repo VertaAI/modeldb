@@ -89,29 +89,32 @@ public class VersionInputHandler {
    * then again we are keep hyperparameter element blob mapping for those run in separate mapping
    * table called `hyperparameter_element_mapping`
    */
-  public InternalFuture<Void> validateAndInsertVersionedInputs(
+  public void validateAndInsertVersionedInputs(
       Handle handle, String runId, VersioningEntry versioningEntry) {
     if (versioningEntry == null) {
-      return InternalFuture.failedStage(
-          new InvalidArgumentException("VersionedInput not found in request"));
+      throw new InvalidArgumentException("VersionedInput not found in request");
     } else {
-      return validateVersioningEntity(versioningEntry)
-          .thenAccept(
-              locationBlobWithHashMap -> {
-                // Insert version input for run in versioning_modeldb_entity_mapping mapping table
-                insertVersioningInput(handle, versioningEntry, locationBlobWithHashMap, runId);
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap;
+      try {
+        locationBlobWithHashMap = validateVersioningEntity(versioningEntry).get();
+      } catch (Exception ex) {
+        if (ex.getCause() != null && ex.getCause().getCause() != null) {
+          throw (ModelDBException) ex.getCause().getCause();
+        }
+        throw ex;
+      }
 
-                // Insert config blob and version input mapping in
-                // versioning_modeldb_entity_mapping_config_blob mapping table
-                insertVersioningInputMappingConfigBlob(
-                    handle, versioningEntry, locationBlobWithHashMap, runId);
+      // Insert version input for run in versioning_modeldb_entity_mapping mapping table
+      insertVersioningInput(handle, versioningEntry, locationBlobWithHashMap, runId);
 
-                // Insert hyperparameter element and run mapping in
-                // hyperparameter_element_mapping table
-                insertHyperparameterElementMapping(
-                    handle, versioningEntry, locationBlobWithHashMap, runId);
-              },
-              executor);
+      // Insert config blob and version input mapping in
+      // versioning_modeldb_entity_mapping_config_blob mapping table
+      insertVersioningInputMappingConfigBlob(
+          handle, versioningEntry, locationBlobWithHashMap, runId);
+
+      // Insert hyperparameter element and run mapping in
+      // hyperparameter_element_mapping table
+      insertHyperparameterElementMapping(handle, versioningEntry, locationBlobWithHashMap, runId);
     }
   }
 
