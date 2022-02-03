@@ -121,20 +121,17 @@ public class MssqlMigrationUtil {
                 + "ALTER TABLE \"%s\" ADD CONSTRAINT %s UNIQUE (%s) "
                 + "END";
       }
-      final String format = String.format(
-          query,
-          constraintName,
-          type,
-          tableName,
-          constraintName,
-          primaryKeyConstraint.getValue().getValue().stream()
-              .map(
-                  value -> String.format("\"%s\"", value))
-              .collect(Collectors.joining(",")));
-      handle
-          .createUpdate(
-              format)
-          .execute();
+      final String format =
+          String.format(
+              query,
+              constraintName,
+              type,
+              tableName,
+              constraintName,
+              primaryKeyConstraint.getValue().getValue().stream()
+                  .map(value -> String.format("\"%s\"", value))
+                  .collect(Collectors.joining(",")));
+      handle.createUpdate(format).execute();
     }
   }
 
@@ -200,8 +197,9 @@ public class MssqlMigrationUtil {
                     indexesMap.getKey(),
                     indexesMap.getKey(),
                     tableIndexesMap.getKey(),
-                    indexesMap.getValue().stream().map(word -> "\"" + word + "\"").collect(
-                        Collectors.joining(","))))
+                    indexesMap.getValue().stream()
+                        .map(word -> "\"" + word + "\"")
+                        .collect(Collectors.joining(","))))
             .execute();
       }
     }
@@ -239,16 +237,14 @@ public class MssqlMigrationUtil {
     for (Map.Entry<String, Map<String, Set<String>>> tableIndexesMap :
         tableWiseIndexesMap.entrySet()) {
       for (Map.Entry<String, Set<String>> indexesMap : tableIndexesMap.getValue().entrySet()) {
-        final String format = String.format(
-            "IF EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
-                + "BEGIN "
-                + "DROP INDEX \"%s\" ON \"%s\" "
-                + "END",
-            indexesMap.getKey(), indexesMap.getKey(), tableIndexesMap.getKey());
-        handle
-            .createUpdate(
-                format)
-            .execute();
+        final String format =
+            String.format(
+                "IF EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
+                    + "BEGIN "
+                    + "DROP INDEX \"%s\" ON \"%s\" "
+                    + "END",
+                indexesMap.getKey(), indexesMap.getKey(), tableIndexesMap.getKey());
+        handle.createUpdate(format).execute();
       }
     }
   }
