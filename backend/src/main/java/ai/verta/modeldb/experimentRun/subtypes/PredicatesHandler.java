@@ -1,20 +1,32 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.KeyValueQuery;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
+import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.exceptions.UnimplementedException;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.Value;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 public class PredicatesHandler extends PredicateHandlerUtils {
   private static final String ENTITY_ID_NOT_IN_QUERY_CONDITION = "%s.id NOT IN (%s)";
@@ -26,12 +38,13 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   private final String tableName;
   private final String alias;
 
-  public PredicatesHandler(String tableName, String alias) {
+  public PredicatesHandler(Executor executor, UAC uac, String tableName, String alias) {
+    super(executor, uac);
     this.tableName = tableName;
     this.alias = alias;
 
     if ("experiment_run".equals(tableName)) {
-      this.hyperparameterPredicatesHandler = new HyperparameterPredicatesHandler();
+      this.hyperparameterPredicatesHandler = new HyperparameterPredicatesHandler(executor, uac);
     }
   }
 
@@ -110,7 +123,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                 .addCondition(String.format("%s.date_updated = :%s", alias, bindingName))
                 .addBind(q -> q.bind(bindingName, dateUpdated)));
       case "owner":
-        // case time created/updated:
+        return setOwnerPredicate(index, predicate);
         // case visibility:
       case "":
         return InternalFuture.failedStage(new InvalidArgumentException("Key is empty"));
@@ -623,5 +636,80 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     } catch (Exception ex) {
       return InternalFuture.failedStage(ex);
     }
+  }
+
+  private InternalFuture<QueryFilterContext> setOwnerPredicate(long index, KeyValueQuery predicate)
+      throws ModelDBException {
+    var operator = predicate.getOperator();
+    InternalFuture<List<UserInfo>> userInfoListFuture;
+    if (operator.equals(OperatorEnum.Operator.CONTAIN)
+        || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+      userInfoListFuture =
+          getFuzzyUserInfoList(predicate.getValue().getStringValue())
+              .thenApply(UserInfoPaginationDTO::getUserInfoList, executor);
+    } else {
+      var ownerIdsArrString = predicate.getValue().getStringValue();
+      List<String> ownerIds = new ArrayList<>();
+      if (operator.equals(OperatorEnum.Operator.IN)) {
+        ownerIds = Arrays.asList(ownerIdsArrString.split(","));
+      } else {
+        ownerIds.add(ownerIdsArrString);
+      }
+      userInfoListFuture =
+          getUserInfoFromAuthServer(
+                  new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList())
+              .thenApply(userInfoMap -> new ArrayList<>(userInfoMap.values()), executor);
+    }
+
+    return userInfoListFuture.thenCompose(
+        userInfoList -> {
+          if (userInfoList != null && !userInfoList.isEmpty()) {
+            var resourceItemsFutures = new ArrayList<InternalFuture<Set<String>>>();
+            for (var userInfo : userInfoList) {
+              resourceItemsFutures.add(
+                  getResourceItemsForLoginUserWorkspace(
+                          userInfo.getVertaInfo().getUsername(),
+                          Optional.empty(),
+                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                      .thenApply(
+                          accessibleAllWorkspaceItems ->
+                              accessibleAllWorkspaceItems.stream()
+                                  .map(GetResourcesResponseItem::getResourceId)
+                                  .collect(Collectors.toSet()),
+                          executor));
+            }
+            return InternalFuture.sequence(resourceItemsFutures, executor)
+                .thenCompose(
+                    resourceIdsList -> {
+                      var resourceIds = new HashSet<String>();
+                      for (var resourceIdSet : resourceIdsList) {
+                        resourceIds.addAll(resourceIdSet);
+                      }
+
+                      final var valueBindingName = String.format("fuzzy_id_%d", index);
+                      var sql = "<" + valueBindingName + ">";
+
+                      var queryContext =
+                          new QueryFilterContext()
+                              .addBind(q -> q.bindList(valueBindingName, resourceIds));
+                      if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+                          || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+                        queryContext =
+                            queryContext.addCondition(
+                                String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
+                      } else {
+                        queryContext =
+                            queryContext.addCondition(
+                                String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
+                      }
+                      return InternalFuture.completedInternalFuture(queryContext);
+                    },
+                    executor);
+          } else {
+            return InternalFuture.completedInternalFuture(
+                new QueryFilterContext().addCondition(String.format("%s.id = -1", alias)));
+          }
+        },
+        executor);
   }
 }

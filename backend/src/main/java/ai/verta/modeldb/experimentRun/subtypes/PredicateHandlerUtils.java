@@ -2,11 +2,18 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.App;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.MDBConfig;
+import ai.verta.modeldb.project.UACApisUtil;
+import java.util.concurrent.Executor;
 import java.util.regex.Pattern;
 
-public class PredicateHandlerUtils {
+public class PredicateHandlerUtils extends UACApisUtil {
   private static final MDBConfig mdbConfig = App.getInstance().mdbConfig;
+
+  public PredicateHandlerUtils(Executor executor, UAC uac) {
+    super(executor, uac);
+  }
 
   protected String columnAsNumber(String colName, boolean isString) {
     if (mdbConfig.getDatabase().getRdbConfiguration().isPostgres()) {

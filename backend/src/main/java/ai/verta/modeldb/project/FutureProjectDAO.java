@@ -42,9 +42,7 @@ import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.Action;
-import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GetWorkspaceById;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ResourceType;
@@ -68,12 +66,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
 
-public class FutureProjectDAO {
+public class FutureProjectDAO extends UACApisUtil {
   private static final Logger LOGGER = LogManager.getLogger(FutureProjectDAO.class);
 
-  private final Executor executor;
   private final FutureJdbi jdbi;
-  private final UAC uac;
   private final boolean isMssql;
 
   private final AttributeHandler attributeHandler;
@@ -90,9 +86,8 @@ public class FutureProjectDAO {
       ArtifactStoreDAO artifactStoreDAO,
       DatasetVersionDAO datasetVersionDAO,
       MDBConfig mdbConfig) {
-    this.executor = executor;
+    super(executor, uac);
     this.jdbi = jdbi;
-    this.uac = uac;
     this.isMssql = mdbConfig.getDatabase().getRdbConfiguration().isMssql();
 
     var entityName = "ProjectEntity";
@@ -110,7 +105,7 @@ public class FutureProjectDAO {
             artifactStoreDAO,
             datasetVersionDAO,
             mdbConfig);
-    predicatesHandler = new PredicatesHandler("project", "p");
+    predicatesHandler = new PredicatesHandler(executor, uac, "project", "p");
     sortingHandler = new SortingHandler("project");
   }
 
@@ -717,13 +712,6 @@ public class FutureProjectDAO {
         executor);
   }
 
-  private InternalFuture<Workspace> getWorkspaceById(long workspaceId) {
-    return FutureGrpc.ClientRequest(
-        uac.getWorkspaceService()
-            .getWorkspaceById(GetWorkspaceById.newBuilder().setId(workspaceId).build()),
-        executor);
-  }
-
   private List<Project> sortProjectFields(List<Project> projects) {
     List<Project> sortedProjects = new LinkedList<>();
     for (Project project : projects) {
@@ -744,54 +732,5 @@ public class FutureProjectDAO {
       sortedProjects.add(projectBuilder.build());
     }
     return sortedProjects;
-  }
-
-  private InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForLoginUserWorkspace(
-      String workspaceName,
-      Optional<List<String>> resourceIdsOptional,
-      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceTypes) {
-    var resourceType =
-        ResourceType.newBuilder().setModeldbServiceResourceType(resourceTypes).build();
-    Resources.Builder resources =
-        Resources.newBuilder()
-            .setResourceType(resourceType)
-            .setService(ServiceEnum.Service.MODELDB_SERVICE);
-
-    if (!resourceIdsOptional.isEmpty() && resourceIdsOptional.isPresent()) {
-      resources.addAllResourceIds(
-          resourceIdsOptional.get().stream().map(String::valueOf).collect(Collectors.toSet()));
-    }
-
-    var builder = GetResources.newBuilder().setResources(resources.build());
-    builder.setWorkspaceName(workspaceName);
-    return FutureGrpc.ClientRequest(
-            uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(builder.build()),
-            executor)
-        .thenApply(GetResources.Response::getItemList, executor);
-  }
-
-  private InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForWorkspace(
-      String workspaceName,
-      Optional<List<String>> resourceIdsOptional,
-      Optional<String> resourceName,
-      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceTypes) {
-    var resourceType =
-        ResourceType.newBuilder().setModeldbServiceResourceType(resourceTypes).build();
-    Resources.Builder resources =
-        Resources.newBuilder()
-            .setResourceType(resourceType)
-            .setService(ServiceEnum.Service.MODELDB_SERVICE);
-
-    if (!resourceIdsOptional.isEmpty() && resourceIdsOptional.isPresent()) {
-      resources.addAllResourceIds(
-          resourceIdsOptional.get().stream().map(String::valueOf).collect(Collectors.toSet()));
-    }
-
-    var builder = GetResources.newBuilder().setResources(resources.build());
-    builder.setWorkspaceName(workspaceName);
-    resourceName.ifPresent(builder::setResourceName);
-    return FutureGrpc.ClientRequest(
-            uac.getCollaboratorService().getResources(builder.build()), executor)
-        .thenApply(GetResources.Response::getItemList, executor);
   }
 }
