@@ -618,7 +618,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void logArtifacts(
       LogProjectArtifacts request, StreamObserver<LogProjectArtifacts.Response> responseObserver) {
-    super.logArtifacts(request, responseObserver);
     try {
       final var futureResponse =
           futureProjectDAO
