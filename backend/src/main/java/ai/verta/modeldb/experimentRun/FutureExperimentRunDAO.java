@@ -1710,7 +1710,8 @@ public class FutureExperimentRunDAO {
                 jdbi.withHandle(
                     handle ->
                         handle
-                            .createQuery("SELECT COUNT(id) FROM experiment WHERE id = :id AND deleted = :deleted")
+                            .createQuery(
+                                "SELECT COUNT(id) FROM experiment WHERE id = :id AND deleted = :deleted")
                             .bind("id", request.getExperimentId())
                             .bind("deleted", false)
                             .mapTo(Long.class)
