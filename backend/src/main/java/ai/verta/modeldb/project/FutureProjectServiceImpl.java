@@ -647,7 +647,33 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   public void logProjectCodeVersion(
       LogProjectCodeVersion request,
       StreamObserver<LogProjectCodeVersion.Response> responseObserver) {
-    super.logProjectCodeVersion(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .logProjectCodeVersion(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("code_version"),
+                              Collections.emptyMap(),
+                              "code_version logged successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      LogProjectCodeVersion.Response.newBuilder()
+                          .setProject(updatedProject)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

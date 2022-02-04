@@ -25,6 +25,7 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LastModifiedExperimentRunSummary;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogProjectArtifacts;
+import ai.verta.modeldb.LogProjectCodeVersion;
 import ai.verta.modeldb.MetricsSummary;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
@@ -1519,5 +1520,42 @@ public class FutureProjectDAO {
                     .setCodeVersion(project.getCodeVersionSnapshot())
                     .build(),
             executor);
+  }
+
+  public InternalFuture<Void> logProjectCodeVersion(LogProjectCodeVersion request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              String errorMessage = null;
+              if (request.getId().isEmpty() && request.getCodeVersion() == null) {
+                throw new InvalidArgumentException(
+                    "Project ID and Code version not found in LogProjectCodeVersion request");
+              } else if (request.getId().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project ID not found in LogProjectCodeVersion request");
+              } else if (request.getCodeVersion() == null) {
+                throw new InvalidArgumentException(
+                    "CodeVersion not found in LogProjectCodeVersion request");
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        codeVersionHandler.logCodeVersion(
+                            handle, request.getId(), false, request.getCodeVersion())),
+            executor)
+        .thenCompose(
+            unused -> updateModifiedTimestamp(request.getId(), new Date().getTime()), executor)
+        .thenCompose(unused -> updateVersionNumber(request.getId()), executor);
   }
 }
