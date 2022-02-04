@@ -110,7 +110,30 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void createProject(
       CreateProject request, StreamObserver<CreateProject.Response> responseObserver) {
-    super.createProject(request, responseObserver);
+    // super.createProject(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureProjectDAO
+              .createProject(request)
+              .thenCompose(
+                  createdProject ->
+                      addEvent(
+                              createdProject.getId(),
+                              createdProject.getWorkspaceServiceId(),
+                              "add.resource.project.add_project_succeeded",
+                              Optional.empty(),
+                              Collections.emptyMap(),
+                              "project logged successfully")
+                          .thenApply(eventLoggedStatus -> createdProject, executor),
+                  executor)
+              .thenApply(
+                  createdProject ->
+                      CreateProject.Response.newBuilder().setProject(createdProject).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

@@ -24,7 +24,7 @@ import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
-public class CreateExperimentRunHandler {
+public class CreateExperimentRunHandler extends HandlerUtil {
 
   private static Logger LOGGER = LogManager.getLogger(CreateExperimentRunHandler.class);
 
@@ -192,24 +192,6 @@ public class CreateExperimentRunHandler {
     runValueMap.put("deleted", false);
     runValueMap.put("created", false);
 
-    // Created comma separated field names from keys of above map
-    String[] fieldsArr = runValueMap.keySet().toArray(new String[0]);
-    var commaFields = String.join(",", fieldsArr);
-
-    StringBuilder queryStrBuilder =
-        new StringBuilder("insert into experiment_run ( ").append(commaFields).append(") values (");
-
-    // Created comma separated query bind arguments for the values
-    // based on the
-    // keys of
-    // above the map
-    // Ex: VALUES (:project_id, :experiment_id, :name) etc.
-    var bindArguments =
-        String.join(",", Arrays.stream(fieldsArr).map(s -> ":" + s).toArray(String[]::new));
-
-    queryStrBuilder.append(bindArguments);
-    queryStrBuilder.append(" ) ");
-
     return jdbi.useHandle(
             handle ->
                 handle.useTransaction(
@@ -224,9 +206,10 @@ public class CreateExperimentRunHandler {
                                 + "' already exists in database");
                       }
 
-                      LOGGER.trace(
-                          "insert experiment run query string: " + queryStrBuilder.toString());
-                      var query = handleForTransaction.createUpdate(queryStrBuilder.toString());
+                      String queryString = buildInsertQuery(runValueMap, "experiment_run");
+
+                      LOGGER.trace("insert experiment run query string: " + queryString);
+                      var query = handleForTransaction.createUpdate(queryString);
 
                       // Inserting fields arguments based on the keys and value of map
                       for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {

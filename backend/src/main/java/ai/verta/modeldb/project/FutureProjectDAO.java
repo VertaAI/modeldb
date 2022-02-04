@@ -7,6 +7,7 @@ import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.Pagination;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.CreateProject;
 import ai.verta.modeldb.DeleteProjectArtifact;
 import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
@@ -58,19 +59,25 @@ import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.project.subtypes.CreateProjectHandler;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.Action;
+import ai.verta.uac.CollaboratorPermissions;
+import ai.verta.uac.DeleteResources;
 import ai.verta.uac.Empty;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetWorkspaceById;
+import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ResourceType;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
+import ai.verta.uac.SetResource;
 import ai.verta.uac.Workspace;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -106,6 +113,7 @@ public class FutureProjectDAO {
   private final CodeVersionHandler codeVersionHandler;
   private final SortingHandler sortingHandler;
   private final FutureExperimentRunDAO futureExperimentRunDAO;
+  private final CreateProjectHandler createProjectHandler;
 
   public FutureProjectDAO(
       Executor executor,
@@ -138,6 +146,9 @@ public class FutureProjectDAO {
             mdbConfig);
     predicatesHandler = new PredicatesHandler("project", "p");
     sortingHandler = new SortingHandler("project");
+    createProjectHandler =
+        new CreateProjectHandler(
+            executor, jdbi, mdbConfig, uac, attributeHandler, tagsHandler, artifactHandler);
   }
 
   public InternalFuture<Void> deleteAttributes(DeleteProjectAttributes request) {
@@ -359,6 +370,16 @@ public class FutureProjectDAO {
 
   public InternalFuture<Void> checkProjectPermission(
       String projId, ModelDBActionEnum.ModelDBServiceActions action) {
+    var resourceBuilder =
+        Resources.newBuilder()
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .setResourceType(
+                ResourceType.newBuilder()
+                    .setModeldbServiceResourceType(
+                        ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT));
+    if (projId != null) {
+      resourceBuilder.addResourceIds(projId);
+    }
     return FutureGrpc.ClientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(
@@ -367,15 +388,7 @@ public class FutureProjectDAO {
                             Action.newBuilder()
                                 .setModeldbServiceAction(action)
                                 .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                        .addResources(
-                            Resources.newBuilder()
-                                .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                                .setResourceType(
-                                    ResourceType.newBuilder()
-                                        .setModeldbServiceResourceType(
-                                            ModelDBResourceEnum.ModelDBServiceResourceTypes
-                                                .PROJECT))
-                                .addResourceIds(projId))
+                        .addResources(resourceBuilder.build())
                         .build()),
             executor)
         .thenAccept(
@@ -759,6 +772,13 @@ public class FutureProjectDAO {
     return FutureGrpc.ClientRequest(
         uac.getWorkspaceService()
             .getWorkspaceById(GetWorkspaceById.newBuilder().setId(workspaceId).build()),
+        executor);
+  }
+
+  private InternalFuture<Workspace> getWorkspaceByWorkspaceName(String workspaceName) {
+    return FutureGrpc.ClientRequest(
+        uac.getWorkspaceService()
+            .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
         executor);
   }
 
@@ -1557,5 +1577,220 @@ public class FutureProjectDAO {
         .thenCompose(
             unused -> updateModifiedTimestamp(request.getId(), new Date().getTime()), executor)
         .thenCompose(unused -> updateVersionNumber(request.getId()), executor);
+  }
+
+  public InternalFuture<Project> createProject(CreateProject request) {
+    // Validate if current user has access to the entity or not
+    return checkProjectPermission(null, ModelDBActionEnum.ModelDBServiceActions.CREATE)
+        .thenCompose(unused -> createProjectHandler.convertCreateRequest(request), executor)
+        .thenCompose(
+            project ->
+                jdbi.withHandle(
+                        handle ->
+                            handle
+                                .createQuery(
+                                    "SELECT p.id From project p where p.name = :projectName AND p.deleted = :deleted")
+                                .bind("projectName", project.getName())
+                                .bind("deleted", true)
+                                .mapTo(String.class)
+                                .list())
+                    .thenCompose(
+                        deletedProjectIds ->
+                            deleteEntityResourcesWithServiceUser(
+                                deletedProjectIds,
+                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT),
+                        executor)
+                    .thenApply(status -> project, executor),
+            executor)
+        .thenCompose(createProjectHandler::insertProject, executor)
+        .thenCompose(
+            createdProject ->
+                FutureGrpc.ClientRequest(
+                        uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
+                    .thenCompose(
+                        loginUser -> {
+                          String workspaceName;
+                          if (!request.getWorkspaceName().isEmpty()) {
+                            workspaceName = request.getWorkspaceName();
+                          } else {
+                            workspaceName = loginUser.getVertaInfo().getUsername();
+                          }
+                          return getWorkspaceByWorkspaceName(workspaceName)
+                              .thenCompose(
+                                  workspace -> {
+                                    var resourceVisibility = createdProject.getVisibility();
+                                    if (createdProject
+                                        .getVisibility()
+                                        .equals(ResourceVisibility.UNKNOWN)) {
+                                      resourceVisibility =
+                                          ModelDBUtils.getResourceVisibility(
+                                              Optional.of(workspace),
+                                              createdProject.getProjectVisibility());
+                                    }
+                                    var projectBuilder = createdProject.toBuilder();
+                                    return createResources(
+                                            Optional.of(workspaceName),
+                                            createdProject.getId(),
+                                            createdProject.getName(),
+                                            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                                            createdProject.getCustomPermission(),
+                                            resourceVisibility)
+                                        .thenCompose(
+                                            unused2 ->
+                                                jdbi.useHandle(
+                                                    handle ->
+                                                        handle
+                                                            .createUpdate(
+                                                                "UPDATE project SET created=:created WHERE id=:id")
+                                                            .bind("created", true)
+                                                            .bind("id", createdProject.getId())
+                                                            .execute()),
+                                            executor)
+                                        .thenCompose(
+                                            unused ->
+                                                getResourceItemsForLoginUserWorkspace(
+                                                        workspaceName,
+                                                        Optional.of(
+                                                            Collections.singletonList(
+                                                                createdProject.getId())),
+                                                        ModelDBResourceEnum
+                                                            .ModelDBServiceResourceTypes.PROJECT)
+                                                    .thenApply(
+                                                        getResourcesResponseItems -> {
+                                                          Optional<GetResourcesResponseItem>
+                                                              responseItem =
+                                                                  getResourcesResponseItems.stream()
+                                                                      .findFirst();
+                                                          if (!responseItem.isPresent()) {
+                                                            throw new NotFoundException(
+                                                                String.format(
+                                                                    "Failed to locate Project resources in UAC for ID : %s",
+                                                                    createdProject.getId()));
+                                                          }
+                                                          GetResourcesResponseItem projectResource =
+                                                              responseItem.get();
+
+                                                          projectBuilder.setVisibility(
+                                                              projectResource.getVisibility());
+                                                          projectBuilder.setWorkspaceServiceId(
+                                                              projectResource.getWorkspaceId());
+                                                          projectBuilder.setOwner(
+                                                              String.valueOf(
+                                                                  projectResource.getOwnerId()));
+                                                          projectBuilder.setCustomPermission(
+                                                              projectResource
+                                                                  .getCustomPermission());
+
+                                                          switch (workspace.getInternalIdCase()) {
+                                                            case ORG_ID:
+                                                              projectBuilder.setWorkspaceId(
+                                                                  workspace.getOrgId());
+                                                              projectBuilder.setWorkspaceTypeValue(
+                                                                  WorkspaceTypeEnum.WorkspaceType
+                                                                      .ORGANIZATION_VALUE);
+                                                              break;
+                                                            case USER_ID:
+                                                              projectBuilder.setWorkspaceId(
+                                                                  workspace.getUserId());
+                                                              projectBuilder.setWorkspaceTypeValue(
+                                                                  WorkspaceTypeEnum.WorkspaceType
+                                                                      .USER_VALUE);
+                                                              break;
+                                                            default:
+                                                              // Do nothing
+                                                              break;
+                                                          }
+
+                                                          ProjectVisibility visibility =
+                                                              (ProjectVisibility)
+                                                                  ModelDBUtils.getOldVisibility(
+                                                                      ModelDBResourceEnum
+                                                                          .ModelDBServiceResourceTypes
+                                                                          .PROJECT,
+                                                                      projectResource
+                                                                          .getVisibility());
+                                                          projectBuilder.setProjectVisibility(
+                                                              visibility);
+
+                                                          return projectBuilder.build();
+                                                        },
+                                                        executor),
+                                            executor);
+                                  },
+                                  executor);
+                        },
+                        executor),
+            executor);
+  }
+
+  private InternalFuture<Boolean> deleteEntityResourcesWithServiceUser(
+      List<String> entityIds,
+      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    if (entityIds == null || entityIds.isEmpty()) {
+      return InternalFuture.completedInternalFuture(true);
+    }
+    var modeldbServiceResourceType =
+        ResourceType.newBuilder()
+            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
+            .build();
+    var resources =
+        Resources.newBuilder()
+            .setResourceType(modeldbServiceResourceType)
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .addAllResourceIds(entityIds)
+            .build();
+
+    LOGGER.trace("Calling CollaboratorService to delete resources");
+    var deleteResources = DeleteResources.newBuilder().setResources(resources).build();
+    return FutureGrpc.ClientRequest(
+            uac.getServiceAccountCollaboratorServiceForServiceUser()
+                .deleteResources(deleteResources),
+            executor)
+        .thenCompose(
+            response -> {
+              LOGGER.trace("DeleteResources message sent.  Response: {}", response);
+              return InternalFuture.completedInternalFuture(true);
+            },
+            executor);
+  }
+
+  private InternalFuture<Boolean> createResources(
+      Optional<String> workspaceName,
+      String resourceId,
+      String resourceName,
+      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType,
+      CollaboratorPermissions permissions,
+      ResourceVisibility resourceVisibility) {
+    LOGGER.trace("Calling CollaboratorService to create resources");
+    var modeldbServiceResourceType =
+        ResourceType.newBuilder().setModeldbServiceResourceType(resourceType).build();
+    var setResourcesBuilder =
+        SetResource.newBuilder()
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .setResourceType(modeldbServiceResourceType)
+            .setResourceId(resourceId)
+            .setResourceName(resourceName)
+            .setVisibility(resourceVisibility);
+
+    if (resourceVisibility.equals(ResourceVisibility.ORG_CUSTOM)) {
+      setResourcesBuilder.setCollaboratorType(permissions.getCollaboratorType());
+      setResourcesBuilder.setCanDeploy(permissions.getCanDeploy());
+    }
+
+    if (workspaceName.isPresent()) {
+      setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
+    } else {
+      throw new IllegalArgumentException(
+          "workspaceId and workspaceName are both empty.  One must be provided.");
+    }
+
+    return FutureGrpc.ClientRequest(
+            uac.getCollaboratorService().setResource(setResourcesBuilder.build()), executor)
+        .thenCompose(
+            response -> {
+              LOGGER.trace("SetResources message sent.  Response: {}", response);
+              return InternalFuture.completedInternalFuture(true);
+            },
+            executor);
   }
 }
