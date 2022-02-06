@@ -2,6 +2,7 @@ __pycache__/
 .DS_Store
 .ipynb
 .vscode
+.idea
 
 # ignore dirs created and used by docker-compose modeldb-backend
 data

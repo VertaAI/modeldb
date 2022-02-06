@@ -331,6 +331,7 @@
                     <pluginId>grpc-java</pluginId>
                     <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
                     <protoSourceRoot>../protos/protos/public</protoSourceRoot>
+                    <checkStaleness>true</checkStaleness>
                 </configuration>
                 <executions>
                     <execution>
@@ -448,21 +449,23 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>com.theoryinpractise</groupId>
-                <artifactId>googleformatter-maven-plugin</artifactId>
-                <version>1.7.5</version>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.20.0</version>
+                <configuration>
+                    <java>
+                        <googleJavaFormat>
+                            <version>1.7</version>
+                            <style>GOOGLE</style>
+                        </googleJavaFormat>
+                    </java>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>reformat-sources</id>
-                        <configuration>
-                            <includeStale>false</includeStale>
-                            <style>GOOGLE</style>
-                            <filterModified>false</filterModified>
-                            <skip>false</skip>
-                            <fixImports>true</fixImports>
-                        </configuration>
+                        <id>spotless-apply</id>
                         <goals>
-                            <goal>format</goal>
+                            <!-- can be disabled using -Dspotless.check.skip=true -->
+                            <goal>apply</goal>
                         </goals>
                         <phase>process-sources</phase>
                     </execution>
