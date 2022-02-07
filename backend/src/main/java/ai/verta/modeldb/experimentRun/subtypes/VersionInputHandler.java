@@ -94,8 +94,15 @@ public class VersionInputHandler {
     if (versioningEntry == null) {
       throw new InvalidArgumentException("VersionedInput not found in request");
     } else {
-      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
-          validateVersioningEntity(versioningEntry).get();
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap;
+      try {
+        locationBlobWithHashMap = validateVersioningEntity(versioningEntry).get();
+      } catch (Exception ex) {
+        if (ex.getCause() != null && ex.getCause().getCause() != null) {
+          throw (ModelDBException) ex.getCause().getCause();
+        }
+        throw ex;
+      }
 
       // Insert version input for run in versioning_modeldb_entity_mapping mapping table
       insertVersioningInput(handle, versioningEntry, locationBlobWithHashMap, runId);
