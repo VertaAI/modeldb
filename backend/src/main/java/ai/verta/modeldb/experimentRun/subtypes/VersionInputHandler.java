@@ -90,12 +90,13 @@ public class VersionInputHandler {
    * table called `hyperparameter_element_mapping`
    */
   public void validateAndInsertVersionedInputs(
-      Handle handle, String runId, VersioningEntry versioningEntry) {
+      Handle handle,
+      String runId,
+      VersioningEntry versioningEntry,
+      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap) {
     if (versioningEntry == null) {
       throw new InvalidArgumentException("VersionedInput not found in request");
     } else {
-      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap =
-          validateVersioningEntity(versioningEntry).get();
 
       // Insert version input for run in versioning_modeldb_entity_mapping mapping table
       insertVersioningInput(handle, versioningEntry, locationBlobWithHashMap, runId);
@@ -344,7 +345,7 @@ public class VersionInputHandler {
    * @return returns a map from location to an Entry of BlobExpanded and sha
    * @throws ModelDBException ModelDBException
    */
-  private InternalFuture<Map<String, Map.Entry<BlobExpanded, String>>> validateVersioningEntity(
+  public InternalFuture<Map<String, Map.Entry<BlobExpanded, String>>> validateVersioningEntity(
       VersioningEntry versioningEntry) {
 
     final var futureTask =
