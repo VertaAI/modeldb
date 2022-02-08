@@ -56,6 +56,8 @@ public class ArtifactHandler extends ArtifactHandlerBase {
 
     if (entityName.equals("ProjectEntity")) {
       this.artifactEntityType = ArtifactPartEntity.PROJECT_ARTIFACT;
+    } else if (entityName.equals("ExperimentEntity")) {
+        this.artifactEntityType = ArtifactPartEntity.EXPERIMENT_ARTIFACT;
     } else if (entityName.equals("ExperimentRunEntity")) {
       this.artifactEntityType = ArtifactPartEntity.EXP_RUN_ARTIFACT;
     } else {
