@@ -19,7 +19,6 @@ import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
-import ai.verta.modeldb.experiment.ExperimentServiceImpl;
 import ai.verta.modeldb.experiment.FutureExperimentServiceImpl;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunServiceImpl;
 import ai.verta.modeldb.health.HealthServiceImpl;
