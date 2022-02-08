@@ -16,6 +16,7 @@ import ai.verta.modeldb.FindProjects;
 import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetProjectByName;
+import ai.verta.modeldb.GetProjectReadme;
 import ai.verta.modeldb.GetSummary;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
@@ -27,6 +28,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
+import ai.verta.modeldb.SetProjectReadme;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
@@ -1293,5 +1295,76 @@ public class FutureProjectDAO {
                     .mapTo(Long.class)
                     .findOne())
         .thenApply(count -> count.orElse(0L), executor);
+  }
+
+  public InternalFuture<Void> setProjectReadme(SetProjectReadme request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project ID not found in SetProjectReadme request");
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        handle
+                            .createUpdate(
+                                "update project set readme_text = :readmeText where id = :id")
+                            .bind("id", request.getId())
+                            .bind("readmeText", request.getReadmeText())
+                            .execute()),
+            executor)
+        .thenCompose(
+            unused -> updateModifiedTimestamp(request.getId(), new Date().getTime()), executor)
+        .thenCompose(unused -> updateVersionNumber(request.getId()), executor);
+  }
+
+  public InternalFuture<GetProjectReadme.Response> getProjectReadme(GetProjectReadme request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                var errorMessage = "Project ID not found in GetProjectReadme request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.withHandle(
+                    handle ->
+                        handle
+                            .createQuery("select readme_text from project where id = :id")
+                            .bind("id", request.getId())
+                            .mapTo(String.class)
+                            .findOne()),
+            executor)
+        .thenApply(
+            readmeTextOptional -> {
+              var response = GetProjectReadme.Response.newBuilder();
+              readmeTextOptional.ifPresent(response::setReadmeText);
+              return response.build();
+            },
+            executor);
   }
 }
