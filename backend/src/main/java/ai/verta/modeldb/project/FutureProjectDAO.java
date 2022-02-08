@@ -7,17 +7,28 @@ import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.Pagination;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.DeleteProjectArtifact;
 import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
+import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.FindProjects;
+import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
+import ai.verta.modeldb.GetProjectByName;
+import ai.verta.modeldb.GetProjectReadme;
+import ai.verta.modeldb.GetSummary;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.LastModifiedExperimentRunSummary;
 import ai.verta.modeldb.LogAttributes;
+import ai.verta.modeldb.LogProjectArtifacts;
+import ai.verta.modeldb.MetricsSummary;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
+import ai.verta.modeldb.SetProjectReadme;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
@@ -34,6 +45,7 @@ import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
@@ -58,9 +70,11 @@ import ai.verta.uac.Workspace;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +100,7 @@ public class FutureProjectDAO {
   private final PredicatesHandler predicatesHandler;
   private final CodeVersionHandler codeVersionHandler;
   private final SortingHandler sortingHandler;
+  private final FutureExperimentRunDAO futureExperimentRunDAO;
 
   public FutureProjectDAO(
       Executor executor,
@@ -93,11 +108,13 @@ public class FutureProjectDAO {
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
       DatasetVersionDAO datasetVersionDAO,
-      MDBConfig mdbConfig) {
+      MDBConfig mdbConfig,
+      FutureExperimentRunDAO futureExperimentRunDAO) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
     this.isMssql = mdbConfig.getDatabase().getRdbConfiguration().isMssql();
+    this.futureExperimentRunDAO = futureExperimentRunDAO;
 
     var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
@@ -415,7 +432,7 @@ public class FutureProjectDAO {
               } else {
                 resourcesFuture =
                     getResourceItemsForWorkspace(
-                        request.getWorkspaceName(),
+                        Optional.of(request.getWorkspaceName()),
                         Optional.of(request.getProjectIdsList()),
                         Optional.empty(),
                         ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
@@ -787,7 +804,7 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForWorkspace(
-      String workspaceName,
+      Optional<String> workspaceName,
       Optional<List<String>> resourceIdsOptional,
       Optional<String> resourceName,
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceTypes) {
@@ -804,7 +821,7 @@ public class FutureProjectDAO {
     }
 
     var builder = GetResources.newBuilder().setResources(resources.build());
-    builder.setWorkspaceName(workspaceName);
+    workspaceName.ifPresent(builder::setWorkspaceName);
     resourceName.ifPresent(builder::setResourceName);
     return FutureGrpc.ClientRequest(
             uac.getCollaboratorService().getResources(builder.build()), executor)
@@ -846,7 +863,7 @@ public class FutureProjectDAO {
         .thenCompose(
             allowedProjectIds -> {
               return getResourceItemsForWorkspace(
-                  "",
+                  Optional.empty(),
                   Optional.of(allowedProjectIds),
                   Optional.empty(),
                   ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
@@ -993,6 +1010,361 @@ public class FutureProjectDAO {
                           .setVersionNumber(project.getVersionNumber() + 1L)
                           .build();
                     }),
+            executor);
+  }
+
+  public InternalFuture<GetProjectByName.Response> getProjectByName(GetProjectByName request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getName().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project name is not found in GetProjectByName request");
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                FutureGrpc.ClientRequest(
+                    uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
+            executor)
+        .thenCompose(
+            userInfo -> {
+              // Get the user info from the Context
+              return getResourceItemsForWorkspace(
+                      Optional.empty(),
+                      Optional.empty(),
+                      Optional.of(request.getName()),
+                      ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                  .thenCompose(
+                      responseItem -> {
+                        if (responseItem.size() == 0) {
+                          throw new NotFoundException("Project not found");
+                        }
+
+                        String workspaceName =
+                            request.getWorkspaceName().isEmpty()
+                                ? userInfo.getVertaInfo().getUsername()
+                                : request.getWorkspaceName();
+
+                        FindProjects.Builder findProjects =
+                            FindProjects.newBuilder()
+                                .addAllProjectIds(
+                                    responseItem.stream()
+                                        .map(GetResourcesResponseItem::getResourceId)
+                                        .collect(Collectors.toList()))
+                                .setWorkspaceName(workspaceName);
+                        return findProjects(findProjects.build())
+                            .thenApply(
+                                response -> {
+                                  Project selfOwnerProject = null;
+                                  List<Project> sharedProjects = new ArrayList<>();
+
+                                  for (Project project : response.getProjectsList()) {
+                                    if (userInfo == null
+                                        || project
+                                            .getOwner()
+                                            .equals(userInfo.getVertaInfo().getUserId())) {
+                                      selfOwnerProject = project;
+                                    } else {
+                                      sharedProjects.add(project);
+                                    }
+                                  }
+
+                                  var responseBuilder = GetProjectByName.Response.newBuilder();
+                                  if (selfOwnerProject != null) {
+                                    responseBuilder.setProjectByUser(selfOwnerProject);
+                                  }
+                                  responseBuilder.addAllSharedProjects(sharedProjects);
+
+                                  return responseBuilder.build();
+                                },
+                                executor);
+                      },
+                      executor);
+            },
+            executor);
+  }
+
+  public InternalFuture<Void> logArtifacts(LogProjectArtifacts request) {
+    final var projectId = request.getId();
+    final var artifacts = request.getArtifactsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> artifactHandler.logArtifacts(handle, projectId, artifacts, false)),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(projectId), executor);
+  }
+
+  public InternalFuture<List<Artifact>> getArtifacts(GetArtifacts request) {
+    final var projectId = request.getId();
+    final var key = request.getKey();
+    Optional<String> maybeKey = key.isEmpty() ? Optional.empty() : Optional.of(key);
+
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                throw new InvalidArgumentException("Project ID not found in GetArtifacts request");
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> artifactHandler.getArtifacts(projectId, maybeKey), executor)
+        .thenApply(
+            artifacts ->
+                artifacts.stream()
+                    .sorted(Comparator.comparing(Artifact::getKey))
+                    .collect(Collectors.toList()),
+            executor);
+  }
+
+  public InternalFuture<Void> deleteArtifacts(DeleteProjectArtifact request) {
+    final var projectId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    final var keys =
+        request.getKey().isEmpty()
+            ? new ArrayList<String>()
+            : Collections.singletonList(request.getKey());
+    Optional<List<String>> optionalKeys = keys.isEmpty() ? Optional.empty() : Optional.of(keys);
+
+    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> artifactHandler.deleteArtifacts(projectId, optionalKeys), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(projectId), executor);
+  }
+
+  public InternalFuture<GetSummary.Response> getSummary(GetSummary request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getEntityId().isEmpty()) {
+                var errorMessage = "Project ID not found in GetSummary request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getEntityId(), ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> getProjectById(request.getEntityId()), executor)
+        .thenCompose(
+            project -> {
+              final var responseBuilder =
+                  GetSummary.Response.newBuilder()
+                      .setName(project.getName())
+                      .setLastUpdatedTime(project.getDateUpdated());
+
+              var experimentCountFuture =
+                  getExperimentCount(Collections.singletonList(project.getId()))
+                      .thenApply(responseBuilder::setTotalExperiment, executor);
+              return experimentCountFuture
+                  .thenCompose(
+                      builder ->
+                          getExperimentRunCount(Collections.singletonList(project.getId()))
+                              .thenApply(builder::setTotalExperimentRuns, executor),
+                      executor)
+                  .thenCompose(
+                      builder ->
+                          futureExperimentRunDAO
+                              .findExperimentRuns(
+                                  FindExperimentRuns.newBuilder()
+                                      .setProjectId(request.getEntityId())
+                                      .build())
+                              .thenApply(
+                                  response -> {
+                                    var experimentRuns = response.getExperimentRunsList();
+                                    LastModifiedExperimentRunSummary
+                                        lastModifiedExperimentRunSummary = null;
+                                    List<MetricsSummary> minMaxMetricsValueList = new ArrayList<>();
+                                    if (!experimentRuns.isEmpty()) {
+                                      ExperimentRun lastModifiedExperimentRun = null;
+                                      Map<String, Double[]> minMaxMetricsValueMap =
+                                          new HashMap<>(); // In double[], Index 0 =
+                                      // minValue, Index 1 =
+                                      // maxValue
+                                      Set<String> keySet = new HashSet<>();
+
+                                      for (ExperimentRun experimentRun : experimentRuns) {
+                                        if (lastModifiedExperimentRun == null
+                                            || lastModifiedExperimentRun.getDateUpdated()
+                                                < experimentRun.getDateUpdated()) {
+                                          lastModifiedExperimentRun = experimentRun;
+                                        }
+
+                                        for (KeyValue keyValue : experimentRun.getMetricsList()) {
+                                          keySet.add(keyValue.getKey());
+                                          minMaxMetricsValueMap.putAll(
+                                              getMinMaxMetricsValueMap(
+                                                  minMaxMetricsValueMap, keyValue));
+                                        }
+                                      }
+
+                                      lastModifiedExperimentRunSummary =
+                                          LastModifiedExperimentRunSummary.newBuilder()
+                                              .setLastUpdatedTime(
+                                                  lastModifiedExperimentRun.getDateUpdated())
+                                              .setName(lastModifiedExperimentRun.getName())
+                                              .build();
+
+                                      for (String key : keySet) {
+                                        Double[] minMaxValueArray =
+                                            minMaxMetricsValueMap.get(
+                                                key); // Index 0 = minValue, Index 1
+                                        // = maxValue
+                                        var minMaxMetricsSummary =
+                                            MetricsSummary.newBuilder()
+                                                .setKey(key)
+                                                .setMinValue(minMaxValueArray[0]) // Index 0 =
+                                                // minValue
+                                                .setMaxValue(
+                                                    minMaxValueArray[1]) // Index 1 = maxValue
+                                                .build();
+                                        minMaxMetricsValueList.add(minMaxMetricsSummary);
+                                      }
+                                    }
+
+                                    builder.addAllMetrics(minMaxMetricsValueList);
+
+                                    if (lastModifiedExperimentRunSummary != null) {
+                                      builder.setLastModifiedExperimentRunSummary(
+                                          lastModifiedExperimentRunSummary);
+                                    }
+
+                                    return builder.build();
+                                  },
+                                  executor),
+                      executor);
+            },
+            executor);
+  }
+
+  private Map<String, Double[]> getMinMaxMetricsValueMap(
+      Map<String, Double[]> minMaxMetricsValueMap, KeyValue keyValue) {
+    Double value = keyValue.getValue().getNumberValue();
+    Double[] minMaxValueArray = minMaxMetricsValueMap.get(keyValue.getKey());
+    if (minMaxValueArray == null) {
+      minMaxValueArray = new Double[2]; // Index 0 = minValue, Index 1 = maxValue
+    }
+    if (minMaxValueArray[0] == null || minMaxValueArray[0] > value) {
+      minMaxValueArray[0] = value;
+    }
+    if (minMaxValueArray[1] == null || minMaxValueArray[1] < value) {
+      minMaxValueArray[1] = value;
+    }
+    return Collections.singletonMap(keyValue.getKey(), minMaxValueArray);
+  }
+
+  private InternalFuture<Long> getExperimentCount(List<String> projectIds) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "SELECT COUNT(ee.id) FROM experiment ee WHERE ee.project_id IN (<project_ids>)")
+                    .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
+                    .mapTo(Long.class)
+                    .findOne())
+        .thenApply(count -> count.orElse(0L), executor);
+  }
+
+  private InternalFuture<Long> getExperimentRunCount(List<String> projectIds) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "SELECT COUNT(er.id) FROM experiment_run er WHERE er.project_id IN (<project_ids>)")
+                    .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
+                    .mapTo(Long.class)
+                    .findOne())
+        .thenApply(count -> count.orElse(0L), executor);
+  }
+
+  public InternalFuture<Void> setProjectReadme(SetProjectReadme request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project ID not found in SetProjectReadme request");
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        handle
+                            .createUpdate(
+                                "update project set readme_text = :readmeText where id = :id")
+                            .bind("id", request.getId())
+                            .bind("readmeText", request.getReadmeText())
+                            .execute()),
+            executor)
+        .thenCompose(
+            unused -> updateModifiedTimestamp(request.getId(), new Date().getTime()), executor)
+        .thenCompose(unused -> updateVersionNumber(request.getId()), executor);
+  }
+
+  public InternalFuture<GetProjectReadme.Response> getProjectReadme(GetProjectReadme request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                var errorMessage = "Project ID not found in GetProjectReadme request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.withHandle(
+                    handle ->
+                        handle
+                            .createQuery("select readme_text from project where id = :id")
+                            .bind("id", request.getId())
+                            .mapTo(String.class)
+                            .findOne()),
+            executor)
+        .thenApply(
+            readmeTextOptional -> {
+              var response = GetProjectReadme.Response.newBuilder();
+              readmeTextOptional.ifPresent(response::setReadmeText);
+              return response.build();
+            },
             executor);
   }
 }
