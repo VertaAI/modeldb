@@ -33,6 +33,8 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogProjectArtifacts;
 import ai.verta.modeldb.LogProjectCodeVersion;
+import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.SetProjectReadme;
 import ai.verta.modeldb.SetProjectShortName;
@@ -41,6 +43,9 @@ import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.gson.Gson;
@@ -105,6 +110,41 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
     eventMetadata.addProperty("message", eventMessage);
     return futureEventDAO.addLocalEventWithAsync(
         ModelDBServiceResourceTypes.PROJECT.name(), eventType, workspaceId, eventMetadata);
+  }
+
+  private InternalFuture<Project> getProjectById(String projectId) {
+    try {
+      var validateArgumentFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (projectId.isEmpty()) {
+                  throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
+                }
+              },
+              executor);
+      return validateArgumentFuture
+          .thenCompose(
+              unused ->
+                  futureProjectDAO.findProjects(
+                      FindProjects.newBuilder()
+                          .addProjectIds(projectId)
+                          .setPageLimit(1)
+                          .setPageNumber(1)
+                          .build()),
+              executor)
+          .thenApply(
+              response -> {
+                if (response.getProjectsList().isEmpty()) {
+                  throw new NotFoundException("Project not found for given Id");
+                } else if (response.getProjectsCount() > 1) {
+                  throw new InternalErrorException("More then one projects found");
+                }
+                return response.getProjects(0);
+              },
+              executor);
+    } catch (Exception e) {
+      return InternalFuture.failedStage(e);
+    }
   }
 
   @Override
@@ -516,8 +556,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       GetProjectById request, StreamObserver<GetProjectById.Response> responseObserver) {
     try {
       final var response =
-          futureProjectDAO
-              .getProjectById(request.getId())
+          getProjectById(request.getId())
               .thenApply(
                   project -> GetProjectById.Response.newBuilder().setProject(project).build(),
                   executor);
@@ -541,7 +580,12 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void verifyConnection(
       Empty request, StreamObserver<VerifyConnectionResponse> responseObserver) {
-    super.verifyConnection(request, responseObserver);
+    try {
+      final var response = futureProjectDAO.verifyConnection(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

@@ -10,6 +10,7 @@ import ai.verta.modeldb.AddProjectTags;
 import ai.verta.modeldb.DeleteProjectArtifact;
 import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
+import ai.verta.modeldb.Empty;
 import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.FindProjects;
@@ -31,6 +32,7 @@ import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.SetProjectReadme;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.UpdateProjectDescription;
+import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
@@ -53,10 +55,10 @@ import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.Action;
-import ai.verta.uac.Empty;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
@@ -67,6 +69,7 @@ import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.Workspace;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -416,9 +419,14 @@ public class FutureProjectDAO {
         unused -> artifactHandler.getUrlForArtifact(request), executor);
   }
 
+  public InternalFuture<VerifyConnectionResponse> verifyConnection(Empty request) {
+    return InternalFuture.completedInternalFuture(
+        VerifyConnectionResponse.newBuilder().setStatus(true).build());
+  }
+
   public InternalFuture<FindProjects.Response> findProjects(FindProjects request) {
     return FutureGrpc.ClientRequest(
-            uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
+            uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()), executor)
         .thenCompose(
             userInfo -> {
               InternalFuture<List<GetResourcesResponseItem>> resourcesFuture;
@@ -455,30 +463,8 @@ public class FutureProjectDAO {
                           FindProjects.Response.newBuilder().build());
                     }
 
-                    List<KeyValueQuery> predicates = new ArrayList<>(request.getPredicatesList());
-                    for (KeyValueQuery predicate : predicates) {
-                      // Validate if current user has access to the entity or not where predicate
-                      // key has an id
-                      RdbmsUtils.validatePredicates(
-                          ModelDBConstants.PROJECTS,
-                          new ArrayList<>(accessibleResourceIdsWithCollaborator),
-                          predicate,
-                          true);
-                    }
-
-                    final var futureLocalContext =
-                        InternalFuture.supplyAsync(
-                            () -> {
-                              final var localQueryContext = new QueryFilterContext();
-                              localQueryContext.getConditions().add("p.deleted = :deleted");
-                              localQueryContext.getBinds().add(q -> q.bind("deleted", false));
-
-                              localQueryContext.getConditions().add("p.created = :created");
-                              localQueryContext.getBinds().add(q -> q.bind("created", true));
-
-                              return localQueryContext;
-                            },
-                            executor);
+                    final InternalFuture<QueryFilterContext> futureLocalContext =
+                        getFutureLocalContext();
 
                     // futurePredicatesContext
                     final var futurePredicatesContext =
@@ -488,21 +474,8 @@ public class FutureProjectDAO {
                     final var futureSortingContext =
                         sortingHandler.processSort(request.getSortKey(), request.getAscending());
 
-                    final InternalFuture<QueryFilterContext> futureProjectIdsContext =
-                        InternalFuture.supplyAsync(
-                            () -> {
-                              final var localQueryContext = new QueryFilterContext();
-                              localQueryContext.getConditions().add(" p.id IN (<projectIds>) ");
-                              localQueryContext
-                                  .getBinds()
-                                  .add(
-                                      q ->
-                                          q.bindList(
-                                              "projectIds", accessibleResourceIdsWithCollaborator));
-
-                              return localQueryContext;
-                            },
-                            executor);
+                    var futureProjectIdsContext =
+                        getFutureProjectIdsContext(request, accessibleResourceIdsWithCollaborator);
 
                     final var futureProjects =
                         InternalFuture.sequence(
@@ -538,86 +511,11 @@ public class FutureProjectDAO {
                                                   new HashMap<>();
                                               return query
                                                   .map(
-                                                      (rs, ctx) -> {
-                                                        var projectBuilder =
-                                                            Project.newBuilder()
-                                                                .setId(rs.getString("p.id"))
-                                                                .setName(rs.getString("p.name"))
-                                                                .setDescription(
-                                                                    rs.getString("p.description"))
-                                                                .setDateUpdated(
-                                                                    rs.getLong("p.date_updated"))
-                                                                .setDateCreated(
-                                                                    rs.getLong("p.date_created"))
-                                                                .setOwner(rs.getString("p.owner"))
-                                                                .setVersionNumber(
-                                                                    rs.getLong("p.version_number"))
-                                                                .setShortName(
-                                                                    rs.getString("p.short_name"))
-                                                                .setReadmeText(
-                                                                    rs.getString("p.readme_text"));
-
-                                                        var projectResource =
-                                                            getResourcesMap.get(
-                                                                projectBuilder.getId());
-                                                        projectBuilder.setVisibility(
-                                                            projectResource.getVisibility());
-                                                        projectBuilder.setWorkspaceServiceId(
-                                                            projectResource.getWorkspaceId());
-                                                        projectBuilder.setOwner(
-                                                            String.valueOf(
-                                                                projectResource.getOwnerId()));
-                                                        projectBuilder.setCustomPermission(
-                                                            projectResource.getCustomPermission());
-
-                                                        Workspace workspace;
-                                                        if (cacheWorkspaceMap.containsKey(
-                                                            projectResource.getWorkspaceId())) {
-                                                          workspace =
-                                                              cacheWorkspaceMap.get(
-                                                                  projectResource.getWorkspaceId());
-                                                        } else {
-                                                          workspace =
-                                                              getWorkspaceById(
-                                                                      projectResource
-                                                                          .getWorkspaceId())
-                                                                  .get();
-                                                          cacheWorkspaceMap.put(
-                                                              workspace.getId(), workspace);
-                                                        }
-                                                        switch (workspace.getInternalIdCase()) {
-                                                          case ORG_ID:
-                                                            projectBuilder.setWorkspaceId(
-                                                                workspace.getOrgId());
-                                                            projectBuilder.setWorkspaceTypeValue(
-                                                                WorkspaceTypeEnum.WorkspaceType
-                                                                    .ORGANIZATION_VALUE);
-                                                            break;
-                                                          case USER_ID:
-                                                            projectBuilder.setWorkspaceId(
-                                                                workspace.getUserId());
-                                                            projectBuilder.setWorkspaceTypeValue(
-                                                                WorkspaceTypeEnum.WorkspaceType
-                                                                    .USER_VALUE);
-                                                            break;
-                                                          default:
-                                                            // Do nothing
-                                                            break;
-                                                        }
-
-                                                        ProjectVisibility visibility =
-                                                            (ProjectVisibility)
-                                                                ModelDBUtils.getOldVisibility(
-                                                                    ModelDBResourceEnum
-                                                                        .ModelDBServiceResourceTypes
-                                                                        .PROJECT,
-                                                                    projectResource
-                                                                        .getVisibility());
-                                                        projectBuilder.setProjectVisibility(
-                                                            visibility);
-
-                                                        return projectBuilder;
-                                                      })
+                                                      (rs, ctx) ->
+                                                          buildProjectBuilderFromResultSet(
+                                                              getResourcesMap,
+                                                              cacheWorkspaceMap,
+                                                              rs))
                                                   .list();
                                             })
                                         .thenCompose(
@@ -714,25 +612,7 @@ public class FutureProjectDAO {
                                     futureProjectIdsContext),
                                 executor)
                             .thenApply(QueryFilterContext::combine, executor)
-                            .thenCompose(
-                                queryContext ->
-                                    jdbi.withHandle(
-                                        handle -> {
-                                          var sql = "select count(p.id) from project p ";
-
-                                          if (!queryContext.getConditions().isEmpty()) {
-                                            sql +=
-                                                " WHERE "
-                                                    + String.join(
-                                                        " AND ", queryContext.getConditions());
-                                          }
-
-                                          var query = handle.createQuery(sql);
-                                          queryContext.getBinds().forEach(b -> b.accept(query));
-
-                                          return query.mapTo(Long.class).one();
-                                        }),
-                                executor);
+                            .thenCompose(this::getProjectCountBasedOnQueryFilter, executor);
 
                     return futureProjects
                         .thenApply(this::sortProjectFields, executor)
@@ -748,6 +628,117 @@ public class FutureProjectDAO {
                   executor);
             },
             executor);
+  }
+
+  private InternalFuture<Long> getProjectCountBasedOnQueryFilter(QueryFilterContext queryContext) {
+    return jdbi.withHandle(
+        handle -> {
+          var sql = "select count(p.id) from project p ";
+
+          if (!queryContext.getConditions().isEmpty()) {
+            sql += " WHERE " + String.join(" AND ", queryContext.getConditions());
+          }
+
+          var query = handle.createQuery(sql);
+          queryContext.getBinds().forEach(b -> b.accept(query));
+
+          return query.mapTo(Long.class).one();
+        });
+  }
+
+  private Project.Builder buildProjectBuilderFromResultSet(
+      Map<String, GetResourcesResponseItem> getResourcesMap,
+      Map<Long, Workspace> cacheWorkspaceMap,
+      java.sql.ResultSet rs)
+      throws SQLException {
+    var projectBuilder =
+        Project.newBuilder()
+            .setId(rs.getString("id"))
+            .setName(rs.getString("name"))
+            .setDescription(rs.getString("description"))
+            .setDateUpdated(rs.getLong("date_updated"))
+            .setDateCreated(rs.getLong("date_created"))
+            .setOwner(rs.getString("owner"))
+            .setVersionNumber(rs.getLong("version_number"))
+            .setShortName(rs.getString("short_name"))
+            .setReadmeText(rs.getString("readme_text"));
+
+    var projectResource = getResourcesMap.get(projectBuilder.getId());
+    projectBuilder.setVisibility(projectResource.getVisibility());
+    projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
+    projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+    projectBuilder.setCustomPermission(projectResource.getCustomPermission());
+
+    Workspace workspace;
+    if (cacheWorkspaceMap.containsKey(projectResource.getWorkspaceId())) {
+      workspace = cacheWorkspaceMap.get(projectResource.getWorkspaceId());
+    } else {
+      workspace = getWorkspaceById(projectResource.getWorkspaceId()).get();
+      cacheWorkspaceMap.put(workspace.getId(), workspace);
+    }
+    switch (workspace.getInternalIdCase()) {
+      case ORG_ID:
+        projectBuilder.setWorkspaceId(workspace.getOrgId());
+        projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
+        break;
+      case USER_ID:
+        projectBuilder.setWorkspaceId(workspace.getUserId());
+        projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+        break;
+      default:
+        // Do nothing
+        break;
+    }
+
+    ProjectVisibility visibility =
+        (ProjectVisibility)
+            ModelDBUtils.getOldVisibility(
+                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                projectResource.getVisibility());
+    projectBuilder.setProjectVisibility(visibility);
+
+    return projectBuilder;
+  }
+
+  private InternalFuture<QueryFilterContext> getFutureLocalContext() {
+    return InternalFuture.supplyAsync(
+        () -> {
+          final var localQueryContext = new QueryFilterContext();
+          localQueryContext.getConditions().add("p.deleted = :deleted");
+          localQueryContext.getBinds().add(q -> q.bind("deleted", false));
+
+          localQueryContext.getConditions().add("p.created = :created");
+          localQueryContext.getBinds().add(q -> q.bind("created", true));
+
+          return localQueryContext;
+        },
+        executor);
+  }
+
+  private InternalFuture<QueryFilterContext> getFutureProjectIdsContext(
+      FindProjects request, Set<String> accessibleResourceIdsWithCollaborator) {
+    List<KeyValueQuery> predicates = new ArrayList<>(request.getPredicatesList());
+    for (KeyValueQuery predicate : predicates) {
+      // Validate if current user has access to the entity or not where predicate
+      // key has an id
+      RdbmsUtils.validatePredicates(
+          ModelDBConstants.PROJECTS,
+          new ArrayList<>(accessibleResourceIdsWithCollaborator),
+          predicate,
+          true);
+    }
+
+    return InternalFuture.supplyAsync(
+        () -> {
+          final var localQueryContext = new QueryFilterContext();
+          localQueryContext.getConditions().add(" p.id IN (<projectIds>) ");
+          localQueryContext
+              .getBinds()
+              .add(q -> q.bindList("projectIds", accessibleResourceIdsWithCollaborator));
+
+          return localQueryContext;
+        },
+        executor);
   }
 
   private InternalFuture<Workspace> getWorkspaceById(long workspaceId) {
@@ -861,13 +852,12 @@ public class FutureProjectDAO {
             },
             executor)
         .thenCompose(
-            allowedProjectIds -> {
-              return getResourceItemsForWorkspace(
-                  Optional.empty(),
-                  Optional.of(allowedProjectIds),
-                  Optional.empty(),
-                  ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
-            },
+            allowedProjectIds ->
+                getResourceItemsForWorkspace(
+                    Optional.empty(),
+                    Optional.of(allowedProjectIds),
+                    Optional.empty(),
+                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT),
             executor)
         .thenCompose(
             allowedProjectResources ->
@@ -888,11 +878,10 @@ public class FutureProjectDAO {
                               "Mark Projects as deleted : {}, count : {}",
                               allowedProjectResources,
                               updatedCount);
-                          //                          allowedProjectResources.forEach(
-                          //                              allowedResource ->
-                          //
-                          // ReconcilerInitializer.softDeleteProjects.insert(
-                          //                                      allowedResource.getResourceId()));
+                          allowedProjectResources.forEach(
+                              allowedResource ->
+                                  ReconcilerInitializer.softDeleteProjects.insert(
+                                      allowedResource.getResourceId()));
                           LOGGER.debug("Project deleted successfully");
                         })
                     .thenApply(unused -> allowedProjectResources, executor),
@@ -1029,7 +1018,8 @@ public class FutureProjectDAO {
         .thenCompose(
             unused ->
                 FutureGrpc.ClientRequest(
-                    uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
+                    uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()),
+                    executor),
             executor)
         .thenCompose(
             userInfo -> {
