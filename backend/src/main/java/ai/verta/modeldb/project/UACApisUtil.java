@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public abstract class UACApisUtil {
+public class UACApisUtil {
   private static final Logger LOGGER = LogManager.getLogger(UACApisUtil.class);
   protected final Executor executor;
   protected final UAC uac;
@@ -37,14 +37,14 @@ public abstract class UACApisUtil {
     this.uac = uac;
   }
 
-  protected InternalFuture<Workspace> getWorkspaceById(long workspaceId) {
+  public InternalFuture<Workspace> getWorkspaceById(long workspaceId) {
     return FutureGrpc.ClientRequest(
         uac.getWorkspaceService()
             .getWorkspaceById(GetWorkspaceById.newBuilder().setId(workspaceId).build()),
         executor);
   }
 
-  protected InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForLoginUserWorkspace(
+  public InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForLoginUserWorkspace(
       String workspaceName,
       Optional<List<String>> resourceIdsOptional,
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceTypes) {
@@ -68,7 +68,7 @@ public abstract class UACApisUtil {
         .thenApply(GetResources.Response::getItemList, executor);
   }
 
-  protected InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForWorkspace(
+  public InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForWorkspace(
       String workspaceName,
       Optional<List<String>> resourceIdsOptional,
       Optional<String> resourceName,
@@ -93,7 +93,7 @@ public abstract class UACApisUtil {
         .thenApply(GetResources.Response::getItemList, executor);
   }
 
-  protected InternalFuture<UserInfoPaginationDTO> getFuzzyUserInfoList(String usernameChar) {
+  public InternalFuture<UserInfoPaginationDTO> getFuzzyUserInfoList(String usernameChar) {
     LOGGER.trace("usernameChar : {}", usernameChar);
     if (usernameChar.isEmpty()) {
       var paginationDTO = new UserInfoPaginationDTO();
@@ -116,7 +116,7 @@ public abstract class UACApisUtil {
             executor);
   }
 
-  protected InternalFuture<Map<String, UserInfo>> getUserInfoFromAuthServer(
+  public InternalFuture<Map<String, UserInfo>> getUserInfoFromAuthServer(
       Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
     var getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
     if (emailIdList != null && !emailIdList.isEmpty()) {

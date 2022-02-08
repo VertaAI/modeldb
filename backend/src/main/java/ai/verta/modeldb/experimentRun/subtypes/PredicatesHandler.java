@@ -7,13 +7,13 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
-import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.exceptions.UnimplementedException;
+import ai.verta.modeldb.project.UACApisUtil;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Value;
@@ -37,14 +37,18 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   private HyperparameterPredicatesHandler hyperparameterPredicatesHandler;
   private final String tableName;
   private final String alias;
+  private final Executor executor;
+  private final UACApisUtil uacApisUtil;
 
-  public PredicatesHandler(Executor executor, UAC uac, String tableName, String alias) {
-    super(executor, uac);
+  public PredicatesHandler(
+      Executor executor, String tableName, String alias, UACApisUtil uacApisUtil) {
+    this.executor = executor;
     this.tableName = tableName;
     this.alias = alias;
+    this.uacApisUtil = uacApisUtil;
 
     if ("experiment_run".equals(tableName)) {
-      this.hyperparameterPredicatesHandler = new HyperparameterPredicatesHandler(executor, uac);
+      this.hyperparameterPredicatesHandler = new HyperparameterPredicatesHandler();
     }
   }
 
@@ -645,7 +649,8 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     if (operator.equals(OperatorEnum.Operator.CONTAIN)
         || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
       userInfoListFuture =
-          getFuzzyUserInfoList(predicate.getValue().getStringValue())
+          uacApisUtil
+              .getFuzzyUserInfoList(predicate.getValue().getStringValue())
               .thenApply(UserInfoPaginationDTO::getUserInfoList, executor);
     } else {
       var ownerIdsArrString = predicate.getValue().getStringValue();
@@ -656,7 +661,8 @@ public class PredicatesHandler extends PredicateHandlerUtils {
         ownerIds.add(ownerIdsArrString);
       }
       userInfoListFuture =
-          getUserInfoFromAuthServer(
+          uacApisUtil
+              .getUserInfoFromAuthServer(
                   new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList())
               .thenApply(userInfoMap -> new ArrayList<>(userInfoMap.values()), executor);
     }
@@ -667,7 +673,8 @@ public class PredicatesHandler extends PredicateHandlerUtils {
             var resourceItemsFutures = new ArrayList<InternalFuture<Set<String>>>();
             for (var userInfo : userInfoList) {
               resourceItemsFutures.add(
-                  getResourceItemsForLoginUserWorkspace(
+                  uacApisUtil
+                      .getResourceItemsForLoginUserWorkspace(
                           userInfo.getVertaInfo().getUsername(),
                           Optional.empty(),
                           ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)

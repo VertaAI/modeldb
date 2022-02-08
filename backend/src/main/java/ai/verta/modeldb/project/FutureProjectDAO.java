@@ -66,10 +66,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
 
-public class FutureProjectDAO extends UACApisUtil {
+public class FutureProjectDAO {
   private static final Logger LOGGER = LogManager.getLogger(FutureProjectDAO.class);
 
   private final FutureJdbi jdbi;
+  private final Executor executor;
+  private final UAC uac;
   private final boolean isMssql;
 
   private final AttributeHandler attributeHandler;
@@ -78,6 +80,7 @@ public class FutureProjectDAO extends UACApisUtil {
   private final PredicatesHandler predicatesHandler;
   private final CodeVersionHandler codeVersionHandler;
   private final SortingHandler sortingHandler;
+  private final UACApisUtil uacApisUtil;
 
   public FutureProjectDAO(
       Executor executor,
@@ -85,10 +88,13 @@ public class FutureProjectDAO extends UACApisUtil {
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
       DatasetVersionDAO datasetVersionDAO,
-      MDBConfig mdbConfig) {
-    super(executor, uac);
+      MDBConfig mdbConfig,
+      UACApisUtil uacApisUtil) {
     this.jdbi = jdbi;
     this.isMssql = mdbConfig.getDatabase().getRdbConfiguration().isMssql();
+    this.executor = executor;
+    this.uac = uac;
+    this.uacApisUtil = uacApisUtil;
 
     var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
@@ -105,7 +111,7 @@ public class FutureProjectDAO extends UACApisUtil {
             artifactStoreDAO,
             datasetVersionDAO,
             mdbConfig);
-    predicatesHandler = new PredicatesHandler(executor, uac, "project", "p");
+    predicatesHandler = new PredicatesHandler(executor, "project", "p", uacApisUtil);
     sortingHandler = new SortingHandler("project");
   }
 
@@ -404,13 +410,13 @@ public class FutureProjectDAO extends UACApisUtil {
               if (request.getWorkspaceName().isEmpty()
                   || request.getWorkspaceName().equals(userInfo.getVertaInfo().getUsername())) {
                 resourcesFuture =
-                    getResourceItemsForLoginUserWorkspace(
+                    uacApisUtil.getResourceItemsForLoginUserWorkspace(
                         request.getWorkspaceName(),
                         Optional.of(request.getProjectIdsList()),
                         ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
               } else {
                 resourcesFuture =
-                    getResourceItemsForWorkspace(
+                    uacApisUtil.getResourceItemsForWorkspace(
                         request.getWorkspaceName(),
                         Optional.of(request.getProjectIdsList()),
                         Optional.empty(),
@@ -644,7 +650,7 @@ public class FutureProjectDAO extends UACApisUtil {
     if (cacheWorkspaceMap.containsKey(projectResource.getWorkspaceId())) {
       workspace = cacheWorkspaceMap.get(projectResource.getWorkspaceId());
     } else {
-      workspace = getWorkspaceById(projectResource.getWorkspaceId()).get();
+      workspace = uacApisUtil.getWorkspaceById(projectResource.getWorkspaceId()).get();
       cacheWorkspaceMap.put(workspace.getId(), workspace);
     }
     switch (workspace.getInternalIdCase()) {

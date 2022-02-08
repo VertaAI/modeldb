@@ -3,18 +3,12 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.exceptions.UnimplementedException;
 import java.util.Date;
-import java.util.concurrent.Executor;
 
 public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
-
-  public HyperparameterPredicatesHandler(Executor executor, UAC uac) {
-    super(executor, uac);
-  }
 
   public InternalFuture<QueryFilterContext> processHyperparametersPredicate(
       long index, KeyValueQuery predicate, String name, String fieldType) {
