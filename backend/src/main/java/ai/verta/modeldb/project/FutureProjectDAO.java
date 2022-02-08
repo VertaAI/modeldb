@@ -630,15 +630,15 @@ public class FutureProjectDAO {
       throws SQLException {
     var projectBuilder =
         Project.newBuilder()
-            .setId(rs.getString("p.id"))
-            .setName(rs.getString("p.name"))
-            .setDescription(rs.getString("p.description"))
-            .setDateUpdated(rs.getLong("p.date_updated"))
-            .setDateCreated(rs.getLong("p.date_created"))
-            .setOwner(rs.getString("p.owner"))
-            .setVersionNumber(rs.getLong("p.version_number"))
-            .setShortName(rs.getString("p.short_name"))
-            .setReadmeText(rs.getString("p.readme_text"));
+            .setId(rs.getString("id"))
+            .setName(rs.getString("name"))
+            .setDescription(rs.getString("description"))
+            .setDateUpdated(rs.getLong("date_updated"))
+            .setDateCreated(rs.getLong("date_created"))
+            .setOwner(rs.getString("owner"))
+            .setVersionNumber(rs.getLong("version_number"))
+            .setShortName(rs.getString("short_name"))
+            .setReadmeText(rs.getString("readme_text"));
 
     var projectResource = getResourcesMap.get(projectBuilder.getId());
     projectBuilder.setVisibility(projectResource.getVisibility());

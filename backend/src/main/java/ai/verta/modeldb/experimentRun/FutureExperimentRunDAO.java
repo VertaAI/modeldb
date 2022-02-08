@@ -1564,11 +1564,17 @@ public class FutureExperimentRunDAO {
             },
             executor)
         .thenCompose(
-            unused ->
+            unused -> versionInputHandler.validateVersioningEntity(request.getVersionedInputs()),
+            executor)
+        .thenCompose(
+            locationBlobWithHashMap ->
                 jdbi.useHandle(
                     handle ->
                         versionInputHandler.validateAndInsertVersionedInputs(
-                            handle, request.getId(), request.getVersionedInputs())),
+                            handle,
+                            request.getId(),
+                            request.getVersionedInputs(),
+                            locationBlobWithHashMap)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
