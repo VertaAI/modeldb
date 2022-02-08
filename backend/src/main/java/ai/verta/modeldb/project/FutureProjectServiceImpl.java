@@ -1,5 +1,6 @@
 package ai.verta.modeldb.project;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddProjectAttributes;
@@ -156,7 +157,31 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   public void updateProjectDescription(
       UpdateProjectDescription request,
       StreamObserver<UpdateProjectDescription.Response> responseObserver) {
-    super.updateProjectDescription(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureProjectDAO
+              .updateProjectDescription(request)
+              .thenCompose(
+                  updatedProject ->
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("description"),
+                              Collections.emptyMap(),
+                              "project description updated successfully")
+                          .thenApply(eventLoggedStatus -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      UpdateProjectDescription.Response.newBuilder()
+                          .setProject(updatedProject)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -171,7 +196,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .setId(request.getId())
                       .addAllAttributes(request.getAttributesList())
                       .build())
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject ->
                       addEvent(
@@ -208,7 +233,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var futureResponse =
           futureProjectDAO
               .updateProjectAttributes(request)
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject ->
                       addEvent(
@@ -264,7 +289,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var futureResponse =
           futureProjectDAO
               .deleteAttributes(request)
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject -> {
                     // Add succeeded event in local DB
@@ -308,7 +333,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var response =
           futureProjectDAO
               .addTags(request)
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject ->
                       addEvent(
@@ -355,7 +380,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       final var response =
           futureProjectDAO
               .deleteTags(request)
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject -> {
                     // Add succeeded event in local DB
@@ -401,7 +426,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .setId(request.getId())
                       .addTags(request.getTag())
                       .build())
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject ->
                       addEvent(
@@ -440,7 +465,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                       .addTags(request.getTag())
                       .setDeleteAll(false)
                       .build())
-              .thenCompose(unused -> getProjectById(request.getId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
               .thenCompose(
                   updatedProject ->
                       addEvent(
@@ -544,7 +569,12 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void getProjectByName(
       GetProjectByName request, StreamObserver<GetProjectByName.Response> responseObserver) {
-    super.getProjectByName(request, responseObserver);
+    try {
+      final var futureResponse = futureProjectDAO.getProjectByName(request);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -566,19 +596,54 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
 
   @Override
   public void getSummary(GetSummary request, StreamObserver<GetSummary.Response> responseObserver) {
-    super.getSummary(request, responseObserver);
+    try {
+      final var response = futureProjectDAO.getSummary(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void setProjectReadme(
       SetProjectReadme request, StreamObserver<SetProjectReadme.Response> responseObserver) {
-    super.setProjectReadme(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .setProjectReadme(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("readme_text"),
+                              Collections.singletonMap(
+                                  "readme_text", updatedProject.getReadmeText()),
+                              "project readme_text updated successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      SetProjectReadme.Response.newBuilder().setProject(updatedProject).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getProjectReadme(
       GetProjectReadme request, StreamObserver<GetProjectReadme.Response> responseObserver) {
-    super.getProjectReadme(request, responseObserver);
+    try {
+      final var response = futureProjectDAO.getProjectReadme(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -632,20 +697,93 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void logArtifacts(
       LogProjectArtifacts request, StreamObserver<LogProjectArtifacts.Response> responseObserver) {
-    super.logArtifacts(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureProjectDAO
+              .logArtifacts(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("artifacts"),
+                              Collections.singletonMap(
+                                  "artifact_keys",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getArtifactsList().stream()
+                                              .map(Artifact::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "project artifacts added successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      LogProjectArtifacts.Response.newBuilder().setProject(updatedProject).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getArtifacts(
       GetArtifacts request, StreamObserver<GetArtifacts.Response> responseObserver) {
-    super.getArtifacts(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureProjectDAO
+              .getArtifacts(request)
+              .thenApply(
+                  artifacts ->
+                      GetArtifacts.Response.newBuilder().addAllArtifacts(artifacts).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteArtifact(
       DeleteProjectArtifact request,
       StreamObserver<DeleteProjectArtifact.Response> responseObserver) {
-    super.deleteArtifact(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureProjectDAO
+              .deleteArtifacts(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("artifacts"),
+                              Collections.singletonMap(
+                                  "artifact_keys",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getKey()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "project artifact deleted successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      DeleteProjectArtifact.Response.newBuilder()
+                          .setProject(updatedProject)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
