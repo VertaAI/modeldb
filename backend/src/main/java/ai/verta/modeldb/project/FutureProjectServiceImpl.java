@@ -55,6 +55,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -469,7 +470,33 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void deleteProject(
       DeleteProject request, StreamObserver<DeleteProject.Response> responseObserver) {
-    super.deleteProject(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .deleteProjects(Collections.singletonList(request.getId()))
+              .thenCompose(
+                  allowedProjectResources -> {
+                    List<InternalFuture<Void>> eventFuture = new ArrayList<>();
+                    // Add succeeded event in local DB
+                    for (var projectResource : allowedProjectResources) {
+                      eventFuture.add(
+                          addEvent(
+                              projectResource.getResourceId(),
+                              projectResource.getWorkspaceId(),
+                              DELETE_PROJECT_EVENT_TYPE,
+                              Optional.empty(),
+                              Collections.emptyMap(),
+                              "project deleted successfully"));
+                    }
+                    return InternalFuture.sequence(eventFuture, executor);
+                  },
+                  executor)
+              .thenApply(
+                  project -> DeleteProject.Response.newBuilder().setStatus(true).build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -624,7 +651,34 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void deleteProjects(
       DeleteProjects request, StreamObserver<DeleteProjects.Response> responseObserver) {
-    super.deleteProjects(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .deleteProjects(request.getIdsList())
+              .thenCompose(
+                  allowedProjectResources -> {
+                    List<InternalFuture<Void>> eventFuture = new ArrayList<>();
+                    // Add succeeded event in local DB
+                    for (var projectResource : allowedProjectResources) {
+                      eventFuture.add(
+                          addEvent(
+                              projectResource.getResourceId(),
+                              projectResource.getWorkspaceId(),
+                              DELETE_PROJECT_EVENT_TYPE,
+                              Optional.empty(),
+                              Collections.emptyMap(),
+                              "project deleted successfully"));
+                    }
+                    return InternalFuture.sequence(eventFuture, executor);
+                  },
+                  executor)
+              .thenApply(
+                  project -> DeleteProjects.Response.newBuilder().setStatus(true).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

@@ -22,6 +22,7 @@ import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.UpdateProjectAttributes;
 import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
@@ -39,11 +40,13 @@ import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.Action;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetWorkspaceById;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum;
@@ -793,5 +796,112 @@ public class FutureProjectDAO {
     return FutureGrpc.ClientRequest(
             uac.getCollaboratorService().getResources(builder.build()), executor)
         .thenApply(GetResources.Response::getItemList, executor);
+  }
+
+  public InternalFuture<List<GetResourcesResponseItem>> deleteProjects(List<String> projectIds) {
+    // validate argument
+    InternalFuture<Void> validateArgumentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              // Request Parameter Validation
+              if (projectIds.isEmpty() || projectIds.stream().allMatch(String::isEmpty)) {
+                var errorMessage = "Project ID not found in request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+
+    return validateArgumentFuture
+        .thenCompose(
+            unused -> {
+              // Get self allowed resources id where user has delete permission
+              return getSelfAllowedResources(
+                  ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                  ModelDBActionEnum.ModelDBServiceActions.DELETE,
+                  projectIds);
+            },
+            executor)
+        .thenApply(
+            allowedProjectIds -> {
+              if (allowedProjectIds.isEmpty()) {
+                throw new PermissionDeniedException(
+                    "Delete Access Denied for given project Ids : " + projectIds);
+              }
+              return allowedProjectIds;
+            },
+            executor)
+        .thenCompose(
+            allowedProjectIds ->
+                getResourceItemsForWorkspace(
+                    "",
+                    Optional.of(allowedProjectIds),
+                    Optional.empty(),
+                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT),
+            executor)
+        .thenCompose(
+            allowedProjectResources ->
+                jdbi.useHandle(
+                        handle -> {
+                          var updatedCount =
+                              handle
+                                  .createUpdate(
+                                      "update project set deleted = :deleted where id IN (<projectIds>)")
+                                  .bind("deleted", true)
+                                  .bindList(
+                                      "projectIds",
+                                      allowedProjectResources.stream()
+                                          .map(GetResourcesResponseItem::getResourceId)
+                                          .collect(Collectors.toList()))
+                                  .execute();
+                          LOGGER.debug(
+                              "Mark Projects as deleted : {}, count : {}",
+                              allowedProjectResources,
+                              updatedCount);
+                          allowedProjectResources.forEach(
+                              allowedResource ->
+                                  ReconcilerInitializer.softDeleteProjects.insert(
+                                      allowedResource.getResourceId()));
+                          LOGGER.debug("Project deleted successfully");
+                        })
+                    .thenApply(unused -> allowedProjectResources, executor),
+            executor);
+  }
+
+  private InternalFuture<List<String>> getSelfAllowedResources(
+      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      List<String> requestedResourcesIds) {
+    var action =
+        Action.newBuilder()
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .setModeldbServiceAction(modelDBServiceActions)
+            .build();
+    GetSelfAllowedResources getAllowedResourcesRequest =
+        GetSelfAllowedResources.newBuilder()
+            .addActions(action)
+            .setResourceType(
+                ResourceType.newBuilder()
+                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .build();
+    return FutureGrpc.ClientRequest(
+            uac.getAuthzService().getSelfAllowedResources(getAllowedResourcesRequest), executor)
+        .thenApply(
+            getAllowedResourcesResponse -> {
+              LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+              LOGGER.trace(
+                  CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
+
+              var resourcesIds = new ArrayList<String>();
+              if (!getAllowedResourcesResponse.getResourcesList().isEmpty()) {
+                for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
+                  resourcesIds.addAll(resources.getResourceIdsList());
+                }
+                // Validate if current user has access to the entity or not
+                resourcesIds.retainAll(requestedResourcesIds);
+              }
+              return resourcesIds;
+            },
+            executor);
   }
 }
