@@ -97,7 +97,6 @@ public class VersionInputHandler {
     if (versioningEntry == null) {
       throw new InvalidArgumentException("VersionedInput not found in request");
     } else {
-      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap;
       try {
         locationBlobWithHashMap = validateVersioningEntity(versioningEntry).get();
       } catch (Exception ex) {
