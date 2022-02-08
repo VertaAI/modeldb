@@ -63,8 +63,8 @@ class TestKafkaSettings:
             KafkaSettings(input_topic, output_topic, error_topic)
 
 
+@pytest.mark.deployment
 class TestConfigureEndpoint:
-
     def test_configure_endpoint(self, client, model_version, strs):
         LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
         strs = iter(strs)

@@ -1,13 +1,5 @@
-FROM adoptopenjdk/openjdk16:jdk-16_36-alpine as builder
-
-RUN apk add wget
-
-RUN GRPC_HEALTH_PROBE_VERSION=v0.3.0 && \
-    wget -qO/bin/grpc_health_probe https://github.com/grpc-ecosystem/grpc-health-probe/releases/download/${GRPC_HEALTH_PROBE_VERSION}/grpc_health_probe-linux-amd64 && \
-    chmod +x /bin/grpc_health_probe
-
-FROM adoptopenjdk/openjdk16:jdk-16_36-alpine
-COPY --from=builder /bin/grpc_health_probe /bin/grpc_health_probe
+ARG BASE_IMAGE=adoptopenjdk/openjdk16:jdk-16_36-alpine
+FROM $BASE_IMAGE
 
 RUN mkdir -p modeldb-project-work-dir
 WORKDIR /modeldb-project-work-dir

@@ -73,6 +73,9 @@ public class SortingHandler {
       case ModelDBConstants.METRICS:
         return InternalFuture.completedInternalFuture(
             processKeyValueSort(names[1], ascending, "metrics"));
+      case ModelDBConstants.ATTRIBUTES:
+        return InternalFuture.completedInternalFuture(
+            processAttributeSort(names[1], ascending, "attributes"));
       case ModelDBConstants.HYPERPARAMETERS:
         final var hyperparameterSoryPredicate =
             processKeyValueSort(names[1], ascending, "hyperparameters");
@@ -95,6 +98,22 @@ public class SortingHandler {
     var sql =
         String.format(
             "select %s as entityId, kv_value as value from keyvalue where entity_name=:entityName and field_type=:sort_field_type and kv_key=:sort_key",
+            getEntityColumn());
+    var queryContext =
+        new QueryFilterContext()
+            .addBind(q -> q.bind("sort_field_type", fieldType))
+            .addBind(q -> q.bind("entityName", getEntityName()))
+            .addBind(q -> q.bind("sort_key", key));
+    queryContext.addOrderItem(
+        new OrderTable(
+            sql, ascending, Collections.singletonList(new OrderColumn("value", ascending))));
+    return queryContext;
+  }
+
+  private QueryFilterContext processAttributeSort(String key, boolean ascending, String fieldType) {
+    var sql =
+        String.format(
+            "select %s as entityId, kv_value as value from attribute where entity_name=:entityName and field_type=:sort_field_type and kv_key=:sort_key",
             getEntityColumn());
     var queryContext =
         new QueryFilterContext()
