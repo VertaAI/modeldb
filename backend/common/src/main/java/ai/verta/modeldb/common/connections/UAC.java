@@ -20,7 +20,7 @@ public class UAC extends Connection {
 
   private final CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorServiceFutureStub;
   private final CollaboratorServiceGrpc.CollaboratorServiceFutureStub
-          serviceAccountCollaboratorServiceFutureStub;
+      serviceAccountCollaboratorServiceFutureStub;
   private final UACServiceGrpc.UACServiceFutureStub uacServiceFutureStub;
   private final WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspaceServiceFutureStub;
   private final AuthzServiceGrpc.AuthzServiceFutureStub authzServiceFutureStub;
