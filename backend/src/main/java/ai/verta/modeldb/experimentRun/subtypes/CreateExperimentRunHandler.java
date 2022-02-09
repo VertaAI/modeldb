@@ -3,7 +3,6 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.CreateExperimentRun;
 import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.Config;
@@ -310,11 +309,9 @@ public class CreateExperimentRunHandler {
                                   || newExperimentRun.getCodeVersionSnapshot().hasGitSnapshot()) {
                                 codeVersionHandler.logCodeVersion(
                                     handleForTransaction,
-                                    LogExperimentRunCodeVersion.newBuilder()
-                                        .setId(newExperimentRun.getId())
-                                        .setCodeVersion(newExperimentRun.getCodeVersionSnapshot())
-                                        .setOverwrite(false)
-                                        .build());
+                                    newExperimentRun.getId(),
+                                    false,
+                                    newExperimentRun.getCodeVersionSnapshot());
                               }
                               if (!newExperimentRun.getDatasetsList().isEmpty()) {
                                 datasetHandler.logArtifacts(
