@@ -59,9 +59,6 @@ public class DAOSet {
     set.blobDAO = new BlobDAORdbImpl(services.authService, services.mdbRoleService);
 
     set.experimentDAO = new ExperimentDAORdbImpl(services.authService, services.mdbRoleService);
-    set.futureExperimentDAO =
-        new FutureExperimentDAO(
-            executor, jdbi, services.uac, mdbConfig, set.artifactStoreDAO, set.datasetVersionDAO);
     set.experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             mdbConfig,
@@ -107,6 +104,7 @@ public class DAOSet {
             set.futureExperimentRunDAO);
     set.futureEventDAO =
         new FutureEventDAO(executor, jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
+    set.futureExperimentDAO = new FutureExperimentDAO(executor, jdbi, services.uac, mdbConfig, set);
 
     return set;
   }
