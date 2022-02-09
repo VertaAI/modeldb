@@ -20,7 +20,7 @@ public class UAC extends Connection {
 
   private final CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorServiceFutureStub;
   private final CollaboratorServiceGrpc.CollaboratorServiceFutureStub
-      ServiceAccountCollaboratorServiceFutureStub;
+          serviceAccountCollaboratorServiceFutureStub;
   private final UACServiceGrpc.UACServiceFutureStub uacServiceFutureStub;
   private final WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspaceServiceFutureStub;
   private final AuthzServiceGrpc.AuthzServiceFutureStub authzServiceFutureStub;
@@ -53,7 +53,7 @@ public class UAC extends Connection {
     }
 
     collaboratorServiceFutureStub = CollaboratorServiceGrpc.newFutureStub(authServiceChannel);
-    ServiceAccountCollaboratorServiceFutureStub =
+    serviceAccountCollaboratorServiceFutureStub =
         CollaboratorServiceGrpc.newFutureStub(authServiceChannel)
             .withInterceptors(
                 MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
@@ -96,7 +96,7 @@ public class UAC extends Connection {
 
   public CollaboratorServiceGrpc.CollaboratorServiceFutureStub
       getServiceAccountCollaboratorServiceForServiceUser() {
-    return attachInterceptors(ServiceAccountCollaboratorServiceFutureStub);
+    return attachInterceptors(serviceAccountCollaboratorServiceFutureStub);
   }
 
   public UACServiceGrpc.UACServiceFutureStub getUACService() {

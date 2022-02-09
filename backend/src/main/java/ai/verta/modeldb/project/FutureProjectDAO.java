@@ -1585,21 +1585,7 @@ public class FutureProjectDAO {
         .thenCompose(unused -> createProjectHandler.convertCreateRequest(request), executor)
         .thenCompose(
             project ->
-                jdbi.withHandle(
-                        handle ->
-                            handle
-                                .createQuery(
-                                    "SELECT p.id From project p where p.name = :projectName AND p.deleted = :deleted")
-                                .bind("projectName", project.getName())
-                                .bind("deleted", true)
-                                .mapTo(String.class)
-                                .list())
-                    .thenCompose(
-                        deletedProjectIds ->
-                            deleteEntityResourcesWithServiceUser(
-                                deletedProjectIds,
-                                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT),
-                        executor)
+                deleteEntityResourcesWithServiceUser(project.getName())
                     .thenApply(status -> project, executor),
             executor)
         .thenCompose(createProjectHandler::insertProject, executor)
@@ -1618,15 +1604,8 @@ public class FutureProjectDAO {
                           return getWorkspaceByWorkspaceName(workspaceName)
                               .thenCompose(
                                   workspace -> {
-                                    var resourceVisibility = createdProject.getVisibility();
-                                    if (createdProject
-                                        .getVisibility()
-                                        .equals(ResourceVisibility.UNKNOWN)) {
-                                      resourceVisibility =
-                                          ModelDBUtils.getResourceVisibility(
-                                              Optional.of(workspace),
-                                              createdProject.getProjectVisibility());
-                                    }
+                                    ResourceVisibility resourceVisibility =
+                                        getResourceVisibility(createdProject, workspace);
                                     var projectBuilder = createdProject.toBuilder();
                                     return createResources(
                                             Optional.of(workspaceName),
@@ -1636,85 +1615,15 @@ public class FutureProjectDAO {
                                             createdProject.getCustomPermission(),
                                             resourceVisibility)
                                         .thenCompose(
-                                            unused2 ->
-                                                jdbi.useHandle(
-                                                    handle ->
-                                                        handle
-                                                            .createUpdate(
-                                                                "UPDATE project SET created=:created WHERE id=:id")
-                                                            .bind("created", true)
-                                                            .bind("id", createdProject.getId())
-                                                            .execute()),
+                                            unused2 -> updateProjectAsCreated(createdProject),
                                             executor)
                                         .thenCompose(
                                             unused ->
-                                                getResourceItemsForLoginUserWorkspace(
-                                                        workspaceName,
-                                                        Optional.of(
-                                                            Collections.singletonList(
-                                                                createdProject.getId())),
-                                                        ModelDBResourceEnum
-                                                            .ModelDBServiceResourceTypes.PROJECT)
-                                                    .thenApply(
-                                                        getResourcesResponseItems -> {
-                                                          Optional<GetResourcesResponseItem>
-                                                              responseItem =
-                                                                  getResourcesResponseItems.stream()
-                                                                      .findFirst();
-                                                          if (!responseItem.isPresent()) {
-                                                            throw new NotFoundException(
-                                                                String.format(
-                                                                    "Failed to locate Project resources in UAC for ID : %s",
-                                                                    createdProject.getId()));
-                                                          }
-                                                          GetResourcesResponseItem projectResource =
-                                                              responseItem.get();
-
-                                                          projectBuilder.setVisibility(
-                                                              projectResource.getVisibility());
-                                                          projectBuilder.setWorkspaceServiceId(
-                                                              projectResource.getWorkspaceId());
-                                                          projectBuilder.setOwner(
-                                                              String.valueOf(
-                                                                  projectResource.getOwnerId()));
-                                                          projectBuilder.setCustomPermission(
-                                                              projectResource
-                                                                  .getCustomPermission());
-
-                                                          switch (workspace.getInternalIdCase()) {
-                                                            case ORG_ID:
-                                                              projectBuilder.setWorkspaceId(
-                                                                  workspace.getOrgId());
-                                                              projectBuilder.setWorkspaceTypeValue(
-                                                                  WorkspaceTypeEnum.WorkspaceType
-                                                                      .ORGANIZATION_VALUE);
-                                                              break;
-                                                            case USER_ID:
-                                                              projectBuilder.setWorkspaceId(
-                                                                  workspace.getUserId());
-                                                              projectBuilder.setWorkspaceTypeValue(
-                                                                  WorkspaceTypeEnum.WorkspaceType
-                                                                      .USER_VALUE);
-                                                              break;
-                                                            default:
-                                                              // Do nothing
-                                                              break;
-                                                          }
-
-                                                          ProjectVisibility visibility =
-                                                              (ProjectVisibility)
-                                                                  ModelDBUtils.getOldVisibility(
-                                                                      ModelDBResourceEnum
-                                                                          .ModelDBServiceResourceTypes
-                                                                          .PROJECT,
-                                                                      projectResource
-                                                                          .getVisibility());
-                                                          projectBuilder.setProjectVisibility(
-                                                              visibility);
-
-                                                          return projectBuilder.build();
-                                                        },
-                                                        executor),
+                                                populateProjectFieldFromResourceItem(
+                                                    createdProject,
+                                                    workspaceName,
+                                                    workspace,
+                                                    projectBuilder),
                                             executor);
                                   },
                                   executor);
@@ -1723,33 +1632,119 @@ public class FutureProjectDAO {
             executor);
   }
 
-  private InternalFuture<Boolean> deleteEntityResourcesWithServiceUser(
-      List<String> entityIds,
-      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    if (entityIds == null || entityIds.isEmpty()) {
-      return InternalFuture.completedInternalFuture(true);
-    }
-    var modeldbServiceResourceType =
-        ResourceType.newBuilder()
-            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
-            .build();
-    var resources =
-        Resources.newBuilder()
-            .setResourceType(modeldbServiceResourceType)
-            .setService(ServiceEnum.Service.MODELDB_SERVICE)
-            .addAllResourceIds(entityIds)
-            .build();
+  private InternalFuture<Project> populateProjectFieldFromResourceItem(
+      Project createdProject,
+      String workspaceName,
+      Workspace workspace,
+      Project.Builder projectBuilder) {
+    return getResourceItemsForLoginUserWorkspace(
+            workspaceName,
+            Optional.of(Collections.singletonList(createdProject.getId())),
+            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+        .thenApply(
+            getResourcesResponseItems -> {
+              Optional<GetResourcesResponseItem> responseItem =
+                  getResourcesResponseItems.stream().findFirst();
+              if (!responseItem.isPresent()) {
+                throw new NotFoundException(
+                    String.format(
+                        "Failed to locate Project resources in UAC for ID : %s",
+                        createdProject.getId()));
+              }
+              GetResourcesResponseItem projectResource = responseItem.get();
 
-    LOGGER.trace("Calling CollaboratorService to delete resources");
-    var deleteResources = DeleteResources.newBuilder().setResources(resources).build();
-    return FutureGrpc.ClientRequest(
-            uac.getServiceAccountCollaboratorServiceForServiceUser()
-                .deleteResources(deleteResources),
-            executor)
+              projectBuilder.setVisibility(projectResource.getVisibility());
+              projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
+              projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+              projectBuilder.setCustomPermission(projectResource.getCustomPermission());
+
+              switch (workspace.getInternalIdCase()) {
+                case ORG_ID:
+                  projectBuilder.setWorkspaceId(workspace.getOrgId());
+                  projectBuilder.setWorkspaceTypeValue(
+                      WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
+                  break;
+                case USER_ID:
+                  projectBuilder.setWorkspaceId(workspace.getUserId());
+                  projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+                  break;
+                default:
+                  // Do nothing
+                  break;
+              }
+
+              ProjectVisibility visibility =
+                  (ProjectVisibility)
+                      ModelDBUtils.getOldVisibility(
+                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                          projectResource.getVisibility());
+              projectBuilder.setProjectVisibility(visibility);
+
+              return projectBuilder.build();
+            },
+            executor);
+  }
+
+  private InternalFuture<Void> updateProjectAsCreated(Project createdProject) {
+    return jdbi.useHandle(
+        handle ->
+            handle
+                .createUpdate("UPDATE project SET created=:created WHERE id=:id")
+                .bind("created", true)
+                .bind("id", createdProject.getId())
+                .execute());
+  }
+
+  private ResourceVisibility getResourceVisibility(Project createdProject, Workspace workspace) {
+    var resourceVisibility = createdProject.getVisibility();
+    if (createdProject.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
+      resourceVisibility =
+          ModelDBUtils.getResourceVisibility(
+              Optional.of(workspace), createdProject.getProjectVisibility());
+    }
+    return resourceVisibility;
+  }
+
+  private InternalFuture<Boolean> deleteEntityResourcesWithServiceUser(String projectName) {
+
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "SELECT p.id From project p where p.name = :projectName AND p.deleted = :deleted")
+                    .bind("projectName", projectName)
+                    .bind("deleted", true)
+                    .mapTo(String.class)
+                    .list())
         .thenCompose(
-            response -> {
-              LOGGER.trace("DeleteResources message sent.  Response: {}", response);
-              return InternalFuture.completedInternalFuture(true);
+            deletedProjectIds -> {
+              if (deletedProjectIds == null || deletedProjectIds.isEmpty()) {
+                return InternalFuture.completedInternalFuture(true);
+              }
+              var modeldbServiceResourceType =
+                  ResourceType.newBuilder()
+                      .setModeldbServiceResourceType(
+                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                      .build();
+              var resources =
+                  Resources.newBuilder()
+                      .setResourceType(modeldbServiceResourceType)
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .addAllResourceIds(deletedProjectIds)
+                      .build();
+
+              LOGGER.trace("Calling CollaboratorService to delete resources");
+              var deleteResources = DeleteResources.newBuilder().setResources(resources).build();
+              return FutureGrpc.ClientRequest(
+                      uac.getServiceAccountCollaboratorServiceForServiceUser()
+                          .deleteResources(deleteResources),
+                      executor)
+                  .thenCompose(
+                      response -> {
+                        LOGGER.trace("DeleteResources message sent.  Response: {}", response);
+                        return InternalFuture.completedInternalFuture(true);
+                      },
+                      executor);
             },
             executor);
   }

@@ -110,7 +110,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void createProject(
       CreateProject request, StreamObserver<CreateProject.Response> responseObserver) {
-    // super.createProject(request, responseObserver);
     try {
       final var futureResponse =
           futureProjectDAO
