@@ -45,7 +45,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
   private static final String DELETE_EXPERIMENT_EVENT_TYPE =
       "delete.resource.experiment.delete_experiment_succeeded";
   private final AuthService authService;
-  private final MDBRoleService mdbRoleService;
+  public final MDBRoleService mdbRoleService;
   private final ExperimentDAO experimentDAO;
   private final ProjectDAO projectDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
