@@ -31,7 +31,9 @@ import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
+import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.project.FutureProjectDAO;
 import com.google.gson.JsonElement;
@@ -39,6 +41,7 @@ import com.google.gson.JsonObject;
 import io.grpc.stub.StreamObserver;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,9 +56,11 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   private final FutureExperimentDAO futureExperimentDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
   private final FutureEventDAO futureEventDAO;
+  private final Executor executor;
 
-  public FutureExperimentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+  public FutureExperimentServiceImpl(Executor executor, ServiceSet serviceSet, DAOSet daoSet) {
     super(serviceSet, daoSet);
+    this.executor = executor;
     this.futureProjectDAO = daoSet.futureProjectDAO;
     this.futureExperimentDAO = daoSet.futureExperimentDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
@@ -225,7 +230,12 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void findExperiments(
       FindExperiments request, StreamObserver<FindExperiments.Response> responseObserver) {
-    super.findExperiments(request, responseObserver);
+    try {
+      final var futureResponse = futureExperimentDAO.findExperiments(request);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
