@@ -57,8 +57,7 @@ public class AuthInterceptor implements ServerInterceptor {
             parameterMissing = true;
           }
         } else if (sourceValue.equals("SessionId")) {
-          if (!requestHeaders.containsKey(sessionId)
-              || !requestHeaders.containsKey(sessionIdSig)) {
+          if (!requestHeaders.containsKey(sessionId) || !requestHeaders.containsKey(sessionIdSig)) {
             parameterMissing = true;
           }
         } else if (!requestHeaders.containsKey(bearerAccessToken)) {
