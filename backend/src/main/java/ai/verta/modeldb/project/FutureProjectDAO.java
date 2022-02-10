@@ -59,10 +59,8 @@ import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.Action;
-import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
-import ai.verta.uac.GetWorkspaceById;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ResourceType;
@@ -92,8 +90,8 @@ import org.jdbi.v3.core.statement.Query;
 public class FutureProjectDAO {
   private static final Logger LOGGER = LogManager.getLogger(FutureProjectDAO.class);
 
-  private final Executor executor;
   private final FutureJdbi jdbi;
+  private final Executor executor;
   private final UAC uac;
   private final boolean isMssql;
 
@@ -104,6 +102,7 @@ public class FutureProjectDAO {
   private final CodeVersionHandler codeVersionHandler;
   private final SortingHandler sortingHandler;
   private final FutureExperimentRunDAO futureExperimentRunDAO;
+  private final UACApisUtil uacApisUtil;
 
   public FutureProjectDAO(
       Executor executor,
@@ -112,12 +111,14 @@ public class FutureProjectDAO {
       ArtifactStoreDAO artifactStoreDAO,
       DatasetVersionDAO datasetVersionDAO,
       MDBConfig mdbConfig,
-      FutureExperimentRunDAO futureExperimentRunDAO) {
-    this.executor = executor;
+      FutureExperimentRunDAO futureExperimentRunDAO,
+      UACApisUtil uacApisUtil) {
     this.jdbi = jdbi;
-    this.uac = uac;
     this.isMssql = mdbConfig.getDatabase().getRdbConfiguration().isMssql();
+    this.executor = executor;
+    this.uac = uac;
     this.futureExperimentRunDAO = futureExperimentRunDAO;
+    this.uacApisUtil = uacApisUtil;
 
     var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
@@ -134,7 +135,7 @@ public class FutureProjectDAO {
             artifactStoreDAO,
             datasetVersionDAO,
             mdbConfig);
-    predicatesHandler = new PredicatesHandler("project", "p");
+    predicatesHandler = new PredicatesHandler(executor, "project", "p", uacApisUtil);
     sortingHandler = new SortingHandler("project");
   }
 
@@ -433,13 +434,13 @@ public class FutureProjectDAO {
               if (request.getWorkspaceName().isEmpty()
                   || request.getWorkspaceName().equals(userInfo.getVertaInfo().getUsername())) {
                 resourcesFuture =
-                    getResourceItemsForLoginUserWorkspace(
+                    uacApisUtil.getResourceItemsForLoginUserWorkspace(
                         request.getWorkspaceName(),
                         Optional.of(request.getProjectIdsList()),
                         ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
               } else {
                 resourcesFuture =
-                    getResourceItemsForWorkspace(
+                    uacApisUtil.getResourceItemsForWorkspace(
                         Optional.of(request.getWorkspaceName()),
                         Optional.of(request.getProjectIdsList()),
                         Optional.empty(),
@@ -673,7 +674,7 @@ public class FutureProjectDAO {
     if (cacheWorkspaceMap.containsKey(projectResource.getWorkspaceId())) {
       workspace = cacheWorkspaceMap.get(projectResource.getWorkspaceId());
     } else {
-      workspace = getWorkspaceById(projectResource.getWorkspaceId()).get();
+      workspace = uacApisUtil.getWorkspaceById(projectResource.getWorkspaceId()).get();
       cacheWorkspaceMap.put(workspace.getId(), workspace);
     }
     switch (workspace.getInternalIdCase()) {
@@ -741,13 +742,6 @@ public class FutureProjectDAO {
         executor);
   }
 
-  private InternalFuture<Workspace> getWorkspaceById(long workspaceId) {
-    return FutureGrpc.ClientRequest(
-        uac.getWorkspaceService()
-            .getWorkspaceById(GetWorkspaceById.newBuilder().setId(workspaceId).build()),
-        executor);
-  }
-
   private List<Project> sortProjectFields(List<Project> projects) {
     List<Project> sortedProjects = new LinkedList<>();
     for (Project project : projects) {
@@ -768,55 +762,6 @@ public class FutureProjectDAO {
       sortedProjects.add(projectBuilder.build());
     }
     return sortedProjects;
-  }
-
-  private InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForLoginUserWorkspace(
-      String workspaceName,
-      Optional<List<String>> resourceIdsOptional,
-      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceTypes) {
-    var resourceType =
-        ResourceType.newBuilder().setModeldbServiceResourceType(resourceTypes).build();
-    Resources.Builder resources =
-        Resources.newBuilder()
-            .setResourceType(resourceType)
-            .setService(ServiceEnum.Service.MODELDB_SERVICE);
-
-    if (!resourceIdsOptional.isEmpty() && resourceIdsOptional.isPresent()) {
-      resources.addAllResourceIds(
-          resourceIdsOptional.get().stream().map(String::valueOf).collect(Collectors.toSet()));
-    }
-
-    var builder = GetResources.newBuilder().setResources(resources.build());
-    builder.setWorkspaceName(workspaceName);
-    return FutureGrpc.ClientRequest(
-            uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(builder.build()),
-            executor)
-        .thenApply(GetResources.Response::getItemList, executor);
-  }
-
-  private InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForWorkspace(
-      Optional<String> workspaceName,
-      Optional<List<String>> resourceIdsOptional,
-      Optional<String> resourceName,
-      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceTypes) {
-    var resourceType =
-        ResourceType.newBuilder().setModeldbServiceResourceType(resourceTypes).build();
-    Resources.Builder resources =
-        Resources.newBuilder()
-            .setResourceType(resourceType)
-            .setService(ServiceEnum.Service.MODELDB_SERVICE);
-
-    if (!resourceIdsOptional.isEmpty() && resourceIdsOptional.isPresent()) {
-      resources.addAllResourceIds(
-          resourceIdsOptional.get().stream().map(String::valueOf).collect(Collectors.toSet()));
-    }
-
-    var builder = GetResources.newBuilder().setResources(resources.build());
-    workspaceName.ifPresent(builder::setWorkspaceName);
-    resourceName.ifPresent(builder::setResourceName);
-    return FutureGrpc.ClientRequest(
-            uac.getCollaboratorService().getResources(builder.build()), executor)
-        .thenApply(GetResources.Response::getItemList, executor);
   }
 
   public InternalFuture<List<GetResourcesResponseItem>> deleteProjects(List<String> projectIds) {
@@ -853,7 +798,7 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             allowedProjectIds ->
-                getResourceItemsForWorkspace(
+                uacApisUtil.getResourceItemsForWorkspace(
                     Optional.empty(),
                     Optional.of(allowedProjectIds),
                     Optional.empty(),
@@ -1024,7 +969,8 @@ public class FutureProjectDAO {
         .thenCompose(
             userInfo -> {
               // Get the user info from the Context
-              return getResourceItemsForWorkspace(
+              return uacApisUtil
+                  .getResourceItemsForWorkspace(
                       Optional.empty(),
                       Optional.empty(),
                       Optional.of(request.getName()),
