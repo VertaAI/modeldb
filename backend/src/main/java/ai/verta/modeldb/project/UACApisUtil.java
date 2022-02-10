@@ -69,7 +69,7 @@ public class UACApisUtil {
   }
 
   public InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForWorkspace(
-      String workspaceName,
+      Optional<String> workspaceName,
       Optional<List<String>> resourceIdsOptional,
       Optional<String> resourceName,
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceTypes) {
@@ -86,7 +86,7 @@ public class UACApisUtil {
     }
 
     var builder = GetResources.newBuilder().setResources(resources.build());
-    builder.setWorkspaceName(workspaceName);
+    workspaceName.ifPresent(builder::setWorkspaceName);
     resourceName.ifPresent(builder::setResourceName);
     return FutureGrpc.ClientRequest(
             uac.getCollaboratorService().getResources(builder.build()), executor)

@@ -82,16 +82,6 @@ public class DAOSet {
     set.lineageDAO = new LineageDAORdbImpl();
     set.datasetVersionDAO =
         new DatasetVersionDAORdbImpl(services.authService, services.mdbRoleService);
-
-    set.futureProjectDAO =
-        new FutureProjectDAO(
-            executor,
-            jdbi,
-            services.uac,
-            set.artifactStoreDAO,
-            set.datasetVersionDAO,
-            mdbConfig,
-            uacApisUtil);
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(
             executor,
@@ -103,6 +93,16 @@ public class DAOSet {
             set.repositoryDAO,
             set.commitDAO,
             set.blobDAO,
+            uacApisUtil);
+    set.futureProjectDAO =
+        new FutureProjectDAO(
+            executor,
+            jdbi,
+            services.uac,
+            set.artifactStoreDAO,
+            set.datasetVersionDAO,
+            mdbConfig,
+            set.futureExperimentRunDAO,
             uacApisUtil);
     set.futureEventDAO =
         new FutureEventDAO(executor, jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
