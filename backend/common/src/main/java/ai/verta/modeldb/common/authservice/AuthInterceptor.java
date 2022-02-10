@@ -56,7 +56,7 @@ public class AuthInterceptor implements ServerInterceptor {
                   || requestHeaders.containsKey(devKey))) {
             parameterMissing = true;
           }
-        } else if (sourceValue.equals("InternalToken")) {
+        } else if (sourceValue.equals("SessionId")) {
           if (!requestHeaders.containsKey(sessionId)
               || !requestHeaders.containsKey(sessionIdSig)) {
             parameterMissing = true;
