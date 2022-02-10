@@ -34,6 +34,7 @@ import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.project.FutureProjectDAO;
@@ -150,7 +151,42 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   public void getExperimentsInProject(
       GetExperimentsInProject request,
       StreamObserver<GetExperimentsInProject.Response> responseObserver) {
-    super.getExperimentsInProject(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getProjectId().isEmpty()) {
+                  var errorMessage = "Project ID not found in GetExperimentsInProject request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused -> futureProjectDAO.getProjectById(request.getProjectId()), executor)
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.findExperiments(
+                          FindExperiments.newBuilder()
+                              .setProjectId(request.getProjectId())
+                              .setPageLimit(request.getPageLimit())
+                              .setPageNumber(request.getPageNumber())
+                              .setAscending(request.getAscending())
+                              .setSortKey(request.getSortKey())
+                              .build()),
+                  executor)
+              .thenApply(
+                  findResponse ->
+                      GetExperimentsInProject.Response.newBuilder()
+                          .addAllExperiments(findResponse.getExperimentsList())
+                          .setTotalRecords(findResponse.getTotalRecords())
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
