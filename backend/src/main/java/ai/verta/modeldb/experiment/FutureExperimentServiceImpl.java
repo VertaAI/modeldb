@@ -1,5 +1,6 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddAttributes;
@@ -27,6 +28,7 @@ import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
@@ -36,6 +38,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -43,6 +46,8 @@ import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.uac.GetResourcesResponseItem;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.protobuf.Value;
+import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.Collections;
 import java.util.Map;
@@ -235,7 +240,69 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void getExperimentByName(
       GetExperimentByName request, StreamObserver<GetExperimentByName.Response> responseObserver) {
-    super.getExperimentByName(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                String errorMessage = null;
+                if (request.getProjectId().isEmpty() || request.getName().isEmpty()) {
+                  errorMessage =
+                      "Experiment name and Project ID is not found in GetExperimentByName request";
+                } else if (request.getProjectId().isEmpty()) {
+                  errorMessage = "Project ID not found in GetExperimentByName request";
+                } else if (request.getName().isEmpty()) {
+                  errorMessage = "Experiment name not found in GetExperimentByName request";
+                }
+                if (errorMessage != null) {
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.findExperiments(
+                          FindExperiments.newBuilder()
+                              .setProjectId(request.getProjectId())
+                              .addPredicates(
+                                  KeyValueQuery.newBuilder()
+                                      .setKey(ModelDBConstants.NAME)
+                                      .setValue(
+                                          Value.newBuilder()
+                                              .setStringValue(request.getName())
+                                              .build())
+                                      .build())
+                              .build()),
+                  executor)
+              .thenApply(
+                  findResponse -> {
+                    var experiments = findResponse.getExperimentsList();
+                    if (experiments.isEmpty()) {
+                      var errorMessage =
+                          "Experiment with name "
+                              + request.getName()
+                              + " not found in project "
+                              + request.getProjectId();
+                      throw new ModelDBException(errorMessage, Code.NOT_FOUND);
+                    }
+                    if (experiments.size() != 1) {
+                      var errorMessage =
+                          "Multiple experiments with name "
+                              + request.getName()
+                              + " found in project "
+                              + request.getProjectId();
+                      throw new ModelDBException(errorMessage, Code.INTERNAL);
+                    }
+                    return GetExperimentByName.Response.newBuilder()
+                        .setExperiment(experiments.get(0))
+                        .build();
+                  },
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

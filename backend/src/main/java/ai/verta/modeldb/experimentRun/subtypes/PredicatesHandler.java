@@ -234,7 +234,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       long index, String bindingName, KeyValueQuery predicate) {
     var value = predicate.getValue();
     switch (predicate.getKey()) {
-      case "experiment.name":
+      case "name":
         var expSql = "select distinct id from experiment where ";
         expSql += applyOperator(predicate.getOperator(), "name", ":" + bindingName);
 
@@ -248,12 +248,10 @@ public class PredicatesHandler extends PredicateHandlerUtils {
         if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
             || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
           expQueryContext =
-              expQueryContext.addCondition(
-                  String.format("experiment_run.experiment_id NOT IN (%s)", expSql));
+              expQueryContext.addCondition(String.format("experiment.id NOT IN (%s)", expSql));
         } else {
           expQueryContext =
-              expQueryContext.addCondition(
-                  String.format("experiment_run.experiment_id IN (%s)", expSql));
+              expQueryContext.addCondition(String.format("experiment.id IN (%s)", expSql));
         }
 
         return InternalFuture.completedInternalFuture(expQueryContext);
