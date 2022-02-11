@@ -16,8 +16,7 @@ import javax.persistence.Table;
 @Table(name = "feature")
 public class FeatureEntity implements Serializable {
 
-  public FeatureEntity() {
-  }
+  public FeatureEntity() {}
 
   public FeatureEntity(Object entity, Feature feature) {
     setName(feature.getName());

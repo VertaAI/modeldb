@@ -12,8 +12,7 @@ import javax.persistence.Table;
 @Table(name = "folder_element")
 public class InternalFolderElementEntity implements Serializable {
 
-  public InternalFolderElementEntity() {
-  }
+  public InternalFolderElementEntity() {}
 
   public InternalFolderElementEntity(
       InternalFolderElement internalFolderElement, String folderHash, String elementType) {

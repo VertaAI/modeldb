@@ -104,24 +104,24 @@ public class AutogenPythonEnvironmentDiff implements ProtoType {
 
     {
       Function3<
-          List<AutogenPythonRequirementEnvironmentDiff>,
-          List<AutogenPythonRequirementEnvironmentDiff>,
-          Boolean>
+              List<AutogenPythonRequirementEnvironmentDiff>,
+              List<AutogenPythonRequirementEnvironmentDiff>,
+              Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenPythonRequirementEnvironmentDiff,
-                            AutogenPythonRequirementEnvironmentDiff,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenPythonRequirementEnvironmentDiff,
+                                    AutogenPythonRequirementEnvironmentDiff,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.Constraints != null || other.Constraints != null) {
         if (this.Constraints == null && other.Constraints != null) {
           return false;
@@ -136,24 +136,24 @@ public class AutogenPythonEnvironmentDiff implements ProtoType {
     }
     {
       Function3<
-          List<AutogenPythonRequirementEnvironmentDiff>,
-          List<AutogenPythonRequirementEnvironmentDiff>,
-          Boolean>
+              List<AutogenPythonRequirementEnvironmentDiff>,
+              List<AutogenPythonRequirementEnvironmentDiff>,
+              Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenPythonRequirementEnvironmentDiff,
-                            AutogenPythonRequirementEnvironmentDiff,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenPythonRequirementEnvironmentDiff,
+                                    AutogenPythonRequirementEnvironmentDiff,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.Requirements != null || other.Requirements != null) {
         if (this.Requirements == null && other.Requirements != null) {
           return false;
@@ -230,24 +230,24 @@ public class AutogenPythonEnvironmentDiff implements ProtoType {
     AutogenPythonEnvironmentDiff obj = new AutogenPythonEnvironmentDiff();
     {
       Function<
-          ai.verta.modeldb.versioning.PythonEnvironmentDiff,
-          List<AutogenPythonRequirementEnvironmentDiff>>
+              ai.verta.modeldb.versioning.PythonEnvironmentDiff,
+              List<AutogenPythonRequirementEnvironmentDiff>>
           f =
-          x ->
-              blob.getConstraintsList().stream()
-                  .map(AutogenPythonRequirementEnvironmentDiff::fromProto)
-                  .collect(Collectors.toList());
+              x ->
+                  blob.getConstraintsList().stream()
+                      .map(AutogenPythonRequirementEnvironmentDiff::fromProto)
+                      .collect(Collectors.toList());
       obj.setConstraints(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.PythonEnvironmentDiff,
-          List<AutogenPythonRequirementEnvironmentDiff>>
+              ai.verta.modeldb.versioning.PythonEnvironmentDiff,
+              List<AutogenPythonRequirementEnvironmentDiff>>
           f =
-          x ->
-              blob.getRequirementsList().stream()
-                  .map(AutogenPythonRequirementEnvironmentDiff::fromProto)
-                  .collect(Collectors.toList());
+              x ->
+                  blob.getRequirementsList().stream()
+                      .map(AutogenPythonRequirementEnvironmentDiff::fromProto)
+                      .collect(Collectors.toList());
       obj.setRequirements(f.apply(blob));
     }
     {

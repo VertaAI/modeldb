@@ -14,8 +14,7 @@ import javax.persistence.Table;
 @Table(name = "environment_command_line")
 public class EnvironmentCommandLineEntity implements Serializable {
 
-  public EnvironmentCommandLineEntity() {
-  }
+  public EnvironmentCommandLineEntity() {}
 
   @Id
   @ManyToOne(targetEntity = EnvironmentBlobEntity.class, cascade = CascadeType.ALL)

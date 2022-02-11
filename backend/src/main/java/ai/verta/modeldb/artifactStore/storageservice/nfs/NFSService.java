@@ -66,7 +66,7 @@ public class NFSService implements ArtifactStoreService {
   /**
    * Upload multipart file into respected artifact path
    *
-   * @param artifactPath            : artifact path
+   * @param artifactPath : artifact path
    * @param uploadedFileInputStream : uploaded file input stream
    * @return {@link String} : upload filename
    * @throws ModelDBException ModelDBException

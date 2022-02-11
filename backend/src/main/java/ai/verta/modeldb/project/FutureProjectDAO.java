@@ -360,24 +360,24 @@ public class FutureProjectDAO {
   public InternalFuture<Void> checkProjectPermission(
       String projId, ModelDBActionEnum.ModelDBServiceActions action) {
     return FutureGrpc.ClientRequest(
-        uac.getAuthzService()
-            .isSelfAllowed(
-                IsSelfAllowed.newBuilder()
-                    .addActions(
-                        Action.newBuilder()
-                            .setModeldbServiceAction(action)
-                            .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                    .addResources(
-                        Resources.newBuilder()
-                            .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                            .setResourceType(
-                                ResourceType.newBuilder()
-                                    .setModeldbServiceResourceType(
-                                        ModelDBResourceEnum.ModelDBServiceResourceTypes
-                                            .PROJECT))
-                            .addResourceIds(projId))
-                    .build()),
-        executor)
+            uac.getAuthzService()
+                .isSelfAllowed(
+                    IsSelfAllowed.newBuilder()
+                        .addActions(
+                            Action.newBuilder()
+                                .setModeldbServiceAction(action)
+                                .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                        .addResources(
+                            Resources.newBuilder()
+                                .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                                .setResourceType(
+                                    ResourceType.newBuilder()
+                                        .setModeldbServiceResourceType(
+                                            ModelDBResourceEnum.ModelDBServiceResourceTypes
+                                                .PROJECT))
+                                .addResourceIds(projId))
+                        .build()),
+            executor)
         .thenAccept(
             response -> {
               if (!response.getAllowed()) {
@@ -428,7 +428,7 @@ public class FutureProjectDAO {
 
   public InternalFuture<FindProjects.Response> findProjects(FindProjects request) {
     return FutureGrpc.ClientRequest(
-        uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()), executor)
+            uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()), executor)
         .thenCompose(
             userInfo -> {
               InternalFuture<List<GetResourcesResponseItem>> resourcesFuture;
@@ -481,45 +481,45 @@ public class FutureProjectDAO {
 
                     final var futureProjects =
                         InternalFuture.sequence(
-                            Arrays.asList(
-                                futureLocalContext,
-                                futurePredicatesContext,
-                                futureSortingContext,
-                                futureProjectIdsContext),
-                            executor)
+                                Arrays.asList(
+                                    futureLocalContext,
+                                    futurePredicatesContext,
+                                    futureSortingContext,
+                                    futureProjectIdsContext),
+                                executor)
                             .thenApply(QueryFilterContext::combine, executor)
                             .thenCompose(
                                 queryContext ->
                                     jdbi.withHandle(
-                                        handle -> {
-                                          var sql =
-                                              "select p.id, p.date_created, p.date_updated, p.name, p.description, p.owner, "
-                                                  + "p.short_name, p.project_visibility, p.readme_text, "
-                                                  + "p.deleted, p.version_number from project p ";
+                                            handle -> {
+                                              var sql =
+                                                  "select p.id, p.date_created, p.date_updated, p.name, p.description, p.owner, "
+                                                      + "p.short_name, p.project_visibility, p.readme_text, "
+                                                      + "p.deleted, p.version_number from project p ";
 
-                                          Query query =
-                                              CommonUtils.buildQueryFromQueryContext(
-                                                  "p",
-                                                  Pagination.newBuilder()
-                                                      .setPageLimit(request.getPageLimit())
-                                                      .setPageNumber(request.getPageNumber())
-                                                      .build(),
-                                                  queryContext,
-                                                  handle,
-                                                  sql,
-                                                  isMssql);
+                                              Query query =
+                                                  CommonUtils.buildQueryFromQueryContext(
+                                                      "p",
+                                                      Pagination.newBuilder()
+                                                          .setPageLimit(request.getPageLimit())
+                                                          .setPageNumber(request.getPageNumber())
+                                                          .build(),
+                                                      queryContext,
+                                                      handle,
+                                                      sql,
+                                                      isMssql);
 
-                                          Map<Long, Workspace> cacheWorkspaceMap =
-                                              new HashMap<>();
-                                          return query
-                                              .map(
-                                                  (rs, ctx) ->
-                                                      buildProjectBuilderFromResultSet(
-                                                          getResourcesMap,
-                                                          cacheWorkspaceMap,
-                                                          rs))
-                                              .list();
-                                        })
+                                              Map<Long, Workspace> cacheWorkspaceMap =
+                                                  new HashMap<>();
+                                              return query
+                                                  .map(
+                                                      (rs, ctx) ->
+                                                          buildProjectBuilderFromResultSet(
+                                                              getResourcesMap,
+                                                              cacheWorkspaceMap,
+                                                              rs))
+                                                  .list();
+                                            })
                                         .thenCompose(
                                             builders -> {
                                               if (builders == null || builders.isEmpty()) {
@@ -608,11 +608,11 @@ public class FutureProjectDAO {
 
                     final var futureCount =
                         InternalFuture.sequence(
-                            Arrays.asList(
-                                futureLocalContext,
-                                futurePredicatesContext,
-                                futureProjectIdsContext),
-                            executor)
+                                Arrays.asList(
+                                    futureLocalContext,
+                                    futurePredicatesContext,
+                                    futureProjectIdsContext),
+                                executor)
                             .thenApply(QueryFilterContext::combine, executor)
                             .thenCompose(this::getProjectCountBasedOnQueryFilter, executor);
 
@@ -808,28 +808,28 @@ public class FutureProjectDAO {
         .thenCompose(
             allowedProjectResources ->
                 jdbi.useHandle(
-                    handle -> {
-                      var updatedCount =
-                          handle
-                              .createUpdate(
-                                  "update project set deleted = :deleted where id IN (<projectIds>)")
-                              .bind("deleted", true)
-                              .bindList(
-                                  "projectIds",
-                                  allowedProjectResources.stream()
-                                      .map(GetResourcesResponseItem::getResourceId)
-                                      .collect(Collectors.toList()))
-                              .execute();
-                      LOGGER.debug(
-                          "Mark Projects as deleted : {}, count : {}",
-                          allowedProjectResources,
-                          updatedCount);
-                      allowedProjectResources.forEach(
-                          allowedResource ->
-                              ReconcilerInitializer.softDeleteProjects.insert(
-                                  allowedResource.getResourceId()));
-                      LOGGER.debug("Project deleted successfully");
-                    })
+                        handle -> {
+                          var updatedCount =
+                              handle
+                                  .createUpdate(
+                                      "update project set deleted = :deleted where id IN (<projectIds>)")
+                                  .bind("deleted", true)
+                                  .bindList(
+                                      "projectIds",
+                                      allowedProjectResources.stream()
+                                          .map(GetResourcesResponseItem::getResourceId)
+                                          .collect(Collectors.toList()))
+                                  .execute();
+                          LOGGER.debug(
+                              "Mark Projects as deleted : {}, count : {}",
+                              allowedProjectResources,
+                              updatedCount);
+                          allowedProjectResources.forEach(
+                              allowedResource ->
+                                  ReconcilerInitializer.softDeleteProjects.insert(
+                                      allowedResource.getResourceId()));
+                          LOGGER.debug("Project deleted successfully");
+                        })
                     .thenApply(unused -> allowedProjectResources, executor),
             executor);
   }
@@ -852,7 +852,7 @@ public class FutureProjectDAO {
             .setService(ServiceEnum.Service.MODELDB_SERVICE)
             .build();
     return FutureGrpc.ClientRequest(
-        uac.getAuthzService().getSelfAllowedResources(getAllowedResourcesRequest), executor)
+            uac.getAuthzService().getSelfAllowedResources(getAllowedResourcesRequest), executor)
         .thenApply(
             getAllowedResourcesResponse -> {
               LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
@@ -1003,8 +1003,8 @@ public class FutureProjectDAO {
                                   for (Project project : response.getProjectsList()) {
                                     if (userInfo == null
                                         || project
-                                        .getOwner()
-                                        .equals(userInfo.getVertaInfo().getUserId())) {
+                                            .getOwner()
+                                            .equals(userInfo.getVertaInfo().getUserId())) {
                                       selfOwnerProject = project;
                                     } else {
                                       sharedProjects.add(project);
@@ -1143,7 +1143,7 @@ public class FutureProjectDAO {
                                       for (ExperimentRun experimentRun : experimentRuns) {
                                         if (lastModifiedExperimentRun == null
                                             || lastModifiedExperimentRun.getDateUpdated()
-                                            < experimentRun.getDateUpdated()) {
+                                                < experimentRun.getDateUpdated()) {
                                           lastModifiedExperimentRun = experimentRun;
                                         }
 
@@ -1212,25 +1212,25 @@ public class FutureProjectDAO {
 
   private InternalFuture<Long> getExperimentCount(List<String> projectIds) {
     return jdbi.withHandle(
-        handle ->
-            handle
-                .createQuery(
-                    "SELECT COUNT(ee.id) FROM experiment ee WHERE ee.project_id IN (<project_ids>)")
-                .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
-                .mapTo(Long.class)
-                .findOne())
+            handle ->
+                handle
+                    .createQuery(
+                        "SELECT COUNT(ee.id) FROM experiment ee WHERE ee.project_id IN (<project_ids>)")
+                    .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
+                    .mapTo(Long.class)
+                    .findOne())
         .thenApply(count -> count.orElse(0L), executor);
   }
 
   private InternalFuture<Long> getExperimentRunCount(List<String> projectIds) {
     return jdbi.withHandle(
-        handle ->
-            handle
-                .createQuery(
-                    "SELECT COUNT(er.id) FROM experiment_run er WHERE er.project_id IN (<project_ids>)")
-                .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
-                .mapTo(Long.class)
-                .findOne())
+            handle ->
+                handle
+                    .createQuery(
+                        "SELECT COUNT(er.id) FROM experiment_run er WHERE er.project_id IN (<project_ids>)")
+                    .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
+                    .mapTo(Long.class)
+                    .findOne())
         .thenApply(count -> count.orElse(0L), executor);
   }
 

@@ -205,7 +205,7 @@ public class DatasetTest extends TestsInit {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
-              == status.getCode()); // because of shadow delete the response could be 403 or 404
+                  == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
@@ -1807,7 +1807,7 @@ public class DatasetTest extends TestsInit {
         createDatasetRequest.getName(),
         dataset3.getName());
 
-    for (Dataset dataset : new Dataset[]{dataset1, dataset2, dataset3}) {
+    for (Dataset dataset : new Dataset[] {dataset1, dataset2, dataset3}) {
       DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
       DeleteDataset.Response deleteDatasetResponse =
           datasetServiceStub.deleteDataset(deleteDataset);

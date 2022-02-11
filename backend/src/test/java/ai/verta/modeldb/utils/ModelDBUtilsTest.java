@@ -31,10 +31,8 @@ public class ModelDBUtilsTest {
   private static final String TEAM_ID = "12";
   private static final String ORG_NAME = "org name";
   private static final String TEAM_NAME = "team_name";
-  @Mock
-  AuthService authService;
-  @Mock
-  MDBRoleService mdbRoleService;
+  @Mock AuthService authService;
+  @Mock MDBRoleService mdbRoleService;
 
   @Test
   public void getHydratedCollaboratorUserInfo() {

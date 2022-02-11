@@ -59,8 +59,7 @@ public class ModelDBUtils {
 
   private static final Logger LOGGER = LogManager.getLogger(ModelDBUtils.class);
 
-  private ModelDBUtils() {
-  }
+  private ModelDBUtils() {}
 
   public static Map<String, Object> readYamlProperties(String filePath) throws IOException {
     LOGGER.info("Reading File {} as YAML", filePath);
@@ -129,13 +128,15 @@ public class ModelDBUtils {
   }
 
   /**
-   * VERTA <br> Function to divide the list of collaborators by one's which can be resolved by
-   * email_id and ones which can be resolved by user_id. <br> The output just contains email_id or
-   * user_id as appropriate instead of entire collaborator object.
+   * VERTA <br>
+   * Function to divide the list of collaborators by one's which can be resolved by email_id and
+   * ones which can be resolved by user_id. <br>
+   * The output just contains email_id or user_id as appropriate instead of entire collaborator
+   * object.
    *
    * @param entityCollaboratorList : list of collaborators
    * @return map with keys `user_id` and `email_id` and values being a list of user_ids or
-   * email_ids.
+   *     email_ids.
    */
   public static Map<String, List<String>> getVertaIdOrEmailIdMapFromCollaborator(
       List<GetCollaboratorResponseItem> entityCollaboratorList) {
@@ -162,11 +163,12 @@ public class ModelDBUtils {
   }
 
   /**
-   * VERTA<br> Resolves the collaborators by looking them up in the map.
+   * VERTA<br>
+   * Resolves the collaborators by looking them up in the map.
    *
    * @param collaboratorList : List of collaborators to be resolved from the map
-   * @param userInfoMap      : Map from vertaId to UserInfo, containing vertaIds related to the
-   *                         current higher RPC called.
+   * @param userInfoMap : Map from vertaId to UserInfo, containing vertaIds related to the current
+   *     higher RPC called.
    * @return List of CollaboratorUserInfo
    */
   public static List<CollaboratorUserInfo> getHydratedCollaboratorUserInfo(
@@ -257,7 +259,7 @@ public class ModelDBUtils {
   /**
    * Update artifact path based on pathOnly flag
    *
-   * @param entityId  : Project.id, Experiment.id, ExperimentRun.id
+   * @param entityId : Project.id, Experiment.id, ExperimentRun.id
    * @param artifacts : List of artifact which is comes from request
    * @return {@link List<Artifact>} : updated artifact
    */
@@ -366,7 +368,7 @@ public class ModelDBUtils {
     var rootCause = throwable;
     while (rootCause.getCause() != null
         && !(rootCause.getCause() instanceof SocketException
-        || rootCause.getCause() instanceof LockAcquisitionException)) {
+            || rootCause.getCause() instanceof LockAcquisitionException)) {
       rootCause = rootCause.getCause();
     }
     return rootCause;

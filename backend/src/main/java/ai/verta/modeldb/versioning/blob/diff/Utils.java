@@ -15,9 +15,9 @@ public class Utils {
       Object ret =
           ((List) obj)
               .stream()
-              .map(x -> removeEmpty(x))
-              .filter(x -> x != null)
-              .collect(Collectors.toList());
+                  .map(x -> removeEmpty(x))
+                  .filter(x -> x != null)
+                  .collect(Collectors.toList());
       if (((List) ret).isEmpty()) {
         return null;
       }

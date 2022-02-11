@@ -162,8 +162,8 @@ public class Utils {
 
           @Override
           public AutogenHyperparameterValuesConfigBlob
-          postVisitAutogenHyperparameterValuesConfigBlob(
-              AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
+              postVisitAutogenHyperparameterValuesConfigBlob(
+                  AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
             if (blob == null) {
               return null;
             }
@@ -354,9 +354,9 @@ public class Utils {
       Object ret =
           ((List) obj)
               .stream()
-              .map(x -> removeEmpty(x))
-              .filter(x -> x != null)
-              .collect(Collectors.toList());
+                  .map(x -> removeEmpty(x))
+                  .filter(x -> x != null)
+                  .collect(Collectors.toList());
       if (((List) ret).isEmpty()) {
         return null;
       }

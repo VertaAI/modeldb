@@ -48,9 +48,7 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
     this.recordUpdateLimit = recordUpdateLimit;
   }
 
-  /**
-   * The action to be performed by this timer task.
-   */
+  /** The action to be performed by this timer task. */
   @Override
   public void run() {
     LOGGER.info("PopulateEnvironmentInRunCron wakeup");
@@ -103,9 +101,9 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
         try {
           List<ArtifactEntity> experimentRunArtifacts =
               (experimentRunEntity.getArtifactEntityMap() != null
-                  && experimentRunEntity
-                  .getArtifactEntityMap()
-                  .containsKey(ModelDBConstants.ARTIFACTS))
+                      && experimentRunEntity
+                          .getArtifactEntityMap()
+                          .containsKey(ModelDBConstants.ARTIFACTS))
                   ? experimentRunEntity.getArtifactEntityMap().get(ModelDBConstants.ARTIFACTS)
                   : Collections.emptyList();
           if (!experimentRunArtifacts.isEmpty()) {

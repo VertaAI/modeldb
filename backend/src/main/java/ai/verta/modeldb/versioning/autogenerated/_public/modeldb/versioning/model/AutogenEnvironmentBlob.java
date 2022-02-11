@@ -155,22 +155,22 @@ public class AutogenEnvironmentBlob implements ProtoType {
     }
     {
       Function3<
-          List<AutogenEnvironmentVariablesBlob>, List<AutogenEnvironmentVariablesBlob>, Boolean>
+              List<AutogenEnvironmentVariablesBlob>, List<AutogenEnvironmentVariablesBlob>, Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenEnvironmentVariablesBlob,
-                            AutogenEnvironmentVariablesBlob,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenEnvironmentVariablesBlob,
+                                    AutogenEnvironmentVariablesBlob,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.EnvironmentVariables != null || other.EnvironmentVariables != null) {
         if (this.EnvironmentVariables == null && other.EnvironmentVariables != null) {
           return false;
@@ -261,10 +261,10 @@ public class AutogenEnvironmentBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.EnvironmentBlob, List<AutogenEnvironmentVariablesBlob>>
           f =
-          x ->
-              blob.getEnvironmentVariablesList().stream()
-                  .map(AutogenEnvironmentVariablesBlob::fromProto)
-                  .collect(Collectors.toList());
+              x ->
+                  blob.getEnvironmentVariablesList().stream()
+                      .map(AutogenEnvironmentVariablesBlob::fromProto)
+                      .collect(Collectors.toList());
       obj.setEnvironmentVariables(f.apply(blob));
     }
     {

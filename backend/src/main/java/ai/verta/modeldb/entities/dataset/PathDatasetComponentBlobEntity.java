@@ -13,8 +13,7 @@ import javax.persistence.Table;
 @Table(name = "path_dataset_component_blob")
 public class PathDatasetComponentBlobEntity {
 
-  public PathDatasetComponentBlobEntity() {
-  }
+  public PathDatasetComponentBlobEntity() {}
 
   public PathDatasetComponentBlobEntity(
       String blobHash, String blobHashDataset, PathDatasetComponentBlob pathDatasetComponentBlob) {
@@ -29,8 +28,7 @@ public class PathDatasetComponentBlobEntity {
     this.base_path = pathDatasetComponentBlob.getBasePath();
   }
 
-  @EmbeddedId
-  private PathDatasetComponentBlobId id;
+  @EmbeddedId private PathDatasetComponentBlobId id;
 
   @Column(name = "path", columnDefinition = "TEXT")
   private String path;
@@ -109,8 +107,7 @@ class PathDatasetComponentBlobId implements Serializable {
     path_dataset_blob_id = datasetBlobHash;
   }
 
-  private PathDatasetComponentBlobId() {
-  }
+  private PathDatasetComponentBlobId() {}
 
   public String getBlob_hash() {
     return blob_hash;

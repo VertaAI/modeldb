@@ -27,8 +27,7 @@ public class AttributeEntity implements Serializable {
 
   private static Logger LOGGER = LogManager.getLogger(AttributeEntity.class);
 
-  public AttributeEntity() {
-  }
+  public AttributeEntity() {}
 
   public AttributeEntity(Object entity, String fieldType, KeyValue keyValue) {
     setKey(keyValue.getKey());

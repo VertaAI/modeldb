@@ -19,8 +19,7 @@ public class ConfigBlobEntity implements Serializable {
   public static final int HYPERPARAMETER_SET = 0;
   public static final int HYPERPARAMETER = 1;
 
-  private ConfigBlobEntity() {
-  }
+  private ConfigBlobEntity() {}
 
   public ConfigBlobEntity(String blobHash, Integer configSeqNumber, Object blobEntity)
       throws ModelDBException {

@@ -22,8 +22,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 @Table(name = "raw_dataset_version_info")
 public class RawDatasetVersionInfoEntity implements Serializable {
 
-  public RawDatasetVersionInfoEntity() {
-  }
+  public RawDatasetVersionInfoEntity() {}
 
   public RawDatasetVersionInfoEntity(
       String fieldType, RawDatasetVersionInfo rawDatasetVersionInfo) {

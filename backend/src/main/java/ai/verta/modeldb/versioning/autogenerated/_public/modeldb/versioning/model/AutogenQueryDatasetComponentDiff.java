@@ -216,29 +216,29 @@ public class AutogenQueryDatasetComponentDiff implements ProtoType {
     AutogenQueryDatasetComponentDiff obj = new AutogenQueryDatasetComponentDiff();
     {
       Function<
-          ai.verta.modeldb.versioning.QueryDatasetComponentDiff,
-          AutogenQueryDatasetComponentBlob>
+              ai.verta.modeldb.versioning.QueryDatasetComponentDiff,
+              AutogenQueryDatasetComponentBlob>
           f = x -> AutogenQueryDatasetComponentBlob.fromProto(blob.getA());
       obj.setA(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.QueryDatasetComponentDiff,
-          AutogenQueryDatasetComponentBlob>
+              ai.verta.modeldb.versioning.QueryDatasetComponentDiff,
+              AutogenQueryDatasetComponentBlob>
           f = x -> AutogenQueryDatasetComponentBlob.fromProto(blob.getB());
       obj.setB(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.QueryDatasetComponentDiff,
-          AutogenQueryDatasetComponentBlob>
+              ai.verta.modeldb.versioning.QueryDatasetComponentDiff,
+              AutogenQueryDatasetComponentBlob>
           f = x -> AutogenQueryDatasetComponentBlob.fromProto(blob.getC());
       obj.setC(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.QueryDatasetComponentDiff,
-          AutogenDiffStatusEnumDiffStatus>
+              ai.verta.modeldb.versioning.QueryDatasetComponentDiff,
+              AutogenDiffStatusEnumDiffStatus>
           f = x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
       obj.setStatus(f.apply(blob));
     }

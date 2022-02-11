@@ -19,8 +19,7 @@ public class TreeElem {
   private String type = null;
   private Map<String, TreeElem> children = new HashMap<>();
 
-  TreeElem() {
-  }
+  TreeElem() {}
 
   public TreeElem push(List<String> pathList, String blobHash, String type) {
     path = pathList.get(0);

@@ -96,24 +96,24 @@ public class AutogenConfigDiff implements ProtoType {
 
     {
       Function3<
-          List<AutogenHyperparameterSetConfigDiff>,
-          List<AutogenHyperparameterSetConfigDiff>,
-          Boolean>
+              List<AutogenHyperparameterSetConfigDiff>,
+              List<AutogenHyperparameterSetConfigDiff>,
+              Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenHyperparameterSetConfigDiff,
-                            AutogenHyperparameterSetConfigDiff,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenHyperparameterSetConfigDiff,
+                                    AutogenHyperparameterSetConfigDiff,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.HyperparameterSet != null || other.HyperparameterSet != null) {
         if (this.HyperparameterSet == null && other.HyperparameterSet != null) {
           return false;
@@ -128,22 +128,22 @@ public class AutogenConfigDiff implements ProtoType {
     }
     {
       Function3<
-          List<AutogenHyperparameterConfigDiff>, List<AutogenHyperparameterConfigDiff>, Boolean>
+              List<AutogenHyperparameterConfigDiff>, List<AutogenHyperparameterConfigDiff>, Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenHyperparameterConfigDiff,
-                            AutogenHyperparameterConfigDiff,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenHyperparameterConfigDiff,
+                                    AutogenHyperparameterConfigDiff,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.Hyperparameters != null || other.Hyperparameters != null) {
         if (this.Hyperparameters == null && other.Hyperparameters != null) {
           return false;

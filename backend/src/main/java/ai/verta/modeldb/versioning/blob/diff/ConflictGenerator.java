@@ -148,14 +148,14 @@ public class ConflictGenerator {
             .build();
       case DATASET:
         return diff.setDataset(
-            getDatasetConflictBlob(a.getDataset(), b.getDataset(), c.getDataset()).get(0))
+                getDatasetConflictBlob(a.getDataset(), b.getDataset(), c.getDataset()).get(0))
             .toProto()
             .build();
       case ENVIRONMENT:
         return diff.setEnvironment(
-            getEnvironmentonflictBlob(
-                a.getEnvironment(), b.getEnvironment(), c.getEnvironment())
-                .get(0))
+                getEnvironmentonflictBlob(
+                        a.getEnvironment(), b.getEnvironment(), c.getEnvironment())
+                    .get(0))
             .toProto()
             .build();
       case CONTENT_NOT_SET:

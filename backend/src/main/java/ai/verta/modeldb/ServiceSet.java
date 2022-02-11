@@ -112,6 +112,5 @@ public class ServiceSet {
     return artifactStoreService;
   }
 
-  private ServiceSet() {
-  }
+  private ServiceSet() {}
 }

@@ -92,23 +92,23 @@ public class FeatureHandler {
 
   public InternalFuture<MapSubtypes<String, Feature>> getFeaturesMap(Set<String> entityIds) {
     return jdbi.withHandle(
-        handle ->
-            handle
-                .createQuery(
-                    "select feature, "
-                        + entityIdReferenceColumn
-                        + " as entity_id from feature "
-                        + "where entity_name=:entity_name and "
-                        + entityIdReferenceColumn
-                        + " in (<entity_ids>)")
-                .bindList("entity_ids", entityIds)
-                .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                .map(
-                    (rs, ctx) ->
-                        new AbstractMap.SimpleEntry<>(
-                            rs.getString(ENTITY_ID_QUERY_PARAM),
-                            Feature.newBuilder().setName(rs.getString("feature")).build()))
-                .list())
+            handle ->
+                handle
+                    .createQuery(
+                        "select feature, "
+                            + entityIdReferenceColumn
+                            + " as entity_id from feature "
+                            + "where entity_name=:entity_name and "
+                            + entityIdReferenceColumn
+                            + " in (<entity_ids>)")
+                    .bindList("entity_ids", entityIds)
+                    .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                    .map(
+                        (rs, ctx) ->
+                            new AbstractMap.SimpleEntry<>(
+                                rs.getString(ENTITY_ID_QUERY_PARAM),
+                                Feature.newBuilder().setName(rs.getString("feature")).build()))
+                    .list())
         .thenApply(MapSubtypes::from, executor);
   }
 }

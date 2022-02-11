@@ -78,7 +78,7 @@ public class CreateExperimentRunHandler {
 
   public InternalFuture<ExperimentRun> convertCreateRequest(final CreateExperimentRun request) {
     return FutureGrpc.ClientRequest(
-        uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
+            uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
         .thenCompose(
             currentLoginUserInfo -> {
               final var experimentRun = getExperimentRunFromRequest(request, currentLoginUserInfo);
@@ -110,7 +110,7 @@ public class CreateExperimentRunHandler {
    * Convert CreateExperimentRun request to Experiment object. This method generate the
    * ExperimentRun Id using UUID and put it in ExperimentRun object.
    *
-   * @param request  : CreateExperimentRun request
+   * @param request : CreateExperimentRun request
    * @param userInfo : current login UserInfo
    * @return ExperimentRun : experimentRun
    */
@@ -376,35 +376,35 @@ public class CreateExperimentRunHandler {
         ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN;
     String roleName = ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER;
     return FutureGrpc.ClientRequest(
-        uac.getServiceAccountRoleServiceFutureStub()
-            .setRoleBinding(
-                SetRoleBinding.newBuilder()
-                    .setRoleBinding(
-                        RoleBinding.newBuilder()
-                            .setName(
-                                buildRoleBindingName(
-                                    roleName,
-                                    experimentRun.getId(),
-                                    experimentRun.getOwner(),
-                                    modelDBServiceResourceType.name()))
-                            .setScope(RoleScope.newBuilder().build())
-                            .setRoleName(roleName)
-                            .addEntities(
-                                Entities.newBuilder()
-                                    .addUserIds(experimentRun.getOwner())
-                                    .build())
-                            .addResources(
-                                Resources.newBuilder()
-                                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                                    .setResourceType(
-                                        ResourceType.newBuilder()
-                                            .setModeldbServiceResourceType(
-                                                modelDBServiceResourceType))
-                                    .addResourceIds(experimentRun.getId())
-                                    .build())
-                            .build())
-                    .build()),
-        executor)
+            uac.getServiceAccountRoleServiceFutureStub()
+                .setRoleBinding(
+                    SetRoleBinding.newBuilder()
+                        .setRoleBinding(
+                            RoleBinding.newBuilder()
+                                .setName(
+                                    buildRoleBindingName(
+                                        roleName,
+                                        experimentRun.getId(),
+                                        experimentRun.getOwner(),
+                                        modelDBServiceResourceType.name()))
+                                .setScope(RoleScope.newBuilder().build())
+                                .setRoleName(roleName)
+                                .addEntities(
+                                    Entities.newBuilder()
+                                        .addUserIds(experimentRun.getOwner())
+                                        .build())
+                                .addResources(
+                                    Resources.newBuilder()
+                                        .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                                        .setResourceType(
+                                            ResourceType.newBuilder()
+                                                .setModeldbServiceResourceType(
+                                                    modelDBServiceResourceType))
+                                        .addResourceIds(experimentRun.getId())
+                                        .build())
+                                .build())
+                        .build()),
+            executor)
         .thenAccept(
             response -> {
               LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response);

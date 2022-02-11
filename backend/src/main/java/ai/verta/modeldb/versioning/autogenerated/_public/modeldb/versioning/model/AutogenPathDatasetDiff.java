@@ -76,22 +76,22 @@ public class AutogenPathDatasetDiff implements ProtoType {
 
     {
       Function3<
-          List<AutogenPathDatasetComponentDiff>, List<AutogenPathDatasetComponentDiff>, Boolean>
+              List<AutogenPathDatasetComponentDiff>, List<AutogenPathDatasetComponentDiff>, Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenPathDatasetComponentDiff,
-                            AutogenPathDatasetComponentDiff,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenPathDatasetComponentDiff,
+                                    AutogenPathDatasetComponentDiff,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.Components != null || other.Components != null) {
         if (this.Components == null && other.Components != null) {
           return false;
@@ -128,10 +128,10 @@ public class AutogenPathDatasetDiff implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.PathDatasetDiff, List<AutogenPathDatasetComponentDiff>>
           f =
-          x ->
-              blob.getComponentsList().stream()
-                  .map(AutogenPathDatasetComponentDiff::fromProto)
-                  .collect(Collectors.toList());
+              x ->
+                  blob.getComponentsList().stream()
+                      .map(AutogenPathDatasetComponentDiff::fromProto)
+                      .collect(Collectors.toList());
       obj.setComponents(f.apply(blob));
     }
     return obj;

@@ -165,12 +165,12 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
               .thenCompose(
                   updatedProject ->
                       addEvent(
-                          updatedProject.getId(),
-                          updatedProject.getWorkspaceServiceId(),
-                          UPDATE_PROJECT_EVENT_TYPE,
-                          Optional.of("description"),
-                          Collections.emptyMap(),
-                          "project description updated successfully")
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("description"),
+                              Collections.emptyMap(),
+                              "project description updated successfully")
                           .thenApply(eventLoggedStatus -> updatedProject, executor),
                   executor)
               .thenApply(
@@ -201,20 +201,19 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
               .thenCompose(
                   updatedProject ->
                       addEvent(
-                          updatedProject.getId(),
-                          updatedProject.getWorkspaceServiceId(),
-                          UPDATE_PROJECT_EVENT_TYPE,
-                          Optional.of("attributes"),
-                          Collections.singletonMap(
-                              "attribute_keys",
-                              new Gson()
-                                  .toJsonTree(
-                                      request.getAttributesList().stream()
-                                          .map(KeyValue::getKey)
-                                          .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
-                          "project attributes added successfully")
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("attributes"),
+                              Collections.singletonMap(
+                                  "attribute_keys",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getAttributesList().stream()
+                                              .map(KeyValue::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "project attributes added successfully")
                           .thenApply(eventLoggedStatus -> updatedProject, executor),
                   executor)
               .thenApply(
@@ -239,20 +238,19 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
               .thenCompose(
                   updatedProject ->
                       addEvent(
-                          updatedProject.getId(),
-                          updatedProject.getWorkspaceServiceId(),
-                          UPDATE_PROJECT_EVENT_TYPE,
-                          Optional.of("attributes"),
-                          Collections.singletonMap(
-                              "attribute_keys",
-                              new Gson()
-                                  .toJsonTree(
-                                      Stream.of(request.getAttribute())
-                                          .map(KeyValue::getKey)
-                                          .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
-                          "project attributes updated successfully")
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("attributes"),
+                              Collections.singletonMap(
+                                  "attribute_keys",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Stream.of(request.getAttribute())
+                                              .map(KeyValue::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "project attributes updated successfully")
                           .thenApply(eventLoggedStatus -> updatedProject, executor),
                   executor)
               .thenApply(
@@ -305,16 +303,15 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                           new Gson()
                               .toJsonTree(
                                   request.getAttributeKeysList(),
-                                  new TypeToken<ArrayList<String>>() {
-                                  }.getType()));
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
                     }
                     return addEvent(
-                        updatedProject.getId(),
-                        updatedProject.getWorkspaceServiceId(),
-                        UPDATE_PROJECT_EVENT_TYPE,
-                        Optional.of("attributes"),
-                        extraFieldValue,
-                        "project attributes deleted successfully")
+                            updatedProject.getId(),
+                            updatedProject.getWorkspaceServiceId(),
+                            UPDATE_PROJECT_EVENT_TYPE,
+                            Optional.of("attributes"),
+                            extraFieldValue,
+                            "project attributes deleted successfully")
                         .thenApply(eventLoggedStatus -> updatedProject, executor);
                   },
                   executor)
@@ -341,18 +338,17 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
               .thenCompose(
                   updatedProject ->
                       addEvent(
-                          updatedProject.getId(),
-                          updatedProject.getWorkspaceServiceId(),
-                          UPDATE_PROJECT_EVENT_TYPE,
-                          Optional.of("tags"),
-                          Collections.singletonMap(
-                              "tags",
-                              new Gson()
-                                  .toJsonTree(
-                                      request.getTagsList(),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
-                          "project tags updated successfully")
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("tags"),
+                              Collections.singletonMap(
+                                  "tags",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getTagsList(),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "project tags updated successfully")
                           .thenApply(eventLoggedStatus -> updatedProject, executor),
                   executor)
               .thenApply(
@@ -398,16 +394,15 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                           new Gson()
                               .toJsonTree(
                                   request.getTagsList(),
-                                  new TypeToken<ArrayList<String>>() {
-                                  }.getType()));
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
                     }
                     return addEvent(
-                        updatedProject.getId(),
-                        updatedProject.getWorkspaceServiceId(),
-                        UPDATE_PROJECT_EVENT_TYPE,
-                        Optional.of("tags"),
-                        extraFieldValue,
-                        "project tags deleted successfully")
+                            updatedProject.getId(),
+                            updatedProject.getWorkspaceServiceId(),
+                            UPDATE_PROJECT_EVENT_TYPE,
+                            Optional.of("tags"),
+                            extraFieldValue,
+                            "project tags deleted successfully")
                         .thenApply(eventLoggedStatus -> updatedProject, executor);
                   },
                   executor)
@@ -436,18 +431,17 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
               .thenCompose(
                   updatedProject ->
                       addEvent(
-                          updatedProject.getId(),
-                          updatedProject.getWorkspaceServiceId(),
-                          UPDATE_PROJECT_EVENT_TYPE,
-                          Optional.of("tags"),
-                          Collections.singletonMap(
-                              "tags",
-                              new Gson()
-                                  .toJsonTree(
-                                      Collections.singletonList(request.getTag()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
-                          "project tag added successfully")
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("tags"),
+                              Collections.singletonMap(
+                                  "tags",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getTag()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "project tag added successfully")
                           .thenApply(eventLoggedStatus -> updatedProject, executor),
                   executor)
               .thenApply(
@@ -476,18 +470,17 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
               .thenCompose(
                   updatedProject ->
                       addEvent(
-                          updatedProject.getId(),
-                          updatedProject.getWorkspaceServiceId(),
-                          UPDATE_PROJECT_EVENT_TYPE,
-                          Optional.of("tags"),
-                          Collections.singletonMap(
-                              "tags",
-                              new Gson()
-                                  .toJsonTree(
-                                      Collections.singletonList(request.getTag()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
-                          "project tag deleted successfully")
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("tags"),
+                              Collections.singletonMap(
+                                  "tags",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getTag()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "project tag deleted successfully")
                           .thenApply(eventLoggedStatus -> updatedProject, executor),
                   executor)
               .thenApply(
@@ -624,13 +617,13 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                   updatedProject ->
                       // Add succeeded event in local DB
                       addEvent(
-                          updatedProject.getId(),
-                          updatedProject.getWorkspaceServiceId(),
-                          UPDATE_PROJECT_EVENT_TYPE,
-                          Optional.of("readme_text"),
-                          Collections.singletonMap(
-                              "readme_text", updatedProject.getReadmeText()),
-                          "project readme_text updated successfully")
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("readme_text"),
+                              Collections.singletonMap(
+                                  "readme_text", updatedProject.getReadmeText()),
+                              "project readme_text updated successfully")
                           .thenApply(unused -> updatedProject, executor),
                   executor)
               .thenApply(
@@ -714,20 +707,19 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                   updatedProject ->
                       // Add succeeded event in local DB
                       addEvent(
-                          updatedProject.getId(),
-                          updatedProject.getWorkspaceServiceId(),
-                          UPDATE_PROJECT_EVENT_TYPE,
-                          Optional.of("artifacts"),
-                          Collections.singletonMap(
-                              "artifact_keys",
-                              new Gson()
-                                  .toJsonTree(
-                                      request.getArtifactsList().stream()
-                                          .map(Artifact::getKey)
-                                          .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
-                          "project artifacts added successfully")
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("artifacts"),
+                              Collections.singletonMap(
+                                  "artifact_keys",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getArtifactsList().stream()
+                                              .map(Artifact::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "project artifacts added successfully")
                           .thenApply(unused -> updatedProject, executor),
                   executor)
               .thenApply(
@@ -770,18 +762,17 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
                   updatedProject ->
                       // Add succeeded event in local DB
                       addEvent(
-                          updatedProject.getId(),
-                          updatedProject.getWorkspaceServiceId(),
-                          UPDATE_PROJECT_EVENT_TYPE,
-                          Optional.of("artifacts"),
-                          Collections.singletonMap(
-                              "artifact_keys",
-                              new Gson()
-                                  .toJsonTree(
-                                      Collections.singletonList(request.getKey()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
-                          "project artifact deleted successfully")
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("artifacts"),
+                              Collections.singletonMap(
+                                  "artifact_keys",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getKey()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "project artifact deleted successfully")
                           .thenApply(unused -> updatedProject, executor),
                   executor)
               .thenApply(

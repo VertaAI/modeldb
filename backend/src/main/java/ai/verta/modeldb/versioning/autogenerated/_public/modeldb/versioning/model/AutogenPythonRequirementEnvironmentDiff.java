@@ -110,9 +110,9 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
 
     {
       Function3<
-          AutogenPythonRequirementEnvironmentBlob,
-          AutogenPythonRequirementEnvironmentBlob,
-          Boolean>
+              AutogenPythonRequirementEnvironmentBlob,
+              AutogenPythonRequirementEnvironmentBlob,
+              Boolean>
           f = (x, y) -> x.equals(y);
       if (this.A != null || other.A != null) {
         if (this.A == null && other.A != null) {
@@ -128,9 +128,9 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
     }
     {
       Function3<
-          AutogenPythonRequirementEnvironmentBlob,
-          AutogenPythonRequirementEnvironmentBlob,
-          Boolean>
+              AutogenPythonRequirementEnvironmentBlob,
+              AutogenPythonRequirementEnvironmentBlob,
+              Boolean>
           f = (x, y) -> x.equals(y);
       if (this.B != null || other.B != null) {
         if (this.B == null && other.B != null) {
@@ -146,9 +146,9 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
     }
     {
       Function3<
-          AutogenPythonRequirementEnvironmentBlob,
-          AutogenPythonRequirementEnvironmentBlob,
-          Boolean>
+              AutogenPythonRequirementEnvironmentBlob,
+              AutogenPythonRequirementEnvironmentBlob,
+              Boolean>
           f = (x, y) -> x.equals(y);
       if (this.C != null || other.C != null) {
         if (this.C == null && other.C != null) {
@@ -228,29 +228,29 @@ public class AutogenPythonRequirementEnvironmentDiff implements ProtoType {
     AutogenPythonRequirementEnvironmentDiff obj = new AutogenPythonRequirementEnvironmentDiff();
     {
       Function<
-          ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff,
-          AutogenPythonRequirementEnvironmentBlob>
+              ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff,
+              AutogenPythonRequirementEnvironmentBlob>
           f = x -> AutogenPythonRequirementEnvironmentBlob.fromProto(blob.getA());
       obj.setA(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff,
-          AutogenPythonRequirementEnvironmentBlob>
+              ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff,
+              AutogenPythonRequirementEnvironmentBlob>
           f = x -> AutogenPythonRequirementEnvironmentBlob.fromProto(blob.getB());
       obj.setB(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff,
-          AutogenPythonRequirementEnvironmentBlob>
+              ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff,
+              AutogenPythonRequirementEnvironmentBlob>
           f = x -> AutogenPythonRequirementEnvironmentBlob.fromProto(blob.getC());
       obj.setC(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff,
-          AutogenDiffStatusEnumDiffStatus>
+              ai.verta.modeldb.versioning.PythonRequirementEnvironmentDiff,
+              AutogenDiffStatusEnumDiffStatus>
           f = x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
       obj.setStatus(f.apply(blob));
     }

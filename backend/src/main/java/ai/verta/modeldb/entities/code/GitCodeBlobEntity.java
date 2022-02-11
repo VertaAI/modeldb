@@ -10,8 +10,7 @@ import javax.persistence.Table;
 @Table(name = "git_code_blob")
 public class GitCodeBlobEntity {
 
-  public GitCodeBlobEntity() {
-  }
+  public GitCodeBlobEntity() {}
 
   public GitCodeBlobEntity(String blobHash, GitCodeBlob gitCodeBlob) {
     blob_hash = blobHash;

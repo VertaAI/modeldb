@@ -15,8 +15,7 @@ import org.apache.logging.log4j.Logger;
 @Table(name = "hyperparameter_element_mapping")
 public class HyperparameterElementMappingEntity implements Serializable {
 
-  private HyperparameterElementMappingEntity() {
-  }
+  private HyperparameterElementMappingEntity() {}
 
   private static final Logger LOGGER =
       LogManager.getLogger(HyperparameterElementMappingEntity.class);

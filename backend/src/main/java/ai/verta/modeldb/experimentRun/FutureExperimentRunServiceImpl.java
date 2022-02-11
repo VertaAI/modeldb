@@ -114,13 +114,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                   experimentRun ->
                       // Add succeeded event in local DB
                       addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          ADD_EVENT_TYPE,
-                          Optional.empty(),
-                          Collections.emptyMap(),
-                          "experiment_run added successfully")
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              ADD_EVENT_TYPE,
+                              Optional.empty(),
+                              Collections.emptyMap(),
+                              "experiment_run added successfully")
                           .thenApply(unused -> experimentRun, executor),
                   executor)
               .thenApply(
@@ -352,13 +352,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                   experimentRun ->
                       // Add succeeded event in local DB
                       addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("description"),
-                          Collections.emptyMap(),
-                          "experiment_run description added successfully")
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("description"),
+                              Collections.emptyMap(),
+                              "experiment_run description added successfully")
                           .thenApply(unused -> experimentRun, executor),
                   executor)
               .thenApply(
@@ -394,19 +394,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                   experimentRun ->
                       // Add succeeded event in local DB
                       addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("tags"),
-                          Collections.singletonMap(
-                              "tags",
-                              new Gson()
-                                  .toJsonTree(
-                                      request.getTagsList(),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
-                          "experiment_run tags added successfully")
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("tags"),
+                              Collections.singletonMap(
+                                  "tags",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getTagsList(),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment_run tags added successfully")
                           .thenApply(unused -> experimentRun, executor),
                   executor)
               .thenApply(
@@ -464,17 +463,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                           new Gson()
                               .toJsonTree(
                                   request.getTagsList(),
-                                  new TypeToken<ArrayList<String>>() {
-                                  }.getType()));
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
                     }
                     return addEvent(
-                        experimentRun.getId(),
-                        Optional.of(experimentRun.getExperimentId()),
-                        experimentRun.getProjectId(),
-                        UPDATE_EVENT_TYPE,
-                        Optional.of("tags"),
-                        extraFieldValue,
-                        "experiment_run tags deleted successfully")
+                            experimentRun.getId(),
+                            Optional.of(experimentRun.getExperimentId()),
+                            experimentRun.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("tags"),
+                            extraFieldValue,
+                            "experiment_run tags deleted successfully")
                         .thenApply(unused -> experimentRun, executor);
                   },
                   executor)
@@ -514,19 +512,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                   experimentRun ->
                       // Add succeeded event in local DB
                       addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("tags"),
-                          Collections.singletonMap(
-                              "tags",
-                              new Gson()
-                                  .toJsonTree(
-                                      Collections.singletonList(request.getTag()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
-                          "experiment_run tag added successfully")
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("tags"),
+                              Collections.singletonMap(
+                                  "tags",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getTag()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment_run tag added successfully")
                           .thenApply(eventLoggedStatus -> experimentRun, executor),
                   executor)
               .thenApply(
@@ -566,19 +563,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                   experimentRun ->
                       // Add succeeded event in local DB
                       addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("tags"),
-                          Collections.singletonMap(
-                              "tags",
-                              new Gson()
-                                  .toJsonTree(
-                                      Collections.singletonList(request.getTag()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
-                          "experiment_run tag deleted successfully")
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("tags"),
+                              Collections.singletonMap(
+                                  "tags",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getTag()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment_run tag deleted successfully")
                           .thenApply(eventLoggedStatus -> experimentRun, executor),
                   executor)
               .thenApply(
@@ -635,8 +631,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                         Collections.singletonMap(
                             "observations",
                             new Gson()
-                                .toJsonTree(keys, new TypeToken<ArrayList<String>>() {
-                                }.getType())),
+                                .toJsonTree(keys, new TypeToken<ArrayList<String>>() {}.getType())),
                         "experiment_run observation added successfully");
                   },
                   executor)
@@ -685,8 +680,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                         Collections.singletonMap(
                             "observations",
                             new Gson()
-                                .toJsonTree(keys, new TypeToken<ArrayList<String>>() {
-                                }.getType())),
+                                .toJsonTree(keys, new TypeToken<ArrayList<String>>() {}.getType())),
                         "experiment_run observations added successfully");
                   },
                   executor)
@@ -744,8 +738,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                           new Gson()
                               .toJsonTree(
                                   request.getObservationKeysList(),
-                                  new TypeToken<ArrayList<String>>() {
-                                  }.getType()));
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
                     }
                     return addEvent(
                         experimentRun.getId(),
@@ -799,8 +792,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                       Stream.of(request.getMetric())
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
                           "experiment_run metric added successfully"),
                   executor)
               .thenApply(unused -> LogMetric.Response.newBuilder().build(), executor);
@@ -841,8 +833,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                       request.getMetricsList().stream()
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
                           "experiment_run metrics added successfully"),
                   executor)
               .thenApply(unused -> LogMetrics.Response.newBuilder().build(), executor);
@@ -895,8 +886,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                           new Gson()
                               .toJsonTree(
                                   request.getMetricKeysList(),
-                                  new TypeToken<ArrayList<String>>() {
-                                  }.getType()));
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
                     }
                     return addEvent(
                         experimentRun.getId(),
@@ -949,8 +939,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   Stream.of(request.getDataset())
                                       .map(Artifact::getKey)
                                       .collect(Collectors.toSet()),
-                                  new TypeToken<ArrayList<String>>() {
-                                  }.getType()));
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
                     }
                     return addEvent(
                         experimentRun.getId(),
@@ -999,8 +988,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                   request.getDatasetsList().stream()
                                       .map(Artifact::getKey)
                                       .collect(Collectors.toSet()),
-                                  new TypeToken<ArrayList<String>>() {
-                                  }.getType()));
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
                     }
                     return addEvent(
                         experimentRun.getId(),
@@ -1071,8 +1059,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                       Stream.of(request.getHyperparameter())
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
                           "experiment_run hyperparameter added successfully"),
                   executor)
               .thenApply(unused -> LogHyperparameter.Response.newBuilder().build(), executor);
@@ -1114,8 +1101,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                       request.getHyperparametersList().stream()
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
                           "experiment_run hyperparameters added successfully"),
                   executor)
               .thenApply(unused -> LogHyperparameters.Response.newBuilder().build(), executor);
@@ -1173,8 +1159,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                           new Gson()
                               .toJsonTree(
                                   request.getHyperparameterKeysList(),
-                                  new TypeToken<ArrayList<String>>() {
-                                  }.getType()));
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
                     }
                     return addEvent(
                         experimentRun.getId(),
@@ -1229,8 +1214,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                       Stream.of(request.getAttribute())
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
                           "experiment_run attribute added successfully"),
                   executor)
               .thenApply(unused -> LogAttribute.Response.newBuilder().build(), executor);
@@ -1272,8 +1256,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                       request.getAttributesList().stream()
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
                           "experiment_run attributes added successfully"),
                   executor)
               .thenApply(unused -> LogAttributes.Response.newBuilder().build(), executor);
@@ -1337,8 +1320,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                       request.getAttributesList().stream()
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
                           "experiment_run attributes added successfully"),
                   executor)
               .thenApply(
@@ -1378,8 +1360,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                           new Gson()
                               .toJsonTree(
                                   request.getAttributeKeysList(),
-                                  new TypeToken<ArrayList<String>>() {
-                                  }.getType()));
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
                     }
                     return addEvent(
                         experimentRun.getId(),
@@ -1528,8 +1509,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                       Stream.of(request.getArtifact())
                                           .map(Artifact::getKey)
                                           .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
                           "experiment_run artifact added successfully"),
                   executor)
               .thenApply(unused -> LogArtifact.Response.newBuilder().build(), executor);
@@ -1571,8 +1551,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                                       request.getArtifactsList().stream()
                                           .map(Artifact::getKey)
                                           .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
                           "experiment_run artifacts added successfully"),
                   executor)
               .thenApply(unused -> LogArtifacts.Response.newBuilder().build(), executor);
@@ -1629,8 +1608,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                               new Gson()
                                   .toJsonTree(
                                       Collections.singletonList(request.getKey()),
-                                      new TypeToken<ArrayList<String>>() {
-                                      }.getType())),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
                           "experiment_run artifact deleted successfully"),
                   executor)
               .thenApply(deleted -> DeleteArtifact.Response.newBuilder().build(), executor);
@@ -1861,13 +1839,13 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                   returnResponse ->
                       // Add succeeded event in local DB
                       addEvent(
-                          returnResponse.getRun().getId(),
-                          Optional.of(returnResponse.getRun().getExperimentId()),
-                          returnResponse.getRun().getProjectId(),
-                          ADD_EVENT_TYPE,
-                          Optional.empty(),
-                          Collections.emptyMap(),
-                          "experiment_run cloned successfully")
+                              returnResponse.getRun().getId(),
+                              Optional.of(returnResponse.getRun().getExperimentId()),
+                              returnResponse.getRun().getProjectId(),
+                              ADD_EVENT_TYPE,
+                              Optional.empty(),
+                              Collections.emptyMap(),
+                              "experiment_run cloned successfully")
                           .thenApply(unused -> returnResponse, executor),
                   executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);

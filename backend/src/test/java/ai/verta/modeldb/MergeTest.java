@@ -71,7 +71,7 @@ public class MergeTest extends TestsInit {
   // Git Notebook Code
   @Parameters
   public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][]{{0}, {1}, {2}, {3}});
+    return Arrays.asList(new Object[][] {{0}, {1}, {2}, {3}});
   }
 
   public MergeTest(int blobType) {
@@ -86,7 +86,7 @@ public class MergeTest extends TestsInit {
 
   @After
   public void removeEntities() {
-    for (Repository repo : new Repository[]{repository}) {
+    for (Repository repo : new Repository[] {repository}) {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repo.getId()))
@@ -271,7 +271,7 @@ public class MergeTest extends TestsInit {
     Assert.assertFalse(mergeReponse3.getConflictsList().isEmpty());
 
     for (Commit commit :
-        new Commit[]{commitE, commitD, commitC, mergeReponse1.getCommit(), commitB, commitA}) {
+        new Commit[] {commitE, commitD, commitC, mergeReponse1.getCommit(), commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
               .setRepositoryId(
@@ -606,6 +606,6 @@ public class MergeTest extends TestsInit {
                 .build();
         break;
     }
-    return new BlobExpanded[]{blobExpanded1, blobExpanded2, blobExpanded3, blobExpanded4};
+    return new BlobExpanded[] {blobExpanded1, blobExpanded2, blobExpanded3, blobExpanded4};
   }
 }

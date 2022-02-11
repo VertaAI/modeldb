@@ -49,10 +49,10 @@ public class GlobalSharingTest extends TestsInit {
   @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(
-        new Object[][]{
-            {ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT},
-            {ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET},
-            {ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY},
+        new Object[][] {
+          {ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT},
+          {ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET},
+          {ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY},
         });
   }
 

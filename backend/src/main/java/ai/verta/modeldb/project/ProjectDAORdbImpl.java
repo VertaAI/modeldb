@@ -98,7 +98,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
    * Method to convert createProject request to Project object. This method generates the project Id
    * using UUID and puts it in Project object.
    *
-   * @param request  : CreateProject
+   * @param request : CreateProject
    * @param userInfo : UserInfo
    * @return Project
    */

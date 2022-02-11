@@ -43,14 +43,14 @@ public interface ExperimentRunDAO {
   /**
    * Get List of ExperimentRun entity using given projectId from database.
    *
-   * @param pageNumber  --> page number use for pagination.
-   * @param pageLimit   --> page limit is per page record count.
-   * @param sortKey     -- > Use this field for filter data.
-   * @param order       --> this parameter has order like asc OR desc.
-   * @param entityKey   --> like ModelDBConstants.PROJECT_ID, ModelDBConstants.EXPERIMENT_ID etc.
+   * @param pageNumber --> page number use for pagination.
+   * @param pageLimit --> page limit is per page record count.
+   * @param sortKey -- > Use this field for filter data.
+   * @param order --> this parameter has order like asc OR desc.
+   * @param entityKey --> like ModelDBConstants.PROJECT_ID, ModelDBConstants.EXPERIMENT_ID etc.
    * @param entityValue --> like Project.id, experiment.id etc.
    * @return ExperimentRunPaginationDTO experimentRunPaginationDTO contains the experimentRunList &
-   * total_pages count
+   *     total_pages count
    */
   ExperimentRunPaginationDTO getExperimentRunsFromEntity(
       ProjectDAO projectDAO,
@@ -65,8 +65,8 @@ public interface ExperimentRunDAO {
   /**
    * Get ExperimentRun entity using given experimentRunId from database.
    *
-   * @param String   key --> key like ModelDBConstants.ID, ModelDBConstants.Name etc.
-   * @param String   value --> value like ExperimentRun.id, ExperimentRun.name etc.
+   * @param String key --> key like ModelDBConstants.ID, ModelDBConstants.Name etc.
+   * @param String value --> value like ExperimentRun.id, ExperimentRun.name etc.
    * @param UserInfo userInfo --> current user info
    * @return List<ExperimentRun> experimentRuns
    */
@@ -91,13 +91,13 @@ public interface ExperimentRunDAO {
   boolean isExperimentRunExists(Session session, String experimentRunId);
 
   /**
-   * @param experimentRunId   : experimentRun.id
+   * @param experimentRunId : experimentRun.id
    * @param experimentRunName : updated experimentRun name from client request
    */
   void updateExperimentRunName(String experimentRunId, String experimentRunName);
 
   /**
-   * @param experimentRunId          : experimentRun.id
+   * @param experimentRunId : experimentRun.id
    * @param experimentRunDescription : updated experimentRun description from client request
    * @return {@link ExperimentRun} : updated experimentRun
    */
@@ -105,13 +105,13 @@ public interface ExperimentRunDAO {
       String experimentRunId, String experimentRunDescription) throws ModelDBException;
 
   /**
-   * @param experimentRunId    : experimentRun.id
+   * @param experimentRunId : experimentRun.id
    * @param updatedCodeVersion : updated experimentRun code version snapshot from client request
    */
   void logExperimentRunCodeVersion(String experimentRunId, CodeVersion updatedCodeVersion);
 
   /**
-   * @param experimentRunId       : experimentRun.id
+   * @param experimentRunId : experimentRun.id
    * @param parentExperimentRunId : experimentRun parentId from client request
    */
   void setParentExperimentRunId(String experimentRunId, String parentExperimentRunId);
@@ -120,7 +120,7 @@ public interface ExperimentRunDAO {
    * Add List of ExperimentRun Tags in database.
    *
    * @param experimentRunId : ExperimentRun.id
-   * @param tagsList        : tag list
+   * @param tagsList : tag list
    * @return ExperimentRun : updatedExperimentRun
    */
   ExperimentRun addExperimentRunTags(String experimentRunId, List<String> tagsList)
@@ -129,9 +129,9 @@ public interface ExperimentRunDAO {
   /**
    * Delete ExperimentRun Tags from ExperimentRun entity.
    *
-   * @param deleteAll            : flag
+   * @param deleteAll : flag
    * @param experimentRunTagList : tags list for deletion
-   * @param experimentRunId      : ExperimentRun.id
+   * @param experimentRunId : ExperimentRun.id
    * @return ExperimentRun updatedExperimentRun
    */
   ExperimentRun deleteExperimentRunTags(
@@ -159,7 +159,7 @@ public interface ExperimentRunDAO {
    * ExperimentRun has Metrics list field. Add new metric in that Metrics List.
    *
    * @param experimentRunId
-   * @param metrics         has KeyValue entity
+   * @param metrics has KeyValue entity
    */
   void logMetrics(String experimentRunId, List<KeyValue> metrics);
 
@@ -216,15 +216,14 @@ public interface ExperimentRunDAO {
    * ExperimentRun has attributes field. Add new attribute in that attribute List.
    *
    * @param experimentRunId
-   * @param attributes      has KeyValue.
+   * @param attributes has KeyValue.
    */
   void logAttributes(String experimentRunId, List<KeyValue> attributes);
 
   /**
-   * ExperimentRun has attributes field, Return List<KeyValue> attributes from ExperimentRun
-   * entity.
+   * ExperimentRun has attributes field, Return List<KeyValue> attributes from ExperimentRun entity.
    *
-   * @param getAll           flag
+   * @param getAll flag
    * @param attributeKeyList
    * @param experimentRunId
    * @return List<KeyValue> attribute list
@@ -235,11 +234,11 @@ public interface ExperimentRunDAO {
   /**
    * Return list of experimentRuns based on FindExperimentRuns queryParameters
    *
-   * @param projectDAO           : projectDAO
+   * @param projectDAO : projectDAO
    * @param currentLoginUserInfo : current login user info
-   * @param queryParameters      --> query parameters for filtering experimentRuns
+   * @param queryParameters --> query parameters for filtering experimentRuns
    * @return ExperimentRunPaginationDTO -- experimentRunPaginationDTO contains the list of
-   * experimentRuns based on filter queryParameters & total_pages count
+   *     experimentRuns based on filter queryParameters & total_pages count
    */
   ExperimentRunPaginationDTO findExperimentRuns(
       ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
@@ -250,7 +249,7 @@ public interface ExperimentRunDAO {
    *
    * @param queryParameters --> query parameters for sorting experimentRuns
    * @return ExperimentRunPaginationDTO -- experimentRunPaginationDTO contains the list of
-   * experimentRuns based on filter queryParameters & total_pages count
+   *     experimentRuns based on filter queryParameters & total_pages count
    */
   ExperimentRunPaginationDTO sortExperimentRuns(
       ProjectDAO projectDAO, SortExperimentRuns queryParameters) throws PermissionDeniedException;
@@ -259,9 +258,9 @@ public interface ExperimentRunDAO {
    * Return "Top n" (e.g. Top 5) experimentRuns after applying the sort queryParameters
    *
    * @param TopExperimentRunsSelector queryParameters --> query parameters for sorting and selecting
-   *                                  "Top n" experimentRuns
+   *     "Top n" experimentRuns
    * @return List<ExperimentRun> -- return list of experimentRuns based on top selector
-   * queryParameters
+   *     queryParameters
    */
   List<ExperimentRun> getTopExperimentRuns(
       ProjectDAO projectDAO, TopExperimentRunsSelector queryParameters)
@@ -279,16 +278,16 @@ public interface ExperimentRunDAO {
    * Add attributes in database using experimentRunId.
    *
    * @param experimentRunId : ExperimentRun.id
-   * @param attributesList  : new attribute list
+   * @param attributesList : new attribute list
    */
   void addExperimentRunAttributes(String experimentRunId, List<KeyValue> attributesList);
 
   /**
    * Delete ExperimentRun Attributes in database using experimentRunId.
    *
-   * @param deleteAll:       flag
+   * @param deleteAll: flag
    * @param attributeKeyList : attribute list for deletion
-   * @param experimentRunId  : ExperimentRun.id
+   * @param experimentRunId : ExperimentRun.id
    */
   void deleteExperimentRunAttributes(
       String experimentRunId, List<String> attributeKeyList, Boolean deleteAll);
@@ -297,7 +296,7 @@ public interface ExperimentRunDAO {
    * Log JobId in ExperimentRun entity.
    *
    * @param experimentRunId : ExperimentRun.id
-   * @param jobId           : job.id
+   * @param jobId : job.id
    */
   void logJobId(String experimentRunId, String jobId);
 
@@ -321,8 +320,8 @@ public interface ExperimentRunDAO {
    * ExperimentRun has datasets field. Add new dataset in that dataset List.
    *
    * @param experimentRunId
-   * @param datasets        List of artifacts of type Data and object_id pointing to an existing
-   *                        datasetVersion
+   * @param datasets List of artifacts of type Data and object_id pointing to an existing
+   *     datasetVersion
    */
   void logDatasets(String experimentRunId, List<Artifact> datasets, boolean overwrite)
       throws ModelDBException;
@@ -331,7 +330,7 @@ public interface ExperimentRunDAO {
    * Deletes the artifact key associated with the experiment run
    *
    * @param experimentRunId : ExperimentRun.id
-   * @param atrifactKey     : artifact key
+   * @param atrifactKey : artifact key
    */
   void deleteArtifacts(String experimentRunId, String atrifactKey);
 
@@ -355,8 +354,8 @@ public interface ExperimentRunDAO {
    * Get ExperimentRun entity with selected fields using given list of experimentRunID.
    *
    * @param experimentRunIds : list of experimentRun.id
-   * @param selectedFields   : list of selected field like ExperimentRun.attributes,
-   *                         ExperimentRun.project_id etc.
+   * @param selectedFields : list of selected field like ExperimentRun.attributes,
+   *     ExperimentRun.project_id etc.
    * @return {@link List} : value = experimentRun OR selectedFields_array_objects
    */
   @SuppressWarnings({"squid:S1452"})

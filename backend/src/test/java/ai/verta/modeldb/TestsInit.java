@@ -111,9 +111,9 @@ public class TestsInit {
     if (testConfig.getAuthService() != null) {
       ManagedChannel authServiceChannel =
           ManagedChannelBuilder.forTarget(
-              testConfig.getAuthService().getHost()
-                  + ":"
-                  + testConfig.getAuthService().getPort())
+                  testConfig.getAuthService().getHost()
+                      + ":"
+                      + testConfig.getAuthService().getPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient1AuthInterceptor())
               .build();
@@ -124,9 +124,9 @@ public class TestsInit {
 
       ManagedChannel authServiceChannelClient2 =
           ManagedChannelBuilder.forTarget(
-              testConfig.getAuthService().getHost()
-                  + ":"
-                  + testConfig.getAuthService().getPort())
+                  testConfig.getAuthService().getHost()
+                      + ":"
+                      + testConfig.getAuthService().getPort())
               .usePlaintext()
               .intercept(authClientInterceptor.getClient2AuthInterceptor())
               .build();

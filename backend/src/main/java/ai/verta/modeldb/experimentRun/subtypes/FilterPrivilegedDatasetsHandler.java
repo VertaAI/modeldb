@@ -38,7 +38,7 @@ public class FilterPrivilegedDatasetsHandler {
   /**
    * @param datasets : datasets for privilege check
    * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false) at
-   *                 fetch time
+   *     fetch time
    * @return {@link List} : accessible datasets
    */
   public InternalFuture<List<Artifact>> filterAndGetPrivilegedDatasetsOnly(
@@ -59,19 +59,19 @@ public class FilterPrivilegedDatasetsHandler {
       return InternalFuture.completedInternalFuture(datasets);
     }
     return jdbi.withHandle(
-        handle -> {
-          // We have dataset version as a commit and dataset as a repository in MDB so added
-          // commit_hash filter here
-          return handle
-              .createQuery(
-                  " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<linkedDatasetVersionIds>) ")
-              .bindList("linkedDatasetVersionIds", linkedDatasetVersionIds)
-              .map(
-                  (rs, ctx) ->
-                      new AbstractMap.SimpleEntry<>(
-                          rs.getString("commit_hash"), rs.getLong("repository_id")))
-              .list();
-        })
+            handle -> {
+              // We have dataset version as a commit and dataset as a repository in MDB so added
+              // commit_hash filter here
+              return handle
+                  .createQuery(
+                      " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<linkedDatasetVersionIds>) ")
+                  .bindList("linkedDatasetVersionIds", linkedDatasetVersionIds)
+                  .map(
+                      (rs, ctx) ->
+                          new AbstractMap.SimpleEntry<>(
+                              rs.getString("commit_hash"), rs.getLong("repository_id")))
+                  .list();
+            })
         .thenCompose(
             datasetVersionDatasetList -> {
               // Convert list of dataset and dataset version mapping into Map

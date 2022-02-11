@@ -31,9 +31,7 @@ public class CleanUpEntitiesCron extends TimerTask {
     this.recordUpdateLimit = recordUpdateLimit;
   }
 
-  /**
-   * The action to be performed by this timer task.
-   */
+  /** The action to be performed by this timer task. */
   @Override
   public void run() {
     LOGGER.info("CleanUpEntitiesCron wakeup");

@@ -216,29 +216,29 @@ public class AutogenHyperparameterSetConfigDiff implements ProtoType {
     AutogenHyperparameterSetConfigDiff obj = new AutogenHyperparameterSetConfigDiff();
     {
       Function<
-          ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
-          AutogenHyperparameterSetConfigBlob>
+              ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
+              AutogenHyperparameterSetConfigBlob>
           f = x -> AutogenHyperparameterSetConfigBlob.fromProto(blob.getA());
       obj.setA(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
-          AutogenHyperparameterSetConfigBlob>
+              ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
+              AutogenHyperparameterSetConfigBlob>
           f = x -> AutogenHyperparameterSetConfigBlob.fromProto(blob.getB());
       obj.setB(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
-          AutogenHyperparameterSetConfigBlob>
+              ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
+              AutogenHyperparameterSetConfigBlob>
           f = x -> AutogenHyperparameterSetConfigBlob.fromProto(blob.getC());
       obj.setC(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
-          AutogenDiffStatusEnumDiffStatus>
+              ai.verta.modeldb.versioning.HyperparameterSetConfigDiff,
+              AutogenDiffStatusEnumDiffStatus>
           f = x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
       obj.setStatus(f.apply(blob));
     }

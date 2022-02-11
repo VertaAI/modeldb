@@ -100,7 +100,7 @@ public class AutogenHyperparameterConfigBlob implements ProtoType {
     }
     {
       Function3<
-          AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
+              AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
           f = (x, y) -> x.equals(y);
       if (this.Value != null || other.Value != null) {
         if (this.Value == null && other.Value != null) {
@@ -149,8 +149,8 @@ public class AutogenHyperparameterConfigBlob implements ProtoType {
     }
     {
       Function<
-          ai.verta.modeldb.versioning.HyperparameterConfigBlob,
-          AutogenHyperparameterValuesConfigBlob>
+              ai.verta.modeldb.versioning.HyperparameterConfigBlob,
+              AutogenHyperparameterValuesConfigBlob>
           f = x -> AutogenHyperparameterValuesConfigBlob.fromProto(blob.getValue());
       obj.setValue(f.apply(blob));
     }

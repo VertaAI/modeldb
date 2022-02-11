@@ -22,8 +22,7 @@ import javax.persistence.Table;
 @Table(name = "observation")
 public class ObservationEntity implements Serializable {
 
-  public ObservationEntity() {
-  }
+  public ObservationEntity() {}
 
   public ObservationEntity(Object entity, String fieldType, Observation observation) {
 

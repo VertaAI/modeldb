@@ -2,8 +2,7 @@ package ai.verta.modeldb;
 
 public abstract class ModelDBConstants {
 
-  private ModelDBConstants() {
-  }
+  private ModelDBConstants() {}
 
   // Properties Keys
   public static final String VERTA_MODELDB_CONFIG = "VERTA_MODELDB_CONFIG";

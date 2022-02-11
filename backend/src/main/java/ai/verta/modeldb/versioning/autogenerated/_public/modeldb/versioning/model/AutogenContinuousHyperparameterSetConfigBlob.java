@@ -99,7 +99,7 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
 
     {
       Function3<
-          AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
+              AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
           f = (x, y) -> x.equals(y);
       if (this.IntervalBegin != null || other.IntervalBegin != null) {
         if (this.IntervalBegin == null && other.IntervalBegin != null) {
@@ -115,7 +115,7 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
     }
     {
       Function3<
-          AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
+              AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
           f = (x, y) -> x.equals(y);
       if (this.IntervalEnd != null || other.IntervalEnd != null) {
         if (this.IntervalEnd == null && other.IntervalEnd != null) {
@@ -131,7 +131,7 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
     }
     {
       Function3<
-          AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
+              AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
           f = (x, y) -> x.equals(y);
       if (this.IntervalStep != null || other.IntervalStep != null) {
         if (this.IntervalStep == null && other.IntervalStep != null) {
@@ -188,22 +188,22 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
         new AutogenContinuousHyperparameterSetConfigBlob();
     {
       Function<
-          ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
-          AutogenHyperparameterValuesConfigBlob>
+              ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
+              AutogenHyperparameterValuesConfigBlob>
           f = x -> AutogenHyperparameterValuesConfigBlob.fromProto(blob.getIntervalBegin());
       obj.setIntervalBegin(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
-          AutogenHyperparameterValuesConfigBlob>
+              ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
+              AutogenHyperparameterValuesConfigBlob>
           f = x -> AutogenHyperparameterValuesConfigBlob.fromProto(blob.getIntervalEnd());
       obj.setIntervalEnd(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
-          AutogenHyperparameterValuesConfigBlob>
+              ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
+              AutogenHyperparameterValuesConfigBlob>
           f = x -> AutogenHyperparameterValuesConfigBlob.fromProto(blob.getIntervalStep());
       obj.setIntervalStep(f.apply(blob));
     }
@@ -217,10 +217,10 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
       if (this.IntervalBegin != null && !this.IntervalBegin.equals(null)) {
         Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder, Void>
             f =
-            x -> {
-              builder.setIntervalBegin(this.IntervalBegin.toProto());
-              return null;
-            };
+                x -> {
+                  builder.setIntervalBegin(this.IntervalBegin.toProto());
+                  return null;
+                };
         f.apply(builder);
       }
     }
@@ -228,10 +228,10 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
       if (this.IntervalEnd != null && !this.IntervalEnd.equals(null)) {
         Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder, Void>
             f =
-            x -> {
-              builder.setIntervalEnd(this.IntervalEnd.toProto());
-              return null;
-            };
+                x -> {
+                  builder.setIntervalEnd(this.IntervalEnd.toProto());
+                  return null;
+                };
         f.apply(builder);
       }
     }
@@ -239,10 +239,10 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
       if (this.IntervalStep != null && !this.IntervalStep.equals(null)) {
         Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder, Void>
             f =
-            x -> {
-              builder.setIntervalStep(this.IntervalStep.toProto());
-              return null;
-            };
+                x -> {
+                  builder.setIntervalStep(this.IntervalStep.toProto());
+                  return null;
+                };
         f.apply(builder);
       }
     }

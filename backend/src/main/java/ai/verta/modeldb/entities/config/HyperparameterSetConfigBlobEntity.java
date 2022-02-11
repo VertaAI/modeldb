@@ -27,8 +27,7 @@ import javax.persistence.Table;
 @Table(name = "hyperparameter_set_config_blob")
 public class HyperparameterSetConfigBlobEntity implements Serializable {
 
-  private HyperparameterSetConfigBlobEntity() {
-  }
+  private HyperparameterSetConfigBlobEntity() {}
 
   public HyperparameterSetConfigBlobEntity(
       String blobHash, HyperparameterSetConfigBlob hyperparameterSetConfigBlob)

@@ -19,27 +19,27 @@ public interface ProjectDAO {
    * Insert Project entity in database.
    *
    * @param createProjectRequest : create project request
-   * @param userInfo             : current login userInfo
+   * @param userInfo : current login userInfo
    * @return Project
    */
   Project insertProject(CreateProject createProjectRequest, UserInfo userInfo);
 
   /**
-   * @param projectId          : project.id
+   * @param projectId : project.id
    * @param projectDescription : updated project description from client request
    * @return {@link Project} : updated project
    */
   Project updateProjectDescription(String projectId, String projectDescription);
 
   /**
-   * @param projectId     : project.id
+   * @param projectId : project.id
    * @param projectReadme : updated project readme text from client request
    * @return {@link Project} : updated project
    */
   Project updateProjectReadme(String projectId, String projectReadme);
 
   /**
-   * @param projectId          : project.id
+   * @param projectId : project.id
    * @param updatedCodeVersion : updated project codeVersion snapshot from client request
    * @return {@link Project} : updated project
    */
@@ -59,9 +59,9 @@ public interface ProjectDAO {
   /**
    * Fetch Project Attributes from database using projectId.
    *
-   * @param getAll           flag
+   * @param getAll flag
    * @param attributeKeyList
-   * @param String           projectId
+   * @param String projectId
    * @return List<KeyValue> projectAttributes.
    */
   List<KeyValue> getProjectAttributes(
@@ -80,14 +80,14 @@ public interface ProjectDAO {
   /**
    * Fetch All the Project from database bases on user details.
    *
-   * @param userInfo          : userInfo
-   * @param pageNumber        : page number use for pagination.
-   * @param pageLimit         : page limit is per page record count.
-   * @param order             : this parameter has order like asc OR desc.
-   * @param sortKey           : Use this field for filter data.
+   * @param userInfo : userInfo
+   * @param pageNumber : page number use for pagination.
+   * @param pageLimit : page limit is per page record count.
+   * @param order : this parameter has order like asc OR desc.
+   * @param sortKey : Use this field for filter data.
    * @param projectVisibility : ProjectVisibility.PUBLIC, ProjectVisibility.PRIVATE
    * @return {@link ProjectPaginationDTO} : projectPaginationDTO contains the projectList &
-   * total_pages count
+   *     total_pages count
    */
   ProjectPaginationDTO getProjects(
       UserInfo userInfo,
@@ -110,7 +110,7 @@ public interface ProjectDAO {
    *
    * @param projectTagList
    * @param deleteAll
-   * @param String         projectId
+   * @param String projectId
    * @return Project project
    */
   Project deleteProjectTags(String projectId, List<String> projectTagList, Boolean deleteAll);
@@ -118,8 +118,8 @@ public interface ProjectDAO {
   /**
    * Fetch the Projects based on key and value from database.
    *
-   * @param key      : key like ModelDBConstants.ID,ModelDBConstants.NAME etc.
-   * @param value    : value is project.Id, project.name etc.
+   * @param key : key like ModelDBConstants.ID,ModelDBConstants.NAME etc.
+   * @param value : value is project.Id, project.name etc.
    * @param userInfo : current login user
    * @return {@link Project} : project based on search return project entity.
    */
@@ -128,7 +128,7 @@ public interface ProjectDAO {
   /**
    * Add attributes in database using projectId.
    *
-   * @param String         projectId
+   * @param String projectId
    * @param List<KeyValue> attributesList
    * @return Project --> updated Project entity
    */
@@ -139,7 +139,7 @@ public interface ProjectDAO {
    *
    * @param deleteAll
    * @param attributeKeyList
-   * @param String           projectId
+   * @param String projectId
    * @return Project project
    */
   Project deleteProjectAttributes(
@@ -210,12 +210,12 @@ public interface ProjectDAO {
   /**
    * Return list of projects based on FindProjects queryParameters
    *
-   * @param queryParameters      : queryParameters --> query parameters for filtering projects
-   * @param host                 : host userInfo based on shared URL (ex: xyz.abcPlatform.ai/xyz_user_email_id)
+   * @param queryParameters : queryParameters --> query parameters for filtering projects
+   * @param host : host userInfo based on shared URL (ex: xyz.abcPlatform.ai/xyz_user_email_id)
    * @param currentLoginUserInfo : Current login userInfo
-   * @param projectVisibility    : projectVisibility.PUBLIC, projectVisibility.PRIVATE
+   * @param projectVisibility : projectVisibility.PUBLIC, projectVisibility.PRIVATE
    * @return {@link ProjectPaginationDTO} : projectPaginationDTO contains the list of projects based
-   * on filter queryParameters & total_pages count
+   *     on filter queryParameters & total_pages count
    */
   ProjectPaginationDTO findProjects(
       FindProjects queryParameters,
@@ -243,7 +243,7 @@ public interface ProjectDAO {
   /**
    * Deletes the artifact key associated with the experiment run
    *
-   * @param projectId   : project.id
+   * @param projectId : project.id
    * @param artifactKey : artifact.key
    * @return {@link Project} : updated project
    */

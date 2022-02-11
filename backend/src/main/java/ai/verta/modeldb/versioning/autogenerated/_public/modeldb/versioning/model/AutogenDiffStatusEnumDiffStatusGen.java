@@ -18,10 +18,10 @@ public class AutogenDiffStatusEnumDiffStatusGen extends Generator<AutogenDiffSta
   public AutogenDiffStatusEnumDiffStatus generate(SourceOfRandomness r, GenerationStatus status) {
     return new AutogenDiffStatusEnumDiffStatus(
         r.choose(
-            new DiffStatusEnum.DiffStatus[]{
-                DiffStatusEnum.DiffStatus.ADDED,
-                DiffStatusEnum.DiffStatus.DELETED,
-                DiffStatusEnum.DiffStatus.MODIFIED
+            new DiffStatusEnum.DiffStatus[] {
+              DiffStatusEnum.DiffStatus.ADDED,
+              DiffStatusEnum.DiffStatus.DELETED,
+              DiffStatusEnum.DiffStatus.MODIFIED
             }));
   }
 }

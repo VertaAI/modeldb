@@ -1150,7 +1150,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
         var findRepositoriesQuery =
             new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(
-                session, authService, mdbRoleService)
+                    session, authService, mdbRoleService)
                 .setRepoIds(
                     accessibleResourceIdsWithCollaborator.stream()
                         .map(Long::valueOf)

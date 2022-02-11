@@ -216,25 +216,25 @@ public class AutogenEnvironmentVariablesDiff implements ProtoType {
     AutogenEnvironmentVariablesDiff obj = new AutogenEnvironmentVariablesDiff();
     {
       Function<
-          ai.verta.modeldb.versioning.EnvironmentVariablesDiff, AutogenEnvironmentVariablesBlob>
+              ai.verta.modeldb.versioning.EnvironmentVariablesDiff, AutogenEnvironmentVariablesBlob>
           f = x -> AutogenEnvironmentVariablesBlob.fromProto(blob.getA());
       obj.setA(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.EnvironmentVariablesDiff, AutogenEnvironmentVariablesBlob>
+              ai.verta.modeldb.versioning.EnvironmentVariablesDiff, AutogenEnvironmentVariablesBlob>
           f = x -> AutogenEnvironmentVariablesBlob.fromProto(blob.getB());
       obj.setB(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.EnvironmentVariablesDiff, AutogenEnvironmentVariablesBlob>
+              ai.verta.modeldb.versioning.EnvironmentVariablesDiff, AutogenEnvironmentVariablesBlob>
           f = x -> AutogenEnvironmentVariablesBlob.fromProto(blob.getC());
       obj.setC(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.EnvironmentVariablesDiff, AutogenDiffStatusEnumDiffStatus>
+              ai.verta.modeldb.versioning.EnvironmentVariablesDiff, AutogenDiffStatusEnumDiffStatus>
           f = x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
       obj.setStatus(f.apply(blob));
     }

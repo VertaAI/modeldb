@@ -77,24 +77,24 @@ public class AutogenDiscreteHyperparameterSetConfigBlob implements ProtoType {
 
     {
       Function3<
-          List<AutogenHyperparameterValuesConfigBlob>,
-          List<AutogenHyperparameterValuesConfigBlob>,
-          Boolean>
+              List<AutogenHyperparameterValuesConfigBlob>,
+              List<AutogenHyperparameterValuesConfigBlob>,
+              Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenHyperparameterValuesConfigBlob,
-                            AutogenHyperparameterValuesConfigBlob,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenHyperparameterValuesConfigBlob,
+                                    AutogenHyperparameterValuesConfigBlob,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.Values != null || other.Values != null) {
         if (this.Values == null && other.Values != null) {
           return false;
@@ -133,13 +133,13 @@ public class AutogenDiscreteHyperparameterSetConfigBlob implements ProtoType {
         new AutogenDiscreteHyperparameterSetConfigBlob();
     {
       Function<
-          ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob,
-          List<AutogenHyperparameterValuesConfigBlob>>
+              ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob,
+              List<AutogenHyperparameterValuesConfigBlob>>
           f =
-          x ->
-              blob.getValuesList().stream()
-                  .map(AutogenHyperparameterValuesConfigBlob::fromProto)
-                  .collect(Collectors.toList());
+              x ->
+                  blob.getValuesList().stream()
+                      .map(AutogenHyperparameterValuesConfigBlob::fromProto)
+                      .collect(Collectors.toList());
       obj.setValues(f.apply(blob));
     }
     return obj;

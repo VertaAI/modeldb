@@ -25,8 +25,7 @@ public class S3Controller {
 
   private static final Logger LOGGER = LogManager.getLogger(S3Controller.class);
 
-  @Autowired
-  private S3Service s3Service;
+  @Autowired private S3Service s3Service;
 
   @PutMapping(value = {"${artifactEndpoint.storeArtifact}"})
   public ResponseEntity<UploadFileResponse> storeArtifact(

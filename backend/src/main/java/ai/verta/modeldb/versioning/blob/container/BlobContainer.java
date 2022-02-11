@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.Set;
 import org.hibernate.Session;
 
-/**
- * contains proto object and saves it to the database
- */
+/** contains proto object and saves it to the database */
 public abstract class BlobContainer {
 
   private final BlobExpanded blobExpanded;
@@ -54,8 +52,8 @@ public abstract class BlobContainer {
   }
 
   /**
-   * @param rootTree   : Each blob or folder need to be converted to a tree element. the process is
-   *                   bootstrapped with an empty tree for each BlobExpanded
+   * @param rootTree : Each blob or folder need to be converted to a tree element. the process is
+   *     bootstrapped with an empty tree for each BlobExpanded
    * @param fileHasher get sha of the blob or string
    * @throws NoSuchAlgorithmException for no hashing algorithm
    */

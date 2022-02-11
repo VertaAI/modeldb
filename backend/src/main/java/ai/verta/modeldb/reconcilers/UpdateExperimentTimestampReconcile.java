@@ -54,8 +54,8 @@ public class UpdateExperimentTimestampReconcile
     logger.debug(
         "Reconciling update timestamp for experiments: "
             + updatedMaxDateMap.stream()
-            .map(AbstractMap.SimpleEntry::getKey)
-            .collect(Collectors.toList()));
+                .map(AbstractMap.SimpleEntry::getKey)
+                .collect(Collectors.toList()));
     return futureJdbi
         .useHandle(
             handle -> {

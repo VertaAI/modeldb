@@ -43,11 +43,11 @@ public class MonitoringInterceptor implements ServerInterceptor {
           .register();
 
   /**
-   * @param call:          ServerCall
+   * @param call: ServerCall
    * @param requestHeaders : Metadata request headers
-   * @param next:          ServerCallHandler
-   * @param <R>:           Request
-   * @param <S>:           Response
+   * @param next: ServerCallHandler
+   * @param <R>: Request
+   * @param <S>: Response
    * @return {@link Contexts}
    */
   @Override

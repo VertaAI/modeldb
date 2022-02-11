@@ -76,22 +76,22 @@ public class AutogenPathDatasetBlob implements ProtoType {
 
     {
       Function3<
-          List<AutogenPathDatasetComponentBlob>, List<AutogenPathDatasetComponentBlob>, Boolean>
+              List<AutogenPathDatasetComponentBlob>, List<AutogenPathDatasetComponentBlob>, Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenPathDatasetComponentBlob,
-                            AutogenPathDatasetComponentBlob,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenPathDatasetComponentBlob,
+                                    AutogenPathDatasetComponentBlob,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.Components != null || other.Components != null) {
         if (this.Components == null && other.Components != null) {
           return false;
@@ -128,10 +128,10 @@ public class AutogenPathDatasetBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.PathDatasetBlob, List<AutogenPathDatasetComponentBlob>>
           f =
-          x ->
-              blob.getComponentsList().stream()
-                  .map(AutogenPathDatasetComponentBlob::fromProto)
-                  .collect(Collectors.toList());
+              x ->
+                  blob.getComponentsList().stream()
+                      .map(AutogenPathDatasetComponentBlob::fromProto)
+                      .collect(Collectors.toList());
       obj.setComponents(f.apply(blob));
     }
     return obj;

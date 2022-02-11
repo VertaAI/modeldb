@@ -498,15 +498,13 @@ public class FindProjectEntitiesTest extends TestsInit {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
-              == status.getCode()); // because of shadow delete the response could be 403 or 404
+                  == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
   }
 
-  /**
-   * Validation check for the predicate value with empty string which is not valid
-   */
+  /** Validation check for the predicate value with empty string which is not valid */
   @Test
   public void findProjectPredicateValueEmptyNegativeTest() {
     LOGGER.info(
@@ -560,9 +558,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindProjects predicate value is empty negative test stop ................................");
   }
 
-  /**
-   * Validate check for protobuf struct type in KeyValueQuery not implemented
-   */
+  /** Validate check for protobuf struct type in KeyValueQuery not implemented */
   @Test
   public void findProjectStructTypeNotImplemented() {
     LOGGER.info(
@@ -603,9 +599,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "check for protobuf struct type in KeyValueQuery not implemented test stop................................");
   }
 
-  /**
-   * find projects with value of attributes.attribute_1 <= 0.6543210
-   */
+  /** find projects with value of attributes.attribute_1 <= 0.6543210 */
   @Test
   public void findProjectsByAttributesTest() {
     LOGGER.info("FindProjects by attributes test start................................");
@@ -742,9 +736,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindProjects by multiple attribute condition test stop................................");
   }
 
-  /**
-   * get projectRun with value of metrics.accuracy >= 0.6543210 & tags == Tag_7
-   */
+  /** get projectRun with value of metrics.accuracy >= 0.6543210 & tags == Tag_7 */
   @Test
   public void findProjectsByMetricsAndTagsTest() {
     LOGGER.info(
@@ -793,9 +785,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindProjects by and condition of metrics & tags test stop................................");
   }
 
-  /**
-   * Find projects with value of endTime
-   */
+  /** Find projects with value of endTime */
   @Test
   public void findProjectsByProjectEndTimeTest() {
     LOGGER.info("FindProjects by project endtime test start................................");
@@ -832,9 +822,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindProjects by project endtime test stop................................");
   }
 
-  /**
-   * Find projects by attributes with pagination
-   */
+  /** Find projects by attributes with pagination */
   @Test
   public void findProjectsByAttributesWithPaginationTest() {
     LOGGER.info(
@@ -910,9 +898,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindProjects by attributes with pagination test stop................................");
   }
 
-  /**
-   * Check observations.attributes not support
-   */
+  /** Check observations.attributes not support */
   @Test
   public void findProjectsNotSupportObservationsAttributesTest() {
     LOGGER.info(
@@ -946,9 +932,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindProjects not support the observation.attributes test stop................................");
   }
 
-  /**
-   * Find projects with value of tags == test_tag_123
-   */
+  /** Find projects with value of tags == test_tag_123 */
   @Test
   public void findProjectsByTagsTest() {
     LOGGER.info("FindProjects by tags test start................................");
@@ -993,9 +977,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindProjects by tags test stop................................");
   }
 
-  /**
-   * Find projects with attribute predicates and sort by attribute key
-   */
+  /** Find projects with attribute predicates and sort by attribute key */
   @Test
   public void findAndSortProjectsByAttributeTest() {
     LOGGER.info("Find and sort Projects by attributes test start................................");
@@ -1091,9 +1073,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("Find and sort Projects by attributes test stop................................");
   }
 
-  /**
-   * Find projects by name key
-   */
+  /** Find projects by name key */
   @Test
   public void findProjectsByNameTest() {
     LOGGER.info("Find Projects by name test start................................");
@@ -1128,9 +1108,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("Find Projects by name test stop................................");
   }
 
-  /**
-   * Validation check for the predicate value with empty string which is not valid
-   */
+  /** Validation check for the predicate value with empty string which is not valid */
   @Test
   public void findExperimentPredicateValueEmptyNegativeTest() {
     LOGGER.info(
@@ -1184,9 +1162,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindExperiments predicate value is empty negative test stop................................");
   }
 
-  /**
-   * Validate check for protobuf struct type in KeyValueQuery not implemented
-   */
+  /** Validate check for protobuf struct type in KeyValueQuery not implemented */
   @Test
   public void findExperimentsStructTypeNotImplemented() {
     LOGGER.info(
@@ -1227,9 +1203,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "Check for protobuf struct type in KeyValueQuery not implemented in findExperiments test stop........");
   }
 
-  /**
-   * Find experiments with value of attributes.attribute_1 <= 0.6543210
-   */
+  /** Find experiments with value of attributes.attribute_1 <= 0.6543210 */
   @Test
   public void findExperimentsByAttributesTest() {
     LOGGER.info("FindExperiments by attributes test start................................");
@@ -1335,9 +1309,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindExperiments by multiple attributes condition test stop................................");
   }
 
-  /**
-   * Find experiment with value of metrics.accuracy >= 0.6543210 & tags == Tag_7
-   */
+  /** Find experiment with value of metrics.accuracy >= 0.6543210 & tags == Tag_7 */
   @Test
   public void findExperimentsByMetricsAndTagsTest() {
     LOGGER.info("FindExperiments by metrics and tags test start................................");
@@ -1386,9 +1358,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindExperiments by metrics and tags test stop................................");
   }
 
-  /**
-   * Find experiments with value of endTime
-   */
+  /** Find experiments with value of endTime */
   @Test
   public void findExperimentsByExperimentEndTimeTest() {
     LOGGER.info("FindExperiments by experiment endtime test start................................");
@@ -1427,9 +1397,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindExperiments by experiment endtime test stop................................");
   }
 
-  /**
-   * Find experiments by attributes with pagination
-   */
+  /** Find experiments by attributes with pagination */
   @Test
   public void findExperimentsByAttributesWithPaginationTest() {
     LOGGER.info(
@@ -1504,9 +1472,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindExperiments by attribute with pagination test stop................................");
   }
 
-  /**
-   * Check observations.attributes not support
-   */
+  /** Check observations.attributes not support */
   @Test
   public void findExperimentsNotSupportObservationsAttributesTest() {
     LOGGER.info("FindExperiments not support the observation.attributes test start............");
@@ -1539,9 +1505,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindExperiments not support the observation.attributes test stop............");
   }
 
-  /**
-   * Find experiments with value of tags == test_tag_123
-   */
+  /** Find experiments with value of tags == test_tag_123 */
   @Test
   public void findExperimentsByTagsTest() {
     LOGGER.info("FindExperiments by tags test start................................");
@@ -1587,9 +1551,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindExperiments by tags test stop................................");
   }
 
-  /**
-   * Find experiments with value of endTime
-   */
+  /** Find experiments with value of endTime */
   @Test
   public void findAndSortExperimentsByAttributesTest() {
     LOGGER.info(
@@ -1699,9 +1661,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "Find and sort Experiments by attributes test stop................................");
   }
 
-  /**
-   * Validation check for the predicate value with empty string which is not valid
-   */
+  /** Validation check for the predicate value with empty string which is not valid */
   @Test
   public void findExperimentRunPredicateValueEmptyNegativeTest() {
     LOGGER.info("FindExperimentRuns predicate value is empty negative test start.....");
@@ -1751,9 +1711,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindExperimentRuns predicate value is empty negative test stop.....");
   }
 
-  /**
-   * Validate check for protobuf struct type in KeyValueQuery not implemented
-   */
+  /** Validate check for protobuf struct type in KeyValueQuery not implemented */
   @Test
   public void findExperimentRunStructTypeNotImplemented() {
     LOGGER.info(
@@ -1792,9 +1750,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("Check for protobuf struct type in KeyValueQuery not implemented test stop.......");
   }
 
-  /**
-   * Find experimentRun with value of metrics.loss <= 0.6543210
-   */
+  /** Find experimentRun with value of metrics.loss <= 0.6543210 */
   @Test
   public void findExperimentRunsByMetricsTest() {
     LOGGER.info("FindExperimentRuns by metrics test start................................");
@@ -1845,9 +1801,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindExperimentRuns by metrics test stop................................");
   }
 
-  /**
-   * Find experimentRun with value of metrics.loss <= 0.6543210 & metrics.accuracy == 0.31
-   */
+  /** Find experimentRun with value of metrics.loss <= 0.6543210 & metrics.accuracy == 0.31 */
   @Test
   public void findExperimentRunsByMultipleMetricsTest() {
     LOGGER.info(
@@ -1961,9 +1915,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindExperimentRuns by metric and hyperparameter test stop................................");
   }
 
-  /**
-   * Find experimentRun with value of endTime
-   */
+  /** Find experimentRun with value of endTime */
   @Test
   public void findExperimentRunsByEndTimeTest() {
     LOGGER.info(
@@ -2004,9 +1956,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindExperimentRuns by ExperimentRun EndTime test stop................................");
   }
 
-  /**
-   * Find experimentRun by metrics and sort by code_version with pagination
-   */
+  /** Find experimentRun by metrics and sort by code_version with pagination */
   @Test
   @Ignore("sort by code_version not supported")
   public void findExperimentRunsByMetricsWithPaginationTest() {
@@ -2084,9 +2034,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindExperimentRuns by metrics sort by code_version with pagination test stop..................");
   }
 
-  /**
-   * Find experimentRun by metrics and sort by hyperparameters with pagination
-   */
+  /** Find experimentRun by metrics and sort by hyperparameters with pagination */
   @Test
   public void findRunsByMetricsSoryByHyprWithPaginationTest() {
     LOGGER.info(
@@ -2163,9 +2111,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         "FindExperimentRuns by metrics sort by Hyperparameters with pagination test stop.......");
   }
 
-  /**
-   * Check observations.attributes not support
-   */
+  /** Check observations.attributes not support */
   @Test
   public void findExperimentRunsNotSupportObservationsAttributesTest() {
     LOGGER.info("FindExperimentRuns not support the observation.attributes test start.........");
@@ -2198,9 +2144,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindExperimentRuns not support the observation.attributes test stop.........");
   }
 
-  /**
-   * Find experimentRun with value of tags
-   */
+  /** Find experimentRun with value of tags */
   @Test
   public void findExperimentRunsByTagsTest() {
     LOGGER.info("FindExperimentRuns by tags test start.........");
@@ -2248,9 +2192,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindExperimentRuns by tags test stop.........");
   }
 
-  /**
-   * Find experimentRun with value of metrics.loss <= 0.6543210 & sort key metrics.loss
-   */
+  /** Find experimentRun with value of metrics.loss <= 0.6543210 & sort key metrics.loss */
   @Test
   public void findAndSortExperimentRunsByMetricsTest() {
     LOGGER.info("Find and Sort ExperimentRuns by metrics test start.........");
@@ -2456,9 +2398,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindExperimentRuns with unwind test stop................................");
   }
 
-  /**
-   * Find experiments by workspace
-   */
+  /** Find experiments by workspace */
   @Test
   public void findExperimentsByWorkspaceTest() {
     LOGGER.info("FindExperiments by workspace test start................................");
@@ -2501,9 +2441,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     LOGGER.info("FindExperiments by workspace test stop................................");
   }
 
-  /**
-   * Find experimentRun with value of endTime
-   */
+  /** Find experimentRun with value of endTime */
   @Test
   public void findExperimentRunsWithoutProjectExperimentTest() {
     LOGGER.info(

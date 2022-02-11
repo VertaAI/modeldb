@@ -28,8 +28,7 @@ public class NFSController {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSController.class);
 
-  @Autowired
-  private NFSService nfsService;
+  @Autowired private NFSService nfsService;
 
   @PutMapping(value = {"${artifactEndpoint.storeArtifact}"})
   public UploadFileResponse storeArtifact(

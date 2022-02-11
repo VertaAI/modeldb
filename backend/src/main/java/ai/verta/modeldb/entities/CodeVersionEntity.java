@@ -18,8 +18,7 @@ import javax.persistence.Table;
 @Table(name = "code_version")
 public class CodeVersionEntity implements Serializable {
 
-  public CodeVersionEntity() {
-  }
+  public CodeVersionEntity() {}
 
   public CodeVersionEntity(String fieldType, CodeVersion codeVersion) {
 

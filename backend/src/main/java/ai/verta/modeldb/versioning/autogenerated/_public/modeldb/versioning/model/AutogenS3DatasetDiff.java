@@ -77,20 +77,20 @@ public class AutogenS3DatasetDiff implements ProtoType {
     {
       Function3<List<AutogenS3DatasetComponentDiff>, List<AutogenS3DatasetComponentDiff>, Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenS3DatasetComponentDiff,
-                            AutogenS3DatasetComponentDiff,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenS3DatasetComponentDiff,
+                                    AutogenS3DatasetComponentDiff,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.Components != null || other.Components != null) {
         if (this.Components == null && other.Components != null) {
           return false;

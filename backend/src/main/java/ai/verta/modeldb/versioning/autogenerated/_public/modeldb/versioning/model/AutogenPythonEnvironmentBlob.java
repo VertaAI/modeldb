@@ -104,24 +104,24 @@ public class AutogenPythonEnvironmentBlob implements ProtoType {
 
     {
       Function3<
-          List<AutogenPythonRequirementEnvironmentBlob>,
-          List<AutogenPythonRequirementEnvironmentBlob>,
-          Boolean>
+              List<AutogenPythonRequirementEnvironmentBlob>,
+              List<AutogenPythonRequirementEnvironmentBlob>,
+              Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenPythonRequirementEnvironmentBlob,
-                            AutogenPythonRequirementEnvironmentBlob,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenPythonRequirementEnvironmentBlob,
+                                    AutogenPythonRequirementEnvironmentBlob,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.Constraints != null || other.Constraints != null) {
         if (this.Constraints == null && other.Constraints != null) {
           return false;
@@ -136,24 +136,24 @@ public class AutogenPythonEnvironmentBlob implements ProtoType {
     }
     {
       Function3<
-          List<AutogenPythonRequirementEnvironmentBlob>,
-          List<AutogenPythonRequirementEnvironmentBlob>,
-          Boolean>
+              List<AutogenPythonRequirementEnvironmentBlob>,
+              List<AutogenPythonRequirementEnvironmentBlob>,
+              Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenPythonRequirementEnvironmentBlob,
-                            AutogenPythonRequirementEnvironmentBlob,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenPythonRequirementEnvironmentBlob,
+                                    AutogenPythonRequirementEnvironmentBlob,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.Requirements != null || other.Requirements != null) {
         if (this.Requirements == null && other.Requirements != null) {
           return false;
@@ -230,24 +230,24 @@ public class AutogenPythonEnvironmentBlob implements ProtoType {
     AutogenPythonEnvironmentBlob obj = new AutogenPythonEnvironmentBlob();
     {
       Function<
-          ai.verta.modeldb.versioning.PythonEnvironmentBlob,
-          List<AutogenPythonRequirementEnvironmentBlob>>
+              ai.verta.modeldb.versioning.PythonEnvironmentBlob,
+              List<AutogenPythonRequirementEnvironmentBlob>>
           f =
-          x ->
-              blob.getConstraintsList().stream()
-                  .map(AutogenPythonRequirementEnvironmentBlob::fromProto)
-                  .collect(Collectors.toList());
+              x ->
+                  blob.getConstraintsList().stream()
+                      .map(AutogenPythonRequirementEnvironmentBlob::fromProto)
+                      .collect(Collectors.toList());
       obj.setConstraints(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.PythonEnvironmentBlob,
-          List<AutogenPythonRequirementEnvironmentBlob>>
+              ai.verta.modeldb.versioning.PythonEnvironmentBlob,
+              List<AutogenPythonRequirementEnvironmentBlob>>
           f =
-          x ->
-              blob.getRequirementsList().stream()
-                  .map(AutogenPythonRequirementEnvironmentBlob::fromProto)
-                  .collect(Collectors.toList());
+              x ->
+                  blob.getRequirementsList().stream()
+                      .map(AutogenPythonRequirementEnvironmentBlob::fromProto)
+                      .collect(Collectors.toList());
       obj.setRequirements(f.apply(blob));
     }
     {

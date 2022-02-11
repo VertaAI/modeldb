@@ -76,8 +76,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           .build(
               new CacheLoader<String, ReadWriteLock>() {
                 public ReadWriteLock load(String lockKey) {
-                  return new ReentrantReadWriteLock() {
-                  };
+                  return new ReentrantReadWriteLock() {};
                 }
               });
 
@@ -476,7 +475,7 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   /**
-   * @param session       session
+   * @param session session
    * @param parentShaList : a list of sha for which the function returns commits
    * @return {@link Map<String, CommitEntity>}
    */
@@ -760,8 +759,8 @@ public class CommitDAORdbImpl implements CommitDAO {
         throw new ModelDBException(
             "Commit is associated with Tags : "
                 + tagsEntities.stream()
-                .map(tagsEntity -> tagsEntity.getId().getTag())
-                .collect(Collectors.joining(",")),
+                    .map(tagsEntity -> tagsEntity.getId().getTag())
+                    .collect(Collectors.joining(",")),
             Code.FAILED_PRECONDITION);
       }
 
@@ -944,8 +943,8 @@ public class CommitDAORdbImpl implements CommitDAO {
    *
    * <p>commit.author, commit.label, tags, repoIds, commitHashList
    *
-   * @param session              :hibernate session
-   * @param request              : FindRepositoriesBlobs request
+   * @param session :hibernate session
+   * @param request : FindRepositoriesBlobs request
    * @param currentLoginUserInfo : current login userInfo
    * @return {@link CommitPaginationDTO} : "result", "count" as a key
    */
@@ -1124,9 +1123,9 @@ public class CommitDAORdbImpl implements CommitDAO {
             Map<String, Object> attrQueryParametersMap = new HashMap<>();
             StringBuilder attrQueryBuilder =
                 new StringBuilder(
-                    "SELECT attr.entity_hash From "
-                        + AttributeEntity.class.getSimpleName()
-                        + " attr where attr.")
+                        "SELECT attr.entity_hash From "
+                            + AttributeEntity.class.getSimpleName()
+                            + " attr where attr.")
                     .append(ModelDBConstants.KEY);
             RdbmsUtils.setValueWithOperatorInQuery(
                 index,
@@ -1430,7 +1429,7 @@ public class CommitDAORdbImpl implements CommitDAO {
   /**
    * Check commit exists in the commit table by commitHash irrespective to repository
    *
-   * @param session    : session
+   * @param session : session
    * @param commitHash : commit.commit_hash
    * @return {@link Boolean} : exists status
    */

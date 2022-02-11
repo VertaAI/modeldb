@@ -98,9 +98,9 @@ public class AutogenHyperparameterSetConfigBlob implements ProtoType {
 
     {
       Function3<
-          AutogenContinuousHyperparameterSetConfigBlob,
-          AutogenContinuousHyperparameterSetConfigBlob,
-          Boolean>
+              AutogenContinuousHyperparameterSetConfigBlob,
+              AutogenContinuousHyperparameterSetConfigBlob,
+              Boolean>
           f = (x, y) -> x.equals(y);
       if (this.Continuous != null || other.Continuous != null) {
         if (this.Continuous == null && other.Continuous != null) {
@@ -116,9 +116,9 @@ public class AutogenHyperparameterSetConfigBlob implements ProtoType {
     }
     {
       Function3<
-          AutogenDiscreteHyperparameterSetConfigBlob,
-          AutogenDiscreteHyperparameterSetConfigBlob,
-          Boolean>
+              AutogenDiscreteHyperparameterSetConfigBlob,
+              AutogenDiscreteHyperparameterSetConfigBlob,
+              Boolean>
           f = (x, y) -> x.equals(y);
       if (this.Discrete != null || other.Discrete != null) {
         if (this.Discrete == null && other.Discrete != null) {
@@ -187,15 +187,15 @@ public class AutogenHyperparameterSetConfigBlob implements ProtoType {
     AutogenHyperparameterSetConfigBlob obj = new AutogenHyperparameterSetConfigBlob();
     {
       Function<
-          ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,
-          AutogenContinuousHyperparameterSetConfigBlob>
+              ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,
+              AutogenContinuousHyperparameterSetConfigBlob>
           f = x -> AutogenContinuousHyperparameterSetConfigBlob.fromProto(blob.getContinuous());
       obj.setContinuous(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,
-          AutogenDiscreteHyperparameterSetConfigBlob>
+              ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,
+              AutogenDiscreteHyperparameterSetConfigBlob>
           f = x -> AutogenDiscreteHyperparameterSetConfigBlob.fromProto(blob.getDiscrete());
       obj.setDiscrete(f.apply(blob));
     }

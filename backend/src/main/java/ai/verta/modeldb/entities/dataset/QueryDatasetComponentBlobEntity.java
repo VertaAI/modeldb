@@ -13,8 +13,7 @@ import javax.persistence.Table;
 @Table(name = "query_dataset_component_blob")
 public class QueryDatasetComponentBlobEntity {
 
-  public QueryDatasetComponentBlobEntity() {
-  }
+  public QueryDatasetComponentBlobEntity() {}
 
   public QueryDatasetComponentBlobEntity(
       String blobHash,
@@ -27,8 +26,7 @@ public class QueryDatasetComponentBlobEntity {
     this.num_records = queryDatasetComponentBlob.getNumRecords();
   }
 
-  @EmbeddedId
-  private QueryDatasetComponentBlobId id;
+  @EmbeddedId private QueryDatasetComponentBlobId id;
 
   @Column(name = "query", columnDefinition = "TEXT")
   private String query;
@@ -70,8 +68,7 @@ class QueryDatasetComponentBlobId implements Serializable {
     query_dataset_blob_id = datasetBlobHash;
   }
 
-  private QueryDatasetComponentBlobId() {
-  }
+  private QueryDatasetComponentBlobId() {}
 
   public String getBlob_hash() {
     return blob_hash;

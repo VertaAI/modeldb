@@ -15,14 +15,12 @@ import javax.persistence.Table;
 @Table(name = "metadata_property_mapping")
 public class MetadataPropertyMappingEntity {
 
-  public MetadataPropertyMappingEntity() {
-  }
+  public MetadataPropertyMappingEntity() {}
 
   @Column(name = "metadata_value", columnDefinition = "TEXT")
   private String value;
 
-  @EmbeddedId
-  private LabelMappingId id;
+  @EmbeddedId private LabelMappingId id;
 
   public MetadataPropertyMappingEntity(LabelMappingId id0, String value) {
     id = id0;
@@ -60,8 +58,7 @@ public class MetadataPropertyMappingEntity {
     @Column(name = "metadata_key")
     private String key;
 
-    public LabelMappingId() {
-    }
+    public LabelMappingId() {}
 
     private LabelMappingId(String compositeId, String key) {
       String[] compositeIdArr = VersioningUtils.getDatasetVersionBlobCompositeIdString(compositeId);

@@ -10,8 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 public class ArtifactPathMigrationUtils {
 
-  private ArtifactPathMigrationUtils() {
-  }
+  private ArtifactPathMigrationUtils() {}
 
   private static final Logger LOGGER = LogManager.getLogger(ArtifactPathMigrationUtils.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =

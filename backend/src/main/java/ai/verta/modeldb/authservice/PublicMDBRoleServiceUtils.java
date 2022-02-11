@@ -108,8 +108,8 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
    * Checks permissions of the user wrt the Entity
    *
    * @param modelDBServiceResourceTypes : modelDBServiceResourceTypes
-   * @param resourceId                  --> value of key like project.id, dataset.id etc.
-   * @param modelDBServiceActions       --> ModelDBServiceActions.UPDATE, ModelDBServiceActions.DELETE,
+   * @param resourceId --> value of key like project.id, dataset.id etc.
+   * @param modelDBServiceActions --> ModelDBServiceActions.UPDATE, ModelDBServiceActions.DELETE,
    */
   @Override
   public void validateEntityUserWithUserInfo(

@@ -76,24 +76,24 @@ public class AutogenQueryDatasetDiff implements ProtoType {
 
     {
       Function3<
-          List<AutogenQueryDatasetComponentDiff>,
-          List<AutogenQueryDatasetComponentDiff>,
-          Boolean>
+              List<AutogenQueryDatasetComponentDiff>,
+              List<AutogenQueryDatasetComponentDiff>,
+              Boolean>
           f =
-          (x2, y2) ->
-              IntStream.range(0, Math.min(x2.size(), y2.size()))
-                  .mapToObj(
-                      i -> {
-                        Function3<
-                            AutogenQueryDatasetComponentDiff,
-                            AutogenQueryDatasetComponentDiff,
-                            Boolean>
-                            f2 = (x, y) -> x.equals(y);
-                        return f2.apply(x2.get(i), y2.get(i));
-                      })
-                  .filter(x -> x.equals(false))
-                  .collect(Collectors.toList())
-                  .isEmpty();
+              (x2, y2) ->
+                  IntStream.range(0, Math.min(x2.size(), y2.size()))
+                      .mapToObj(
+                          i -> {
+                            Function3<
+                                    AutogenQueryDatasetComponentDiff,
+                                    AutogenQueryDatasetComponentDiff,
+                                    Boolean>
+                                f2 = (x, y) -> x.equals(y);
+                            return f2.apply(x2.get(i), y2.get(i));
+                          })
+                      .filter(x -> x.equals(false))
+                      .collect(Collectors.toList())
+                      .isEmpty();
       if (this.Components != null || other.Components != null) {
         if (this.Components == null && other.Components != null) {
           return false;
@@ -131,10 +131,10 @@ public class AutogenQueryDatasetDiff implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.QueryDatasetDiff, List<AutogenQueryDatasetComponentDiff>>
           f =
-          x ->
-              blob.getComponentsList().stream()
-                  .map(AutogenQueryDatasetComponentDiff::fromProto)
-                  .collect(Collectors.toList());
+              x ->
+                  blob.getComponentsList().stream()
+                      .map(AutogenQueryDatasetComponentDiff::fromProto)
+                      .collect(Collectors.toList());
       obj.setComponents(f.apply(blob));
     }
     return obj;

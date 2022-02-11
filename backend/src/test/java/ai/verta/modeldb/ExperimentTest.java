@@ -97,7 +97,7 @@ public class ExperimentTest extends TestsInit {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
-              == status.getCode()); // because of shadow delete the response could be 403 or 404
+                  == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }

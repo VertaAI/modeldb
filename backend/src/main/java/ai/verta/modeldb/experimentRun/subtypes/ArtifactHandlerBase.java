@@ -73,12 +73,12 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
 
   protected InternalFuture<Optional<Long>> getArtifactId(String entityId, String key) {
     return InternalFuture.runAsync(
-        () -> {
-          if (key.isEmpty()) {
-            throw new ModelDBException("Key must be provided", Code.INVALID_ARGUMENT);
-          }
-        },
-        executor)
+            () -> {
+              if (key.isEmpty()) {
+                throw new ModelDBException("Key must be provided", Code.INVALID_ARGUMENT);
+              }
+            },
+            executor)
         .thenCompose(
             unused ->
                 jdbi.withHandle(

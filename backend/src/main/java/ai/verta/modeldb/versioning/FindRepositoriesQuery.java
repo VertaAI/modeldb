@@ -30,8 +30,7 @@ import org.hibernate.query.Query;
 
 public class FindRepositoriesQuery {
 
-  private FindRepositoriesQuery() {
-  }
+  private FindRepositoriesQuery() {}
 
   private Query findRepositoriesHQLQuery;
   private Query findRepositoriesCountHQLQuery;
@@ -134,7 +133,7 @@ public class FindRepositoriesQuery {
       var joinClause = new StringBuilder();
       Map<String, String> joinAliasMap = new HashMap<>();
       if (this.predicates != null && !this.predicates.isEmpty()) {
-        final var index = new int[]{0};
+        final var index = new int[] {0};
         this.predicates.forEach(
             keyValueQuery -> {
               if (keyValueQuery.getKey().contains(ModelDBConstants.LABEL)) {

@@ -432,48 +432,48 @@ public class VersionInputHandler {
   // there.
   public InternalFuture<Map<String, VersioningEntry>> getVersionedInputs(Set<String> runIds) {
     return jdbi.withHandle(
-        handle ->
-            handle
-                .createQuery(
-                    String.format(
-                        "select vm.experiment_run_id, vm.repository_id, vm.%s, vm.versioning_key, vm.versioning_location  "
-                            + " from versioning_modeldb_entity_mapping as vm "
-                            + " where vm.experiment_run_id in (<run_ids>) "
-                            + " and vm.entity_type = :entityType",
-                        App.getInstance()
-                            .mdbConfig
-                            .getDatabase()
-                            .getRdbConfiguration()
-                            .isMssql()
-                            ? "\"commit\""
-                            : "commit"))
-                .bindList("run_ids", runIds)
-                .bind("entityType", entity_type)
-                .map(
-                    (rs, ctx) -> {
-                      // Preparing VersionedInput (VersioningEntry) from the mapping table
-                      // based on run ids but
-                      // here we have store multiple locations key for single version key see
-                      // line 299 loop so
-                      // we are creating SimpleEntry based on each location key.
-                      var versioningEntryBuilder =
-                          VersioningEntry.newBuilder()
-                              .setRepositoryId(rs.getLong(REPOSITORY_ID_QUERY_PARAM))
-                              .setCommit(rs.getString(COMMIT_QUERY_PARAM));
+            handle ->
+                handle
+                    .createQuery(
+                        String.format(
+                            "select vm.experiment_run_id, vm.repository_id, vm.%s, vm.versioning_key, vm.versioning_location  "
+                                + " from versioning_modeldb_entity_mapping as vm "
+                                + " where vm.experiment_run_id in (<run_ids>) "
+                                + " and vm.entity_type = :entityType",
+                            App.getInstance()
+                                    .mdbConfig
+                                    .getDatabase()
+                                    .getRdbConfiguration()
+                                    .isMssql()
+                                ? "\"commit\""
+                                : "commit"))
+                    .bindList("run_ids", runIds)
+                    .bind("entityType", entity_type)
+                    .map(
+                        (rs, ctx) -> {
+                          // Preparing VersionedInput (VersioningEntry) from the mapping table
+                          // based on run ids but
+                          // here we have store multiple locations key for single version key see
+                          // line 299 loop so
+                          // we are creating SimpleEntry based on each location key.
+                          var versioningEntryBuilder =
+                              VersioningEntry.newBuilder()
+                                  .setRepositoryId(rs.getLong(REPOSITORY_ID_QUERY_PARAM))
+                                  .setCommit(rs.getString(COMMIT_QUERY_PARAM));
 
-                      if (rs.getString(VERSIONING_KEY_QUERY_PARAM) != null
-                          && !rs.getString(VERSIONING_KEY_QUERY_PARAM).isEmpty()) {
-                        var locationBuilder = Location.newBuilder();
-                        CommonUtils.getProtoObjectFromString(
-                            rs.getString(VERSIONING_LOCATION_QUERY_PARAM), locationBuilder);
-                        versioningEntryBuilder.putKeyLocationMap(
-                            rs.getString(VERSIONING_KEY_QUERY_PARAM), locationBuilder.build());
-                      }
+                          if (rs.getString(VERSIONING_KEY_QUERY_PARAM) != null
+                              && !rs.getString(VERSIONING_KEY_QUERY_PARAM).isEmpty()) {
+                            var locationBuilder = Location.newBuilder();
+                            CommonUtils.getProtoObjectFromString(
+                                rs.getString(VERSIONING_LOCATION_QUERY_PARAM), locationBuilder);
+                            versioningEntryBuilder.putKeyLocationMap(
+                                rs.getString(VERSIONING_KEY_QUERY_PARAM), locationBuilder.build());
+                          }
 
-                      return new AbstractMap.SimpleEntry<>(
-                          rs.getString("experiment_run_id"), versioningEntryBuilder.build());
-                    })
-                .list())
+                          return new AbstractMap.SimpleEntry<>(
+                              rs.getString("experiment_run_id"), versioningEntryBuilder.build());
+                        })
+                    .list())
         .thenCompose(
             simpleEntries -> {
               // Key= experiment_run_id, Value = VersionedInput

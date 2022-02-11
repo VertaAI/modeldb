@@ -108,7 +108,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
    * Convert CreateExperiment request to Experiment object. This method generate the experiment Id
    * using UUID and put it in Experiment object.
    *
-   * @param request  : CreateExperiment request
+   * @param request : CreateExperiment request
    * @param userInfo : current login UserInfo
    * @return Experiment : experimentDeleteExperiments
    */
@@ -159,7 +159,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
   /**
    * Convert CreateExperiment request to Experiment entity and insert in database.
    *
-   * @param request          : CreateExperiment request
+   * @param request : CreateExperiment request
    * @param responseObserver : CreateExperiment.Response responseObserver
    */
   @Override
@@ -325,7 +325,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
    * Update Experiment name Or Description in Experiment Entity. Create Experiment object with
    * updated data from UpdateExperimentNameOrDescription request and update in database.
    *
-   * @param request          : UpdateExperimentNameOrDescription request
+   * @param request : UpdateExperimentNameOrDescription request
    * @param responseObserver : UpdateExperimentNameOrDescription.Response responseObserver
    */
   @Override
@@ -390,7 +390,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
    * Update Experiment name in Experiment Entity. Create Experiment object with updated data from
    * UpdateExperimentName request and update in database.
    *
-   * @param request          : UpdateExperimentName request
+   * @param request : UpdateExperimentName request
    * @param responseObserver : UpdateExperimentName.Response responseObserver
    */
   @Override
@@ -441,7 +441,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
    * Update Experiment Description in Experiment Entity. Create Experiment object with updated data
    * from UpdateExperimentDescription request and update in database.
    *
-   * @param request          : UpdateExperimentDescription request
+   * @param request : UpdateExperimentDescription request
    * @param responseObserver : UpdateExperimentDescription.Response responseObserver
    */
   @Override
@@ -527,8 +527,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               "tags",
               new Gson()
                   .toJsonTree(
-                      request.getTagsList(), new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
           "experiment tags added successfully");
 
       responseObserver.onNext(response);
@@ -583,8 +582,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               new Gson()
                   .toJsonTree(
                       Collections.singletonList(request.getTag()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "experiment tag added successfully");
 
       responseObserver.onNext(response);
@@ -661,8 +659,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             "tags",
             new Gson()
                 .toJsonTree(
-                    request.getTagsList(), new TypeToken<ArrayList<String>>() {
-                    }.getType()));
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           updatedExperiment.getId(),
@@ -723,8 +720,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               new Gson()
                   .toJsonTree(
                       Collections.singletonList(request.getTag()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "experiment tag deleted successfully");
 
       responseObserver.onNext(response);
@@ -774,8 +770,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
                       Stream.of(request.getAttribute())
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "experiment attribute added successfully");
 
       responseObserver.onNext(response);
@@ -831,8 +826,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
                       request.getAttributesList().stream()
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "experiment attributes added successfully");
 
       responseObserver.onNext(response);
@@ -931,8 +925,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
             new Gson()
                 .toJsonTree(
                     request.getAttributeKeysList(),
-                    new TypeToken<ArrayList<String>>() {
-                    }.getType()));
+                    new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           updatedExperiment.getId(),
@@ -1236,8 +1229,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
                       request.getArtifactsList().stream()
                           .map(Artifact::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "experiment artifacts added successfully");
 
       responseObserver.onNext(response);
@@ -1320,8 +1312,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
               new Gson()
                   .toJsonTree(
                       Collections.singletonList(request.getKey()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "experiment artifact deleted successfully");
 
       responseObserver.onNext(response);

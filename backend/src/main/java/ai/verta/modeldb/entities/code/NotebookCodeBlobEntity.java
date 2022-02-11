@@ -12,8 +12,7 @@ import javax.persistence.Table;
 @Table(name = "notebook_code_blob")
 public class NotebookCodeBlobEntity {
 
-  public NotebookCodeBlobEntity() {
-  }
+  public NotebookCodeBlobEntity() {}
 
   public NotebookCodeBlobEntity(
       String blobHash, GitCodeBlobEntity gitCodeBlobEntity, String pathBlobSha) {

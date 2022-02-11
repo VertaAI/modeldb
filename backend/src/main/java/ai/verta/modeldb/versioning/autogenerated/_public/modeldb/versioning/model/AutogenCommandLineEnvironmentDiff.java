@@ -260,8 +260,8 @@ public class AutogenCommandLineEnvironmentDiff implements ProtoType {
     }
     {
       Function<
-          ai.verta.modeldb.versioning.CommandLineEnvironmentDiff,
-          AutogenDiffStatusEnumDiffStatus>
+              ai.verta.modeldb.versioning.CommandLineEnvironmentDiff,
+              AutogenDiffStatusEnumDiffStatus>
           f = x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
       obj.setStatus(f.apply(blob));
     }

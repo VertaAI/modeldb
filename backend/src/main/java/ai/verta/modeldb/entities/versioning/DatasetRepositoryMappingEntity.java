@@ -13,8 +13,7 @@ import javax.persistence.Table;
 @Table(name = "dataset_repository_mapping")
 public class DatasetRepositoryMappingEntity implements Serializable {
 
-  public DatasetRepositoryMappingEntity() {
-  }
+  public DatasetRepositoryMappingEntity() {}
 
   public DatasetRepositoryMappingEntity(RepositoryEntity repositoryEntity) {
     this.repositoryEntity = repositoryEntity;

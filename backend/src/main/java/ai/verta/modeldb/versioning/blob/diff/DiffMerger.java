@@ -147,9 +147,9 @@ public class DiffMerger {
         && d != null
         && !diffStatusDeleted
         && !a.toProto()
-        .getContentCase()
-        .name()
-        .equalsIgnoreCase(d.toProto().getContentCase().name())) {
+            .getContentCase()
+            .name()
+            .equalsIgnoreCase(d.toProto().getContentCase().name())) {
       conflictKeys.add(a.toString());
     }
     return Utils.removeEmpty(

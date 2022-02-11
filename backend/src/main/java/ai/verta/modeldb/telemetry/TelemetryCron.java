@@ -32,9 +32,7 @@ public class TelemetryCron extends TimerTask {
     telemetryUtils = new TelemetryUtils(consumerURL);
   }
 
-  /**
-   * The action to be performed by this timer task.
-   */
+  /** The action to be performed by this timer task. */
   @Override
   public void run() {
     LOGGER.info("TelemetryUtils wakeup");

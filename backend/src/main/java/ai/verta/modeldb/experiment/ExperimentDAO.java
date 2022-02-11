@@ -26,14 +26,14 @@ public interface ExperimentDAO {
   Experiment insertExperiment(Experiment experiment, UserInfo userInfo);
 
   /**
-   * @param experimentId   : experiment.id
+   * @param experimentId : experiment.id
    * @param experimentName : updated experiment name from client request
    * @return {@link Experiment} : updated experiment
    */
   Experiment updateExperimentName(String experimentId, String experimentName);
 
   /**
-   * @param experimentId          : experiment.id
+   * @param experimentId : experiment.id
    * @param experimentDescription : updated experiment description from client request
    * @return {@link Experiment} : updated experiment
    */
@@ -56,13 +56,13 @@ public interface ExperimentDAO {
   /**
    * Get List of Experiment entity using given projectId from database.
    *
-   * @param sortKey    -- > Use this field getExperimentsInProjector filter data.
-   * @param order      --> this parameter has order like asc OR desc.
-   * @param projectId  projectId
+   * @param sortKey -- > Use this field getExperimentsInProjector filter data.
+   * @param order --> this parameter has order like asc OR desc.
+   * @param projectId projectId
    * @param pageNumber page number
-   * @param pageLimit  page limit
+   * @param pageLimit page limit
    * @return ExperimentPaginationDTO experimentPaginationDTO contain the experimentList &
-   * total_pages count
+   *     total_pages count
    */
   ExperimentPaginationDTO getExperimentsInProject(
       ProjectDAO projectDAO,
@@ -94,7 +94,7 @@ public interface ExperimentDAO {
    *
    * @param tagList
    * @param deleteAll
-   * @param String    experimentId
+   * @param String experimentId
    * @return Experiment updatedExperiment
    */
   Experiment deleteExperimentTags(
@@ -103,7 +103,7 @@ public interface ExperimentDAO {
   /**
    * Add Attribute in Experiment Attributes list in database.
    *
-   * @param String         experimentId
+   * @param String experimentId
    * @param List<KeyValue> attributes
    * @return Experiment updatedExperiment
    */
@@ -112,9 +112,9 @@ public interface ExperimentDAO {
   /**
    * Fetch Experiment Attributes from database using experimentId.
    *
-   * @param getAll           flag
+   * @param getAll flag
    * @param attributeKeyList
-   * @param String           experimentId
+   * @param String experimentId
    * @return List<KeyValue> experimentAttributes.
    */
   List<KeyValue> getExperimentAttributes(
@@ -125,7 +125,7 @@ public interface ExperimentDAO {
    *
    * @param deleteAll
    * @param attributeKeyList
-   * @param String           experimentId
+   * @param String experimentId
    * @return Experiment experiment
    */
   Experiment deleteExperimentAttributes(
@@ -173,7 +173,7 @@ public interface ExperimentDAO {
       Experiment srcExperiment, Project newProject, UserInfo newOwner);
 
   /**
-   * @param experimentId       : experiment.id
+   * @param experimentId : experiment.id
    * @param updatedCodeVersion : updated experiment code version snapshot from client request
    * @return {@link Experiment} : updated experiment
    */
@@ -184,7 +184,7 @@ public interface ExperimentDAO {
    *
    * @param queryParameters : queryParameters --> query parameters for filtering experiments
    * @return ExperimentPaginationDTO : experimentPaginationDTO contains the list of experiments
-   * based on filter queryParameters & total_pages count
+   *     based on filter queryParameters & total_pages count
    */
   ExperimentPaginationDTO findExperiments(
       ProjectDAO projectDAO, UserInfo userInfo, FindExperiments queryParameters)
@@ -194,7 +194,7 @@ public interface ExperimentDAO {
    * Experiment has artifacts field. Add new Artifact in that artifacts List.
    *
    * @param experimentId : experiment.id
-   * @param artifacts    : experiment.artifacts
+   * @param artifacts : experiment.artifacts
    * @return {@link Experiment} : updated experiment
    */
   Experiment logArtifacts(String experimentId, List<Artifact> artifacts) throws NotFoundException;
@@ -211,7 +211,7 @@ public interface ExperimentDAO {
    * Deletes the artifact key associated with the experiment
    *
    * @param experimentId : experiment.id
-   * @param artifactKey  : artifact.key
+   * @param artifactKey : artifact.key
    * @return {@link Experiment} : updated experiment
    */
   Experiment deleteArtifacts(String experimentId, String artifactKey);

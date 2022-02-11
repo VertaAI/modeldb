@@ -11,8 +11,7 @@ import javax.persistence.Table;
 @Table(name = "docker_environment_blob")
 public class DockerEnvironmentBlobEntity implements Serializable {
 
-  public DockerEnvironmentBlobEntity() {
-  }
+  public DockerEnvironmentBlobEntity() {}
 
   public DockerEnvironmentBlobEntity(String blobHash, DockerEnvironmentBlob docker) {
     blob_hash = blobHash;

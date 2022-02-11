@@ -322,9 +322,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     datasetVersionMap.put(datasetVersion4.getId(), datasetVersion4);
   }
 
-  /**
-   * Validation check for the predicate value with empty string which is not valid
-   */
+  /** Validation check for the predicate value with empty string which is not valid */
   @Test
   public void findDatasetPredicateValueEmptyNegativeTest() {
     LOGGER.info("FindDatasets predicate value is empty negative test start.........");
@@ -378,9 +376,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("FindDatasets predicate value is empty negative test start.........");
   }
 
-  /**
-   * Validate check for protobuf struct type in KeyValueQuery not implemented
-   */
+  /** Validate check for protobuf struct type in KeyValueQuery not implemented */
   @Test
   public void findDatasetStructTypeNotImplemented() {
     LOGGER.info(
@@ -421,9 +417,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
         "check for protobuf struct type in KeyValueQuery not implemented test start........");
   }
 
-  /**
-   * Find dataset with value of attributes.attribute_1 <= 0.6543210
-   */
+  /** Find dataset with value of attributes.attribute_1 <= 0.6543210 */
   @Test
   public void findDatasetsByAttributesTest() {
     LOGGER.info("FindDatasets by attribute test start................................");
@@ -468,8 +462,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
   }
 
   /**
-   * Find dataset with value of attributes.attribute_1 <= 0.6543210 & attributes.attribute_2 ==
-   * 0.31
+   * Find dataset with value of attributes.attribute_1 <= 0.6543210 & attributes.attribute_2 == 0.31
    */
   @Test
   public void findDatasetsByMultipleAttributeTest() {
@@ -527,9 +520,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("FindDatasets by multiple attribute condition test stop..................");
   }
 
-  /**
-   * Find dataset with value of metrics.accuracy >= 0.6543210 & tags == A7
-   */
+  /** Find dataset with value of metrics.accuracy >= 0.6543210 & tags == A7 */
   @Test
   public void findDatasetsByMetricsAndTagsTest() {
     LOGGER.info("FindDatasets by metrics and tags test start................................");
@@ -575,9 +566,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("FindDatasets by metrics and tags test stop................................");
   }
 
-  /**
-   * Find dataset with value of endTime
-   */
+  /** Find dataset with value of endTime */
   @Test
   public void findDatasetsByDatasetTimeUpdatedTest() {
     LOGGER.info("FindDatasets By Dataset TimeUpdated test start................................");
@@ -620,9 +609,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("FindDatasets By Dataset TimeUpdated test stop................................");
   }
 
-  /**
-   * FInd Datasets by attribute with pagination
-   */
+  /** FInd Datasets by attribute with pagination */
   @Test
   public void findDatasetsByAttributeWithPaginationTest() {
     LOGGER.info(
@@ -698,9 +685,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
         "FindDatasets by attribute with pagination test start................................");
   }
 
-  /**
-   * Check observations.attributes not support
-   */
+  /** Check observations.attributes not support */
   @Test
   public void findDatasetsNotSupportObservationsAttributesTest() {
     LOGGER.info("FindDatasets not support the observation.attributes test start............");
@@ -734,9 +719,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("FindDatasets not support the observation.attributes test stop............");
   }
 
-  /**
-   * Find datasets with value of tags
-   */
+  /** Find datasets with value of tags */
   @Test
   public void findDatasetsByTagsTest() {
     LOGGER.info("FindDatasets by tags test start................................");
@@ -783,9 +766,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("FindDatasets by tags test start................................");
   }
 
-  /**
-   * Find datasets with attribute predicates and sort by attribute key
-   */
+  /** Find datasets with attribute predicates and sort by attribute key */
   @Test
   public void findAndSortDatasetsByAttributeTest() {
     LOGGER.info("Find and sort Datasets by attributes test start................................");
@@ -902,9 +883,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("Find and sort Datasets by attributes test start................................");
   }
 
-  /**
-   * Validation check for the predicate value with empty string which is not valid
-   */
+  /** Validation check for the predicate value with empty string which is not valid */
   @Test
   public void findDatasetVersionsPredicateValueEmptyNegativeTest() {
     LOGGER.info("DatasetVersions predicate value is empty negative test start.........");
@@ -958,9 +937,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("DatasetVersions predicate value is empty negative test stop..............");
   }
 
-  /**
-   * Validate check for protobuf struct type in KeyValueQuery not implemented
-   */
+  /** Validate check for protobuf struct type in KeyValueQuery not implemented */
   @Test
   public void findDatasetVersionStructTypeNotImplemented() {
     LOGGER.info(
@@ -1000,9 +977,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
         "Check for protobuf struct type in KeyValueQuery not implemented test stop........");
   }
 
-  /**
-   * Find datasetVersion with value of attributes.attribute_1 <= 0.6543210
-   */
+  /** Find datasetVersion with value of attributes.attribute_1 <= 0.6543210 */
   @Test
   public void findDatasetVersionsByAttributeTest() {
     LOGGER.info("FindDatasetVersions by attribute test start................................");
@@ -1121,9 +1096,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("FindDatasetVersions by multiple attribute condition test stop..............");
   }
 
-  /**
-   * Find datasetVersion with value of metrics.accuracy >= 0.6543210 & tags == A7
-   */
+  /** Find datasetVersion with value of metrics.accuracy >= 0.6543210 & tags == A7 */
   @Test
   public void findDatasetVersionsByMetricsAndTagsTest() {
     LOGGER.info("FindDatasetVersions by metrics and tags test start.........");
@@ -1173,9 +1146,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("FindDatasetVersions by metrics and tags test stop.........");
   }
 
-  /**
-   * Find datasetVersion with value of endTime
-   */
+  /** Find datasetVersion with value of endTime */
   @Test
   public void findDatasetVersionsByEndTimeTest() {
     LOGGER.info("FindDatasetVersions by datasetVersion EndTime test start..........");
@@ -1270,9 +1241,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("FindDatasetVersions by datasetVersion EndTime test stop..........");
   }
 
-  /**
-   * Find datasetVersion with value of tags
-   */
+  /** Find datasetVersion with value of tags */
   @Test
   public void findDatasetVersionsByTagsTest() {
     LOGGER.info("FindDatasetVersions by tags test start................................");
@@ -1396,9 +1365,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
     LOGGER.info("FindDatasetVersions by tags test stop................................");
   }
 
-  /**
-   * Find datasetVersions by workspace
-   */
+  /** Find datasetVersions by workspace */
   @Test
   public void findDatasetVersionsByWorkspaceTest() {
     LOGGER.info("FindDatasetVersions by workspace test start................................");

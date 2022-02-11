@@ -50,11 +50,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {
-  }
+  public void preVisitAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {}
 
   public AutogenBlobDiff postVisitAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {
     return blob;
@@ -110,11 +108,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {
-  }
+  public void preVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenBlob(AutogenBlob blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenBlob(AutogenBlob blob) throws ModelDBException {}
 
   public AutogenBlob postVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {
     return blob;
@@ -169,11 +165,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {
-  }
+  public void preVisitAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {}
 
   public AutogenCodeBlob postVisitAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {
     return blob;
@@ -229,11 +223,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {
-  }
+  public void preVisitAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {}
 
   public AutogenCodeDiff postVisitAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {
     return blob;
@@ -280,8 +272,8 @@ public class Visitor {
   }
 
   public List<AutogenCommandLineEnvironmentDiff>
-  postVisitDeepListOfAutogenCommandLineEnvironmentDiff(
-      List<AutogenCommandLineEnvironmentDiff> lst) throws ModelDBException {
+      postVisitDeepListOfAutogenCommandLineEnvironmentDiff(
+          List<AutogenCommandLineEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -293,12 +285,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenCommandLineEnvironmentDiff(AutogenCommandLineEnvironmentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenCommandLineEnvironmentDiff(AutogenCommandLineEnvironmentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenCommandLineEnvironmentDiff postVisitAutogenCommandLineEnvironmentDiff(
       AutogenCommandLineEnvironmentDiff blob) throws ModelDBException {
@@ -356,11 +346,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenConfigBlob(AutogenConfigBlob blob) throws ModelDBException {
-  }
+  public void preVisitAutogenConfigBlob(AutogenConfigBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenConfigBlob(AutogenConfigBlob blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenConfigBlob(AutogenConfigBlob blob) throws ModelDBException {}
 
   public AutogenConfigBlob postVisitAutogenConfigBlob(AutogenConfigBlob blob)
       throws ModelDBException {
@@ -418,11 +406,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenConfigDiff(AutogenConfigDiff blob) throws ModelDBException {
-  }
+  public void preVisitAutogenConfigDiff(AutogenConfigDiff blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenConfigDiff(AutogenConfigDiff blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenConfigDiff(AutogenConfigDiff blob) throws ModelDBException {}
 
   public AutogenConfigDiff postVisitAutogenConfigDiff(AutogenConfigDiff blob)
       throws ModelDBException {
@@ -458,8 +444,8 @@ public class Visitor {
   }
 
   public List<AutogenContinuousHyperparameterSetConfigBlob>
-  postVisitListOfAutogenContinuousHyperparameterSetConfigBlob(
-      List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
+      postVisitListOfAutogenContinuousHyperparameterSetConfigBlob(
+          List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -471,8 +457,8 @@ public class Visitor {
   }
 
   public List<AutogenContinuousHyperparameterSetConfigBlob>
-  postVisitDeepListOfAutogenContinuousHyperparameterSetConfigBlob(
-      List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
+      postVisitDeepListOfAutogenContinuousHyperparameterSetConfigBlob(
+          List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -484,22 +470,20 @@ public class Visitor {
   }
 
   public void preVisitAutogenContinuousHyperparameterSetConfigBlob(
-      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
-  }
+      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {}
 
   public void preVisitDeepAutogenContinuousHyperparameterSetConfigBlob(
-      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
-  }
+      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {}
 
   public AutogenContinuousHyperparameterSetConfigBlob
-  postVisitAutogenContinuousHyperparameterSetConfigBlob(
-      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
+      postVisitAutogenContinuousHyperparameterSetConfigBlob(
+          AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
     return blob;
   }
 
   public AutogenContinuousHyperparameterSetConfigBlob
-  postVisitDeepAutogenContinuousHyperparameterSetConfigBlob(
-      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
+      postVisitDeepAutogenContinuousHyperparameterSetConfigBlob(
+          AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
     if (blob != null) {
       return blob.postVisitDeep(this);
     }
@@ -550,11 +534,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {
-  }
+  public void preVisitAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {}
 
   public AutogenDatasetBlob postVisitAutogenDatasetBlob(AutogenDatasetBlob blob)
       throws ModelDBException {
@@ -613,11 +595,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {
-  }
+  public void preVisitAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {}
 
   public AutogenDatasetDiff postVisitAutogenDatasetDiff(AutogenDatasetDiff blob)
       throws ModelDBException {
@@ -653,8 +633,8 @@ public class Visitor {
   }
 
   public List<AutogenDiscreteHyperparameterSetConfigBlob>
-  postVisitListOfAutogenDiscreteHyperparameterSetConfigBlob(
-      List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
+      postVisitListOfAutogenDiscreteHyperparameterSetConfigBlob(
+          List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -666,8 +646,8 @@ public class Visitor {
   }
 
   public List<AutogenDiscreteHyperparameterSetConfigBlob>
-  postVisitDeepListOfAutogenDiscreteHyperparameterSetConfigBlob(
-      List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
+      postVisitDeepListOfAutogenDiscreteHyperparameterSetConfigBlob(
+          List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -679,22 +659,20 @@ public class Visitor {
   }
 
   public void preVisitAutogenDiscreteHyperparameterSetConfigBlob(
-      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
-  }
+      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {}
 
   public void preVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(
-      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
-  }
+      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {}
 
   public AutogenDiscreteHyperparameterSetConfigBlob
-  postVisitAutogenDiscreteHyperparameterSetConfigBlob(
-      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
+      postVisitAutogenDiscreteHyperparameterSetConfigBlob(
+          AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
     return blob;
   }
 
   public AutogenDiscreteHyperparameterSetConfigBlob
-  postVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(
-      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
+      postVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(
+          AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
     if (blob != null) {
       return blob.postVisitDeep(this);
     }
@@ -746,12 +724,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenDockerEnvironmentBlob(AutogenDockerEnvironmentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenDockerEnvironmentBlob(AutogenDockerEnvironmentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenDockerEnvironmentBlob postVisitAutogenDockerEnvironmentBlob(
       AutogenDockerEnvironmentBlob blob) throws ModelDBException {
@@ -811,12 +787,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenDockerEnvironmentDiff(AutogenDockerEnvironmentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenDockerEnvironmentDiff(AutogenDockerEnvironmentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenDockerEnvironmentDiff postVisitAutogenDockerEnvironmentDiff(
       AutogenDockerEnvironmentDiff blob) throws ModelDBException {
@@ -875,12 +849,10 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenEnvironmentBlob(AutogenEnvironmentBlob blob) throws ModelDBException {
-  }
+  public void preVisitAutogenEnvironmentBlob(AutogenEnvironmentBlob blob) throws ModelDBException {}
 
   public void preVisitDeepAutogenEnvironmentBlob(AutogenEnvironmentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenEnvironmentBlob postVisitAutogenEnvironmentBlob(AutogenEnvironmentBlob blob)
       throws ModelDBException {
@@ -939,12 +911,10 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenEnvironmentDiff(AutogenEnvironmentDiff blob) throws ModelDBException {
-  }
+  public void preVisitAutogenEnvironmentDiff(AutogenEnvironmentDiff blob) throws ModelDBException {}
 
   public void preVisitDeepAutogenEnvironmentDiff(AutogenEnvironmentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenEnvironmentDiff postVisitAutogenEnvironmentDiff(AutogenEnvironmentDiff blob)
       throws ModelDBException {
@@ -1004,12 +974,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenEnvironmentVariablesBlob(AutogenEnvironmentVariablesBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenEnvironmentVariablesBlob(AutogenEnvironmentVariablesBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenEnvironmentVariablesBlob postVisitAutogenEnvironmentVariablesBlob(
       AutogenEnvironmentVariablesBlob blob) throws ModelDBException {
@@ -1069,12 +1037,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenEnvironmentVariablesDiff(AutogenEnvironmentVariablesDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenEnvironmentVariablesDiff(AutogenEnvironmentVariablesDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenEnvironmentVariablesDiff postVisitAutogenEnvironmentVariablesDiff(
       AutogenEnvironmentVariablesDiff blob) throws ModelDBException {
@@ -1133,11 +1099,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenGitCodeBlob(AutogenGitCodeBlob blob) throws ModelDBException {
-  }
+  public void preVisitAutogenGitCodeBlob(AutogenGitCodeBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenGitCodeBlob(AutogenGitCodeBlob blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenGitCodeBlob(AutogenGitCodeBlob blob) throws ModelDBException {}
 
   public AutogenGitCodeBlob postVisitAutogenGitCodeBlob(AutogenGitCodeBlob blob)
       throws ModelDBException {
@@ -1196,11 +1160,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenGitCodeDiff(AutogenGitCodeDiff blob) throws ModelDBException {
-  }
+  public void preVisitAutogenGitCodeDiff(AutogenGitCodeDiff blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenGitCodeDiff(AutogenGitCodeDiff blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenGitCodeDiff(AutogenGitCodeDiff blob) throws ModelDBException {}
 
   public AutogenGitCodeDiff postVisitAutogenGitCodeDiff(AutogenGitCodeDiff blob)
       throws ModelDBException {
@@ -1260,12 +1222,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenHyperparameterConfigBlob(AutogenHyperparameterConfigBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenHyperparameterConfigBlob(AutogenHyperparameterConfigBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenHyperparameterConfigBlob postVisitAutogenHyperparameterConfigBlob(
       AutogenHyperparameterConfigBlob blob) throws ModelDBException {
@@ -1325,12 +1285,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenHyperparameterConfigDiff(AutogenHyperparameterConfigDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenHyperparameterConfigDiff(AutogenHyperparameterConfigDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenHyperparameterConfigDiff postVisitAutogenHyperparameterConfigDiff(
       AutogenHyperparameterConfigDiff blob) throws ModelDBException {
@@ -1378,8 +1336,8 @@ public class Visitor {
   }
 
   public List<AutogenHyperparameterSetConfigBlob>
-  postVisitDeepListOfAutogenHyperparameterSetConfigBlob(
-      List<AutogenHyperparameterSetConfigBlob> lst) throws ModelDBException {
+      postVisitDeepListOfAutogenHyperparameterSetConfigBlob(
+          List<AutogenHyperparameterSetConfigBlob> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -1391,12 +1349,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenHyperparameterSetConfigBlob(AutogenHyperparameterSetConfigBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenHyperparameterSetConfigBlob(
-      AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {
-  }
+      AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {}
 
   public AutogenHyperparameterSetConfigBlob postVisitAutogenHyperparameterSetConfigBlob(
       AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {
@@ -1444,8 +1400,8 @@ public class Visitor {
   }
 
   public List<AutogenHyperparameterSetConfigDiff>
-  postVisitDeepListOfAutogenHyperparameterSetConfigDiff(
-      List<AutogenHyperparameterSetConfigDiff> lst) throws ModelDBException {
+      postVisitDeepListOfAutogenHyperparameterSetConfigDiff(
+          List<AutogenHyperparameterSetConfigDiff> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -1457,12 +1413,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenHyperparameterSetConfigDiff(AutogenHyperparameterSetConfigDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenHyperparameterSetConfigDiff(
-      AutogenHyperparameterSetConfigDiff blob) throws ModelDBException {
-  }
+      AutogenHyperparameterSetConfigDiff blob) throws ModelDBException {}
 
   public AutogenHyperparameterSetConfigDiff postVisitAutogenHyperparameterSetConfigDiff(
       AutogenHyperparameterSetConfigDiff blob) throws ModelDBException {
@@ -1498,8 +1452,8 @@ public class Visitor {
   }
 
   public List<AutogenHyperparameterValuesConfigBlob>
-  postVisitListOfAutogenHyperparameterValuesConfigBlob(
-      List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
+      postVisitListOfAutogenHyperparameterValuesConfigBlob(
+          List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -1511,8 +1465,8 @@ public class Visitor {
   }
 
   public List<AutogenHyperparameterValuesConfigBlob>
-  postVisitDeepListOfAutogenHyperparameterValuesConfigBlob(
-      List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
+      postVisitDeepListOfAutogenHyperparameterValuesConfigBlob(
+          List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -1524,12 +1478,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenHyperparameterValuesConfigBlob(
-      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
-  }
+      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {}
 
   public void preVisitDeepAutogenHyperparameterValuesConfigBlob(
-      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
-  }
+      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {}
 
   public AutogenHyperparameterValuesConfigBlob postVisitAutogenHyperparameterValuesConfigBlob(
       AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
@@ -1589,12 +1541,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenNotebookCodeBlob(AutogenNotebookCodeBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenNotebookCodeBlob(AutogenNotebookCodeBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenNotebookCodeBlob postVisitAutogenNotebookCodeBlob(AutogenNotebookCodeBlob blob)
       throws ModelDBException {
@@ -1654,12 +1604,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenNotebookCodeDiff(AutogenNotebookCodeDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenNotebookCodeDiff(AutogenNotebookCodeDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenNotebookCodeDiff postVisitAutogenNotebookCodeDiff(AutogenNotebookCodeDiff blob)
       throws ModelDBException {
@@ -1718,12 +1666,10 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenPathDatasetBlob(AutogenPathDatasetBlob blob) throws ModelDBException {
-  }
+  public void preVisitAutogenPathDatasetBlob(AutogenPathDatasetBlob blob) throws ModelDBException {}
 
   public void preVisitDeepAutogenPathDatasetBlob(AutogenPathDatasetBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenPathDatasetBlob postVisitAutogenPathDatasetBlob(AutogenPathDatasetBlob blob)
       throws ModelDBException {
@@ -1783,12 +1729,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenPathDatasetComponentBlob(AutogenPathDatasetComponentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenPathDatasetComponentBlob(AutogenPathDatasetComponentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenPathDatasetComponentBlob postVisitAutogenPathDatasetComponentBlob(
       AutogenPathDatasetComponentBlob blob) throws ModelDBException {
@@ -1848,12 +1792,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenPathDatasetComponentDiff(AutogenPathDatasetComponentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenPathDatasetComponentDiff(AutogenPathDatasetComponentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenPathDatasetComponentDiff postVisitAutogenPathDatasetComponentDiff(
       AutogenPathDatasetComponentDiff blob) throws ModelDBException {
@@ -1912,12 +1854,10 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenPathDatasetDiff(AutogenPathDatasetDiff blob) throws ModelDBException {
-  }
+  public void preVisitAutogenPathDatasetDiff(AutogenPathDatasetDiff blob) throws ModelDBException {}
 
   public void preVisitDeepAutogenPathDatasetDiff(AutogenPathDatasetDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenPathDatasetDiff postVisitAutogenPathDatasetDiff(AutogenPathDatasetDiff blob)
       throws ModelDBException {
@@ -1977,12 +1917,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenPythonEnvironmentBlob(AutogenPythonEnvironmentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenPythonEnvironmentBlob(AutogenPythonEnvironmentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenPythonEnvironmentBlob postVisitAutogenPythonEnvironmentBlob(
       AutogenPythonEnvironmentBlob blob) throws ModelDBException {
@@ -2042,12 +1980,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenPythonEnvironmentDiff(AutogenPythonEnvironmentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenPythonEnvironmentDiff(AutogenPythonEnvironmentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenPythonEnvironmentDiff postVisitAutogenPythonEnvironmentDiff(
       AutogenPythonEnvironmentDiff blob) throws ModelDBException {
@@ -2083,8 +2019,8 @@ public class Visitor {
   }
 
   public List<AutogenPythonRequirementEnvironmentBlob>
-  postVisitListOfAutogenPythonRequirementEnvironmentBlob(
-      List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
+      postVisitListOfAutogenPythonRequirementEnvironmentBlob(
+          List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -2096,8 +2032,8 @@ public class Visitor {
   }
 
   public List<AutogenPythonRequirementEnvironmentBlob>
-  postVisitDeepListOfAutogenPythonRequirementEnvironmentBlob(
-      List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
+      postVisitDeepListOfAutogenPythonRequirementEnvironmentBlob(
+          List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -2109,12 +2045,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenPythonRequirementEnvironmentBlob(
-      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
-  }
+      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {}
 
   public void preVisitDeepAutogenPythonRequirementEnvironmentBlob(
-      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
-  }
+      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {}
 
   public AutogenPythonRequirementEnvironmentBlob postVisitAutogenPythonRequirementEnvironmentBlob(
       AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
@@ -2122,8 +2056,8 @@ public class Visitor {
   }
 
   public AutogenPythonRequirementEnvironmentBlob
-  postVisitDeepAutogenPythonRequirementEnvironmentBlob(
-      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
+      postVisitDeepAutogenPythonRequirementEnvironmentBlob(
+          AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
     if (blob != null) {
       return blob.postVisitDeep(this);
     }
@@ -2151,8 +2085,8 @@ public class Visitor {
   }
 
   public List<AutogenPythonRequirementEnvironmentDiff>
-  postVisitListOfAutogenPythonRequirementEnvironmentDiff(
-      List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
+      postVisitListOfAutogenPythonRequirementEnvironmentDiff(
+          List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -2164,8 +2098,8 @@ public class Visitor {
   }
 
   public List<AutogenPythonRequirementEnvironmentDiff>
-  postVisitDeepListOfAutogenPythonRequirementEnvironmentDiff(
-      List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
+      postVisitDeepListOfAutogenPythonRequirementEnvironmentDiff(
+          List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
     if (lst == null) {
       return null;
     }
@@ -2177,12 +2111,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenPythonRequirementEnvironmentDiff(
-      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
-  }
+      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {}
 
   public void preVisitDeepAutogenPythonRequirementEnvironmentDiff(
-      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
-  }
+      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {}
 
   public AutogenPythonRequirementEnvironmentDiff postVisitAutogenPythonRequirementEnvironmentDiff(
       AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
@@ -2190,8 +2122,8 @@ public class Visitor {
   }
 
   public AutogenPythonRequirementEnvironmentDiff
-  postVisitDeepAutogenPythonRequirementEnvironmentDiff(
-      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
+      postVisitDeepAutogenPythonRequirementEnvironmentDiff(
+          AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
     if (blob != null) {
       return blob.postVisitDeep(this);
     }
@@ -2243,12 +2175,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenQueryDatasetBlob(AutogenQueryDatasetBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenQueryDatasetBlob(AutogenQueryDatasetBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenQueryDatasetBlob postVisitAutogenQueryDatasetBlob(AutogenQueryDatasetBlob blob)
       throws ModelDBException {
@@ -2308,12 +2238,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenQueryDatasetComponentBlob(AutogenQueryDatasetComponentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenQueryDatasetComponentBlob(AutogenQueryDatasetComponentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenQueryDatasetComponentBlob postVisitAutogenQueryDatasetComponentBlob(
       AutogenQueryDatasetComponentBlob blob) throws ModelDBException {
@@ -2373,12 +2301,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenQueryDatasetComponentDiff(AutogenQueryDatasetComponentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenQueryDatasetComponentDiff(AutogenQueryDatasetComponentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenQueryDatasetComponentDiff postVisitAutogenQueryDatasetComponentDiff(
       AutogenQueryDatasetComponentDiff blob) throws ModelDBException {
@@ -2438,12 +2364,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenQueryDatasetDiff(AutogenQueryDatasetDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenQueryDatasetDiff(AutogenQueryDatasetDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenQueryDatasetDiff postVisitAutogenQueryDatasetDiff(AutogenQueryDatasetDiff blob)
       throws ModelDBException {
@@ -2502,11 +2426,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenS3DatasetBlob(AutogenS3DatasetBlob blob) throws ModelDBException {
-  }
+  public void preVisitAutogenS3DatasetBlob(AutogenS3DatasetBlob blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenS3DatasetBlob(AutogenS3DatasetBlob blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenS3DatasetBlob(AutogenS3DatasetBlob blob) throws ModelDBException {}
 
   public AutogenS3DatasetBlob postVisitAutogenS3DatasetBlob(AutogenS3DatasetBlob blob)
       throws ModelDBException {
@@ -2566,12 +2488,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenS3DatasetComponentBlob(AutogenS3DatasetComponentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenS3DatasetComponentBlob(AutogenS3DatasetComponentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenS3DatasetComponentBlob postVisitAutogenS3DatasetComponentBlob(
       AutogenS3DatasetComponentBlob blob) throws ModelDBException {
@@ -2631,12 +2551,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenS3DatasetComponentDiff(AutogenS3DatasetComponentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenS3DatasetComponentDiff(AutogenS3DatasetComponentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenS3DatasetComponentDiff postVisitAutogenS3DatasetComponentDiff(
       AutogenS3DatasetComponentDiff blob) throws ModelDBException {
@@ -2695,11 +2613,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenS3DatasetDiff(AutogenS3DatasetDiff blob) throws ModelDBException {
-  }
+  public void preVisitAutogenS3DatasetDiff(AutogenS3DatasetDiff blob) throws ModelDBException {}
 
-  public void preVisitDeepAutogenS3DatasetDiff(AutogenS3DatasetDiff blob) throws ModelDBException {
-  }
+  public void preVisitDeepAutogenS3DatasetDiff(AutogenS3DatasetDiff blob) throws ModelDBException {}
 
   public AutogenS3DatasetDiff postVisitAutogenS3DatasetDiff(AutogenS3DatasetDiff blob)
       throws ModelDBException {
@@ -2759,12 +2675,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenVersionEnvironmentBlob(AutogenVersionEnvironmentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenVersionEnvironmentBlob(AutogenVersionEnvironmentBlob blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenVersionEnvironmentBlob postVisitAutogenVersionEnvironmentBlob(
       AutogenVersionEnvironmentBlob blob) throws ModelDBException {
@@ -2824,12 +2738,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenVersionEnvironmentDiff(AutogenVersionEnvironmentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenVersionEnvironmentDiff(AutogenVersionEnvironmentDiff blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenVersionEnvironmentDiff postVisitAutogenVersionEnvironmentDiff(
       AutogenVersionEnvironmentDiff blob) throws ModelDBException {
@@ -2884,11 +2796,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitString(String blob) throws ModelDBException {
-  }
+  public void preVisitString(String blob) throws ModelDBException {}
 
-  public void preVisitDeepString(String blob) throws ModelDBException {
-  }
+  public void preVisitDeepString(String blob) throws ModelDBException {}
 
   public String postVisitString(String blob) throws ModelDBException {
     return blob;
@@ -2938,11 +2848,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitBoolean(Boolean blob) throws ModelDBException {
-  }
+  public void preVisitBoolean(Boolean blob) throws ModelDBException {}
 
-  public void preVisitDeepBoolean(Boolean blob) throws ModelDBException {
-  }
+  public void preVisitDeepBoolean(Boolean blob) throws ModelDBException {}
 
   public Boolean postVisitBoolean(Boolean blob) throws ModelDBException {
     return blob;
@@ -2992,11 +2900,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitDouble(Double blob) throws ModelDBException {
-  }
+  public void preVisitDouble(Double blob) throws ModelDBException {}
 
-  public void preVisitDeepDouble(Double blob) throws ModelDBException {
-  }
+  public void preVisitDeepDouble(Double blob) throws ModelDBException {}
 
   public Double postVisitDouble(Double blob) throws ModelDBException {
     return blob;
@@ -3046,11 +2952,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitInteger(Integer blob) throws ModelDBException {
-  }
+  public void preVisitInteger(Integer blob) throws ModelDBException {}
 
-  public void preVisitDeepInteger(Integer blob) throws ModelDBException {
-  }
+  public void preVisitDeepInteger(Integer blob) throws ModelDBException {}
 
   public Integer postVisitInteger(Integer blob) throws ModelDBException {
     return blob;
@@ -3100,11 +3004,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitLong(Long blob) throws ModelDBException {
-  }
+  public void preVisitLong(Long blob) throws ModelDBException {}
 
-  public void preVisitDeepLong(Long blob) throws ModelDBException {
-  }
+  public void preVisitDeepLong(Long blob) throws ModelDBException {}
 
   public Long postVisitLong(Long blob) throws ModelDBException {
     return blob;
@@ -3154,11 +3056,9 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitFloat(Float blob) throws ModelDBException {
-  }
+  public void preVisitFloat(Float blob) throws ModelDBException {}
 
-  public void preVisitDeepFloat(Float blob) throws ModelDBException {
-  }
+  public void preVisitDeepFloat(Float blob) throws ModelDBException {}
 
   public Float postVisitFloat(Float blob) throws ModelDBException {
     return blob;
@@ -3213,12 +3113,10 @@ public class Visitor {
   }
 
   public void preVisitAutogenDiffStatusEnumDiffStatus(AutogenDiffStatusEnumDiffStatus blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public void preVisitDeepAutogenDiffStatusEnumDiffStatus(AutogenDiffStatusEnumDiffStatus blob)
-      throws ModelDBException {
-  }
+      throws ModelDBException {}
 
   public AutogenDiffStatusEnumDiffStatus postVisitAutogenDiffStatusEnumDiffStatus(
       AutogenDiffStatusEnumDiffStatus blob) throws ModelDBException {

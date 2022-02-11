@@ -216,25 +216,25 @@ public class AutogenPathDatasetComponentDiff implements ProtoType {
     AutogenPathDatasetComponentDiff obj = new AutogenPathDatasetComponentDiff();
     {
       Function<
-          ai.verta.modeldb.versioning.PathDatasetComponentDiff, AutogenPathDatasetComponentBlob>
+              ai.verta.modeldb.versioning.PathDatasetComponentDiff, AutogenPathDatasetComponentBlob>
           f = x -> AutogenPathDatasetComponentBlob.fromProto(blob.getA());
       obj.setA(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.PathDatasetComponentDiff, AutogenPathDatasetComponentBlob>
+              ai.verta.modeldb.versioning.PathDatasetComponentDiff, AutogenPathDatasetComponentBlob>
           f = x -> AutogenPathDatasetComponentBlob.fromProto(blob.getB());
       obj.setB(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.PathDatasetComponentDiff, AutogenPathDatasetComponentBlob>
+              ai.verta.modeldb.versioning.PathDatasetComponentDiff, AutogenPathDatasetComponentBlob>
           f = x -> AutogenPathDatasetComponentBlob.fromProto(blob.getC());
       obj.setC(f.apply(blob));
     }
     {
       Function<
-          ai.verta.modeldb.versioning.PathDatasetComponentDiff, AutogenDiffStatusEnumDiffStatus>
+              ai.verta.modeldb.versioning.PathDatasetComponentDiff, AutogenDiffStatusEnumDiffStatus>
           f = x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
       obj.setStatus(f.apply(blob));
     }

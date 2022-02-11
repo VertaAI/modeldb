@@ -14,8 +14,7 @@ import javax.persistence.Table;
 @Table(name = "s3_dataset_component_blob")
 public class S3DatasetComponentBlobEntity {
 
-  public S3DatasetComponentBlobEntity() {
-  }
+  public S3DatasetComponentBlobEntity() {}
 
   public S3DatasetComponentBlobEntity(
       String blobHash, String blobHashDataset, S3DatasetComponentBlob s3DatasetComponentBlob) {
@@ -32,8 +31,7 @@ public class S3DatasetComponentBlobEntity {
     this.base_path = pathDatasetComponentBlob.getBasePath();
   }
 
-  @EmbeddedId
-  private S3DatasetComponentBlobId id;
+  @EmbeddedId private S3DatasetComponentBlobId id;
 
   @Column(name = "path", columnDefinition = "TEXT")
   private String path;
@@ -112,8 +110,7 @@ class S3DatasetComponentBlobId implements Serializable {
     this.s3_dataset_blob_id = blobHashDataset;
   }
 
-  private S3DatasetComponentBlobId() {
-  }
+  private S3DatasetComponentBlobId() {}
 
   public String getBlob_hash() {
     return blob_hash;

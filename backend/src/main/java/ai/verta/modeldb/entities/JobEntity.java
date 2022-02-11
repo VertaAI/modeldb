@@ -20,8 +20,7 @@ import org.hibernate.annotations.LazyCollectionOption;
 @Table(name = "job")
 public class JobEntity implements Serializable {
 
-  public JobEntity() {
-  }
+  public JobEntity() {}
 
   public JobEntity(Job job) {
     setId(job.getId());

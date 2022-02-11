@@ -634,7 +634,7 @@ public class BlobDAORdbImpl implements BlobDAO {
    *
    * @param session
    * @param parentFolderHash : folder hash of the parent
-   * @param elementName      : element name of the element to be fetched
+   * @param elementName : element name of the element to be fetched
    * @return {@link List<InternalFolderElementEntity>}
    */
   private List<InternalFolderElementEntity> getFolderElement(
@@ -751,7 +751,7 @@ public class BlobDAORdbImpl implements BlobDAO {
    * returns them with their location as set
    *
    * @param session
-   * @param folderHash   : the base folder to start the search for location list
+   * @param folderHash : the base folder to start the search for location list
    * @param locationList : list of trees and psossibly terminating with blob
    * @return
    * @throws ModelDBException
@@ -1319,7 +1319,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       List<ai.verta.modeldb.versioning.BlobDiff> commitToRevertShaBlobDiff =
           computeDiffFromCommitMaps(
-              locationBlobsMapCommitToRevert, locationBlobsMapFirstParentCommit)
+                  locationBlobsMapCommitToRevert, locationBlobsMapFirstParentCommit)
               .getDiffsList();
       Map<String, BlobExpanded> locationBlobsMapBaseCommitSimple =
           convertToLocationBlobMap(locationBlobsMapBaseCommit);
@@ -1811,7 +1811,7 @@ public class BlobDAORdbImpl implements BlobDAO {
    * containing with keys 'internalPath' and 'computeSha' and values populated from the details of
    * the Component
    *
-   * @param blob                         : commit blob
+   * @param blob : commit blob
    * @param pathDatasetComponentBlobPath : pathDatasetComponentBlobPath
    * @return
    * @throws ModelDBException
@@ -1911,8 +1911,8 @@ public class BlobDAORdbImpl implements BlobDAO {
     if (partNumberSpecified) {
       uploadId =
           uploadStatusEntity == null
-              || uploadStatusEntity.getUploadId() == null
-              || uploadStatusEntity.getUploadId().isEmpty()
+                  || uploadStatusEntity.getUploadId() == null
+                  || uploadStatusEntity.getUploadId().isEmpty()
               ? null
               : uploadStatusEntity.getUploadId();
 
@@ -2032,12 +2032,12 @@ public class BlobDAORdbImpl implements BlobDAO {
 
   @Override
   public GetCommittedVersionedDatasetBlobArtifactParts.Response
-  getCommittedVersionedDatasetBlobArtifactParts(
-      RepositoryDAO repositoryDAO,
-      String datasetId,
-      CommitFunction commitFunction,
-      GetCommittedVersionedDatasetBlobArtifactParts request)
-      throws ModelDBException {
+      getCommittedVersionedDatasetBlobArtifactParts(
+          RepositoryDAO repositoryDAO,
+          String datasetId,
+          CommitFunction commitFunction,
+          GetCommittedVersionedDatasetBlobArtifactParts request)
+          throws ModelDBException {
     var blobArtifactPartsResponse =
         getCommittedVersionedBlobArtifactParts(
             (session) ->

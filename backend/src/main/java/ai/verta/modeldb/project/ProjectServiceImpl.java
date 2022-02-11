@@ -265,8 +265,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       request.getAttributesList().stream()
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "project attributes added successfully");
 
       responseObserver.onNext(response);
@@ -325,8 +324,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       Stream.of(request.getAttribute())
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "project attributes updated successfully");
 
       responseObserver.onNext(response);
@@ -424,8 +422,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
             new Gson()
                 .toJsonTree(
                     request.getAttributeKeysList(),
-                    new TypeToken<ArrayList<String>>() {
-                    }.getType()));
+                    new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           updatedProject.getId(),
@@ -479,8 +476,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               "tags",
               new Gson()
                   .toJsonTree(
-                      request.getTagsList(), new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
           "project tags added successfully");
 
       responseObserver.onNext(response);
@@ -556,8 +552,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
             "tags",
             new Gson()
                 .toJsonTree(
-                    request.getTagsList(), new TypeToken<ArrayList<String>>() {
-                    }.getType()));
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
       }
       addEvent(
           updatedProject.getId(),
@@ -615,8 +610,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               new Gson()
                   .toJsonTree(
                       Collections.singletonList(request.getTag()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "project tag added successfully");
 
       responseObserver.onNext(response);
@@ -664,8 +658,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               new Gson()
                   .toJsonTree(
                       Collections.singletonList(request.getTag()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "project tag deleted successfully");
 
       responseObserver.onNext(response);
@@ -1359,8 +1352,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
                       request.getArtifactsList().stream()
                           .map(Artifact::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "project artifacts added successfully");
 
       responseObserver.onNext(responseBuilder.build());
@@ -1426,8 +1418,7 @@ public class ProjectServiceImpl extends ProjectServiceImplBase {
               new Gson()
                   .toJsonTree(
                       Collections.singletonList(request.getKey()),
-                      new TypeToken<ArrayList<String>>() {
-                      }.getType())),
+                      new TypeToken<ArrayList<String>>() {}.getType())),
           "project artifact deleted successfully");
 
       responseObserver.onNext(response);

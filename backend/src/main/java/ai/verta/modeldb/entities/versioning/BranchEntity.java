@@ -12,16 +12,14 @@ import javax.persistence.Table;
 @Table(name = "branch")
 public class BranchEntity {
 
-  public BranchEntity() {
-  }
+  public BranchEntity() {}
 
   public BranchEntity(Long repositoryId, String commitHash, String branchName) {
     this.id = new BranchId(branchName, repositoryId);
     this.commit_hash = commitHash;
   }
 
-  @EmbeddedId
-  private BranchId id;
+  @EmbeddedId private BranchId id;
 
   @Column(name = "commit_hash", nullable = false, columnDefinition = "varchar", length = 64)
   private String commit_hash;
@@ -49,8 +47,7 @@ public class BranchEntity {
       this.repository_id = repositoryId;
     }
 
-    private BranchId() {
-    }
+    private BranchId() {}
 
     public String getBranch() {
       return branch;

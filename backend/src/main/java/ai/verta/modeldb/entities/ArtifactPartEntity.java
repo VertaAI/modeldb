@@ -17,8 +17,7 @@ public class ArtifactPartEntity implements Serializable {
   public static final int VERSION_BLOB_ARTIFACT = 1;
   public static final int PROJECT_ARTIFACT = 2;
 
-  public ArtifactPartEntity() {
-  }
+  public ArtifactPartEntity() {}
 
   public ArtifactPartEntity(String artifactId, int artifactType, long partNumber, String etag) {
     this.artifact_id = artifactId;
@@ -39,8 +38,7 @@ public class ArtifactPartEntity implements Serializable {
   @Column(name = "part_number", nullable = false)
   private long partNumber;
 
-  @Column
-  private String etag;
+  @Column private String etag;
 
   @Override
   public boolean equals(Object o) {
