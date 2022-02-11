@@ -24,6 +24,7 @@ import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.UACApisUtil;
@@ -401,9 +402,14 @@ public class FutureExperimentDAO {
             executor)
         .thenCompose(
             unused -> {
-              if (!request.getName().isEmpty()) {
+              var name = request.getName();
+              if (request.getName().isEmpty()) {
+                name = MetadataServiceImpl.createRandomName();
+              }
+
+              if (!name.isEmpty()) {
                 return updateExperimentName(
-                    request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
+                    request.getId(), ModelDBUtils.checkEntityNameLength(name));
               }
               // FIXME: this code never allows us to set the description as an empty string
               if (!request.getDescription().isEmpty()) {
