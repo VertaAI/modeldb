@@ -528,7 +528,23 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void getExperimentTags(
       GetTags request, StreamObserver<GetTags.Response> responseObserver) {
-    super.getExperimentTags(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in GetTags request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture.thenCompose(
+              unused -> futureExperimentDAO.getTags(request.getId()), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

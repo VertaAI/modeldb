@@ -6,6 +6,7 @@ import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
+import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
@@ -558,5 +559,17 @@ public class FutureExperimentDAO {
         .createUpdate("update experiment set version_number=(version_number + 1) where id=:exp_id")
         .bind("exp_id", expId)
         .execute();
+  }
+
+  public InternalFuture<GetTags.Response> getTags(String expId) {
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> tagsHandler.getTags(expId), executor)
+        .thenApply(tags -> tags.stream().sorted().collect(Collectors.toList()), executor)
+        .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
   }
 }
