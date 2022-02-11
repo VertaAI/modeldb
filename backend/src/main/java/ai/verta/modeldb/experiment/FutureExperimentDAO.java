@@ -16,6 +16,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.experiment.subtypes.CreateExperimentHandler;
@@ -512,5 +513,54 @@ public class FutureExperimentDAO {
                 updateExperimentField(request.getId(), "description", request.getDescription()),
             executor)
         .thenCompose(unused -> getExperimentById(request.getId()), executor);
+  }
+
+  public InternalFuture<Experiment> addTags(String expId, List<String> tags) {
+    final var now = new Date().getTime();
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        tagsHandler.addTags(
+                            handle, expId, TagsHandlerBase.checkEntityTagsLength(tags))),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(expId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(expId), executor)
+        .thenCompose(unused -> getExperimentById(expId), executor);
+  }
+
+  private InternalFuture<Void> updateModifiedTimestamp(String experimentId, Long now) {
+    return jdbi.useHandle(
+        handle -> {
+          final var currentDateUpdated =
+              handle
+                  .createQuery("SELECT date_updated FROM experiment WHERE id=:exp_id")
+                  .bind("exp_id", experimentId)
+                  .mapTo(Long.class)
+                  .one();
+          final var dateUpdated = Math.max(currentDateUpdated, now);
+          handle
+              .createUpdate("update experiment set date_updated=:date_updated where id=:exp_id")
+              .bind("exp_id", experimentId)
+              .bind("date_updated", dateUpdated)
+              .execute();
+        });
+  }
+
+  private InternalFuture<Void> updateVersionNumber(String expId) {
+    return jdbi.useHandle(
+        handle ->
+            handle
+                .createUpdate(
+                    "update experiment set version_number=(version_number + 1) where id=:exp_id")
+                .bind("exp_id", expId)
+                .execute());
   }
 }
