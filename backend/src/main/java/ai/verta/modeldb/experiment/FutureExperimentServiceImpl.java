@@ -293,7 +293,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   public void updateExperimentNameOrDescription(
       UpdateExperimentNameOrDescription request,
       StreamObserver<UpdateExperimentNameOrDescription.Response> responseObserver) {
-    super.updateExperimentNameOrDescription(request, responseObserver);
     try {
       final var requestValidationFuture =
           InternalFuture.runAsync(

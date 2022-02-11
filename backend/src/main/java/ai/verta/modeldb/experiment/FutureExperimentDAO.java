@@ -420,7 +420,7 @@ public class FutureExperimentDAO {
         handle ->
             handle
                 .createUpdate(
-                    "update experiment set name = :name, date_update = :updatedTime, version_number=(version_number + 1) where id = :id ")
+                    "update experiment set name = :name, date_updated = :updatedTime, version_number=(version_number + 1) where id = :id ")
                 .bind("name", name)
                 .bind("id", expId)
                 .bind("updatedTime", new Date().getTime())
@@ -432,7 +432,7 @@ public class FutureExperimentDAO {
         handle ->
             handle
                 .createUpdate(
-                    "update experiment set description = :description, date_update = :updatedTime, version_number=(version_number + 1) where id = :id ")
+                    "update experiment set description = :description, date_updated = :updatedTime, version_number=(version_number + 1) where id = :id ")
                 .bind("description", description)
                 .bind("id", expId)
                 .bind("updatedTime", new Date().getTime())
